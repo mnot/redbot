@@ -81,6 +81,7 @@ red_footer = """\
 <p class="navigation"> 
 <a href="http://redbot.org/about/">about red</a> |
 <a href="http://redbot.org/terms/">terms of use</a> | 
+<a href="http://redbot.org/project">red project</a> |
 <a href="javascript:location%%20=%%20'http://redbot.org/?uri='+escape(location);%%20void%%200" title="drag me to your toolbar to use RED any time.">red</a> bookmarklet 
 </p>
 </div>
