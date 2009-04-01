@@ -212,14 +212,14 @@ class HttpClient:
         res_hdr_lines = LWS.sub(" ", top).splitlines()
         res_line = res_hdr_lines.pop(0)
         try: 
-            res_version, rest = res_line.split(None, 1)
+            res_version, status_txt = res_line.split(None, 1)
             res_version = float(res_version.rsplit('/', 1)[1])
         except (ValueError, IndexError), why:
             return self._http_error("502", "Bad Gateway", why)
         try:
-            res_code, res_phrase = res_line.split(None, 1)
-        except IndexError:
-            res_code = res_line
+            res_code, res_phrase = status_txt.split(None, 1)
+        except ValueError:
+            res_code = status_txt
             res_phrase = ""
         res_headers = []
         connection_tokens = []
