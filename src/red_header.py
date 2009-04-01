@@ -73,6 +73,22 @@ $(document).ready(function(){
 	$("a.view").click(function(){
 		document.all.long_mesg.src = this.getAttribute('title');
 	});
+
+	var check_phrase = "Enter a HTTP URI to check";
+	$(document).ready(function(){
+		if (! $("#uri").val()) {
+			$("#uri").val(check_phrase);
+			$("#uri").css({'color': '#ccc'});
+		}
+	});
+
+	$("#uri").focus(function(){
+		if ($(this).val() == check_phrase) {
+			$(this).val("");
+			$("#uri").css({'color': '#111'});
+		}
+	});
+
 });
 
 </script>
@@ -82,5 +98,5 @@ $(document).ready(function(){
 
 <h1><span class="hilight">r</span>esource <span class="hilight">e</span>xpert <span class="hilight">d</span>roid</h1>
 
-<p><form method="GET"><input type="text" name="uri" value="%(uri)s"/></form></p>
+<p><form method="GET"><input type="text" name="uri" value="%(uri)s" id="uri"/></form></p>
 """
