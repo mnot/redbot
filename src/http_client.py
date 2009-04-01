@@ -179,7 +179,8 @@ class HttpClient:
         if self._conn_mode == CLOSE:
             self.res_body_done(True)
         else:
-            if self.method in self.safe_methods and self._retries < self.retry_limit: 
+            if self.method in self.safe_methods and self._retries < self.retry_limit:
+                # FIXME: this is probably dangerous past WAITING. Clean up state before we retry.
                 self._retries += 1
                 pool.attach(self.tcp_conn.host, self.tcp_conn.port, 
                     self.handle_connect, self.handle_connect_error)                
