@@ -443,7 +443,7 @@ MIME_VERSION = (GENERAL, INFO,
     }
 )
 
-PRAGMA_NO_CACHE = (CACHING, INFO,
+PRAGMA_NO_CACHE = (CACHING, BAD,
     {
     'en': "Pragma: no-cache is a request directive, not a response directive."
     },
