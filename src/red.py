@@ -204,6 +204,7 @@ class ResourceExpertDroid(object):
         else:
             freshness_lifetime_str = relative_time(int(freshness_lifetime), 0)            
         self.setMessage(" ".join(freshness_hdrs), rs.FRESHNESS_LIFETIME, freshness_lifetime=freshness_lifetime_str)
+
         # calculate age
         if self.response.parsed_hdrs.has_key('date'):
             apparent_age = max(0, self.response.header_timestamp - self.response.parsed_hdrs['date'])
@@ -212,6 +213,15 @@ class ResourceExpertDroid(object):
         current_age = max(apparent_age, self.response.parsed_hdrs.get('age', 0))
         current_age_str = relative_time(current_age, 0, 0)
         self.setMessage('header-age header-date', rs.CURRENT_AGE, current_age=current_age_str)
+
+        # check clock sync TODO: alert on clockless origin server.
+        skew = self.response.parsed_hdrs.get('date', 0) - self.response.header_timestamp + self.response.parsed_hdrs.get('age', 0)
+        if abs(skew) > 2: # TODO: make configurable
+            self.setMessage('date', rs.DATE_INCORRECT, 
+                clock_skew_string=relative_time(self.response.parsed_hdrs['date'], self.response.header_timestamp, 2))
+        else:
+            self.setMessage('date', rs.DATE_CORRECT)
+
                 
     def checkEtagValidation(self):
         name = 'etag'
@@ -456,12 +466,6 @@ class ResponseHeaderParser(object):
         except ValueError, why:
             self.setMessage(name, rs.BAD_DATE_SYNTAX)
             return None
-        skew = date - self.response.header_timestamp
-        if abs(skew) > 2: # TODO: make configurable
-            self.setMessage(name, rs.DATE_INCORRECT, 
-                clock_skew_string=relative_time(date, self.response.header_timestamp, 2))
-        else:
-            self.setMessage(name, rs.DATE_CORRECT)
         return date
 
     @SingleFieldValue
