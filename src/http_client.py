@@ -72,6 +72,7 @@ class HttpClient:
         self._timeout_event = None
         
     def start_request(self, method, uri, req_headers={}):
+        assert self._req_state == WAITING
         self.method = method
         self.uri = uri
         self.req_headers = req_headers
@@ -104,7 +105,7 @@ class HttpClient:
         self._http_error("504", "Gateway Timeout", os.strerror(err)) 
 
     def req_body_write(self, data):
-        assert self._req_state == HEADERS_DONE, "Can't send request body without headers."
+        assert self._req_state == HEADERS_DONE
         assert self.req_headers.has_key('content-length'), "Request bodies require content-length"
         #TODO: deal with pausing
         self._req_body_sent += len(data)
@@ -113,6 +114,7 @@ class HttpClient:
             "Too many request body bytes sent"
         
     def req_body_done(self, data):
+        assert self._req_state == HEADERS_DONE
         self._req_state = BODY_DONE
 
     def handle_input(self, instr):
@@ -188,6 +190,7 @@ class HttpClient:
                 self._http_error("504", "Gateway Timeout", "connection closed") 
 
     def res_body_done(self, complete):
+        assert self._res_state < BODY_DONE
         self._res_state = BODY_DONE
         if self.tcp_conn and self.tcp_conn.tcp_connected:                
             def unexpected_read(data):
