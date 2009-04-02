@@ -171,7 +171,6 @@ class HttpClient:
                 raise Exception, "Unknown conn_mode"
 
     def conn_closed(self):
-        sys.stdout.flush()
         if self._input_buffer:
             self.handle_input("")
             if self._res_state == BODY_DONE:
