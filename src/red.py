@@ -218,7 +218,7 @@ class ResourceExpertDroid(object):
         skew = self.response.parsed_hdrs.get('date', 0) - self.response.header_timestamp + self.response.parsed_hdrs.get('age', 0)
         if abs(skew) > 2: # TODO: make configurable
             self.setMessage('date', rs.DATE_INCORRECT, 
-                clock_skew_string=relative_time(self.response.parsed_hdrs['date'], self.response.header_timestamp, 2))
+                clock_skew_string=relative_time(self.response.parsed_hdrs.get('date', 0), self.response.header_timestamp, 2))
         else:
             self.setMessage('date', rs.DATE_CORRECT)
 
