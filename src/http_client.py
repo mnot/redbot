@@ -263,8 +263,7 @@ class HttpClient:
         else: # HTTP/1.0
             if content_length != None and 'keep-alive' in connection_tokens:
                 self._conn_mode = COUNTED
-                if self._res_body_left == None:
-                    self._res_body_left = 0
+                self._res_body_left = content_length
             else:
                 self._conn_mode = CLOSE
         if 'close' not in connection_tokens:
