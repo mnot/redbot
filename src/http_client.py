@@ -49,6 +49,7 @@ BODY_DONE = 2
 
 class HttpClient:
     safe_methods = ['GET', 'HEAD']
+    no_body_status = ['304', '204']
     retry_limit = 2
 
     def __init__(self, res_start_cb, res_body_write_cb, res_body_done_cb, timeout=None):
@@ -242,7 +243,7 @@ class HttpClient:
                 except ValueError, why:
                     return self._http_error("502" "Bad Gateway", why) 
 
-        if self.method == "HEAD" or res_code in ["304"]: # responses that have no body.
+        if self.method == "HEAD" or res_code in self.no_body_status:
             self._conn_mode = COUNTED
             self._res_body_left = 0
         elif res_version > 1.0: # HTTP/1.1
