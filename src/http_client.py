@@ -280,7 +280,7 @@ class HttpClient:
         self.res_start_cb("1.1", status_code, status_phrase, [])
         self.res_body_write_cb(str(body))
         self.res_body_done(False)
-        if self.tcp_conn and self.tcp_conn.tcp_connected:
+        if hasattr(self, 'tcp_conn') and self.tcp_conn and self.tcp_conn.tcp_connected:
             self.tcp_conn.close()
         return ""
 
