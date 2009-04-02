@@ -385,7 +385,7 @@ class ResponseHeaderParser(object):
         self.setMessage(name, rs.AGE_PRESENT, 
             age=relative_time(self.response.header_timestamp - age, 
                               self.response.header_timestamp, 0))
-        return age
+        return age # FIXME: duplicative with checkCaching.
     
     @GenericHeaderSyntax
     def allow(self, name, values):
