@@ -84,6 +84,8 @@ class HttpClient:
             port = int(port)
         else:
             host, port = authority, 80
+        if path == "":
+            path = "/"
         self.req_headers.append(("Host", authority)) # FIXME: make sure it's the only one
         self.req_headers.append(("Connection", "keep-alive"))
         self.uri = urlunsplit(('', '', path, query, ''))
