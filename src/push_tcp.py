@@ -350,9 +350,11 @@ class _AsyncoreClient(asyncore.dispatcher):
         if timeout:
             to_err = errno.ETIMEDOUT
             self._timeout_ev = schedule(timeout, self.connect_error_handler, host, port, to_err)
-        self.connect((host, port))
         # TODO: socket.getaddrinfo(); needs to be non-blocking.
-        # TODO: error handling, timeout
+        try:
+            self.connect((host, port))
+        except socket.error, why:
+            self.handle_error()
 
     def handle_connect(self):
         if self._timeout_ev:
