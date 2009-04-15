@@ -354,7 +354,7 @@ class _AsyncoreClient(asyncore.dispatcher):
         try:
             self.connect((host, port))
         except socket.error, why:
-            self.handle_error()
+            self.handle_error(why[0])
 
     def handle_connect(self):
         if self._timeout_ev:
@@ -362,10 +362,11 @@ class _AsyncoreClient(asyncore.dispatcher):
         tcp_conn = _AsyncoreConnection(self.socket, self.host, self.port, self.connect_error_handler)
         tcp_conn.read_cb, tcp_conn.close_cb, tcp_conn.pause_cb = self.conn_handler(tcp_conn)
 
-    def handle_error(self):
+    def handle_error(self, err=None):
         if self._timeout_ev:
             self._timeout_ev.delete()
-        t, err, tb = sys.exc_info()
+        if err == None:
+            t, err, tb = sys.exc_info()
         self.connect_error_handler(self.host, self.port, err)
 
     def handle_read(self):
