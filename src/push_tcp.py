@@ -348,8 +348,8 @@ class _AsyncoreClient(asyncore.dispatcher):
         self._timeout_ev = None
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         if timeout:
-            err = errno.ETIMEDOUT
-            self._timeout_ev = schedule(timeout, self.connect_error_handler, host, port, err)
+            to_err = errno.ETIMEDOUT
+            self._timeout_ev = schedule(timeout, self.connect_error_handler, host, port, to_err)
         self.connect((host, port))
         # TODO: socket.getaddrinfo(); needs to be non-blocking.
         # TODO: error handling, timeout
@@ -382,8 +382,8 @@ class _EventClient:
         event.write(sock, self.handle_connect, sock, host, port).add()
         # TODO: socket.getaddrinfo(); needs to be non-blocking.
         if timeout:
-            err = errno.ETIMEDOUT
-            self._timeout_ev = schedule(timeout, self.connect_error_handler, host, port, err)
+            to_err = errno.ETIMEDOUT
+            self._timeout_ev = schedule(timeout, self.connect_error_handler, host, port, to_err)
         err = sock.connect_ex((host, port)) # FIXME: check for DNS errors, etc.
         if err != errno.EINPROGRESS: # FIXME: others?
             if self._timeout_ev:
