@@ -327,7 +327,7 @@ DATE_INCORRECT = (CACHING, BAD,
 
 INM_304 = (CACHING, GOOD,
     {
-    'en': "An If-None-Match conditional request returned a 304 Not Modified response."
+    'en': "The resource supports If-None-Match conditional requests."
     },
     {
     'en': """HTTP allows clients to make conditional requests to see if a copy that they hold is still valid. Since this response
@@ -391,7 +391,7 @@ LM_PRESENT = (CACHING, INFO,
 
 IMS_304 = (CACHING, GOOD,
     {
-    'en': "An If-Modified-Since conditional request returned a 304 Not Modified response."
+    'en': "The resource supports If-Modified-Since conditional requests."
     },
     {
     'en': """HTTP allows clients to make conditional requests to see if a copy that they hold is still valid. Since this response
