@@ -190,12 +190,12 @@ class ResourceExpertDroid(object):
             apparent_age = 0
         current_age = max(apparent_age, self.response.parsed_hdrs.get('age', 0))
 
+        current_age_str = relative_time(current_age, 0, 0)
         if current_age >= 1:
-            current_age_str = relative_time(current_age, 0, 0)
             self.setMessage('header-age header-date', rs.CURRENT_AGE, current_age=current_age_str)
         
         # calculate freshness
-        freshness_lifetime = None
+        freshness_lifetime = 0
         freshness_hdrs = ['header-date', 'header-expires']
         if cc_dict.has_key('s-maxage'):
             freshness_lifetime = cc_dict['s-maxage']
@@ -212,14 +212,22 @@ class ResourceExpertDroid(object):
                     self.response.header_timestamp # ?
                     # FIXME: offset age; e.g. cnet.com
 
-        freshness_lifetime -= current_age
+        freshness_left = freshness_lifetime - current_age
+        freshness_left_str = relative_time(abs(int(freshness_left)), 0, 0)
+        freshness_lifetime_str = relative_time(int(freshness_lifetime), 0, 0)
 
-        if freshness_lifetime > 0:
-            freshness_lifetime_str = relative_time(int(freshness_lifetime), 0, 0)
-            self.setMessage(" ".join(freshness_hdrs), rs.FRESHNESS_FRESH, freshness_lifetime=freshness_lifetime_str)
+        if freshness_left > 0:
+            self.setMessage(" ".join(freshness_hdrs), rs.FRESHNESS_FRESH, 
+                            freshness_lifetime=freshness_lifetime_str,
+                            freshness_left=freshness_left_str,
+                            current_age = current_age_str
+                            )
         else:
-            stale_str = ""
-            self.setMessage(" ".join(freshness_hdrs), rs.FRESHNESS_STALE, stale_str=stale_str)
+            self.setMessage(" ".join(freshness_hdrs), rs.FRESHNESS_STALE, 
+                            freshness_lifetime=freshness_lifetime_str,
+                            freshness_left=freshness_left_str,
+                            current_age = current_age_str
+                            )
 
         # check clock sync TODO: alert on clockless origin server.
         skew = self.response.parsed_hdrs.get('date', 0) - self.response.header_timestamp + self.response.parsed_hdrs.get('age', 0)
@@ -406,6 +414,12 @@ class ResponseHeaderParser(object):
                 attr = directive
                 value = None
             attr = attr.lower()
+            if attr in ['max-age', 's-maxage']:
+                try:
+                    value = int(value)
+                except ValueError:
+                    self.setMessage(name, rs.BAD_CC_SYNTAX, bad_cc_attr=attr)
+                    continue
             directives.append((attr, value))
         return directives
 

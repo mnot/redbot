@@ -124,6 +124,15 @@ BAD_SYNTAX = (GENERAL, BAD,
     }
 )
 
+BAD_CC_SYNTAX = (GENERAL, BAD,
+    {
+     'en': "The %(bad_cc_attr)s Cache-Control directive's syntax is incorrect."
+    },
+    {
+     'en': "This value must be an integer."
+    }
+)
+
 BODY_EXTRA = (GENERAL, BAD,
     {
     'en': "The body sent on the wire is longer than it should be."
@@ -519,12 +528,13 @@ CURRENT_AGE = (CACHING, INFO,
     }
 )
 
-FRESHNESS_FRESH = (CACHING, INFO,
+FRESHNESS_FRESH = (CACHING, GOOD,
     {
-     'en': "The response is fresh for %(freshness_lifetime)s."
+     'en': "The response is fresh for %(freshness_left)s."
     },
     {
-    'en': """"""
+    'en': """A response can be considered fresh when its age (here, %(current_age)s)
+    is less than its freshness lifetime (in this case, %(freshness_lifetime)s)."""
     }
 )
 
@@ -533,6 +543,7 @@ FRESHNESS_STALE = (CACHING, INFO,
      'en': "The response is stale."
     },
     {
-    'en': """"""
+    'en': """A cache considers a HTTP response stale when its age (here, %(current_age)s)
+    is equal to or exceeds its freshness lifetime (in this case, %(freshness_lifetime)s)."""
     }
 )
