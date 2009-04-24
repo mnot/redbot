@@ -212,6 +212,8 @@ class ResourceExpertDroid(object):
                     self.response.header_timestamp # ?
                     # FIXME: offset age; e.g. cnet.com
 
+        freshness_lifetime -= current_age
+
         if freshness_lifetime > 0:
             freshness_lifetime_str = relative_time(int(freshness_lifetime), 0, 0)
             self.setMessage(" ".join(freshness_hdrs), rs.FRESHNESS_FRESH, freshness_lifetime=freshness_lifetime_str)
