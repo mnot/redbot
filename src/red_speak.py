@@ -547,3 +547,47 @@ FRESHNESS_STALE = (CACHING, INFO,
     is equal to or exceeds its freshness lifetime (in this case, %(freshness_lifetime)s)."""
     }
 )
+
+METHOD_UNCACHEABLE = (CACHING, INFO,
+    {
+     'en': "Responses to the %(method)s method can't be stored by caches."
+    },
+    {
+    'en': """"""
+    }
+)
+
+NO_STORE = (CACHING, INFO,
+    {
+     'en': "This response can't be stored by a cache."
+    },
+    {
+    'en': """The <code>Cache-Control: no-store</code> directive indicates that the
+    response can't be stored by a cache."""
+    }
+)
+
+PRIVATE_CC = (CACHING, INFO,
+    {
+     'en': "This response can only be stored by a private cache."
+    },
+    {
+    'en': """The <code>Cache-Control: private</code> directive indicates that the
+    response can only be stored by caches that are specific to a single user; for
+    example, a browser cache. Shared caches, such as those in proxies, cannot store
+    it."""
+    }
+)
+
+PRIVATE_AUTH = (CACHING, INFO,
+    {
+     'en': "This response can only be stored by a private cache."
+    },
+    {
+    'en': """Because the request was authenticated and the response doesn't contain
+    a <code>Cache-Control: public</code> directive, this
+    response can only be stored by caches that are specific to a single user; for
+    example, a browser cache. Shared caches, such as those in proxies, cannot store
+    it."""
+    }
+)

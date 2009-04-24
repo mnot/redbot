@@ -172,16 +172,21 @@ class ResourceExpertDroid(object):
     def checkCaching(self):
         # TODO: assure that there aren't any dup standard directives
         cc_dict = dict(self.response.parsed_hdrs.get('cache-control', []))
-        # can it be stored?
-        storable = True
-        private = False
+
+        # can it be stored? If not, get out of here.
         if self.method not in cacheable_methods:
-            storable = False
+            self.setMessage('method', rs.METHOD_UNCACHEABLE, method=self.method)
+            return
+        if cc_dict.has_key('no-store'):
+            self.setMessage('header-cache-control', rs.NO_STORE)
+            return 
+
+        # is it private?
         if cc_dict.has_key('private'):
-            private = True
-        if 'authorization' in [k.lower() for k, v in self.req_headers]:
-            private = True
-        # TODO: surface storeability and private
+            self.setMessage('header-cache-control', rs.PRIVATE_CC)
+        if 'authorization' in [k.lower() for k, v in self.req_headers] and \
+          not cc_dict.has_key('public'):
+            self.setMessage('header-cache-control', rs.PRIVATE_AUTH)
 
         # calculate age
         if self.response.parsed_hdrs.has_key('date'):
@@ -193,6 +198,7 @@ class ResourceExpertDroid(object):
         current_age_str = relative_time(current_age, 0, 0)
         if current_age >= 1:
             self.setMessage('header-age header-date', rs.CURRENT_AGE, current_age=current_age_str)
+        # TODO: differentiate between transit / skew and actual cache age
         
         # calculate freshness
         freshness_lifetime = 0
