@@ -258,7 +258,7 @@ CMD5_INCORRECT = (GENERAL, BAD,
     }
 )
 
-CONNEG_GZIP = (GENERAL, INFO,
+CONNEG_GZIP = (GENERAL, GOOD,
     {
     'en': 'Content negotiation for gzip compression is supported.'
     },
