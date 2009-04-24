@@ -211,8 +211,9 @@ class ResourceExpertDroid(object):
         else:
             apparent_age = 0
         current_age = max(apparent_age, self.response.parsed_hdrs.get('age', 0))
-        current_age_str = relative_time(current_age, 0, 0)
-        self.setMessage('header-age header-date', rs.CURRENT_AGE, current_age=current_age_str)
+        if current_age >= 1:
+            current_age_str = relative_time(current_age, 0, 0)
+            self.setMessage('header-age header-date', rs.CURRENT_AGE, current_age=current_age_str)
 
         # check clock sync TODO: alert on clockless origin server.
         skew = self.response.parsed_hdrs.get('date', 0) - self.response.header_timestamp + self.response.parsed_hdrs.get('age', 0)
