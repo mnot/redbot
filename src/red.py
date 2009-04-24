@@ -702,7 +702,7 @@ def relative_time(utime, now=None, show_sign=1):
         return None
     if now == None:	
         now = time.time()
-    age = now - utime
+    age = int(now - utime)
     if age == 0: 
         return signs[show_sign][0]
     	
