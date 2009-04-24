@@ -706,7 +706,8 @@ def relative_time(utime, now=None, show_sign=1):
         arr.append(str(hrs) + ' hr') 
     if mnt: 
         arr.append(str(mnt) + ' min')
-    arr.append(str(sec) + ' sec')
+    if sec:
+        arr.append(str(sec) + ' sec')
     arr = arr[:2]		# resolution
     if show_sign: 
         arr.append(sign)
