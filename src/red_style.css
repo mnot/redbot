@@ -22,6 +22,11 @@ h3 {
 	margin: 0;
 	padding: 0;
 }
+
+ul {
+	margin-top: 0;
+}
+
 pre {
 	background-color: #111;
 	color: #ddd;
@@ -44,10 +49,10 @@ input {
 	width: 600px;
 }
 #long_mesg {
-	float: right;
 	border: 0;
-	padding: 1em 0em;
-	min-width: 250px;
+	padding: 0em;
+	margin-top: 4em;
+	width: 350px;
 	height: 500px;
 }
 .good {
@@ -73,7 +78,7 @@ input {
 	display: none;
 }
 .version {
-	padding-top: 10em;
+	padding-top: 5em;
 	text-align: center;
 	color: #aaa;
 	font-size: 0.6em;
