@@ -27,10 +27,10 @@ THE SOFTWARE.
 __version__ = "1"
 
 import re
-import md5
 import time
 import calendar 
 import socket
+from hashlib import md5
 from email.utils import parsedate as lib_parsedate
 
 import http_client
@@ -199,11 +199,12 @@ class ResourceExpertDroid(object):
                 freshness_lifetime = self.response.parsed_hdrs['expires'] - \
                     self.response.header_timestamp # ?
                     # FIXME: offset age; e.g. cnet.com
-        if freshness_lifetime == None:
-            freshness_lifetime_str = "now" # FIXME: not fresh
+        if freshness_lifetime > 0:
+            freshness_lifetime_str = relative_time(int(freshness_lifetime), 0, 0)
+            self.setMessage(" ".join(freshness_hdrs), rs.FRESHNESS_FRESH, freshness_lifetime=freshness_lifetime_str)
         else:
-            freshness_lifetime_str = relative_time(int(freshness_lifetime), 0)            
-        self.setMessage(" ".join(freshness_hdrs), rs.FRESHNESS_LIFETIME, freshness_lifetime=freshness_lifetime_str)
+            stale_str = ""
+            self.setMessage(" ".join(freshness_hdrs), rs.FRESHNESS_STALE, stale_str=stale_str)
 
         # calculate age
         if self.response.parsed_hdrs.has_key('date'):
@@ -434,7 +435,7 @@ class ResponseHeaderParser(object):
     @SingleFieldValue
     def content_md5(self, name, values):
         c_md5 = values[-1]
-        if c_md5 == md5.new(self.response.body).hexdigest():
+        if c_md5 == md5(self.response.body).hexdigest():
             self.setMessage(name, rs.CMD5_CORRECT)
         else:
             self.setMessage(name, rs.CMD5_INCORRECT)

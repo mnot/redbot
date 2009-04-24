@@ -261,7 +261,7 @@ CMD5_INCORRECT = (GENERAL, BAD,
 
 CONNEG_GZIP = (GENERAL, INFO,
     {
-    'en': 'The resource supports content negotiation for gzip compression.'
+    'en': 'Content negotiation for gzip compression is supported.'
     },
     {
     'en': """HTTP supports compression of responses by negotiating for <code>Content-Encoding</code>. 
@@ -271,7 +271,7 @@ CONNEG_GZIP = (GENERAL, INFO,
 
 CONNEG_NO_GZIP = (GENERAL, INFO,
     {
-    'en': 'The resource does not support content negotiation for gzip compression.'
+    'en': 'Content negotiation for gzip compression isn\'t supported.'
     },
     {
     'en': """HTTP supports compression of responses by negotiating for <code>Content-Encoding</code>. 
@@ -281,7 +281,7 @@ CONNEG_NO_GZIP = (GENERAL, INFO,
 
 CONNEG_GZIP_WITHOUT_ASKING = (GENERAL, BAD,
     {
-    'en': 'The resource sent a gzip-compressed representation when it wasn\'t asked for.'
+    'en': 'A gzip-compressed response was sent when it wasn\'t asked for.'
     },
     {
     'en': """HTTP supports compression of responses by negotiating for <code>Content-Encoding</code>. 
@@ -327,7 +327,7 @@ DATE_INCORRECT = (CACHING, BAD,
 
 INM_304 = (CACHING, GOOD,
     {
-    'en': "The resource supports If-None-Match conditional requests."
+    'en': "If-None-Match conditional requests are supported."
     },
     {
     'en': """HTTP allows clients to make conditional requests to see if a copy that they hold is still valid. Since this response
@@ -391,7 +391,7 @@ LM_PRESENT = (CACHING, INFO,
 
 IMS_304 = (CACHING, GOOD,
     {
-    'en': "The resource supports If-Modified-Since conditional requests."
+    'en': "If-Modified-Since conditional requests are supported."
     },
     {
     'en': """HTTP allows clients to make conditional requests to see if a copy that they hold is still valid. Since this response
@@ -527,9 +527,18 @@ CURRENT_AGE = (CACHING, INFO,
     }    
 )
 
-FRESHNESS_LIFETIME = (CACHING, INFO,
+FRESHNESS_FRESH = (CACHING, INFO,
     {
-     'en': "The response is fresh until %(freshness_lifetime)s."
+     'en': "The response is fresh for %(freshness_lifetime)s."
+    },
+    {
+    'en': """"""
+    }
+)
+
+FRESHNESS_STALE = (CACHING, INFO,
+    {
+     'en': "The response is stale."
     },
     {
     'en': """"""
