@@ -204,16 +204,6 @@ AGE_NEGATIVE = (CACHING, BAD,
     }
 )
 
-AGE_PRESENT = (CACHING, INFO,
-    {
-    'en': "It already been cached for %(age)s."
-    },
-    {
-    'en': """The <code>Age</code> header indicates the age of the response; i.e., how long it
-    has been cached since it was generated."""
-    }
-)
-
 CL_CORRECT = (CONNECTION, GOOD,
     {
     'en': 'The Content-Length header is correct.'
@@ -520,11 +510,13 @@ VIA_PRESENT = (GENERAL, INFO,
 
 CURRENT_AGE = (CACHING, INFO,
     {
-     'en': "The response is %(current_age)s old."
+     'en': "The response has been cached for %(current_age)s."
     },
     {
-    'en': """"""
-    }    
+    'en': """The <code>Age</code> header indicates the age of the response; i.e., how long it
+    has been cached since it was generated. HTTP takes this as well as any apparent clock skew
+    into account in computing how old the response already is."""
+    }
 )
 
 FRESHNESS_FRESH = (CACHING, INFO,

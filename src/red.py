@@ -383,11 +383,7 @@ class ResponseHeaderParser(object):
         if age < 0: 
             self.setMessage(name, rs.AGE_NEGATIVE)
             return None
-
-        self.setMessage(name, rs.AGE_PRESENT, 
-            age=relative_time(self.response.header_timestamp - age, 
-                              self.response.header_timestamp, 0))
-        return age # FIXME: duplicative with checkCaching.
+        return age
     
     @GenericHeaderSyntax
     def allow(self, name, values):
