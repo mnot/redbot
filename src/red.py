@@ -236,6 +236,14 @@ class ResourceExpertDroid(object):
                             current_age = current_age_str
                             )
 
+        # can stale responses be served?
+        if cc_dict.has_key('must-revalidate'):
+            self.setMessage('cache-control', rs.STALE_MUST_REVALIDATE) 
+        elif cc_dict.has_key('proxy-revalidate') or cc_dict.has_key('s-maxage'):
+            self.setMessage('cache-control', rs.STALE_PROXY_REVALIDATE) 
+        else:
+            self.setMessage('cache-control', rs.STALE_SERVABLE)
+
         # check clock sync TODO: alert on clockless origin server.
         skew = self.response.parsed_hdrs.get('date', 0) - self.response.header_timestamp + self.response.parsed_hdrs.get('age', 0)
         if abs(skew) > 2: # TODO: make configurable

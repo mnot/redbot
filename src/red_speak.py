@@ -548,6 +548,44 @@ FRESHNESS_STALE = (CACHING, INFO,
     }
 )
 
+STALE_SERVABLE = (CACHING, INFO,
+    {
+     'en': "This response can be served stale by caches."
+    },
+    {
+    'en': """HTTP allows stale responses to be served under some circumstances; for example,
+    if the origin server can't be contacted, a stale response can be used (even if it doesn't
+    have explicit freshness information).<p>This behaviour can be prevented by using the 
+    <code>Cache-Control: must-revalidate</code> response directive."""
+    }
+)
+
+STALE_MUST_REVALIDATE = (CACHING, INFO,
+    {
+     'en': "This response cannot be served stale by caches."
+    },
+    {
+    'en': """The <code>Cache-Control: must-revalidate</code> directive forbids caches from
+    using stale responses to satisfy requests.<p>For example, caches often use stale responses
+    when they cannot connect to the origin server; when this directive is present, they will
+    return an error rather than a stale response."""
+    }
+)
+
+STALE_PROXY_REVALIDATE = (CACHING, INFO,
+    {
+     'en': "This response cannot be served stale by shared caches."
+    },
+    {
+    'en': """The presence of the <code>Cache-Control: proxy-revalidate</code> and/or
+    <code>s-maxage</code> directives forbids shared caches (e.g., proxy caches) from using
+    stale responses to satisfy requests.<p>For example, caches often use stale responses
+    when they cannot connect to the origin server; when this directive is present, they will
+    return an error rather than a stale response.<p>These directives do not affect private
+    caches; for example, those in browsers."""
+    }
+)
+
 METHOD_UNCACHEABLE = (CACHING, INFO,
     {
      'en': "Responses to the %(method)s method can't be stored by caches."
