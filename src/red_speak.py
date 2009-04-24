@@ -530,7 +530,7 @@ CURRENT_AGE = (CACHING, INFO,
 
 FRESHNESS_FRESH = (CACHING, GOOD,
     {
-     'en': "The response is fresh for %(freshness_left)s."
+     'en': "The response is fresh until %(freshness_left)s from now."
     },
     {
     'en': """A response can be considered fresh when its age (here, %(current_age)s)
