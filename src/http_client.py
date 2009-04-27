@@ -130,6 +130,10 @@ class HttpClient:
                 self.handle_input(rest)
             else: # partial headers; store it and wait for more
                 self._input_buffer = instr
+        elif self._res_state == BODY_DONE:
+            # got some data after the body is done... hmm.
+            # TODO: collect extra data
+            pass
         else:
             if self._conn_mode == CLOSE:
                 self.res_body_write_cb(instr)
@@ -168,7 +172,8 @@ class HttpClient:
                 if self._res_body_left <= len(instr): # got it all (and more?)
                     self.res_body_write_cb(instr[:self._res_body_left])
                     self.res_body_done(True)
-                    # TODO: will we ever get anything on instr[self._res_body_left:]?
+                    if instr[self._res_body_left:]:
+                        self.handle_input(instr[self._res_body_left:])
                 else: # got some of it
                     self.res_body_write_cb(instr)
                     self._res_body_left -= len(instr)
@@ -194,16 +199,16 @@ class HttpClient:
     def res_body_done(self, complete):
         assert self._res_state < BODY_DONE
         self._res_state = BODY_DONE
-        if self.tcp_conn and self.tcp_conn.tcp_connected:                
-            def unexpected_read(data):
-                if data:
-                    self._conn_mode = CLOSE
-                    self.res_body_write_cb(data)
-            self.tcp_conn.read_cb = unexpected_read
-            def idle_close():
-                pass
-            self.tcp_conn.close_cb = idle_close
+        if self.tcp_conn and self.tcp_conn.tcp_connected:
             if self._conn_reusable:
+                def unexpected_read(data):
+                    if data:
+                        # TODO: collect extra data
+                        pass
+                self.tcp_conn.read_cb = unexpected_read
+                def idle_close():
+                    pass
+                self.tcp_conn.close_cb = idle_close
                 pool.release(self.tcp_conn)
             else:
                 del self.tcp_conn
