@@ -548,6 +548,20 @@ FRESHNESS_STALE = (CACHING, INFO,
     }
 )
 
+HEURISTIC_FRESHNESS = (CACHING, INFO,
+    {
+     'en': "A cache is allowed to calculate freshness using a heuristic." 
+    },
+    {
+     'en': """When the response doesn't have explicit freshness information (like a <code>
+     Cache-Control: max-age</code> directive, or <code>Expires</code> header), caches are
+     allowed to estimate how fresh the response is using a heuristic.<p>
+     Usually, but not always, this is done using the <code>Last-Modified</code> header. For 
+     example, if your response was last modified a week ago, a cache might decide to consider
+     the response fresh for a day."""
+    }
+)
+
 STALE_SERVABLE = (CACHING, INFO,
     {
      'en': "This response can be served stale by caches."

@@ -52,6 +52,7 @@ DATE = r'(?:\w{3}, \d{2} \w{3} \d{4} \d{2}:\d{2}:\d{2} GMT|\w{6,9}, \d{2}\-\w{3}
 
 # various configuration
 cacheable_methods = ['GET']
+heuristic_cacheable_status = ['200', '203', '206', '300', '301', '410']
 max_uri = 8 * 1024
 max_hdr_size = 4 * 1024
 max_ttl_hdr = 20 * 1024
@@ -203,14 +204,18 @@ class ResourceExpertDroid(object):
         
         # calculate freshness
         freshness_lifetime = 0
+        has_explicit_freshness = False
         freshness_hdrs = ['header-date', 'header-expires']
         if cc_dict.has_key('s-maxage'):
             freshness_lifetime = cc_dict['s-maxage']
             freshness_hdrs.append('header-cache-control')
+            has_explicit_freshness = True
         elif cc_dict.has_key('max-age'):
             freshness_lifetime = cc_dict['max-age']
             freshness_hdrs.append('header-cache-control')
+            has_explicit_freshness = True
         elif self.response.parsed_hdrs.has_key('expires'):
+            has_explicit_freshness = True
             if self.response.parsed_hdrs.has_key('date'):
                 freshness_lifetime = self.response.parsed_hdrs['expires'] - \
                     self.response.parsed_hdrs['date']
@@ -235,6 +240,11 @@ class ResourceExpertDroid(object):
                             freshness_left=freshness_left_str,
                             current_age = current_age_str
                             )
+
+        # can heuristic freshness be used?
+        if self.response.status in heuristic_cacheable_status and \
+          not has_explicit_freshness:
+            self.setMessage('last-modified', rs.HEURISTIC_FRESHNESS)
 
         # can stale responses be served?
         if cc_dict.has_key('must-revalidate'):
