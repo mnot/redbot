@@ -79,6 +79,7 @@ class ResourceExpertDroid(object):
         def get_response_done(response):
             self.response = response
             ResponseHeaderParser(self.response, self.setMessage)
+            ResponseStatusChecker(self.response, self.setMessage, self.makeRequest)
             # TODO: make this into a plug-in system
             self.checkCaching()
             self.checkConneg()
@@ -634,43 +635,121 @@ class ResponseStatusChecker:
         self.response = response
         self._setMessage = setMessage
         self.makeRequest = makeRequest
-        status_token = "status_%s" % response.status
         try:
-            getattr(self, status_token)()
-        except:
+            getattr(self, "status%s" % response.status)()
+        except AttributeError:
             pass
 
-    def status_100(self):
-        pass
-    
-    def status_200(self):
-        pass
+    def setMessage(self, name, msg, **vars):
+        if self._setMessage:
+            ident = 'status %s' % name
+            self._setMessage(ident, msg, status=self.response.status, **vars)
 
-    def status_201(self):
+    def status100(self):        # Continue
         pass
-
-    def status_204(self):
+    def status101(self):        # Switching Protocols
         pass
-
-    def status_300(self):
+    def status102(self):        # Processing
         pass
-
-    def status_301(self):
+    def status200(self):        # OK
         pass
-
-    def status_302(self):
+    def status201(self):        # Created
         pass
-
-    def status_303(self):
+    def status202(self):        # Accepted
         pass
-
-    def status_304(self):
+    def status203(self):        # Non-Authoritative Information
         pass
-
-    def status_400(self):
+    def status204(self):        # No Content
         pass
-
-    def status_500(self):
+    def status205(self):        # Reset Content
+        pass
+    def status206(self):        # Partial Content
+        pass
+    def status207(self):        # Multi-Status
+        pass
+    def status226(self):        # IM Used
+        pass
+    def status300(self):        # Multiple Choices
+        pass
+    def status301(self):        # Moved Permanently
+        if not self.response.parsed_hdrs.has_key('Location'):
+            self.setMessage('header-location', rs.REDIRECT_WITHOUT_LOCATION)
+    def status302(self):        # Found
+        if not self.response.parsed_hdrs.has_key('Location'):
+            self.setMessage('header-location', rs.REDIRECT_WITHOUT_LOCATION)
+    def status303(self):        # See Other
+        if not self.response.parsed_hdrs.has_key('Location'):
+            self.setMessage('header-location', rs.REDIRECT_WITHOUT_LOCATION)
+    def status304(self):        # Not Modified
+        pass
+    def status305(self):        # Use Proxy
+        self.setMessage('', rs.DEPRECATED_STATUS)
+    def status306(self):        # Reserved
+        self.setMessage('', rs.RESERVED_STATUS)
+    def status307(self):        # Temporary Redirect
+        if not self.response.parsed_hdrs.has_key('Location'):
+            self.setMessage('header-location', rs.REDIRECT_WITHOUT_LOCATION)
+    def status400(self):        # Bad Request
+        pass
+    def status401(self):        # Unauthorized
+        pass
+    def status402(self):        # Payment Required
+        pass
+    def status403(self):        # Forbidden
+        pass
+    def status404(self):        # Not Found
+        pass
+    def status405(self):        # Method Not Allowed
+        pass
+    def status406(self):        # Not Acceptable
+        pass
+    def status407(self):        # Proxy Authentication Required
+        pass
+    def status408(self):        # Request Timeout
+        pass
+    def status409(self):        # Conflict
+        pass
+    def status410(self):        # Gone
+        pass
+    def status411(self):        # Length Required
+        pass
+    def status412(self):        # Precondition Failed
+        pass
+    def status413(self):        # Request Entity Too Large
+        pass
+    def status414(self):        # Request-URI Too Long
+        self.setMessage('uri', rs.SERVER_URI_TOO_LONG, uri_len=len(self.response.uri))
+    def status415(self):        # Unsupported Media Type
+        pass
+    def status416(self):        # Requested Range Not Satisfiable
+        pass
+    def status417(self):        # Expectation Failed
+        pass
+    def status422(self):        # Unprocessable Entity
+        pass
+    def status423(self):        # Locked
+        pass
+    def status424(self):        # Failed Dependency
+        pass
+    def status426(self):        # Upgrade Required
+        pass
+    def status500(self):        # Internal Server Error
+        pass
+    def status501(self):        # Not Implemented
+        pass
+    def status502(self):        # Bad Gateway
+        pass
+    def status503(self):        # Service Unavailable
+        pass
+    def status504(self):        # Gateway Timeout
+        pass
+    def status505(self):        # HTTP Version Not Supported
+        pass
+    def status506(self):        # Variant Also Negotiates
+        pass
+    def status507(self):        # Insufficient Storage
+        pass
+    def status510(self):        # Not Extended
         pass
 
     

@@ -59,6 +59,16 @@ URI_TOO_LONG = (GENERAL, BAD,
     }
 )
 
+SERVER_URI_TOO_LONG = (GENERAL, BAD,
+    {
+    'en': "The server won't accept a URI this long (%(uri_len)s characters)."
+    },
+    {
+    'en': """The %(status)s status code means that the server can't or won't accept
+    a request-uri this long."""
+    }
+)
+
 URI_BAD_SYNTAX = (GENERAL, BAD,
     {
     'en': "The URI's syntax isn't valid."
@@ -641,5 +651,36 @@ PRIVATE_AUTH = (CACHING, INFO,
     response can only be stored by caches that are specific to a single user; for
     example, a browser cache. Shared caches, such as those in proxies, cannot store
     it."""
+    }
+)
+
+REDIRECT_WITHOUT_LOCATION = (GENERAL, BAD,
+    {
+     'en': "Redirects need to have a Location header."
+    },
+    {
+     'en': """The %(status)s status code redirects users to another URI. The
+     <code>Location</code> header is used to convey this URI, but a valid one
+     isn't present in this response."""
+    }
+)
+
+DEPRECATED_STATUS = (GENERAL, BAD,
+    {
+     'en': "The %(status)s status code is deprecated."
+    },
+    {
+     'en': """When a status code is deprecated, it should not be used, 
+     because its meaning is not well-defined enough to ensure interoperability."""
+    }
+)
+
+RESERVED_STATUS = (GENERAL, BAD,
+    {
+     'en': "The %(status)s status code is reserved."
+    },
+    {
+     'en': """Reserved status codes can only be used by future, standard protocol
+     extensions; they are not for private use."""
     }
 )
