@@ -183,9 +183,9 @@ class HttpClient:
     def conn_closed(self):
         if self._input_buffer:
             self.handle_input("")
-            if self._res_state == BODY_DONE:
-                return # we've seen the whole body now.
-        if self._conn_mode == CLOSE:
+        if self._res_state == BODY_DONE:
+            return # we've seen the whole body already.
+        elif self._conn_mode == CLOSE:
             self.res_body_done(True)
         else:
             if self.method in self.safe_methods and self._retries < self.retry_limit:
