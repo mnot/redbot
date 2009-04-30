@@ -264,7 +264,7 @@ CMD5_INCORRECT = (GENERAL, BAD,
     {
     'en': """<code>Content-MD5</code> is a hash of the body, and can be used to ensure integrity
     of the response. RED has checked its value and found it to be incorrect; i.e.,
-    the given <code>Content-MD5</code> does not match the body's value."""
+    the given <code>Content-MD5</code> does not match what RED thinks it should be (%(calc_md5)s)."""
     }
 )
 

@@ -30,6 +30,7 @@ import re
 import time
 import calendar 
 import socket
+import base64
 from hashlib import md5
 from email.utils import parsedate as lib_parsedate
 
@@ -476,10 +477,11 @@ class ResponseHeaderParser(object):
     @SingleFieldValue
     def content_md5(self, name, values):
         c_md5 = values[-1]
-        if c_md5 == md5(self.response.body).hexdigest():
+        c_md5_calc = base64.encodestring(md5(self.response.body).digest())[:-1]
+        if c_md5 == c_md5_calc:
             self.setMessage(name, rs.CMD5_CORRECT)
         else:
-            self.setMessage(name, rs.CMD5_INCORRECT)
+            self.setMessage(name, rs.CMD5_INCORRECT, calc_md5=c_md5_calc)
         return values[-1]
 
     def content_range(self, name, values):
