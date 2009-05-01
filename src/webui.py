@@ -102,7 +102,7 @@ error_template = """\
 
 class RedWebUi(object):
     def __init__(self, test_uri):
-        print red_header.__doc__ % {'uri': test_uri} 
+        print red_header.__doc__ % {'uri': e(test_uri)} 
         sys.stdout.flush()
         if uri:
             try:
