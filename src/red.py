@@ -230,7 +230,7 @@ class ResourceExpertDroid(object):
         # check clock sync TODO: alert on clockless origin server.
         skew = self.response.parsed_hdrs.get('date', 0) - \
           self.response.header_timestamp + self.response.parsed_hdrs.get('age', 0)
-        if abs(skew) > 2: # TODO: make configurable
+        if abs(skew) > 5: # TODO: make configurable
             self.setMessage('date', rs.DATE_INCORRECT, clock_skew_string=relative_time(
               self.response.parsed_hdrs.get('date', 0), 
               self.response.header_timestamp, 2)
