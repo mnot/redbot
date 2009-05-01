@@ -128,6 +128,7 @@ class ResourceExpertDroid(object):
         name = 'content-encoding'
         if "gzip" in self.response.parsed_hdrs.get(name, []):
             self.setMessage('header-%s' % name, rs.CONNEG_GZIP)
+            # TODO: check for Vary in response
             def conneg_done(conneg_res):
                 # FIXME: verify that the status is the same; if it's different, alert
                 # TODO: check to make sure the response body is the same as well
