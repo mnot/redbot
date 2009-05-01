@@ -740,3 +740,15 @@ RESERVED_STATUS = (GENERAL, BAD,
      extensions; they are not for private use."""
     }
 )
+
+NONSTANDARD_STATUS = (GENERAL, BAD,
+    {
+     'en': "%(status)s is not a standard HTTP status code."
+    },
+    {
+     'en': """Non-standard status codes are not well-defined and interoperable.
+     Instead of defining your own status code, you should reuse one of the more
+     generic ones; for example, 400 for a client-side problem, or 500 for a 
+     server-side problem."""
+    }
+)

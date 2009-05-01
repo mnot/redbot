@@ -608,7 +608,7 @@ class ResponseStatusChecker:
         try:
             getattr(self, "status%s" % response.status)()
         except AttributeError:
-            pass
+            self.setMessage('status', rs.NONSTANDARD_STATUS)
 
     def setMessage(self, name, msg, **vars):
         if self._setMessage:
