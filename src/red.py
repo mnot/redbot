@@ -71,7 +71,6 @@ class ResourceExpertDroid(object):
             self.req_headers = []
         self.messages = []             # holds messages about the resource
         self.response = None           # holds the "main" response
-        self.outstanding_requests = 0  # how many requests we have left to go
         # check URI
         if not re.match("^\s*%s\s*$" % URI, uri):
             self.setMessage('uri', rs.URI_BAD_SYNTAX)
@@ -80,7 +79,7 @@ class ResourceExpertDroid(object):
         def get_response_done(response):
             self.response = response
             ResponseHeaderParser(self.response, self.setMessage)
-            ResponseStatusChecker(self.response, self.setMessage, self.makeRequest)
+            ResponseStatusChecker(self.response, self.setMessage)
             # TODO: make this into a plug-in system
             self.checkCaching()
             self.checkConneg()
@@ -89,46 +88,11 @@ class ResourceExpertDroid(object):
             self.checkRanges()
         self.req_headers.append(('Accept-Encoding', 'gzip'))
         try:
-            self.makeRequest(uri, get_response_done, method=self.method, 
+            makeRequest(uri, get_response_done, status_cb=status_cb, method=self.method, 
                         req_headers=self.req_headers, reason=self.method)
             http_client.run()
         except socket.gaierror:
             raise AssertionError, "Hostname not found."
-
-    def makeRequest(self, uri, done_cb, method="GET", req_headers=None, body=None, reason=""):
-        if req_headers == None:
-            req_headers = []
-        response = Response(uri)
-        self.outstanding_requests += 1
-        req_headers.append(("User-Agent", "RED/%s (http://redbot.org/project)" % __version__))
-        def response_start(version, status, phrase, res_headers):
-            response.version = version
-            response.status = status
-            response.phrase = phrase
-            response.headers = res_headers
-            response.header_timestamp = time.time()
-        def response_body(chunk):
-            if response.complete:
-                if response.body_extra == "":
-                    self.setMessage('body', rs.BODY_EXTRA)
-                response.body_extra += chunk
-            else:
-                response.body += chunk
-        def response_done(complete):
-            response.complete = complete
-            done_cb(response)
-            self.outstanding_requests -= 1
-            if self.status_cb:
-                self.status_cb("fetched %s (%s)" % (uri, reason))
-            if self.outstanding_requests == 0:
-                http_client.stop()
-        c = http_client.HttpClient(response_start, response_body, response_done, timeout=4)
-        if self.status_cb:
-            self.status_cb("fetching %s (%s)" % (uri, reason))
-        req_body_write, req_body_done = c.start_request(method, uri, req_headers=req_headers)
-        if body != None:
-            req_body_write(body)
-            req_body_done()
 
     def checkRanges(self):
         name = 'accept-ranges'
@@ -150,7 +114,7 @@ class ResourceExpertDroid(object):
                     self.setMessage('header-%s' % name, rs.RANGE_FULL)
                 else:
                     self.setMessage('header-%s' % name, rs.RANGE_STATUS, range_status=range_response.status)
-            self.makeRequest(self.response.uri, range_done, req_headers=[
+            makeRequest(self.response.uri, range_done, self.status_cb, req_headers=[
                 ('Range', "bytes=%s-%s" % (range_start, range_end)), 
                 ('Accept-Encoding', 'gzip')
                 ], reason="Range")
@@ -171,7 +135,7 @@ class ResourceExpertDroid(object):
                         no_conneg_vary=", ".join(conneg_res.parsed_hdrs.get('vary', [])))
                 if conneg_res.parsed_hdrs.get('etag', 1) == self.response.parsed_hdrs.get('etag', 2):
                     self.setMessage('header-etag', rs.ETAG_DOESNT_CHANGE)
-            self.makeRequest(self.response.uri, conneg_done, reason="conneg")
+            makeRequest(self.response.uri, conneg_done, self.status_cb, reason="conneg")
 
     def checkCaching(self):
         # TODO: assure that there aren't any dup standard directives
@@ -284,7 +248,7 @@ class ResourceExpertDroid(object):
             else:
                 weak_str = ""
             etag_str = '%s"%s"' % (weak_str, etag)
-            self.makeRequest(self.response.uri, inm_done,
+            makeRequest(self.response.uri, inm_done, self.status_cb,
                 req_headers=[('If-None-Match', etag_str)], reason="ETag validation")
                 
     def checkLmValidation(self):
@@ -302,25 +266,11 @@ class ResourceExpertDroid(object):
                     self.setMessage('header-%s' % name, rs.IMS_STATUS, ims_status=ims_response.status)
             date_str = time.strftime('%a, %d %b %Y %H:%M:%S GMT', 
                                      time.gmtime(self.response.parsed_hdrs[name]))
-            self.makeRequest(self.response.uri, ims_done, 
+            makeRequest(self.response.uri, ims_done, self.status_cb, 
                 req_headers=[('If-Modified-Since', date_str)], reason="Last-Modified validation")
                 
     def setMessage(self, subject, msg, **vars):
         self.messages.append((subject, msg, vars))
-
-
-class Response: 
-    def __init__(self, uri=None):
-        self.uri = uri
-        self.version = ""
-        self.status = None
-        self.phrase = ""
-        self.headers = []
-        self.parsed_hdrs = {}
-        self.body = ""
-        self.body_extra = ""
-        self.complete = False
-        self.header_timestamp = None
 
 
 def GenericHeaderSyntax(meth):
@@ -633,10 +583,9 @@ class ResponseHeaderParser(object):
         pass
     
 class ResponseStatusChecker:    
-    def __init__(self, response, setMessage, makeRequest):
+    def __init__(self, response, setMessage):
         self.response = response
         self._setMessage = setMessage
-        self.makeRequest = makeRequest
         try:
             getattr(self, "status%s" % response.status)()
         except AttributeError:
@@ -755,7 +704,61 @@ class ResponseStatusChecker:
         pass
 
     
-### utility functions
+################################################################################
+
+
+class Response: 
+    def __init__(self, uri=None):
+        self.uri = uri
+        self.version = ""
+        self.status = None
+        self.phrase = ""
+        self.headers = []
+        self.parsed_hdrs = {}
+        self.body = ""
+        self.body_extra = ""
+        self.complete = False
+        self.header_timestamp = None
+
+
+outstanding_requests = 0
+def makeRequest(uri, done_cb, status_cb=None, method="GET", req_headers=None, body=None, reason=""):
+    global outstanding_requests
+    if req_headers == None:
+        req_headers = []
+    response = Response(uri)
+    outstanding_requests += 1
+    req_headers.append(("User-Agent", "RED/%s (http://redbot.org/project)" % __version__))
+    def response_start(version, status, phrase, res_headers):
+        response.version = version
+        response.status = status
+        response.phrase = phrase
+        response.headers = res_headers
+        response.header_timestamp = time.time()
+    def response_body(chunk):
+        if response.complete:
+#            if response.body_extra == "":  # TODO: find the right place for extra_body
+#                self.setMessage('body', rs.BODY_EXTRA)
+            response.body_extra += chunk
+        else:
+            response.body += chunk
+    def response_done(complete):
+        global outstanding_requests
+        response.complete = complete
+        done_cb(response)
+        outstanding_requests -= 1
+        if status_cb:
+            status_cb("fetched %s (%s)" % (uri, reason))
+        if outstanding_requests == 0:
+            http_client.stop()
+    c = http_client.HttpClient(response_start, response_body, response_done, timeout=4)
+    if status_cb:
+        status_cb("fetching %s (%s)" % (uri, reason))
+    req_body_write, req_body_done = c.start_request(method, uri, req_headers=req_headers)
+    if body != None:
+        req_body_write(body)
+        req_body_done()
+
 
 def parse_date(values):
     value = values[-1]
