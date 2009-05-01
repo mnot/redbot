@@ -69,13 +69,16 @@ class ResourceExpertDroid(object):
             self.req_headers = req_headers
         else:
             self.req_headers = []
-        self.messages = []             # holds messages about the resource
+        self.messages = []             # holds messages
         self.response = None           # holds the "main" response
-        # check URI
+
+        # check the URI
         if not re.match("^\s*%s\s*$" % URI, uri):
             self.setMessage('uri', rs.URI_BAD_SYNTAX)
         if len(uri) > max_uri:
             self.setMessage('uri', rs.URI_TOO_LONG, uri_len=len(uri))
+            
+        # make a GET request
         def get_response_done(response):
             self.response = response
             ResponseHeaderParser(self.response, self.setMessage)
@@ -275,9 +278,10 @@ class ResourceExpertDroid(object):
 
 def GenericHeaderSyntax(meth):
     """
-    Decorator to take a list of header values, split on commas (except where escaped) and return a 
-    list of header field-values. This will not work for Set-Cookie (which contains
-    an unescaped comma) and similar headers containing bare dates.
+    Decorator to take a list of header values, split on commas (except where 
+    escaped) and return a list of header field-values. This will not work for 
+    Set-Cookie (which contains an unescaped comma) and similar headers 
+    containing bare dates.
     
     E.g.,
       ["foo,bar", "baz, bat"]
@@ -582,7 +586,11 @@ class ResponseHeaderParser(object):
     def x_pad(self, name, values):
         pass
     
-class ResponseStatusChecker:    
+class ResponseStatusChecker:
+    """
+    Given a response and a setMessage function, check out the status
+    code and perform appropriate tests on it.
+    """
     def __init__(self, response, setMessage):
         self.response = response
         self._setMessage = setMessage
@@ -708,6 +716,7 @@ class ResponseStatusChecker:
 
 
 class Response: 
+    "Holds a HTTP response message."
     def __init__(self, uri=None):
         self.uri = uri
         self.version = ""
@@ -720,9 +729,13 @@ class Response:
         self.complete = False
         self.header_timestamp = None
 
-
-outstanding_requests = 0
+outstanding_requests = 0 # how many requests we have left
 def makeRequest(uri, done_cb, status_cb=None, method="GET", req_headers=None, body=None, reason=""):
+    """
+    Make an asynchronous HTTP request to uri, calling status_cb as it's updated and
+    done_cb when it's done. Reason is used to explain what the request is in the
+    status callback.
+    """
     global outstanding_requests
     if req_headers == None:
         req_headers = []
@@ -761,6 +774,7 @@ def makeRequest(uri, done_cb, status_cb=None, method="GET", req_headers=None, bo
 
 
 def parse_date(values):
+    """Parse a HTTP date. Raises ValueError if it's bad."""
     value = values[-1]
     if not re.match(r"%s$" % DATE, value):
         raise ValueError
