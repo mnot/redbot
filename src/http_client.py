@@ -94,7 +94,7 @@ class HttpClient:
     def handle_connect(self, tcp_conn):
         self.tcp_conn = tcp_conn
         hdr_block = ["%s %s HTTP/1.1" % (self.method, self.uri)]
-        [hdr_block.append("%s: %s" % (k,v)) for k, v in self.req_headers]
+        [hdr_block.append("%s: %s" % (k, v)) for k, v in self.req_headers]
         hdr_block.append("")
         hdr_block.append("")
         self.tcp_conn.write("\r\n".join(hdr_block))
@@ -166,7 +166,7 @@ class HttpClient:
                     self._res_body_left = int(chunk_size, 16)
                     self.handle_input(instr)
             elif self._conn_mode == COUNTED:
-                assert self._res_body_left >= 0, "response bytecounting problem! (%s)" % self._res_body_left
+                assert self._res_body_left >= 0, "resp counting problem (%s)" % self._res_body_left
                 # process response body
                 if self._res_body_left <= len(instr): # got it all (and more?)
                     self.res_body_write_cb(instr[:self._res_body_left])
@@ -303,10 +303,12 @@ class HttpClientConnectionPool:
             try:
                 idle_conn = self._conns[(host, port)].pop()
             except (IndexError, KeyError):
-                push_tcp.Client(host, port, handle_connect, handle_connect_error, self.connect_timeout)
+                push_tcp.Client(host, port, handle_connect, handle_connect_error, 
+                                self.connect_timeout)
                 break        
             if idle_conn.tcp_connected:
-                idle_conn.read_cb, idle_conn.close_cb, idle_conn.pause_cb = handle_connect(idle_conn)
+                idle_conn.read_cb, idle_conn.close_cb, idle_conn.pause_cb = \
+                    handle_connect(idle_conn)
                 break
         
     def release(self, tcp_conn):
