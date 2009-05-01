@@ -24,7 +24,6 @@ THE SOFTWARE.
 
 import sys
 import re
-import errno
 from urlparse import urlsplit, urlunsplit
 
 import push_tcp
