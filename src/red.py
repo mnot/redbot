@@ -115,7 +115,7 @@ class ResourceExpertDroid(object):
             else:
                 response.body += chunk
         def response_done(complete):
-            self.complete = complete
+            response.complete = complete
             done_cb(response)
             self.outstanding_requests -= 1
             if self.status_cb:
