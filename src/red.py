@@ -100,7 +100,7 @@ class ResourceExpertDroid(object):
             req_headers = []
         response = Response(uri)
         self.outstanding_requests += 1
-        req_headers.append(("User-Agent", "RED/%s" % __version__))
+        req_headers.append(("User-Agent", "RED/%s (http://redbot.org/project)" % __version__))
         def response_start(version, status, phrase, res_headers):
             response.version = version
             response.status = status
