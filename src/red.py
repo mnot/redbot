@@ -648,15 +648,15 @@ class ResponseStatusChecker:
             self._setMessage(ident, msg, status=self.response.status, **vars)
 
     def status100(self):        # Continue
-        pass
+        pass # TODO: check to make sure expectation sent
     def status101(self):        # Switching Protocols
-        pass
+        pass # TODO: make sure upgrade sent
     def status102(self):        # Processing
         pass
     def status200(self):        # OK
         pass
     def status201(self):        # Created
-        pass
+        pass # TODO: make sure appropriate method used, Location present
     def status202(self):        # Accepted
         pass
     def status203(self):        # Non-Authoritative Information
@@ -666,7 +666,7 @@ class ResponseStatusChecker:
     def status205(self):        # Reset Content
         pass
     def status206(self):        # Partial Content
-        pass
+        pass # TODO: check partial content
     def status207(self):        # Multi-Status
         pass
     def status226(self):        # IM Used
@@ -683,7 +683,7 @@ class ResponseStatusChecker:
         if not self.response.parsed_hdrs.has_key('location'):
             self.setMessage('header-location', rs.REDIRECT_WITHOUT_LOCATION)
     def status304(self):        # Not Modified
-        pass
+        pass # TODO: check to make sure required headers are present, stable
     def status305(self):        # Use Proxy
         self.setMessage('', rs.DEPRECATED_STATUS)
     def status306(self):        # Reserved
@@ -692,41 +692,41 @@ class ResponseStatusChecker:
         if not self.response.parsed_hdrs.has_key('location'):
             self.setMessage('header-location', rs.REDIRECT_WITHOUT_LOCATION)
     def status400(self):        # Bad Request
-        pass
+        pass # TODO: ?
     def status401(self):        # Unauthorized
-        pass
+        pass # TODO: prompt for credentials
     def status402(self):        # Payment Required
         pass
     def status403(self):        # Forbidden
-        pass
+        pass # TODO: explain
     def status404(self):        # Not Found
-        pass
+        pass # TODO: explain
     def status405(self):        # Method Not Allowed
-        pass
+        pass # TODO: show allowed methods?
     def status406(self):        # Not Acceptable
-        pass
+        pass # TODO: warn that the client may still want something
     def status407(self):        # Proxy Authentication Required
         pass
     def status408(self):        # Request Timeout
         pass
     def status409(self):        # Conflict
-        pass
+        pass # TODO: explain
     def status410(self):        # Gone
-        pass
+        pass # TODO: explain
     def status411(self):        # Length Required
         pass
     def status412(self):        # Precondition Failed
-        pass
+        pass # TODO: test to see if it's true, alert if not
     def status413(self):        # Request Entity Too Large
-        pass
+        pass # TODO: explain 
     def status414(self):        # Request-URI Too Long
         self.setMessage('uri', rs.SERVER_URI_TOO_LONG, uri_len=len(self.response.uri))
     def status415(self):        # Unsupported Media Type
-        pass
+        pass # TODO: explain
     def status416(self):        # Requested Range Not Satisfiable
-        pass
+        pass # TODO: test to see if it's true, alter if not
     def status417(self):        # Expectation Failed
-        pass
+        pass # TODO: explain, alert if it's 100-continue
     def status422(self):        # Unprocessable Entity
         pass
     def status423(self):        # Locked
@@ -736,17 +736,17 @@ class ResponseStatusChecker:
     def status426(self):        # Upgrade Required
         pass
     def status500(self):        # Internal Server Error
-        pass
+        pass # TODO: explain
     def status501(self):        # Not Implemented
-        pass
+        pass # TODO: explain
     def status502(self):        # Bad Gateway
-        pass
+        pass # TODO: explain
     def status503(self):        # Service Unavailable
-        pass
+        pass # TODO: explain
     def status504(self):        # Gateway Timeout
-        pass
+        pass # TODO: explain
     def status505(self):        # HTTP Version Not Supported
-        pass
+        pass # TODO: warn
     def status506(self):        # Variant Also Negotiates
         pass
     def status507(self):        # Insufficient Storage
