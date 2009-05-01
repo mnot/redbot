@@ -78,8 +78,8 @@ class ResourceExpertDroid(object):
         if len(uri) > max_uri:
             self.setMessage('uri', rs.URI_TOO_LONG, uri_len=len(uri))
             
-        # make a GET request
-        def get_response_done(response):
+        # make the primary request
+        def primary_response_done(response):
             self.response = response
             ResponseHeaderParser(self.response, self.setMessage)
             ResponseStatusChecker(self.response, self.setMessage)
@@ -91,8 +91,9 @@ class ResourceExpertDroid(object):
             self.checkRanges()
         self.req_headers.append(('Accept-Encoding', 'gzip'))
         try:
-            makeRequest(uri, get_response_done, status_cb=status_cb, method=self.method, 
-                        req_headers=self.req_headers, reason=self.method)
+            makeRequest(uri, primary_response_done, status_cb=status_cb,
+                        method=self.method, req_headers=self.req_headers, 
+                        reason=self.method)
             http_client.run()
         except socket.gaierror:
             raise AssertionError, "Hostname not found."
