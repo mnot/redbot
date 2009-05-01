@@ -674,13 +674,13 @@ class ResponseStatusChecker:
     def status300(self):        # Multiple Choices
         pass
     def status301(self):        # Moved Permanently
-        if not self.response.parsed_hdrs.has_key('Location'):
+        if not self.response.parsed_hdrs.has_key('location'):
             self.setMessage('header-location', rs.REDIRECT_WITHOUT_LOCATION)
     def status302(self):        # Found
-        if not self.response.parsed_hdrs.has_key('Location'):
+        if not self.response.parsed_hdrs.has_key('location'):
             self.setMessage('header-location', rs.REDIRECT_WITHOUT_LOCATION)
     def status303(self):        # See Other
-        if not self.response.parsed_hdrs.has_key('Location'):
+        if not self.response.parsed_hdrs.has_key('location'):
             self.setMessage('header-location', rs.REDIRECT_WITHOUT_LOCATION)
     def status304(self):        # Not Modified
         pass
@@ -689,7 +689,7 @@ class ResponseStatusChecker:
     def status306(self):        # Reserved
         self.setMessage('', rs.RESERVED_STATUS)
     def status307(self):        # Temporary Redirect
-        if not self.response.parsed_hdrs.has_key('Location'):
+        if not self.response.parsed_hdrs.has_key('location'):
             self.setMessage('header-location', rs.REDIRECT_WITHOUT_LOCATION)
     def status400(self):        # Bad Request
         pass
