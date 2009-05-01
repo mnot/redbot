@@ -307,7 +307,7 @@ BAD_DATE_SYNTAX = (GENERAL, BAD,
     'en': """HTTP dates have very specific syntax, and sending an invalid date can 
     cause a number of problems, especially around caching. Common problems include
     sending "1 May" instead of "01 May" (the month is a fixed-width field), and sending
-    a date in a timezone other than GMT. See <a href="">the HTTP specification</a> for
+    a date in a timezone other than GMT. See <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3">the HTTP specification</a> for
     more information."""
     }
 )
