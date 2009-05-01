@@ -179,7 +179,7 @@ class ResourceExpertDroid(object):
         freshness_lifetime = 0
         has_explicit_freshness = False
         freshness_hdrs = ['header-date', 'header-expires']
-        if cc_dict.has_key('s-maxage'):
+        if cc_dict.has_key('s-maxage'): # TODO: differentiate message for s-maxage
             freshness_lifetime = cc_dict['s-maxage']
             freshness_hdrs.append('header-cache-control')
             has_explicit_freshness = True
