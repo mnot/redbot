@@ -81,7 +81,8 @@ red_footer = """\
 <a href="http://redbot.org/about/">about red</a> |
 <a href="http://redbot.org/terms/">terms of use</a> | 
 <a href="http://redbot.org/project">red project</a> |
-<a href="javascript:location%%20=%%20'http://redbot.org/?uri='+escape(location);%%20void%%200" title="drag me to your toolbar to use RED any time.">red</a> bookmarklet 
+<a href="javascript:location%%20=%%20'http://redbot.org/?uri='+escape(location);%%20void%%200" 
+title="drag me to your toolbar to use RED any time.">red</a> bookmarklet 
 </p>
 </div>
 
@@ -111,8 +112,7 @@ class RedWebUi(object):
             except AssertionError, why:
                 print error_template % why
         print red_footer % {'version': __version__}
-        sys.stdout.flush()
-            
+        sys.stdout.flush()            
     
     def presentResults(self):
         result_strings = {
@@ -137,23 +137,27 @@ class RedWebUi(object):
         return "    <span class='header-%s'>%s: %s</span>" % (
             e(token_name), e(name), self.header_presenter.Show(name, value))
 
-
     def presentCategory(self, category):
         messages = [msg for msg in self.red.messages if msg[1][0] == category]
         if not messages:
             return ""
         return "<h3>%s</h3>\n<ul>\n" % category \
-        + "\n".join(["<li class='%s %s'>%s<span class='hidden_desc'>%s</span></li>" % (l, e(s), e(m[lang]%v), lm[lang]%v) 
-                     for (s,(c,l,m,lm),v) in messages]) \
+        + "\n".join([
+                    "<li class='%s %s'>%s<span class='hidden_desc'>%s</span></li>" % 
+                    (l, e(s), e(m[lang]%v), lm[lang]%v) 
+                    for (s,(c,l,m,lm),v) in messages
+                    ]) \
         + "</ul>\n"
 
     def presentOptions(self):
         options = []
         media_type = self.red.response.parsed_hdrs.get('content-type', [None])[0]
         if media_type in viewable_types:
-            options.append("<a href='#' class='view' title='%s'>view</a>" % self.red.response.uri)
+            options.append("<a href='#' class='view' title='%s'>view</a>" % 
+                           self.red.response.uri)
         if validators.has_key(media_type):
-            options.append("<a href='%s'>validate body</a>" % validators[media_type] % self.red.response.uri)
+            options.append("<a href='%s'>validate body</a>" % 
+                           validators[media_type] % self.red.response.uri)
         return options
 
 
@@ -166,6 +170,7 @@ tr = textwrap.TextWrapper(width=65, subsequent_indent=" "*8)
 def i(value, sub_width):
     tr.width = 65 - sub_width
     return tr.fill(value)
+
 
 class HeaderPresenter(object):
     """
