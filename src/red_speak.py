@@ -95,7 +95,7 @@ FIELD_NAME_BAD_SYNTAX = (GENERAL, BAD,
 
 HEADER_BLOCK_TOO_LARGE = (GENERAL, BAD,
     {
-    'en': "The response headers are very large (%(header_block_size)s)."
+    'en': "This response's headers are very large (%(header_block_size)s)."
     },
     {
     'en': """Some implementations have limits on the total size of headers
@@ -160,8 +160,8 @@ RANGE_CORRECT = (TESTS, GOOD,
     {
     'en': """This resource advertises support for ranged requests with 
     <code>Accept-Ranges</code>; that is, it allows clients to specify that only 
-    part of the response should be sent. RED has tested this by requesting part 
-    of the response, which was returned correctly."""
+    part of it should be sent. RED has tested this by requesting part 
+    of this response, which was returned correctly."""
     }
 )
 
@@ -173,7 +173,7 @@ RANGE_INCORRECT = (TESTS, BAD,
     'en': """This resource advertises support for ranged requests with 
     <code>Accept-Ranges</code>; that is, it allows clients to specify that only 
     part of the response should be sent. RED has tested this by requesting part 
-    of the response, but the partial response doesn't correspond with the full 
+    of this response, but the partial response doesn't correspond with the full 
     response retrieved at the same time. This could indicate that the range 
     implementation isn't working properly."""
     }
@@ -187,7 +187,7 @@ RANGE_FULL = (TESTS, BAD,
     'en': """This resource advertises support for ranged requests with 
     <code>Accept-Ranges</code>; that is, it allows clients to specify that only 
     part of the response should be sent. RED has tested this by requesting part 
-    of the response, but the entire response was returned. In other words, 
+    of this response, but the entire response was returned. In other words, 
     although the resource advertises support for partial content, it
     doesn't appear to actually do so."""
     }
@@ -200,8 +200,8 @@ RANGE_STATUS = (TESTS, INFO,
     {
     'en': """This resource advertises support for ranged requests; that is, it allows
     clients to specify that only part of the response should be sent. RED has tested
-    this by requesting part of the response, the response had a %(range_status)s 
-    response code, which RED was not expecting."""
+    this by requesting part of this response, but a %(range_status)s 
+    response code was returned, which RED was not expecting."""
     }
 )
 
@@ -526,7 +526,7 @@ VARY_ASTERISK = (CACHING, BAD,
     {
     'en': """<code>Vary *</code> indicates that responses for this resource vary 
     by some aspect that can't (or won't) be described by the server. This makes 
-    the response effectively uncacheable."""
+    this response effectively uncacheable."""
     }
 )
 
@@ -581,7 +581,7 @@ VIA_PRESENT = (GENERAL, INFO,
 
 CURRENT_AGE = (CACHING, INFO,
     {
-     'en': "The response has been cached for %(current_age)s."
+     'en': "This response has been cached for %(current_age)s."
     },
     {
     'en': """The <code>Age</code> header indicates the age of the response; 
@@ -593,7 +593,7 @@ CURRENT_AGE = (CACHING, INFO,
 
 FRESHNESS_FRESH = (CACHING, GOOD,
     {
-     'en': "The response is fresh until %(freshness_left)s from now."
+     'en': "This response is fresh until %(freshness_left)s from now."
     },
     {
     'en': """A response can be considered fresh when its age (here, %(current_age)s)
@@ -603,7 +603,7 @@ FRESHNESS_FRESH = (CACHING, GOOD,
 
 FRESHNESS_STALE = (CACHING, INFO,
     {
-     'en': "The response is stale."
+     'en': "This response is stale."
     },
     {
     'en': """A cache considers a HTTP response stale when its age (here, %(current_age)s)
@@ -681,7 +681,7 @@ NO_STORE = (CACHING, INFO,
     },
     {
     'en': """The <code>Cache-Control: no-store</code> directive indicates that 
-    the response can't be stored by a cache."""
+    this response can't be stored by a cache."""
     }
 )
 
@@ -702,7 +702,7 @@ PRIVATE_AUTH = (CACHING, INFO,
      'en': "This response can only be stored by a private cache."
     },
     {
-    'en': """Because the request was authenticated and the response doesn't contain
+    'en': """Because the request was authenticated and this response doesn't contain
     a <code>Cache-Control: public</code> directive, this response can only be 
     stored by caches that are specific to a single user; for example, a browser 
     cache. Shared caches, such as those in proxies, cannot store
