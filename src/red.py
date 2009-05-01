@@ -116,7 +116,8 @@ class ResourceExpertDroid(object):
                 elif range_response.status == '200':
                     self.setMessage('header-%s' % name, rs.RANGE_FULL)
                 else:
-                    self.setMessage('header-%s' % name, rs.RANGE_STATUS, range_status=range_response.status)
+                    self.setMessage('header-%s' % name, rs.RANGE_STATUS, 
+                                    range_status=range_response.status)
             makeRequest(self.response.uri, range_done, self.status_cb, req_headers=[
                 ('Range', "bytes=%s-%s" % (range_start, range_end)), 
                 ('Accept-Encoding', 'gzip')
@@ -161,14 +162,16 @@ class ResourceExpertDroid(object):
 
         # calculate age
         if self.response.parsed_hdrs.has_key('date'):
-            apparent_age = max(0, self.response.header_timestamp - self.response.parsed_hdrs['date'])
+            apparent_age = max(0, 
+              self.response.header_timestamp - self.response.parsed_hdrs['date'])
         else:
             apparent_age = 0
         current_age = max(apparent_age, self.response.parsed_hdrs.get('age', 0))
 
         current_age_str = relative_time(current_age, 0, 0)
         if current_age >= 1:
-            self.setMessage('header-age header-date', rs.CURRENT_AGE, current_age=current_age_str)
+            self.setMessage('header-age header-date', rs.CURRENT_AGE, 
+                            current_age=current_age_str)
         # TODO: differentiate between transit / skew and actual cache age
         
         # calculate freshness
@@ -224,10 +227,13 @@ class ResourceExpertDroid(object):
             self.setMessage('cache-control', rs.STALE_SERVABLE)
 
         # check clock sync TODO: alert on clockless origin server.
-        skew = self.response.parsed_hdrs.get('date', 0) - self.response.header_timestamp + self.response.parsed_hdrs.get('age', 0)
+        skew = self.response.parsed_hdrs.get('date', 0) - \
+          self.response.header_timestamp + self.response.parsed_hdrs.get('age', 0)
         if abs(skew) > 2: # TODO: make configurable
-            self.setMessage('date', rs.DATE_INCORRECT, 
-                clock_skew_string=relative_time(self.response.parsed_hdrs.get('date', 0), self.response.header_timestamp, 2))
+            self.setMessage('date', rs.DATE_INCORRECT, clock_skew_string=relative_time(
+              self.response.parsed_hdrs.get('date', 0), 
+              self.response.header_timestamp, 2)
+            )
         else:
             self.setMessage('date', rs.DATE_CORRECT)
 
@@ -244,7 +250,8 @@ class ResourceExpertDroid(object):
                     else:
                         self.setMessage('header-%s' % name, rs.INM_UNKNOWN)
                 else:
-                    self.setMessage('header-%s' % name, rs.INM_STATUS, inm_status=inm_response.status)
+                    self.setMessage('header-%s' % name, rs.INM_STATUS, 
+                                    inm_status=inm_response.status)
             weak, etag = self.response.parsed_hdrs['etag']
             if weak:
                 weak_str = "W/"
@@ -290,8 +297,8 @@ def GenericHeaderSyntax(meth):
     """
     def new(self, name, values):
         values = sum(
-            [[f.strip() for f in re.findall(r'((?:[^",]|%s)+)(?=%s|\s*$)' % (QUOTED_STRING, COMMA), v)] 
-             for v in values], []
+            [[f.strip() for f in re.findall(r'((?:[^",]|%s)+)(?=%s|\s*$)' % 
+             (QUOTED_STRING, COMMA), v)] for v in values], []
         )
         return meth(self, name, values)
     return new
@@ -425,7 +432,8 @@ class ResponseHeaderParser(object):
         if len(self.response.body) == cl:
             self.setMessage(name, rs.CL_CORRECT)
         else:
-            self.setMessage(name, rs.CL_INCORRECT, body_length=len(self.response.body))
+            self.setMessage(name, rs.CL_INCORRECT, 
+                            body_length=len(self.response.body))
         return cl
 
     @SingleFieldValue
@@ -502,7 +510,8 @@ class ResponseHeaderParser(object):
             self.setMessage(name, rs.LM_FUTURE)
             return
         else:
-            self.setMessage(name, rs.LM_PRESENT, last_modified_string=relative_time(date, self.response.header_timestamp))
+            self.setMessage(name, rs.LM_PRESENT, 
+              last_modified_string=relative_time(date, self.response.header_timestamp))
         return date
 
     @GenericHeaderSyntax
@@ -677,7 +686,8 @@ class ResponseStatusChecker:
     def status413(self):        # Request Entity Too Large
         pass # TODO: explain 
     def status414(self):        # Request-URI Too Long
-        self.setMessage('uri', rs.SERVER_URI_TOO_LONG, uri_len=len(self.response.uri))
+        self.setMessage('uri', rs.SERVER_URI_TOO_LONG, 
+                        uri_len=len(self.response.uri))
     def status415(self):        # Unsupported Media Type
         pass # TODO: explain
     def status416(self):        # Requested Range Not Satisfiable
