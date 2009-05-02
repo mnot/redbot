@@ -297,6 +297,20 @@ CONNEG_NO_GZIP = (GENERAL, INFO,
     }
 )
 
+CONNEG_NO_VARY = (GENERAL, BAD,
+    {
+    'en': "This response is negotiated, but doesn't have an appropriate Vary header."
+    },
+    {
+    'en': """Any response that's content negotiated needs to have a
+    <code>Vary</code> header that reflects the header(s) used to select the
+    response.<p>
+    This response was negotiated for <code>gzip</code> content encoding, so
+    the <code>Vary</code> header needs to contain <code>Accept-Encoding</code>,
+    the request header used."""
+    }
+)
+
 CONNEG_GZIP_WITHOUT_ASKING = (GENERAL, BAD,
     {
     'en': 'A gzip-compressed response was sent when it wasn\'t asked for.'
