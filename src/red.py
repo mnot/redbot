@@ -374,7 +374,6 @@ class ResponseHeaderParser(object):
     @GenericHeaderSyntax
     def accept_ranges(self, name, values):
         # TODO: syntax check, parse
-        # Make a ranged request
         return values
 
     @GenericHeaderSyntax
