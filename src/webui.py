@@ -162,7 +162,13 @@ class RedWebUi(object):
 
 
     def updateStatus(self, message):
-        print "<script language='JavaScript'>\n window.status='%s'; return true;\n</script>" % \
+        print """
+<script language="JavaScript">
+<!--
+window.status="%s";
+-->
+</script>
+        """ % \
             e(str(message))
         sys.stdout.flush()
 
