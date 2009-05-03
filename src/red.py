@@ -100,7 +100,7 @@ class ResourceExpertDroid(object):
 
     def checkRanges(self):
         name = 'accept-ranges'
-        if self.response.parsed_hdrs.get(name, []):
+        if 'bytes' in self.response.parsed_hdrs.get(name, []):
             range_status = None
             range_start = int(len(self.response.body) * 0.5)
             range_end = int(len(self.response.body) * 0.75)
