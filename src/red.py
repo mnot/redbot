@@ -31,7 +31,6 @@ import time
 import calendar 
 import socket
 import base64
-import zlib
 from hashlib import md5
 from email.utils import parsedate as lib_parsedate
 
