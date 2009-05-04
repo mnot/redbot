@@ -48,6 +48,7 @@ TESTS = "Tests"
 GOOD = 'good'
 BAD = 'bad'
 INFO = 'info'
+WARN = 'warning'
 
 URI_TOO_LONG = (GENERAL, BAD,
     {
