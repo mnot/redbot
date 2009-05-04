@@ -152,6 +152,7 @@ class ResourceExpertDroid(object):
             makeRequest(self.response.uri, conneg_done, self.status_cb, reason="conneg")
 
     def checkCaching(self):
+        # TODO: check URI for query string, message about HTTP/1.0 if so
         # TODO: assure that there aren't any dup standard directives
         cc_dict = dict(self.response.parsed_hdrs.get('cache-control', []))
 
