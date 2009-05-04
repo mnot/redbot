@@ -119,7 +119,7 @@ class ResourceExpertDroid(object):
                             range_expected=self.response.body[range_start:range_end+1],
                             range_received=range_response.body # FIXME: encode these
                         ) # TODO: limit partial content, check content-range
-                elif range_response.status == '200':
+                elif range_response.status == self.response.status:
                     self.setMessage('header-%s' % name, rs.RANGE_FULL)
                 else:
                     self.setMessage('header-%s' % name, rs.RANGE_STATUS, 
@@ -253,7 +253,7 @@ class ResourceExpertDroid(object):
             def inm_done(inm_response):
                 if inm_response.status == '304':
                     self.setMessage('header-%s' % name, rs.INM_304)
-                elif inm_response.status == '200':
+                elif inm_response.status == self.response.status:
                     if inm_response.body == self.response.body:
                         self.setMessage('header-%s' % name, rs.INM_FULL)
                     else:
@@ -276,7 +276,7 @@ class ResourceExpertDroid(object):
             def ims_done(ims_response):
                 if ims_response.status == '304':
                     self.setMessage('header-%s' % name, rs.IMS_304)
-                elif ims_response.status == '200':
+                elif ims_response.status == self.response.status:
                     if ims_response.body == self.response.body:
                         self.setMessage('header-%s' % name, rs.IMS_FULL)
                     else:
