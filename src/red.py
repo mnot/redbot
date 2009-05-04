@@ -345,7 +345,9 @@ def CheckFieldSyntax(exp):
             for value in values:
                 if not re.match(r"^\s*(?:%s)?\s*$" % exp, value):
                     self.setMessage(name, rs.BAD_SYNTAX)
-                    continue
+                    def bad_syntax(self, name, values):
+                        return None
+                    return bad_syntax(self, name, values)
             return meth(self, name, values)
         return new
     return wrap
