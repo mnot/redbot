@@ -103,14 +103,15 @@ class ResourceExpertDroid(object):
             range_status = None
             range_start = int(len(self.response.body) * 0.5)
             range_end = int(len(self.response.body) * 0.75)
-            if range_start == range_end: return
+            if range_start == range_end: return # wow, that's a small body.
             def range_done(range_response):
                 if range_response.status == '206':
                     # TODO: check entity headers
                     # TODO: check content-range
                     if ('gzip' in self.response.parsed_hdrs.get('accept-ranges', [])) == \
                        ('gzip' not in range_response.parsed_hdrs.get('accept-ranges', [])):
-                        self.setMessage('header-%s header-content-encoding' % rs.RANGE_NEG_MISMATCH)
+                        self.setMessage('header-accept-ranges header-content-encoding', 
+                                        rs.RANGE_NEG_MISMATCH)
                         return
                     if range_response.body == self.response.body[range_start:range_end+1]:
                         self.setMessage('header-accept-ranges', rs.RANGE_CORRECT)
@@ -780,11 +781,11 @@ def makeRequest(uri, done_cb, status_cb=None, method="GET", req_headers=None, bo
             response.body += chunk
     def response_done(complete):
         global outstanding_requests
+        if status_cb:
+            status_cb("fetched %s (%s)" % (uri, reason))
         response.complete = complete
         done_cb(response)
         outstanding_requests -= 1
-        if status_cb:
-            status_cb("fetched %s (%s)" % (uri, reason))
         if outstanding_requests == 0:
             http_client.stop()
     c = http_client.HttpClient(response_start, response_body, response_done, timeout=4)
