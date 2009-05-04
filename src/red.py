@@ -100,8 +100,7 @@ class ResourceExpertDroid(object):
             raise AssertionError, "Hostname not found."
 
     def checkRanges(self):
-        name = 'accept-ranges'
-        if 'bytes' in self.response.parsed_hdrs.get(name, []):
+        if 'bytes' in self.response.parsed_hdrs.get('accept-ranges', []):
             range_status = None
             range_start = int(len(self.response.body) * 0.5)
             range_end = int(len(self.response.body) * 0.75)
@@ -109,21 +108,22 @@ class ResourceExpertDroid(object):
             def range_done(range_response):
                 if range_response.status == '206':
                     # TODO: check entity headers
-                    if ('gzip' in self.response.parsed_hdrs.get(name, [])) == \
-                       ('gzip' not in range_response.parsed_hdrs.get(name, [])):
+                    # TODO: check content-range
+                    if ('gzip' in self.response.parsed_hdrs.get('accept-ranges', [])) == \
+                       ('gzip' not in range_response.parsed_hdrs.get('accept-ranges', [])):
                         self.setMessage('header-%s header-content-encoding' % rs.RANGE_NEG_MISMATCH)
                         return
                     if range_response.body == self.response.body[range_start:range_end+1]:
-                        self.setMessage('header-%s' % name, rs.RANGE_CORRECT)
+                        self.setMessage('header-accept-ranges', rs.RANGE_CORRECT)
                     else:
-                        self.setMessage('header-%s' % name, rs.RANGE_INCORRECT,
-                            range_expected=self.response.body[range_start:range_end+1],
-                            range_received=range_response.body # FIXME: encode these
-                        ) # TODO: limit partial content, check content-range
+                        self.setMessage('header-accept-ranges', rs.RANGE_INCORRECT)
+#                            range_expected=self.response.body[range_start:range_end+1],
+#                            range_received=range_response.body #  need to encode these
+#                        ) 
                 elif range_response.status == self.response.status:
-                    self.setMessage('header-%s' % name, rs.RANGE_FULL)
+                    self.setMessage('header-accept-ranges', rs.RANGE_FULL)
                 else:
-                    self.setMessage('header-%s' % name, rs.RANGE_STATUS, 
+                    self.setMessage('header-accept-ranges', rs.RANGE_STATUS, 
                                     range_status=range_response.status)
             makeRequest(self.response.uri, range_done, self.status_cb, req_headers=[
                 ('Range', "bytes=%s-%s" % (range_start, range_end)), 
@@ -131,9 +131,8 @@ class ResourceExpertDroid(object):
                 ], reason="Range")
 
     def checkConneg(self):
-        name = 'content-encoding'
-        if "gzip" in self.response.parsed_hdrs.get(name, []):
-            self.setMessage('header-%s' % name, rs.CONNEG_GZIP)
+        if "gzip" in self.response.parsed_hdrs.get('content-encoding', []):
+            self.setMessage('header-content-encoding', rs.CONNEG_GZIP)
             vary_headers = self.response.parsed_hdrs.get('vary', [])
             if (not "accept-encoding" in vary_headers) and (not "*" in vary_headers):
                 self.setMessage('header-vary header-%s', rs.CONNEG_NO_VARY)
@@ -141,8 +140,9 @@ class ResourceExpertDroid(object):
                 # FIXME: verify that the status is the same; if it's different, alert
                 # TODO: check to make sure the response body is the same as well
                 ResponseHeaderParser(conneg_res)
-                if 'gzip' in conneg_res.parsed_hdrs.get(name, []):
-                    self.setMessage('header-vary header-%s' % name, rs.CONNEG_GZIP_WITHOUT_ASKING)
+                if 'gzip' in conneg_res.parsed_hdrs.get('content-encoding', []):
+                    self.setMessage('header-vary header-content-encoding', 
+                                    rs.CONNEG_GZIP_WITHOUT_ASKING)
                 if conneg_res.parsed_hdrs.get('vary', []) != self.response.parsed_hdrs.get('vary', []):
                     self.setMessage('header-vary', rs.VARY_INCONSISTENT,
                         conneg_vary=", ".join(self.response.parsed_hdrs.get('vary', [])),
@@ -250,18 +250,17 @@ class ResourceExpertDroid(object):
 
                 
     def checkEtagValidation(self):
-        name = 'etag'
-        if self.response.parsed_hdrs.has_key(name):
+        if self.response.parsed_hdrs.has_key('etag'):
             def inm_done(inm_response):
                 if inm_response.status == '304':
-                    self.setMessage('header-%s' % name, rs.INM_304)
+                    self.setMessage('header-etag', rs.INM_304)
                 elif inm_response.status == self.response.status:
                     if inm_response.body == self.response.body:
-                        self.setMessage('header-%s' % name, rs.INM_FULL)
+                        self.setMessage('header-etag', rs.INM_FULL)
                     else:
-                        self.setMessage('header-%s' % name, rs.INM_UNKNOWN)
+                        self.setMessage('header-etag', rs.INM_UNKNOWN)
                 else:
-                    self.setMessage('header-%s' % name, rs.INM_STATUS, 
+                    self.setMessage('header-etag', rs.INM_STATUS, 
                                     inm_status=inm_response.status)
                 # TODO: check entity headers
                 # TODO: message on weak etag
@@ -275,21 +274,21 @@ class ResourceExpertDroid(object):
                 req_headers=[('If-None-Match', etag_str)], reason="ETag validation")
                 
     def checkLmValidation(self):
-        name = 'last-modified'
-        if self.response.parsed_hdrs.has_key(name):
+        if self.response.parsed_hdrs.has_key('last-modified'):
             def ims_done(ims_response):
                 if ims_response.status == '304':
-                    self.setMessage('header-%s' % name, rs.IMS_304)
+                    self.setMessage('header-last-modified', rs.IMS_304)
                 elif ims_response.status == self.response.status:
                     if ims_response.body == self.response.body:
-                        self.setMessage('header-%s' % name, rs.IMS_FULL)
+                        self.setMessage('header-last-modified', rs.IMS_FULL)
                     else:
-                        self.setMessage('header-%s' % name, rs.IMS_UNKNOWN)
+                        self.setMessage('header-last-modified', rs.IMS_UNKNOWN)
                 else:
-                    self.setMessage('header-%s' % name, rs.IMS_STATUS, ims_status=ims_response.status)
+                    self.setMessage('header-last-modified', rs.IMS_STATUS, 
+                                    ims_status=ims_response.status)
                 # TODO: check entity headers
             date_str = time.strftime('%a, %d %b %Y %H:%M:%S GMT', 
-                                     time.gmtime(self.response.parsed_hdrs[name]))
+                                     time.gmtime(self.response.parsed_hdrs['last-modified']))
             makeRequest(self.response.uri, ims_done, self.status_cb, 
                 req_headers=[('If-Modified-Since', date_str)], reason="Last-Modified validation")
                 
