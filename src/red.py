@@ -194,7 +194,7 @@ class ResourceExpertDroid(object):
         # calculate age
         if self.response.parsed_hdrs.has_key('date'):
             apparent_age = max(0, 
-              self.response.header_timestamp - self.response.parsed_hdrs['date'])
+              int(self.response.header_timestamp - self.response.parsed_hdrs['date']))
         else:
             apparent_age = 0
         age = self.response.parsed_hdrs.get('age', 0)
