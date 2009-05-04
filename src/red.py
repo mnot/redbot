@@ -104,27 +104,28 @@ class ResourceExpertDroid(object):
             range_start = int(len(self.response.body) * 0.5)
             range_end = int(len(self.response.body) * 0.75)
             if range_start == range_end: return # wow, that's a small body.
-            def range_done(range_response):
-                if range_response.status == '206':
+            def range_done(range_res):
+                ResponseHeaderParser(range_res)
+                if range_res.status == '206':
                     # TODO: check entity headers
                     # TODO: check content-range
                     if ('gzip' in self.response.parsed_hdrs.get('accept-ranges', [])) == \
-                       ('gzip' not in range_response.parsed_hdrs.get('accept-ranges', [])):
+                       ('gzip' not in range_res.parsed_hdrs.get('accept-ranges', [])):
                         self.setMessage('header-accept-ranges header-content-encoding', 
                                         rs.RANGE_NEG_MISMATCH)
                         return
-                    if range_response.body == self.response.body[range_start:range_end+1]:
+                    if range_res.body == self.response.body[range_start:range_end+1]:
                         self.setMessage('header-accept-ranges', rs.RANGE_CORRECT)
                     else:
                         self.setMessage('header-accept-ranges', rs.RANGE_INCORRECT)
 #                            range_expected=self.response.body[range_start:range_end+1],
 #                            range_received=range_response.body #  need to encode these
 #                        ) 
-                elif range_response.status == self.response.status:
+                elif range_res.status == self.response.status:
                     self.setMessage('header-accept-ranges', rs.RANGE_FULL)
                 else:
                     self.setMessage('header-accept-ranges', rs.RANGE_STATUS, 
-                                    range_status=range_response.status)
+                                    range_status=range_res.status)
             makeRequest(self.response.uri, range_done, self.status_cb, req_headers=[
                 ('Range', "bytes=%s-%s" % (range_start, range_end)), 
                 ('Accept-Encoding', 'gzip')
