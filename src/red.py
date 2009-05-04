@@ -139,16 +139,17 @@ class ResourceExpertDroid(object):
             if (not "accept-encoding" in vary_headers) and (not "*" in vary_headers):
                 self.setMessage('header-vary header-%s', rs.CONNEG_NO_VARY)
             def conneg_done(conneg_res):
-                # FIXME: verify that the status is the same; if it's different, alert
-                # TODO: check to make sure the response body is the same as well
+                # FIXME: verify that the status/body/hdrs are the same; if it's different, alert
                 ResponseHeaderParser(conneg_res)
+                conneg_vary_headers = conneg_res.parsed_hdrs.get('vary', [])
                 if 'gzip' in conneg_res.parsed_hdrs.get('content-encoding', []):
                     self.setMessage('header-vary header-content-encoding', 
                                     rs.CONNEG_GZIP_WITHOUT_ASKING)
-                if conneg_res.parsed_hdrs.get('vary', []) != self.response.parsed_hdrs.get('vary', []):
+                if conneg_vary_headers != vary_headers:
                     self.setMessage('header-vary', rs.VARY_INCONSISTENT,
-                        conneg_vary=", ".join(self.response.parsed_hdrs.get('vary', [])),
-                        no_conneg_vary=", ".join(conneg_res.parsed_hdrs.get('vary', [])))
+                        conneg_vary=", ".join(conneg_vary_headers),
+                        no_conneg_vary=", ".join(vary_headers)
+                    )
                 if conneg_res.parsed_hdrs.get('etag', 1) == self.response.parsed_hdrs.get('etag', 2):
                     self.setMessage('header-etag', rs.ETAG_DOESNT_CHANGE)
             makeRequest(self.response.uri, conneg_done, self.status_cb, reason="conneg")
