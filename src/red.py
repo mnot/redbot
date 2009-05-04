@@ -275,7 +275,10 @@ class ResourceExpertDroid(object):
                 weak_str = ""
             etag_str = '%s"%s"' % (weak_str, etag)
             makeRequest(self.response.uri, inm_done, self.status_cb,
-                req_headers=[('If-None-Match', etag_str)], reason="ETag validation")
+                req_headers=[
+                    ('If-None-Match', etag_str),
+                    ('Accept-Encoding', 'gzip')
+                ], reason="ETag validation")
                 
     def checkLmValidation(self):
         if self.response.parsed_hdrs.has_key('last-modified'):
@@ -294,7 +297,10 @@ class ResourceExpertDroid(object):
             date_str = time.strftime('%a, %d %b %Y %H:%M:%S GMT', 
                                      time.gmtime(self.response.parsed_hdrs['last-modified']))
             makeRequest(self.response.uri, ims_done, self.status_cb, 
-                req_headers=[('If-Modified-Since', date_str)], reason="Last-Modified validation")
+                req_headers=[
+                    ('If-Modified-Since', date_str),
+                    ('Accept-Encoding', 'gzip')
+                ], reason="Last-Modified validation")
                 
     def setMessage(self, subject, msg, **vars):
         self.messages.append((subject, msg, vars))
