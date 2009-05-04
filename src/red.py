@@ -85,6 +85,7 @@ class ResourceExpertDroid(object):
             ResponseHeaderParser(self.response, self.setMessage)
             ResponseStatusChecker(self.response, self.setMessage)
             # TODO: make this into a plug-in system
+            self.checkClock()
             self.checkCaching()
             self.checkConneg()
             self.checkEtagValidation()
@@ -154,6 +155,22 @@ class ResourceExpertDroid(object):
                     self.setMessage('header-etag', rs.ETAG_DOESNT_CHANGE)
             makeRequest(self.response.uri, conneg_done, self.status_cb, reason="conneg")
 
+
+    def checkClock(self):
+        # check clock sync TODO: alert on clockless origin server.
+        skew = self.response.parsed_hdrs.get('date', 0) - \
+          self.response.header_timestamp + self.response.parsed_hdrs.get('age', 0)
+        if abs(skew) > 5: # TODO: make configurable
+            self.setMessage('date', rs.DATE_INCORRECT, 
+                            clock_skew_string=relative_time(
+                                self.response.parsed_hdrs.get('date', 0), 
+                                self.response.header_timestamp, 2
+                            )
+            )
+        else:
+            self.setMessage('date', rs.DATE_CORRECT)
+
+
     def checkCaching(self):
         # TODO: check URI for query string, message about HTTP/1.0 if so
         # TODO: assure that there aren't any dup standard directives
@@ -180,13 +197,12 @@ class ResourceExpertDroid(object):
               self.response.header_timestamp - self.response.parsed_hdrs['date'])
         else:
             apparent_age = 0
+        age = self.response.parsed_hdrs.get('age', 0)
         current_age = max(apparent_age, self.response.parsed_hdrs.get('age', 0))
-
         current_age_str = relative_time(current_age, 0, 0)
-        if current_age >= 1:
+        if age >= 1:
             self.setMessage('header-age header-date', rs.CURRENT_AGE, 
                             current_age=current_age_str)
-        # TODO: differentiate between transit / skew and actual cache age
         
         # calculate freshness
         freshness_lifetime = 0
@@ -239,19 +255,6 @@ class ResourceExpertDroid(object):
             self.setMessage('cache-control', rs.STALE_PROXY_REVALIDATE) 
         else:
             self.setMessage('cache-control', rs.STALE_SERVABLE)
-
-        # check clock sync TODO: alert on clockless origin server.
-        skew = self.response.parsed_hdrs.get('date', 0) - \
-          self.response.header_timestamp + self.response.parsed_hdrs.get('age', 0)
-        if abs(skew) > 5: # TODO: make configurable
-            self.setMessage('date', rs.DATE_INCORRECT, 
-                            clock_skew_string=relative_time(
-                                self.response.parsed_hdrs.get('date', 0), 
-                                self.response.header_timestamp, 2
-                            )
-            )
-        else:
-            self.setMessage('date', rs.DATE_CORRECT)
 
                 
     def checkEtagValidation(self):
@@ -836,7 +839,7 @@ def relative_time(utime, now=None, show_sign=1):
      '''
 
     signs = {
-        0:	('now', '', ''),
+        0:	('none', '', ''),
         1:	('now', 'ago', 'from now'),
         2:	('none', 'behind', 'ahead'),
     }
