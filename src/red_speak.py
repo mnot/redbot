@@ -181,7 +181,7 @@ RANGE_INCORRECT = (TESTS, BAD,
 
 RANGE_FULL = (TESTS, BAD,
     {
-    'en': "A ranged request returned the full content, rather than partial content."
+    'en': "A ranged request returned the full rather than partial content."
     },
     {
     'en': """This resource advertises support for ranged requests with 
@@ -202,6 +202,16 @@ RANGE_STATUS = (TESTS, INFO,
     clients to specify that only part of the response should be sent. RED has tested
     this by requesting part of this response, but a %(range_status)s 
     response code was returned, which RED was not expecting."""
+    }
+)
+
+RANGE_NEG_MISMATCH = (TESTS, BAD,
+    {
+     'en': "Partial responses don't have the same support for compression that full ones do."
+    },
+    {
+     'en': """This resource supports ranged requests and also supports negotiation for
+     gzip compression, but doesn't support compression for both full and partial responses."""
     }
 )
 
@@ -313,7 +323,7 @@ CONNEG_NO_VARY = (GENERAL, BAD,
 
 CONNEG_GZIP_WITHOUT_ASKING = (GENERAL, BAD,
     {
-    'en': 'A gzip-compressed response was sent when it wasn\'t asked for.'
+    'en': "A gzip-compressed response was sent when it wasn't asked for."
     },
     {
     'en': """HTTP supports compression of responses by negotiating for 

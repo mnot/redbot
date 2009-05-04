@@ -31,6 +31,7 @@ import time
 import calendar 
 import socket
 import base64
+import zlib
 from hashlib import md5
 from email.utils import parsedate as lib_parsedate
 
@@ -107,6 +108,10 @@ class ResourceExpertDroid(object):
             if range_start == range_end: return
             def range_done(range_response):
                 if range_response.status == '206':
+                    if ('gzip' in self.response.parsed_hdrs.get(name, [])) == \
+                       ('gzip' not in range_response.parsed_hdrs.get(name, [])):
+                        self.setMessage('header-%s header-content-encoding' % rs.RANGE_NEG_MISMATCH)
+                        return
                     if range_response.body == self.response.body[range_start:range_end+1]:
                         self.setMessage('header-%s' % name, rs.RANGE_CORRECT)
                     else:
