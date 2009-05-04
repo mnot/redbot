@@ -108,6 +108,7 @@ class ResourceExpertDroid(object):
             if range_start == range_end: return
             def range_done(range_response):
                 if range_response.status == '206':
+                    # TODO: check entity headers
                     if ('gzip' in self.response.parsed_hdrs.get(name, [])) == \
                        ('gzip' not in range_response.parsed_hdrs.get(name, [])):
                         self.setMessage('header-%s header-content-encoding' % rs.RANGE_NEG_MISMATCH)
@@ -261,6 +262,8 @@ class ResourceExpertDroid(object):
                 else:
                     self.setMessage('header-%s' % name, rs.INM_STATUS, 
                                     inm_status=inm_response.status)
+                # TODO: check entity headers
+                # TODO: message on weak etag
             weak, etag = self.response.parsed_hdrs['etag']
             if weak:
                 weak_str = "W/"
@@ -283,6 +286,7 @@ class ResourceExpertDroid(object):
                         self.setMessage('header-%s' % name, rs.IMS_UNKNOWN)
                 else:
                     self.setMessage('header-%s' % name, rs.IMS_STATUS, ims_status=ims_response.status)
+                # TODO: check entity headers
             date_str = time.strftime('%a, %d %b %Y %H:%M:%S GMT', 
                                      time.gmtime(self.response.parsed_hdrs[name]))
             makeRequest(self.response.uri, ims_done, self.status_cb, 
