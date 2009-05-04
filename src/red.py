@@ -33,6 +33,7 @@ import socket
 import base64
 from hashlib import md5
 from email.utils import parsedate as lib_parsedate
+from cgi import escape as e
 
 import http_client
 import red_speak as rs
@@ -117,10 +118,10 @@ class ResourceExpertDroid(object):
                     if range_res.body == self.response.body[range_start:range_end+1]:
                         self.setMessage('header-accept-ranges', rs.RANGE_CORRECT)
                     else:
-                        self.setMessage('header-accept-ranges', rs.RANGE_INCORRECT)
-#                            range_expected=self.response.body[range_start:range_end+1],
-#                            range_received=range_response.body #  need to encode these
-#                        ) 
+                        self.setMessage('header-accept-ranges', rs.RANGE_INCORRECT,
+                            range_expected=e(self.response.body[range_start:range_end+1]),
+                            range_received=e(range_res.body)
+                        ) 
                 elif range_res.status == self.response.status:
                     self.setMessage('header-accept-ranges', rs.RANGE_FULL)
                 else:

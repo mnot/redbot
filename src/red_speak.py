@@ -175,7 +175,9 @@ RANGE_INCORRECT = (TESTS, BAD,
     part of the response should be sent. RED has tested this by requesting part 
     of this response, but the partial response doesn't correspond with the full 
     response retrieved at the same time. This could indicate that the range 
-    implementation isn't working properly."""
+    implementation isn't working properly.
+    <p>RED expected: %(range_expected)s
+    <p>RED received: %(range_received)s"""
     }
 )
 
