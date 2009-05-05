@@ -191,6 +191,11 @@ class ResourceExpertDroid(object):
           not cc_dict.has_key('public'):
             self.setMessage('header-cache-control', rs.PRIVATE_AUTH)
 
+        # no-cache?
+        if cc_dict.has_key('no-cache'):
+            self.setMessage('header-cache-control', rs.NO_CACHE)
+            return
+
         # calculate age
         if self.response.parsed_hdrs.has_key('date'):
             apparent_age = max(0, 

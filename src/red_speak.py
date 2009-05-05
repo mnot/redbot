@@ -606,6 +606,21 @@ VIA_PRESENT = (GENERAL, INFO,
     }
 )
 
+NO_CACHE = (CACHING, INFO,
+    {
+     'en': "This response cannot be served from cache without validation."
+    },
+    {
+     'en': """The <code>Cache-Control: no-store</code> directive means that 
+     while caches <strong>can</strong> store this response, they cannot use
+     it to satisfy a request unless it has been validated (either with an 
+     <code>If-None-Match</code> or <code>If-Modified-Since</code> conditional) 
+     for that request.<p>
+     If the response doesn't have a <code>Last-Modified</code> or
+     <code>ETag</code> header, it effectively can't be used by a cache."""
+    }
+)
+
 CURRENT_AGE = (CACHING, INFO,
     {
      'en': "This response has been cached for %(current_age)s."
