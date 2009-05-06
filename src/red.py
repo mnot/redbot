@@ -275,10 +275,10 @@ class ResourceExpertDroid(object):
                     self.setMessage('header-etag', rs.INM_STATUS, 
                                     inm_status=inm_response.status)
                 # TODO: check entity headers
-                # TODO: message on weak etag
             weak, etag = self.response.parsed_hdrs['etag']
             if weak:
                 weak_str = "W/"
+                # TODO: message on weak etag
             else:
                 weak_str = ""
             etag_str = '%s"%s"' % (weak_str, etag)
