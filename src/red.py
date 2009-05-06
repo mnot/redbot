@@ -229,7 +229,6 @@ class ResourceExpertDroid(object):
             else:
                 freshness_lifetime = self.response.parsed_hdrs['expires'] - \
                     self.response.header_timestamp # ?
-                    # FIXME: offset age; e.g. cnet.com
 
         freshness_left = freshness_lifetime - current_age
         freshness_left_str = relative_time(abs(int(freshness_left)), 0, 0)
