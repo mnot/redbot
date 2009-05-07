@@ -374,6 +374,29 @@ DATE_INCORRECT = (CACHING, BAD,
     }
 )
 
+DATE_CLOCKLESS = (CACHING, WARN,
+    {
+     'en': "This response doesn't have a Date header."
+    },
+    {
+     'en': """Although HTTP allowes a server not to send a <code>Date</code> header if it
+     doesn't have a local clock, this can make calculation of the response's age
+     inexact."""
+    }
+)
+
+DATE_CLOCKLESS_BAD_HDR = (CACHING, BAD,
+    {
+     'en': "Responses without a Date aren't allowed to have Expires or Last-Modified values."
+    },
+    {
+     'en': """Because both the <code>Expires</code> and <code>Last-Modified</code>
+     headers are date-based, it's necessary to know when the message was generated
+     for them to be useful; otherwise, clock drift, transit times between nodes as 
+     well as caching could skew their application."""
+    }
+)
+
 INM_304 = (CACHING, GOOD,
     {
     'en': "If-None-Match conditional requests are supported."

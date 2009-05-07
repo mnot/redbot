@@ -52,12 +52,13 @@ COMMA = r'(?:\s*(?:,\s*)+)'
 DIGITS = r'(?:\d+)'
 DATE = r'(?:\w{3}, \d{2} \w{3} \d{4} \d{2}:\d{2}:\d{2} GMT|\w{6,9}, \d{2}\-\w{3}\-\d{2} \d{2}:\d{2}:\d{2} GMT|\w{3} \w{3} [\d ]\d \d{2}:\d{2}:\d{2} \d{4})'
 
-# various configuration
+### configuration
 cacheable_methods = ['GET']
 heuristic_cacheable_status = ['200', '203', '206', '300', '301', '410']
 max_uri = 8 * 1024
 max_hdr_size = 4 * 1024
 max_ttl_hdr = 20 * 1024
+max_clock_skew = 5  # seconds
 
 # TODO: resource limits
 # TODO: special case for content-* headers and HEAD responses, partial responses.
@@ -157,23 +158,29 @@ class ResourceExpertDroid(object):
 
 
     def checkClock(self):
-        # check clock sync TODO: alert on clockless origin server.
-        skew = self.response.parsed_hdrs.get('date', 0) - \
+        if not self.response.parsed_hdrs.has_key('date'):
+            self.setMessage('', rs.DATE_CLOCKLESS)
+            if self.response.parsed_hdrs.has_key('expires') or \
+              self.response.parsed_hdrs.has_key('last-modified'):
+                self.setMessage('header-expires header-last-modified', rs.DATE_CLOCKLESS_BAD_HDR)
+            return
+        skew = self.response.parsed_hdrs['date'] - \
           self.response.header_timestamp + self.response.parsed_hdrs.get('age', 0)
-        if abs(skew) > 5: # TODO: make configurable
-            self.setMessage('date', rs.DATE_INCORRECT, 
+        if abs(skew) > max_clock_skew:
+            self.setMessage('header-date', rs.DATE_INCORRECT, 
                             clock_skew_string=relative_time(
                                 self.response.parsed_hdrs.get('date', 0), 
                                 self.response.header_timestamp, 2
                             )
             )
         else:
-            self.setMessage('date', rs.DATE_CORRECT)
+            self.setMessage('header-date', rs.DATE_CORRECT)
 
 
     def checkCaching(self):
         # TODO: check URI for query string, message about HTTP/1.0 if so
         # TODO: assure that there aren't any dup standard directives
+        # TODO: check for spurious 'public' directive (e.g., sun.com)
         cc_dict = dict(self.response.parsed_hdrs.get('cache-control', []))
 
         # can it be stored? If not, get out of here.
