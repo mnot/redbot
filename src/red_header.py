@@ -5,21 +5,24 @@
 	<link rel="stylesheet" type='text/css' href="red_style.css">
 </head>
 <script src="jquery.js"></script>
+<script src="./jquery.hoverIntent.js"></script>
 <script>
 var tid = false;
+var frame_css = "<style type='text/css'>body {margin: 0; padding:0; background-color: #eee; color: #111; font: 1em/1.1em sans-serif;}</style>";
+
 $(document).ready(function(){
-	$("span").hover(
+	$("span.hdr").hover(
 	function(){
 		var classes = this.className.split(" ");
 		for (var i=0; i < classes.length; i++) {
 			var c = classes[i];
-			if (true) { 
+			if (c != 'hdr') { 
 			 var marker_class = c;
 			}
 		};
 		$("span." + marker_class).css({"font-weight": "bold", "color": "white"});
 		$("li:not(." + marker_class + ")").fadeTo(100, 0.15);
-		$("li." + marker_class).fadeTo(60, 1.0);
+		$("li." + marker_class).fadeTo(50, 1.0);
 		if (tid != false) {
 			clearTimeout(tid);
 			tid = false;
@@ -34,44 +37,33 @@ $(document).ready(function(){
 		};
 		$("span." + marker_class).css({"font-weight": "normal", "color": "#ddd"});
 		tid = setTimeout(function(){
-			$("li").fadeTo(100, 1.0);
+			$("li").fadeTo(50, 1.0);
 		}, 100);
 	});
-
-	$("li").mouseover(function(){
+	
+	$("li.msg").hoverIntent(function(){
 		classes = this.className.split(" ");
 		for (var i=0; i < classes.length; i++) {
 			var c = classes[i];
 			$("span." + c ).css({"font-weight": "bold", "color": "white"});
 		};
-	});
-
-	$("li").mouseout(function(){
+		$("#long_mesg").css({"position": "fixed"});
+		$("#long_mesg").html($("span:first", this).html());
+	}, function(){
 		classes = this.className.split(" ");
 		for (var i=0; i < classes.length; i++) {
 			var c = classes[i];
 			$("span." + c ).css({"font-weight": "normal", "color": "#ddd"});
-		};
-	});
-	
-	$("li").hover(function(){
-		var content = this.getElementsByTagName("span")[0].innerHTML;
-		var lm = document.getElementById("long_mesg");  
-		var doc = lm.contentDocument;
-		if (doc == undefined || doc == null)
-		    doc = lm.contentWindow.document;
-		doc.open();
-		doc.write("<style type='text/css'>body {margin: 0; padding:0; background-color: #eee; color: #111; font: 1.05em/1.15em sans-serif; margin: 1em 4em;}</style>");
-		doc.write(content);
-		doc.close();
+		};	
 	});
 
 	$("h3").click(function(){
 		$(this).next().slideToggle("normal");
 	});
-
-	$("a.view").click(function(){
-		document.all.long_mesg.src = this.getAttribute('title');
+	
+	$("a.link_view").click(function(){
+		$("#long_mesg").css({"position": "absolute"});
+		$("#long_mesg").html($("#link_list").html());
 	});
 
 	var check_phrase = "Enter a HTTP URI to check";

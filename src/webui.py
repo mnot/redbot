@@ -23,28 +23,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
-logdir = 'exceptions' # set to None to disable traceback logging
-import cgitb; cgitb.enable(logdir=logdir)
-import sys
-import cgi
-import textwrap
-from urlparse import urljoin
-from cgi import escape as e
 
-from red import ResourceExpertDroid, __version__
-import red_speak as rs
-import red_header
+### Configuration
 
 # FIXME: make language configurable/dynamic
 lang = "en"
 
 # header file
 header_file = "red_header.html"
-
-# the order of message categories to display
-msg_categories = [
-    rs.GENERAL, rs.CONNECTION, rs.CACHING, rs.TESTS
-]
 
 # validator uris for media types
 validators = {
@@ -55,10 +41,46 @@ validators = {
 
 viewable_types = [
     'text/plain',
+    'text/html',
+    'application/pdf',
     'image/gif',
     'image/jpeg',
     'image/jpg',
     'image/png',
+    'application/javascript',
+    'application/x-javascript',
+    'text/javascript',
+    'text/x-javascript',
+    'text/css',
+]
+
+link_parseable_types = [
+    'text/html',
+]
+
+logdir = 'exceptions' # set to None to disable traceback logging
+
+### End configuration
+
+
+import cgitb; cgitb.enable(logdir=logdir)
+import sys
+import cgi
+import gzip
+import StringIO
+import textwrap
+from HTMLParser import HTMLParser
+from urlparse import urljoin
+from urllib import quote
+from cgi import escape as e
+
+from red import ResourceExpertDroid, __version__
+import red_speak as rs
+import red_header
+
+# the order of message categories to display
+msg_categories = [
+    rs.GENERAL, rs.CONNECTION, rs.CACHING, rs.TESTS
 ]
 
 template = """\
@@ -86,7 +108,7 @@ title="drag me to your toolbar to use RED any time.">red</a> bookmarklet
 </p>
 </div>
 
-<iframe id="long_mesg"/>
+<div id="long_mesg"/>
 
 
 </body>
@@ -107,6 +129,7 @@ class RedWebUi(object):
         if uri:
             try:
                 self.red = ResourceExpertDroid(uri, self.updateStatus)
+                self.updateStatus('Done.')
                 self.header_presenter = HeaderPresenter(self.red)
                 print self.presentResults()
             except AssertionError, why:
@@ -134,7 +157,7 @@ class RedWebUi(object):
 
     def presentHeader(self, name, value):
         token_name = name.lower()
-        return "    <span class='header-%s'>%s: %s</span>" % (
+        return "    <span class='header-%s hdr'>%s: %s</span>" % (
             e(token_name), e(name), self.header_presenter.Show(name, value))
 
     def presentCategory(self, category):
@@ -143,7 +166,7 @@ class RedWebUi(object):
             return ""
         return "<h3>%s</h3>\n<ul>\n" % category \
         + "\n".join([
-                    "<li class='%s %s'>%s<span class='hidden_desc'>%s</span></li>" % 
+                    "<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span></li>" % 
                     (l, e(s), e(m[lang]%v), lm[lang]%v) 
                     for (s,(c,l,m,lm),v) in messages
                     ]) \
@@ -153,13 +176,42 @@ class RedWebUi(object):
         options = []
         media_type = self.red.response.parsed_hdrs.get('content-type', [None])[0]
         if media_type in viewable_types:
-            options.append("<a href='#' class='view' title='%s'>view</a>" % 
-                           self.red.response.uri)
+            options.append("<a href='%s'>view</a>" % self.red.response.uri)
+        if media_type in link_parseable_types:
+            if 'gzip' in self.red.response.parsed_hdrs.get('content-encoding', []):
+                body = gzip.GzipFile(fileobj=StringIO.StringIO(self.red.response.body)).read()
+            else:  # TODO: check for gzip errors
+                body = self.red.response.body
+            links = HTMLLinkParser(body)
+            if links.count > 0:
+                options.append("<a href='#' class='link_view' title='%s'>links</a>" %
+                               self.red.response.uri)
+                base = links.base or self.red.response.uri
+                options.append("<span class='hidden_desc' id='link_list'>")
+                options += self.presentLinks('Scripts', base, links.scripts)
+                options += self.presentLinks('Images', base, links.imgs)
+                options += self.presentLinks('Frames', base, links.frames)
+                options += self.presentLinks('Links', base, links.links)
+                options.append("</span>")
         if validators.has_key(media_type):
             options.append("<a href='%s'>validate body</a>" % 
                            validators[media_type] % self.red.response.uri)
         return options
 
+    def presentLinks(self, name, base, links):
+        if not links: return []
+        out = ["<h3>%s</h3>" % name]
+        out.append("<ul>")
+        links = list(links)
+        links.sort()
+        for l in links:
+            if "#" in l:
+                l = l[:l.index('#')]
+            if not l: continue
+            al = "?uri=%s" % quote(urljoin(base, l), safe=":;/?#@+$&,")
+            out.append("<li><a href='%s'>%s</a></li>" % (al, e(l)))
+        out.append("</ul>")
+        return out
 
     def updateStatus(self, message):
         print """
@@ -206,6 +258,40 @@ class HeaderPresenter(object):
     location = \
     x_xrds_location = \
     BARE_URI
+
+
+class HTMLLinkParser(HTMLParser):
+    def __init__(self, content):
+        self.links = set()
+        self.imgs = set()
+        self.scripts = set()
+        self.frames = set()
+        self.base = None
+        self.count = 0
+        HTMLParser.__init__(self)
+        try:
+            self.feed(content)
+        except AssertionError: # oh, well...
+            pass
+        
+    def handle_starttag(self, tag, attrs):
+        if tag in ['a', 'link']: # @href
+            target = dict(attrs).get('href', None)
+            if not target: return
+            self.links.add(target)
+            self.count += 1
+        elif tag in ['img', 'script', 'frame', 'iframe']: # @src
+            target = dict(attrs).get('src', None)
+            if not target: return
+            if tag == 'img': self.imgs.add(target)
+            elif tag == 'script': self.scripts.add(target)
+            else: self.frames.add(target)
+            self.count += 1
+        elif tag == 'base':
+            self.base = dict(attrs).get('href', None)
+
+    def error(self, message):
+            return
 
 
 if __name__ == "__main__":

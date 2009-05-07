@@ -49,11 +49,14 @@ input {
 	width: 600px;
 }
 #long_mesg {
+	position: fixed;
+	left: 710px;
+	right: 3em;
+	top: 115px;
 	border: 0;
-	padding: 0em;
-	margin-top: 4em;
-	width: 350px;
-	height: 500px;
+	padding: 0;
+	margin: 0;
+	max-width: 500px;
 }
 .good {
 	color: green;
