@@ -571,7 +571,7 @@ VARY_ASTERISK = (CACHING, BAD,
     }
 )
 
-VARY_USER_AGENT = (CACHING, BAD,
+VARY_USER_AGENT = (CACHING, WARN,
     {
      'en': "Vary: User-Agent is bad practice."
     },
