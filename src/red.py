@@ -775,7 +775,7 @@ class Response:
         self.headers = []
         self.parsed_hdrs = {}
         self.body = ""
-        self.body_extra = ""
+        self.body_extra = 0
         self.complete = False
         self.header_timestamp = None
 
@@ -800,9 +800,9 @@ def makeRequest(uri, done_cb, status_cb=None, method="GET", req_headers=None, bo
         response.header_timestamp = time.time()
     def response_body(chunk):
         if response.complete:
-#            if response.body_extra == "":  # TODO: find the right place for extra_body
+#            if response.body_extra:  # TODO: find the right place for extra_body
 #                self.setMessage('body', rs.BODY_EXTRA)
-            response.body_extra += chunk
+            response.body_extra += len(chunk)
         else:
             response.body += chunk
     def response_done(complete):
