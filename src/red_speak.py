@@ -145,15 +145,6 @@ BAD_CC_SYNTAX = (GENERAL, BAD,
     }
 )
 
-BODY_EXTRA = (GENERAL, BAD,
-    {
-    'en': "The body sent on the wire is longer than it should be."
-    },
-    {
-    'en': """""" 
-    }
-)
-
 RANGE_CORRECT = (TESTS, GOOD,
     {
     'en': "A ranged request returned the correct partial content."

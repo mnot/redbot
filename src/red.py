@@ -31,7 +31,7 @@ import time
 import calendar 
 import socket
 import base64
-from hashlib import md5
+import hashlib
 from email.utils import parsedate as lib_parsedate
 from cgi import escape as e
 
@@ -275,7 +275,7 @@ class ResourceExpertDroid(object):
                 if inm_response.status == '304':
                     self.setMessage('header-etag', rs.INM_304)
                 elif inm_response.status == self.response.status:
-                    if inm_response.body == self.response.body:
+                    if inm_response.body_md5 == self.response.body_md5:
                         self.setMessage('header-etag', rs.INM_FULL)
                     else:
                         self.setMessage('header-etag', rs.INM_UNKNOWN)
@@ -302,7 +302,7 @@ class ResourceExpertDroid(object):
                 if ims_response.status == '304':
                     self.setMessage('header-last-modified', rs.IMS_304)
                 elif ims_response.status == self.response.status:
-                    if ims_response.body == self.response.body:
+                    if ims_response.body_md5 == self.response.body_md5:
                         self.setMessage('header-last-modified', rs.IMS_FULL)
                     else:
                         self.setMessage('header-last-modified', rs.IMS_UNKNOWN)
@@ -469,17 +469,17 @@ class ResponseHeaderParser(object):
     @CheckFieldSyntax(DIGITS)
     def content_length(self, name, values):
         cl = int(values[-1])
-        if len(self.response.body) == cl:
+        if self.response.body_len == cl:
             self.setMessage(name, rs.CL_CORRECT)
         else:
             self.setMessage(name, rs.CL_INCORRECT, 
-                            body_length=len(self.response.body))
+                            body_length=self.response.body_len)
         return cl
 
     @SingleFieldValue
     def content_md5(self, name, values):
         c_md5 = values[-1]
-        c_md5_calc = base64.encodestring(md5(self.response.body).digest())[:-1]
+        c_md5_calc = base64.encodestring(self.response.body_md5)[:-1]
         if c_md5 == c_md5_calc:
             self.setMessage(name, rs.CMD5_CORRECT)
         else:
@@ -775,7 +775,9 @@ class Response:
         self.headers = []
         self.parsed_hdrs = {}
         self.body = ""
-        self.body_extra = 0
+        self.body_len = 0
+        self.body_md5 = None
+        self.body_sample = ""
         self.complete = False
         self.header_timestamp = None
 
@@ -790,6 +792,7 @@ def makeRequest(uri, done_cb, status_cb=None, method="GET", req_headers=None, bo
     if req_headers == None:
         req_headers = []
     response = Response(uri)
+    md5_processor = hashlib.md5()
     outstanding_requests += 1
     req_headers.append(("User-Agent", "RED/%s (http://redbot.org/about)" % __version__))
     def response_start(version, status, phrase, res_headers):
@@ -799,17 +802,16 @@ def makeRequest(uri, done_cb, status_cb=None, method="GET", req_headers=None, bo
         response.headers = res_headers
         response.header_timestamp = time.time()
     def response_body(chunk):
-        if response.complete:
-#            if response.body_extra:  # TODO: find the right place for extra_body
-#                self.setMessage('body', rs.BODY_EXTRA)
-            response.body_extra += len(chunk)
-        else:
+        md5_processor.update(chunk)
+        response.body_len += len(chunk)
+        if not response.complete:
             response.body += chunk
     def response_done(complete):
         global outstanding_requests
         if status_cb:
             status_cb("fetched %s (%s)" % (uri, reason))
         response.complete = complete
+        response.body_md5 = md5_processor.digest()
         done_cb(response)
         outstanding_requests -= 1
         if outstanding_requests == 0:
