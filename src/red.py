@@ -32,6 +32,7 @@ import calendar
 import socket
 import base64
 import hashlib
+import zlib
 from email.utils import parsedate as lib_parsedate
 from cgi import escape as e
 
@@ -65,7 +66,8 @@ connect_timeout = 5 # seconds
 # TODO: special case for content-* headers and HEAD responses, partial responses.
 
 class ResourceExpertDroid(object):
-    def __init__(self, uri, status_cb=None, method="GET", req_headers=None):
+    def __init__(self, uri, method="GET", req_headers=None, 
+                 body_processors=[], status_cb=None):
         self.status_cb = status_cb     # tells caller how we're doing
         self.method = method
         if req_headers != None:
@@ -87,6 +89,7 @@ class ResourceExpertDroid(object):
             ResponseStatusChecker(self.response, self.setMessage)
             # TODO: make this into a plug-in system
             self.checkClock()
+            self.checkBody()
             self.checkCaching()
             self.checkConneg()
             self.checkEtagValidation()
@@ -96,7 +99,7 @@ class ResourceExpertDroid(object):
         try:
             makeRequest(uri, method=self.method, req_headers=self.req_headers,
                 done_cb=primary_response_done, status_cb=status_cb, set_message=self.setMessage,
-                reason=self.method)
+                body_processors=body_processors, reason=self.method)
             http_client.run()
         except socket.gaierror:
             raise AssertionError, "Hostname not found."
@@ -134,6 +137,23 @@ class ResourceExpertDroid(object):
                 ], 
                 done_cb=range_done, status_cb=self.status_cb, 
                 reason="Range")
+
+    def checkBody(self):
+        if self.response.parsed_hdrs.has_key('content-length'):
+            if self.response.body_len == self.response.parsed_hdrs['content-length']:
+                self.setMessage('header-content-length', rs.CL_CORRECT)
+            else:
+                self.setMessage('header-content-length', rs.CL_INCORRECT, 
+                                body_length=self.response.body_len)
+                
+        if self.response.parsed_hdrs.has_key('content-md5'):
+            c_md5_calc = base64.encodestring(self.response.body_md5)[:-1]
+            if self.response.parsed_hdrs['content-md5'] == c_md5_calc:
+                self.setMessage('header-content-md5', rs.CMD5_CORRECT)
+            else:
+                self.setMessage('header-content-md5', rs.CMD5_INCORRECT, 
+                                calc_md5=c_md5_calc)
+
 
     def checkConneg(self):
         if "gzip" in self.response.parsed_hdrs.get('content-encoding', []):
@@ -473,22 +493,10 @@ class ResponseHeaderParser(object):
     @SingleFieldValue
     @CheckFieldSyntax(DIGITS)
     def content_length(self, name, values):
-        cl = int(values[-1])
-        if self.response.body_len == cl:
-            self.setMessage(name, rs.CL_CORRECT)
-        else:
-            self.setMessage(name, rs.CL_INCORRECT, 
-                            body_length=self.response.body_len)
-        return cl
+        return int(values[-1])
 
     @SingleFieldValue
     def content_md5(self, name, values):
-        c_md5 = values[-1]
-        c_md5_calc = base64.encodestring(self.response.body_md5)[:-1]
-        if c_md5 == c_md5_calc:
-            self.setMessage(name, rs.CMD5_CORRECT)
-        else:
-            self.setMessage(name, rs.CMD5_INCORRECT, calc_md5=c_md5_calc)
         return values[-1]
 
     def content_range(self, name, values):
@@ -785,11 +793,13 @@ class Response:
         self.body_sample = ""
         self.complete = False
         self.header_timestamp = None
+        self._in_gzip_body = False
+        self._gzip_header_buffer = ""
 
 outstanding_requests = 0 # how many requests we have left
 def makeRequest(uri, method="GET", req_headers=None, body=None, 
                 done_cb=None, status_cb=None, set_message=None,
-                reason=None):
+                body_processors=[], reason=None):
     """
     Make an asynchronous HTTP request to uri, calling status_cb as it's updated and
     done_cb when it's done. Reason is used to explain what the request is in the
@@ -800,24 +810,41 @@ def makeRequest(uri, method="GET", req_headers=None, body=None,
         req_headers = []
     response = Response(uri)
     md5_processor = hashlib.md5()
+    decompress = zlib.decompressobj(-zlib.MAX_WBITS)
     outstanding_requests += 1
     req_headers.append(("User-Agent", "RED/%s (http://redbot.org/about)" % __version__))
     def response_start(version, status, phrase, res_headers):
+        response.header_timestamp = time.time()
         response.version = version
         response.status = status
         response.phrase = phrase
         response.headers = res_headers
-        response.header_timestamp = time.time()
+        ResponseHeaderParser(response, set_message)
+
     def response_body(chunk):
         md5_processor.update(chunk)
         response.body_len += len(chunk)
         if not response.complete:
-            response.body += chunk
+            response.body += chunk # TODO: get rid of this
+        # TODO: deflate support
+        if 'gzip' in response.parsed_hdrs.get('content-encoding', []):
+            if not response._in_gzip_body:
+                response._gzip_header_buffer += chunk
+                try:
+                    chunk = read_gzip_header(response._gzip_header_buffer)
+                    response._in_gzip_body = True
+                except IndexError:
+                    return # not a full header yet
+                except IOError:
+                    raise # TODO: flag bad gzip
+            chunk = decompress.decompress(chunk) # TODO: flag bad zlib
+        for processor in body_processors:
+            processor(chunk)
+                
     def response_done(complete):
         global outstanding_requests
         response.complete = complete
         response.body_md5 = md5_processor.digest()
-        ResponseHeaderParser(response, set_message)
         # TODO: move status parsing, other checks here too
         if status_cb and reason:
             status_cb("fetched %s (%s)" % (uri, reason))
@@ -826,6 +853,7 @@ def makeRequest(uri, method="GET", req_headers=None, body=None,
         outstanding_requests -= 1
         if outstanding_requests == 0:
             http_client.stop()
+
     c = http_client.HttpClient(response_start, response_body, response_done, timeout=connect_timeout)
     if status_cb and reason:
         status_cb("fetching %s (%s)" % (uri, reason))
@@ -833,6 +861,42 @@ def makeRequest(uri, method="GET", req_headers=None, body=None,
     if body != None:
         req_body_write(body)
         req_body_done()
+
+
+# adapted from gzip.py
+def read_gzip_header(content):
+    FTEXT, FHCRC, FEXTRA, FNAME, FCOMMENT = 1, 2, 4, 8, 16
+    if len(content) < 10: 
+        raise IndexError, "Header not complete yet"
+    magic = content[:2]
+    if magic != '\037\213':
+        raise IOError, 'Not a gzipped file'
+    method = ord( content[2:3] )
+    if method != 8:
+        raise IOError, 'Unknown compression method'
+    flag = ord( content[3:4] )
+    content_l = list(content[10:])
+    if flag & FEXTRA:
+        # Read & discard the extra field, if present
+        xlen = ord(content_l.pop())
+        xlen = xlen + 256*ord(content_l.pop())
+        content_l = content_l[xlen:]
+    if flag & FNAME:
+        # Read and discard a null-terminated string containing the filename
+        while True:
+            s = content_l.pop()
+            if not s or s == '\000':
+                break
+    if flag & FCOMMENT:
+        # Read and discard a null-terminated string containing a comment
+        while True:
+            s = content_l.pop()
+            if not s or s == '\000':
+                break
+    if flag & FHCRC:
+        content_l = content_l[2:]   # Read & discard the 16-bit header CRC
+    return "".join(content_l)
+
 
 
 def parse_date(values):

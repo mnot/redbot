@@ -130,9 +130,11 @@ class RedWebUi(object):
     def __init__(self, test_uri):
         print red_header.__doc__ % {'uri': e(test_uri)} 
         sys.stdout.flush()
+        self.links = HTMLLinkParser()
         if uri:
             try:
-                self.red = ResourceExpertDroid(uri, self.updateStatus)
+                self.red = ResourceExpertDroid(uri, 
+                    status_cb=self.updateStatus, body_processors=[self.links.feed])
                 self.updateStatus('Done.')
                 self.header_presenter = HeaderPresenter(self.red)
                 print self.presentResults()
@@ -182,35 +184,30 @@ class RedWebUi(object):
         if media_type in viewable_types:
             options.append("<a href='%s'>view</a>" % self.red.response.uri)
         if media_type in link_parseable_types:
-            if 'gzip' in self.red.response.parsed_hdrs.get('content-encoding', []):
-                body = gzip.GzipFile(fileobj=StringIO.StringIO(self.red.response.body)).read()
-            else:  # TODO: check for gzip errors
-                body = self.red.response.body
-            links = HTMLLinkParser(body)
-            if links.count > 0:
+            if self.links.count > 0:
                 options.append("<a href='#' class='link_view' title='%s'>links</a>" %
                                self.red.response.uri)
-                base = links.base or self.red.response.uri
                 options.append("<span class='hidden_desc' id='link_list'>")
-                options += self.presentLinks('Head Links', base, links.link, links.titles)
-                options += self.presentLinks('Scripts', base, links.script, links.titles)
-                options += self.presentLinks('Frames', base, links.frame, links.titles)
-                options += self.presentLinks('Images', base, links.img, links.titles)
-                options += self.presentLinks('Body Links', base, links.a, links.titles)
+                options += self.presentLinks('Head Links', self.links.link)
+                options += self.presentLinks('Scripts', self.links.script)
+                options += self.presentLinks('Frames', self.links.frame)
+                options += self.presentLinks('Images', self.links.img)
+                options += self.presentLinks('Body Links', self.links.a)
                 options.append("</span>")
         if validators.has_key(media_type):
             options.append("<a href='%s'>validate body</a>" % 
                            validators[media_type] % self.red.response.uri)
         return options
 
-    def presentLinks(self, name, base, links, titles):
-        if not links: return []
+    def presentLinks(self, name, link_set):
+        if not link_set: return []
+        link_list = list(link_set)
+        link_list.sort()
+        base = self.links.base or self.red.response.uri
         out = ["<h3>%s</h3>" % name]
         out.append("<ul>")
-        links = list(links)
-        links.sort()
-        for target in links:
-            title = titles.get(target, target)
+        for target in link_set:
+            title = self.links.titles.get(target, target)
             al = "?uri=%s" % quote(urljoin(base, target), safe=":;/?#@+$&,")
             out.append("<li><a href='%s' title='%s'>%s</a></li>" % (al, e(target), e(title)))
         out.append("</ul>")
@@ -264,7 +261,7 @@ class HeaderPresenter(object):
 
 
 class HTMLLinkParser(HTMLParser):
-    def __init__(self, content):
+    def __init__(self):
         self.link = set()
         self.a = set()
         self.img = set()
@@ -274,8 +271,10 @@ class HTMLLinkParser(HTMLParser):
         self.base = None
         self.count = 0
         HTMLParser.__init__(self)
+
+    def feed(self, content):
         try:
-            self.feed(content)
+            HTMLParser.feed(self, content)
         except Exception: # oh, well...
             pass
         
