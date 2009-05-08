@@ -836,7 +836,7 @@ def makeRequest(uri, method="GET", req_headers=None, body=None,
                 except IndexError:
                     return # not a full header yet
                 except IOError:
-                    raise # TODO: flag bad gzip
+                    return # TODO: flag bad gzip
             chunk = decompress.decompress(chunk) # TODO: flag bad zlib
         for processor in body_processors:
             processor(chunk)
