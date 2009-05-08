@@ -192,28 +192,27 @@ class RedWebUi(object):
                                self.red.response.uri)
                 base = links.base or self.red.response.uri
                 options.append("<span class='hidden_desc' id='link_list'>")
-                options += self.presentLinks('Scripts', base, links.scripts)
-                options += self.presentLinks('Images', base, links.imgs)
-                options += self.presentLinks('Frames', base, links.frames)
-                options += self.presentLinks('Links', base, links.links)
+                options += self.presentLinks('Head Links', base, links.link, links.titles)
+                options += self.presentLinks('Scripts', base, links.script, links.titles)
+                options += self.presentLinks('Frames', base, links.frame, links.titles)
+                options += self.presentLinks('Images', base, links.img, links.titles)
+                options += self.presentLinks('Body Links', base, links.a, links.titles)
                 options.append("</span>")
         if validators.has_key(media_type):
             options.append("<a href='%s'>validate body</a>" % 
                            validators[media_type] % self.red.response.uri)
         return options
 
-    def presentLinks(self, name, base, links):
+    def presentLinks(self, name, base, links, titles):
         if not links: return []
         out = ["<h3>%s</h3>" % name]
         out.append("<ul>")
         links = list(links)
         links.sort()
-        for l in links:
-            if "#" in l:
-                l = l[:l.index('#')]
-            if not l: continue
-            al = "?uri=%s" % quote(urljoin(base, l), safe=":;/?#@+$&,")
-            out.append("<li><a href='%s'>%s</a></li>" % (al, e(l)))
+        for target in links:
+            title = titles.get(target, target)
+            al = "?uri=%s" % quote(urljoin(base, target), safe=":;/?#@+$&,")
+            out.append("<li><a href='%s' title='%s'>%s</a></li>" % (al, e(target), e(title)))
         out.append("</ul>")
         return out
 
@@ -266,10 +265,12 @@ class HeaderPresenter(object):
 
 class HTMLLinkParser(HTMLParser):
     def __init__(self, content):
-        self.links = set()
-        self.imgs = set()
-        self.scripts = set()
-        self.frames = set()
+        self.link = set()
+        self.a = set()
+        self.img = set()
+        self.script = set()
+        self.frame = set()
+        self.titles = {}
         self.base = None
         self.count = 0
         HTMLParser.__init__(self)
@@ -279,20 +280,27 @@ class HTMLLinkParser(HTMLParser):
             pass
         
     def handle_starttag(self, tag, attrs):
+        title = dict(attrs).get('title', None)
         if tag in ['a', 'link']: # @href
             target = dict(attrs).get('href', None)
             if not target: return
-            self.links.add(target)
-            self.count += 1
         elif tag in ['img', 'script', 'frame', 'iframe']: # @src
             target = dict(attrs).get('src', None)
+            title = dict(attrs).get('title', None)
             if not target: return
-            if tag == 'img': self.imgs.add(target)
-            elif tag == 'script': self.scripts.add(target)
-            else: self.frames.add(target)
-            self.count += 1
         elif tag == 'base':
             self.base = dict(attrs).get('href', None)
+            return
+        else:
+            return
+        if "#" in target:
+            target = target[:target.index('#')]
+        if target:
+            self.__dict__[tag].add(target)
+            self.count += 1
+            if title:
+                self.titles[target] = title
+
 
     def error(self, message):
             return
