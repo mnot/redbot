@@ -589,8 +589,8 @@ VARY_INCONSISTENT = (CACHING, BAD,
     consistently for all responses if they change based upon different aspects 
     of the request. This resource has both compressed and uncompressed variants 
     available, negotiated by the <code>Accept-Encoding</code> request header, 
-    but it sends different Vary headers for each; '%(conneg_vary)s' when the 
-    response is compressed, and '%(no_conneg_vary)s' when it is not. This can 
+    but it sends different Vary headers for each; "%(conneg_vary)s" when the 
+    response is compressed, and "%(no_conneg_vary)s" when it is not. This can 
     cause problems for downstream caches, because they cannot consistently 
     determine what the cache key for a given URI is."""
     }
