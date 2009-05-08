@@ -21,8 +21,8 @@ $(document).ready(function(){
 			}
 		};
 		$("span." + marker_class).css({"font-weight": "bold", "color": "white"});
-		$("li:not(." + marker_class + ")").fadeTo(100, 0.15);
-		$("li." + marker_class).fadeTo(50, 1.0);
+		$("li.msg:not(." + marker_class + ")").fadeTo(100, 0.15);
+		$("li.msg." + marker_class).fadeTo(50, 1.0);
 		if (tid != false) {
 			clearTimeout(tid);
 			tid = false;
@@ -37,7 +37,7 @@ $(document).ready(function(){
 		};
 		$("span." + marker_class).css({"font-weight": "normal", "color": "#ddd"});
 		tid = setTimeout(function(){
-			$("li").fadeTo(50, 1.0);
+			$("li.msg").fadeTo(50, 1.0);
 		}, 100);
 	});
 	
