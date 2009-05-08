@@ -35,6 +35,8 @@ header_file = "red_header.html"
 # validator uris for media types
 validators = {
     'text/html': "http://validator.w3.org/check?uri=%s",
+    'text/css': "http://jigsaw.w3.org/css-validator/validator?uri=%s&",
+    'application/xhtml+xml': "http://validator.w3.org/check?uri=%s",    
     'application/atom+xml': "http://feedvalidator.org/check.cgi?url=%s",
     'application/rss+xml': "http://feedvalidator.org/check.cgi?url=%s",
 }
@@ -42,6 +44,7 @@ validators = {
 viewable_types = [
     'text/plain',
     'text/html',
+    'application/xhtml+xml',
     'application/pdf',
     'image/gif',
     'image/jpeg',
@@ -56,6 +59,7 @@ viewable_types = [
 
 link_parseable_types = [
     'text/html',
+    'application/xhtml+xml',
 ]
 
 logdir = 'exceptions' # set to None to disable traceback logging
