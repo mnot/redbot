@@ -84,7 +84,6 @@ class ResourceExpertDroid(object):
         # make the primary request
         def primary_response_done(response):
             self.response = response
-            ResponseHeaderParser(self.response, self.setMessage)
             ResponseStatusChecker(self.response, self.setMessage)
             # TODO: make this into a plug-in system
             self.checkClock()
@@ -95,9 +94,9 @@ class ResourceExpertDroid(object):
             self.checkRanges()
         self.req_headers.append(('Accept-Encoding', 'gzip'))
         try:
-            makeRequest(uri, primary_response_done, status_cb=status_cb,
-                        method=self.method, req_headers=self.req_headers, 
-                        reason=self.method)
+            makeRequest(uri, method=self.method, req_headers=self.req_headers,
+                done_cb=primary_response_done, status_cb=status_cb, set_message=self.setMessage,
+                reason=self.method)
             http_client.run()
         except socket.gaierror:
             raise AssertionError, "Hostname not found."
@@ -109,7 +108,6 @@ class ResourceExpertDroid(object):
             range_end = int(len(self.response.body) * 0.75)
             if range_start == range_end: return # wow, that's a small body.
             def range_done(range_res):
-                ResponseHeaderParser(range_res)
                 if range_res.status == '206':
                     # TODO: check entity headers
                     # TODO: check content-range
@@ -130,10 +128,12 @@ class ResourceExpertDroid(object):
                 else:
                     self.setMessage('header-accept-ranges', rs.RANGE_STATUS, 
                                     range_status=range_res.status)
-            makeRequest(self.response.uri, range_done, self.status_cb, req_headers=[
+            makeRequest(self.response.uri, req_headers=[
                 ('Range', "bytes=%s-%s" % (range_start, range_end)), 
                 ('Accept-Encoding', 'gzip')
-                ], reason="Range")
+                ], 
+                done_cb=range_done, status_cb=self.status_cb, 
+                reason="Range")
 
     def checkConneg(self):
         if "gzip" in self.response.parsed_hdrs.get('content-encoding', []):
@@ -143,7 +143,6 @@ class ResourceExpertDroid(object):
                 self.setMessage('header-vary header-%s', rs.CONNEG_NO_VARY)
             def conneg_done(conneg_res):
                 # FIXME: verify that the status/body/hdrs are the same; if it's different, alert
-                ResponseHeaderParser(conneg_res)
                 conneg_vary_headers = conneg_res.parsed_hdrs.get('vary', [])
                 if 'gzip' in conneg_res.parsed_hdrs.get('content-encoding', []):
                     self.setMessage('header-vary header-content-encoding', 
@@ -155,7 +154,9 @@ class ResourceExpertDroid(object):
                     )
                 if conneg_res.parsed_hdrs.get('etag', 1) == self.response.parsed_hdrs.get('etag', 2):
                     self.setMessage('header-etag', rs.ETAG_DOESNT_CHANGE)
-            makeRequest(self.response.uri, conneg_done, self.status_cb, reason="conneg")
+            makeRequest(self.response.uri, 
+                        done_cb=conneg_done, status_cb=self.status_cb, 
+                        reason="conneg")
 
 
     def checkClock(self):
@@ -290,11 +291,13 @@ class ResourceExpertDroid(object):
             else:
                 weak_str = ""
             etag_str = '%s"%s"' % (weak_str, etag)
-            makeRequest(self.response.uri, inm_done, self.status_cb,
+            makeRequest(self.response.uri, 
                 req_headers=[
                     ('If-None-Match', etag_str),
                     ('Accept-Encoding', 'gzip')
-                ], reason="ETag validation")
+                ], 
+                done_cb=inm_done, status_cb=self.status_cb,
+                reason="ETag validation")
                 
     def checkLmValidation(self):
         if self.response.parsed_hdrs.has_key('last-modified'):
@@ -312,11 +315,13 @@ class ResourceExpertDroid(object):
                 # TODO: check entity headers
             date_str = time.strftime('%a, %d %b %Y %H:%M:%S GMT', 
                                      time.gmtime(self.response.parsed_hdrs['last-modified']))
-            makeRequest(self.response.uri, ims_done, self.status_cb, 
+            makeRequest(self.response.uri,  
                 req_headers=[
                     ('If-Modified-Since', date_str),
                     ('Accept-Encoding', 'gzip')
-                ], reason="Last-Modified validation")
+                ], 
+                done_cb=ims_done, status_cb=self.status_cb,
+                reason="Last-Modified validation")
                 
     def setMessage(self, subject, msg, **vars):
         self.messages.append((subject, msg, vars))
@@ -782,7 +787,9 @@ class Response:
         self.header_timestamp = None
 
 outstanding_requests = 0 # how many requests we have left
-def makeRequest(uri, done_cb, status_cb=None, method="GET", req_headers=None, body=None, reason=""):
+def makeRequest(uri, method="GET", req_headers=None, body=None, 
+                done_cb=None, status_cb=None, set_message=None,
+                reason=None):
     """
     Make an asynchronous HTTP request to uri, calling status_cb as it's updated and
     done_cb when it's done. Reason is used to explain what the request is in the
@@ -808,16 +815,18 @@ def makeRequest(uri, done_cb, status_cb=None, method="GET", req_headers=None, bo
             response.body += chunk
     def response_done(complete):
         global outstanding_requests
-        if status_cb:
-            status_cb("fetched %s (%s)" % (uri, reason))
         response.complete = complete
         response.body_md5 = md5_processor.digest()
-        done_cb(response)
+        ResponseHeaderParser(response, set_message)
+        if status_cb and reason:
+            status_cb("fetched %s (%s)" % (uri, reason))
+        if done_cb:
+            done_cb(response)
         outstanding_requests -= 1
         if outstanding_requests == 0:
             http_client.stop()
     c = http_client.HttpClient(response_start, response_body, response_done, timeout=connect_timeout)
-    if status_cb:
+    if status_cb and reason:
         status_cb("fetching %s (%s)" % (uri, reason))
     req_body_write, req_body_done = c.start_request(method, uri, req_headers=req_headers)
     if body != None:
