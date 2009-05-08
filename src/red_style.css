@@ -80,6 +80,11 @@ input {
 .hidden_desc {
 	display: none;
 }
+.stats {
+	text-align: center;
+	color: #aaa;
+	font-size: 0.6em;
+}
 .version {
 	padding-top: 5em;
 	text-align: center;

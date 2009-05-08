@@ -203,6 +203,7 @@ class ResourceExpertDroid(object):
         # TODO: check URI for query string, message about HTTP/1.0 if so
         # TODO: assure that there aren't any dup standard directives
         # TODO: check for spurious 'public' directive (e.g., sun.com)
+        # TODO: check for capitalisation on standard directives
         cc_dict = dict(self.response.parsed_hdrs.get('cache-control', []))
 
         # can it be stored? If not, get out of here.
@@ -797,6 +798,7 @@ class Response:
         self._gzip_header_buffer = ""
 
 outstanding_requests = 0 # how many requests we have left
+total_requests = 0 # how many we've made
 def makeRequest(uri, method="GET", req_headers=None, body=None, 
                 done_cb=None, status_cb=None, set_message=None,
                 body_processors=[], reason=None):
@@ -805,13 +807,14 @@ def makeRequest(uri, method="GET", req_headers=None, body=None,
     done_cb when it's done. Reason is used to explain what the request is in the
     status callback.
     """
-    global outstanding_requests
+    global outstanding_requests, total_requests
     if req_headers == None:
         req_headers = []
     response = Response(uri)
     md5_processor = hashlib.md5()
     decompress = zlib.decompressobj(-zlib.MAX_WBITS)
     outstanding_requests += 1
+    total_requests += 1
     req_headers.append(("User-Agent", "RED/%s (http://redbot.org/about)" % __version__))
     def response_start(version, status, phrase, res_headers):
         response.header_timestamp = time.time()

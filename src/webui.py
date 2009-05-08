@@ -70,15 +70,14 @@ logdir = 'exceptions' # set to None to disable traceback logging
 import cgitb; cgitb.enable(logdir=logdir)
 import sys
 import cgi
-import gzip
-import StringIO
+import time
 import textwrap
 from HTMLParser import HTMLParser
 from urlparse import urljoin
 from urllib import quote
 from cgi import escape as e
 
-from red import ResourceExpertDroid, __version__
+import red
 import red_speak as rs
 import red_header
 
@@ -97,6 +96,8 @@ template = """\
 </p>
 
 %(messages)s
+
+<!-- p class="stats">%(stats)s</p -->
 
 """
 
@@ -132,15 +133,17 @@ class RedWebUi(object):
         sys.stdout.flush()
         self.links = HTMLLinkParser()
         if uri:
+            start = time.time()
             try:
-                self.red = ResourceExpertDroid(uri, 
+                self.red = red.ResourceExpertDroid(uri, 
                     status_cb=self.updateStatus, body_processors=[self.links.feed])
                 self.updateStatus('Done.')
+                self.elapsed = time.time() - start
                 self.header_presenter = HeaderPresenter(self.red)
                 print self.presentResults()
             except AssertionError, why:
                 print error_template % why
-        print red_footer % {'version': __version__}
+        print red_footer % {'version': red.__version__}
         sys.stdout.flush()            
     
     def presentResults(self):
@@ -149,6 +152,10 @@ class RedWebUi(object):
             'response': self.presentResponse(),
             'options': "\n".join(self.presentOptions()),
             'messages': "\n".join([self.presentCategory(cat) for cat in msg_categories]),
+            'stats':  "that took %(elapsed)2.2f seconds and %(reqs)i request(s)." % {
+                'elapsed': self.elapsed, 
+                'reqs': red.total_requests                                                                           
+                }
         }
         return template % result_strings
 
