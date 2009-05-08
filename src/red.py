@@ -63,6 +63,7 @@ max_clock_skew = 5  # seconds
 connect_timeout = 5 # seconds
 
 # TODO: resource limits
+# TODO: use sets where appropriate (e.g., Vary, Accept-Encoding)
 # TODO: special case for content-* headers and HEAD responses, partial responses.
 
 class ResourceExpertDroid(object):
@@ -161,19 +162,19 @@ class ResourceExpertDroid(object):
             vary_headers = self.response.parsed_hdrs.get('vary', [])
             if (not "accept-encoding" in vary_headers) and (not "*" in vary_headers):
                 self.setMessage('header-vary header-%s', rs.CONNEG_NO_VARY)
-            def conneg_done(conneg_res):
+            def conneg_done(no_conneg_res):
                 # FIXME: verify that the status/body/hdrs are the same; if it's different, alert
-                conneg_vary_headers = conneg_res.parsed_hdrs.get('vary', [])
-                if 'gzip' in conneg_res.parsed_hdrs.get('content-encoding', []):
+                no_conneg_vary_headers = no_conneg_res.parsed_hdrs.get('vary', [])
+                if 'gzip' in no_conneg_res.parsed_hdrs.get('content-encoding', []):
                     self.setMessage('header-vary header-content-encoding', 
                                     rs.CONNEG_GZIP_WITHOUT_ASKING)
-                if conneg_vary_headers != vary_headers:
+                if no_conneg_vary_headers != vary_headers:
                     self.setMessage('header-vary', rs.VARY_INCONSISTENT,
-                        conneg_vary=", ".join(conneg_vary_headers),
-                        no_conneg_vary=", ".join(vary_headers)
+                        conneg_vary=", ".join(vary_headers),
+                        no_conneg_vary=", ".join(no_conneg_vary_headers)
                     )
-                if conneg_res.parsed_hdrs.get('etag', 1) == self.response.parsed_hdrs.get('etag', 2):
-                    self.setMessage('header-etag', rs.ETAG_DOESNT_CHANGE)
+                if no_conneg_res.parsed_hdrs.get('etag', 1) == self.response.parsed_hdrs.get('etag', 2):
+                    self.setMessage('header-etag', rs.ETAG_DOESNT_CHANGE) # TODO: weakness?
             makeRequest(self.response.uri, 
                         done_cb=conneg_done, status_cb=self.status_cb, 
                         reason="conneg")
