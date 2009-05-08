@@ -818,6 +818,7 @@ def makeRequest(uri, method="GET", req_headers=None, body=None,
         response.complete = complete
         response.body_md5 = md5_processor.digest()
         ResponseHeaderParser(response, set_message)
+        # TODO: move status parsing, other checks here too
         if status_cb and reason:
             status_cb("fetched %s (%s)" % (uri, reason))
         if done_cb:
