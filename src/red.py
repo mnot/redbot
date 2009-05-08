@@ -459,6 +459,7 @@ class ResponseHeaderParser(object):
     
     @GenericHeaderSyntax
     def allow(self, name, values):
+        # TODO: check syntax
         return values
 
     @GenericHeaderSyntax
@@ -488,10 +489,12 @@ class ResponseHeaderParser(object):
         return values[-1]
         
     def content_disposition(self, name, values):
+        # TODO: check syntax, parse
         pass
         
     @GenericHeaderSyntax
     def content_encoding(self, name, values):
+        # TODO: check syntax, values?
         values = [v.lower() for v in values]
         return values
         
@@ -503,14 +506,17 @@ class ResponseHeaderParser(object):
 
     @SingleFieldValue
     def content_md5(self, name, values):
+        # TODO: check syntax
         return values[-1]
 
     def content_range(self, name, values):
+        # TODO: check syntax, values?
         pass
 
     @GenericHeaderSyntax
     @SingleFieldValue
     def content_type(self, name, values):
+        # TODO: check syntax
         try:
             media_type, params = values[-1].split(";", 1)
         except ValueError:
@@ -555,6 +561,7 @@ class ResponseHeaderParser(object):
 
     @GenericHeaderSyntax
     def keep_alive(self, name, values):
+        # TODO: check syntax, values?
         values = [v.lower() for v in values]
         return values
         
@@ -575,6 +582,7 @@ class ResponseHeaderParser(object):
 
     @GenericHeaderSyntax
     def link(self, name, values):
+        # TODO: check syntax, values?
         pass
 
     @CheckFieldSyntax(URI)
@@ -588,10 +596,12 @@ class ResponseHeaderParser(object):
 
     @GenericHeaderSyntax
     def nnCoection(self, name, values):
+        # TODO: flag this, others?
         pass
         
     @GenericHeaderSyntax
     def p3p(self, name, values):
+        # TODO: check synta, values
         pass
                 
     @GenericHeaderSyntax
@@ -607,9 +617,11 @@ class ResponseHeaderParser(object):
     @GenericHeaderSyntax
     @SingleFieldValue
     def retry_after(self, name, values):
+        # TODO: check syntax
         pass
 
     def server(self, name, values):
+        # TODO: check syntax, flag servers?
         pass
         
     @CheckFieldSyntax(URI)
@@ -618,15 +630,18 @@ class ResponseHeaderParser(object):
         return values[-1]
         
     def set_cookie(self, name, values):
+        # TODO: check syntax, values?
         pass
 
     @GenericHeaderSyntax
     def transfer_encoding(self, name, values):
+        # TODO: check syntax, values?
         values = [v.lower() for v in values]
         return values
 
     @GenericHeaderSyntax
     def vary(self, name, values):
+        # TODO: check syntax
         values = [v.lower() for v in values]
         values.sort()
         if "*" in values:
@@ -642,6 +657,7 @@ class ResponseHeaderParser(object):
         
     @GenericHeaderSyntax
     def warning(self, name, values):
+        # TODO: check syntax, values?
         pass
 
     @GenericHeaderSyntax
@@ -652,6 +668,7 @@ class ResponseHeaderParser(object):
 
     @GenericHeaderSyntax
     def x_pad(self, name, values):
+        # TODO: message
         pass
     
 class ResponseStatusChecker:
