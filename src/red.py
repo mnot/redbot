@@ -59,6 +59,7 @@ max_uri = 8 * 1024
 max_hdr_size = 4 * 1024
 max_ttl_hdr = 20 * 1024
 max_clock_skew = 5  # seconds
+connect_timeout = 5 # seconds
 
 # TODO: resource limits
 # TODO: special case for content-* headers and HEAD responses, partial responses.
@@ -813,7 +814,7 @@ def makeRequest(uri, done_cb, status_cb=None, method="GET", req_headers=None, bo
         outstanding_requests -= 1
         if outstanding_requests == 0:
             http_client.stop()
-    c = http_client.HttpClient(response_start, response_body, response_done, timeout=4)
+    c = http_client.HttpClient(response_start, response_body, response_done, timeout=connect_timeout)
     if status_cb:
         status_cb("fetching %s (%s)" % (uri, reason))
     req_body_write, req_body_done = c.start_request(method, uri, req_headers=req_headers)
