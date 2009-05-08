@@ -445,6 +445,7 @@ class ResponseHeaderParser(object):
 
     @GenericHeaderSyntax
     @SingleFieldValue
+    @CheckFieldSyntax(DIGITS)
     def age(self, name, values):
         try: 
             age = int(values[-1])
