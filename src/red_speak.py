@@ -65,7 +65,7 @@ SERVER_URI_TOO_LONG = (GENERAL, BAD,
     'en': "The server won't accept a URI this long (%(uri_len)s characters)."
     },
     {
-    'en': """The %(status)s status code means that the server can't or won't accept
+    'en': """The %(enc_status)s status code means that the server can't or won't accept
     a request-uri this long."""
     }
 )
@@ -194,7 +194,7 @@ RANGE_STATUS = (TESTS, INFO,
     {
     'en': """This resource advertises support for ranged requests; that is, it allows
     clients to specify that only part of the response should be sent. RED has tested
-    this by requesting part of this response, but a %(range_status)s 
+    this by requesting part of this response, but a %(enc_range_status)s 
     response code was returned, which RED was not expecting."""
     }
 )
@@ -438,7 +438,7 @@ INM_STATUS = (CACHING, INFO,
     'en': """HTTP allows clients to make conditional requests to see if a copy 
     that they hold is still valid. Since this response has an <code>ETag</code>, 
     clients should be able to use an <code>If-None-Match</code> request header 
-    for validation. RED has done this, but the response had a %(inm_status)s 
+    for validation. RED has done this, but the response had a %(enc_inm_status)s 
     status code, so RED can't tell whether or not <code>ETag</code> validation 
     is supported."""
     }
@@ -521,7 +521,7 @@ IMS_STATUS = (CACHING, INFO,
     that they hold is still valid. Since this response has a 
     <code>Last-Modified</code> header, clients should be able to use an 
     <code>If-Modified-Since</code> request header for validation.<p>
-    RED has done this, but the response had a %(ims_status)s status code, so 
+    RED has done this, but the response had a %(enc_ims_status)s status code, so 
     RED can't tell whether or not <code>Last-Modified</code> validation is 
     supported."""
     }
@@ -771,7 +771,7 @@ REDIRECT_WITHOUT_LOCATION = (GENERAL, BAD,
      'en': "Redirects need to have a Location header."
     },
     {
-     'en': """The %(status)s status code redirects users to another URI. The
+     'en': """The %(enc_status)s status code redirects users to another URI. The
      <code>Location</code> header is used to convey this URI, but a valid one
      isn't present in this response."""
     }

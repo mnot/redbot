@@ -131,7 +131,8 @@ class ResourceExpertDroid(object):
                     self.setMessage('header-accept-ranges', rs.RANGE_FULL)
                 else:
                     self.setMessage('header-accept-ranges', rs.RANGE_STATUS, 
-                                    range_status=range_res.status)
+                                    range_status=range_res.status,
+                                    enc_range_status=e(range_res.status))
             makeRequest(self.response.uri, req_headers=[
                 ('Range', "bytes=%s-%s" % (range_start, range_end)), 
                 ('Accept-Encoding', 'gzip')
@@ -304,7 +305,8 @@ class ResourceExpertDroid(object):
                         self.setMessage('header-etag', rs.INM_UNKNOWN)
                 else:
                     self.setMessage('header-etag', rs.INM_STATUS, 
-                                    inm_status=inm_response.status)
+                                    inm_status=inm_response.status,
+                                    enc_inm_status=e(inm_response.status))
                 # TODO: check entity headers
             weak, etag = self.response.parsed_hdrs['etag']
             if weak:
@@ -333,7 +335,8 @@ class ResourceExpertDroid(object):
                         self.setMessage('header-last-modified', rs.IMS_UNKNOWN)
                 else:
                     self.setMessage('header-last-modified', rs.IMS_STATUS, 
-                                    ims_status=ims_response.status)
+                                    ims_status=ims_response.status,
+                                    enc_ims_status=e(ims_response.status))
                 # TODO: check entity headers
             date_str = time.strftime('%a, %d %b %Y %H:%M:%S GMT', 
                                      time.gmtime(self.response.parsed_hdrs['last-modified']))
@@ -666,7 +669,10 @@ class ResponseStatusChecker:
     def setMessage(self, name, msg, **vars):
         if self._setMessage:
             ident = 'status %s' % name
-            self._setMessage(ident, msg, status=self.response.status, **vars)
+            self._setMessage(ident, msg, 
+                             status=self.response.status,
+                             enc_status=e(self.response.status), 
+                             **vars)
 
     def status100(self):        # Continue
         pass # TODO: check to make sure expectation sent
