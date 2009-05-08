@@ -68,7 +68,7 @@ connect_timeout = 5 # seconds
 
 class ResourceExpertDroid(object):
     def __init__(self, uri, method="GET", req_headers=None, 
-                 body_processors=[], status_cb=None):
+                 body_processors=None, status_cb=None):
         self.status_cb = status_cb     # tells caller how we're doing
         self.method = method
         if req_headers != None:
@@ -826,7 +826,7 @@ outstanding_requests = 0 # how many requests we have left
 total_requests = 0 # how many we've made
 def makeRequest(uri, method="GET", req_headers=None, body=None, 
                 done_cb=None, status_cb=None, set_message=None,
-                body_processors=[], reason=None):
+                body_processors=None, reason=None):
     """
     Make an asynchronous HTTP request to uri, calling status_cb as it's updated and
     done_cb when it's done. Reason is used to explain what the request is in the
@@ -835,6 +835,8 @@ def makeRequest(uri, method="GET", req_headers=None, body=None,
     global outstanding_requests, total_requests
     if req_headers == None:
         req_headers = []
+    if body_processors == None:
+        body_processors = []
     response = Response(uri)
     md5_processor = hashlib.md5()
     decompress = zlib.decompressobj(-zlib.MAX_WBITS)
