@@ -837,17 +837,23 @@ def makeRequest(uri, method="GET", req_headers=None, body=None,
         if not response.complete:
             response.body += chunk # TODO: get rid of this
         # TODO: deflate support
-        if 'gzip' in response.parsed_hdrs.get('content-encoding', []):
-            if not response._in_gzip_body:
-                response._gzip_header_buffer += chunk
-                try:
-                    chunk = read_gzip_header(response._gzip_header_buffer)
-                    response._in_gzip_body = True
-                except IndexError:
-                    return # not a full header yet
-                except IOError:
-                    return # TODO: flag bad gzip
-            chunk = decompress.decompress(chunk) # TODO: flag bad zlib
+        content_codings = response.parsed_hdrs.get('content-encoding', [])
+        content_codings.reverse()
+        for coding in content_codings:
+            # TODO: deflate support
+            if coding == 'gzip':
+                if not response._in_gzip_body:
+                    response._gzip_header_buffer += chunk
+                    try:
+                        chunk = read_gzip_header(response._gzip_header_buffer)
+                        response._in_gzip_body = True
+                    except IndexError:
+                        return # not a full header yet
+                    except IOError:
+                        return # TODO: flag bad gzip
+                chunk = decompress.decompress(chunk) # TODO: flag bad zlib
+            else:
+                pass # TODO: flag unasked-for coding
         for processor in body_processors:
             processor(chunk)
                 
