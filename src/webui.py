@@ -271,7 +271,7 @@ class HTMLLinkParser(HTMLParser):
         HTMLParser.__init__(self)
         try:
             self.feed(content)
-        except AssertionError: # oh, well...
+        except Exception: # oh, well...
             pass
         
     def handle_starttag(self, tag, attrs):
