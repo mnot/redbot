@@ -875,7 +875,7 @@ def makeRequest(uri, method="GET", req_headers=None, body=None,
             else:
                 pass # TODO: flag unasked-for coding
         for processor in body_processors:
-            processor(chunk)
+            processor(response, chunk)
                 
     def response_done(complete):
         global outstanding_requests

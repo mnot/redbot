@@ -99,6 +99,8 @@ template = """\
 
 <!-- p class="stats">%(stats)s</p -->
 
+<div class='hidden_desc' id='link_list'>%(links)s</div>
+
 """
 
 red_footer = """\
@@ -112,6 +114,7 @@ red_footer = """\
 title="drag me to your toolbar to use RED any time.">red</a> bookmarklet 
 </p>
 </div>
+
 
 <div id="long_mesg"/>
 
@@ -152,6 +155,7 @@ class RedWebUi(object):
             'response': self.presentResponse(),
             'options': "\n".join(self.presentOptions()),
             'messages': "\n".join([self.presentCategory(cat) for cat in msg_categories]),
+            'links': "\n".join(self.presentLinks()),
             'stats':  "that took %(elapsed)2.2f seconds and %(reqs)i request(s)." % {
                 'elapsed': self.elapsed, 
                 'reqs': red.total_requests                                                                           
@@ -194,30 +198,26 @@ class RedWebUi(object):
             if self.links.count > 0:
                 options.append("<a href='#' class='link_view' title='%s'>links</a>" %
                                self.red.response.uri)
-                options.append("<span class='hidden_desc' id='link_list'>")
-                options += self.presentLinks('Head Links', self.links.link)
-                options += self.presentLinks('Scripts', self.links.script)
-                options += self.presentLinks('Frames', self.links.frame)
-                options += self.presentLinks('Images', self.links.img)
-                options += self.presentLinks('Body Links', self.links.a)
-                options.append("</span>")
         if validators.has_key(media_type):
             options.append("<a href='%s'>validate body</a>" % 
                            validators[media_type] % self.red.response.uri)
         return options
 
-    def presentLinks(self, name, link_set):
-        if not link_set: return []
-        link_list = list(link_set)
-        link_list.sort()
+    def presentLinks(self):
         base = self.links.base or self.red.response.uri
-        out = ["<h3>%s</h3>" % name]
-        out.append("<ul>")
-        for target in link_set:
-            title = self.links.titles.get(target, target)
-            al = "?uri=%s" % quote(urljoin(base, target), safe=":;/?#@+$&,")
-            out.append("<li><a href='%s' title='%s'>%s</a></li>" % (al, e(target), e(title)))
-        out.append("</ul>")
+        out = []
+        for tag, name in self.links.link_order:
+            attr, link_set = self.links.links[tag]
+            if len(link_set) > 0:
+                link_list = list(link_set)
+                link_list.sort()
+                out.append("<h3>%s</h3>" % name)
+                out.append("<ul>")
+                for target in link_set:
+                    title = self.links.titles.get(target, target)
+                    al = "?uri=%s" % quote(urljoin(base, target), safe=":;/?#@+$&,")
+                    out.append("<li><a href='%s' title='%s'>%s</a></li>" % (al, e(target), e(title)))
+                out.append("</ul>")
         return out
 
     def updateStatus(self, message):
@@ -269,44 +269,46 @@ class HeaderPresenter(object):
 
 class HTMLLinkParser(HTMLParser):
     def __init__(self):
-        self.link = set()
-        self.a = set()
-        self.img = set()
-        self.script = set()
-        self.frame = set()
+        self.link_order = (
+            ('link', 'Head Links'),
+            ('a', 'Body Links'),
+            ('img', 'Images'),
+            ('script', 'Scripts'),
+            ('frame', 'Frames'),
+        )
+        self.links = {
+            'link': ('href', set()),
+            'a': ('href', set()),
+            'img': ('src', set()),
+            'script': ('src', set()),
+            'frame': ('src', set()),             
+        }
         self.titles = {}
         self.base = None
         self.count = 0
         HTMLParser.__init__(self)
 
-    def feed(self, content):
-        try:
-            HTMLParser.feed(self, content)
-        except Exception: # oh, well...
-            pass
+    def feed(self, response, chunk):
+        if response.parsed_hdrs.get('content-type', [None])[0] in link_parseable_types:
+            try:
+                HTMLParser.feed(self, chunk)
+            except Exception: # oh, well...
+                pass
         
     def handle_starttag(self, tag, attrs):
-        title = dict(attrs).get('title', None)
-        if tag in ['a', 'link']: # @href
-            target = dict(attrs).get('href', None)
-            if not target: return
-        elif tag in ['img', 'script', 'frame', 'iframe']: # @src
-            target = dict(attrs).get('src', None)
-            title = dict(attrs).get('title', None)
-            if not target: return
+        title = dict(attrs).get('title', '').strip()
+        if tag in self.links.keys():
+            target = dict(attrs).get(self.links[tag][0])
+            if target:
+                self.count += 1
+                if "#" in target:
+                    target = target[:target.index('#')]
+                self.links[tag][1].add(target)
+                if title:
+                    self.titles[target] = title
         elif tag == 'base':
             self.base = dict(attrs).get('href', None)
             return
-        else:
-            return
-        if "#" in target:
-            target = target[:target.index('#')]
-        if target:
-            self.__dict__[tag].add(target)
-            self.count += 1
-            if title:
-                self.titles[target] = title
-
 
     def error(self, message):
             return
