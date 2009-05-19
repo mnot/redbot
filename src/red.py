@@ -63,7 +63,6 @@ max_clock_skew = 5  # seconds
 connect_timeout = 5 # seconds
 
 # TODO: resource limits
-# TODO: use sets where appropriate (e.g., Vary, Accept-Encoding)
 # TODO: special case for content-* headers and HEAD responses, partial responses.
 
 class ResourceExpertDroid(object):
@@ -465,7 +464,7 @@ class ResponseHeaderParser(object):
     @GenericHeaderSyntax
     @CheckFieldSyntax(PARAMETER)
     def cache_control(self, name, values):
-        directives = []
+        directives = set()
         for directive in values:
             try:
                 attr, value = directive.split("=", 1)
@@ -480,7 +479,7 @@ class ResponseHeaderParser(object):
                 except ValueError:
                     self.setMessage(name, rs.BAD_CC_SYNTAX, bad_cc_attr=attr)
                     continue
-            directives.append((attr, value))
+            directives.add((attr, value))
         return directives
 
     @SingleFieldValue
@@ -562,7 +561,7 @@ class ResponseHeaderParser(object):
     @GenericHeaderSyntax
     def keep_alive(self, name, values):
         # TODO: check syntax, values?
-        values = [v.lower() for v in values]
+        values = set([v.lower() for v in values])
         return values
         
     @SingleFieldValue
@@ -606,7 +605,7 @@ class ResponseHeaderParser(object):
                 
     @GenericHeaderSyntax
     def pragma(self, name, values):
-        values = [v.lower() for v in values]
+        values = set([v.lower() for v in values])
         if "no-cache" in values:
             self.setMessage(name, rs.PRAGMA_NO_CACHE)
         others = [True for v in values if v != "no-cache"]
@@ -642,8 +641,7 @@ class ResponseHeaderParser(object):
     @GenericHeaderSyntax
     def vary(self, name, values):
         # TODO: check syntax
-        values = [v.lower() for v in values]
-        values.sort()
+        values = set([v.lower() for v in values])
         if "*" in values:
             self.setMessage(name, rs.VARY_ASTERISK)
         elif 'user-agent' in values:
