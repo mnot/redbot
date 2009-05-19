@@ -642,7 +642,9 @@ class ResponseHeaderParser(object):
     def vary(self, name, values):
         # TODO: check syntax
         values = set([v.lower() for v in values])
-        if "*" in values:
+        if len(values) > 3:
+            self.setMessage(name, rs.VARY_COMPLEX)
+        elif "*" in values:
             self.setMessage(name, rs.VARY_ASTERISK)
         elif 'user-agent' in values:
             self.setMessage(name, rs.VARY_USER_AGENT)

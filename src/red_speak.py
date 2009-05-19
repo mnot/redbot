@@ -596,6 +596,18 @@ VARY_INCONSISTENT = (CACHING, BAD,
     }
 )
 
+VARY_COMPLEX = (CACHING, WARN,
+    {
+     'en': "This resource varies in %(vary_count)i ways."
+    },
+    {
+     'en': """The <code>Vary</code> mechanism allows a resource to describe the
+     dimensions that its responses vary, or change, over; each listed header
+     is another dimension.<p>Varying by too many dimensions makes using this
+     information impractical."""
+    }
+)
+
 ETAG_DOESNT_CHANGE = (GENERAL, BAD,
     {
     'en': "The ETag doesn't change between representations."
