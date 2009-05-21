@@ -45,7 +45,7 @@ TOKEN = r'(?:[^\(\)<>@,;:\\"/\[\]\?={} \t]+?)'
 STRING = r'(?:[^,]+)'
 QUOTED_STRING = r'(?:"(?:\\"|[^"])*")'
 PARAMETER = r'(?:%(TOKEN)s(?:=(?:%(TOKEN)s|%(QUOTED_STRING)s))?)' % locals()
-STRPARAM = r'(?:\S+(?:\s*;\s*%(PARAMETER)s)*)' % locals()
+TOK_PARAM = r'(?:%(TOKEN)s(?:\s*;\s*%(PARAMETER)s)*)' % locals()
 PRODUCT = r'(?:%(TOKEN)s(?:/%(TOKEN)s)?)' % locals()
 COMMENT = r'(?:\((?:[^\(\)]|\\\(|\\\))*\))' # does not handle nesting
 URI = r'(?:(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?)'  # RFC3986
@@ -513,9 +513,9 @@ class ResponseHeaderParser(object):
         pass
 
     @GenericHeaderSyntax
+    @CheckFieldSyntax(r'(?:%(TOKEN)s/%(TOKEN)s(?:\s*;\s*%(PARAMETER)s)*)' % globals())
     @SingleFieldValue
     def content_type(self, name, values):
-        # TODO: check syntax
         try:
             media_type, params = values[-1].split(";", 1)
         except ValueError:
@@ -633,8 +633,9 @@ class ResponseHeaderParser(object):
         pass
 
     @GenericHeaderSyntax
+    @CheckFieldSyntax(TOK_PARAM)
     def transfer_encoding(self, name, values):
-        # TODO: check syntax, values?
+        # TODO: check values?
         values = [v.lower() for v in values]
         return values
 
