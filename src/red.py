@@ -386,7 +386,7 @@ def CheckFieldSyntax(exp):
     Decorator to check each header field-value to conform to the regex exp.
     """
     def wrap(meth):
-        def new(self, name, values):
+        def new(self, name, values): # TODO: allow pointer to syntax definition
             for value in values:
                 if not re.match(r"^\s*(?:%s)?\s*$" % exp, value):
                     self.setMessage(name, rs.BAD_SYNTAX)
