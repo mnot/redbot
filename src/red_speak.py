@@ -50,7 +50,7 @@ BAD = 'bad'
 INFO = 'info'
 WARN = 'warning'
 
-URI_TOO_LONG = (GENERAL, BAD,
+URI_TOO_LONG = (GENERAL, WARN,
     {
     'en': "The URI is very long (%(uri_len)s characters)."
     },
@@ -105,7 +105,7 @@ HEADER_BLOCK_TOO_LARGE = (GENERAL, BAD,
     }
 )
 
-HEADER_TOO_LARGE = (GENERAL, BAD,
+HEADER_TOO_LARGE = (GENERAL, WARN,
     {
     'en': "The %(header_name)s header is very large (%(header_size)s)."
     },
@@ -177,7 +177,7 @@ RANGE_INCORRECT = (TESTS, BAD,
     }
 )
 
-RANGE_FULL = (TESTS, BAD,
+RANGE_FULL = (TESTS, WARN,
     {
     'en': "A ranged request returned the full rather than partial content."
     },
@@ -406,7 +406,7 @@ INM_304 = (CACHING, GOOD,
     }
 )
 
-INM_FULL = (CACHING, BAD,
+INM_FULL = (CACHING, WARN,
     {
     'en': "An If-None-Match conditional request returned the full content unchanged."
     },
@@ -486,7 +486,7 @@ IMS_304 = (CACHING, GOOD,
     }
 )
 
-IMS_FULL = (CACHING, BAD,
+IMS_FULL = (CACHING, WARN,
     {
     'en': "An If-Modified-Since conditional request returned the full content unchanged."
     },
@@ -553,7 +553,7 @@ PRAGMA_NO_CACHE = (CACHING, BAD,
     }
 )
 
-PRAGMA_OTHER = (GENERAL, BAD,
+PRAGMA_OTHER = (GENERAL, WARN,
     {
     'en': """Pragma only defines the 'no-cache' request directive, and is 
     deprecated for other uses."""
@@ -564,7 +564,7 @@ PRAGMA_OTHER = (GENERAL, BAD,
     }
 )
 
-VARY_ASTERISK = (CACHING, BAD,
+VARY_ASTERISK = (CACHING, WARN,
     {
     'en': "Vary: * effectively makes responses for this URI uncacheable."
     },

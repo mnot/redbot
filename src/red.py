@@ -118,8 +118,8 @@ class ResourceExpertDroid(object):
                 if range_res.status == '206':
                     # TODO: check entity headers
                     # TODO: check content-range
-                    if ('gzip' in self.response.parsed_hdrs.get('accept-ranges', [])) == \
-                       ('gzip' not in range_res.parsed_hdrs.get('accept-ranges', [])):
+                    if ('gzip' in self.response.parsed_hdrs.get('content-encoding', [])) == \
+                       ('gzip' not in range_res.parsed_hdrs.get('content-encoding', [])):
                         self.setMessage('header-accept-ranges header-content-encoding', 
                                         rs.RANGE_NEG_MISMATCH)
                         return
