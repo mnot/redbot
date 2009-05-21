@@ -615,9 +615,9 @@ class ResponseHeaderParser(object):
         return values
                 
     @GenericHeaderSyntax
+    @CheckFieldSyntax(r"(?:%s|%s)" % (DIGITS, DATE))
     @SingleFieldValue
     def retry_after(self, name, values):
-        # TODO: check syntax
         pass
 
     def server(self, name, values):
