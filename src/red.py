@@ -566,7 +566,6 @@ class ResponseHeaderParser(object):
             return (False, unquotestring(instr))
 
     @GenericHeaderSyntax
-    @CheckFieldSyntax(TOKEN)
     def keep_alive(self, name, values):
         # TODO: check values?
         values = set([v.lower() for v in values])
