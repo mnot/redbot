@@ -505,7 +505,6 @@ class ResponseHeaderParser(object):
 
     @SingleFieldValue
     def content_md5(self, name, values):
-        # TODO: check syntax
         return values[-1]
 
     def content_range(self, name, values):
