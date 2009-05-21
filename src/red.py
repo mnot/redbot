@@ -857,7 +857,6 @@ def makeRequest(uri, method="GET", req_headers=None, body=None,
         response.body_len += len(chunk)
         if not response.complete:
             response.body += chunk # TODO: get rid of this
-        # TODO: deflate support
         content_codings = response.parsed_hdrs.get('content-encoding', [])
         content_codings.reverse()
         for coding in content_codings:
