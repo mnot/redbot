@@ -209,7 +209,10 @@ RANGE_NEG_MISMATCH = (TESTS, BAD,
     },
     {
      'en': """This resource supports ranged requests and also supports negotiation for
-     gzip compression, but doesn't support compression for both full and partial responses."""
+     gzip compression, but doesn't support compression for both full and partial responses.<p>
+     This can cause problems for clients when they compare the partial and full responses, 
+     since the partial response is expressed as a byte range, and compression changes the 
+     bytes."""
     }
 )
 
