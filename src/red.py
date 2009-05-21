@@ -639,8 +639,8 @@ class ResponseHeaderParser(object):
         return values
 
     @GenericHeaderSyntax
+    @CheckFieldSyntax(TOKEN)
     def vary(self, name, values):
-        # TODO: check syntax
         values = set([v.lower() for v in values])
         if len(values) > 3:
             self.setMessage(name, rs.VARY_COMPLEX, vary_count=len(values))
