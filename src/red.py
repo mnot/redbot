@@ -492,8 +492,8 @@ class ResponseHeaderParser(object):
         pass
         
     @GenericHeaderSyntax
+    @CheckFieldSyntax(TOKEN)
     def content_encoding(self, name, values):
-        # TODO: check syntax, values?
         values = [v.lower() for v in values]
         return values
         
