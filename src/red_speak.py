@@ -168,8 +168,12 @@ RANGE_INCORRECT = (TESTS, BAD,
     of this response, but the partial response doesn't correspond with the full 
     response retrieved at the same time. This could indicate that the range 
     implementation isn't working properly.
-    <p>RED expected: %(range_expected)s
-    <p>RED received: %(range_received)s"""
+    <p>RED sent<br/>
+    <code>Range: %(range)s</code>
+    <p>RED expected %(range_expected_bytes)s bytes:<br/> 
+    <code>%(range_expected)s</code>
+    <p>RED received %(range_received_bytes)s bytes:<br/> 
+    <code>%(range_received)s</code>"""
     }
 )
 

@@ -33,6 +33,7 @@ import socket
 import base64
 import hashlib
 import zlib
+import random
 from email.utils import parsedate as lib_parsedate
 from cgi import escape as e
 
@@ -106,9 +107,12 @@ class ResourceExpertDroid(object):
 
     def checkRanges(self):
         if 'bytes' in self.response.parsed_hdrs.get('accept-ranges', []):
-            range_status = None
-            range_start = int(len(self.response.body) * 0.5)
-            range_end = int(len(self.response.body) * 0.75)
+            if len(self.response.body_sample) == 0: return
+            sample_num = random.randint(0, len(self.response.body_sample) - 1)
+            sample_len = min(96, len(self.response.body_sample[sample_num][1]))
+            range_start = self.response.body_sample[sample_num][0]
+            range_end = range_start + sample_len
+            range_target = self.response.body_sample[sample_num][1][:sample_len + 1]
             if range_start == range_end: return # wow, that's a small body.
             def range_done(range_res):
                 if range_res.status == '206':
@@ -119,13 +123,17 @@ class ResourceExpertDroid(object):
                         self.setMessage('header-accept-ranges header-content-encoding', 
                                         rs.RANGE_NEG_MISMATCH)
                         return
-                    if range_res.body == self.response.body[range_start:range_end+1]:
+                    if range_res.body == range_target:
                         self.setMessage('header-accept-ranges', rs.RANGE_CORRECT)
                     else:
                         self.setMessage('header-accept-ranges', rs.RANGE_INCORRECT,
-                            range_expected=e(self.response.body[range_start:range_end+1]),
-                            range_received=e(range_res.body)
+                            range="bytes=%s-%s" % (range_start, range_end),
+                            range_expected=e(range_target),
+                            range_expected_bytes = len(range_target),
+                            range_received=e(range_res.body),
+                            range_received_bytes = range_res.body_len
                         ) 
+                # TODO: address 416 directly
                 elif range_res.status == self.response.status:
                     self.setMessage('header-accept-ranges', rs.RANGE_FULL)
                 else:
@@ -814,10 +822,10 @@ class Response:
         self.phrase = ""
         self.headers = []
         self.parsed_hdrs = {}
-        self.body = ""
+        self.body = "" # note: only partial resposnes get this populated
         self.body_len = 0
         self.body_md5 = None
-        self.body_sample = ""
+        self.body_sample = [] # array of (offset, chunk), max size 4.
         self.complete = False
         self.header_timestamp = None
         self._in_gzip_body = False
@@ -854,9 +862,14 @@ def makeRequest(uri, method="GET", req_headers=None, body=None,
 
     def response_body(chunk):
         md5_processor.update(chunk)
-        response.body_len += len(chunk)
         if not response.complete:
-            response.body += chunk # TODO: get rid of this
+            if response.status == "206":
+                # Store only partial responses completely, for error reporting
+                response.body += chunk
+            response.body_sample.append((response.body_len, chunk))
+            if len(response.body_sample) > 4:
+                response.body_sample.pop(0)
+        response.body_len += len(chunk)
         content_codings = response.parsed_hdrs.get('content-encoding', [])
         content_codings.reverse()
         for coding in content_codings:
