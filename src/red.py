@@ -457,8 +457,8 @@ class ResponseHeaderParser(object):
         return age
     
     @GenericHeaderSyntax
+    @CheckFieldSyntax(TOKEN)
     def allow(self, name, values):
-        # TODO: check syntax
         return values
 
     @GenericHeaderSyntax
