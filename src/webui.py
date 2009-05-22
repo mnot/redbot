@@ -86,6 +86,8 @@ msg_categories = [
     rs.GENERAL, rs.CONNECTION, rs.CACHING, rs.TESTS
 ]
 
+req_headers = []
+
 template = """\
 <pre>
 %(response)s
@@ -139,7 +141,10 @@ class RedWebUi(object):
             start = time.time()
             try:
                 self.red = red.ResourceExpertDroid(uri, 
-                    status_cb=self.updateStatus, body_processors=[self.links.feed])
+                    req_headers=req_headers,
+                    body_processors=[self.links.feed],
+                    status_cb=self.updateStatus
+                )
                 self.updateStatus('Done.')
                 self.elapsed = time.time() - start
                 self.header_presenter = HeaderPresenter(self.red)
