@@ -375,7 +375,7 @@ def GenericHeaderSyntax(meth):
         values = sum(
             [[f.strip() for f in re.findall(r'((?:[^",]|%s)+)(?=%s|\s*$)' % 
              (QUOTED_STRING, COMMA), v)] for v in values], []
-        )
+        ) or ['']
         return meth(self, name, values)
     return new
 
@@ -396,7 +396,7 @@ def CheckFieldSyntax(exp):
     def wrap(meth):
         def new(self, name, values): # TODO: allow pointer to syntax definition
             for value in values:
-                if not re.match(r"^\s*(?:%s)?\s*$" % exp, value):
+                if not re.match(r"^\s*(?:%s)\s*$" % exp, value):
                     self.setMessage(name, rs.BAD_SYNTAX)
                     def bad_syntax(self, name, values):
                         return None
