@@ -122,7 +122,9 @@ SINGLE_HEADER_REPEAT = (GENERAL, BAD,
     'en': """This header is designed to only occur once in a message. When it 
     occurs more than once, a receiver needs to choose the one to use, which
     can lead to interoperability problems, since different implementations may
-    choose different instances to use."""
+    choose different instances to use.<p>
+    For the purposes of its tests, RED uses the last instance of the header that
+    is present; other implementations may choose a different one."""
     }
 )
 
