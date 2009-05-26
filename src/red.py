@@ -40,6 +40,8 @@ from cgi import escape as e
 import http_client
 import red_speak as rs
 
+# base URL for RFC2616 references
+rfc2616 = "http://www.apps.ietf.org/rfc/rfc2616.html#%s"
 
 # generic syntax regexen
 TOKEN = r'(?:[^\(\)<>@,;:\\"/\[\]\?={} \t]+?)'
@@ -389,15 +391,16 @@ def SingleFieldValue(meth):
         return meth(self, name, values)
     return new
 
-def CheckFieldSyntax(exp):
+def CheckFieldSyntax(exp, ref):
     """
-    Decorator to check each header field-value to conform to the regex exp.
+    Decorator to check each header field-value to conform to the regex exp,
+    and if not to point users to url ref.
     """
     def wrap(meth):
-        def new(self, name, values): # TODO: allow pointer to syntax definition
+        def new(self, name, values):
             for value in values:
                 if not re.match(r"^\s*(?:%s)\s*$" % exp, value):
-                    self.setMessage(name, rs.BAD_SYNTAX)
+                    self.setMessage(name, rs.BAD_SYNTAX, ref_uri=ref)
                     def bad_syntax(self, name, values):
                         return None
                     return bad_syntax(self, name, values)
@@ -452,7 +455,7 @@ class ResponseHeaderParser(object):
 
     @GenericHeaderSyntax
     @SingleFieldValue
-    @CheckFieldSyntax(DIGITS)
+    @CheckFieldSyntax(DIGITS, rfc2616 % "sec-14.6")
     def age(self, name, values):
         try: 
             age = int(values[-1])
@@ -465,12 +468,12 @@ class ResponseHeaderParser(object):
         return age
     
     @GenericHeaderSyntax
-    @CheckFieldSyntax(TOKEN)
+    @CheckFieldSyntax(TOKEN, rfc2616 % "sec-14.7")
     def allow(self, name, values):
         return values
 
     @GenericHeaderSyntax
-    @CheckFieldSyntax(PARAMETER)
+    @CheckFieldSyntax(PARAMETER, rfc2616 % "sec-14.9")
     def cache_control(self, name, values):
         directives = set()
         for directive in values:
@@ -491,8 +494,8 @@ class ResponseHeaderParser(object):
         return directives
 
     @SingleFieldValue
-    @CheckFieldSyntax(URI)
     def content_base(self, name, values):
+        # TODO: alert that it's deprecated
         return values[-1]
         
     def content_disposition(self, name, values):
@@ -500,14 +503,14 @@ class ResponseHeaderParser(object):
         pass
         
     @GenericHeaderSyntax
-    @CheckFieldSyntax(TOKEN)
+    @CheckFieldSyntax(TOKEN, rfc2616 % "sec-14.11")
     def content_encoding(self, name, values):
         values = [v.lower() for v in values]
         return values
         
     @GenericHeaderSyntax
     @SingleFieldValue
-    @CheckFieldSyntax(DIGITS)
+    @CheckFieldSyntax(DIGITS, rfc2616 % "sec-14.13")
     def content_length(self, name, values):
         return int(values[-1])
 
@@ -520,7 +523,8 @@ class ResponseHeaderParser(object):
         pass
 
     @GenericHeaderSyntax
-    @CheckFieldSyntax(r'(?:%(TOKEN)s/%(TOKEN)s(?:\s*;\s*%(PARAMETER)s)*)' % globals())
+    @CheckFieldSyntax(r'(?:%(TOKEN)s/%(TOKEN)s(?:\s*;\s*%(PARAMETER)s)*)' % globals(),
+                      rfc2616 % "sec-14.17")
     @SingleFieldValue
     def content_type(self, name, values):
         try:
@@ -557,7 +561,7 @@ class ResponseHeaderParser(object):
 
     @GenericHeaderSyntax
     @SingleFieldValue
-    @CheckFieldSyntax(r'(?:(?:W/)?%s|\*)' % QUOTED_STRING)
+    @CheckFieldSyntax(r'(?:(?:W/)?%s|\*)' % QUOTED_STRING, rfc2616 % "sec-14.19")
     def etag(self, name, values):
         instr = values[-1]
         if instr[:2] == 'W/':
@@ -591,7 +595,7 @@ class ResponseHeaderParser(object):
         # TODO: check syntax, values?
         pass
 
-    @CheckFieldSyntax(URI)
+    @CheckFieldSyntax(URI, rfc2616 % "sec-14.30")
     @SingleFieldValue
     def location(self, name, values):
         return values[-1]
@@ -621,7 +625,7 @@ class ResponseHeaderParser(object):
         return values
                 
     @GenericHeaderSyntax
-    @CheckFieldSyntax(r"(?:%s|%s)" % (DIGITS, DATE))
+    @CheckFieldSyntax(r"(?:%s|%s)" % (DIGITS, DATE), rfc2616 % "sec-14.37")
     @SingleFieldValue
     def retry_after(self, name, values):
         pass
@@ -630,7 +634,6 @@ class ResponseHeaderParser(object):
         # TODO: check syntax, flag servers?
         pass
         
-    @CheckFieldSyntax(URI)
     @SingleFieldValue
     def soapaction(self, name, values):
         return values[-1]
@@ -640,14 +643,14 @@ class ResponseHeaderParser(object):
         pass
 
     @GenericHeaderSyntax
-    @CheckFieldSyntax(TOK_PARAM)
+    @CheckFieldSyntax(TOK_PARAM, rfc2616 % "sec-14.41")
     def transfer_encoding(self, name, values):
         # TODO: check values?
         values = [v.lower() for v in values]
         return values
 
     @GenericHeaderSyntax
-    @CheckFieldSyntax(TOKEN)
+    @CheckFieldSyntax(TOKEN, rfc2616 % "sec-14.44")
     def vary(self, name, values):
         values = set([v.lower() for v in values])
         if len(values) > 3:
@@ -659,7 +662,8 @@ class ResponseHeaderParser(object):
         return values
         
     @GenericHeaderSyntax
-    @CheckFieldSyntax(r'(?:%s/)?%s\s+[^,\s]+(?:\s+%s)?' % (TOKEN, TOKEN, COMMENT))
+    @CheckFieldSyntax(r'(?:%s/)?%s\s+[^,\s]+(?:\s+%s)?' % (TOKEN, TOKEN, COMMENT),
+                      rfc2616 % "sec-14.45")
     def via(self, name, values):
         self.setMessage(name, rs.VIA_PRESENT, via_string=values)
         
@@ -669,7 +673,6 @@ class ResponseHeaderParser(object):
         pass
 
     @GenericHeaderSyntax
-    @CheckFieldSyntax(URI)
     @SingleFieldValue
     def x_xrds_location(self, name, values):
         pass

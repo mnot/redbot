@@ -131,8 +131,9 @@ BAD_SYNTAX = (GENERAL, BAD,
     'en': "The %(field_name)s header's syntax isn't valid."
     },
     {
-    'en': """The value for this header doesn't conform to that specified for it; see
-    its definition for more information."""
+    'en': """The value for this header doesn't conform to its specified syntax; see
+    <a href="%(ref_uri)s">its definition</a> for more information.
+    """
     }
 )
 
