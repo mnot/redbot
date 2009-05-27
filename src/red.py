@@ -832,6 +832,7 @@ class Response:
         self.header_timestamp = None
         self._in_gzip_body = False
         self._gzip_header_buffer = ""
+        self._gzip_ok = True # turn False if we have a problem
 
 outstanding_requests = 0 # how many requests we have left
 total_requests = 0 # how many we've made
@@ -876,7 +877,7 @@ def makeRequest(uri, method="GET", req_headers=None, body=None,
         content_codings.reverse()
         for coding in content_codings:
             # TODO: deflate support
-            if coding == 'gzip':
+            if coding == 'gzip' and response._gzip_ok:
                 if not response._in_gzip_body:
                     response._gzip_header_buffer += chunk
                     try:
@@ -884,13 +885,25 @@ def makeRequest(uri, method="GET", req_headers=None, body=None,
                         response._in_gzip_body = True
                     except IndexError:
                         return # not a full header yet
-                    except IOError:
-                        return # TODO: flag bad gzip
-                chunk = decompress.decompress(chunk) # TODO: flag bad zlib
+                    except IOError, why:
+                        set_message('header-content-encoding', rs.BAD_GZIP,
+                                    gzip_error=why)
+                        response._gzip_ok = False
+                        return
+                try:
+                    chunk = decompress.decompress(chunk)
+                except zlib.error, why:
+                    set_message('header-content-encoding', rs.BAD_ZLIB,
+                                zlib_error=why,
+                                ok_zlib_len=response.body_sample[-1][0],
+                                chunk_sample=e(chunk[:20]))
+                    response._gzip_ok = False
+                    return
             else:
                 pass # TODO: flag unasked-for coding
-        for processor in body_processors:
-            processor(response, chunk)
+        if response._gzip_ok:
+            for processor in body_processors:
+                processor(response, chunk)
                 
     def response_done(complete):
         global outstanding_requests
@@ -921,7 +934,7 @@ def read_gzip_header(content):
         raise IndexError, "Header not complete yet"
     magic = content[:2]
     if magic != '\037\213':
-        raise IOError, 'Not a gzipped file'
+        raise IOError, 'Not a gzipped file (magic is %s)' % magic
     method = ord( content[2:3] )
     if method != 8:
         raise IOError, 'Unknown compression method'
@@ -936,13 +949,13 @@ def read_gzip_header(content):
         # Read and discard a null-terminated string containing the filename
         while True:
             s = content_l.pop()
-            if not s or s == '\000':
+            if not content_l or s == '\000':
                 break
     if flag & FCOMMENT:
         # Read and discard a null-terminated string containing a comment
         while True:
             s = content_l.pop()
-            if not s or s == '\000':
+            if not content_l or s == '\000':
                 break
     if flag & FHCRC:
         content_l = content_l[2:]   # Read & discard the 16-bit header CRC

@@ -337,6 +337,30 @@ CONNEG_GZIP_WITHOUT_ASKING = (GENERAL, BAD,
     }
 )
 
+BAD_GZIP = (GENERAL, BAD,
+    {
+    'en': "This response was compressed using GZip, but the header wasn't valid."
+    },
+    {
+    'en': """GZip-compressed responses have a header that contains metadata. 
+    This response's header wasn't valid; the error encountered was 
+    "<code>%(gzip_error)s</code>"."""
+    }
+)
+
+BAD_ZLIB = (GENERAL, BAD,
+    {
+    'en': "This response was compressed using GZip, but the data was corrupt."
+    },
+    {
+    'en': """GZip-compressed responses use zlib compression to reduce the number
+    of bytes transferred on the wire. However, this response could not be decompressed;
+    the error encountered was "<code>%(zlib_error)s</code>".<p>
+    %(ok_zlib_len)s bytes were decompressed successfully before this; the erroneous
+    chunk starts with "<code>%(chunk_sample)s</code>"."""
+    }
+)
+
 BAD_DATE_SYNTAX = (GENERAL, BAD,
     {
     'en': "The %(field_name)s header's value isn't a valid date."
