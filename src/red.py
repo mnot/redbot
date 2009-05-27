@@ -847,6 +847,8 @@ def makeRequest(uri, method="GET", req_headers=None, body=None,
     global outstanding_requests, total_requests
     if req_headers == None:
         req_headers = []
+    if set_message == None:
+        set_message = lambda a, b, **vars : None
     if body_processors == None:
         body_processors = []
     response = Response(uri)
@@ -885,16 +887,16 @@ def makeRequest(uri, method="GET", req_headers=None, body=None,
                         response._in_gzip_body = True
                     except IndexError:
                         return # not a full header yet
-                    except IOError, why:
+                    except IOError, gzip_error:
                         set_message('header-content-encoding', rs.BAD_GZIP,
-                                    gzip_error=why)
+                                    gzip_error=e(str(gzip_error)))
                         response._gzip_ok = False
                         return
                 try:
                     chunk = decompress.decompress(chunk)
-                except zlib.error, why:
+                except zlib.error, zlib_error:
                     set_message('header-content-encoding', rs.BAD_ZLIB,
-                                zlib_error=why,
+                                zlib_error=e(str(zlib_error)),
                                 ok_zlib_len=response.body_sample[-1][0],
                                 chunk_sample=e(chunk[:20]))
                     response._gzip_ok = False
