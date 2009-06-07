@@ -30,6 +30,7 @@ ul {
 pre {
 	background-color: #111;
 	color: #ddd;
+	border-radius: 1em;
 	-moz-border-radius: 1em;
 	-webkit-border-radius: 1em;
 	border: 1px solid black;
