@@ -148,6 +148,166 @@ BAD_CC_SYNTAX = (GENERAL, BAD,
     }
 )
 
+AGE_NOT_INT = (CACHING, BAD,
+    {
+    'en': "The Age header's value should be an integer."
+    },
+    {
+    'en': """The <code>Age</code> header indicates the age of the response; i.e., 
+    how long it has been cached since it was generated. The value given was not 
+    an integer, so it is not a valid age."""
+    }
+)
+
+AGE_NEGATIVE = (CACHING, BAD,
+    {
+    'en': "The Age headers' value must be a positive integer."
+    },
+    {
+    'en': """The <code>Age</code> header indicates the age of the response; i.e., 
+    how long it has been cached since it was generated. The value given was 
+    negative, so it is not a valid age."""
+    }
+)
+
+BAD_GZIP = (GENERAL, BAD,
+    {
+    'en': "This response was compressed using GZip, but the header wasn't valid."
+    },
+    {
+    'en': """GZip-compressed responses have a header that contains metadata. 
+    This response's header wasn't valid; the error encountered was 
+    "<code>%(gzip_error)s</code>"."""
+    }
+)
+
+BAD_ZLIB = (GENERAL, BAD,
+    {
+    'en': "This response was compressed using GZip, but the data was corrupt."
+    },
+    {
+    'en': """GZip-compressed responses use zlib compression to reduce the number
+    of bytes transferred on the wire. However, this response could not be decompressed;
+    the error encountered was "<code>%(zlib_error)s</code>".<p>
+    %(ok_zlib_len)s bytes were decompressed successfully before this; the erroneous
+    chunk starts with "<code>%(chunk_sample)s</code>"."""
+    }
+)
+
+BAD_DATE_SYNTAX = (GENERAL, BAD,
+    {
+    'en': "The %(field_name)s header's value isn't a valid date."
+    },
+    {
+    'en': """HTTP dates have very specific syntax, and sending an invalid date can 
+    cause a number of problems, especially around caching. Common problems include
+    sending "1 May" instead of "01 May" (the month is a fixed-width field), and 
+    sending a date in a timezone other than GMT. See 
+    <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3">the 
+    HTTP specification</a> for more information."""
+    }
+)
+
+LM_FUTURE = (CACHING, BAD,
+    {
+    'en': "The Last-Modified time is in the future."
+    },
+    {
+    'en': """The <code>Last-Modified</code> header indicates the last point in 
+    time that the resource has changed. This response's 
+    <code>Last-Modified</code> time is in the future, which doesn't have any 
+    defined meaning in HTTP."""
+    }
+)
+
+LM_PRESENT = (CACHING, INFO, 
+    {
+    'en': "The resource last changed %(last_modified_string)s."
+    },
+    {
+    'en': """The <code>Last-Modified</code> header indicates the last point in 
+    time that the resource has changed. It is used in HTTP for validating cached
+    responses, and for calculating heuristic freshness in caches."""
+    }
+)
+
+MIME_VERSION = (GENERAL, INFO, 
+    {
+    'en': "The MIME-Version header generally isn't necessary in HTTP."
+    },
+    {
+    'en': """<code>MIME_Version</code> is a MIME header, not a HTTP header; it's 
+    only used when HTTP messages are moved over MIME-based protocols 
+    (e.g., SMTP), which is uncommon."""
+    }
+)
+
+PRAGMA_NO_CACHE = (CACHING, BAD,
+    {
+    'en': "Pragma: no-cache is a request directive, not a response directive."
+    },
+    {
+    'en': """<code>Pragma</code> is a very old request header that is sometimes 
+    used as a response header, even though this is not specified behaviour. 
+    <code>Cache-Control: no-cache</code> is more appropriate."""
+    }
+)
+
+PRAGMA_OTHER = (GENERAL, WARN,
+    {
+    'en': """Pragma only defines the 'no-cache' request directive, and is 
+    deprecated for other uses."""
+    },
+    {
+    'en': """<code>Pragma</code> is a very old request header that is sometimes 
+    used as a response header, even though this is not specified behaviour."""
+    }
+)
+
+VARY_ASTERISK = (CACHING, WARN,
+    {
+    'en': "Vary: * effectively makes responses for this URI uncacheable."
+    },
+    {
+    'en': """<code>Vary *</code> indicates that responses for this resource vary 
+    by some aspect that can't (or won't) be described by the server. This makes 
+    this response effectively uncacheable."""
+    }
+)
+
+VARY_USER_AGENT = (CACHING, WARN,
+    {
+     'en': "Vary: User-Agent is bad practice."
+    },
+    {
+    'en': """"""
+    }
+)
+
+VARY_COMPLEX = (CACHING, WARN,
+    {
+     'en': "This resource varies in %(vary_count)i ways."
+    },
+    {
+     'en': """The <code>Vary</code> mechanism allows a resource to describe the
+     dimensions that its responses vary, or change, over; each listed header
+     is another dimension.<p>Varying by too many dimensions makes using this
+     information impractical."""
+    }
+)
+
+VIA_PRESENT = (GENERAL, INFO,
+    {
+    'en': "An intermediary ('%(via_string)s') is present."
+    },
+    {
+    'en': """The <code>Via</code> header indicates that an intermediary is 
+    present between RED and the origin server for the resource."""
+    }
+)
+
+### Ranges
+
 RANGE_CORRECT = (TESTS, GOOD,
     {
     'en': "A ranged request returned the correct partial content."
@@ -219,27 +379,7 @@ RANGE_NEG_MISMATCH = (TESTS, BAD,
     }
 )
 
-AGE_NOT_INT = (CACHING, BAD,
-    {
-    'en': "The Age header's value should be an integer."
-    },
-    {
-    'en': """The <code>Age</code> header indicates the age of the response; i.e., 
-    how long it has been cached since it was generated. The value given was not 
-    an integer, so it is not a valid age."""
-    }
-)
-
-AGE_NEGATIVE = (CACHING, BAD,
-    {
-    'en': "The Age headers' value must be a positive integer."
-    },
-    {
-    'en': """The <code>Age</code> header indicates the age of the response; i.e., 
-    how long it has been cached since it was generated. The value given was 
-    negative, so it is not a valid age."""
-    }
-)
+### Body
 
 CL_CORRECT = (CONNECTION, GOOD,
     {
@@ -289,6 +429,8 @@ CMD5_INCORRECT = (GENERAL, BAD,
     }
 )
 
+### Conneg
+
 CONNEG_GZIP = (GENERAL, GOOD,
     {
     'en': 'Content negotiation for gzip compression is supported.'
@@ -337,43 +479,37 @@ CONNEG_GZIP_WITHOUT_ASKING = (GENERAL, BAD,
     }
 )
 
-BAD_GZIP = (GENERAL, BAD,
+VARY_INCONSISTENT = (CACHING, BAD,
     {
-    'en': "This response was compressed using GZip, but the header wasn't valid."
+    'en': "The resource doesn't send Vary consistently."
     },
     {
-    'en': """GZip-compressed responses have a header that contains metadata. 
-    This response's header wasn't valid; the error encountered was 
-    "<code>%(gzip_error)s</code>"."""
+    'en': """HTTP requires that the <code>Vary</code> response header be sent 
+    consistently for all responses if they change based upon different aspects 
+    of the request. This resource has both compressed and uncompressed variants 
+    available, negotiated by the <code>Accept-Encoding</code> request header, 
+    but it sends different Vary headers for each; "<code>%(conneg_vary)s</code>" 
+    when the response is compressed, and "<code>%(no_conneg_vary)s</code>" when 
+    it is not. This can cause problems for downstream caches, because they 
+    cannot consistently determine what the cache key for a given URI is."""
     }
 )
 
-BAD_ZLIB = (GENERAL, BAD,
+ETAG_DOESNT_CHANGE = (GENERAL, BAD,
     {
-    'en': "This response was compressed using GZip, but the data was corrupt."
+    'en': "The ETag doesn't change between representations."
     },
     {
-    'en': """GZip-compressed responses use zlib compression to reduce the number
-    of bytes transferred on the wire. However, this response could not be decompressed;
-    the error encountered was "<code>%(zlib_error)s</code>".<p>
-    %(ok_zlib_len)s bytes were decompressed successfully before this; the erroneous
-    chunk starts with "<code>%(chunk_sample)s</code>"."""
+    'en': """HTTP requires that the <code>ETag</code>s for two different 
+    responses associated with the same URI be different as well, to help caches 
+    and other receivers disambiguate them. This resource, however, sent the same
+    ETag for both the compressed and uncompressed versions of it (negotiated by 
+    <code>Accept-Encoding</code>. This can cause interoperability problems, 
+    especially with caches."""
     }
 )
 
-BAD_DATE_SYNTAX = (GENERAL, BAD,
-    {
-    'en': "The %(field_name)s header's value isn't a valid date."
-    },
-    {
-    'en': """HTTP dates have very specific syntax, and sending an invalid date can 
-    cause a number of problems, especially around caching. Common problems include
-    sending "1 May" instead of "01 May" (the month is a fixed-width field), and 
-    sending a date in a timezone other than GMT. See 
-    <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3">the 
-    HTTP specification</a> for more information."""
-    }
-)
+### Clock
 
 DATE_CORRECT = (GENERAL, GOOD,
     {
@@ -422,247 +558,59 @@ DATE_CLOCKLESS_BAD_HDR = (CACHING, BAD,
     }
 )
 
-INM_304 = (CACHING, GOOD,
-    {
-    'en': "If-None-Match conditional requests are supported."
-    },
-    {
-    'en': """HTTP allows clients to make conditional requests to see if a copy 
-    that they hold is still valid. Since this response has an <code>ETag</code>, 
-    clients should be able to use an <code>If-None-Match</code> request header 
-    for validation. RED has done this and found that the resource sends a 
-    <code>304 Not Modified</code> response, indicating that it supports 
-    <code>ETag</code> validation."""
-    }
-)
+### Caching
 
-INM_FULL = (CACHING, WARN,
+METHOD_UNCACHEABLE = (CACHING, INFO,
     {
-    'en': "An If-None-Match conditional request returned the full content unchanged."
-    },
-    {
-    'en': """HTTP allows clients to make conditional requests to see if a copy 
-    that they hold is still valid. Since this response has an <code>ETag</code>, 
-    clients should be able to use an <code>If-None-Match</code> request header 
-    for validation. RED has done this and found that the resource sends a full 
-    response even though it hadn't changed, indicating that it doesn't support 
-    <code>ETag</code> validation."""
-    }
-)
-
-INM_UNKNOWN = (CACHING, INFO,
-    {
-     'en': "An If-None-Match conditional request returned the full content, but it had changed."
-    },
-    {
-    'en': """HTTP allows clients to make conditional requests to see if a copy 
-    that they hold is still valid. Since this response has an <code>ETag</code>, 
-    clients should be able to use an <code>If-None-Match</code> request header 
-    for validation. RED has done this, but the response changed between the 
-    original request and the validating request, so RED can't tell whether or 
-    not <code>ETag</code> validation is supported."""
-    }
-)
-
-INM_STATUS = (CACHING, INFO,
-    {
-    'en': "An If-None-Match conditional request returned a %(inm_status)s status."
-    },
-    {
-    'en': """HTTP allows clients to make conditional requests to see if a copy 
-    that they hold is still valid. Since this response has an <code>ETag</code>, 
-    clients should be able to use an <code>If-None-Match</code> request header 
-    for validation. RED has done this, but the response had a %(enc_inm_status)s 
-    status code, so RED can't tell whether or not <code>ETag</code> validation 
-    is supported."""
-    }
-)
-
-LM_FUTURE = (CACHING, BAD,
-    {
-    'en': "The Last-Modified time is in the future."
-    },
-    {
-    'en': """The <code>Last-Modified</code> header indicates the last point in 
-    time that the resource has changed. This response's 
-    <code>Last-Modified</code> time is in the future, which doesn't have any 
-    defined meaning in HTTP."""
-    }
-)
-
-LM_PRESENT = (CACHING, INFO, 
-    {
-    'en': "The resource last changed %(last_modified_string)s."
-    },
-    {
-    'en': """The <code>Last-Modified</code> header indicates the last point in 
-    time that the resource has changed. It is used in HTTP for validating cached
-    responses, and for calculating heuristic freshness in caches."""
-    }
-)
-
-IMS_304 = (CACHING, GOOD,
-    {
-    'en': "If-Modified-Since conditional requests are supported."
-    },
-    {
-    'en': """HTTP allows clients to make conditional requests to see if a copy 
-    that they hold is still valid. Since this response has a 
-    <code>Last-Modified</code> header, clients should be able to use an 
-    <code>If-Modified-Since</code> request header for validation.<p>
-    RED has done this and found that the resource sends a 
-    <code>304 Not Modified</code> response, indicating that it supports 
-    <code>Last-Modified</code> validation."""
-    }
-)
-
-IMS_FULL = (CACHING, WARN,
-    {
-    'en': "An If-Modified-Since conditional request returned the full content unchanged."
-    },
-    {
-    'en': """HTTP allows clients to make conditional requests to see if a copy 
-    that they hold is still valid. Since this response has a 
-    <code>Last-Modified</code> header, clients should be able to use an 
-    <code>If-Modified-Since</code> request header for validation.<p>
-    RED has done this and found that the resource sends a full response even 
-    though it hadn't changed, indicating that it doesn't support 
-    <code>Last-Modified</code> validation."""
-    }
-)
-
-IMS_UNKNOWN = (CACHING, INFO,
-    {
-     'en': "An If-Modified-Since conditional request returned the full content, but it had changed."
-    },
-    {
-    'en': """HTTP allows clients to make conditional requests to see if a copy 
-    that they hold is still valid. Since this response has a 
-    <code>Last-Modified</code> header, clients should be able to use an 
-    <code>If-Modified-Since</code> request header for validation.<p>
-    RED has done this, but the response changed between the original request and 
-    the validating request, so RED can't tell whether or not 
-    <code>Last-Modified</code> validation is supported."""
-    }
-)
-
-IMS_STATUS = (CACHING, INFO,
-    {
-    'en': "An If-Modified-Since conditional request returned a %(ims_status)s status."
-    },
-    {
-    'en': """HTTP allows clients to make conditional requests to see if a copy 
-    that they hold is still valid. Since this response has a 
-    <code>Last-Modified</code> header, clients should be able to use an 
-    <code>If-Modified-Since</code> request header for validation.<p>
-    RED has done this, but the response had a %(enc_ims_status)s status code, so 
-    RED can't tell whether or not <code>Last-Modified</code> validation is 
-    supported."""
-    }
-)
-
-MIME_VERSION = (GENERAL, INFO, 
-    {
-    'en': "The MIME-Version header generally isn't necessary in HTTP."
-    },
-    {
-    'en': """<code>MIME_Version</code> is a MIME header, not a HTTP header; it's 
-    only used when HTTP messages are moved over MIME-based protocols 
-    (e.g., SMTP), which is uncommon."""
-    }
-)
-
-PRAGMA_NO_CACHE = (CACHING, BAD,
-    {
-    'en': "Pragma: no-cache is a request directive, not a response directive."
-    },
-    {
-    'en': """<code>Pragma</code> is a very old request header that is sometimes 
-    used as a response header, even though this is not specified behaviour. 
-    <code>Cache-Control: no-cache</code> is more appropriate."""
-    }
-)
-
-PRAGMA_OTHER = (GENERAL, WARN,
-    {
-    'en': """Pragma only defines the 'no-cache' request directive, and is 
-    deprecated for other uses."""
-    },
-    {
-    'en': """<code>Pragma</code> is a very old request header that is sometimes 
-    used as a response header, even though this is not specified behaviour."""
-    }
-)
-
-VARY_ASTERISK = (CACHING, WARN,
-    {
-    'en': "Vary: * effectively makes responses for this URI uncacheable."
-    },
-    {
-    'en': """<code>Vary *</code> indicates that responses for this resource vary 
-    by some aspect that can't (or won't) be described by the server. This makes 
-    this response effectively uncacheable."""
-    }
-)
-
-VARY_USER_AGENT = (CACHING, WARN,
-    {
-     'en': "Vary: User-Agent is bad practice."
+     'en': "Responses to the %(method)s method can't be stored by caches."
     },
     {
     'en': """"""
     }
 )
 
-VARY_INCONSISTENT = (CACHING, BAD,
+NO_STORE = (CACHING, INFO,
     {
-    'en': "The resource doesn't send Vary consistently."
+     'en': "This response can't be stored by a cache."
     },
     {
-    'en': """HTTP requires that the <code>Vary</code> response header be sent 
-    consistently for all responses if they change based upon different aspects 
-    of the request. This resource has both compressed and uncompressed variants 
-    available, negotiated by the <code>Accept-Encoding</code> request header, 
-    but it sends different Vary headers for each; "<code>%(conneg_vary)s</code>" 
-    when the response is compressed, and "<code>%(no_conneg_vary)s</code>" when 
-    it is not. This can cause problems for downstream caches, because they 
-    cannot consistently determine what the cache key for a given URI is."""
+    'en': """The <code>Cache-Control: no-store</code> directive indicates that 
+    this response can't be stored by a cache."""
     }
 )
 
-VARY_COMPLEX = (CACHING, WARN,
+PRIVATE_CC = (CACHING, INFO,
     {
-     'en': "This resource varies in %(vary_count)i ways."
+     'en': "This response can only be stored by a private cache."
     },
     {
-     'en': """The <code>Vary</code> mechanism allows a resource to describe the
-     dimensions that its responses vary, or change, over; each listed header
-     is another dimension.<p>Varying by too many dimensions makes using this
-     information impractical."""
+    'en': """The <code>Cache-Control: private</code> directive indicates that the
+    response can only be stored by caches that are specific to a single user; for
+    example, a browser cache. Shared caches, such as those in proxies, cannot store
+    it."""
     }
 )
 
-ETAG_DOESNT_CHANGE = (GENERAL, BAD,
+PRIVATE_AUTH = (CACHING, INFO,
     {
-    'en': "The ETag doesn't change between representations."
+     'en': "This response can only be stored by a private cache."
     },
     {
-    'en': """HTTP requires that the <code>ETag</code>s for two different 
-    responses associated with the same URI be different as well, to help caches 
-    and other receivers disambiguate them. This resource, however, sent the same
-    ETag for both the compressed and uncompressed versions of it (negotiated by 
-    <code>Accept-Encoding</code>. This can cause interoperability problems, 
-    especially with caches."""
+    'en': """Because the request was authenticated and this response doesn't contain
+    a <code>Cache-Control: public</code> directive, this response can only be 
+    stored by caches that are specific to a single user; for example, a browser 
+    cache. Shared caches, such as those in proxies, cannot store
+    it."""
     }
 )
 
-VIA_PRESENT = (GENERAL, INFO,
+STOREABLE = (CACHING, INFO,
     {
-    'en': "An intermediary ('%(via_string)s') is present."
+     'en': """This response can be stored by any cache."""
     },
     {
-    'en': """The <code>Via</code> header indicates that an intermediary is 
-    present between RED and the origin server for the resource."""
+     'en': """A cache can store this response; it may or may not be able to 
+     use it to satisfy a particular request."""
     }
 )
 
@@ -768,59 +716,127 @@ STALE_PROXY_REVALIDATE = (CACHING, INFO,
     }
 )
 
-METHOD_UNCACHEABLE = (CACHING, INFO,
+### ETag Validation
+
+INM_304 = (CACHING, GOOD,
     {
-     'en': "Responses to the %(method)s method can't be stored by caches."
+    'en': "If-None-Match conditional requests are supported."
     },
     {
-    'en': """"""
+    'en': """HTTP allows clients to make conditional requests to see if a copy 
+    that they hold is still valid. Since this response has an <code>ETag</code>, 
+    clients should be able to use an <code>If-None-Match</code> request header 
+    for validation. RED has done this and found that the resource sends a 
+    <code>304 Not Modified</code> response, indicating that it supports 
+    <code>ETag</code> validation."""
     }
 )
 
-NO_STORE = (CACHING, INFO,
+INM_FULL = (CACHING, WARN,
     {
-     'en': "This response can't be stored by a cache."
+    'en': "An If-None-Match conditional request returned the full content unchanged."
     },
     {
-    'en': """The <code>Cache-Control: no-store</code> directive indicates that 
-    this response can't be stored by a cache."""
+    'en': """HTTP allows clients to make conditional requests to see if a copy 
+    that they hold is still valid. Since this response has an <code>ETag</code>, 
+    clients should be able to use an <code>If-None-Match</code> request header 
+    for validation. RED has done this and found that the resource sends a full 
+    response even though it hadn't changed, indicating that it doesn't support 
+    <code>ETag</code> validation."""
     }
 )
 
-PRIVATE_CC = (CACHING, INFO,
+INM_UNKNOWN = (CACHING, INFO,
     {
-     'en': "This response can only be stored by a private cache."
+     'en': "An If-None-Match conditional request returned the full content, but it had changed."
     },
     {
-    'en': """The <code>Cache-Control: private</code> directive indicates that the
-    response can only be stored by caches that are specific to a single user; for
-    example, a browser cache. Shared caches, such as those in proxies, cannot store
-    it."""
+    'en': """HTTP allows clients to make conditional requests to see if a copy 
+    that they hold is still valid. Since this response has an <code>ETag</code>, 
+    clients should be able to use an <code>If-None-Match</code> request header 
+    for validation. RED has done this, but the response changed between the 
+    original request and the validating request, so RED can't tell whether or 
+    not <code>ETag</code> validation is supported."""
     }
 )
 
-PRIVATE_AUTH = (CACHING, INFO,
+INM_STATUS = (CACHING, INFO,
     {
-     'en': "This response can only be stored by a private cache."
+    'en': "An If-None-Match conditional request returned a %(inm_status)s status."
     },
     {
-    'en': """Because the request was authenticated and this response doesn't contain
-    a <code>Cache-Control: public</code> directive, this response can only be 
-    stored by caches that are specific to a single user; for example, a browser 
-    cache. Shared caches, such as those in proxies, cannot store
-    it."""
+    'en': """HTTP allows clients to make conditional requests to see if a copy 
+    that they hold is still valid. Since this response has an <code>ETag</code>, 
+    clients should be able to use an <code>If-None-Match</code> request header 
+    for validation. RED has done this, but the response had a %(enc_inm_status)s 
+    status code, so RED can't tell whether or not <code>ETag</code> validation 
+    is supported."""
     }
 )
 
-STORABLE = (CACHING, INFO,
+### Last-Modified Validation
+
+IMS_304 = (CACHING, GOOD,
     {
-     'en': """This response can be stored by any cache."""
+    'en': "If-Modified-Since conditional requests are supported."
     },
     {
-     'en': """A cache can store this response; it may or may not be able to 
-     use it to satisfy a particular request."""
+    'en': """HTTP allows clients to make conditional requests to see if a copy 
+    that they hold is still valid. Since this response has a 
+    <code>Last-Modified</code> header, clients should be able to use an 
+    <code>If-Modified-Since</code> request header for validation.<p>
+    RED has done this and found that the resource sends a 
+    <code>304 Not Modified</code> response, indicating that it supports 
+    <code>Last-Modified</code> validation."""
     }
 )
+
+IMS_FULL = (CACHING, WARN,
+    {
+    'en': "An If-Modified-Since conditional request returned the full content unchanged."
+    },
+    {
+    'en': """HTTP allows clients to make conditional requests to see if a copy 
+    that they hold is still valid. Since this response has a 
+    <code>Last-Modified</code> header, clients should be able to use an 
+    <code>If-Modified-Since</code> request header for validation.<p>
+    RED has done this and found that the resource sends a full response even 
+    though it hadn't changed, indicating that it doesn't support 
+    <code>Last-Modified</code> validation."""
+    }
+)
+
+IMS_UNKNOWN = (CACHING, INFO,
+    {
+     'en': "An If-Modified-Since conditional request returned the full content, but it had changed."
+    },
+    {
+    'en': """HTTP allows clients to make conditional requests to see if a copy 
+    that they hold is still valid. Since this response has a 
+    <code>Last-Modified</code> header, clients should be able to use an 
+    <code>If-Modified-Since</code> request header for validation.<p>
+    RED has done this, but the response changed between the original request and 
+    the validating request, so RED can't tell whether or not 
+    <code>Last-Modified</code> validation is supported."""
+    }
+)
+
+IMS_STATUS = (CACHING, INFO,
+    {
+    'en': "An If-Modified-Since conditional request returned a %(ims_status)s status."
+    },
+    {
+    'en': """HTTP allows clients to make conditional requests to see if a copy 
+    that they hold is still valid. Since this response has a 
+    <code>Last-Modified</code> header, clients should be able to use an 
+    <code>If-Modified-Since</code> request header for validation.<p>
+    RED has done this, but the response had a %(enc_ims_status)s status code, so 
+    RED can't tell whether or not <code>Last-Modified</code> validation is 
+    supported."""
+    }
+)
+
+### Status checks
 
 REDIRECT_WITHOUT_LOCATION = (GENERAL, BAD,
     {
