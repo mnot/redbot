@@ -812,6 +812,16 @@ PRIVATE_AUTH = (CACHING, INFO,
     }
 )
 
+STORABLE = (CACHING, INFO,
+    {
+     'en': """This response can be stored by any cache."""
+    },
+    {
+     'en': """A cache can store this response; it may or may not be able to 
+     use it to satisfy a particular request."""
+    }
+)
+
 REDIRECT_WITHOUT_LOCATION = (GENERAL, BAD,
     {
      'en': "Redirects need to have a Location header."

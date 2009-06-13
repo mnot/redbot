@@ -66,7 +66,6 @@ logdir = 'exceptions' # set to None to disable traceback logging
 
 ### End configuration
 
-
 import cgitb; cgitb.enable(logdir=logdir)
 import sys
 import cgi
@@ -261,7 +260,7 @@ class HeaderPresenter(object):
         if name_token[0] != "_" and hasattr(self, name_token):
             return getattr(self, name_token)(name, value)
         else:
-            return e(i(value, len(name)))
+            return e(value)
 
     def BARE_URI(self, name, value):
         return "<a href='?uri=%s'>%s</a>" % (

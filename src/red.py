@@ -214,20 +214,20 @@ class ResourceExpertDroid(object):
         # TODO: check for capitalisation on standard directives
         cc_dict = dict(self.response.parsed_hdrs.get('cache-control', []))
 
-        # can it be stored? If not, get out of here.
+        # Who can store this?
         if self.method not in cacheable_methods:
             self.setMessage('method', rs.METHOD_UNCACHEABLE, method=self.method)
-            return
-        if cc_dict.has_key('no-store'):
+            return # bail; nothing else to see here
+        elif cc_dict.has_key('no-store'):
             self.setMessage('header-cache-control', rs.NO_STORE)
-            return 
-
-        # is it private?
-        if cc_dict.has_key('private'):
+            return # bail; nothing else to see here
+        elif cc_dict.has_key('private'):
             self.setMessage('header-cache-control', rs.PRIVATE_CC)
         if 'authorization' in [k.lower() for k, v in self.req_headers] and \
           not cc_dict.has_key('public'):
             self.setMessage('header-cache-control', rs.PRIVATE_AUTH)
+        else:
+            self.setMessage('header-cache-control', rs.STOREABLE)
 
         # no-cache?
         if cc_dict.has_key('no-cache'):
