@@ -260,7 +260,7 @@ class HeaderPresenter(object):
         if name_token[0] != "_" and hasattr(self, name_token):
             return getattr(self, name_token)(name, value)
         else:
-            return e(value)
+            return i(e(value), len(name))
 
     def BARE_URI(self, name, value):
         return "<a href='?uri=%s'>%s</a>" % (
