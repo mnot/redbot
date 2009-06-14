@@ -178,7 +178,7 @@ class RedWebUi(object):
 
     def presentHeader(self, name, value):
         token_name = name.lower()
-        return "    <span class='header-%s hdr'>%s: %s</span>" % (
+        return "    <span class='header-%s hdr'>%s:%s</span>" % (
             e(token_name), e(name), self.header_presenter.Show(name, value))
 
     def presentCategory(self, category):
@@ -263,8 +263,11 @@ class HeaderPresenter(object):
             return i(e(value), len(name))
 
     def BARE_URI(self, name, value):
-        return "<a href='?uri=%s'>%s</a>" % (
-            e(urljoin(self.red.response.uri, value)), i(e(value), len(name)))
+        value = value.rstrip()
+        svalue = value.lstrip()
+        space = len(value) - len(svalue)
+        return "%s<a href='?uri=%s'>%s</a>" % ( " " * space,
+            e(urljoin(self.red.response.uri, svalue)), i(e(svalue), len(name)))
     content_location = \
     location = \
     x_xrds_location = \

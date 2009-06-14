@@ -37,7 +37,7 @@ import random
 from email.utils import parsedate as lib_parsedate
 from cgi import escape as e
 
-import http_client
+import nbhttp
 import red_speak as rs
 
 # base URL for RFC2616 references
@@ -63,7 +63,6 @@ max_uri = 8 * 1024
 max_hdr_size = 4 * 1024
 max_ttl_hdr = 20 * 1024
 max_clock_skew = 5  # seconds
-connect_timeout = 5 # seconds
 
 # TODO: resource limits
 # TODO: special case for content-* headers and HEAD responses, partial responses.
@@ -103,7 +102,7 @@ class ResourceExpertDroid(object):
             makeRequest(uri, method=self.method, req_headers=self.req_headers,
                 done_cb=primary_response_done, status_cb=status_cb, set_message=self.setMessage,
                 body_processors=body_processors, reason=self.method)
-            http_client.run()
+            nbhttp.run()
         except socket.gaierror:
             raise AssertionError, "Hostname not found."
 
@@ -425,6 +424,7 @@ class ResponseHeaderParser(object):
             if not re.match("^\s*%s\s*$" % TOKEN, name):
                 self.setMessage(name, rs.FIELD_NAME_BAD_SYNTAX)
             name = name.lower()
+            value = value.strip()
             if hdr_dict.has_key(name):
                 hdr_dict[name].append(value)
             else:
@@ -854,7 +854,9 @@ def makeRequest(uri, method="GET", req_headers=None, body=None,
     outstanding_requests += 1
     total_requests += 1
     req_headers.append(("User-Agent", "RED/%s (http://redbot.org/about)" % __version__))
-    def response_start(version, status, phrase, res_headers):
+    def response_start(version, status, phrase, res_headers, res_pause):
+        print "<!-- response start: %s %s %s -->" % (method, reason, status)
+        global outstanding_requests
         response.header_timestamp = time.time()
         response.version = version
         response.status = status
@@ -862,65 +864,70 @@ def makeRequest(uri, method="GET", req_headers=None, body=None,
         response.headers = res_headers
         ResponseHeaderParser(response, set_message)
 
-    def response_body(chunk):
-        md5_processor.update(chunk)
-        if not response.complete:
-            if response.status == "206":
-                # Store only partial responses completely, for error reporting
-                response.body += chunk
-            response.body_sample.append((response.body_len, chunk))
-            if len(response.body_sample) > 4:
-                response.body_sample.pop(0)
-        response.body_len += len(chunk)
-        content_codings = response.parsed_hdrs.get('content-encoding', [])
-        content_codings.reverse()
-        for coding in content_codings:
-            # TODO: deflate support
-            if coding == 'gzip' and response._gzip_ok:
-                if not response._in_gzip_body:
-                    response._gzip_header_buffer += chunk
+        def response_body(chunk):
+            print "<!-- response body: %s %s %s -->" % (method, reason, len(chunk))
+            md5_processor.update(chunk)
+            if not response.complete:
+                if response.status == "206":
+                    # Store only partial responses completely, for error reporting
+                    response.body += chunk
+                response.body_sample.append((response.body_len, chunk))
+                if len(response.body_sample) > 4:
+                    response.body_sample.pop(0)
+            response.body_len += len(chunk)
+            content_codings = response.parsed_hdrs.get('content-encoding', [])
+            content_codings.reverse()
+            for coding in content_codings:
+                # TODO: deflate support
+                if coding == 'gzip' and response._gzip_ok:
+                    if not response._in_gzip_body:
+                        response._gzip_header_buffer += chunk
+                        try:
+                            chunk = read_gzip_header(response._gzip_header_buffer)
+                            response._in_gzip_body = True
+                        except IndexError:
+                            return # not a full header yet
+                        except IOError, gzip_error:
+                            set_message('header-content-encoding', rs.BAD_GZIP,
+                                        gzip_error=e(str(gzip_error)))
+                            response._gzip_ok = False
+                            return
                     try:
-                        chunk = read_gzip_header(response._gzip_header_buffer)
-                        response._in_gzip_body = True
-                    except IndexError:
-                        return # not a full header yet
-                    except IOError, gzip_error:
-                        set_message('header-content-encoding', rs.BAD_GZIP,
-                                    gzip_error=e(str(gzip_error)))
+                        chunk = decompress.decompress(chunk)
+                    except zlib.error, zlib_error:
+                        set_message('header-content-encoding', rs.BAD_ZLIB,
+                                    zlib_error=e(str(zlib_error)),
+                                    ok_zlib_len=response.body_sample[-1][0],
+                                    chunk_sample=e(chunk[:20]))
                         response._gzip_ok = False
                         return
-                try:
-                    chunk = decompress.decompress(chunk)
-                except zlib.error, zlib_error:
-                    set_message('header-content-encoding', rs.BAD_ZLIB,
-                                zlib_error=e(str(zlib_error)),
-                                ok_zlib_len=response.body_sample[-1][0],
-                                chunk_sample=e(chunk[:20]))
-                    response._gzip_ok = False
-                    return
-            else:
-                pass # TODO: flag unasked-for coding
-        if response._gzip_ok:
-            for processor in body_processors:
-                processor(response, chunk)
-                
-    def response_done(complete):
-        global outstanding_requests
-        response.complete = complete
-        response.body_md5 = md5_processor.digest()
-        # TODO: move status parsing, other checks here too
-        if status_cb and reason:
-            status_cb("fetched %s (%s)" % (uri, reason))
-        if done_cb:
-            done_cb(response)
-        outstanding_requests -= 1
-        if outstanding_requests == 0:
-            http_client.stop()
+                else:
+                    pass # TODO: flag unasked-for coding
+            if response._gzip_ok:
+                for processor in body_processors:
+                    processor(response, chunk)                    
 
-    c = http_client.HttpClient(response_start, response_body, response_done, timeout=connect_timeout)
+        def response_done(complete):
+            print "<!-- response done: %s %s -->" % (method, reason)
+            global outstanding_requests
+            response.complete = complete
+            response.body_md5 = md5_processor.digest()
+            # TODO: move status parsing, other checks here too
+            if status_cb and reason:
+                status_cb("fetched %s (%s)" % (uri, reason))
+            if done_cb:
+                done_cb(response)
+            outstanding_requests -= 1
+            print "<!-- %s requests outstanding -->" % outstanding_requests
+            if outstanding_requests == 0:
+                nbhttp.stop()
+
+        return response_body, response_done
+
+    c = nbhttp.Client(response_start)
     if status_cb and reason:
         status_cb("fetching %s (%s)" % (uri, reason))
-    req_body_write, req_body_done = c.start_request(method, uri, req_headers=req_headers)
+    req_body_write, req_body_done = c.req_start(method, uri, req_headers, nbhttp.dummy)
     if body != None:
         req_body_write(body)
         req_body_done()
