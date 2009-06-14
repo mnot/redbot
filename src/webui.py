@@ -82,7 +82,7 @@ import red_header
 
 # the order of message categories to display
 msg_categories = [
-    rs.GENERAL, rs.CONNECTION, rs.CACHING, rs.TESTS
+    rs.GENERAL, rs.CONNEG, rs.CONNECTION, rs.CACHING, rs.VALIDATION, rs.RANGE
 ]
 
 req_headers = []

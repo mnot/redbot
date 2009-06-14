@@ -40,9 +40,11 @@ Both message forms may contain %(var)s style variable interpolation.
 
 # message classifications
 GENERAL = "General"
+CONNEG = "Content Negotiation"
 CACHING = "Caching"
+VALIDATION = "Validation"
 CONNECTION = "Connection"
-TESTS = "Tests"
+RANGE = "Partial Content"
 
 # message levels
 GOOD = 'good'
@@ -139,7 +141,7 @@ BAD_SYNTAX = (GENERAL, BAD,
     }
 )
 
-BAD_CC_SYNTAX = (GENERAL, BAD,
+BAD_CC_SYNTAX = (CACHING, BAD,
     {
      'en': "The %(bad_cc_attr)s Cache-Control directive's syntax is incorrect."
     },
@@ -170,7 +172,7 @@ AGE_NEGATIVE = (CACHING, BAD,
     }
 )
 
-BAD_GZIP = (GENERAL, BAD,
+BAD_GZIP = (CONNEG, BAD,
     {
     'en': "This response was compressed using GZip, but the header wasn't valid."
     },
@@ -181,7 +183,7 @@ BAD_GZIP = (GENERAL, BAD,
     }
 )
 
-BAD_ZLIB = (GENERAL, BAD,
+BAD_ZLIB = (CONNEG, BAD,
     {
     'en': "This response was compressed using GZip, but the data was corrupt."
     },
@@ -308,7 +310,7 @@ VIA_PRESENT = (GENERAL, INFO,
 
 ### Ranges
 
-RANGE_CORRECT = (TESTS, GOOD,
+RANGE_CORRECT = (RANGE, GOOD,
     {
     'en': "A ranged request returned the correct partial content."
     },
@@ -320,7 +322,7 @@ RANGE_CORRECT = (TESTS, GOOD,
     }
 )
 
-RANGE_INCORRECT = (TESTS, BAD,
+RANGE_INCORRECT = (RANGE, BAD,
     {
     'en': 'A ranged request returned partial content, but it was incorrect.'
     },
@@ -340,7 +342,7 @@ RANGE_INCORRECT = (TESTS, BAD,
     }
 )
 
-RANGE_FULL = (TESTS, WARN,
+RANGE_FULL = (RANGE, WARN,
     {
     'en': "A ranged request returned the full rather than partial content."
     },
@@ -354,7 +356,7 @@ RANGE_FULL = (TESTS, WARN,
     }
 )
 
-RANGE_STATUS = (TESTS, INFO,
+RANGE_STATUS = (RANGE, INFO,
     {
     'en': "A ranged request returned a %(range_status)s status."
     },
@@ -366,7 +368,7 @@ RANGE_STATUS = (TESTS, INFO,
     }
 )
 
-RANGE_NEG_MISMATCH = (TESTS, BAD,
+RANGE_NEG_MISMATCH = (RANGE, BAD,
     {
      'en': "Partial responses don't have the same support for compression that full ones do."
     },
@@ -381,7 +383,7 @@ RANGE_NEG_MISMATCH = (TESTS, BAD,
 
 ### Body
 
-CL_CORRECT = (CONNECTION, GOOD,
+CL_CORRECT = (GENERAL, GOOD,
     {
     'en': 'The Content-Length header is correct.'
     },
@@ -393,7 +395,7 @@ CL_CORRECT = (CONNECTION, GOOD,
     }
 )
 
-CL_INCORRECT = (CONNECTION, BAD,
+CL_INCORRECT = (GENERAL, BAD,
     {
     'en': 'The Content-Length header is incorrect (actual body size: %(body_length)s).'
     },
@@ -431,7 +433,7 @@ CMD5_INCORRECT = (GENERAL, BAD,
 
 ### Conneg
 
-CONNEG_GZIP = (GENERAL, GOOD,
+CONNEG_GZIP = (CONNEG, GOOD,
     {
     'en': 'Content negotiation for gzip compression is supported.'
     },
@@ -442,7 +444,7 @@ CONNEG_GZIP = (GENERAL, GOOD,
     }
 )
 
-CONNEG_NO_GZIP = (GENERAL, INFO,
+CONNEG_NO_GZIP = (CONNEG, INFO,
     {
     'en': 'Content negotiation for gzip compression isn\'t supported.'
     },
@@ -453,7 +455,7 @@ CONNEG_NO_GZIP = (GENERAL, INFO,
     }
 )
 
-CONNEG_NO_VARY = (GENERAL, BAD,
+CONNEG_NO_VARY = (CONNEG, BAD,
     {
     'en': "This response is negotiated, but doesn't have an appropriate Vary header."
     },
@@ -467,7 +469,7 @@ CONNEG_NO_VARY = (GENERAL, BAD,
     }
 )
 
-CONNEG_GZIP_WITHOUT_ASKING = (GENERAL, BAD,
+CONNEG_GZIP_WITHOUT_ASKING = (CONNEG, BAD,
     {
     'en': "A gzip-compressed response was sent when it wasn't asked for."
     },
@@ -479,7 +481,7 @@ CONNEG_GZIP_WITHOUT_ASKING = (GENERAL, BAD,
     }
 )
 
-VARY_INCONSISTENT = (CACHING, BAD,
+VARY_INCONSISTENT = (CONNEG, BAD,
     {
     'en': "The resource doesn't send Vary consistently."
     },
@@ -495,7 +497,7 @@ VARY_INCONSISTENT = (CACHING, BAD,
     }
 )
 
-ETAG_DOESNT_CHANGE = (GENERAL, BAD,
+ETAG_DOESNT_CHANGE = (CONNEG, BAD,
     {
     'en': "The ETag doesn't change between representations."
     },
@@ -522,7 +524,7 @@ DATE_CORRECT = (GENERAL, GOOD,
     }
 )
 
-DATE_INCORRECT = (CACHING, BAD,
+DATE_INCORRECT = (GENERAL, BAD,
     {
     'en': "The server's clock is %(clock_skew_string)s."
     },
@@ -535,7 +537,7 @@ DATE_INCORRECT = (CACHING, BAD,
     }
 )
 
-DATE_CLOCKLESS = (CACHING, WARN,
+DATE_CLOCKLESS = (GENERAL, WARN,
     {
      'en': "This response doesn't have a Date header."
     },
@@ -663,7 +665,7 @@ FRESHNESS_STALE = (CACHING, INFO,
 
 HEURISTIC_FRESHNESS = (CACHING, INFO,
     {
-     'en': "A cache is allowed to calculate freshness using a heuristic." 
+     'en': "This response allows heuristic freshness to be used." 
     },
     {
      'en': """When the response doesn't have explicit freshness information (like a <code>
@@ -677,7 +679,7 @@ HEURISTIC_FRESHNESS = (CACHING, INFO,
 
 STALE_SERVABLE = (CACHING, INFO,
     {
-     'en': "This response can be served stale by caches."
+     'en': "This response can be served stale."
     },
     {
     'en': """HTTP allows stale responses to be served under some circumstances; 
@@ -718,7 +720,7 @@ STALE_PROXY_REVALIDATE = (CACHING, INFO,
 
 ### ETag Validation
 
-INM_304 = (CACHING, GOOD,
+INM_304 = (VALIDATION, GOOD,
     {
     'en': "If-None-Match conditional requests are supported."
     },
@@ -732,7 +734,7 @@ INM_304 = (CACHING, GOOD,
     }
 )
 
-INM_FULL = (CACHING, WARN,
+INM_FULL = (VALIDATION, WARN,
     {
     'en': "An If-None-Match conditional request returned the full content unchanged."
     },
@@ -746,7 +748,7 @@ INM_FULL = (CACHING, WARN,
     }
 )
 
-INM_UNKNOWN = (CACHING, INFO,
+INM_UNKNOWN = (VALIDATION, INFO,
     {
      'en': "An If-None-Match conditional request returned the full content, but it had changed."
     },
@@ -760,7 +762,7 @@ INM_UNKNOWN = (CACHING, INFO,
     }
 )
 
-INM_STATUS = (CACHING, INFO,
+INM_STATUS = (VALIDATION, INFO,
     {
     'en': "An If-None-Match conditional request returned a %(inm_status)s status."
     },
@@ -776,7 +778,7 @@ INM_STATUS = (CACHING, INFO,
 
 ### Last-Modified Validation
 
-IMS_304 = (CACHING, GOOD,
+IMS_304 = (VALIDATION, GOOD,
     {
     'en': "If-Modified-Since conditional requests are supported."
     },
@@ -791,7 +793,7 @@ IMS_304 = (CACHING, GOOD,
     }
 )
 
-IMS_FULL = (CACHING, WARN,
+IMS_FULL = (VALIDATION, WARN,
     {
     'en': "An If-Modified-Since conditional request returned the full content unchanged."
     },
@@ -806,7 +808,7 @@ IMS_FULL = (CACHING, WARN,
     }
 )
 
-IMS_UNKNOWN = (CACHING, INFO,
+IMS_UNKNOWN = (VALIDATION, INFO,
     {
      'en': "An If-Modified-Since conditional request returned the full content, but it had changed."
     },
@@ -821,7 +823,7 @@ IMS_UNKNOWN = (CACHING, INFO,
     }
 )
 
-IMS_STATUS = (CACHING, INFO,
+IMS_STATUS = (VALIDATION, INFO,
     {
     'en': "An If-Modified-Since conditional request returned a %(ims_status)s status."
     },
