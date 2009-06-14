@@ -855,7 +855,6 @@ def makeRequest(uri, method="GET", req_headers=None, body=None,
     total_requests += 1
     req_headers.append(("User-Agent", "RED/%s (http://redbot.org/about)" % __version__))
     def response_start(version, status, phrase, res_headers, res_pause):
-        print "<!-- response start: %s %s %s -->" % (method, reason, status)
         global outstanding_requests
         response.header_timestamp = time.time()
         response.version = version
@@ -865,7 +864,6 @@ def makeRequest(uri, method="GET", req_headers=None, body=None,
         ResponseHeaderParser(response, set_message)
 
         def response_body(chunk):
-            print "<!-- response body: %s %s %s -->" % (method, reason, len(chunk))
             md5_processor.update(chunk)
             if not response.complete:
                 if response.status == "206":
@@ -908,7 +906,6 @@ def makeRequest(uri, method="GET", req_headers=None, body=None,
                     processor(response, chunk)                    
 
         def response_done(complete):
-            print "<!-- response done: %s %s -->" % (method, reason)
             global outstanding_requests
             response.complete = complete
             response.body_md5 = md5_processor.digest()
@@ -918,7 +915,6 @@ def makeRequest(uri, method="GET", req_headers=None, body=None,
             if done_cb:
                 done_cb(response)
             outstanding_requests -= 1
-            print "<!-- %s requests outstanding -->" % outstanding_requests
             if outstanding_requests == 0:
                 nbhttp.stop()
 
