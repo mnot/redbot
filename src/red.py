@@ -222,7 +222,7 @@ class ResourceExpertDroid(object):
             return # bail; nothing else to see here
         elif cc_dict.has_key('private'):
             self.setMessage('header-cache-control', rs.PRIVATE_CC)
-        if 'authorization' in [k.lower() for k, v in self.req_headers] and \
+        elif 'authorization' in [k.lower() for k, v in self.req_headers] and \
           not cc_dict.has_key('public'):
             self.setMessage('header-cache-control', rs.PRIVATE_AUTH)
         else:
