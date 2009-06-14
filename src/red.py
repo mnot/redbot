@@ -423,20 +423,20 @@ class ResponseHeaderParser(object):
             header_block_size += hdr_size
             if not re.match("^\s*%s\s*$" % TOKEN, name):
                 self.setMessage(name, rs.FIELD_NAME_BAD_SYNTAX)
-            name = name.lower()
+            norm_name = name.lower()
             value = value.strip()
-            if hdr_dict.has_key(name):
-                hdr_dict[name].append(value)
+            if hdr_dict.has_key(norm_name):
+                hdr_dict[norm_name][1].append(value)
             else:
-                hdr_dict[name] = [value]
+                hdr_dict[norm_name] = (name, [value])
         if header_block_size > max_ttl_hdr:
             self.setMessage('header', rs.HEADER_BLOCK_TOO_LARGE, 
                             header_block_size=header_block_size)
-        for fn, values in hdr_dict.items():
+        for fn, (nn, values) in hdr_dict.items():
             name_token = fn.replace('-', '_')
             # anything starting with an underscore or with any caps won't match
             if name_token[0] != '_' and hasattr(self, name_token):
-                parsed_value = getattr(self, name_token)(fn, values)
+                parsed_value = getattr(self, name_token)(nn, values)
                 if parsed_value != None:
                     self.response.parsed_hdrs[fn] = parsed_value
 
