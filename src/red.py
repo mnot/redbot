@@ -231,7 +231,7 @@ class ResourceExpertDroid(object):
         # no-cache?
         if cc_dict.has_key('no-cache'):
             self.setMessage('header-cache-control', rs.NO_CACHE)
-            return
+            return # TODO: differentiate when there aren't LM or ETag present.
 
         # calculate age
         if self.response.parsed_hdrs.has_key('date'):
