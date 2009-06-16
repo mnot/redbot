@@ -305,10 +305,11 @@ class HTMLLinkParser(HTMLParser):
                 pass
         
     def handle_starttag(self, tag, attrs):
-        title = dict(attrs).get('title', '').strip()
+        title = unicode(dict(attrs).get('title', '').strip(), errors="ignore")
         if tag in self.links.keys():
             target = dict(attrs).get(self.links[tag][0])
             if target:
+                target = unicode(target, errors="ignore")
                 self.count += 1
                 if "#" in target:
                     target = target[:target.index('#')]
