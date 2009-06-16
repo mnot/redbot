@@ -864,8 +864,8 @@ def makeRequest(uri, method="GET", req_headers=None, body=None,
         ResponseHeaderParser(response, set_message)
 
         def response_body(chunk):
-            md5_processor.update(chunk)
             if not response.complete:
+                md5_processor.update(chunk)
                 if response.status == "206":
                     # Store only partial responses completely, for error reporting
                     response.body += chunk
