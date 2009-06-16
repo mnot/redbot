@@ -33,7 +33,7 @@ with Apache you can put it in a directory and add these configuration directives
   AddHandler cgi-script .py
   DirectoryIndex webui.py
   
-If the directory is the root htdocs directory for your server "example.com", 
+If the directory is the root directory for your server "example.com", 
 this will configure RED to be at the URI "http://example.com/".
 
 red_style.css and jquery.js must be available at the same URI path as RED; 
