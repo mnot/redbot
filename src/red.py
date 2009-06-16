@@ -821,7 +821,7 @@ class Response:
         self.phrase = ""
         self.headers = []
         self.parsed_hdrs = {}
-        self.body = "" # note: only partial resposnes get this populated
+        self.body = "" # note: only partial responses get this populated
         self.body_len = 0
         self.body_md5 = None
         self.body_sample = [] # array of (offset, chunk), max size 4.
