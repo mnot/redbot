@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.5
+#!/usr/bin/env python
 
 """
 webui.py - A Web UI for RED, the Resource Expert Droid.
@@ -75,6 +75,8 @@ from HTMLParser import HTMLParser
 from urlparse import urljoin
 from urllib import quote
 from cgi import escape as e
+
+assert sys.version_info[0] == 2 and sys.version_info[1] >= 5, "Please use Python 2.5 or greater"
 
 import red
 import red_speak as rs
