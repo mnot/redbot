@@ -1,18 +1,18 @@
 body {
-	background-color: #eee;
+	background-color: #efefef;
 	color: #111;
 	font: 1.05em/1.15em sans-serif;
 	margin: 1em 4em;
 }
 h1 {
-	color: #999;
+	color: #555;
 	padding: 0;
 	text-align: right;
-	font-size: 1em;
+	font-size: 1.2em;
 	width: 600px;
 }
 .hilight {
-	color: #d66;
+	color: #d33;
 }
 h2 {
 	font-size: 1.1em;
@@ -24,7 +24,8 @@ h3 {
 }
 
 ul {
-	margin-top: 0;
+	margin-top: 0.2em;
+	margin-left: 1em;
 }
 
 pre {
@@ -60,13 +61,20 @@ input {
 	max-width: 500px;
 }
 .good {
-	color: green;
+	color: #060;
+	list-style-image: url(icon/accept1.png);
 }
 .warning {
-	color: #aa0;
+	color: #660;
+	list-style-image: url(icon/yellowflag1.png);
 }
 .bad {
-	color: red;
+	color: #800;
+	list-style-image: url(icon/remove-16.png);
+}
+.info {
+	color: #111;
+	list-style-image: url(icon/infomation-16.png);
 }
 .options {
 	margin-top: 0.2em;
