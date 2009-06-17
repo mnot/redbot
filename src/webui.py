@@ -321,7 +321,7 @@ class HTMLLinkParser(HTMLParser):
             return
 
     def error(self, message):
-            return
+        return
 
 
 if __name__ == "__main__":
