@@ -280,10 +280,10 @@ class HTMLLinkParser(HTMLParser):
     def __init__(self):
         self.link_order = (
             ('link', 'Head Links'),
-            ('a', 'Body Links'),
             ('img', 'Images'),
             ('script', 'Scripts'),
             ('frame', 'Frames'),
+            ('a', 'Body Links'),
         )
         self.links = {
             'link': ('href', set()),
