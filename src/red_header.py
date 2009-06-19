@@ -92,7 +92,7 @@ $(document).ready(function(){
 <body>
 <div id="main">
 
-<h1><span class="hilight">r</span>esource <span class="hilight">e</span>xpert <span class="hilight">d</span>roid</h1>
+<h1><span class="hilight">R</span>esource <span class="hilight">E</span>xpert <span class="hilight">D</span>roid</h1>
 
 <p><form method="GET"><input type="text" name="uri" value="%(uri)s" id="uri"/></form></p>
 """

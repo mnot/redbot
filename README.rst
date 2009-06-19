@@ -47,7 +47,7 @@ documentation for more information.
 Support, Reporting Issues and Contributing
 ------------------------------------------
 
-See <http://redbot.org/project> to give feedback, report issues, and contribute
+See <http://REDbot.org/project> to give feedback, report issues, and contribute
 to the project. You can also join the redbot-users mailing list there.
 
 Credits
