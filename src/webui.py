@@ -89,7 +89,7 @@ msg_categories = [
 
 req_headers = []
 
-template = """\
+template = u"""\
 <pre>
 %(response)s
 </pre>
@@ -106,7 +106,7 @@ template = """\
 
 """
 
-red_footer = """\
+red_footer = u"""\
 
 <p class="version">this is red %(version)s.</p>
 <p class="navigation"> 
@@ -126,12 +126,14 @@ title="drag me to your toolbar to use RED any time.">red</a> bookmarklet
 </html>
 """
 
-error_template = """\
+error_template = u"""\
 
 <p class="error">
  %s
 </p>
 """
+
+nl = u"\n"
 
 class RedWebUi(object):
     def __init__(self, test_uri):
@@ -159,53 +161,53 @@ class RedWebUi(object):
         result_strings = {
             'uri': e(self.red.response.uri),
             'response': self.presentResponse(),
-            'options': "\n".join(self.presentOptions()),
-            'messages': "\n".join([self.presentCategory(cat) for cat in msg_categories]),
-            'links': "\n".join(self.presentLinks()),
-            'stats':  "that took %(elapsed)2.2f seconds and %(reqs)i request(s)." % {
+            'options': nl.join(self.presentOptions()),
+            'messages': nl.join([self.presentCategory(cat) for cat in msg_categories]),
+            'links': nl.join(self.presentLinks()),
+            'stats':  u"that took %(elapsed)2.2f seconds and %(reqs)i request(s)." % {
                 'elapsed': self.elapsed, 
                 'reqs': red.total_requests                                                                           
                 }
         }
-        return template % result_strings
+        return (template % result_strings).encode("utf-8")
 
     def presentResponse(self):
         return \
-        "    <span class='response-line'>HTTP/%s %s %s</span>\n" % (
+        u"    <span class='response-line'>HTTP/%s %s %s</span>\n" % (
             e(str(self.red.response.version)), 
             e(str(self.red.response.status)), 
             e(str(self.red.response.phrase))
         ) + \
-        "\n".join([self.presentHeader(f,v) for (f,v) in self.red.response.headers])
+        nl.join([self.presentHeader(f,v) for (f,v) in self.red.response.headers])
 
     def presentHeader(self, name, value):
         token_name = name.lower()
-        return "    <span class='header-%s hdr'>%s:%s</span>" % (
+        return u"    <span class='header-%s hdr'>%s:%s</span>" % (
             e(token_name), e(name), self.header_presenter.Show(name, value))
 
     def presentCategory(self, category):
         messages = [msg for msg in self.red.messages if msg[1][0] == category]
         if not messages:
-            return ""
-        return "<h3>%s</h3>\n<ul>\n" % category \
-        + "\n".join([
-                    "<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span></li>" % 
+            return nl
+        return u"<h3>%s</h3>\n<ul>\n" % category \
+        + nl.join([
+                    u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span></li>" % 
                     (l, e(s), e(m[lang]%v), lm[lang]%v) 
                     for (s,(c,l,m,lm),v) in messages
                     ]) \
-        + "</ul>\n"
+        + u"</ul>\n"
 
     def presentOptions(self):
         options = []
         media_type = self.red.response.parsed_hdrs.get('content-type', [None])[0]
         if media_type in viewable_types:
-            options.append("<a href='%s'>view</a>" % self.red.response.uri)
+            options.append(u"<a href='%s'>view</a>" % self.red.response.uri)
         if media_type in link_parseable_types:
             if self.links.count > 0:
-                options.append("<a href='#' class='link_view' title='%s'>links</a>" %
+                options.append(u"<a href='#' class='link_view' title='%s'>links</a>" %
                                self.red.response.uri)
         if validators.has_key(media_type):
-            options.append("<a href='%s'>validate body</a>" % 
+            options.append(u"<a href='%s'>validate body</a>" % 
                            validators[media_type] % self.red.response.uri)
         return options
 
@@ -217,17 +219,17 @@ class RedWebUi(object):
             if len(link_set) > 0:
                 link_list = list(link_set)
                 link_list.sort()
-                out.append("<h3>%s</h3>" % name)
-                out.append("<ul>")
+                out.append(u"<h3>%s</h3>" % name)
+                out.append(u"<ul>")
                 for target in link_set:
                     title = self.links.titles.get(target, target)
-                    al = "?uri=%s" % quote(urljoin(base, target), safe=":;/?#@+$&,")
-                    out.append("<li><a href='%s' title='%s'>%s</a></li>" % (al, e(target), e(title)))
-                out.append("</ul>")
+                    al = u"?uri=%s" % quote(urljoin(base, target), safe=":;/?#@+$&,")
+                    out.append(u"<li><a href='%s' title='%s'>%s</a></li>" % (al, e(target), e(title)))
+                out.append(u"</ul>")
         return out
 
     def updateStatus(self, message):
-        print """
+        print u"""
 <script language="JavaScript">
 <!--
 window.status="%s";
@@ -268,7 +270,7 @@ class HeaderPresenter(object):
         value = value.rstrip()
         svalue = value.lstrip()
         space = len(value) - len(svalue)
-        return "%s<a href='?uri=%s'>%s</a>" % ( " " * space,
+        return u"%s<a href='?uri=%s'>%s</a>" % ( " " * space,
             e(urljoin(self.red.response.uri, svalue)), i(e(svalue), len(name)))
     content_location = \
     location = \
@@ -279,11 +281,11 @@ class HeaderPresenter(object):
 class HTMLLinkParser(HTMLParser):
     def __init__(self):
         self.link_order = (
-            ('link', 'Head Links'),
-            ('img', 'Images'),
-            ('script', 'Scripts'),
-            ('frame', 'Frames'),
-            ('a', 'Body Links'),
+            ('link', u'Head Links'),
+            ('img', u'Images'),
+            ('script', u'Scripts'),
+            ('frame', u'Frames'),
+            ('a', u'Body Links'),
         )
         self.links = {
             'link': ('href', set()),
@@ -300,12 +302,13 @@ class HTMLLinkParser(HTMLParser):
     def feed(self, response, chunk):
         if response.parsed_hdrs.get('content-type', [None])[0] in link_parseable_types:
             try:
-                HTMLParser.feed(self, chunk)
+                # HTMLParser doesn't like Unicode input, so we assume UTF-8. Not great...
+                HTMLParser.feed(self, unicode(chunk, "utf-8", "replace").encode("UTF-8", "ignore"))
             except Exception: # oh, well...
                 pass
         
     def handle_starttag(self, tag, attrs):
-        title = unicode(dict(attrs).get('title', '').strip(), errors="ignore")
+        title = dict(attrs).get('title', '').strip()
         if tag in self.links.keys():
             target = dict(attrs).get(self.links[tag][0])
             if target:
@@ -330,7 +333,7 @@ if __name__ == "__main__":
         uri = sys.argv[1]
     except IndexError:
         uri = form.getfirst("uri", "")
-    print "Content-Type: text/html"
+    print "Content-Type: text/html; charset=utf-8"
     if uri:
         print "Cache-Control: max-age=60, must-revalidate"
     else:

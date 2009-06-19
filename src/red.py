@@ -127,11 +127,12 @@ class ResourceExpertDroid(object):
                     if range_res.body == range_target:
                         self.setMessage('header-accept-ranges', rs.RANGE_CORRECT)
                     else:
+                        # the body samples are just bags of bits
                         self.setMessage('header-accept-ranges', rs.RANGE_INCORRECT,
                             range="bytes=%s-%s" % (range_start, range_end),
-                            range_expected=e(range_target),
+                            range_expected=e(unicode(range_target, errors="replace")),
                             range_expected_bytes = len(range_target),
-                            range_received=e(range_res.body),
+                            range_received=e(unicode(range_res.body, errors="replace")),
                             range_received_bytes = range_res.body_len
                         ) 
                 # TODO: address 416 directly
@@ -821,10 +822,10 @@ class Response:
         self.phrase = ""
         self.headers = []
         self.parsed_hdrs = {}
-        self.body = "" # note: only partial responses get this populated
+        self.body = "" # note: only partial responses get this populated; bytes, not unicode
         self.body_len = 0
         self.body_md5 = None
-        self.body_sample = [] # array of (offset, chunk), max size 4.
+        self.body_sample = [] # array of (offset, chunk), max size 4. Bytes, not unicode.
         self.complete = False
         self.header_timestamp = None
         self._in_gzip_body = False

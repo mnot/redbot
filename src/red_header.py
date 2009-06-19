@@ -3,6 +3,7 @@
 <head>
 	<title>RED: &lt;%(uri)s&gt;</title>
 	<link rel="stylesheet" type='text/css' href="red_style.css">
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 </head>
 <script src="jquery.js"></script>
 <script src="./jquery.hoverIntent.js"></script>
