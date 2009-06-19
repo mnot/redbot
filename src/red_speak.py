@@ -47,10 +47,10 @@ CONNECTION = u"Connection"
 RANGE = u"Partial Content"
 
 # message levels
-GOOD = 'good'
-BAD = 'bad'
-INFO = 'info'
-WARN = 'warning'
+GOOD = u'good'
+BAD = u'bad'
+INFO = u'info'
+WARN = u'warning'
 
 URI_TOO_LONG = (GENERAL, WARN,
     {
