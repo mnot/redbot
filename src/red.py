@@ -168,11 +168,13 @@ class ResourceExpertDroid(object):
 
     def checkConneg(self):
         if "gzip" in self.response.parsed_hdrs.get('content-encoding', []):
-            self.setMessage('header-content-encoding', rs.CONNEG_GZIP)
-            vary_headers = self.response.parsed_hdrs.get('vary', [])
-            if (not "accept-encoding" in vary_headers) and (not "*" in vary_headers):
-                self.setMessage('header-vary header-%s', rs.CONNEG_NO_VARY)
             def conneg_done(no_conneg_res):
+                uncomp_len = no_conneg_res.body_len
+                self.setMessage('header-content-encoding', rs.CONNEG_GZIP, 
+                    savings=int(100 * ((float(uncomp_len) - self.response.body_len) / self.response.body_len)))
+                vary_headers = self.response.parsed_hdrs.get('vary', [])
+                if (not "accept-encoding" in vary_headers) and (not "*" in vary_headers):
+                    self.setMessage('header-vary header-%s', rs.CONNEG_NO_VARY)
                 # FIXME: verify that the status/body/hdrs are the same; if it's different, alert
                 no_conneg_vary_headers = no_conneg_res.parsed_hdrs.get('vary', [])
                 if 'gzip' in no_conneg_res.parsed_hdrs.get('content-encoding', []):

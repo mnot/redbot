@@ -459,7 +459,8 @@ CONNEG_GZIP = (CONNEG, GOOD,
     {
     'en': u"""HTTP supports compression of responses by negotiating for 
     <code>Content-Encoding</code>. When RED asked for a compressed response, 
-    the resource provided one."""
+    the resource provided one, saving %(savings)s%% of its size.<p>
+    The compressed response is displayed."""
     }
 )
 
