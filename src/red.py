@@ -655,8 +655,11 @@ class ResponseHeaderParser(object):
             self.setMessage(name, rs.VARY_COMPLEX, vary_count=len(values))
         elif "*" in values:
             self.setMessage(name, rs.VARY_ASTERISK)
-        elif 'user-agent' in values:
-            self.setMessage(name, rs.VARY_USER_AGENT)
+        else:
+            if 'user-agent' in values:
+                self.setMessage(name, rs.VARY_USER_AGENT)
+            if 'host' in values:
+                self.setMessage(name, rs.VARY_HOST)
         return values
         
     @GenericHeaderSyntax

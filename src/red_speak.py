@@ -286,6 +286,25 @@ VARY_USER_AGENT = (CACHING, WARN,
     }
 )
 
+VARY_HOST = (CACHING, WARN,
+    {
+     'en': u"Vary: Host is not necessary."
+    },
+    {
+    'en': u"""Some servers (e.g., <a href="http://httpd.apache.org/">Apache</a>
+    with 
+    <a href="http://httpd.apache.org/docs/2.0/mod/mod_rewrite.html">mod_rewrite</a>) 
+    will send <code>Host</code> in the <code>Vary</code> header, in the belief 
+    that since it affects how the server selects what to send back, 
+    this is necessary.<p>
+    This is not the case; HTTP specifies that the URI is the basis of the cache
+    key, and the URI incorporates the <code>Host</code> header.<p>
+    The presence of <code>Vary: Host</code> may make some caches not store
+    an otherwise cacheable response (since some cache implementations will
+    not store anything that has a <code>Vary</code> header)."""
+    }
+)
+
 VARY_COMPLEX = (CACHING, WARN,
     {
      'en': u"This resource varies in %(vary_count)i ways."
