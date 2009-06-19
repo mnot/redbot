@@ -171,7 +171,7 @@ class ResourceExpertDroid(object):
             def conneg_done(no_conneg_res):
                 uncomp_len = no_conneg_res.body_len
                 self.setMessage('header-content-encoding', rs.CONNEG_GZIP, 
-                    savings=int(100 * ((float(uncomp_len) - self.response.body_len) / self.response.body_len)))
+                    savings=int(100 * ((float(uncomp_len) - self.response.body_len) / uncomp_len)))
                 vary_headers = self.response.parsed_hdrs.get('vary', [])
                 if (not "accept-encoding" in vary_headers) and (not "*" in vary_headers):
                     self.setMessage('header-vary header-%s', rs.CONNEG_NO_VARY)
