@@ -68,8 +68,11 @@ $(document).ready(function(){
 	});
 
 	var check_phrase = "Enter a HTTP URI to check";
+	var uri = "%(uri)s";
 	$(document).ready(function(){
-		if (! $("#uri").val()) {
+		if (uri) {
+			$("#uri").val(uri);		
+		} else if (! $("#uri").val()) {
 			$("#uri").val(check_phrase);
 			$("#uri").css({'color': '#ccc'});
 		}
