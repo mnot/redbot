@@ -650,6 +650,30 @@ NO_CACHE = (CACHING, INFO,
     }
 )
 
+PUBLIC = (CACHING, WARN,
+    {
+     'en': u"Cache-Control: public is rarely necessary."
+    },
+    {
+     'en': u"""The <code>Cache-Control: public</code> directive is useful 
+     to make a response cacheable even when the request had an
+     <code>Authorization</code> header (i.e., HTTP authentication was in use).<p>
+     This is useful if your site uses HTTP authentication; often, only some 
+     resources need to be authenticated, but clients will send the
+     <code>Authentication</code> header for all requests covered by the
+     realm.<p>
+     Additionally, <a href="http://firefox.org/">Firefox</a>'s cache
+     will store SSL-protected responses on disk when <code>public</code> is
+     present; otherwise, they are only cached in memory.<p>
+     <p>Therefore, SSL-protected or HTTP-authenticated (NOT cookie-authenticated)
+     resources <em>may</em> have use for <code>public</code> to improve 
+     cacheability, if used judiciously.<p>
+     However, other resources <strong>do not need to send <code>public</code>
+     </strong>; it does not make the response "more cacheable", and only
+     makes the response headers larger."""
+    }
+)
+
 CURRENT_AGE = (CACHING, INFO,
     {
      'en': u"This response has been cached for %(current_age)s."

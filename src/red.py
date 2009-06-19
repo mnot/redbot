@@ -234,6 +234,10 @@ class ResourceExpertDroid(object):
             self.setMessage('header-cache-control', rs.NO_CACHE)
             return # TODO: differentiate when there aren't LM or ETag present.
 
+        # public?
+        if cc_dict.has_key('public'):
+            self.setMessage('header-cache-control', rs.PUBLIC)
+
         # calculate age
         if self.response.parsed_hdrs.has_key('date'):
             apparent_age = max(0, 
