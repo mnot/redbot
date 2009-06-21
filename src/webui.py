@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
 """
-webui.py - A Web UI for RED, the Resource Expert Droid.
+A Web UI for RED, the Resource Expert Droid.
+"""
 
+__author__ = "Mark Nottingham <mnot@mnot.net>"
+__copyright__ = """\
 Copyright (c) 2008-2009 Mark Nottingham
 
 Permission is hereby granted, free of charge, to any person obtaining a copy

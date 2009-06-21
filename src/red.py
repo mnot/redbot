@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 
 """
-red.py - the Resource Expert Droid. See webui.py for the Web front-end.
+The Resource Expert Droid. See webui.py for the Web front-end.
+"""
 
+__version__ = "1"
+__author__ = "Mark Nottingham <mnot@mnot.net>"
+__copyright__ = """\
 Copyright (c) 2008-2009 Mark Nottingham
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,8 +27,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
-
-__version__ = "1"
 
 import re
 import time

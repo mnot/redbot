@@ -1,6 +1,22 @@
 """
-red_speak.py - A collection of messages that the RED can emit.
+A collection of messages that the RED can emit.
 
+Each should be in the form:
+
+MESSAGE_ID = (classification, level, 
+    {'lang': u'message'}
+    {'lang': u'long message'}
+)
+
+where 'lang' is a language tag, 'message' is a string (NO HTML) that
+contains the message in that language, and 'long message' is a longer
+explanation that may contain HTML.
+
+Both message forms may contain %(var)s style variable interpolation.
+"""
+
+__author__ = "Mark Nottingham <mnot@mnot.net>"
+__copyright__ = """\
 Copyright (c) 2009 Mark Nottingham
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,23 +36,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-
-###########################################################################
-
-Each should be in the form:
-
-MESSAGE_ID = (classification, level, 
-    {'lang': u'message'}
-    {'lang': u'long message'}
-)
-
-where 'lang' is a language tag, 'message' is a string (NO HTML) that
-contains the message in that language, and 'long message' is a longer
-explanation that may contain HTML.
-
-Both message forms may contain %(var)s style variable interpolation.
 """
-
 
 # message classifications
 GENERAL = u"General"
