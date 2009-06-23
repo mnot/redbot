@@ -917,11 +917,11 @@ def makeRequest(uri, method="GET", req_headers=None, body=None,
                 for processor in body_processors:
                     processor(response, chunk)                    
 
-        def response_done(complete):
+        def response_done(err):
             global outstanding_requests
-            response.complete = complete
+            response.complete = True # FIXME: check for errors
             response.body_md5 = md5_processor.digest()
-            # TODO: move status parsing, other checks here too
+            # TODO: move status parsing, other checks here too?
             if status_cb and reason:
                 status_cb("fetched %s (%s)" % (uri, reason))
             if done_cb:
@@ -938,7 +938,7 @@ def makeRequest(uri, method="GET", req_headers=None, body=None,
     req_body_write, req_body_done = c.req_start(method, uri, req_headers, nbhttp.dummy)
     if body != None:
         req_body_write(body)
-        req_body_done()
+    req_body_done(None)
 
 
 # adapted from gzip.py
