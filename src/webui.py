@@ -90,7 +90,8 @@ msg_categories = [
     rs.GENERAL, rs.CONNEG, rs.CONNECTION, rs.CACHING, rs.VALIDATION, rs.RANGE
 ]
 
-req_headers = []
+# any request headers that we want to *always* send.
+req_hdrs = []
 
 template = u"""\
 <pre>
@@ -139,17 +140,18 @@ error_template = u"""\
 nl = u"\n"
 
 class RedWebUi(object):
-    def __init__(self, test_uri):
-        print red_header.__doc__ % {'uri': e(test_uri)} 
+    def __init__(self, uri):
+        print red_header.__doc__ % {'uri': e(uri)} 
         sys.stdout.flush()
         self.links = HTMLLinkParser()
         if uri:
             start = time.time()
             try:
-                self.red = red.ResourceExpertDroid(uri, 
-                    req_headers=req_headers,
-                    body_processors=[self.links.feed],
-                    status_cb=self.updateStatus
+                self.red = red.ResourceExpertDroid(
+                    uri, 
+                    req_hdrs=req_hdrs,
+                    status_cb=self.updateStatus,
+                    body_procs=[self.links.feed],
                 )
                 self.updateStatus('Done.')
                 self.elapsed = time.time() - start
@@ -162,26 +164,23 @@ class RedWebUi(object):
     
     def presentResults(self):
         result_strings = {
-            'uri': e(self.red.response.uri),
+            'uri': e(self.red.uri),
             'response': self.presentResponse(),
             'options': nl.join(self.presentOptions()),
             'messages': nl.join([self.presentCategory(cat) for cat in msg_categories]),
             'links': nl.join(self.presentLinks()),
-            'stats':  u"that took %(elapsed)2.2f seconds and %(reqs)i request(s)." % {
-                'elapsed': self.elapsed, 
-                'reqs': red.total_requests                                                                           
-                }
+            'stats':  u"that took %(elapsed)2.2f seconds" % {'elapsed': self.elapsed}
         }
         return (template % result_strings).encode("utf-8")
 
     def presentResponse(self):
         return \
         u"    <span class='response-line'>HTTP/%s %s %s</span>\n" % (
-            e(str(self.red.response.version)), 
-            e(str(self.red.response.status)), 
-            e(str(self.red.response.phrase))
+            e(str(self.red.res_version)), 
+            e(str(self.red.res_status)), 
+            e(str(self.red.res_phrase))
         ) + \
-        nl.join([self.presentHeader(f,v) for (f,v) in self.red.response.headers])
+        nl.join([self.presentHeader(f,v) for (f,v) in self.red.res_hdrs])
 
     def presentHeader(self, name, value):
         token_name = name.lower()
@@ -189,19 +188,19 @@ class RedWebUi(object):
             e(token_name), e(name), self.header_presenter.Show(name, value))
 
     def presentCategory(self, category):
-        messages = [msg for msg in self.red.response.messages if msg[1][0] == category]
+        messages = [msg for msg in self.red.messages if msg[1][0] == category]
         if not messages:
             return nl
         out = [u"<h3>%s</h3>\n<ul>\n" % category]
-        for (s,(c,l,m,lm),sms,v) in messages:
+        for (s, (c, l, m, lm), sr, v) in messages:
             out.append(u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span>" % 
                     (l, e(s), e(m[lang]%v), lm[lang]%v)
             )
             out.append(u"</li>")
-            sms = [msg for msg in (sms or []) if msg[1][1] in [rs.BAD]]
-            if sms: 
+            smsgs = [msg for msg in getattr(sr, "messages", []) if msg[1][1] in [rs.BAD]]
+            if smsgs: 
                 out.append(u"<ul>")
-                for (s,(c,l,m,lm),sms,v) in sms:
+                for (s, (c, l, m, lm), sms, v) in smsgs:
                     out.append(u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span></li>" % 
                             (l, e(s), e(m[lang]%v), lm[lang]%v)
                     )
@@ -212,20 +211,20 @@ class RedWebUi(object):
 
     def presentOptions(self):
         options = []
-        media_type = self.red.response.parsed_hdrs.get('content-type', [None])[0]
+        media_type = self.red.parsed_hdrs.get('content-type', [None])[0]
         if media_type in viewable_types:
-            options.append(u"<a href='%s'>view</a>" % self.red.response.uri)
+            options.append(u"<a href='%s'>view</a>" % self.red.uri)
         if media_type in link_parseable_types:
             if self.links.count > 0:
                 options.append(u"<a href='#' class='link_view' title='%s'>links</a>" %
-                               self.red.response.uri)
+                               self.red.uri)
         if validators.has_key(media_type):
             options.append(u"<a href='%s'>validate body</a>" % 
-                           validators[media_type] % self.red.response.uri)
+                           validators[media_type] % self.red.uri)
         return options
 
     def presentLinks(self):
-        base = self.links.base or self.red.response.uri
+        base = self.links.base or self.red.uri
         out = []
         for tag, name in self.links.link_order:
             attr, link_set = self.links.links[tag]
@@ -284,7 +283,7 @@ class HeaderPresenter(object):
         svalue = value.lstrip()
         space = len(value) - len(svalue)
         return u"%s<a href='?uri=%s'>%s</a>" % ( " " * space,
-            e(urljoin(self.red.response.uri, svalue)), i(e(svalue), len(name)))
+            e(urljoin(self.red.uri, svalue)), i(e(svalue), len(name)))
     content_location = \
     location = \
     x_xrds_location = \
@@ -343,13 +342,13 @@ class HTMLLinkParser(HTMLParser):
 if __name__ == "__main__":
     form = cgi.FieldStorage()
     try:
-        uri = sys.argv[1]
+        test_uri = sys.argv[1]
     except IndexError:
-        uri = form.getfirst("uri", "")
+        test_uri = form.getfirst("uri", "")
     print "Content-Type: text/html; charset=utf-8"
-    if uri:
+    if test_uri:
         print "Cache-Control: max-age=60, must-revalidate"
     else:
         print "Cache-Control: max-age=3600"
     print
-    RedWebUi(uri)
+    RedWebUi(test_uri)
