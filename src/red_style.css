@@ -27,7 +27,10 @@ ul {
 	margin-top: 0.2em;
 	margin-left: 1em;
 }
-
+ul ul {
+	padding-left: 0.6em;
+	margin-bottom: 0.4em;
+}
 pre {
 	background-color: #111;
 	color: #ddd;

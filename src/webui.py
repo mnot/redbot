@@ -155,7 +155,7 @@ class RedWebUi(object):
                 self.elapsed = time.time() - start
                 self.header_presenter = HeaderPresenter(self.red)
                 print self.presentResults()
-            except AssertionError, why:
+            except red.DroidError, why:
                 print error_template % why
         print red_footer % {'version': red.__version__}
         sys.stdout.flush()            
@@ -189,16 +189,26 @@ class RedWebUi(object):
             e(token_name), e(name), self.header_presenter.Show(name, value))
 
     def presentCategory(self, category):
-        messages = [msg for msg in self.red.messages if msg[1][0] == category]
+        messages = [msg for msg in self.red.response.messages if msg[1][0] == category]
         if not messages:
             return nl
-        return u"<h3>%s</h3>\n<ul>\n" % category \
-        + nl.join([
-                    u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span></li>" % 
-                    (l, e(s), e(m[lang]%v), lm[lang]%v) 
-                    for (s,(c,l,m,lm),v) in messages
-                    ]) \
-        + u"</ul>\n"
+        out = [u"<h3>%s</h3>\n<ul>\n" % category]
+        for (s,(c,l,m,lm),sms,v) in messages:
+            out.append(u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span>" % 
+                    (l, e(s), e(m[lang]%v), lm[lang]%v)
+            )
+            out.append(u"</li>")
+            sms = [msg for msg in (sms or []) if msg[1][1] in [rs.BAD]]
+            if sms: 
+                out.append(u"<ul>")
+                for (s,(c,l,m,lm),sms,v) in sms:
+                    out.append(u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span></li>" % 
+                            (l, e(s), e(m[lang]%v), lm[lang]%v)
+                    )
+                out.append(u"</ul>")
+        out.append(u"</ul>\n")
+        return nl.join(out)
+        
 
     def presentOptions(self):
         options = []
@@ -306,14 +316,14 @@ class HTMLLinkParser(HTMLParser):
         if response.parsed_hdrs.get('content-type', [None])[0] in link_parseable_types:
             try:
                 # HTMLParser doesn't like Unicode input, so we assume UTF-8. Not great...
-                HTMLParser.feed(self, unicode(chunk, "utf-8", "replace").encode("UTF-8", "ignore"))
+                HTMLParser.feed(self, unicode(chunk, "utf-8", "replace").encode("utf-8", "ignore"))
             except Exception: # oh, well...
                 pass
         
     def handle_starttag(self, tag, attrs):
         title = dict(attrs).get('title', '').strip()
         if tag in self.links.keys():
-            target = dict(attrs).get(self.links[tag][0])
+            target = dict(attrs).get(self.links[tag][0]).decode("utf-8", "ignore")
             if target:
                 target = unicode(target, errors="ignore")
                 self.count += 1

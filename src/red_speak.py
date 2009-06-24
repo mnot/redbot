@@ -52,6 +52,14 @@ BAD = u'bad'
 INFO = u'info'
 WARN = u'warning'
 
+response = {
+    'this': {'en': 'This response'},
+    'conneg': {'en': 'The uncompressed response'},
+    'LM validation': {'en': 'The 304 response'},
+    'ETag validation': {'en': 'The 304 response'},
+    'range': {'en': 'The partial response'},
+}
+
 URI_TOO_LONG = (GENERAL, WARN,
     {
     'en': u"The URI is very long (%(uri_len)s characters)."
@@ -98,7 +106,7 @@ FIELD_NAME_BAD_SYNTAX = (GENERAL, BAD,
 
 HEADER_BLOCK_TOO_LARGE = (GENERAL, BAD,
     {
-    'en': u"This response's headers are very large (%(header_block_size)s)."
+    'en': u"%(response)s's headers are very large (%(header_block_size)s)."
     },
     {
     'en': u"""Some implementations have limits on the total size of headers
@@ -128,6 +136,20 @@ SINGLE_HEADER_REPEAT = (GENERAL, BAD,
     For the purposes of its tests, RED uses the last instance of the header that
     is present; other implementations may choose a different one."""
     }
+)
+
+BODY_NOT_ALLOWED = (CONNECTION, BAD,
+    {
+     'en': u"%(response)s is not allowed to have a body."
+    },
+    {
+     'en': u"""HTTP defines a few special situations where a response does not
+     allow a body. This includes 101, 204 and 304 responses, as well as responses
+     to the <code>HEAD</code> method.<p>
+     %(response)s had a body, despite it being disallowed. Clients receiving 
+     it may treat the body as the next response in the connection, leading to
+     interoperability and security issues."""
+    }               
 )
 
 BAD_SYNTAX = (GENERAL, BAD,
@@ -172,20 +194,40 @@ AGE_NEGATIVE = (CACHING, BAD,
     }
 )
 
+BAD_CHUNK = (CONNECTION, BAD,
+    {
+     'en': u"%(response)s had chunked encoding errors."
+    },
+    {
+     'en': u"""The response indicates it uses HTTP chunked encoding, but there
+     was a problem decoding the chunking.<p>     
+     A valid chunk looks something like this:<p>
+     <code>[chunk-size in hex]\\r\\n[chunk-data]\\r\\n</code><p>
+     However, the chunk sent started like this:<p>
+     <code>%(chunk_sample)s</code><p>
+     This is a serious problem, because HTTP uses chunking to delimit one
+     response from the next one; incorrect chunking can lead to interoperability
+     and security problems.<p>
+     This issue is often caused by sending an integer chunk size instead of one
+     in hex, or by sending <code>Transfer-Encoding: chunked</code> without
+     actually chunking the response body."""
+    }
+)
+
 BAD_GZIP = (CONNEG, BAD,
     {
-    'en': u"This response was compressed using GZip, but the header wasn't valid."
+    'en': u"%(response)s was compressed using GZip, but the header wasn't valid."
     },
     {
     'en': u"""GZip-compressed responses have a header that contains metadata. 
-    This response's header wasn't valid; the error encountered was 
+    %(response)s's header wasn't valid; the error encountered was 
     "<code>%(gzip_error)s</code>"."""
     }
 )
 
 BAD_ZLIB = (CONNEG, BAD,
     {
-    'en': u"This response was compressed using GZip, but the data was corrupt."
+    'en': u"%(response)s was compressed using GZip, but the data was corrupt."
     },
     {
     'en': u"""GZip-compressed responses use zlib compression to reduce the number
@@ -216,7 +258,7 @@ LM_FUTURE = (CACHING, BAD,
     },
     {
     'en': u"""The <code>Last-Modified</code> header indicates the last point in 
-    time that the resource has changed. This response's 
+    time that the resource has changed. %(response)s's 
     <code>Last-Modified</code> time is in the future, which doesn't have any 
     defined meaning in HTTP."""
     }
@@ -244,7 +286,7 @@ MIME_VERSION = (GENERAL, INFO,
     }
 )
 
-PRAGMA_NO_CACHE = (CACHING, BAD,
+PRAGMA_NO_CACHE = (CACHING, WARN,
     {
     'en': u"Pragma: no-cache is a request directive, not a response directive."
     },
@@ -416,14 +458,15 @@ CL_CORRECT = (GENERAL, GOOD,
 
 CL_INCORRECT = (GENERAL, BAD,
     {
-    'en': u'The Content-Length header is incorrect (actual body size: %(body_length)s).'
+    'en': u"%(response)s's Content-Length header is incorrect."
     },
     {
     'en': u"""<code>Content-Length</code> is used by HTTP to delimit messages; 
     that is, to mark the end of one message and the beginning of the next. RED 
     has checked the length of the body and found the <code>Content-Length</code> 
     is not correct. This can cause problems not only with connection handling, 
-    but also caching, since an incomplete response is considered uncacheable."""
+    but also caching, since an incomplete response is considered uncacheable.<p>
+    The actual body size sent was %(body_length)s bytes."""
     }
 )
 
@@ -459,8 +502,9 @@ CONNEG_GZIP = (CONNEG, GOOD,
     {
     'en': u"""HTTP supports compression of responses by negotiating for 
     <code>Content-Encoding</code>. When RED asked for a compressed response, 
-    the resource provided one, saving %(savings)s%% of its size.<p>
-    The compressed response is displayed."""
+    the resource provided one, saving %(savings)s%% of its original size 
+    (%(orig_size)s bytes).<p>
+    The compressed response's headers displayed."""
     }
 )
 
@@ -477,13 +521,13 @@ CONNEG_NO_GZIP = (CONNEG, INFO,
 
 CONNEG_NO_VARY = (CONNEG, BAD,
     {
-    'en': u"This response is negotiated, but doesn't have an appropriate Vary header."
+    'en': u"%(response)s is negotiated, but doesn't have an appropriate Vary header."
     },
     {
     'en': u"""Any response that's content negotiated needs to have a
     <code>Vary</code> header that reflects the header(s) used to select the
     response.<p>
-    This response was negotiated for <code>gzip</code> content encoding, so
+    %(response)s was negotiated for <code>gzip</code> content encoding, so
     the <code>Vary</code> header needs to contain <code>Accept-Encoding</code>,
     the request header used."""
     }
@@ -559,7 +603,7 @@ DATE_INCORRECT = (GENERAL, BAD,
 
 DATE_CLOCKLESS = (GENERAL, WARN,
     {
-     'en': u"This response doesn't have a Date header."
+     'en': u"%(response)s doesn't have a Date header."
     },
     {
      'en': u"""Although HTTP allowes a server not to send a <code>Date</code> header if it
@@ -593,7 +637,7 @@ METHOD_UNCACHEABLE = (CACHING, INFO,
 
 NO_STORE = (CACHING, INFO,
     {
-     'en': u"This response can't be stored by a cache."
+     'en': u"%(response)s can't be stored by a cache."
     },
     {
     'en': u"""The <code>Cache-Control: no-store</code> directive indicates that 
@@ -603,7 +647,7 @@ NO_STORE = (CACHING, INFO,
 
 PRIVATE_CC = (CACHING, INFO,
     {
-     'en': u"This response can only be stored by a private cache."
+     'en': u"%(response)s can only be stored by a private cache."
     },
     {
     'en': u"""The <code>Cache-Control: private</code> directive indicates that the
@@ -615,7 +659,7 @@ PRIVATE_CC = (CACHING, INFO,
 
 PRIVATE_AUTH = (CACHING, INFO,
     {
-     'en': u"This response can only be stored by a private cache."
+     'en': u"%(response)s can only be stored by a private cache."
     },
     {
     'en': u"""Because the request was authenticated and this response doesn't contain
@@ -628,7 +672,7 @@ PRIVATE_AUTH = (CACHING, INFO,
 
 STOREABLE = (CACHING, INFO,
     {
-     'en': u"""This response can be stored by any cache."""
+     'en': u"""%(response)s can be stored by any cache."""
     },
     {
      'en': u"""A cache can store this response; it may or may not be able to 
@@ -638,7 +682,7 @@ STOREABLE = (CACHING, INFO,
 
 NO_CACHE = (CACHING, INFO,
     {
-     'en': u"This response cannot be served from cache without validation."
+     'en': u"%(response)s cannot be served from cache without validation."
     },
     {
      'en': u"""The <code>Cache-Control: no-store</code> directive means that 
@@ -677,7 +721,7 @@ PUBLIC = (CACHING, WARN,
 
 CURRENT_AGE = (CACHING, INFO,
     {
-     'en': u"This response has been cached for %(current_age)s."
+     'en': u"%(response)s has been cached for %(current_age)s."
     },
     {
     'en': u"""The <code>Age</code> header indicates the age of the response; 
@@ -689,7 +733,7 @@ CURRENT_AGE = (CACHING, INFO,
 
 FRESHNESS_FRESH = (CACHING, GOOD,
     {
-     'en': u"This response is fresh until %(freshness_left)s from now."
+     'en': u"%(response)s is fresh until %(freshness_left)s from now."
     },
     {
     'en': u"""A response can be considered fresh when its age (here, %(current_age)s)
@@ -699,7 +743,7 @@ FRESHNESS_FRESH = (CACHING, GOOD,
 
 FRESHNESS_STALE = (CACHING, INFO,
     {
-     'en': u"This response is stale."
+     'en': u"%(response)s is stale."
     },
     {
     'en': u"""A cache considers a HTTP response stale when its age (here, %(current_age)s)
@@ -709,7 +753,7 @@ FRESHNESS_STALE = (CACHING, INFO,
 
 HEURISTIC_FRESHNESS = (CACHING, INFO,
     {
-     'en': u"This response allows heuristic freshness to be used." 
+     'en': u"%(response)s allows heuristic freshness to be used." 
     },
     {
      'en': u"""When the response doesn't have explicit freshness information (like a <code>
@@ -723,7 +767,7 @@ HEURISTIC_FRESHNESS = (CACHING, INFO,
 
 STALE_SERVABLE = (CACHING, INFO,
     {
-     'en': u"This response can be served stale."
+     'en': u"%(response)s can be served stale."
     },
     {
     'en': u"""HTTP allows stale responses to be served under some circumstances; 
@@ -736,7 +780,7 @@ STALE_SERVABLE = (CACHING, INFO,
 
 STALE_MUST_REVALIDATE = (CACHING, INFO,
     {
-     'en': u"This response cannot be served stale by caches."
+     'en': u"%(response)s cannot be served stale by caches."
     },
     {
     'en': u"""The <code>Cache-Control: must-revalidate</code> directive forbids 
@@ -749,7 +793,7 @@ STALE_MUST_REVALIDATE = (CACHING, INFO,
 
 STALE_PROXY_REVALIDATE = (CACHING, INFO,
     {
-     'en': u"This response cannot be served stale by shared caches."
+     'en': u"%(response)s cannot be served stale by shared caches."
     },
     {
     'en': u"""The presence of the <code>Cache-Control: proxy-revalidate</code> 

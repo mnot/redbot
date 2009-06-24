@@ -83,17 +83,16 @@ class ResourceExpertDroid(object):
 
         # check the URI
         if not re.match("^\s*%s\s*$" % URI, uri):
-            self.setMessage('uri', rs.URI_BAD_SYNTAX)
+            self.response.setMessage('uri', rs.URI_BAD_SYNTAX)
         if len(uri) > max_uri:
-            self.setMessage('uri', rs.URI_TOO_LONG, uri_len=len(uri))
+            self.response.setMessage('uri', rs.URI_TOO_LONG, uri_len=len(uri))
             
         # make the primary request
         def primary_response_done(response):
             self.response = response
-            ResponseStatusChecker(self.response, self.setMessage)
+            ResponseStatusChecker(self.response)
             # TODO: make this into a plug-in system
             self.checkClock()
-            self.checkBody()
             self.checkCaching()
             self.checkConneg()
             self.checkEtagValidation()
@@ -102,11 +101,11 @@ class ResourceExpertDroid(object):
         self.req_headers.append(('Accept-Encoding', 'gzip'))
         try:
             makeRequest(uri, method=self.method, req_headers=self.req_headers,
-                done_cb=primary_response_done, status_cb=status_cb, set_message=self.setMessage,
+                done_cb=primary_response_done, status_cb=status_cb,
                 body_processors=body_processors, reason=self.method)
             nbhttp.run()
         except socket.gaierror:
-            raise AssertionError, "Hostname not found."
+            raise DroidError, "Hostname not found."
 
     def checkRanges(self):
         if 'bytes' in self.response.parsed_hdrs.get('accept-ranges', []):
@@ -123,14 +122,14 @@ class ResourceExpertDroid(object):
                     # TODO: check content-range
                     if ('gzip' in self.response.parsed_hdrs.get('content-encoding', [])) == \
                        ('gzip' not in range_res.parsed_hdrs.get('content-encoding', [])):
-                        self.setMessage('header-accept-ranges header-content-encoding', 
+                        self.response.setMessage('header-accept-ranges header-content-encoding', 
                                         rs.RANGE_NEG_MISMATCH)
                         return
                     if range_res.body == range_target:
-                        self.setMessage('header-accept-ranges', rs.RANGE_CORRECT)
+                        self.response.setMessage('header-accept-ranges', rs.RANGE_CORRECT, range_res.messages)
                     else:
                         # the body samples are just bags of bits
-                        self.setMessage('header-accept-ranges', rs.RANGE_INCORRECT,
+                        self.response.setMessage('header-accept-ranges', rs.RANGE_INCORRECT, range_res.messages,
                             range="bytes=%s-%s" % (range_start, range_end),
                             range_expected=e(unicode(range_target, errors="replace")),
                             range_expected_bytes = len(range_target),
@@ -139,9 +138,9 @@ class ResourceExpertDroid(object):
                         ) 
                 # TODO: address 416 directly
                 elif range_res.status == self.response.status:
-                    self.setMessage('header-accept-ranges', rs.RANGE_FULL)
+                    self.response.setMessage('header-accept-ranges', rs.RANGE_FULL)
                 else:
-                    self.setMessage('header-accept-ranges', rs.RANGE_STATUS, 
+                    self.response.setMessage('header-accept-ranges', rs.RANGE_STATUS, 
                                     range_status=range_res.status,
                                     enc_range_status=e(range_res.status))
             makeRequest(self.response.uri, req_headers=[
@@ -149,46 +148,35 @@ class ResourceExpertDroid(object):
                 ('Accept-Encoding', 'gzip')
                 ], 
                 done_cb=range_done, status_cb=self.status_cb, 
-                reason="Range")
-
-    def checkBody(self):
-        if self.response.parsed_hdrs.has_key('content-length'):
-            if self.response.body_len == self.response.parsed_hdrs['content-length']:
-                self.setMessage('header-content-length', rs.CL_CORRECT)
-            else:
-                self.setMessage('header-content-length', rs.CL_INCORRECT, 
-                                body_length=self.response.body_len)
-                
-        if self.response.parsed_hdrs.has_key('content-md5'):
-            c_md5_calc = base64.encodestring(self.response.body_md5)[:-1]
-            if self.response.parsed_hdrs['content-md5'] == c_md5_calc:
-                self.setMessage('header-content-md5', rs.CMD5_CORRECT)
-            else:
-                self.setMessage('header-content-md5', rs.CMD5_INCORRECT, 
-                                calc_md5=c_md5_calc)
-
+                reason="range")
 
     def checkConneg(self):
         if "gzip" in self.response.parsed_hdrs.get('content-encoding', []):
             def conneg_done(no_conneg_res):
                 uncomp_len = no_conneg_res.body_len
-                self.setMessage('header-content-encoding', rs.CONNEG_GZIP, 
-                    savings=int(100 * ((float(uncomp_len) - self.response.body_len) / uncomp_len)))
+                if uncomp_len > 0:
+                    savings = int(100 * ((float(uncomp_len) - self.response.body_len) / uncomp_len))
+                else: 
+                    savings = 0
+                self.response.setMessage('header-content-encoding', rs.CONNEG_GZIP, no_conneg_res.messages,
+                                         savings=savings,
+                                         orig_size=uncomp_len
+                                         )
                 vary_headers = self.response.parsed_hdrs.get('vary', [])
                 if (not "accept-encoding" in vary_headers) and (not "*" in vary_headers):
-                    self.setMessage('header-vary header-%s', rs.CONNEG_NO_VARY)
+                    self.response.setMessage('header-vary header-%s', rs.CONNEG_NO_VARY)
                 # FIXME: verify that the status/body/hdrs are the same; if it's different, alert
                 no_conneg_vary_headers = no_conneg_res.parsed_hdrs.get('vary', [])
                 if 'gzip' in no_conneg_res.parsed_hdrs.get('content-encoding', []):
-                    self.setMessage('header-vary header-content-encoding', 
-                                    rs.CONNEG_GZIP_WITHOUT_ASKING)
+                    self.response.setMessage('header-vary header-content-encoding', 
+                                             rs.CONNEG_GZIP_WITHOUT_ASKING)
                 if no_conneg_vary_headers != vary_headers:
-                    self.setMessage('header-vary', rs.VARY_INCONSISTENT,
-                        conneg_vary=e(", ".join(vary_headers)),
-                        no_conneg_vary=e(", ".join(no_conneg_vary_headers))
-                    )
+                    self.response.setMessage('header-vary', rs.VARY_INCONSISTENT,
+                                             conneg_vary=e(", ".join(vary_headers)),
+                                             no_conneg_vary=e(", ".join(no_conneg_vary_headers))
+                                             )
                 if no_conneg_res.parsed_hdrs.get('etag', 1) == self.response.parsed_hdrs.get('etag', 2):
-                    self.setMessage('header-etag', rs.ETAG_DOESNT_CHANGE) # TODO: weakness?
+                    self.response.setMessage('header-etag', rs.ETAG_DOESNT_CHANGE) # TODO: weakness?
             makeRequest(self.response.uri, 
                         done_cb=conneg_done, status_cb=self.status_cb, 
                         reason="conneg")
@@ -196,19 +184,19 @@ class ResourceExpertDroid(object):
 
     def checkClock(self):
         if not self.response.parsed_hdrs.has_key('date'):
-            self.setMessage('', rs.DATE_CLOCKLESS)
+            self.response.setMessage('', rs.DATE_CLOCKLESS)
             if self.response.parsed_hdrs.has_key('expires') or \
               self.response.parsed_hdrs.has_key('last-modified'):
-                self.setMessage('header-expires header-last-modified', rs.DATE_CLOCKLESS_BAD_HDR)
+                self.response.setMessage('header-expires header-last-modified', rs.DATE_CLOCKLESS_BAD_HDR)
             return
         skew = self.response.parsed_hdrs['date'] - \
           self.response.header_timestamp + self.response.parsed_hdrs.get('age', 0)
         if abs(skew) > max_clock_skew:
-            self.setMessage('header-date', rs.DATE_INCORRECT, 
-                            clock_skew_string=relative_time(skew, 0, 2)
-                            )
+            self.response.setMessage('header-date', rs.DATE_INCORRECT, 
+                                     clock_skew_string=relative_time(skew, 0, 2)
+                                     )
         else:
-            self.setMessage('header-date', rs.DATE_CORRECT)
+            self.response.setMessage('header-date', rs.DATE_CORRECT)
 
 
     def checkCaching(self):
@@ -220,22 +208,22 @@ class ResourceExpertDroid(object):
 
         # Who can store this?
         if self.method not in cacheable_methods:
-            self.setMessage('method', rs.METHOD_UNCACHEABLE, method=self.method)
+            self.response.setMessage('method', rs.METHOD_UNCACHEABLE, method=self.method)
             return # bail; nothing else to see here
         elif cc_dict.has_key('no-store'):
-            self.setMessage('header-cache-control', rs.NO_STORE)
+            self.response.setMessage('header-cache-control', rs.NO_STORE)
             return # bail; nothing else to see here
         elif cc_dict.has_key('private'):
-            self.setMessage('header-cache-control', rs.PRIVATE_CC)
+            self.response.setMessage('header-cache-control', rs.PRIVATE_CC)
         elif 'authorization' in [k.lower() for k, v in self.req_headers] and \
           not cc_dict.has_key('public'):
-            self.setMessage('header-cache-control', rs.PRIVATE_AUTH)
+            self.response.setMessage('header-cache-control', rs.PRIVATE_AUTH)
         else:
-            self.setMessage('header-cache-control', rs.STOREABLE)
+            self.response.setMessage('header-cache-control', rs.STOREABLE)
 
         # no-cache?
         if cc_dict.has_key('no-cache'):
-            self.setMessage('header-cache-control', rs.NO_CACHE)
+            self.response.setMessage('header-cache-control', rs.NO_CACHE)
             return # TODO: differentiate when there aren't LM or ETag present.
 
         # calculate age
@@ -248,8 +236,8 @@ class ResourceExpertDroid(object):
         current_age = max(apparent_age, self.response.parsed_hdrs.get('age', 0))
         current_age_str = relative_time(current_age, 0, 0)
         if age >= 1:
-            self.setMessage('header-age header-date', rs.CURRENT_AGE, 
-                            current_age=current_age_str)
+            self.response.setMessage('header-age header-date', rs.CURRENT_AGE, 
+                                     current_age=current_age_str)
         
         # calculate freshness
         freshness_lifetime = 0
@@ -277,50 +265,51 @@ class ResourceExpertDroid(object):
         freshness_lifetime_str = relative_time(int(freshness_lifetime), 0, 0)
 
         if freshness_left > 0:
-            self.setMessage(" ".join(freshness_hdrs), rs.FRESHNESS_FRESH, 
-                            freshness_lifetime=freshness_lifetime_str,
-                            freshness_left=freshness_left_str,
-                            current_age = current_age_str
-                            )
+            self.response.setMessage(" ".join(freshness_hdrs), rs.FRESHNESS_FRESH, 
+                                     freshness_lifetime=freshness_lifetime_str,
+                                     freshness_left=freshness_left_str,
+                                     current_age = current_age_str
+                                     )
         else:
-            self.setMessage(" ".join(freshness_hdrs), rs.FRESHNESS_STALE, 
-                            freshness_lifetime=freshness_lifetime_str,
-                            freshness_left=freshness_left_str,
-                            current_age = current_age_str
-                            )
+            self.response.setMessage(" ".join(freshness_hdrs), rs.FRESHNESS_STALE, 
+                                     freshness_lifetime=freshness_lifetime_str,
+                                     freshness_left=freshness_left_str,
+                                     current_age = current_age_str
+                                     )
 
         # can heuristic freshness be used?
         if self.response.status in heuristic_cacheable_status and \
           not has_explicit_freshness:
-            self.setMessage('last-modified', rs.HEURISTIC_FRESHNESS)
+            self.response.setMessage('last-modified', rs.HEURISTIC_FRESHNESS)
 
         # can stale responses be served?
         if cc_dict.has_key('must-revalidate'):
-            self.setMessage('cache-control', rs.STALE_MUST_REVALIDATE) 
+            self.response.setMessage('cache-control', rs.STALE_MUST_REVALIDATE) 
         elif cc_dict.has_key('proxy-revalidate') or cc_dict.has_key('s-maxage'):
-            self.setMessage('cache-control', rs.STALE_PROXY_REVALIDATE) 
+            self.response.setMessage('cache-control', rs.STALE_PROXY_REVALIDATE) 
         else:
-            self.setMessage('cache-control', rs.STALE_SERVABLE)
+            self.response.setMessage('cache-control', rs.STALE_SERVABLE)
 
         # public?
         if cc_dict.has_key('public'):
-            self.setMessage('header-cache-control', rs.PUBLIC)
+            self.response.setMessage('header-cache-control', rs.PUBLIC)
             
                 
     def checkEtagValidation(self):
         if self.response.parsed_hdrs.has_key('etag'):
-            def inm_done(inm_response):
-                if inm_response.status == '304':
-                    self.setMessage('header-etag', rs.INM_304)
-                elif inm_response.status == self.response.status:
-                    if inm_response.body_md5 == self.response.body_md5:
-                        self.setMessage('header-etag', rs.INM_FULL)
+            def inm_done(inm_res):
+                if inm_res.status == '304':
+                    self.response.setMessage('header-etag', rs.INM_304, inm_res.messages)
+                elif inm_res.status == self.response.status:
+                    if inm_res.body_md5 == self.response.body_md5:
+                        self.response.setMessage('header-etag', rs.INM_FULL, inm_res.messages)
                     else:
-                        self.setMessage('header-etag', rs.INM_UNKNOWN)
+                        self.response.setMessage('header-etag', rs.INM_UNKNOWN, inm_res.messages)
                 else:
-                    self.setMessage('header-etag', rs.INM_STATUS, 
-                                    inm_status=inm_response.status,
-                                    enc_inm_status=e(inm_response.status))
+                    self.response.setMessage('header-etag', rs.INM_STATUS, inm_res.messages, 
+                                    inm_status=inm_res.status,
+                                    enc_inm_status=e(inm_res.status)
+                                    )
                 # TODO: check entity headers
             weak, etag = self.response.parsed_hdrs['etag']
             if weak:
@@ -339,18 +328,19 @@ class ResourceExpertDroid(object):
                 
     def checkLmValidation(self):
         if self.response.parsed_hdrs.has_key('last-modified'):
-            def ims_done(ims_response):
-                if ims_response.status == '304':
-                    self.setMessage('header-last-modified', rs.IMS_304)
-                elif ims_response.status == self.response.status:
-                    if ims_response.body_md5 == self.response.body_md5:
-                        self.setMessage('header-last-modified', rs.IMS_FULL)
+            def ims_done(ims_res):
+                if ims_res.status == '304':
+                    self.response.setMessage('header-last-modified', rs.IMS_304, ims_res.messages)
+                elif ims_res.status == self.response.status:
+                    if ims_res.body_md5 == self.response.body_md5:
+                        self.response.setMessage('header-last-modified', rs.IMS_FULL, ims_res.messages)
                     else:
-                        self.setMessage('header-last-modified', rs.IMS_UNKNOWN)
+                        self.response.setMessage('header-last-modified', rs.IMS_UNKNOWN, ims_res.messages)
                 else:
-                    self.setMessage('header-last-modified', rs.IMS_STATUS, 
-                                    ims_status=ims_response.status,
-                                    enc_ims_status=e(ims_response.status))
+                    self.response.setMessage('header-last-modified', rs.IMS_STATUS, ims_res.messages, 
+                                             ims_status=ims_res.status,
+                                             enc_ims_status=e(ims_res.status)
+                                             )
                 # TODO: check entity headers
             date_str = time.strftime('%a, %d %b %Y %H:%M:%S GMT', 
                                      time.gmtime(self.response.parsed_hdrs['last-modified']))
@@ -360,11 +350,8 @@ class ResourceExpertDroid(object):
                     ('Accept-Encoding', 'gzip')
                 ], 
                 done_cb=ims_done, status_cb=self.status_cb,
-                reason="Last-Modified validation")
+                reason="LM validation")
                 
-    def setMessage(self, subject, msg, **vars):
-        self.messages.append((subject, msg, vars))
-
 
 def GenericHeaderSyntax(meth):
     """
@@ -419,9 +406,8 @@ class ResponseHeaderParser(object):
     as well as semantic errors that are self-contained (i.e.,
     it can be determined without examining other headers, etc.).
     """    
-    def __init__(self, response, setMessage=None):
+    def __init__(self, response):
         self.response = response
-        self._setMessage = setMessage
         hdr_dict = {}
         header_block_size = len(response.phrase) + 13
         for name, value in response.headers:
@@ -450,9 +436,8 @@ class ResponseHeaderParser(object):
                     self.response.parsed_hdrs[fn] = parsed_value
 
     def setMessage(self, name, msg, **vars):
-        if self._setMessage:
-            ident = 'header-%s' % name.lower()
-            self._setMessage(ident, msg, field_name=name, **vars)
+        ident = 'header-%s' % name.lower()
+        self.response.setMessage(ident, msg, field_name=name, **vars)
 
     @GenericHeaderSyntax
     def accept_ranges(self, name, values):
@@ -696,21 +681,20 @@ class ResponseStatusChecker:
     Given a response and a setMessage function, check out the status
     code and perform appropriate tests on it.
     """
-    def __init__(self, response, setMessage):
+    def __init__(self, response):
         self.response = response
-        self._setMessage = setMessage
         try:
             getattr(self, "status%s" % response.status)()
         except AttributeError:
             self.setMessage('status', rs.NONSTANDARD_STATUS)
 
     def setMessage(self, name, msg, **vars):
-        if self._setMessage:
-            ident = 'status %s' % name
-            self._setMessage(ident, msg, 
-                             status=self.response.status,
-                             enc_status=e(self.response.status), 
-                             **vars)
+        ident = 'status %s' % name
+        self.response.setMessage(ident, msg, 
+                                 status=self.response.status,
+                                 enc_status=e(self.response.status), 
+                                 **vars
+                                 )
 
     def status100(self):        # Continue
         pass # TODO: check to make sure expectation sent
@@ -820,14 +804,18 @@ class ResponseStatusChecker:
     def status510(self):        # Not Extended
         pass
 
+
+class DroidError(Exception):
+    pass
     
 ################################################################################
 
 
 class Response: 
     "Holds a HTTP response message."
-    def __init__(self, uri=None):
+    def __init__(self, uri=None, type=None):
         self.uri = uri
+        self.type = type
         self.version = ""
         self.status = None
         self.phrase = ""
@@ -839,14 +827,21 @@ class Response:
         self.body_sample = [] # array of (offset, chunk), max size 4. Bytes, not unicode.
         self.complete = False
         self.header_timestamp = None
+        self.error = None # any parse errors encountered
+        self.messages = []
         self._in_gzip_body = False
         self._gzip_header_buffer = ""
         self._gzip_ok = True # turn False if we have a problem
+        
+    def setMessage(self, subject, msg, submesgs=None, **vars):
+        # TODO: i18n
+        vars['response'] = rs.response.get(self.type, rs.response['this'])['en']
+        self.messages.append((subject, msg, submesgs, vars))
 
 outstanding_requests = 0 # how many requests we have left
 total_requests = 0 # how many we've made
 def makeRequest(uri, method="GET", req_headers=None, body=None, 
-                done_cb=None, status_cb=None, set_message=None,
+                done_cb=None, status_cb=None,
                 body_processors=None, reason=None):
     """
     Make an asynchronous HTTP request to uri, calling status_cb as it's updated and
@@ -856,11 +851,9 @@ def makeRequest(uri, method="GET", req_headers=None, body=None,
     global outstanding_requests, total_requests
     if req_headers == None:
         req_headers = []
-    if set_message == None:
-        set_message = lambda a, b, **vars : None
     if body_processors == None:
         body_processors = []
-    response = Response(uri)
+    response = Response(uri, reason)
     md5_processor = hashlib.md5()
     decompress = zlib.decompressobj(-zlib.MAX_WBITS)
     outstanding_requests += 1
@@ -873,7 +866,7 @@ def makeRequest(uri, method="GET", req_headers=None, body=None,
         response.status = status
         response.phrase = phrase
         response.headers = res_headers
-        ResponseHeaderParser(response, set_message)
+        ResponseHeaderParser(response)
 
         def response_body(chunk):
             if not response.complete:
@@ -898,32 +891,69 @@ def makeRequest(uri, method="GET", req_headers=None, body=None,
                         except IndexError:
                             return # not a full header yet
                         except IOError, gzip_error:
-                            set_message('header-content-encoding', rs.BAD_GZIP,
-                                        gzip_error=e(str(gzip_error)))
+                            response.setMessage('header-content-encoding', rs.BAD_GZIP,
+                                                gzip_error=e(str(gzip_error))
+                                                )
                             response._gzip_ok = False
                             return
                     try:
                         chunk = decompress.decompress(chunk)
                     except zlib.error, zlib_error:
-                        set_message('header-content-encoding', rs.BAD_ZLIB,
-                                    zlib_error=e(str(zlib_error)),
-                                    ok_zlib_len=response.body_sample[-1][0],
-                                    chunk_sample=e(chunk[:20]))
+                        response.setMessage('header-content-encoding', rs.BAD_ZLIB,
+                                            zlib_error=e(str(zlib_error)),
+                                            ok_zlib_len=response.body_sample[-1][0],
+                                            chunk_sample=e(chunk[:20])
+                                            )
                         response._gzip_ok = False
                         return
                 else:
                     pass # TODO: flag unasked-for coding
             if response._gzip_ok:
                 for processor in body_processors:
-                    processor(response, chunk)                    
+                    processor(response, chunk)
 
         def response_done(err):
             global outstanding_requests
-            response.complete = True # FIXME: check for errors
-            response.body_md5 = md5_processor.digest()
-            # TODO: move status parsing, other checks here too?
+            response.complete = True
+            response.error = err
             if status_cb and reason:
                 status_cb("fetched %s (%s)" % (uri, reason))
+            response.body_md5 = md5_processor.digest()
+            # TODO: move status parsing, other checks here too?
+            if err == None:
+                pass
+            elif err['desc'] == nbhttp.error.ERR_BODY_FORBIDDEN['desc']:
+                response.setMessage('header-none', rs.BODY_NOT_ALLOWED)
+            elif err['desc'] == nbhttp.error.ERR_EXTRA_DATA['desc']:
+                response.body_len += len(err.get('detail', ''))
+            elif err['desc'] == nbhttp.error.ERR_CHUNK['desc']:
+                response.setMessage('header-transfer-encoding', rs.BAD_CHUNK,
+                                    chunk_sample=e(err.get('detail', '')[:20]))
+            elif err['desc'] == nbhttp.error.ERR_CONNECT['desc']:
+                raise DroidError, "Could not connect to the server (%s)." % \
+                    err.get('detail', "unknown problem")
+            elif err['desc'] == nbhttp.error.ERR_LEN_REQ['desc']:
+                pass # FIXME: length required
+            elif err['desc'] == nbhttp.error.ERR_URL['desc']:
+                raise DroidError, err.get('detail', "RED can't fetch that URL.")
+            else:
+                raise AssertionError, "Unknown response error: %s" % err
+
+            # check payload basics
+            if response.parsed_hdrs.has_key('content-length'):
+                if response.body_len == response.parsed_hdrs['content-length']:
+                    response.setMessage('header-content-length', rs.CL_CORRECT)
+                else:
+                    response.setMessage('header-content-length', rs.CL_INCORRECT, 
+                                             body_length=response.body_len)                    
+            if response.parsed_hdrs.has_key('content-md5'):
+                c_md5_calc = base64.encodestring(response.body_md5)[:-1]
+                if response.parsed_hdrs['content-md5'] == c_md5_calc:
+                    response.setMessage('header-content-md5', rs.CMD5_CORRECT)
+                else:
+                    response.setMessage('header-content-md5', rs.CMD5_INCORRECT, 
+                                             calc_md5=c_md5_calc)
+            # call callback, check to see if we're done
             if done_cb:
                 done_cb(response)
             outstanding_requests -= 1
