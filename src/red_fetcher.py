@@ -200,7 +200,7 @@ class RedFetcher:
                     self.setMessage('header-content-encoding', rs.BAD_ZLIB,
                                     zlib_error=e(str(zlib_error)),
                                     ok_zlib_len=self.res_body_sample[-1][0],
-                                    chunk_sample=e(chunk[:20])
+                                    chunk_sample=e(chunk[:20].encode('string_escape'))
                                     )
                     self._gzip_ok = False
                     return
