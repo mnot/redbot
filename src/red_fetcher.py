@@ -266,7 +266,7 @@ class RedFetcher:
             raise IndexError, "Header not complete yet"
         magic = content[:2]
         if magic != '\037\213':
-            raise IOError, 'Not a gzipped file (magic is %s)' % magic
+            raise IOError, u'Not a gzip header (magic is hex %s)' % magic.encode('hex-codec')
         method = ord( content[2:3] )
         if method != 8:
             raise IOError, 'Unknown compression method'
