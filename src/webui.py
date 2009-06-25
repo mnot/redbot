@@ -345,23 +345,25 @@ class HTMLLinkParser(HTMLParser):
         "Feed a given chunk of HTML data to the parser"
         if response.parsed_hdrs.get('content-type', [None])[0] in link_parseable_types:
             try:
-                # HTMLParser doesn't like Unicode input, so we assume UTF-8. Not great...
-                HTMLParser.feed(self, unicode(chunk, "utf-8", "replace").encode("utf-8", "ignore"))
+                # HTMLParser doesn't like Unicode input, so we assume UTF-8. FIXME: look at c-t, sniff content
+                if chunk.__class__.__name__ != 'unicode':
+                    chunk = unicode(chunk, 'utf-8', 'ignore')
+                HTMLParser.feed(self, chunk.encode('utf-8', 'ignore'))
             except: # oh, well...
                 pass
         
     def handle_starttag(self, tag, attrs):
         title = dict(attrs).get('title', '').strip()
         if tag in self.links.keys():
-            target = dict(attrs).get(self.links[tag][0]).decode("utf-8", "ignore")
+            target = dict(attrs).get(self.links[tag][0], "")
             if target:
-                target = unicode(target, errors="ignore")
+                target = unicode(target, 'utf-8', errors="ignore")
                 self.count += 1
                 if "#" in target:
                     target = target[:target.index('#')]
                 self.links[tag][1].add(target)
                 if title:
-                    self.titles[target] = title
+                    self.titles[target] = unicode(title, 'utf-8', errors="ignore")
         elif tag == 'base':
             self.base = dict(attrs).get('href', None)
             return
