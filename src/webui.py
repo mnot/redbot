@@ -252,7 +252,10 @@ class RedWebUi(object):
                 out.append(u"<ul>")
                 for target in link_set:
                     title = self.links.titles.get(target, target)
-                    al = u"?uri=%s" % quote(urljoin(base, target), safe=":;/?#@+$&,")
+                    try:
+                        al = u"?uri=%s" % quote(urljoin(base, target), safe=":;/?#@+$&,")
+                    except KeyError: # FIXME: proper support for IRIs
+                        continue
                     out.append(u"<li><a href='%s' title='%s'>%s</a></li>" % (
                                  al, e(target), e(title)))
                 out.append(u"</ul>")
