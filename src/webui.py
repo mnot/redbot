@@ -27,15 +27,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-### Configuration
+### Configuration ##########################################################
 
 # FIXME: make language configurable/dynamic
 lang = "en"
 
-# header file
+# HTML header file
 header_file = "red_header.html"
 
-# validator uris for media types
+# Validator uris, by media type
 validators = {
     'text/html': "http://validator.w3.org/check?uri=%s",
     'text/css': "http://jigsaw.w3.org/css-validator/validator?uri=%s&",
@@ -44,6 +44,7 @@ validators = {
     'application/rss+xml': "http://feedvalidator.org/check.cgi?url=%s",
 }
 
+# Media types that browsers can view natively
 viewable_types = [
     'text/plain',
     'text/html',
@@ -60,14 +61,19 @@ viewable_types = [
     'text/css',
 ]
 
+# Media types to look for links in
 link_parseable_types = [
     'text/html',
     'application/xhtml+xml',
 ]
 
-logdir = 'exceptions' # set to None to disable traceback logging
+# Where to store exceptions; set to None to disable traceback logging
+logdir = 'exceptions'
 
-### End configuration
+# any request headers that we want to *always* send.
+req_hdrs = []
+
+### End configuration ######################################################
 
 import cgitb; cgitb.enable(logdir=logdir)
 import sys
@@ -90,9 +96,7 @@ msg_categories = [
     rs.GENERAL, rs.CONNEG, rs.CONNECTION, rs.CACHING, rs.VALIDATION, rs.RANGE
 ]
 
-# any request headers that we want to *always* send.
-req_hdrs = []
-
+# HTML template for the main response body
 template = u"""\
 <pre>
 %(response)s
@@ -110,6 +114,15 @@ template = u"""\
 
 """
 
+# HTML template for error bodies
+error_template = u"""\
+
+<p class="error">
+ %s
+</p>
+"""
+
+# HTML footer for all generated pages
 red_footer = u"""\
 
 <p class="version">this is RED %(version)s.</p>
@@ -130,16 +143,14 @@ title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
 </html>
 """
 
-error_template = u"""\
-
-<p class="error">
- %s
-</p>
-"""
-
 nl = u"\n"
 
 class RedWebUi(object):
+    """
+    A Web UI for RED.
+    
+    Given a URI, run RED on it and present the results to STDOUT as HTML.
+    """
     def __init__(self, uri):
         print red_header.__doc__ % {'uri': e(uri)} 
         sys.stdout.flush()
@@ -163,6 +174,7 @@ class RedWebUi(object):
         sys.stdout.flush()            
     
     def presentResults(self):
+        "Fill in the template with RED's results."
         result_strings = {
             'uri': e(self.red.uri),
             'response': self.presentResponse(),
@@ -174,6 +186,7 @@ class RedWebUi(object):
         return (template % result_strings).encode("utf-8")
 
     def presentResponse(self):
+        "Return the HTTP response line and headers as HTML"
         return \
         u"    <span class='response-line'>HTTP/%s %s %s</span>\n" % (
             e(str(self.red.res_version)), 
@@ -183,11 +196,13 @@ class RedWebUi(object):
         nl.join([self.presentHeader(f,v) for (f,v) in self.red.res_hdrs])
 
     def presentHeader(self, name, value):
+        "Return an individual HTML header as HTML"
         token_name = name.lower()
         return u"    <span class='header-%s hdr'>%s:%s</span>" % (
             e(token_name), e(name), self.header_presenter.Show(name, value))
 
     def presentCategory(self, category):
+        "For a given category, return all of the messages in it as an HTML list"
         messages = [msg for msg in self.red.messages if msg[1][0] == category]
         if not messages:
             return nl
@@ -201,15 +216,16 @@ class RedWebUi(object):
             if smsgs: 
                 out.append(u"<ul>")
                 for (s, (c, l, m, lm), sms, v) in smsgs:
-                    out.append(u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span></li>" % 
-                            (l, e(s), e(m[lang]%v), lm[lang]%v)
+                    out.append(
+                        u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span></li>" % 
+                        (l, e(s), e(m[lang]%v), lm[lang]%v)
                     )
                 out.append(u"</ul>")
         out.append(u"</ul>\n")
         return nl.join(out)
         
-
     def presentOptions(self):
+        "Return things that the user can do with the URI as HTML links"
         options = []
         media_type = self.red.parsed_hdrs.get('content-type', [None])[0]
         if media_type in viewable_types:
@@ -224,6 +240,7 @@ class RedWebUi(object):
         return options
 
     def presentLinks(self):
+        "Return an HTML list of the links in the response, as RED URIs"
         base = self.links.base or self.red.uri
         out = []
         for tag, name in self.links.link_order:
@@ -236,11 +253,13 @@ class RedWebUi(object):
                 for target in link_set:
                     title = self.links.titles.get(target, target)
                     al = u"?uri=%s" % quote(urljoin(base, target), safe=":;/?#@+$&,")
-                    out.append(u"<li><a href='%s' title='%s'>%s</a></li>" % (al, e(target), e(title)))
+                    out.append(u"<li><a href='%s' title='%s'>%s</a></li>" % (
+                                 al, e(target), e(title)))
                 out.append(u"</ul>")
         return out
 
     def updateStatus(self, message):
+        "Update the status bar of the browser"
         print u"""
 <script language="JavaScript">
 <!--
@@ -254,6 +273,7 @@ window.status="%s";
 
 tr = textwrap.TextWrapper(width=65, subsequent_indent=" "*8)
 def i(value, sub_width):
+    "wrap a line to fit in the header box"
     tr.width = 65 - sub_width
     return tr.fill(value)
 
@@ -271,6 +291,7 @@ class HeaderPresenter(object):
         self.red = red
         
     def Show(self, name, value):
+        "Return the given header name/value pair after presentation processing"
         name = name.lower()
         name_token = name.replace('-', '_')
         if name_token[0] != "_" and hasattr(self, name_token):
@@ -279,6 +300,7 @@ class HeaderPresenter(object):
             return i(e(value), len(name))
 
     def BARE_URI(self, name, value):
+        "Present a bare URI header value"
         value = value.rstrip()
         svalue = value.lstrip()
         space = len(value) - len(svalue)
@@ -291,6 +313,14 @@ class HeaderPresenter(object):
 
 
 class HTMLLinkParser(HTMLParser):
+    """
+    Parse the links out of an HTML document in a very forgiving way.
+    
+    After feed()ing is done, the links dictionary will be populated with 
+    sets of links. Additionally, the titles dictionary will be a mapping of URI
+    to title (if present). Finally, the base attribute will hold the HTML base
+    URI, if present.
+    """
     def __init__(self):
         self.link_order = (
             ('link', u'Head Links'),
@@ -312,11 +342,12 @@ class HTMLLinkParser(HTMLParser):
         HTMLParser.__init__(self)
 
     def feed(self, response, chunk):
+        "Feed a given chunk of HTML data to the parser"
         if response.parsed_hdrs.get('content-type', [None])[0] in link_parseable_types:
             try:
                 # HTMLParser doesn't like Unicode input, so we assume UTF-8. Not great...
                 HTMLParser.feed(self, unicode(chunk, "utf-8", "replace").encode("utf-8", "ignore"))
-            except Exception: # oh, well...
+            except: # oh, well...
                 pass
         
     def handle_starttag(self, tag, attrs):

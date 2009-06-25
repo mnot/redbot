@@ -1,7 +1,14 @@
 #!/usr/bin/env python
 
 """
-The Resource Expert Droid. See webui.py for the Web front-end.
+The Resource Expert Droid. 
+
+RED will examine a HTTP resource for problems and other interesting 
+characteristics, making a list of these observation messages available
+for presentation to the user. It does so by potentially making a number
+of requests to probe the resource's behaviour.
+
+See webui.py for the Web front-end.
 """
 
 __version__ = "1"
@@ -45,6 +52,18 @@ max_clock_skew = 5  # seconds
 # TODO: resource limits
 
 class ResourceExpertDroid(RedFetcher):
+    """
+    Given a URI (optionally with method, request headers and body), as well
+    as an optional status callback and list of body processors, examine the
+    URI for issues and notable conditions, making any necessary additional
+    requests.
+    
+    Note that this primary request negotiates for gzip content-encoding; 
+    see ConnegCheck.
+    
+    After processing the response-specific attributes of RedFetcher will be
+    populated, as well as its messages; see that class for details.
+    """
     def __init__(self, uri, method="GET", req_hdrs=None, req_body=None,
                  status_cb=None, body_procs=None):
         req_hdrs = req_hdrs or []
@@ -60,6 +79,10 @@ class ResourceExpertDroid(RedFetcher):
                             status_cb, body_procs, type=method)
             
     def done(self):
+        """
+        Response is available; perform further processing that's specific to
+        the "main" response.
+        """
         self.checkClock()
         self.checkCaching()
         ConnegCheck(self)
@@ -67,8 +90,8 @@ class ResourceExpertDroid(RedFetcher):
         ETagValidate(self)
         LmValidate(self)
 
-
     def checkClock(self):
+        "Check for clock skew and dateless origin server."
         if not self.parsed_hdrs.has_key('date'):
             self.setMessage('', rs.DATE_CLOCKLESS)
             if self.parsed_hdrs.has_key('expires') or \
@@ -85,6 +108,7 @@ class ResourceExpertDroid(RedFetcher):
             self.setMessage('header-date', rs.DATE_CORRECT)
 
     def checkCaching(self):
+        "Examine HTTP caching characteristics."
         # TODO: check URI for query string, message about HTTP/1.0 if so
         # TODO: assure that there aren't any dup standard directives
         # TODO: check for spurious 'public' directive (e.g., sun.com)
@@ -181,6 +205,12 @@ class ResourceExpertDroid(RedFetcher):
 
 
 class ConnegCheck(RedFetcher):
+    """
+    See if content negotiation for compression is supported, and how.
+    
+    Note that this depends on the "main" request being sent with 
+    Accept-Encoding: gzip
+    """
     def __init__(self, red):
         if "gzip" in red.parsed_hdrs.get('content-encoding', []):
             self.red = red
@@ -217,6 +247,7 @@ class ConnegCheck(RedFetcher):
 
 
 class RangeRequest(RedFetcher):
+    "Check for partial content support (if advertised)"
     def __init__(self, red):
         if 'bytes' in red.parsed_hdrs.get('accept-ranges', []):
             if len(red.res_body_sample) == 0: return
@@ -263,6 +294,7 @@ class RangeRequest(RedFetcher):
         
             
 class ETagValidate(RedFetcher):
+    "If an ETag is present, see if it will validate."
     def __init__(self, red):
         if red.parsed_hdrs.has_key('etag'):
             weak, etag = red.parsed_hdrs['etag']
@@ -295,6 +327,7 @@ class ETagValidate(RedFetcher):
         # TODO: check entity headers
             
 class LmValidate(RedFetcher):
+    "If Last-Modified is present, see if it will validate."
     def __init__(self, red):
         if red.parsed_hdrs.has_key('last-modified'):
             date_str = time.strftime('%a, %d %b %Y %H:%M:%S GMT', 

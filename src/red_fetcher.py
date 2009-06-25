@@ -1,7 +1,13 @@
 #!/usr/bin/env python
 
 """
-The Resource Expert Droid. See webui.py for the Web front-end.
+The Resource Expert Droid Fetcher.
+
+RedFetcher fetches a single URI and analyses that response for common
+problems and other interesting characteristics. It only makes one request,
+based upon the provided headers.
+
+See red.py for the main RED engine and webui.py for the Web front-end.
 """
 
 __version__ = "1"
@@ -68,10 +74,23 @@ class RedFetcher:
     """
     Fetches the given URI (with the provided method, headers and body) and calls:
       - status_cb as it progresses, and
-      - every function in body_procs with each chunk of the body, and
+      - every function in the body_procs list with each chunk of the body, and
       - done when it's done.
     If provided, type indicates the type of the request, and is used to
     help set messages and status_cb appropriately. 
+    
+    Messages is a list of messages, each of which being a tuple that 
+    follows the following form:
+      (
+       subject,     # The subject(s) of the msg, as a space-separated string.
+                    # e.g., "header-cache-control header-expires"
+       message,     # The message structure; see red.speak.py
+       subrequest,  # Optionally, a RedFetcher object representing a
+                    # request with additional details about another request
+                    # made in order to generate the message
+       **variables  # Optionally, key=value pairs intended for interpolation
+                    # into the message; e.g., time_left="5d3h"
+      )
     """
 
     def __init__(self, uri, method="GET", req_hdrs=None, req_body=None,
@@ -107,11 +126,13 @@ class RedFetcher:
             raise DroidError, "Hostname not found."
         
     def setMessage(self, subject, msg, subreq=None, **vrs):
+        "Set a message."
         # TODO: i18n
         vrs['response'] = rs.response.get(self.type, rs.response['this'])['en']
         self.messages.append((subject, msg, subreq, vrs))
 
     def done(self):
+        "Callback for when the response is complete and analysed."
         raise NotImplementedError
 
     def _makeRequest(self):
@@ -133,6 +154,7 @@ class RedFetcher:
         req_done(None)
 
     def _response_start(self, version, status, phrase, res_headers, res_pause):
+        "Process the response start-line and headers."
         self.timestamp = time.time()
         self.res_version = version
         self.res_status = status
@@ -143,6 +165,7 @@ class RedFetcher:
         return self._response_body, self._response_done
 
     def _response_body(self, chunk):
+        "Process a chunk of the response body."
         if not self.res_complete:
             self._md5_processor.update(chunk)
             if self.res_status == "206":
@@ -187,6 +210,7 @@ class RedFetcher:
                 processor(self, chunk)
 
     def _response_done(self, err):
+        "Finish anaylsing the response, handling any parse errors."
         global outstanding_requests
         self.res_complete = True
         self.res_error = err
@@ -235,6 +259,7 @@ class RedFetcher:
 
     @staticmethod
     def _read_gzip_header(content):
+        "Parse a GZIP header"
         # adapted from gzip.py
         FTEXT, FHCRC, FEXTRA, FNAME, FCOMMENT = 1, 2, 4, 8, 16
         if len(content) < 10: 
