@@ -166,15 +166,16 @@ class RedFetcher:
 
     def _response_body(self, chunk):
         "Process a chunk of the response body."
-        if not self.res_complete:
-            self._md5_processor.update(chunk)
-            if self.res_status == "206":
-                # Store only partial responses completely, for error reporting
-                self.res_body += chunk
-            self.res_body_sample.append((self.res_body_len, chunk))
-            if len(self.res_body_sample) > 4:
-                self.res_body_sample.pop(0)
+        self._md5_processor.update(chunk)
+        self.res_body_sample.append((self.res_body_len, chunk))
+        if len(self.res_body_sample) > 4:
+            self.res_body_sample.pop(0)
         self.res_body_len += len(chunk)
+        if self.res_status == "206":
+            # Store only partial responses completely, for error reporting
+            self.res_body += chunk
+            # Don't actually try to make sense of a partial body...
+            return
         content_codings = self.parsed_hdrs.get('content-encoding', [])
         content_codings.reverse()
         for coding in content_codings:
