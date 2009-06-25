@@ -279,9 +279,9 @@ class RangeRequest(RedFetcher):
                 # the body samples are just bags of bits
                 self.red.setMessage('header-accept-ranges', rs.RANGE_INCORRECT, self,
                     range="bytes=%s-%s" % (self.range_start, self.range_end),
-                    range_expected=e(unicode(self.range_target, errors="replace")),
+                    range_expected=e(self.range_target.encode('string_escape')),
                     range_expected_bytes = len(self.range_target),
-                    range_received=e(unicode(self.res_body, errors="replace")),
+                    range_received=e(self.res_body.encode('string_escape')),
                     range_received_bytes = self.res_body_len
                 ) 
         # TODO: address 416 directly
