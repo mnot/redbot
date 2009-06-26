@@ -283,6 +283,32 @@ ENCODING_UNWANTED = (CONNEG, WARN,
     }
 )
 
+TRANSFER_CODING_IDENTITY = (CONNECTION, INFO,
+    {
+    'en': u"The identity transfer-coding isn't necessary."
+    },
+    {
+    'en': u"""HTTP defines <em>transfer-codings</em> as a hop-by-hop encoding
+    of the message body. The <code>identity</code> tranfer-coding was defined
+    as the absence of encoding; it doesn't do anything, so it's necessary.<p>
+    You can remove this token to save a few bytes."""
+    }
+)
+
+TRANSDFER_CODING_UNWANTED = (CONNECTION, BAD,
+    {
+     'en': u"The %(encoding)s transfer-coding wasn't asked for."
+    },
+    {
+     'en': u"""%(response)s's <code>Transfer-Encoding</code> header indicates it
+     has the %(encoding)s transfer-coding applied, but RED didn't ask for it
+     to be.<p>
+     Normally, clients ask for the encodings they want in the 
+     <code>TE</code> request header. Using codings that the
+     client doesn't explicitly request can lead to interoperability problems."""
+    }
+)
+
 BAD_DATE_SYNTAX = (GENERAL, BAD,
     {
     'en': u"The %(field_name)s header's value isn't a valid date."

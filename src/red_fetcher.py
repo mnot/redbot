@@ -496,8 +496,7 @@ class ResponseHeaderParser(object):
             # check to see if there are any non-gzip encodings, because
             # that's the only one we ask for.
             if value != 'gzip':
-                self.setMessage('header-content-encoding', rs.ENCODING_UNWANTED,
-                                encoding=e(value))
+                self.setMessage(name, rs.ENCODING_UNWANTED, encoding=e(value))
                 break
         return values
         
@@ -600,6 +599,7 @@ class ResponseHeaderParser(object):
     @CheckFieldSyntax(URI, rfc2616 % "sec-14.30")
     @SingleFieldValue
     def location(self, name, values):
+        # TODO: make sure it isn't used in a response where it doesn't make sense
         return values[-1]
 
     def mime_version(self, name, values):
@@ -613,7 +613,7 @@ class ResponseHeaderParser(object):
         
     @GenericHeaderSyntax
     def p3p(self, name, values):
-        # TODO: check synta, values
+        # TODO: check syntax, values
         pass
                 
     @GenericHeaderSyntax
@@ -647,8 +647,16 @@ class ResponseHeaderParser(object):
     @GenericHeaderSyntax
     @CheckFieldSyntax(TOK_PARAM, rfc2616 % "sec-14.41")
     def transfer_encoding(self, name, values):
-        # TODO: check values?
         values = [v.lower() for v in values]
+        if 'identity' in values:
+            self.setMessage(name, rs.TRANFER_CODING_IDENTITY)
+        for value in values:
+            # check to see if there are any non-chunked encodings, because
+            # that's the only one we ask for.
+            if value not in ['chunked', 'identity']:
+                self.setMessage(name, rs.TRANSFER_CODING_UNWANTED,
+                                encoding=e(value))
+                break
         return values
 
     @GenericHeaderSyntax
