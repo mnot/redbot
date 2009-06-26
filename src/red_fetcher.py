@@ -127,7 +127,6 @@ class RedFetcher:
         
     def setMessage(self, subject, msg, subreq=None, **vrs):
         "Set a message."
-        # TODO: i18n
         vrs['response'] = rs.response.get(self.type, rs.response['this'])['en']
         self.messages.append((subject, msg, subreq, vrs))
 
@@ -434,7 +433,10 @@ class ResponseHeaderParser(object):
 
     @GenericHeaderSyntax
     def accept_ranges(self, name, values):
-        # TODO: syntax check, parse
+        for value in values:
+            if value not in ['bytes', 'none']:
+                self.setMessage(name, rs.UNKNOWN_RANGE)
+                break
         return values
 
     @GenericHeaderSyntax
@@ -496,7 +498,7 @@ class ResponseHeaderParser(object):
             if value != 'gzip':
                 self.setMessage('header-content-encoding', rs.ENCODING_UNWANTED,
                                 encoding=e(value))
-                return values
+                break
         return values
         
     @GenericHeaderSyntax

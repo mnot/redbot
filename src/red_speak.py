@@ -385,6 +385,20 @@ VIA_PRESENT = (GENERAL, INFO,
 
 ### Ranges
 
+UNKNOWN_RANGE = (RANGE, WARN,
+    {
+     'en': u"%(response)s advertises support for non-standard range-units."
+    },
+    {
+     'en': u"""The <code>Accept-Ranges</code> response header tells clients
+     what <code>range-unit</code>s a resource is willing to process in future
+     requests. HTTP only defines two: <code>bytes</code> and <code>none</code>.
+     <p>
+     Clients who don't know about the non-standard range-unit will not be
+     able to use it."""
+    }
+)
+
 RANGE_CORRECT = (RANGE, GOOD,
     {
     'en': u"A ranged request returned the correct partial content."
