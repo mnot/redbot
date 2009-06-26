@@ -229,7 +229,7 @@ class ConnegCheck(RedFetcher):
                              savings=savings,
                              orig_size=self.res_body_len
                              )
-        vary_headers = self.parsed_hdrs.get('vary', [])
+        vary_headers = self.red.parsed_hdrs.get('vary', [])
         if (not "accept-encoding" in vary_headers) and (not "*" in vary_headers):
             self.red.setMessage('header-vary header-%s', rs.CONNEG_NO_VARY)
         # FIXME: verify that the status/body/hdrs are the same; if it's different, alert
