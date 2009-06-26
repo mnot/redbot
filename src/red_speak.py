@@ -174,6 +174,26 @@ BAD_SYNTAX = (GENERAL, BAD,
     }
 )
 
+KEEP_ALIVE_HEADER = (GENERAL, INFO,
+    {
+    'en': u"The Keep-Alive header isn't necessary."
+    },
+    {
+    'en': u"""HTTP/1.0-style persistent connections rely upon the 
+    <code>Connection: Keep-Alive</code> header to indicate that the server
+    is willing to keep the connection open for another request.<p>
+    It also defines the <code>Keep-Alive</code> header, since connection 
+    tokens refer to headers, and it was desireable to reserve the name.<p>
+    However, it isn't necessary to actually send the <code>Keep-Alive</code>
+    header to use persistent connections; <code>Connection: Keep-Alive</code>
+    is enough.<p>
+    Some implementations do send information (e.g. the number of requests they're
+    willing to serve on a single connection) in this header, but this information
+    isn't usually used by clients. It's safe to remove this header if you wish
+    to save a few bytes in the response."""
+    }
+)
+
 BAD_CC_SYNTAX = (CACHING, BAD,
     {
      'en': u"The %(bad_cc_attr)s Cache-Control directive's syntax is incorrect."

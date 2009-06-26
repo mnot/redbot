@@ -564,8 +564,17 @@ class ResponseHeaderParser(object):
 
     @GenericHeaderSyntax
     def keep_alive(self, name, values):
-        # TODO: check values?
-        values = set([v.lower() for v in values])
+        directives = set()
+        for directive in values:
+            try:
+                attr, value = directive.split("=", 1)
+                value = self._unquotestring(value)
+            except ValueError:
+                attr = directive
+                value = None
+            attr = attr.lower()
+            directives.add((attr, value))
+        self.setMessage(name, rs.KEEP_ALIVE_HEADER)
         return values
         
     @SingleFieldValue
