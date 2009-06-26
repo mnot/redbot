@@ -124,6 +124,17 @@ HEADER_TOO_LARGE = (GENERAL, WARN,
     }
 )
 
+HEADER_DEPRECATED = (GENERAL, WARN,
+    {
+    'en': u"The %(header_name)s header is deprecated."
+    },
+    {
+    'en': u"""This header field is no longer recommended for use, because of 
+    interoperability problems and/or lack of use. See 
+    <a href="%(ref)s">its documentation</a> for more information.""" 
+    }
+)
+
 SINGLE_HEADER_REPEAT = (GENERAL, BAD,
     {
     'en': u"Only one %(field_name)s header is allowed in a response."

@@ -481,7 +481,7 @@ class ResponseHeaderParser(object):
 
     @SingleFieldValue
     def content_base(self, name, values):
-        # TODO: alert that it's deprecated
+        self.setMessage(name, rs.HEADER_DEPRECATED, ref=rfc2616 % "sec-19.6.3")
         return values[-1]
         
     def content_disposition(self, name, values):
