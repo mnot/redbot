@@ -70,16 +70,6 @@ URI_TOO_LONG = (GENERAL, WARN,
     }
 )
 
-SERVER_URI_TOO_LONG = (GENERAL, BAD,
-    {
-    'en': u"The server won't accept a URI this long (%(uri_len)s characters)."
-    },
-    {
-    'en': u"""The %(enc_status)s status code means that the server can't or won't accept
-    a request-uri this long."""
-    }
-)
-
 URI_BAD_SYNTAX = (GENERAL, BAD,
     {
     'en': u"The URI's syntax isn't valid."
@@ -295,7 +285,7 @@ TRANSFER_CODING_IDENTITY = (CONNECTION, INFO,
     }
 )
 
-TRANSDFER_CODING_UNWANTED = (CONNECTION, BAD,
+TRANSFER_CODING_UNWANTED = (CONNECTION, BAD,
     {
      'en': u"The %(encoding)s transfer-coding wasn't asked for."
     },
@@ -1024,7 +1014,7 @@ REDIRECT_WITHOUT_LOCATION = (GENERAL, BAD,
     }
 )
 
-DEPRECATED_STATUS = (GENERAL, BAD,
+STATUS_DEPRECATED = (GENERAL, BAD,
     {
      'en': u"The %(status)s status code is deprecated."
     },
@@ -1034,7 +1024,7 @@ DEPRECATED_STATUS = (GENERAL, BAD,
     }
 )
 
-RESERVED_STATUS = (GENERAL, BAD,
+STATUS_RESERVED = (GENERAL, BAD,
     {
      'en': u"The %(status)s status code is reserved."
     },
@@ -1044,7 +1034,7 @@ RESERVED_STATUS = (GENERAL, BAD,
     }
 )
 
-NONSTANDARD_STATUS = (GENERAL, BAD,
+STATUS_NONSTANDARD = (GENERAL, BAD,
     {
      'en': u"%(status)s is not a standard HTTP status code."
     },
@@ -1053,5 +1043,123 @@ NONSTANDARD_STATUS = (GENERAL, BAD,
      Instead of defining your own status code, you should reuse one of the more
      generic ones; for example, 400 for a client-side problem, or 500 for a 
      server-side problem."""
+    }
+)
+
+STATUS_FORBIDDEN = (GENERAL, INFO,
+    {
+     'en': u"The server has forbidden this request."
+    },
+    {
+     'en': u""" """
+    }
+)
+
+STATUS_NOT_FOUND = (GENERAL, INFO,
+    {
+     'en': u"The resource could not be found."
+    },
+    {
+     'en': u""" """
+    }
+)
+
+STATUS_CONFLICT = (GENERAL, INFO,
+    {
+     'en': u"The request conflicted with the state of the resource."
+    },
+    {
+     'en': u""" """
+    }
+)
+
+STATUS_GONE = (GENERAL, INFO,
+    {
+     'en': u"The resource is gone."
+    },
+    {
+     'en': u""" """
+    }
+)
+
+STATUS_REQUEST_ENTITY_TOO_LARGE = (GENERAL, INFO,
+    {
+     'en': u"The request body was too large."
+    },
+    {
+     'en': u""" """
+    }
+)
+
+STATUS_URI_TOO_LONG = (GENERAL, BAD,
+    {
+    'en': u"The server won't accept a URI this long (%(uri_len)s characters)."
+    },
+    {
+    'en': u"""The %(enc_status)s status code means that the server can't or won't accept
+    a request-uri this long."""
+    }
+)
+
+STATUS_UNSUPPORTED_MEDIA_TYPE = (GENERAL, INFO,
+    {
+     'en': u"The resource doesn't support this media type in requests."
+    },
+    {
+     'en': u""" """
+    }
+)
+
+STATUS_INTERNAL_SERVICE_ERROR = (GENERAL, INFO,
+    {
+     'en': u"There was a general server-side error."
+    },
+    {
+     'en': u""" """
+    }
+)
+
+STATUS_NOT_IMPLEMENTED = (GENERAL, INFO,
+    {
+     'en': u"The server doesn't implement the request method."
+    },
+    {
+     'en': u""" """
+    }
+)
+
+STATUS_BAD_GATEWAY = (GENERAL, INFO,
+    {
+     'en': u"An intermediary encountered an error."
+    },
+    {
+     'en': u""" """
+    }
+)
+
+STATUS_SERVICE_UNAVAILABLE = (GENERAL, INFO,
+    {
+     'en': u"The server is temporarily unavailable."
+    },
+    {
+     'en': u""" """
+    }
+)
+
+STATUS_GATEWAY_TIMEOUT = (GENERAL, INFO,
+    {
+     'en': u"An intermediary timed out."
+    },
+    {
+     'en': u""" """
+    }
+)
+
+STATUS_VERSION_NOT_SUPPORTED = (GENERAL, BAD,
+    {
+     'en': u"The request HTTP version isn't supported."
+    },
+    {
+     'en': u""" """
     }
 )

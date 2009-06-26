@@ -649,7 +649,7 @@ class ResponseHeaderParser(object):
     def transfer_encoding(self, name, values):
         values = [v.lower() for v in values]
         if 'identity' in values:
-            self.setMessage(name, rs.TRANFER_CODING_IDENTITY)
+            self.setMessage(name, rs.TRANSFER_CODING_IDENTITY)
         for value in values:
             # check to see if there are any non-chunked encodings, because
             # that's the only one we ask for.
@@ -705,7 +705,7 @@ class ResponseStatusChecker:
         try:
             getattr(self, "status%s" % red.res_status)()
         except AttributeError:
-            self.setMessage('status', rs.NONSTANDARD_STATUS)
+            self.setMessage('status', rs.STATUS_NONSTANDARD)
 
     def setMessage(self, name, msg, **vars):
         ident = 'status %s' % name
@@ -734,7 +734,7 @@ class ResponseStatusChecker:
     def status205(self):        # Reset Content
         pass
     def status206(self):        # Partial Content
-        pass # TODO: check partial content
+        pass # TODO: check for content-range header
     def status207(self):        # Multi-Status
         pass
     def status226(self):        # IM Used
@@ -753,9 +753,9 @@ class ResponseStatusChecker:
     def status304(self):        # Not Modified
         pass # TODO: check to make sure required headers are present, stable
     def status305(self):        # Use Proxy
-        self.setMessage('', rs.DEPRECATED_STATUS)
+        self.setMessage('', rs.STATUS_DEPRECATED)
     def status306(self):        # Reserved
-        self.setMessage('', rs.RESERVED_STATUS)
+        self.setMessage('', rs.STATUS_RESERVED)
     def status307(self):        # Temporary Redirect
         if not self.red.parsed_hdrs.has_key('location'):
             self.setMessage('header-location', rs.REDIRECT_WITHOUT_LOCATION)
@@ -766,9 +766,9 @@ class ResponseStatusChecker:
     def status402(self):        # Payment Required
         pass
     def status403(self):        # Forbidden
-        pass # TODO: explain
+        self.setMessage('status', rs.STATUS_FORBIDDEN)
     def status404(self):        # Not Found
-        pass # TODO: explain
+        self.setMessage('status', rs.STATUS_NOT_FOUND)
     def status405(self):        # Method Not Allowed
         pass # TODO: show allowed methods?
     def status406(self):        # Not Acceptable
@@ -778,20 +778,20 @@ class ResponseStatusChecker:
     def status408(self):        # Request Timeout
         pass
     def status409(self):        # Conflict
-        pass # TODO: explain
+        self.setMessage('status', rs.STATUS_CONFLICT)
     def status410(self):        # Gone
-        pass # TODO: explain
+        self.setMessage('status', rs.STATUS_GONE)
     def status411(self):        # Length Required
         pass
     def status412(self):        # Precondition Failed
         pass # TODO: test to see if it's true, alert if not
     def status413(self):        # Request Entity Too Large
-        pass # TODO: explain 
+        self.setMessage('status', rs.STATUS_REQUEST_ENTITY_TOO_LARGE)
     def status414(self):        # Request-URI Too Long
-        self.setMessage('uri', rs.SERVER_URI_TOO_LONG, 
+        self.setMessage('uri', rs.STATUS_URI_TOO_LONG, 
                         uri_len=len(self.red.uri))
     def status415(self):        # Unsupported Media Type
-        pass # TODO: explain
+        self.setMessage('status', rs.STATUS_UNSUPPORTED_MEDIA_TYPE)
     def status416(self):        # Requested Range Not Satisfiable
         pass # TODO: test to see if it's true, alter if not
     def status417(self):        # Expectation Failed
@@ -805,17 +805,17 @@ class ResponseStatusChecker:
     def status426(self):        # Upgrade Required
         pass
     def status500(self):        # Internal Server Error
-        pass # TODO: explain
+        self.setMessage('status', rs.STATUS_INTERNAL_SERVICE_ERROR)
     def status501(self):        # Not Implemented
-        pass # TODO: explain
+        self.setMessage('status', rs.STATUS_NOT_IMPLEMENTED)
     def status502(self):        # Bad Gateway
-        pass # TODO: explain
+        self.setMessage('status', rs.STATUS_BAD_GATEWAY)
     def status503(self):        # Service Unavailable
-        pass # TODO: explain
+        self.setMessage('status', rs.STATUS_SERVICE_UNAVAILABLE)
     def status504(self):        # Gateway Timeout
-        pass # TODO: explain
+        self.setMessage('status', rs.STATUS_GATEWAY_TIMEOUT)
     def status505(self):        # HTTP Version Not Supported
-        pass # TODO: warn
+        self.setMessage('status', rs.STATUS_VERSION_NOT_SUPPORTED)
     def status506(self):        # Variant Also Negotiates
         pass
     def status507(self):        # Insufficient Storage
