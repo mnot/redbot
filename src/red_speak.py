@@ -238,6 +238,20 @@ BAD_ZLIB = (CONNEG, BAD,
     }
 )
 
+ENCODING_UNWANTED = (CONNEG, WARN,
+    {
+     'en': u"The %(encoding)s content-coding wasn't asked for."
+    },
+    {
+     'en': u"""%(response)s's <code>Content-Encoding</code> header indicates it
+     has the %(encoding)s content-coding applied, but RED didn't ask for it
+     to be.<p>
+     Normally, clients ask for the encodings they want in the 
+     <code>Accept-Encoding</code> request header. Using encodings that the
+     client doesn't explicitly request can lead to interoperability problems."""
+    }
+)
+
 BAD_DATE_SYNTAX = (GENERAL, BAD,
     {
     'en': u"The %(field_name)s header's value isn't a valid date."

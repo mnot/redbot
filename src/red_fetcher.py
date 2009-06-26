@@ -205,7 +205,8 @@ class RedFetcher:
                     self._gzip_ok = False
                     return
             else:
-                pass # TODO: flag unasked-for coding
+                # we can't really process the rest, so punt on body processing.
+                return
         if self._gzip_ok:
             for processor in self.body_procs:
                 processor(self, chunk)
@@ -218,7 +219,6 @@ class RedFetcher:
         if self.status_cb and self.type:
             self.status_cb("fetched %s (%s)" % (self.uri, self.type))
         self.res_body_md5 = self._md5_processor.digest()
-        # TODO: move status parsing, other checks here too?
         if err == None:
             pass
         elif err['desc'] == nbhttp.error.ERR_BODY_FORBIDDEN['desc']:
@@ -490,6 +490,13 @@ class ResponseHeaderParser(object):
     @CheckFieldSyntax(TOKEN, rfc2616 % "sec-14.11")
     def content_encoding(self, name, values):
         values = [v.lower() for v in values]
+        for value in values:
+            # check to see if there are any non-gzip encodings, because
+            # that's the only one we ask for.
+            if value != 'gzip':
+                self.setMessage('header-content-encoding', rs.ENCODING_UNWANTED,
+                                encoding=e(value))
+                return values
         return values
         
     @GenericHeaderSyntax
