@@ -710,8 +710,8 @@ class ResponseStatusChecker:
     def setMessage(self, name, msg, **vars):
         ident = 'status %s' % name
         self.red.setMessage(ident, msg, 
-                             status=self.red.status,
-                             enc_status=e(self.red.status), 
+                             status=self.red.res_status,
+                             enc_status=e(self.red.res_status), 
                              **vars
                              )
 
@@ -766,9 +766,9 @@ class ResponseStatusChecker:
     def status402(self):        # Payment Required
         pass
     def status403(self):        # Forbidden
-        self.setMessage('status', rs.STATUS_FORBIDDEN)
+        self.setMessage('', rs.STATUS_FORBIDDEN)
     def status404(self):        # Not Found
-        self.setMessage('status', rs.STATUS_NOT_FOUND)
+        self.setMessage('', rs.STATUS_NOT_FOUND)
     def status405(self):        # Method Not Allowed
         pass # TODO: show allowed methods?
     def status406(self):        # Not Acceptable
@@ -778,20 +778,20 @@ class ResponseStatusChecker:
     def status408(self):        # Request Timeout
         pass
     def status409(self):        # Conflict
-        self.setMessage('status', rs.STATUS_CONFLICT)
+        self.setMessage('', rs.STATUS_CONFLICT)
     def status410(self):        # Gone
-        self.setMessage('status', rs.STATUS_GONE)
+        self.setMessage('', rs.STATUS_GONE)
     def status411(self):        # Length Required
         pass
     def status412(self):        # Precondition Failed
         pass # TODO: test to see if it's true, alert if not
     def status413(self):        # Request Entity Too Large
-        self.setMessage('status', rs.STATUS_REQUEST_ENTITY_TOO_LARGE)
+        self.setMessage('', rs.STATUS_REQUEST_ENTITY_TOO_LARGE)
     def status414(self):        # Request-URI Too Long
         self.setMessage('uri', rs.STATUS_URI_TOO_LONG, 
                         uri_len=len(self.red.uri))
     def status415(self):        # Unsupported Media Type
-        self.setMessage('status', rs.STATUS_UNSUPPORTED_MEDIA_TYPE)
+        self.setMessage('', rs.STATUS_UNSUPPORTED_MEDIA_TYPE)
     def status416(self):        # Requested Range Not Satisfiable
         pass # TODO: test to see if it's true, alter if not
     def status417(self):        # Expectation Failed
@@ -805,17 +805,17 @@ class ResponseStatusChecker:
     def status426(self):        # Upgrade Required
         pass
     def status500(self):        # Internal Server Error
-        self.setMessage('status', rs.STATUS_INTERNAL_SERVICE_ERROR)
+        self.setMessage('', rs.STATUS_INTERNAL_SERVICE_ERROR)
     def status501(self):        # Not Implemented
-        self.setMessage('status', rs.STATUS_NOT_IMPLEMENTED)
+        self.setMessage('', rs.STATUS_NOT_IMPLEMENTED)
     def status502(self):        # Bad Gateway
-        self.setMessage('status', rs.STATUS_BAD_GATEWAY)
+        self.setMessage('', rs.STATUS_BAD_GATEWAY)
     def status503(self):        # Service Unavailable
-        self.setMessage('status', rs.STATUS_SERVICE_UNAVAILABLE)
+        self.setMessage('', rs.STATUS_SERVICE_UNAVAILABLE)
     def status504(self):        # Gateway Timeout
-        self.setMessage('status', rs.STATUS_GATEWAY_TIMEOUT)
+        self.setMessage('', rs.STATUS_GATEWAY_TIMEOUT)
     def status505(self):        # HTTP Version Not Supported
-        self.setMessage('status', rs.STATUS_VERSION_NOT_SUPPORTED)
+        self.setMessage('', rs.STATUS_VERSION_NOT_SUPPORTED)
     def status506(self):        # Variant Also Negotiates
         pass
     def status507(self):        # Insufficient Storage
