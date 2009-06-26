@@ -114,6 +114,28 @@ HEADER_TOO_LARGE = (GENERAL, WARN,
     }
 )
 
+HEADER_NAME_ENCODING = (GENERAL, BAD,
+    {
+     'en': u"The %(header_name)s header's name contains non-ASCII characters."
+    },
+    {
+     'en': u"""HTTP header field-names can only contain ASCII characters."""
+    }
+)
+
+HEADER_VALUE_ENCODING = (GENERAL, INFO,
+    {
+     'en': u"The %(header_name)s header's value contains non-ASCII characters."
+    },
+    {
+     'en': u"""HTTP headers use the ISO-8859-1 character set, but in most 
+     cases are pure ASCII (a subset of this encoding).<p>
+     This header has non-ASCII characters, which RED has interpreted as
+     being encoded in ISO-8859-1. If another encoding is used (e.g., UTF-8),
+     the results may be unpredictable."""
+    }
+)
+
 HEADER_DEPRECATED = (GENERAL, WARN,
     {
     'en': u"The %(header_name)s header is deprecated."

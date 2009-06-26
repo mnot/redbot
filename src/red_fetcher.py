@@ -156,8 +156,8 @@ class RedFetcher:
         "Process the response start-line and headers."
         self.timestamp = time.time()
         self.res_version = version
-        self.res_status = status
-        self.res_phrase = phrase
+        self.res_status = status.decode('iso-8859-1', 'replace')
+        self.res_phrase = phrase.decode('iso-8859-1', 'replace')
         self.res_hdrs = res_headers
         ResponseHeaderParser(self)
         ResponseStatusChecker(self)
@@ -204,7 +204,7 @@ class RedFetcher:
                     self._gzip_ok = False
                     return
             else:
-                # we can't really process the rest, so punt on body processing.
+                # we can't handle other codecs, so punt on body processing.
                 return
         if self._gzip_ok:
             for processor in self.body_procs:
@@ -352,12 +352,26 @@ class ResponseHeaderParser(object):
         self.red = red
         hdr_dict = {}
         header_block_size = len(red.res_phrase) + 13
+        clean_res_hdrs = []
         for name, value in red.res_hdrs:
             hdr_size = len(name) + len(value)
             if hdr_size > max_hdr_size:
                 self.setMessage(name.lower(), rs.HEADER_TOO_LARGE,
                                 header_name=name, header_size=hdr_size)
             header_block_size += hdr_size
+            try:
+                name = name.decode('ascii', 'strict')
+            except UnicodeError:
+                name = name.decode('ascii', 'ignore')
+                self.setMessage('header-%s' % name.lower(), rs.HEADER_NAME_ENCODING,
+                                header_name=name)
+            try:
+                value = value.decode('ascii', 'strict')
+            except UnicodeError:
+                value = value.decode('iso-8859-1', 'replace')
+                self.setMessage('header-%s' % name.lower(), rs.HEADER_VALUE_ENCODING,
+                                header_name=name)
+            clean_res_hdrs.append((name, value))
             if not re.match("^\s*%s\s*$" % TOKEN, name):
                 self.setMessage(name, rs.FIELD_NAME_BAD_SYNTAX)
             norm_name = name.lower()
@@ -366,9 +380,13 @@ class ResponseHeaderParser(object):
                 hdr_dict[norm_name][1].append(value)
             else:
                 hdr_dict[norm_name] = (name, [value])
+        # replace the original header tuple with ones that are clean unicode
+        red.res_hdrs = clean_res_hdrs
+        # check the total header block size
         if header_block_size > max_ttl_hdr:
             self.setMessage('header', rs.HEADER_BLOCK_TOO_LARGE, 
                             header_block_size=header_block_size)
+        # build a dictionary of header values
         for fn, (nn, values) in hdr_dict.items():
             name_token = fn.replace('-', '_')
             # anything starting with an underscore or with any caps won't match
