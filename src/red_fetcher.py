@@ -61,7 +61,7 @@ PARAMETER = r'(?:%(TOKEN)s(?:=(?:%(TOKEN)s|%(QUOTED_STRING)s))?)' % locals()
 TOK_PARAM = r'(?:%(TOKEN)s(?:\s*;\s*%(PARAMETER)s)*)' % locals()
 PRODUCT = r'(?:%(TOKEN)s(?:/%(TOKEN)s)?)' % locals()
 COMMENT = r'(?:\((?:[^\(\)]|\\\(|\\\))*\))' # does not handle nesting or check chars
-URI = r'(?:(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?)'  # RFC3986
+URI = r'(?:(([^:/?\#]+):)?(//([^/?\#]*))?([^?#]*)(\?([^\#]*))?(\#(.*))?)'  # RFC3986
 COMMA = r'(?:\s*(?:,\s*)+)'
 DIGITS = r'(?:[0-9]+)'
 DATE = r"""(?:\w{3},\ [0-9]{2}\ \w{3}\ [0-9]{4}\ [0-9]{2}:[0-9]{2}:[0-9]{2}\ GMT |
