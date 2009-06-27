@@ -692,6 +692,7 @@ class ResponseHeaderParser(object):
                 self.setMessage(name, rs.VARY_USER_AGENT)
             if 'host' in values:
                 self.setMessage(name, rs.VARY_HOST)
+            # TODO: enumerate the axes in a message
         return values
         
     @GenericHeaderSyntax
