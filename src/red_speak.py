@@ -13,6 +13,11 @@ contains the message in that language, and 'long message' is a longer
 explanation that may contain HTML.
 
 Both message forms may contain %(var)s style variable interpolation.
+
+PLEASE NOTE: the message field is automatically HTML escaped in webui.py, so
+it can contain arbitrary text (as long as it's unicode). However, the long
+message IS NOT ESCAPED, and therefore all variables to be interpolated into 
+it (but not the short version) need to be escaped.
 """
 
 __author__ = "Mark Nottingham <mnot@mnot.net>"
