@@ -54,18 +54,20 @@ rfc2616 = "http://www.apps.ietf.org/rfc/rfc2616.html#%s"
 max_hdr_size = 4 * 1024
 max_ttl_hdr = 20 * 1024
 
-# generic syntax regexen
-TOKEN = r'(?:[^\(\)<>@,;:\\"/\[\]\?={} \t]+?)'
-STRING = r'(?:[^,]+)'
-QUOTED_STRING = r'(?:"(?:\\"|[^"])*")'
+# generic syntax regexen (assume processing with re.VERBOSE)
+TOKEN = r'(?:[!#\$%&\'\*\+\-\.\^_`|~A-Za-z0-9]+?)'
+QUOTED_STRING = r'(?:"(?:[ \t\x21\x23-\x5B\x5D-\x7E]+|\\[\x01-\x09\x0B-\x0C\x0E\xFF])*")'
 PARAMETER = r'(?:%(TOKEN)s(?:=(?:%(TOKEN)s|%(QUOTED_STRING)s))?)' % locals()
 TOK_PARAM = r'(?:%(TOKEN)s(?:\s*;\s*%(PARAMETER)s)*)' % locals()
 PRODUCT = r'(?:%(TOKEN)s(?:/%(TOKEN)s)?)' % locals()
-COMMENT = r'(?:\((?:[^\(\)]|\\\(|\\\))*\))' # does not handle nesting
+COMMENT = r'(?:\((?:[^\(\)]|\\\(|\\\))*\))' # does not handle nesting or check chars
 URI = r'(?:(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?)'  # RFC3986
 COMMA = r'(?:\s*(?:,\s*)+)'
-DIGITS = r'(?:\d+)'
-DATE = r'(?:\w{3}, \d{2} \w{3} \d{4} \d{2}:\d{2}:\d{2} GMT|\w{6,9}, \d{2}\-\w{3}\-\d{2} \d{2}:\d{2}:\d{2} GMT|\w{3} \w{3} [\d ]\d \d{2}:\d{2}:\d{2} \d{4})'
+DIGITS = r'(?:[0-9]+)'
+DATE = r"""(?:\w{3},\ [0-9]{2}\ \w{3}\ [0-9]{4}\ [0-9]{2}:[0-9]{2}:[0-9]{2}\ GMT |
+         \w{6,9},\ [0-9]{2}\-\w{3}\-[0-9]{2}\ [0-9]{2}:[0-9]{2}:[0-9]{2}\ GMT | 
+         \w{3}\ \w{3}\ [0-9 ][0-9]\ [0-9]{2}:[0-9]{2}:[0-9]{2}\ [0-9]{4})
+        """
 
 
 outstanding_requests = 0 # how many requests we have left
@@ -333,7 +335,7 @@ def CheckFieldSyntax(exp, ref):
     def wrap(meth):
         def new(self, name, values):
             for value in values:
-                if not re.match(r"^\s*(?:%s)\s*$" % exp, value):
+                if not re.match(r"^\s*(?:%s)\s*$" % exp, value, re.VERBOSE):
                     self.setMessage(name, rs.BAD_SYNTAX, ref_uri=ref)
                     def bad_syntax(self, name, values):
                         return None
@@ -403,7 +405,7 @@ class ResponseHeaderParser(object):
     def _parse_date(values):
         """Parse a HTTP date. Raises ValueError if it's bad."""
         value = values[-1]
-        if not re.match(r"%s$" % DATE, value):
+        if not re.match(r"%s$" % DATE, value, re.VERBOSE):
             raise ValueError
         date_tuple = lib_parsedate(value)
         if date_tuple is None:
