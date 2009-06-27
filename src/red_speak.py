@@ -119,7 +119,9 @@ HEADER_NAME_ENCODING = (GENERAL, BAD,
      'en': u"The %(header_name)s header's name contains non-ASCII characters."
     },
     {
-     'en': u"""HTTP header field-names can only contain ASCII characters."""
+     'en': u"""HTTP header field-names can only contain ASCII characters. RED
+     has detected (and possibly removed) non-ASCII characters in this header 
+     name."""
     }
 )
 
