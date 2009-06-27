@@ -365,13 +365,13 @@ class ResponseHeaderParser(object):
                 name = name.decode('ascii', 'strict')
             except UnicodeError:
                 name = name.decode('ascii', 'ignore')
-                self.setMessage('header-%s' % name.lower(), rs.HEADER_NAME_ENCODING,
+                self.setMessage('%s' % name.lower(), rs.HEADER_NAME_ENCODING,
                                 header_name=name)
             try:
                 value = value.decode('ascii', 'strict')
             except UnicodeError:
                 value = value.decode('iso-8859-1', 'replace')
-                self.setMessage('header-%s' % name.lower(), rs.HEADER_VALUE_ENCODING,
+                self.setMessage('%s' % name.lower(), rs.HEADER_VALUE_ENCODING,
                                 header_name=name)
             clean_res_hdrs.append((name, value))
             if not re.match("^\s*%s\s*$" % TOKEN, name):
