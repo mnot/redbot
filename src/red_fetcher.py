@@ -532,7 +532,7 @@ class ResponseHeaderParser(object):
 
     def content_range(self, name, values):
         # TODO: check syntax, values?
-        pass
+        return values
 
     @GenericHeaderSyntax
     @CheckFieldSyntax(r'(?:%(TOKEN)s/%(TOKEN)s(?:\s*;\s*%(PARAMETER)s)*)' % globals(),
@@ -728,7 +728,10 @@ class ResponseStatusChecker:
             self.setMessage('status', rs.STATUS_NONSTANDARD)
 
     def setMessage(self, name, msg, **vars):
-        ident = 'status %s' % name
+        if name:
+            ident = 'status %s' % name
+        else:
+            ident = 'status'
         self.red.setMessage(ident, msg, 
                              status=self.red.res_status,
                              enc_status=e(self.red.res_status), 
@@ -736,15 +739,20 @@ class ResponseStatusChecker:
                              )
 
     def status100(self):        # Continue
-        pass # TODO: check to make sure expectation sent
+        if not "100-continue" in nbhttp.get_hdr(self.red.req_hdrs, 'expect'):
+            self.setMessage('', rs.UNEXPECTED_CONTINUE)
     def status101(self):        # Switching Protocols
-        pass # TODO: make sure upgrade sent
+        if not 'upgrade' in nbhttp.header_dict(self.red.req_hdrs).keys():
+            self.setMessage('', rs.UPGRADE_NOT_REQUESTED)
     def status102(self):        # Processing
         pass
     def status200(self):        # OK
         pass
     def status201(self):        # Created
-        pass # TODO: make sure appropriate method used, Location present
+        if self.red.method in nbhttp.safe_methods:
+            self.setMessage('status', rs.CREATED_SAFE_METHOD, method=self.red.method)
+        if not self.red.parsed_hdrs.has_key('location'):
+            self.setMessage('header-location', rs.CREATED_WITHOUT_LOCATION)
     def status202(self):        # Accepted
         pass
     def status203(self):        # Non-Authoritative Information
@@ -754,7 +762,11 @@ class ResponseStatusChecker:
     def status205(self):        # Reset Content
         pass
     def status206(self):        # Partial Content
-        pass # TODO: check for content-range header
+        if not "range" in nbhttp.header_dict(self.red.req_hdrs).keys():
+            self.setMessage('', rs.PARTIAL_NOT_REQUESTED)
+        if not self.red.parsed_hdrs.has_key('content-range'):
+            print self.red.parsed_hdrs.keys()
+            self.setMessage('header-location', rs.PARTIAL_WITHOUT_RANGE)
     def status207(self):        # Multi-Status
         pass
     def status226(self):        # IM Used
@@ -780,7 +792,7 @@ class ResponseStatusChecker:
         if not self.red.parsed_hdrs.has_key('location'):
             self.setMessage('header-location', rs.REDIRECT_WITHOUT_LOCATION)
     def status400(self):        # Bad Request
-        pass # TODO: ?
+        self.setMessage('', rs.STATUS_BAD_REQUEST)
     def status401(self):        # Unauthorized
         pass # TODO: prompt for credentials
     def status402(self):        # Payment Required
@@ -792,7 +804,7 @@ class ResponseStatusChecker:
     def status405(self):        # Method Not Allowed
         pass # TODO: show allowed methods?
     def status406(self):        # Not Acceptable
-        pass # TODO: warn that the client may still want something
+        self.setMessage('', rs.STATUS_NOT_ACCEPTABLE)
     def status407(self):        # Proxy Authentication Required
         pass
     def status408(self):        # Request Timeout

@@ -1061,6 +1061,96 @@ IMS_STATUS = (VALIDATION, INFO,
 
 ### Status checks
 
+UNEXPECTED_CONTINUE = (GENERAL, BAD,
+    {
+     'en': u"A 100 Continue response was sent when it wasn't asked for."
+    },
+    {
+     'en': u"""HTTP allows clients to ask a server if a request with a body 
+     (e.g., uploading a large file) will succeed before sending it, using
+     a mechanism called "Expect/continue".<p>
+     When used, the client sends an <code>Expect: 100-continue</code>, in
+     the request headers, and if the server is willing to process it, it
+     will send a <code> 100 Continue</code> status code to indicte that the
+     request should continue.<p>
+     This response has a <code>100 Continue</code> status code, but RED
+     did not ask for it (with the <code>Expect</code> request header). Sending
+     this status code without it being requested can cause interoperability 
+     problems."""
+    }
+)
+
+UPGRADE_NOT_REQUESTED = (GENERAL, BAD,
+    {
+     'en': u"The protocol was upgraded without being requested."
+    },
+    {
+     'en': u"""HTTP defines the <code>Upgrade</code> header as a means
+     of negotiating a change of protocol; i.e., it allows you to switch
+     the protocol on a given connection from HTTP to something else.<p>
+     However, it must be first requested by the client; this response
+     contains an <code>Upgrade</code> header, even though RED did not
+     ask for it.<p>
+     Trying to upgrade the connection without the client's participation
+     obviously won't work."""
+    }
+)
+
+CREATED_SAFE_METHOD = (GENERAL, WARN,
+    {
+     'en': u"A new resource was created in response to a safe request."
+    },
+    {
+     'en': u"""The <code>201 Created</code> status code indicates that
+     processing the request had the side effect of creating a new resource.<p>
+     However, the request method that RED used (%(method)s) is defined as
+     a "safe" method; that is, it should not have any side effects.<p>
+     Creating resources as a side effect of a safe method can have unintended
+     consequences; for example, search engine spiders and similar automated
+     agents often follow links, and intermediaries sometimes re-try safe
+     methods when they fail."""
+    }
+)
+
+CREATED_WITHOUT_LOCATION = (GENERAL, BAD,
+    {
+     'en': u"A new resource was created without its location being sent."
+    },
+    {
+     'en': u"""The <code>201 Created</code> status code indicates that 
+     processing the request had the side effect of creating a new resource.<p>
+     HTTP specifies that the URL of the new resource is to be indicated in 
+     the <code>Location</code> header, but it isn't present in this response."""
+    }
+)
+
+PARTIAL_WITHOUT_RANGE = (GENERAL, BAD,
+    {
+     'en': u"%(response)s doesn't have a Content-Range header."
+    },
+    {
+     'en': u"""The <code>206 Partial Response</code> status code indicates that
+     the response body is only partial.<p>
+     However, for a response to be partial, it needs to have a
+     <code>Content-Range</code> header to indicate what part of the full
+     response it carries. This response does not have one, and as a result
+     clients won't be able to process it."""
+    }
+)
+
+PARTIAL_NOT_REQUESTED = (GENERAL, BAD,
+    {
+     'en': u"A partial response was sent when it wasn't requested."
+    },
+    {
+     'en': u"""The <code>206 Partial Response</code> status code indicates that
+     the response body is only partial.<p>
+     However, the client needs to ask for it with the <code>Range</code> header.<p>
+     RED did not request a partial response; sending one without the client 
+     requesting it leads to interoperability problems."""
+    }
+)
+
 REDIRECT_WITHOUT_LOCATION = (GENERAL, BAD,
     {
      'en': u"Redirects need to have a Location header."
@@ -1104,6 +1194,15 @@ STATUS_NONSTANDARD = (GENERAL, BAD,
     }
 )
 
+STATUS_BAD_REQUEST = (GENERAL, WARN,
+    {
+     'en': u"The server didn't understand the request."
+    },
+    {
+     'en': u""" """
+    }
+)
+
 STATUS_FORBIDDEN = (GENERAL, INFO,
     {
      'en': u"The server has forbidden this request."
@@ -1118,7 +1217,17 @@ STATUS_NOT_FOUND = (GENERAL, INFO,
      'en': u"The resource could not be found."
     },
     {
-     'en': u""" """
+     'en': u"""The server couldn't find any resource to serve for the 
+     given URI."""
+    }
+)
+
+STATUS_NOT_ACCEPTABLE = (GENERAL, INFO,
+    {
+     'en': u"The resource could not be found."
+    },
+    {
+     'en': u""""""
     }
 )
 
@@ -1136,16 +1245,18 @@ STATUS_GONE = (GENERAL, INFO,
      'en': u"The resource is gone."
     },
     {
-     'en': u""" """
+     'en': u"""The server previously had a resource at the given URI, but it
+     is no longer there."""
     }
 )
 
 STATUS_REQUEST_ENTITY_TOO_LARGE = (GENERAL, INFO,
     {
-     'en': u"The request body was too large."
+     'en': u"The request body was too large for the server."
     },
     {
-     'en': u""" """
+     'en': u"""The server rejected the request because the request body sent
+     was too large."""
     }
 )
 
@@ -1170,7 +1281,7 @@ STATUS_UNSUPPORTED_MEDIA_TYPE = (GENERAL, INFO,
 
 STATUS_INTERNAL_SERVICE_ERROR = (GENERAL, INFO,
     {
-     'en': u"There was a general server-side error."
+     'en': u"There was a general server error."
     },
     {
      'en': u""" """
