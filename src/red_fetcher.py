@@ -710,6 +710,11 @@ class ResponseHeaderParser(object):
         # TODO: message
         pass
     
+    @SingleFieldValue
+    def x_pingback(self, name, values):
+        #TODO: message, perhaps allow a ping
+        pass
+    
 class ResponseStatusChecker:
     """
     Given a RED, check out the status
