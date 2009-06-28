@@ -905,3 +905,15 @@ def relative_time(utime, now=None, show_sign=1):
         arr.append(sign)
     return " ".join(arr)
     
+    
+
+if "__main__" == __name__:
+    import sys
+    uri = sys.argv[1]
+    req_hdrs = [('Accept-Encoding', 'gzip')]
+    def status_p(msg):
+        print msg
+    class TestFetcher(RedFetcher):
+        def done(self):
+            print self.messages
+    TestFetcher(uri, req_hdrs=req_hdrs, status_cb=status_p, type='test')

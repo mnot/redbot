@@ -369,3 +369,11 @@ class LmValidate(RedFetcher):
         # TODO: check entity headers
             
 
+
+if "__main__" == __name__:
+    import sys
+    uri = sys.argv[1]
+    def status_p(msg):
+        print msg
+    red = ResourceExpertDroid(uri, status_cb=status_p)        
+    print red.messages
