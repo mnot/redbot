@@ -88,8 +88,11 @@ from cgi import escape as e
 assert sys.version_info[0] == 2 and sys.version_info[1] >= 5, "Please use Python 2.5 or greater"
 
 import red
+import red_fetcher
 import red_speak as rs
 import red_header
+RHP = red_fetcher.ResponseHeaderParser
+
 
 # the order of message categories to display
 msg_categories = [
@@ -338,24 +341,27 @@ class HTMLLinkParser(HTMLParser):
         }
         self.titles = {}
         self.base = None
+        self.http_enc = 'latin-1'
+        self.doc_enc = None
         self.count = 0
         HTMLParser.__init__(self)
 
     def feed(self, response, chunk):
         "Feed a given chunk of HTML data to the parser"
         if response.parsed_hdrs.get('content-type', [None])[0] in link_parseable_types:
+            self.http_enc = response.parsed_hdrs['content-type'][1].get('charset', self.http_enc)
             try:
-                # HTMLParser doesn't like Unicode input, so we assume UTF-8. FIXME: look at c-t, sniff content
                 if chunk.__class__.__name__ != 'unicode':
-                    chunk = unicode(chunk, 'utf-8', 'ignore')
+                    chunk = unicode(chunk, self.doc_enc or self.http_enc, 'ignore')
                 HTMLParser.feed(self, chunk.encode('utf-8', 'ignore'))
             except: # oh, well...
                 pass
         
     def handle_starttag(self, tag, attrs):
-        title = dict(attrs).get('title', '').strip()
+        attr_d = dict(attrs)
+        title = attr_d.get('title', '').strip()
         if tag in self.links.keys():
-            target = dict(attrs).get(self.links[tag][0], "")
+            target = attr_d.get(self.links[tag][0], "")
             if target:
                 target = unicode(target, 'utf-8', errors="ignore")
                 self.count += 1
@@ -365,8 +371,24 @@ class HTMLLinkParser(HTMLParser):
                 if title:
                     self.titles[target] = unicode(title, 'utf-8', errors="ignore")
         elif tag == 'base':
-            self.base = dict(attrs).get('href', None)
+            self.base = attr_d.get('href', None)
             return
+        elif tag == 'meta' and attr_d.get('http-equiv', '').lower() == 'content-type':            
+            ct = attr_d.get('content', None)
+            if ct:
+                try:
+                    media_type, params = ct.split(";", 1)
+                except ValueError:
+                    media_type, params = ct, ''
+                media_type = media_type.lower()
+                param_dict = {}
+                for param in RHP._splitstring(params, red_fetcher.PARAMETER, "\s*;\s*"):
+                    try:
+                        a, v = param.split("=", 1)
+                        param_dict[a.lower()] = RHP._unquotestring(v)
+                    except ValueError:
+                        param_dict[param.lower()] = None
+                self.doc_enc = param_dict.get('charset', self.doc_enc)
 
     def error(self, message):
         return
