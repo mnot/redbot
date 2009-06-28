@@ -56,7 +56,7 @@ max_ttl_hdr = 20 * 1024
 
 # generic syntax regexen (assume processing with re.VERBOSE)
 TOKEN = r'(?:[!#\$%&\'\*\+\-\.\^_`|~A-Za-z0-9]+?)'
-QUOTED_STRING = r'(?:"(?:[ \t\x21\x23-\x5B\x5D-\x7E]+|\\[\x01-\x09\x0B-\x0C\x0E\xFF])*")'
+QUOTED_STRING = r'(?:"(?:[ \t\x21\x23-\x5B\x5D-\x7E]|\\[\x01-\x09\x0B-\x0C\x0E\xFF])*")'
 PARAMETER = r'(?:%(TOKEN)s(?:=(?:%(TOKEN)s|%(QUOTED_STRING)s))?)' % locals()
 TOK_PARAM = r'(?:%(TOKEN)s(?:\s*;\s*%(PARAMETER)s)*)' % locals()
 PRODUCT = r'(?:%(TOKEN)s(?:/%(TOKEN)s)?)' % locals()
@@ -573,7 +573,7 @@ class ResponseHeaderParser(object):
 
     @GenericHeaderSyntax
     @SingleFieldValue
-    @CheckFieldSyntax(r'(?:(?:W/)?%s|\*)' % QUOTED_STRING, rfc2616 % "sec-14.19")
+    @CheckFieldSyntax(r'\*|(?:W/)?%s' % QUOTED_STRING, rfc2616 % "sec-14.19")
     def etag(self, name, values):
         instr = values[-1]
         if instr[:2] == 'W/':
