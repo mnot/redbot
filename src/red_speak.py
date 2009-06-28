@@ -398,57 +398,6 @@ PRAGMA_OTHER = (GENERAL, WARN,
     }
 )
 
-VARY_ASTERISK = (CACHING, WARN,
-    {
-    'en': u"Vary: * effectively makes responses for this URI uncacheable."
-    },
-    {
-    'en': u"""<code>Vary *</code> indicates that responses for this resource vary 
-    by some aspect that can't (or won't) be described by the server. This makes 
-    this response effectively uncacheable."""
-    }
-)
-
-VARY_USER_AGENT = (CACHING, WARN,
-    {
-     'en': u"Vary: User-Agent is bad practice."
-    },
-    {
-    'en': u""""""
-    }
-)
-
-VARY_HOST = (CACHING, WARN,
-    {
-     'en': u"Vary: Host is not necessary."
-    },
-    {
-    'en': u"""Some servers (e.g., <a href="http://httpd.apache.org/">Apache</a>
-    with 
-    <a href="http://httpd.apache.org/docs/2.0/mod/mod_rewrite.html">mod_rewrite</a>) 
-    will send <code>Host</code> in the <code>Vary</code> header, in the belief 
-    that since it affects how the server selects what to send back, 
-    this is necessary.<p>
-    This is not the case; HTTP specifies that the URI is the basis of the cache
-    key, and the URI incorporates the <code>Host</code> header.<p>
-    The presence of <code>Vary: Host</code> may make some caches not store
-    an otherwise cacheable response (since some cache implementations will
-    not store anything that has a <code>Vary</code> header)."""
-    }
-)
-
-VARY_COMPLEX = (CACHING, WARN,
-    {
-     'en': u"This resource varies in %(vary_count)i ways."
-    },
-    {
-     'en': u"""The <code>Vary</code> mechanism allows a resource to describe the
-     dimensions that its responses vary, or change, over; each listed header
-     is another dimension.<p>Varying by too many dimensions makes using this
-     information impractical."""
-    }
-)
-
 VIA_PRESENT = (GENERAL, INFO,
     {
     'en': u"One or more intermediaries are present."
@@ -810,6 +759,57 @@ NO_CACHE = (CACHING, INFO,
      for that request.<p>
      If the response doesn't have a <code>Last-Modified</code> or
      <code>ETag</code> header, it effectively can't be used by a cache."""
+    }
+)
+
+VARY_ASTERISK = (CACHING, WARN,
+    {
+    'en': u"Vary: * effectively makes responses for this URI uncacheable."
+    },
+    {
+    'en': u"""<code>Vary *</code> indicates that responses for this resource vary 
+    by some aspect that can't (or won't) be described by the server. This makes 
+    this response effectively uncacheable."""
+    }
+)
+
+VARY_USER_AGENT = (CACHING, WARN,
+    {
+     'en': u"Vary: User-Agent is bad practice."
+    },
+    {
+    'en': u""""""
+    }
+)
+
+VARY_HOST = (CACHING, WARN,
+    {
+     'en': u"Vary: Host is not necessary."
+    },
+    {
+    'en': u"""Some servers (e.g., <a href="http://httpd.apache.org/">Apache</a>
+    with 
+    <a href="http://httpd.apache.org/docs/2.0/mod/mod_rewrite.html">mod_rewrite</a>) 
+    will send <code>Host</code> in the <code>Vary</code> header, in the belief 
+    that since it affects how the server selects what to send back, 
+    this is necessary.<p>
+    This is not the case; HTTP specifies that the URI is the basis of the cache
+    key, and the URI incorporates the <code>Host</code> header.<p>
+    The presence of <code>Vary: Host</code> may make some caches not store
+    an otherwise cacheable response (since some cache implementations will
+    not store anything that has a <code>Vary</code> header)."""
+    }
+)
+
+VARY_COMPLEX = (CACHING, WARN,
+    {
+     'en': u"This resource varies in %(vary_count)i ways."
+    },
+    {
+     'en': u"""The <code>Vary</code> mechanism allows a resource to describe the
+     dimensions that its responses vary, or change, over; each listed header
+     is another dimension.<p>Varying by too many dimensions makes using this
+     information impractical."""
     }
 )
 

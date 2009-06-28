@@ -135,6 +135,20 @@ class ResourceExpertDroid(RedFetcher):
             self.setMessage('header-cache-control', rs.NO_CACHE)
             return # TODO: differentiate when there aren't LM or ETag present.
 
+        # vary?
+        vary = self.parsed_hdrs.get('vary', set())
+        if "*" in vary:
+            self.setMessage('header-vary', rs.VARY_ASTERISK)
+            return # bail; nothing else to see here
+        elif len(vary) > 3:
+            self.setMessage('header-vary', rs.VARY_COMPLEX, vary_count=len(vary))
+        else:
+            if "user-agent" in vary:
+                self.setMessage('header-vary', rs.VARY_USER_AGENT)
+            if "host" in vary:
+                self.setMessage('header-vary', rs.VARY_HOST)
+            # TODO: enumerate the axes in a message
+
         # calculate age
         if self.parsed_hdrs.has_key('date'):
             apparent_age = max(0, 

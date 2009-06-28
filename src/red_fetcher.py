@@ -683,16 +683,6 @@ class ResponseHeaderParser(object):
     @CheckFieldSyntax(TOKEN, rfc2616 % "sec-14.44")
     def vary(self, name, values):
         values = set([v.lower() for v in values])
-        if len(values) > 3:
-            self.setMessage(name, rs.VARY_COMPLEX, vary_count=len(values))
-        elif "*" in values:
-            self.setMessage(name, rs.VARY_ASTERISK)
-        else:
-            if 'user-agent' in values:
-                self.setMessage(name, rs.VARY_USER_AGENT)
-            if 'host' in values:
-                self.setMessage(name, rs.VARY_HOST)
-            # TODO: enumerate the axes in a message
         return values
         
     @GenericHeaderSyntax
