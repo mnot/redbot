@@ -189,15 +189,15 @@ class ResourceExpertDroid(RedFetcher):
         # can heuristic freshness be used?
         if self.res_status in heuristic_cacheable_status and \
           not has_explicit_freshness:
-            self.setMessage('last-modified', rs.HEURISTIC_FRESHNESS)
+            self.setMessage('header-last-modified', rs.HEURISTIC_FRESHNESS)
 
         # can stale responses be served?
         if cc_dict.has_key('must-revalidate'):
-            self.setMessage('cache-control', rs.STALE_MUST_REVALIDATE) 
+            self.setMessage('header-cache-control', rs.STALE_MUST_REVALIDATE) 
         elif cc_dict.has_key('proxy-revalidate') or cc_dict.has_key('s-maxage'):
-            self.setMessage('cache-control', rs.STALE_PROXY_REVALIDATE) 
+            self.setMessage('header-cache-control', rs.STALE_PROXY_REVALIDATE) 
         else:
-            self.setMessage('cache-control', rs.STALE_SERVABLE)
+            self.setMessage('header-cache-control', rs.STALE_SERVABLE)
 
         # public?
         if cc_dict.has_key('public'):
