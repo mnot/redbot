@@ -418,6 +418,21 @@ VIA_PRESENT = (GENERAL, INFO,
     }
 )
 
+LOCATION_UNDEFINED = (GENERAL, WARN,
+    {
+     'en': u"%(response)s doesn't have a defined meaning for the Location header."
+    },
+    {
+     'en': u"""The <code>Location</code> header is used for specific purposes
+     in HTTP; mostly to indicate the URI of another resource (e.g., in
+     redirection, or when a new resource is created).<p>
+     In other status codes (such as this one) it doesn't have a defined meaning, 
+     so any use of it won't be interoperable.<p>
+     Sometimes <code>Location</code> is confused with <code>Content-Location</code>,
+     which indicates a URI for the payload of the message that it appears in."""
+    }
+)
+
 ### Ranges
 
 UNKNOWN_RANGE = (RANGE, WARN,

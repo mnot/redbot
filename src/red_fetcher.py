@@ -619,7 +619,8 @@ class ResponseHeaderParser(object):
     @CheckFieldSyntax(URI, rfc2616 % "sec-14.30")
     @SingleFieldValue
     def location(self, name, values):
-        # TODO: make sure it isn't used in a response where it doesn't make sense
+        if self.red.res_status not in ["201", "300", "301", "302", "303", "305", "307"]:
+            self.setMessage(name, rs.LOCATION_UNDEFINED)
         return values[-1]
 
     def mime_version(self, name, values):
