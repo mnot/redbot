@@ -188,7 +188,7 @@ class RedWebUi(object):
     def presentResponse(self):
         "Return the HTTP response line and headers as HTML"
         return \
-        u"    <span class='response-line'>HTTP/%s %s %s</span>\n" % (
+        u"    <span class='status'>HTTP/%s %s %s</span>\n" % (
             e(str(self.red.res_version)), 
             e(str(self.red.res_status)), 
             e(str(self.red.res_phrase))
