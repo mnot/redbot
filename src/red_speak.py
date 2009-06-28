@@ -451,11 +451,21 @@ VARY_COMPLEX = (CACHING, WARN,
 
 VIA_PRESENT = (GENERAL, INFO,
     {
-    'en': u"An intermediary ('%(via_string)s') is present."
+    'en': u"One or more intermediaries are present."
     },
     {
-    'en': u"""The <code>Via</code> header indicates that an intermediary is 
-    present between RED and the origin server for the resource."""
+    'en': u"""The <code>Via</code> header indicates that one or more 
+    intermediaries are present between RED and the origin server for the 
+    resource.<p>
+    This may indicate that a proxy is in between RED and the server, or that
+    the server uses a "reverse proxy" or CDN in front of it.<p>
+    %(via_list)s
+    <p>
+    There field has three space-separated components; first, the HTTP version
+    of the message that the intermediary received, then the identity of the 
+    intermediary (usually but not always its hostname), and then optionally a 
+    product identifier or comment (usually used to identify the software being 
+    used)."""
     }
 )
 

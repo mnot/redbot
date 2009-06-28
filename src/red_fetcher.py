@@ -699,7 +699,10 @@ class ResponseHeaderParser(object):
     @CheckFieldSyntax(r'(?:%s/)?%s\s+[^,\s]+(?:\s+%s)?' % (TOKEN, TOKEN, COMMENT),
                       rfc2616 % "sec-14.45")
     def via(self, name, values):
-        self.setMessage(name, rs.VIA_PRESENT, via_string=values)
+        via_list = u"<ul>" + u"\n".join(
+               [u"<li><code>%s</code></li>" % e(v) for v in values]
+                           ) + u"</ul>"
+        self.setMessage(name, rs.VIA_PRESENT, via_list=via_list)
         
     @GenericHeaderSyntax
     def warning(self, name, values):
