@@ -382,10 +382,10 @@ class HTMLLinkParser(HTMLParser):
                     media_type, params = ct, ''
                 media_type = media_type.lower()
                 param_dict = {}
-                for param in RHP._splitstring(params, red_fetcher.PARAMETER, "\s*;\s*"):
+                for param in RHP._splitString(params, red_fetcher.PARAMETER, "\s*;\s*"):
                     try:
                         a, v = param.split("=", 1)
-                        param_dict[a.lower()] = RHP._unquotestring(v)
+                        param_dict[a.lower()] = RHP._unquoteString(v)
                     except ValueError:
                         param_dict[param.lower()] = None
                 self.doc_enc = param_dict.get('charset', self.doc_enc)

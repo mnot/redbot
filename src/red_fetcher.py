@@ -389,20 +389,20 @@ class ResponseHeaderParser(object):
             self.setMessage('header', rs.HEADER_BLOCK_TOO_LARGE, 
                             header_block_size=header_block_size)
         # build a dictionary of header values
-        for fn, (nn, values) in hdr_dict.items():
-            name_token = fn.replace('-', '_')
+        for nn, (fn, values) in hdr_dict.items():
+            name_token = nn.replace('-', '_')
             # anything starting with an underscore or with any caps won't match
-            if name_token[0] != '_' and hasattr(self, name_token):
-                parsed_value = getattr(self, name_token)(nn, values)
+            if hasattr(self, name_token):
+                parsed_value = getattr(self, name_token)(fn, values)
                 if parsed_value != None:
-                    self.red.parsed_hdrs[fn] = parsed_value
+                    self.red.parsed_hdrs[nn] = parsed_value
 
     def setMessage(self, name, msg, **vars):
         ident = 'header-%s' % name.lower()
         self.red.setMessage(ident, msg, field_name=name, **vars)
 
     @staticmethod
-    def _parse_date(values):
+    def _parseDate(values):
         """Parse a HTTP date. Raises ValueError if it's bad."""
         value = values[-1]
         if not re.match(r"%s$" % DATE, value, re.VERBOSE):
@@ -420,7 +420,7 @@ class ResponseHeaderParser(object):
         return date
 
     @staticmethod
-    def _unquotestring(instr):
+    def _unquoteString(instr):
         """
         Unquote a string; does NOT unquote control characters. 
     
@@ -438,7 +438,7 @@ class ResponseHeaderParser(object):
         return instr
             
     @staticmethod
-    def _splitstring(instr, item, split):
+    def _splitString(instr, item, split):
         """
         Split instr as a list of items separated by splits.
     
@@ -485,7 +485,7 @@ class ResponseHeaderParser(object):
         for directive in values:
             try:
                 attr, value = directive.split("=", 1)
-                value = self._unquotestring(value)
+                value = self._unquoteString(value)
             except ValueError:
                 attr = directive
                 value = None
@@ -545,10 +545,10 @@ class ResponseHeaderParser(object):
             media_type, params = values[-1], ''
         media_type = media_type.lower()
         param_dict = {}
-        for param in self._splitstring(params, PARAMETER, "\s*;\s*"):
+        for param in self._splitString(params, PARAMETER, "\s*;\s*"):
             try:
                 a, v = param.split("=", 1)
-                param_dict[a.lower()] = self._unquotestring(v)
+                param_dict[a.lower()] = self._unquoteString(v)
             except ValueError:
                 param_dict[param.lower()] = None
         return media_type, param_dict
@@ -556,7 +556,7 @@ class ResponseHeaderParser(object):
     @SingleFieldValue
     def date(self, name, values):
         try:
-            date = self._parse_date(values)
+            date = self._parseDate(values)
         except ValueError:
             self.setMessage(name, rs.BAD_DATE_SYNTAX)
             return None
@@ -565,7 +565,7 @@ class ResponseHeaderParser(object):
     @SingleFieldValue
     def expires(self, name, values):
         try:
-            date = self._parse_date(values)
+            date = self._parseDate(values)
         except ValueError:
             self.setMessage(name, rs.BAD_DATE_SYNTAX)
             return None
@@ -577,9 +577,9 @@ class ResponseHeaderParser(object):
     def etag(self, name, values):
         instr = values[-1]
         if instr[:2] == 'W/':
-            return (True, self._unquotestring(instr[2:]))
+            return (True, self._unquoteString(instr[2:]))
         else:
-            return (False, self._unquotestring(instr))
+            return (False, self._unquoteString(instr))
 
     @GenericHeaderSyntax
     def keep_alive(self, name, values):
@@ -587,7 +587,7 @@ class ResponseHeaderParser(object):
         for directive in values:
             try:
                 attr, value = directive.split("=", 1)
-                value = self._unquotestring(value)
+                value = self._unquoteString(value)
             except ValueError:
                 attr = directive
                 value = None
@@ -599,7 +599,7 @@ class ResponseHeaderParser(object):
     @SingleFieldValue
     def last_modified(self, name, values):
         try:
-            date = self._parse_date(values)
+            date = self._parseDate(values)
         except ValueError:
             self.setMessage(name, rs.BAD_DATE_SYNTAX)
             return None
@@ -628,9 +628,16 @@ class ResponseHeaderParser(object):
         return values
 
     @GenericHeaderSyntax
-    def nnCoection(self, name, values):
-        # TODO: flag this, others?
-        pass
+    def SCRAMBLED_CONNECTION(self, name, values):
+        self.setMessage(name, rs.SCRAMBLED_CONNECTION)
+        return values
+    nncoection = \
+    cneonction = \
+    yyyyyyyyyy = \
+    xxxxxxxxxx = \
+    x_cnection = \
+    _onnection = \
+    SCRAMBLED_CONNECTION
         
     @GenericHeaderSyntax
     def p3p(self, name, values):
@@ -662,6 +669,11 @@ class ResponseHeaderParser(object):
         return values[-1]
         
     def set_cookie(self, name, values):
+        # TODO: check syntax, values?
+        pass
+
+    @GenericHeaderSyntax
+    def tcn(self, name, values):
         # TODO: check syntax, values?
         pass
 
@@ -699,6 +711,31 @@ class ResponseHeaderParser(object):
     def warning(self, name, values):
         # TODO: check syntax, values?
         pass
+    
+    @GenericHeaderSyntax
+    def x_cache(self, name, values):
+        # TODO: explain
+        pass
+
+    @GenericHeaderSyntax
+    def x_content_type_options(self, name, values):
+        # TODO: http://blogs.msdn.com/ie/archive/2008/09/02/ie8-security-part-vi-beta-2-update.aspx
+        pass
+    
+    @GenericHeaderSyntax
+    def x_download_options(self, name, values):
+        # TODO: http://blogs.msdn.com/ie/archive/2008/09/02/ie8-security-part-vi-beta-2-update.aspx
+        pass
+
+    @GenericHeaderSyntax
+    def x_frame_options(self, name, values):
+        # TODO: http://blogs.msdn.com/ie/archive/2009/01/27/ie8-security-part-vii-clickjacking-defenses.aspx
+        pass
+
+    @GenericHeaderSyntax
+    def x_ua_compatible(self, name, values):
+        # TODO: explain - http://blogs.msdn.com/ie/archive/2008/06/10/introducing-ie-emulateie7.aspx
+        pass
 
     @GenericHeaderSyntax
     @SingleFieldValue
@@ -706,9 +743,14 @@ class ResponseHeaderParser(object):
         pass
 
     @GenericHeaderSyntax
-    def x_pad(self, name, values):
-        # TODO: message
-        pass
+    def NETSCAPE_PAD(self, name, values):
+        self.setMessage(name, rs.NETSCAPE_PAD)
+        return values
+    x_pad_for_netscrape_bug = \
+    x_pad = \
+    xx_pad = \
+    x_browseralignment = \
+    NETSCAPE_PAD
     
     @SingleFieldValue
     def x_pingback(self, name, values):

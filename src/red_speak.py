@@ -193,7 +193,7 @@ BAD_SYNTAX = (GENERAL, BAD,
     }
 )
 
-KEEP_ALIVE_HEADER = (GENERAL, INFO,
+KEEP_ALIVE_HEADER = (CONNECTION, INFO,
     {
     'en': u"The Keep-Alive header isn't necessary."
     },
@@ -210,6 +210,39 @@ KEEP_ALIVE_HEADER = (GENERAL, INFO,
     willing to serve on a single connection) in this header, but this information
     isn't usually used by clients. It's safe to remove this header if you wish
     to save a few bytes in the response."""
+    }
+)
+
+SCRAMBLED_CONNECTION = (CONNECTION, INFO,
+    {
+     'en': u"%(response)s has a scrambled Connection header."
+    },
+    {
+     'en': u"""The <code>Connection</code> header is used to indicate what
+     headers are hop-by-hop, and to signal that the connection should not be
+     reused by the client, with the <code>close</code> directive.<p>
+     The <code>%(field_name)s</code> field usually means that a HTTP load 
+     balancer, proxy or other intermediary in front of the server has replaced
+     the <code>Connection</code> header, to allow the connection to be reused.<p>
+     It takes this form because the most efficient way to strip the server's
+     <code>Connection</code> header is to rewrite its name into something
+     that isn't recognisable.
+     """
+    }
+)
+
+NETSCAPE_PAD = (CONNECTION, INFO,
+    {
+     'en': u"%(response)s has a padding header."
+    },
+    {
+     'en': u"""The <code>%(field_name)s</code> header is used to "pad" the 
+     response header size; very old versions of the Netscape browser had a 
+     bug whereby a response whose headers were exactly 256 or 257 bytes long,
+     the browser would consider the response (e.g., an image) invalid.<p>
+     Since the affected browsers (specifically, Netscape 2.x, 3.x and 4.0 up to
+     beta 2) are no longer widely used, it's probably safe to omit this header.
+     """
     }
 )
 
