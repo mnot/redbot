@@ -96,7 +96,7 @@ RHP = red_fetcher.ResponseHeaderParser
 
 # the order of message categories to display
 msg_categories = [
-    rs.GENERAL, rs.CONNEG, rs.CONNECTION, rs.CACHING, rs.VALIDATION, rs.RANGE
+    rs.GENERAL, rs.CONNECTION, rs.CONNEG, rs.CACHING, rs.VALIDATION, rs.RANGE
 ]
 
 # HTML template for the main response body
