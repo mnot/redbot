@@ -466,6 +466,21 @@ LOCATION_UNDEFINED = (GENERAL, WARN,
     }
 )
 
+LOCATION_NOT_ABSOLUTE = (GENERAL, BAD,
+    {
+     'en': u"The Location header contains a relative URI."
+    },
+    {
+     'en': u"""<code>Location</code> is specified to contain an absolute,
+     not relative, URI.<p>
+     Most (but not all) clients will work around this, but since this field isn't
+     defined to take a relative URI, they may behave differently (for example,
+     if the body contains a base URI).</p>
+     The correct value for this field is (probably):<br>
+     <code>%(full_uri)s</code>"""
+    }
+)
+
 ### Ranges
 
 UNKNOWN_RANGE = (RANGE, WARN,

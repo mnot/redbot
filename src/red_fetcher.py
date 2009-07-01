@@ -42,10 +42,12 @@ import socket
 import time
 import zlib
 from cgi import escape as e
+from urlparse import urljoin
 from email.utils import parsedate as lib_parsedate
 
 import nbhttp
 import red_speak as rs 
+from uri_validate import absolute_URI, URI_reference
 
 # base URL for RFC2616 references
 rfc2616 = "http://www.apps.ietf.org/rfc/rfc2616.html#%s"
@@ -61,7 +63,6 @@ PARAMETER = r'(?:%(TOKEN)s(?:=(?:%(TOKEN)s|%(QUOTED_STRING)s))?)' % locals()
 TOK_PARAM = r'(?:%(TOKEN)s(?:\s*;\s*%(PARAMETER)s)*)' % locals()
 PRODUCT = r'(?:%(TOKEN)s(?:/%(TOKEN)s)?)' % locals()
 COMMENT = r'(?:\((?:[^\(\)]|\\\(|\\\))*\))' # does not handle nesting or check chars
-URI = r'(?:(([^:/?\#]+):)?(//([^/?\#]*))?([^?#]*)(\?([^\#]*))?(\#(.*))?)'  # RFC3986
 COMMA = r'(?:\s*(?:,\s*)+)'
 DIGITS = r'(?:[0-9]+)'
 DATE = r"""(?:\w{3},\ [0-9]{2}\ \w{3}\ [0-9]{4}\ [0-9]{2}:[0-9]{2}:[0-9]{2}\ GMT |
@@ -616,11 +617,16 @@ class ResponseHeaderParser(object):
         # TODO: check syntax, values?
         pass
 
-    @CheckFieldSyntax(URI, rfc2616 % "sec-14.30")
+    # The most common problem with Location is a non-absolute URI, so we separate
+    # that from the syntax check.
+    @CheckFieldSyntax(URI_reference, rfc2616 % "sec-14.30")
     @SingleFieldValue
     def location(self, name, values):
         if self.red.res_status not in ["201", "300", "301", "302", "303", "305", "307"]:
             self.setMessage(name, rs.LOCATION_UNDEFINED)
+        if not re.match(r"^\s*(?:%s)\s*$" % absolute_URI, values[-1], re.VERBOSE):
+            self.setMessage(name, rs.LOCATION_NOT_ABSOLUTE,
+                            full_uri=e(urljoin(self.red.uri, values[-1])))
         return values[-1]
 
     def mime_version(self, name, values):

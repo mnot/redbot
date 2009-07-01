@@ -41,7 +41,7 @@ import random
 from cgi import escape as e
 
 import red_speak as rs
-from red_fetcher import RedFetcher, DroidError, relative_time, URI
+from red_fetcher import RedFetcher, DroidError, relative_time, absolute_URI
 
 ### configuration
 cacheable_methods = ['GET']
@@ -69,14 +69,14 @@ class ResourceExpertDroid(RedFetcher):
         req_hdrs = req_hdrs or []
         req_hdrs.append(('Accept-Encoding', 'gzip'))
         req_hdrs.append(("User-Agent", "RED/%s (http://redbot.org/about)" % __version__))
+        RedFetcher.__init__(self, uri, method, req_hdrs, req_body, 
+                            status_cb, body_procs, type=method)
 
         # check the URI
-        if not re.match("^\s*%s\s*$" % URI, uri):
+        if not re.match("^\s*%s\s*$" % absolute_URI, uri, re.VERBOSE):
             self.setMessage('uri', rs.URI_BAD_SYNTAX)
         if len(uri) > max_uri:
             self.setMessage('uri', rs.URI_TOO_LONG, uri_len=len(uri))            
-        RedFetcher.__init__(self, uri, method, req_hdrs, req_body, 
-                            status_cb, body_procs, type=method)
             
     def done(self):
         """
