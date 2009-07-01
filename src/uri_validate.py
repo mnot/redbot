@@ -49,8 +49,10 @@ unreserved = r"(?: %(ALPHA)s | %(DIGIT)s | \- | \. | _ | ~ )"  % locals()
 #   gen-delims    = ":" / "/" / "?" / "#" / "[" / "]" / "@"
 gen_delims = r"(?: : | / | \? | \# | \[ | \] | @ )"
 
-#   sub-delims    = "!" / "$" / "&" / "'" / "("
-sub_delims = r"(?: ! | \$ | & | ' | \( )"
+#   sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
+#                 / "*" / "+" / "," / ";" / "="
+sub_delims = r"""(?: ! | \$ | & | ' | \( | \) |
+                     \* | \+ | , | ; | = )"""
 
 #   pchar         = unreserved / pct-encoded / sub-delims / ":" / "@"
 pchar = r"(?: %(unreserved)s | %(pct_encoded)s | %(sub_delims)s | : | @ )" % locals()
@@ -158,7 +160,7 @@ path_noscheme = r"%(segment_nz_nc)s (?: / %(segment)s )*" % locals()
 path_rootless = r"%(segment_nz)s (?: / %(segment)s )*" % locals()
 
 #   path-empty    = 0<pchar>
-path_empty = r""  ### FIXME
+path_empty = r"%(pchar)s{0}"
 
 #   path          = path-abempty    ; begins with "/" or is empty
 #                 / path-absolute   ; begins with "/" but not "//"
