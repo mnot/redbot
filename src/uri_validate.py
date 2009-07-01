@@ -223,30 +223,30 @@ absolute_URI = r"(?: %(scheme)s : %(hier_part)s (?: \? %(query)s )? )" % locals(
 
 
 if "__main__" == __name__:
-        import re
-        import sys
-        try:
-                instr = sys.argv[1]
-        except IndexError:
-                print "usage: %s test-string" % sys.argv[0]
-                sys.exit(1)
-        
-        print 'testing: "%s"' % instr
-        
-        print "URI:",
-        if re.match("^%s$" % URI, instr, re.VERBOSE):
-                print "yes"
-        else:
-                print "no"
-        
-        print "URI reference:",
-        if re.match("^%s$" % URI_reference, instr, re.VERBOSE):
-                print "yes"
-        else:
-                print "no"
-        
-        print "Absolute URI:",
-        if re.match("^%s$" % absolute_URI, instr, re.VERBOSE):
-                print "yes"
-        else:
-                print "no"
+    import re
+    import sys
+    try:
+        instr = sys.argv[1]
+    except IndexError:
+        print "usage: %s test-string" % sys.argv[0]
+        sys.exit(1)
+    
+    print 'testing: "%s"' % instr
+    
+    print "URI:",
+    if re.match("^%s$" % URI, instr, re.VERBOSE):
+        print "yes"
+    else:
+        print "no"
+    
+    print "URI reference:",
+    if re.match("^%s$" % URI_reference, instr, re.VERBOSE):
+        print "yes"
+    else:
+        print "no"
+    
+    print "Absolute URI:",
+    if re.match("^%s$" % absolute_URI, instr, re.VERBOSE):
+        print "yes"
+    else:
+        print "no"
