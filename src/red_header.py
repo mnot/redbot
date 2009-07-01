@@ -69,7 +69,7 @@ $(document).ready(function(){
 	});
 
 	var check_phrase = "Enter a HTTP URI to check";
-	var uri = "%(uri)s";
+	var uri = "%(js_uri)s";
 	$(document).ready(function(){
 		if (uri) {
 			$("#uri").val(uri);		

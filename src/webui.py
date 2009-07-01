@@ -155,8 +155,10 @@ class RedWebUi(object):
     Given a URI, run RED on it and present the results to STDOUT as HTML.
     """
     def __init__(self, uri):
-        print red_header.__doc__ % {'uri': uri, 'html_uri': e(uri),
-} 
+        print red_header.__doc__ % {
+                        'js_uri': uri.replace('"', r'\"'), 
+                        'html_uri': e(uri),
+                        } 
         sys.stdout.flush()
         self.links = HTMLLinkParser()
         if uri:
@@ -180,8 +182,6 @@ class RedWebUi(object):
     def presentResults(self):
         "Fill in the template with RED's results."
         result_strings = {
-            'uri': self.red.uri,
-            'html_uri': e(self.red.uri),
             'response': self.presentResponse(),
             'options': nl.join(self.presentOptions()),
             'messages': nl.join([self.presentCategory(cat) for cat in msg_categories]),
