@@ -1,7 +1,7 @@
 """\
 <html>
 <head>
-	<title>RED: &lt;%(uri)s&gt;</title>
+	<title>RED: &lt;%(html_uri)s&gt;</title>
 	<link rel="stylesheet" type='text/css' href="red_style.css">
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta name="ROBOTS" content="INDEX, NOFOLLOW" />
@@ -95,5 +95,5 @@ $(document).ready(function(){
 
 <h1><span class="hilight">R</span>esource <span class="hilight">E</span>xpert <span class="hilight">D</span>roid</h1>
 
-<p><form method="GET"><input type="text" name="uri" value="%(uri)s" id="uri"/></form></p>
+<p><form method="GET"><input type="text" name="uri" value="%(html_uri)s" id="uri"/></form></p>
 """
