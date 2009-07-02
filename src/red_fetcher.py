@@ -71,14 +71,14 @@ class RedFetcher:
     """
 
     def __init__(self, uri, method="GET", req_hdrs=None, req_body=None,
-                 status_cb=None, body_procs=None, type=None):
+                 status_cb=None, body_procs=None, req_type=None):
         self.uri = uri
         self.method = method
         self.req_hdrs = req_hdrs or []
         self.req_body = req_body
         self.status_cb = status_cb
         self.body_procs = body_procs or []
-        self.type = type
+        self.type = req_type
         self.res_version = ""
         self.res_status = None
         self.res_phrase = ""
