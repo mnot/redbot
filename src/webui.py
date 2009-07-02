@@ -246,7 +246,7 @@ class RedWebUi(object):
             options.append(u"<a href='%s'>view</a>" % self.red.uri)
         if media_type in link_parseable_types:
             if self.links.count > 0:
-                options.append(u"<a href='#' class='link_view' title='%s'>links</a>" %
+                options.append(u"<a href='#link_list' class='link_view' title='%s'>links</a>" %
                                self.red.uri)
         if validators.has_key(media_type):
             options.append(u"<a href='%s'>validate body</a>" % 
