@@ -162,7 +162,8 @@ class RedWebUi(object):
                         'html_uri': e(uri),
                         } 
         sys.stdout.flush()
-        self.links = HTMLLinkParser()
+        self.links = HTMLLinkParser(uri)
+        self.link_droids = []
         if uri:
             start = time.time()
             self.red = red.ResourceExpertDroid(
@@ -187,7 +188,20 @@ class RedWebUi(object):
                     raise AssertionError, "Unidentified incomplete response error."                
         print red_footer % {'version': red.__version__}
         sys.stdout.flush()            
-    
+
+    def linkProcess(self, link, tag, title):
+        "Follow a link and run RED on it"
+        if tag in ['img', 'link', 'script', 'frame']:
+            self.link_droids.append((
+                    red.ResourceExpertDroid(
+                            link, 
+                            req_hdrs=req_hdrs,
+                            status_cb=self.updateStatus
+                    ),
+                    tag,
+                    title
+            ))
+
     def presentResults(self):
         "Fill in the template with RED's results."
         result_strings = {
@@ -335,7 +349,8 @@ class HTMLLinkParser(HTMLParser):
     to title (if present). Finally, the base attribute will hold the HTML base
     URI, if present.
     """
-    def __init__(self):
+    def __init__(self, base_uri, process_link=None):
+        self.process_link = process_link or self._dummy
         self.link_order = (
             ('link', u'Head Links'),
             ('img', u'Images'),
@@ -351,7 +366,7 @@ class HTMLLinkParser(HTMLParser):
             'frame': ('src', set()),             
         }
         self.titles = {}
-        self.base = None
+        self.base = base_uri
         self.http_enc = 'latin-1'
         self.doc_enc = None
         self.count = 0
@@ -379,10 +394,11 @@ class HTMLLinkParser(HTMLParser):
                 if "#" in target:
                     target = target[:target.index('#')]
                 self.links[tag][1].add(target)
+                self.process_link(urljoin(self.base, target), tag, title)
                 if title:
                     self.titles[target] = unicode(title, 'utf-8', errors="ignore")
         elif tag == 'base':
-            self.base = attr_d.get('href', None)
+            self.base = attr_d.get('href', self.base)
             return
         elif tag == 'meta' and attr_d.get('http-equiv', '').lower() == 'content-type':            
             ct = attr_d.get('content', None)
@@ -400,6 +416,9 @@ class HTMLLinkParser(HTMLParser):
                     except ValueError:
                         param_dict[param.lower()] = None
                 self.doc_enc = param_dict.get('charset', self.doc_enc)
+
+    def _dummy(self, *args, **kw):
+        pass
 
     def error(self, message):
         return
