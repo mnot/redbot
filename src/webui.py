@@ -89,9 +89,10 @@ assert sys.version_info[0] == 2 and sys.version_info[1] >= 5, "Please use Python
 
 import red
 import red_fetcher
-import red_speak as rs
 import red_header
-RHP = red_fetcher.ResponseHeaderParser
+import red_speak as rs
+import response_analyse
+RHP = response_analyse.ResponseHeaderParser
 
 
 # the order of message categories to display
@@ -174,7 +175,7 @@ class RedWebUi(object):
                 self.elapsed = time.time() - start
                 self.header_presenter = HeaderPresenter(self.red)
                 print self.presentResults()
-            except red.DroidError, why:
+            except red_fetcher.DroidError, why:
                 print error_template % why
         print red_footer % {'version': red.__version__}
         sys.stdout.flush()            
@@ -384,7 +385,7 @@ class HTMLLinkParser(HTMLParser):
                     media_type, params = ct, ''
                 media_type = media_type.lower()
                 param_dict = {}
-                for param in RHP._splitString(params, red_fetcher.PARAMETER, "\s*;\s*"):
+                for param in RHP._splitString(params, response_analyse.PARAMETER, "\s*;\s*"):
                     try:
                         a, v = param.split("=", 1)
                         param_dict[a.lower()] = RHP._unquoteString(v)

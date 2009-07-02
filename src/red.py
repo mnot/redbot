@@ -41,7 +41,9 @@ import random
 from cgi import escape as e
 
 import red_speak as rs
-from red_fetcher import RedFetcher, DroidError, relative_time, absolute_URI
+from red_fetcher import RedFetcher
+from response_analyse import relative_time
+from uri_validate import absolute_URI
 
 ### configuration
 cacheable_methods = ['GET']
