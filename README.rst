@@ -23,8 +23,7 @@ Unpack the RED tarball. There are a number of interesting files:
 
 - src/webui.py - the Web frontend for RED. This is what is run by the server.
 - src/\*.py - other Python files necessary for RED.
-- src/red_style.css - RED's CSS stylesheet.
-- src/jquery.js - the JQuery <http://jquery.com/> JavaScript library.
+- web/\* - RED's CSS stylesheet and jquery <http://jquery.com/> library.
 
 Place webui.py where you wish it to be served from the Web server. For example,
 with Apache you can put it in a directory and add these configuration directives
@@ -36,13 +35,13 @@ with Apache you can put it in a directory and add these configuration directives
 If the directory is the root directory for your server "example.com", 
 this will configure RED to be at the URI "http://example.com/".
 
-red_style.css and jquery.js must be available at the same URI path as RED; 
+The contents of the web directory must be available at the same URI path as RED; 
 in the deployment above, the easiest thing to do is to place them in the same
 directory.
 
-Finally, the other .py files must be available to Python; you can either place
-them in the same directory, or somewhere else on your PYTHONPATH. See Python's
-documentation for more information.
+Finally, the other .py files in src must be available to Python; you can either 
+place them in the same directory, or somewhere else on your PYTHONPATH. See 
+Python's documentation for more information.
 
 Support, Reporting Issues and Contributing
 ------------------------------------------
