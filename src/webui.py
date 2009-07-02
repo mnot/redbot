@@ -92,6 +92,7 @@ import red_fetcher
 import red_header
 import red_speak as rs
 import response_analyse
+import nbhttp.error
 RHP = response_analyse.ResponseHeaderParser
 
 
@@ -164,19 +165,26 @@ class RedWebUi(object):
         self.links = HTMLLinkParser()
         if uri:
             start = time.time()
-            try:
-                self.red = red.ResourceExpertDroid(
-                    uri, 
-                    req_hdrs=req_hdrs,
-                    status_cb=self.updateStatus,
-                    body_procs=[self.links.feed],
-                )
-                self.updateStatus('Done.')
-                self.elapsed = time.time() - start
+            self.red = red.ResourceExpertDroid(
+                uri, 
+                req_hdrs=req_hdrs,
+                status_cb=self.updateStatus,
+                body_procs=[self.links.feed],
+            )
+            self.updateStatus('Done.')
+            self.elapsed = time.time() - start
+            if self.red.res_complete:
                 self.header_presenter = HeaderPresenter(self.red)
                 print self.presentResults()
-            except red_fetcher.DroidError, why:
-                print error_template % why
+            else:
+                if self.red.res_error['desc'] == nbhttp.error.ERR_CONNECT['desc']:
+                    print error_template % "Could not connect to the server (%s)" % \
+                        self.red.res_error.get('detail', "unknown")
+                elif self.red.res_error['desc'] == nbhttp.error.ERR_URL['desc']:
+                    print error_template % self.red.res_error.get(
+                                          'detail', "RED can't fetch that URL.")
+                else:
+                    raise AssertionError, "Unidentified incomplete response error."                
         print red_footer % {'version': red.__version__}
         sys.stdout.flush()            
     

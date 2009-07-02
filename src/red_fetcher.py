@@ -100,7 +100,7 @@ class RedFetcher:
         try:
             self._makeRequest()
         except socket.gaierror:
-            raise DroidError, "Hostname not found."
+            self._response_done(nbhttp.error.ERR_CONNECT)
         
     def setMessage(self, subject, msg, subreq=None, **vrs):
         "Set a message."
@@ -205,12 +205,11 @@ class RedFetcher:
             self.setMessage('header-transfer-encoding', rs.BAD_CHUNK,
                                 chunk_sample=e(err.get('detail', '')[:20]))
         elif err['desc'] == nbhttp.error.ERR_CONNECT['desc']:
-            raise DroidError, "Could not connect to the server (%s)." % \
-                err.get('detail', "unknown problem")
+            self.res_complete = False
         elif err['desc'] == nbhttp.error.ERR_LEN_REQ['desc']:
             pass # FIXME: length required
         elif err['desc'] == nbhttp.error.ERR_URL['desc']:
-            raise DroidError, err.get('detail', "RED can't fetch that URL.")
+            self.res_complete = False
         else:
             raise AssertionError, "Unknown response error: %s" % err
 
@@ -270,10 +269,6 @@ class RedFetcher:
             content_l = content_l[2:]   # Read & discard the 16-bit header CRC
         return "".join(content_l)
 
-
-class DroidError(Exception):
-    "An exception raised by RED."
-    pass
 
 
 if "__main__" == __name__:

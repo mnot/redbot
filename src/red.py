@@ -72,7 +72,7 @@ class ResourceExpertDroid(RedFetcher):
         req_hdrs.append(('Accept-Encoding', 'gzip'))
         req_hdrs.append(("User-Agent", "RED/%s (http://redbot.org/about)" % __version__))
         RedFetcher.__init__(self, uri, method, req_hdrs, req_body, 
-                            status_cb, body_procs, type=method)
+                            status_cb, body_procs, req_type=method)
 
         # check the URI
         if not re.match("^\s*%s\s*$" % absolute_URI, uri, re.VERBOSE):
