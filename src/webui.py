@@ -61,12 +61,6 @@ viewable_types = [
     'text/css',
 ]
 
-# Media types to look for links in
-link_parseable_types = [
-    'text/html',
-    'application/xhtml+xml',
-]
-
 # Where to store exceptions; set to None to disable traceback logging
 logdir = 'exceptions'
 
@@ -80,20 +74,16 @@ import sys
 import cgi
 import time
 import textwrap
-from HTMLParser import HTMLParser
 from urlparse import urljoin
-from urllib import quote
 from cgi import escape as e
 
 assert sys.version_info[0] == 2 and sys.version_info[1] >= 5, "Please use Python 2.5 or greater"
 
+import link_parse
 import red
-import red_fetcher
 import red_header
 import red_speak as rs
-import response_analyse
 import nbhttp.error
-RHP = response_analyse.ResponseHeaderParser
 
 
 # the order of message categories to display
@@ -162,15 +152,17 @@ class RedWebUi(object):
                         'html_uri': e(uri),
                         } 
         sys.stdout.flush()
-        self.links = HTMLLinkParser(uri)
+        self.links = {}
         self.link_droids = []
+        self.descend_links = False
         if uri:
             start = time.time()
+            link_parser = link_parse.HTMLLinkParser(uri, self.processLink)
             self.red = red.ResourceExpertDroid(
                 uri, 
                 req_hdrs=req_hdrs,
                 status_cb=self.updateStatus,
-                body_procs=[self.links.feed],
+                body_procs=[link_parser.feed],
             )
             self.updateStatus('Done.')
             self.elapsed = time.time() - start
@@ -189,9 +181,13 @@ class RedWebUi(object):
         print red_footer % {'version': red.__version__}
         sys.stdout.flush()            
 
-    def linkProcess(self, link, tag, title):
-        "Follow a link and run RED on it"
-        if tag in ['img', 'link', 'script', 'frame']:
+    def processLink(self, link, tag, title):
+        "Handle a link from content"
+        if not self.links.has_key(tag):
+            self.links[tag] = set()
+        self.links[tag].add((link, title))
+    
+        if self.descend_links:
             self.link_droids.append((
                     red.ResourceExpertDroid(
                             link, 
@@ -236,7 +232,7 @@ class RedWebUi(object):
             return nl
         out = [u"<h3>%s</h3>\n<ul>\n" % category]
         for (s, (c, l, m, lm), sr, v) in messages:
-            out.append(u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span>" % 
+            out.append(u"<li class='%s %s msg'>%s <span class='hidden_desc'>%s</span>" % 
                     (l, e(s), e(m[lang]%v), lm[lang]%v)
             )
             out.append(u"</li>")
@@ -245,7 +241,7 @@ class RedWebUi(object):
                 out.append(u"<ul>")
                 for (s, (c, l, m, lm), sms, v) in smsgs:
                     out.append(
-                        u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span></li>" % 
+                        u"<li class='%s %s msg'>%s <span class='hidden_desc'>%s</span></li>" % 
                         (l, e(s), e(m[lang]%v), lm[lang]%v)
                     )
                 out.append(u"</ul>")
@@ -258,31 +254,34 @@ class RedWebUi(object):
         media_type = self.red.parsed_hdrs.get('content-type', [None])[0]
         if media_type in viewable_types:
             options.append(u"<a href='%s'>view</a>" % self.red.uri)
-        if media_type in link_parseable_types:
-            if self.links.count > 0:
-                options.append(u"<a href='#link_list' class='link_view' title='%s'>links</a>" %
-                               self.red.uri)
+        if len(self.links) > 0:
+            options.append(u"<a href='#link_list' class='link_view' title='%s'>links</a>" %
+                           self.red.uri)
         if validators.has_key(media_type):
             options.append(u"<a href='%s'>validate body</a>" % 
                            validators[media_type] % self.red.uri)
         return options
 
+    link_order = [
+          ('link', 'Head Links'), 
+          ('script', 'Script Links'), 
+          ('frame', 'Frame Links'),
+          ('a', 'Body Links')
+    ]
     def presentLinks(self):
         "Return an HTML list of the links in the response, as RED URIs"
-        base = self.links.base or self.red.uri
         out = []
-        for tag, name in self.links.link_order:
-            attr, link_set = self.links.links[tag]
+        for tag, name in self.link_order:
+            link_set = self.links.get(tag, set())
             if len(link_set) > 0:
                 link_list = list(link_set)
                 link_list.sort()
                 out.append(u"<h3>%s</h3>" % name)
                 out.append(u"<ul>")
-                for target in link_set:
-                    title = self.links.titles.get(target, target)
-                    al = u"?uri=%s" % e(urljoin(base, target))
+                for link, title in link_set:
+                    al = u"?uri=%s" % e(link)
                     out.append(u"<li><a href='%s' title='%s'>%s</a></li>" % (
-                                 al, e(target), e(title)))
+                                 al, e(link), e(title or link)))
                 out.append(u"</ul>")
         return out
 
@@ -338,90 +337,6 @@ class HeaderPresenter(object):
     location = \
     x_xrds_location = \
     BARE_URI
-
-
-class HTMLLinkParser(HTMLParser):
-    """
-    Parse the links out of an HTML document in a very forgiving way.
-    
-    After feed()ing is done, the links dictionary will be populated with 
-    sets of links. Additionally, the titles dictionary will be a mapping of URI
-    to title (if present). Finally, the base attribute will hold the HTML base
-    URI, if present.
-    """
-    def __init__(self, base_uri, process_link=None):
-        self.process_link = process_link or self._dummy
-        self.link_order = (
-            ('link', u'Head Links'),
-            ('img', u'Images'),
-            ('script', u'Scripts'),
-            ('frame', u'Frames'),
-            ('a', u'Body Links'),
-        )
-        self.links = {
-            'link': ('href', set()),
-            'a': ('href', set()),
-            'img': ('src', set()),
-            'script': ('src', set()),
-            'frame': ('src', set()),             
-        }
-        self.titles = {}
-        self.base = base_uri
-        self.http_enc = 'latin-1'
-        self.doc_enc = None
-        self.count = 0
-        HTMLParser.__init__(self)
-
-    def feed(self, response, chunk):
-        "Feed a given chunk of HTML data to the parser"
-        if response.parsed_hdrs.get('content-type', [None])[0] in link_parseable_types:
-            self.http_enc = response.parsed_hdrs['content-type'][1].get('charset', self.http_enc)
-            try:
-                if chunk.__class__.__name__ != 'unicode':
-                    chunk = unicode(chunk, self.doc_enc or self.http_enc, 'ignore')
-                HTMLParser.feed(self, chunk.encode('utf-8', 'ignore'))
-            except: # oh, well...
-                pass
-        
-    def handle_starttag(self, tag, attrs):
-        attr_d = dict(attrs)
-        title = attr_d.get('title', '').strip()
-        if tag in self.links.keys():
-            target = attr_d.get(self.links[tag][0], "")
-            if target:
-                target = unicode(target, 'utf-8', errors="ignore")
-                self.count += 1
-                if "#" in target:
-                    target = target[:target.index('#')]
-                self.links[tag][1].add(target)
-                self.process_link(urljoin(self.base, target), tag, title)
-                if title:
-                    self.titles[target] = unicode(title, 'utf-8', errors="ignore")
-        elif tag == 'base':
-            self.base = attr_d.get('href', self.base)
-            return
-        elif tag == 'meta' and attr_d.get('http-equiv', '').lower() == 'content-type':            
-            ct = attr_d.get('content', None)
-            if ct:
-                try:
-                    media_type, params = ct.split(";", 1)
-                except ValueError:
-                    media_type, params = ct, ''
-                media_type = media_type.lower()
-                param_dict = {}
-                for param in RHP._splitString(params, response_analyse.PARAMETER, "\s*;\s*"):
-                    try:
-                        a, v = param.split("=", 1)
-                        param_dict[a.lower()] = RHP._unquoteString(v)
-                    except ValueError:
-                        param_dict[param.lower()] = None
-                self.doc_enc = param_dict.get('charset', self.doc_enc)
-
-    def _dummy(self, *args, **kw):
-        pass
-
-    def error(self, message):
-        return
 
 
 if __name__ == "__main__":
