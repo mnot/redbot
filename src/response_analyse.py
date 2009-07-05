@@ -698,7 +698,7 @@ def relative_time(utime, now=None, show_sign=1):
      '''
 
     signs = {
-        0:    ('none', '', ''),
+        0:    ('0', '', ''),
         1:    ('now', 'ago', 'from now'),
         2:    ('none', 'behind', 'ahead'),
     }

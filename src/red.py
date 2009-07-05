@@ -119,17 +119,24 @@ class ResourceExpertDroid(RedFetcher):
 
         # Who can store this?
         if self.method not in cacheable_methods:
+            self.store_shared = self.store_private = False
             self.setMessage('method', rs.METHOD_UNCACHEABLE, method=self.method)
             return # bail; nothing else to see here
         elif cc_dict.has_key('no-store'):
+            self.store_shared = self.store_private = False
             self.setMessage('header-cache-control', rs.NO_STORE)
             return # bail; nothing else to see here
         elif cc_dict.has_key('private'):
+            self.store_shared = False
+            self.store_private = True
             self.setMessage('header-cache-control', rs.PRIVATE_CC)
         elif 'authorization' in [k.lower() for k, v in self.req_hdrs] and \
           not cc_dict.has_key('public'):
+            self.store_shared = False
+            self.store_private = True
             self.setMessage('header-cache-control', rs.PRIVATE_AUTH)
         else:
+            self.store_shared = self.store_private = True
             self.setMessage('header-cache-control', rs.STOREABLE)
 
         # no-cache?
@@ -160,6 +167,7 @@ class ResourceExpertDroid(RedFetcher):
         age = self.parsed_hdrs.get('age', 0)
         current_age = max(apparent_age, self.parsed_hdrs.get('age', 0))
         current_age_str = relative_time(current_age, 0, 0)
+        self.age = age
         if age >= 1:
             self.setMessage('header-age header-date', rs.CURRENT_AGE, 
                                      current_age=current_age_str)
@@ -189,6 +197,7 @@ class ResourceExpertDroid(RedFetcher):
         freshness_left_str = relative_time(abs(int(freshness_left)), 0, 0)
         freshness_lifetime_str = relative_time(int(freshness_lifetime), 0, 0)
 
+        self.freshness_lifetime = freshness_lifetime
         if freshness_left > 0:
             self.setMessage(" ".join(freshness_hdrs), rs.FRESHNESS_FRESH, 
                              freshness_lifetime=freshness_lifetime_str,
@@ -209,10 +218,13 @@ class ResourceExpertDroid(RedFetcher):
 
         # can stale responses be served?
         if cc_dict.has_key('must-revalidate'):
+            self.stale_serveable = False
             self.setMessage('header-cache-control', rs.STALE_MUST_REVALIDATE) 
         elif cc_dict.has_key('proxy-revalidate') or cc_dict.has_key('s-maxage'):
+            self.stale_serveable = False
             self.setMessage('header-cache-control', rs.STALE_PROXY_REVALIDATE) 
         else:
+            self.stale_serveable = True
             self.setMessage('header-cache-control', rs.STALE_SERVABLE)
 
         # public?
@@ -228,12 +240,14 @@ class ConnegCheck(RedFetcher):
     Accept-Encoding: gzip
     """
     def __init__(self, red):
+        self.red = red
         if "gzip" in red.parsed_hdrs.get('content-encoding', []):
-            self.red = red
             req_hdrs = [h for h in red.req_hdrs if
                         h[0].lower() != 'accept-encoding']
             RedFetcher.__init__(self, red.uri, red.method, req_hdrs, red.req_body, 
                                 red.status_cb, red.body_procs, "conneg")
+        else:
+            self.red.gzip_support = False
 
     def done(self):
         if self.res_body_len > 0:
@@ -241,6 +255,8 @@ class ConnegCheck(RedFetcher):
                                   self.red.res_body_len) / self.res_body_len))
         else: 
             savings = 0
+        self.red.gzip_support = True
+        self.red.gzip_savings = savings
         self.red.setMessage('header-content-encoding', rs.CONNEG_GZIP, self,
                              savings=savings,
                              orig_size=self.res_body_len
@@ -265,6 +281,7 @@ class ConnegCheck(RedFetcher):
 class RangeRequest(RedFetcher):
     "Check for partial content support (if advertised)"
     def __init__(self, red):
+        self.red = red
         if 'bytes' in red.parsed_hdrs.get('accept-ranges', []):
             if len(red.res_body_sample) == 0: return
             sample_num = random.randint(0, len(red.res_body_sample) - 1)
@@ -276,9 +293,10 @@ class RangeRequest(RedFetcher):
             req_hdrs = red.req_hdrs + [
                     ('Range', "bytes=%s-%s" % (self.range_start, self.range_end))
             ]
-            self.red = red
             RedFetcher.__init__(self, red.uri, red.method, req_hdrs, red.req_body, 
                                 red.status_cb, red.body_procs, "range")
+        else:
+            self.red.partial_support = False
 
     def done(self):
         if self.res_status == '206':
@@ -290,9 +308,11 @@ class RangeRequest(RedFetcher):
                                 rs.RANGE_NEG_MISMATCH, self)
                 return
             if self.res_body == self.range_target:
+                self.red.partial_support = True
                 self.red.setMessage('header-accept-ranges', rs.RANGE_CORRECT, self)
             else:
                 # the body samples are just bags of bits
+                self.red.partial_support = False
                 self.red.setMessage('header-accept-ranges', rs.RANGE_INCORRECT, self,
                     range="bytes=%s-%s" % (self.range_start, self.range_end),
                     range_expected=e(self.range_target.encode('string_escape')),
@@ -302,6 +322,7 @@ class RangeRequest(RedFetcher):
                 ) 
         # TODO: address 416 directly
         elif self.res_status == self.red.res_status:
+            self.red.partial_support = False
             self.red.setMessage('header-accept-ranges', rs.RANGE_FULL)
         else:
             self.red.setMessage('header-accept-ranges', rs.RANGE_STATUS, 
@@ -312,6 +333,7 @@ class RangeRequest(RedFetcher):
 class ETagValidate(RedFetcher):
     "If an ETag is present, see if it will validate."
     def __init__(self, red):
+        self.red = red
         if red.parsed_hdrs.has_key('etag'):
             weak, etag = red.parsed_hdrs['etag']
             if weak:
@@ -323,15 +345,18 @@ class ETagValidate(RedFetcher):
             req_hdrs = red.req_hdrs + [
                 ('If-None-Match', etag_str),
             ]
-            self.red = red
             RedFetcher.__init__(self, red.uri, red.method, req_hdrs, red.req_body, 
                                 red.status_cb, red.body_procs, "ETag validation")
+        else:
+            self.red.inm_support = False
             
     def done(self):
         if self.res_status == '304':
+            self.red.inm_support = True
             self.red.setMessage('header-etag', rs.INM_304, self)
         elif self.res_status == self.red.res_status:
             if self.res_body_md5 == self.red.res_body_md5:
+                self.red.inm_support = False
                 self.red.setMessage('header-etag', rs.INM_FULL, self)
             else:
                 self.red.setMessage('header-etag', rs.INM_UNKNOWN, self)
@@ -345,21 +370,25 @@ class ETagValidate(RedFetcher):
 class LmValidate(RedFetcher):
     "If Last-Modified is present, see if it will validate."
     def __init__(self, red):
+        self.red = red
         if red.parsed_hdrs.has_key('last-modified'):
             date_str = time.strftime('%a, %d %b %Y %H:%M:%S GMT', 
                                      time.gmtime(red.parsed_hdrs['last-modified']))
             req_hdrs = red.req_hdrs + [
                 ('If-Modified-Since', date_str),
             ]
-            self.red = red
             RedFetcher.__init__(self, red.uri, red.method, req_hdrs, red.req_body, 
                                 red.status_cb, red.body_procs, "LM validation")
+        else:
+            self.red.ims_support = False
 
     def done(self):
         if self.res_status == '304':
+            self.red.ims_support = True
             self.red.setMessage('header-last-modified', rs.IMS_304, self)
         elif self.res_status == self.red.res_status:
             if self.res_body_md5 == self.red.res_body_md5:
+                self.red.ims_support = False
                 self.red.setMessage('header-last-modified', rs.IMS_FULL, self)
             else:
                 self.red.setMessage('header-last-modified', rs.IMS_UNKNOWN, self)

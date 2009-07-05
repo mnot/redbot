@@ -70,10 +70,11 @@ req_hdrs = []
 ### End configuration ######################################################
 
 import cgitb; cgitb.enable(logdir=logdir)
-import sys
 import cgi
-import time
+import operator
+import sys
 import textwrap
+import time
 from urlparse import urljoin
 from cgi import escape as e
 
@@ -81,8 +82,10 @@ assert sys.version_info[0] == 2 and sys.version_info[1] >= 5, "Please use Python
 
 import link_parse
 import red
+import red_fetcher
 import red_header
 import red_speak as rs
+from response_analyse import relative_time
 import nbhttp.error
 
 
@@ -91,51 +94,12 @@ msg_categories = [
     rs.GENERAL, rs.CONNECTION, rs.CONNEG, rs.CACHING, rs.VALIDATION, rs.RANGE
 ]
 
-# HTML template for the main response body
-template = u"""\
-<pre>
-%(response)s
-</pre>
-
-<p class="options">
-	%(options)s
-</p>
-
-%(messages)s
-
-<!-- p class="stats">%(stats)s</p -->
-
-<div class='hidden_desc' id='link_list'>%(links)s</div>
-
-"""
-
 # HTML template for error bodies
 error_template = u"""\
 
 <p class="error">
  %s
 </p>
-"""
-
-# HTML footer for all generated pages
-red_footer = u"""\
-
-<p class="version">this is RED %(version)s.</p>
-<p class="navigation"> 
-<a href="http://REDbot.org/about/">about RED</a> |
-<a href="http://REDbot.org/terms/">terms of use</a> | 
-<a href="http://REDbot.org/project">RED project</a> |
-<a href="javascript:location%%20=%%20'http://redbot.org/?uri='+escape(location);%%20void%%200" 
-title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet 
-</p>
-</div>
-
-
-<div id="long_mesg"/>
-
-
-</body>
-</html>
 """
 
 nl = u"\n"
@@ -146,17 +110,17 @@ class RedWebUi(object):
     
     Given a URI, run RED on it and present the results to STDOUT as HTML.
     """
-    def __init__(self, uri):
+    def __init__(self, uri, descend=False):
+        self.start = time.time()
         print red_header.__doc__ % {
                         'js_uri': uri.replace('"', r'\"'), 
                         'html_uri': e(uri),
                         } 
-        sys.stdout.flush()
         self.links = {}
+        self.link_count = 0
         self.link_droids = []
-        self.descend_links = False
+        self.descend_links = descend
         if uri:
-            start = time.time()
             link_parser = link_parse.HTMLLinkParser(uri, self.processLink)
             self.red = red.ResourceExpertDroid(
                 uri, 
@@ -165,10 +129,11 @@ class RedWebUi(object):
                 body_procs=[link_parser.feed],
             )
             self.updateStatus('Done.')
-            self.elapsed = time.time() - start
             if self.red.res_complete:
-                self.header_presenter = HeaderPresenter(self.red)
-                print self.presentResults()
+                if self.descend_links and self.link_count > 0:
+                    print TablePresenter(self, self.red).presentResults()
+                else:
+                    print DetailPresenter(self, self.red).presentResults()
             else:
                 if self.red.res_error['desc'] == nbhttp.error.ERR_CONNECT['desc']:
                     print error_template % "Could not connect to the server (%s)" % \
@@ -176,43 +141,136 @@ class RedWebUi(object):
                 elif self.red.res_error['desc'] == nbhttp.error.ERR_URL['desc']:
                     print error_template % self.red.res_error.get(
                                           'detail', "RED can't fetch that URL.")
+                elif self.red.res_error['desc'] == nbhttp.error.ERR_READ_TIMEOUT['desc']:
+                    print error_template % self.red.res_error['desc']
                 else:
-                    raise AssertionError, "Unidentified incomplete response error."                
-        print red_footer % {'version': red.__version__}
-        sys.stdout.flush()            
+                    raise AssertionError, "Unidentified incomplete response error."
+        else:
+            print self.presentFooter()   
+        print "</body></html>"
 
     def processLink(self, link, tag, title):
         "Handle a link from content"
+        self.link_count += 1
         if not self.links.has_key(tag):
             self.links[tag] = set()
-        self.links[tag].add((link, title))
-    
-        if self.descend_links:
+        if self.descend_links and tag in ['img', 'script', 'link', 'frame'] and \
+          link not in self.links[tag]:
             self.link_droids.append((
-                    red.ResourceExpertDroid(
-                            link, 
-                            req_hdrs=req_hdrs,
-                            status_cb=self.updateStatus
-                    ),
-                    tag,
-                    title
-            ))
+                red.ResourceExpertDroid(
+                    link, 
+                    req_hdrs=req_hdrs,
+                    status_cb=self.updateStatus
+                ),
+                tag
+            ))    
+        self.links[tag].add(link)
 
+    def presentOptions(self):
+        "Return things that the user can do with the URI as HTML links"
+        options = []
+        media_type = self.red.parsed_hdrs.get('content-type', [None])[0]
+        if media_type in viewable_types:
+            options.append(u"<a href='%s'>view</a>" % self.red.uri)
+        if self.link_count > 0:
+            options.append(u"<a href='#link_list' class='link_view' title='%s'>view links</a>" %
+                           self.red.uri)
+            options.append(u"<a href='?descend=True&uri=%s'>check links</a>" %
+                           self.red.uri)
+        if validators.has_key(media_type):
+            options.append(u"<a href='%s'>validate body</a>" % 
+                           validators[media_type] % self.red.uri)
+        return options
+
+    def presentFooter(self):
+        elapsed = time.time() - self.start
+        return u"""\
+<div class="footer">
+<p class="version">this is RED %(version)s.</p>
+<p class="navigation"> 
+<a href="http://REDbot.org/about/">about RED</a> |
+<a href="http://REDbot.org/terms/">terms of use</a> | 
+<a href="http://REDbot.org/project">RED project</a> |
+<a href="javascript:location%%20=%%20'http://redbot.org/?uri='+escape(location);%%20void%%200" 
+title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet 
+</p>
+</div>
+
+<!-- 
+That took %(requests)s requests and %(elapsed)2.2f seconds.
+-->
+""" % {
+       'version': red.__version__,
+       'requests': red_fetcher.total_requests,
+       'elapsed': elapsed
+       }
+
+    def updateStatus(self, message):
+        "Update the status bar of the browser"
+        print u"""
+<script language="JavaScript">
+<!--
+window.status="%s";
+-->
+</script>
+        """ % \
+            e(str(message))
+        sys.stdout.flush()
+
+
+class DetailPresenter(object):
+    """
+    Present a single RED response in detail.
+    """
+    # the order of message categories to display
+    msg_categories = [
+        rs.GENERAL, rs.CONNECTION, rs.CONNEG, rs.CACHING, rs.VALIDATION, rs.RANGE
+    ]
+    
+    # HTML template for the main response body
+    template = u"""\
+    <div id="main">
+    
+    <pre>
+    %(response)s
+    </pre>
+    
+    <p class="options">
+        %(options)s
+    </p>
+    
+    %(messages)s
+
+    %(footer)s
+    
+    <div class='hidden_desc' id='link_list'>%(links)s</div>
+    
+    </div>
+
+    <div class="mesg_sidebar" id="long_mesg"></div>
+        
+    """
+
+    def __init__(self, ui, red):
+        self.ui = ui
+        self.red = red
+        self.header_presenter = HeaderPresenter(self.red)
+        
     def presentResults(self):
         "Fill in the template with RED's results."
         result_strings = {
             'response': self.presentResponse(),
-            'options': nl.join(self.presentOptions()),
-            'messages': nl.join([self.presentCategory(cat) for cat in msg_categories]),
+            'options': nl.join(self.ui.presentOptions()),
+            'messages': nl.join([self.presentCategory(cat) for cat in self.msg_categories]),
             'links': nl.join(self.presentLinks()),
-            'stats':  u"that took %(elapsed)2.2f seconds" % {'elapsed': self.elapsed}
+            'footer': self.ui.presentFooter(),
         }
-        return (template % result_strings).encode("utf-8")
+        return (self.template % result_strings).encode("utf-8")
 
     def presentResponse(self):
         "Return the HTTP response line and headers as HTML"
         return \
-        u"    <span class='status'>HTTP/%s %s %s</span>\n" % (
+        u"<span class='status'>HTTP/%s %s %s</span>\n" % (
             e(str(self.red.res_version)), 
             e(str(self.red.res_status)), 
             e(str(self.red.res_phrase))
@@ -232,7 +290,7 @@ class RedWebUi(object):
             return nl
         out = [u"<h3>%s</h3>\n<ul>\n" % category]
         for (s, (c, l, m, lm), sr, v) in messages:
-            out.append(u"<li class='%s %s msg'>%s <span class='hidden_desc'>%s</span>" % 
+            out.append(u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span>" % 
                     (l, e(s), e(m[lang]%v), lm[lang]%v)
             )
             out.append(u"</li>")
@@ -241,62 +299,36 @@ class RedWebUi(object):
                 out.append(u"<ul>")
                 for (s, (c, l, m, lm), sms, v) in smsgs:
                     out.append(
-                        u"<li class='%s %s msg'>%s <span class='hidden_desc'>%s</span></li>" % 
+                        u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span></li>" % 
                         (l, e(s), e(m[lang]%v), lm[lang]%v)
                     )
                 out.append(u"</ul>")
         out.append(u"</ul>\n")
         return nl.join(out)
-        
-    def presentOptions(self):
-        "Return things that the user can do with the URI as HTML links"
-        options = []
-        media_type = self.red.parsed_hdrs.get('content-type', [None])[0]
-        if media_type in viewable_types:
-            options.append(u"<a href='%s'>view</a>" % self.red.uri)
-        if len(self.links) > 0:
-            options.append(u"<a href='#link_list' class='link_view' title='%s'>links</a>" %
-                           self.red.uri)
-        if validators.has_key(media_type):
-            options.append(u"<a href='%s'>validate body</a>" % 
-                           validators[media_type] % self.red.uri)
-        return options
 
     link_order = [
           ('link', 'Head Links'), 
           ('script', 'Script Links'), 
           ('frame', 'Frame Links'),
+          ('img', 'Image Links'),
           ('a', 'Body Links')
     ]
     def presentLinks(self):
         "Return an HTML list of the links in the response, as RED URIs"
         out = []
         for tag, name in self.link_order:
-            link_set = self.links.get(tag, set())
+            link_set = self.ui.links.get(tag, set())
             if len(link_set) > 0:
                 link_list = list(link_set)
                 link_list.sort()
                 out.append(u"<h3>%s</h3>" % name)
                 out.append(u"<ul>")
-                for link, title in link_set:
+                for link in link_set:
                     al = u"?uri=%s" % e(link)
-                    out.append(u"<li><a href='%s' title='%s'>%s</a></li>" % (
-                                 al, e(link), e(title or link)))
+                    out.append(u"<li><a href='%s'>%s</a></li>" % (
+                                 al, e(link)))
                 out.append(u"</ul>")
         return out
-
-    def updateStatus(self, message):
-        "Update the status bar of the browser"
-        print u"""
-<script language="JavaScript">
-<!--
-window.status="%s";
--->
-</script>
-        """ % \
-            e(str(message))
-        sys.stdout.flush()
-
 
 tr = textwrap.TextWrapper(width=65, subsequent_indent=" "*8)
 def i(value, sub_width):
@@ -339,16 +371,160 @@ class HeaderPresenter(object):
     BARE_URI
 
 
+class TablePresenter(object):
+    # HTML template for the main response body
+    template = u"""\
+        
+    <table>
+    %(table)s
+    </table>
+
+    %(problems)s
+
+    <div class="mesg_banner" id="long_mesg"> </div>
+    
+    %(footer)s
+    
+    """
+    def __init__(self, ui, red):
+        self.ui = ui
+        self.red = red
+        self.problems = []
+        
+    def presentResults(self):
+        "Fill in the template with RED's results."
+        result_strings = {
+            'table': self.presentTables(),
+            'problems': self.presentProblems(),
+            'footer': self.ui.presentFooter()
+        }
+        return (self.template % result_strings).encode("utf-8")
+
+    link_order = [
+          ('link', 'Head Links'), 
+          ('script', 'Script Links'), 
+          ('frame', 'Frame Links'),
+          ('img', 'Image Links'),
+    ]
+    def presentTables(self):
+        out = [self.presentTableHeader()]
+        out.append(self.presentDroid(self.red))
+        for hdr_tag, heading in self.link_order:
+            droids = [d[0] for d in self.ui.link_droids if d[1] == hdr_tag]
+            if droids:
+                droids.sort(key=operator.attrgetter('uri'))
+                out.append(self.presentTableHeader(heading + " (%s)" % len(droids)))
+                out += [self.presentDroid(d) for d in droids]
+        return nl.join(out)
+            
+    def presentDroid(self, red):
+        out = [u'<tr class="droid %s">']
+        m = 50
+        if len(red.uri) > m:
+            out.append(u"""<td class="uri"><a href="%s" title="%s">
+                %s<span class="fade1">%s</span><span class="fade2">%s</span><span class="fade3">%s</span>
+                </a></td>""" % (
+                        u"?uri=%s" % e(red.uri), e(red.uri), e(red.uri[:m-3]),
+                        e(red.uri[m-2]), e(red.uri[m-1]), e(red.uri[m]),
+                        )
+            )
+        else:
+            out.append(u'<td class="uri"><a href="%s" title="%s">%s</a></td>' % (
+                        u"?uri=%s" % e(red.uri), e(red.uri), e(red.uri)))
+        if red.res_complete:
+            if red.res_status in ['301', '302', '303', '307'] and \
+              red.parsed_hdrs.has_key('location'):
+                out.append(u'<td><a href="?descend=True&uri=%s">%s</a></td>' % (
+                   urljoin(red.uri, red.parsed_hdrs['location']), red.res_status))
+            else:
+                out.append(u'<td>%s</td>' % red.res_status)
+    # pconn
+            out.append(self.presentYesNo(red.store_shared))
+            out.append(self.presentYesNo(red.store_private))
+            out.append(self.presentTime(red.age))
+            out.append(self.presentTime(red.freshness_lifetime))
+            out.append(self.presentYesNo(red.stale_serveable))
+            out.append(self.presentYesNo(red.ims_support))
+            out.append(self.presentYesNo(red.inm_support))
+            if red.gzip_support:
+                out.append(u"<td>%s%%</td>" % red.gzip_savings)
+            else:
+                out.append(self.presentYesNo(red.gzip_support))
+            out.append(self.presentYesNo(red.partial_support))
+            problems = [(m[0], m[1], None, m[3]) for m in red.messages if m[1][1] in [rs.WARN, rs.BAD]]
+    # TODO:        problems += sum([m[2].messages for m in red.messages if m[2] != None], [])
+            out.append(u"<td>")
+            pr_enum = []
+            for problem in problems:
+                if problem not in self.problems:
+                    self.problems.append(problem)
+                pr_enum.append(self.problems.index(problem))
+            out[0] = out[0] % u" ".join(["%d" % p for p in pr_enum])
+            out.append(u" ".join(["%d" % (p + 1) for p in pr_enum]))
+                
+        else:
+            out.append('<td colspan="11">%s' % red.res_error['desc'])
+        out.append(u"</td>")
+        out.append(u'</tr>')
+        return nl.join(out)
+
+    def presentTableHeader(self, heading=None):
+        return u"""
+        <tr>
+        <th title="The URI tested. Click to run a detailed analysis.">%s</th>
+        <th title="The HTTP status code returned.">status</th>
+        <th title="Whether a shared (e.g., proxy) cache can store the response.">shared<br>cache</th>
+        <th title="Whether a private (e.g., browser) cache can store the response.">private<br>cache</th>
+        <th title="How long the response had been cached before RED got it.">age</th>
+        <th title="How long a cache can treat the response as fresh.">fresh</th>
+        <th title="Whether a cache can serve the response once it becomes stale (e.g., when it can't contact the origin server).">serve<br>stale</th>
+        <th title="Whether If-Modified-Since validation is supported, using Last-Modified.">IMS</th>
+        <th title="Whether If-None-Match vaidation is supported, using ETags.">INM</th>
+        <th title="Whether negotiation for gzip compression is supported; if so, the percent of the original size saved.">gzip</th>
+        <th title="Whether partial responses are supported.">partial<br>content</th>
+        <th title="Issues encountered.">problems</th>
+        </tr>
+        """ % (heading or "URI")
+    
+    def presentTime(self, value):
+        if value is None:
+            return u'<td>-</td>'
+        else:
+            return u'<td>%s</td>' % relative_time(value, 0, 0)
+
+    def presentYesNo(self, value):
+        if value is True:
+            return u'<td><img src="icon/accept1.png" alt="yes" title="yes"/></td>'
+        elif value is False:
+            return u'<td><img src="icon/remove-16.png" alt="no" title="no"/></td>'
+        elif value is None:
+            return u'<td><img src="icon/help1.png" alt="?" title="unknown"/></td>'
+        else:
+            raise AssertionError, 'unknown value'
+        
+    def presentProblems(self):
+        out = ['<br /><h2>Problems</h2><ol>']
+        for (s, (c, l, m, lm), sr, v) in self.problems:
+            out.append(u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span>" % 
+                    (l, e(s), e(m[lang]%v), lm[lang]%v)
+            )
+            out.append(u"</li>")
+        out.append(u"</ol>\n")
+        return nl.join(out)
+
+
 if __name__ == "__main__":
     form = cgi.FieldStorage()
     try:
         test_uri = sys.argv[1]
+        descend = False
     except IndexError:
         test_uri = form.getfirst("uri", "")
+        descend = form.getfirst('descend', False)
     print "Content-Type: text/html; charset=utf-8"
     if test_uri:
         print "Cache-Control: max-age=60, must-revalidate"
     else:
         print "Cache-Control: max-age=3600"
     print
-    RedWebUi(test_uri)
+    RedWebUi(test_uri, descend)

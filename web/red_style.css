@@ -7,7 +7,6 @@ body {
 h1 {
 	color: #555;
 	padding: 0;
-	text-align: right;
 	font-size: 1.2em;
 	width: 600px;
 }
@@ -45,15 +44,52 @@ pre {
 pre a {
 	color: #ccf;
 }
-input {
+input[type="text"] {
 	font-size: 1.1em;
 	width: 600px;
+}
+label {
+	font-size: 0.85em;
+	color: #666;
+}
+table {
+	font-size: 0.8em;
+	width: 100%;
+	border-spacing: 0;
+	background-color: #111;
+	color: #ddd;
+	border-radius: 1em;
+	-moz-border-radius: 1em;
+	-webkit-border-radius: 1em;
+	border: 1px solid black;
+	padding: 1em;
+}
+th {
+	text-align: left;
+	padding: 2em 0.5em 0.25em 0.5em;
+	border-bottom: 1px solid #666;
+	vertical-align: bottom;
+}
+td {
+	text-align: center;
+	padding: 0.25em 0.4em;
+	white-space: nowrap;
+}
+tr:hover td {
+	background-color: #333;
+}
+td.uri {
+	text-align: left;
+	font-family: monospace;
+}
+td.uri a {
+	color: #ccc;
 }
 #main {
 	float: left;
 	width: 600px;
 }
-#long_mesg {
+.mesg_sidebar {
 	position: fixed;
 	left: 710px;
 	right: 3em;
@@ -63,22 +99,31 @@ input {
 	margin: 0;
 	max-width: 500px;
 }
+.mesg_banner {
+}
 .good {
 	color: #060;
 	list-style-image: url(icon/accept1.png);
 }
 .warning {
 	color: #660;
+}
+ul li.warning {
 	list-style-image: url(icon/yellowflag1.png);
 }
 .bad {
 	color: #800;
+}
+ul li.bad {
 	list-style-image: url(icon/remove-16.png);
 }
 .info {
 	color: #111;
 	list-style-image: url(icon/infomation-16.png);
 }
+.fade1 { opacity: 0.75; }
+.fade2 { opacity: 0.5; }
+.fade3 { opacity: 0.25; }
 .options {
 	margin-top: 0.2em;
 	margin-bottom: 2em;

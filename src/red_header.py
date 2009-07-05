@@ -5,12 +5,10 @@
 	<link rel="stylesheet" type='text/css' href="red_style.css">
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta name="ROBOTS" content="INDEX, NOFOLLOW" />
-</head>
 <script src="jquery.js"></script>
 <script src="./jquery.hoverIntent.js"></script>
 <script>
 var tid = false;
-var frame_css = "<style type='text/css'>body {margin: 0; padding:0; background-color: #eee; color: #111; font: 1em/1.1em sans-serif;}</style>";
 
 $(document).ready(function(){
 	$("span.hdr").hover(
@@ -41,7 +39,27 @@ $(document).ready(function(){
 		tid = setTimeout(function(){
 			$("li.msg").fadeTo(50, 1.0);
 		}, 100);
-	});
+	});	
+
+	$("tr.droid").hover(
+	function(){
+		var classes = this.className.split(" ");
+		$("li.msg").fadeTo(100, 0.15);
+		for (var i=0; i < classes.length; i++) {
+			var c = classes[i];
+			if (c != 'droid') { 
+				$("li.msg:eq(" + c +")").fadeTo(50, 1.0);
+			}
+		};
+		if (tid != false) {
+			clearTimeout(tid);
+			tid = false;
+		};
+	}, function(){
+		tid = setTimeout(function(){
+			$("li.msg").fadeTo(50, 1.0);
+		}, 100);
+	});	
 	
 	$("li.msg").hoverIntent(function(){
 		classes = this.className.split(" ");
@@ -49,7 +67,7 @@ $(document).ready(function(){
 			var c = classes[i];
 			$("span." + c ).css({"font-weight": "bold", "color": "white"});
 		};
-		$("#long_mesg").css({"position": "fixed"});
+		$(".sidebar").css({"position": "fixed"});
 		$("#long_mesg").html($("span:first", this).html());
 	}, function(){
 		classes = this.className.split(" ");
@@ -64,7 +82,7 @@ $(document).ready(function(){
 	});
 	
 	$("a.link_view").click(function(){
-		$("#long_mesg").css({"position": "absolute"});
+		$(".sidebar").css({"position": "absolute"});
 		$("#long_mesg").html($("#link_list").html());
 	});
 
@@ -89,11 +107,15 @@ $(document).ready(function(){
 });
 
 </script>
+</head>
 
 <body>
-<div id="main">
 
+<div id="header">
 <h1><span class="hilight">R</span>esource <span class="hilight">E</span>xpert <span class="hilight">D</span>roid</h1>
 
-<p><form method="GET"><input type="text" name="uri" value="%(html_uri)s" id="uri"/></form></p>
+<form method="GET">
+<input type="text" name="uri" value="%(html_uri)s" id="uri"/><br />
+</form>
+</div>
 """

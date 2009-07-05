@@ -46,6 +46,11 @@ import red_speak as rs
 import response_analyse as ra
 
 outstanding_requests = 0 # how many requests we have left
+total_requests = 0
+
+class RedHttpClient(nbhttp.Client):
+    connect_timeout = 8
+    read_timeout = 8
 
 class RedFetcher: 
     """
@@ -79,6 +84,8 @@ class RedFetcher:
         self.status_cb = status_cb
         self.body_procs = body_procs or []
         self.type = req_type
+        self.timestamp = None # when the request was started
+        # response attributes; populated by RedFetcher
         self.res_version = ""
         self.res_status = None
         self.res_phrase = ""
@@ -89,9 +96,19 @@ class RedFetcher:
         self.res_body_md5 = None
         self.res_body_sample = [] # array of (offset, chunk), max size 4. Bytes, not unicode.
         self.res_complete = False
-        self.timestamp = None # when the request was started
         self.res_error = None # any parse errors encountered; see nbhttp.error
-        self.messages = []
+        # interesting things about the response; set by a variety of things
+        self.messages = [] # messages (see above)
+        self.age = None
+        self.store_shared = None
+        self.store_private = None
+        self.freshness_lifetime = None
+        self.stale_serveable = None
+        self.partial_support = None
+        self.inm_support = None
+        self.ims_support = None
+        self.gzip_support = None
+        self.gzip_savings = 0
         self._md5_processor = hashlib.md5()
         self._decompress = zlib.decompressobj(-zlib.MAX_WBITS).decompress
         self._in_gzip_body = False
@@ -118,8 +135,10 @@ class RedFetcher:
         status callback.
         """
         global outstanding_requests
+        global total_requests
         outstanding_requests += 1
-        c = nbhttp.Client(self._response_start)
+        total_requests += 1
+        c = RedHttpClient(self._response_start)
         if self.status_cb and self.type:
             self.status_cb("fetching %s (%s)" % (self.uri, self.type))
         req_body, req_done = c.req_start(self.method, self.uri, self.req_hdrs, nbhttp.dummy)
@@ -209,6 +228,8 @@ class RedFetcher:
         elif err['desc'] == nbhttp.error.ERR_LEN_REQ['desc']:
             pass # FIXME: length required
         elif err['desc'] == nbhttp.error.ERR_URL['desc']:
+            self.res_complete = False
+        elif err['desc'] == nbhttp.error.ERR_READ_TIMEOUT['desc']:
             self.res_complete = False
         else:
             raise AssertionError, "Unknown response error: %s" % err
