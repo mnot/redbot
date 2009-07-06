@@ -67,7 +67,7 @@ $(document).ready(function(){
 			var c = classes[i];
 			$("span." + c ).css({"font-weight": "bold", "color": "white"});
 		};
-		$(".sidebar").css({"position": "fixed"});
+		$(".mesg_sidebar").css({"position": "fixed"});
 		$("#long_mesg").html($("span:first", this).html());
 	}, function(){
 		classes = this.className.split(" ");
@@ -82,7 +82,7 @@ $(document).ready(function(){
 	});
 	
 	$("a.link_view").click(function(){
-		$(".sidebar").css({"position": "absolute"});
+		$(".mesg_sidebar").css({"position": "absolute"});
 		$("#long_mesg").html($("#link_list").html());
 	});
 
