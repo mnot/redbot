@@ -32,35 +32,6 @@ THE SOFTWARE.
 # FIXME: make language configurable/dynamic
 lang = "en"
 
-# HTML header file
-header_file = "red_header.html"
-
-# Validator uris, by media type
-validators = {
-    'text/html': "http://validator.w3.org/check?uri=%s",
-    'text/css': "http://jigsaw.w3.org/css-validator/validator?uri=%s&",
-    'application/xhtml+xml': "http://validator.w3.org/check?uri=%s",    
-    'application/atom+xml': "http://feedvalidator.org/check.cgi?url=%s",
-    'application/rss+xml': "http://feedvalidator.org/check.cgi?url=%s",
-}
-
-# Media types that browsers can view natively
-viewable_types = [
-    'text/plain',
-    'text/html',
-    'application/xhtml+xml',
-    'application/pdf',
-    'image/gif',
-    'image/jpeg',
-    'image/jpg',
-    'image/png',
-    'application/javascript',
-    'application/x-javascript',
-    'text/javascript',
-    'text/x-javascript',
-    'text/css',
-]
-
 # Where to store exceptions; set to None to disable traceback logging
 logdir = 'exceptions'
 
@@ -88,12 +59,6 @@ import red_speak as rs
 from response_analyse import relative_time
 import nbhttp.error
 
-
-# the order of message categories to display
-msg_categories = [
-    rs.GENERAL, rs.CONNECTION, rs.CONNEG, rs.CACHING, rs.VALIDATION, rs.RANGE
-]
-
 # HTML template for error bodies
 error_template = u"""\
 
@@ -111,15 +76,15 @@ class RedWebUi(object):
     Given a URI, run RED on it and present the results to STDOUT as HTML.
     """
     def __init__(self, uri, descend=False):
+        self.descend_links = descend
         self.start = time.time()
         print red_header.__doc__ % {
                         'js_uri': uri.replace('"', r'\"'), 
                         'html_uri': e(uri),
                         } 
-        self.links = {}
+        self.links = {}          # {type: set(link...)}
         self.link_count = 0
-        self.link_droids = []
-        self.descend_links = descend
+        self.link_droids = []    # list of REDs
         if uri:
             link_parser = link_parse.HTMLLinkParser(uri, self.processLink)
             self.red = red.ResourceExpertDroid(
@@ -166,22 +131,6 @@ class RedWebUi(object):
             ))    
         self.links[tag].add(link)
 
-    def presentOptions(self):
-        "Return things that the user can do with the URI as HTML links"
-        options = []
-        media_type = self.red.parsed_hdrs.get('content-type', [None])[0]
-        if media_type in viewable_types:
-            options.append(u"<a href='%s'>view</a>" % self.red.uri)
-        if self.link_count > 0:
-            options.append(u"<a href='#link_list' class='link_view' title='%s'>view links</a>" %
-                           self.red.uri)
-            options.append(u"<a href='?descend=True&uri=%s'>check links</a>" %
-                           self.red.uri)
-        if validators.has_key(media_type):
-            options.append(u"<a href='%s'>validate body</a>" % 
-                           validators[media_type] % self.red.uri)
-        return options
-
     def presentFooter(self):
         elapsed = time.time() - self.start
         return u"""\
@@ -205,7 +154,8 @@ That took %(requests)s requests and %(elapsed)2.2f seconds.
        'elapsed': elapsed
        }
 
-    def updateStatus(self, message):
+    @staticmethod
+    def updateStatus(message):
         "Update the status bar of the browser"
         print u"""
 <script language="JavaScript">
@@ -226,6 +176,32 @@ class DetailPresenter(object):
     msg_categories = [
         rs.GENERAL, rs.CONNECTION, rs.CONNEG, rs.CACHING, rs.VALIDATION, rs.RANGE
     ]
+    
+    # Media types that browsers can view natively
+    viewable_types = [
+        'text/plain',
+        'text/html',
+        'application/xhtml+xml',
+        'application/pdf',
+        'image/gif',
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'application/javascript',
+        'application/x-javascript',
+        'text/javascript',
+        'text/x-javascript',
+        'text/css',
+    ]
+    
+    # Validator uris, by media type
+    validators = {
+        'text/html': "http://validator.w3.org/check?uri=%s",
+        'text/css': "http://jigsaw.w3.org/css-validator/validator?uri=%s&",
+        'application/xhtml+xml': "http://validator.w3.org/check?uri=%s",    
+        'application/atom+xml': "http://feedvalidator.org/check.cgi?url=%s",
+        'application/rss+xml': "http://feedvalidator.org/check.cgi?url=%s",
+    }
     
     # HTML template for the main response body
     template = u"""\
@@ -260,9 +236,9 @@ class DetailPresenter(object):
         "Fill in the template with RED's results."
         result_strings = {
             'response': self.presentResponse(),
-            'options': nl.join(self.ui.presentOptions()),
+            'options': self.presentOptions(),
             'messages': nl.join([self.presentCategory(cat) for cat in self.msg_categories]),
-            'links': nl.join(self.presentLinks()),
+            'links': self.presentLinks(),
             'footer': self.ui.presentFooter(),
         }
         return (self.template % result_strings).encode("utf-8")
@@ -306,6 +282,22 @@ class DetailPresenter(object):
         out.append(u"</ul>\n")
         return nl.join(out)
 
+    def presentOptions(self):
+        "Return things that the user can do with the URI as HTML links"
+        options = []
+        media_type = self.red.parsed_hdrs.get('content-type', [None])[0]
+        if media_type in self.viewable_types:
+            options.append(u"<a href='%s'>view</a>" % self.red.uri)
+        if self.ui.link_count > 0:
+            options.append(u"<a href='#link_list' class='link_view' title='%s'>view links</a>" %
+                           self.red.uri)
+            options.append(u"<a href='?descend=True&uri=%s'>check links</a>" %
+                           self.red.uri)
+        if self.validators.has_key(media_type):
+            options.append(u"<a href='%s'>validate body</a>" % 
+                           self.validators[media_type] % self.red.uri)
+        return nl.join(options)
+
     link_order = [
           ('link', 'Head Links'), 
           ('script', 'Script Links'), 
@@ -328,24 +320,18 @@ class DetailPresenter(object):
                     out.append(u"<li><a href='%s'>%s</a></li>" % (
                                  al, e(link)))
                 out.append(u"</ul>")
-        return out
-
-tr = textwrap.TextWrapper(width=65, subsequent_indent=" "*8)
-def i(value, sub_width):
-    "wrap a line to fit in the header box"
-    tr.width = 65 - sub_width
-    return tr.fill(value)
+        return nl.join(out)
 
 
 class HeaderPresenter(object):
     """
-    Present a header in the Web UI. By default, it will:
+    Present a HTTP header in the Web UI. By default, it will:
        - Escape HTML sequences to avoid XSS attacks
        - Wrap long lines
     However if a method is present that corresponds to the header's
     field-name, that method will be run instead to represent the value. 
     """
-    
+
     def __init__(self, red):
         self.red = red
         
@@ -356,7 +342,7 @@ class HeaderPresenter(object):
         if name_token[0] != "_" and hasattr(self, name_token):
             return getattr(self, name_token)(name, value)
         else:
-            return i(e(value), len(name))
+            return self.I(e(value), len(name))
 
     def BARE_URI(self, name, value):
         "Present a bare URI header value"
@@ -364,11 +350,17 @@ class HeaderPresenter(object):
         svalue = value.lstrip()
         space = len(value) - len(svalue)
         return u"%s<a href='?uri=%s'>%s</a>" % ( " " * space,
-            e(urljoin(self.red.uri, svalue)), i(e(svalue), len(name)))
+            e(urljoin(self.red.uri, svalue)), self.I(e(svalue), len(name)))
     content_location = \
     location = \
     x_xrds_location = \
     BARE_URI
+
+    @staticmethod
+    def I(value, sub_width):
+        "wrap a line to fit in the header box"
+        tr = textwrap.TextWrapper(width=65-sub_width, subsequent_indent=" "*8)
+        return tr.fill(value)
 
 
 class TablePresenter(object):
@@ -451,7 +443,8 @@ class TablePresenter(object):
             else:
                 out.append(self.presentYesNo(red.gzip_support))
             out.append(self.presentYesNo(red.partial_support))
-            problems = [(m[0], m[1], None, m[3]) for m in red.messages if m[1][1] in [rs.WARN, rs.BAD]]
+            problems = [(m[0], m[1], None, m[3]) for m in red.messages \
+                        if m[1][1] in [rs.WARN, rs.BAD]]
     # TODO:        problems += sum([m[2].messages for m in red.messages if m[2] != None], [])
             out.append(u"<td>")
             pr_enum = []
