@@ -318,7 +318,7 @@ class DetailPresenter(object):
                 link_list.sort()
                 out.append(u"<h3>%s</h3>" % name)
                 out.append(u"<ul>")
-                for link in link_set:
+                for link in link_list:
                     al = u"?uri=%s" % e(link)
                     out.append(u"<li><a href='%s'>%s</a></li>" % (
                                  al, e(link)))
