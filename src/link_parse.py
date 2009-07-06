@@ -112,3 +112,16 @@ class HTMLLinkParser(HTMLParser):
     def error(self, message):
         return
 
+
+if "__main__" == __name__:
+    import sys
+    from red_fetcher import RedFetcher
+    uri = sys.argv[1]
+    req_hdrs = [('Accept-Encoding', 'gzip')]
+    class TestFetcher(RedFetcher):
+        def done(self):
+            pass
+    def show_link(link, tag, title):
+        print "%s: %s" % (tag, link)
+    p = HTMLLinkParser(uri, show_link)
+    TestFetcher(uri, req_hdrs=req_hdrs, body_procs=[p.feed])
