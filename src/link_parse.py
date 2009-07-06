@@ -76,17 +76,16 @@ class HTMLLinkParser(HTMLParser):
             try:
                 if chunk.__class__.__name__ != 'unicode':
                     chunk = unicode(chunk, self.doc_enc or self.http_enc, 'ignore')
-                HTMLParser.feed(self, chunk.encode('utf-8', 'ignore'))
+                HTMLParser.feed(self, chunk)
             except: # oh, well...
                 pass
         
     def handle_starttag(self, tag, attrs):
         attr_d = dict(attrs)
-        title = unicode(attr_d.get('title', '').strip(), 'utf-8', errors='ignore')
+        title = attr_d.get('title', '').strip()
         if tag in self.links.keys():
             target = attr_d.get(self.links[tag], "")
             if target:
-                target = unicode(target, 'utf-8', errors="ignore")
                 self.count += 1
                 if "#" in target:
                     target = target[:target.index('#')]
@@ -132,6 +131,7 @@ if "__main__" == __name__:
         @staticmethod
         def show_link(link, tag, title):
             TestFetcher.count += 1
-            print "%.3d) [%s] %s" % (TestFetcher.count, tag, link)
+            out = "%.3d) [%s] %s" % (TestFetcher.count, tag, link)
+            print out.encode('utf-8', 'strict')
     p = HTMLLinkParser(uri, TestFetcher.show_link)
     TestFetcher(uri, req_hdrs=req_hdrs, body_procs=[p.feed])
