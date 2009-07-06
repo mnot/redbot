@@ -283,7 +283,7 @@ class DetailPresenter(object):
     def presentOptions(self):
         "Return things that the user can do with the URI as HTML links"
         options = []
-        media_type = self.red.parsed_hdrs.get('content-type', [None])[0]
+        media_type = self.red.parsed_hdrs.get('content-type', [""])[0]
         if media_type in self.viewable_types:
             if media_type[:6] == 'image/':
                 cl = " class='preview'"
@@ -416,7 +416,7 @@ class TablePresenter(object):
     def presentDroid(self, red):
         out = [u'<tr class="droid %s">']
         m = 50
-        if red.parsed_hdrs.get('content-type', [None])[0][:6] == 'image/':
+        if red.parsed_hdrs.get('content-type', [""])[0][:6] == 'image/':
             cl = " class='preview'"
         else:
             cl = ""
