@@ -125,12 +125,13 @@ if "__main__" == __name__:
     from red_fetcher import RedFetcher
     uri = sys.argv[1]
     req_hdrs = [('Accept-Encoding', 'gzip')]
-    count = 0
     class TestFetcher(RedFetcher):
+        count = 0
         def done(self):
             pass
-    def show_link(link, tag, title):
-        count += 1
-        print "%.3d] %s: %s" % (count, tag, link)
-    p = HTMLLinkParser(uri, show_link)
+        @staticmethod
+        def show_link(link, tag, title):
+            TestFetcher.count += 1
+            print "%.3d) [%s] %s" % (TestFetcher.count, tag, link)
+    p = HTMLLinkParser(uri, TestFetcher.show_link)
     TestFetcher(uri, req_hdrs=req_hdrs, body_procs=[p.feed])
