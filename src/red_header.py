@@ -41,7 +41,7 @@ $(document).ready(function(){
 		}, 100);
 	});	
 
-	$("tr.droid").hover(
+	$("tr.droid").hoverIntent(
 	function(){
 		var classes = this.className.split(" ");
 		$("li.msg").fadeTo(100, 0.15);
