@@ -129,6 +129,6 @@ if "__main__" == __name__:
         def done(self):
             pass
     def show_link(link, tag, title):
-        print "%s: %s" % (tag, link)
+        print "%.3d] %s: %s" % (count, tag, link)
     p = HTMLLinkParser(uri, show_link)
     TestFetcher(uri, req_hdrs=req_hdrs, body_procs=[p.feed])
