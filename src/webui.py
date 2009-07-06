@@ -436,6 +436,8 @@ class TablePresenter(object):
               red.parsed_hdrs.has_key('location'):
                 out.append(u'<td><a href="?descend=True&uri=%s">%s</a></td>' % (
                    urljoin(red.uri, red.parsed_hdrs['location']), red.res_status))
+            elif red.res_status in ['400', '404', '410']:
+                out.append(u'<td class="bad">%s</td>' % red.res_status)
             else:
                 out.append(u'<td>%s</td>' % red.res_status)
     # pconn

@@ -82,8 +82,8 @@ td.uri {
 	text-align: left;
 	font-family: monospace;
 }
-td.uri a {
-	color: #ccc;
+td  a {
+	color: #ccf;
 }
 #main {
 	float: left;
@@ -113,6 +113,10 @@ ul li.warning {
 }
 .bad {
 	color: #800;
+}
+td.bad {
+	color: #e66;
+	font-style: bold;
 }
 ul li.bad {
 	list-style-image: url(icon/remove-16.png);
