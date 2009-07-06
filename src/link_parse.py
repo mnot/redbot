@@ -63,6 +63,7 @@ class HTMLLinkParser(HTMLParser):
             'img': 'src',
             'script': 'src',
             'frame': 'src',
+            'iframe': 'src',
         }
         self.count = 0
         HTMLParser.__init__(self)

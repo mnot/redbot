@@ -119,7 +119,7 @@ class RedWebUi(object):
         self.link_count += 1
         if not self.links.has_key(tag):
             self.links[tag] = set()
-        if self.descend_links and tag in ['img', 'script', 'link', 'frame'] and \
+        if self.descend_links and tag not in ['a'] and \
           link not in self.links[tag]:
             self.link_droids.append((
                 red.ResourceExpertDroid(
@@ -304,6 +304,7 @@ class DetailPresenter(object):
           ('link', 'Head Links'), 
           ('script', 'Script Links'), 
           ('frame', 'Frame Links'),
+          ('iframe', 'IFrame links'),
           ('img', 'Image Links'),
           ('a', 'Body Links')
     ]
@@ -398,6 +399,7 @@ class TablePresenter(object):
           ('link', 'Head Links'), 
           ('script', 'Script Links'), 
           ('frame', 'Frame Links'),
+          ('iframe', 'IFrame Links'),
           ('img', 'Image Links'),
     ]
     def presentTables(self):

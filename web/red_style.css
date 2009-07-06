@@ -154,9 +154,11 @@ ul li.bad {
 	font-size: 0.8em;
 }
 #preview{
-	position:absolute;
-	border:1px solid #ddd;
-	background:#666;
-	padding:6px;
-	display:none;
+	position: absolute;
+	border: 1px solid #ddd;
+	background: #666;
+	padding: 6px;
+	display: none;
+	color: #efefef;
+	font-size: 0.75em;
 }

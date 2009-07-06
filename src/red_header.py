@@ -105,14 +105,17 @@ $(document).ready(function(){
 	});
 
 	$("a.preview").hoverIntent(function(e){
-		var link = (this.title != "") ? this.title : this.href;
-		$("body").append("<p id='preview'><img src='"+ link +"' /></p>");
+		this.old_t = this.title;
+		this.title = "";
+		var link = (this.old_t != "") ? this.old_t : this.href;
+		$("body").append("<p id='preview'><img src='" + link + "'/><br />" + link + "</p>");
 		$("#preview")
 			.css("top",(e.pageY - 10) + "px")
 			.css("left",(e.pageX + 25) + "px")
 			.fadeIn("fast");
 	}, function(){
 		$("#preview").remove();
+		this.title = this.old_t;
 	});	
 
 	$("a.preview").mousemove(function(e){
