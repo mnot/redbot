@@ -153,3 +153,10 @@ ul li.bad {
 	color: #aaa;
 	font-size: 0.8em;
 }
+#preview{
+	position:absolute;
+	border:1px solid #ddd;
+	background:#666;
+	padding:6px;
+	display:none;
+}

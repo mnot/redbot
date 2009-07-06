@@ -287,7 +287,11 @@ class DetailPresenter(object):
         options = []
         media_type = self.red.parsed_hdrs.get('content-type', [None])[0]
         if media_type in self.viewable_types:
-            options.append(u"<a href='%s'>view</a>" % self.red.uri)
+            if media_type[:6] == 'image/':
+                cl = " class='preview'"
+            else:
+                cl = ""
+            options.append(u"<a href='%s'%s>view</a>" % (self.red.uri, cl))
         if self.ui.link_count > 0:
             options.append(u"<a href='#link_list' class='link_view' title='%s'>view links</a>" %
                            self.red.uri)
@@ -412,17 +416,21 @@ class TablePresenter(object):
     def presentDroid(self, red):
         out = [u'<tr class="droid %s">']
         m = 50
+        if red.parsed_hdrs.get('content-type', [None])[0][:6] == 'image/':
+            cl = " class='preview'"
+        else:
+            cl = ""
         if len(red.uri) > m:
-            out.append(u"""<td class="uri"><a href="%s" title="%s">
+            out.append(u"""<td class="uri"><a href="%s" title="%s"%s>
                 %s<span class="fade1">%s</span><span class="fade2">%s</span><span class="fade3">%s</span>
                 </a></td>""" % (
-                        u"?uri=%s" % e(red.uri), e(red.uri), e(red.uri[:m-3]),
+                        u"?uri=%s" % e(red.uri), e(red.uri), cl, e(red.uri[:m-3]),
                         e(red.uri[m-2]), e(red.uri[m-1]), e(red.uri[m]),
                         )
             )
         else:
-            out.append(u'<td class="uri"><a href="%s" title="%s">%s</a></td>' % (
-                        u"?uri=%s" % e(red.uri), e(red.uri), e(red.uri)))
+            out.append(u'<td class="uri"><a href="%s" title="%s"%s>%s</a></td>' % (
+                        u"?uri=%s" % e(red.uri), e(red.uri), cl, e(red.uri)))
         if red.res_complete:
             if red.res_status in ['301', '302', '303', '307'] and \
               red.parsed_hdrs.has_key('location'):
