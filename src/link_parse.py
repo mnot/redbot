@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+from htmlentitydefs import entitydefs
 from HTMLParser import HTMLParser
 from urlparse import urljoin
 
@@ -109,6 +110,12 @@ class HTMLLinkParser(HTMLParser):
                         param_dict[param.lower()] = None
                 self.doc_enc = param_dict.get('charset', self.doc_enc)
 
+    def handle_charref(self, name):
+        return entitydefs.get(name, '')
+                    
+    def handle_entityref(self, name):
+        return entitydefs.get(name, '')
+        
     def error(self, message):
         return
 
