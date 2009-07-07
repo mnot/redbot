@@ -51,7 +51,6 @@ heuristic_cacheable_status = ['200', '203', '206', '300', '301', '410']
 max_uri = 8 * 1024
 max_clock_skew = 5  # seconds
 
-# TODO: resource limits
 
 class ResourceExpertDroid(RedFetcher):
     """
@@ -245,7 +244,7 @@ class ConnegCheck(RedFetcher):
             req_hdrs = [h for h in red.req_hdrs if
                         h[0].lower() != 'accept-encoding']
             RedFetcher.__init__(self, red.uri, red.method, req_hdrs, red.req_body, 
-                                red.status_cb, red.body_procs, "conneg")
+                                red.status_cb, [], "conneg")
         else:
             self.red.gzip_support = False
 
@@ -294,7 +293,7 @@ class RangeRequest(RedFetcher):
                     ('Range', "bytes=%s-%s" % (self.range_start, self.range_end))
             ]
             RedFetcher.__init__(self, red.uri, red.method, req_hdrs, red.req_body, 
-                                red.status_cb, red.body_procs, "range")
+                                red.status_cb, [], "range")
         else:
             self.red.partial_support = False
 
@@ -346,7 +345,7 @@ class ETagValidate(RedFetcher):
                 ('If-None-Match', etag_str),
             ]
             RedFetcher.__init__(self, red.uri, red.method, req_hdrs, red.req_body, 
-                                red.status_cb, red.body_procs, "ETag validation")
+                                red.status_cb, [], "ETag validation")
         else:
             self.red.inm_support = False
             
@@ -378,7 +377,7 @@ class LmValidate(RedFetcher):
                 ('If-Modified-Since', date_str),
             ]
             RedFetcher.__init__(self, red.uri, red.method, req_hdrs, red.req_body, 
-                                red.status_cb, red.body_procs, "LM validation")
+                                red.status_cb, [], "LM validation")
         else:
             self.red.ims_support = False
 
