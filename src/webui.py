@@ -38,11 +38,14 @@ logdir = 'exceptions'
 # any request headers that we want to *always* send.
 req_hdrs = []
 
+# how many seconds to allow it to run for
+max_runtime = 30
+
 ### End configuration ######################################################
 
-import cgitb; cgitb.enable(logdir=logdir)
 import cgi
 import operator
+import pprint
 import sys
 import textwrap
 import time
@@ -52,12 +55,12 @@ from cgi import escape as e
 assert sys.version_info[0] == 2 and sys.version_info[1] >= 5, "Please use Python 2.5 or greater"
 
 import link_parse
+import nbhttp
 import red
 import red_fetcher
 import red_header
 import red_speak as rs
 from response_analyse import relative_time
-import nbhttp.error
 
 # HTML template for error bodies
 error_template = u"""\
@@ -78,6 +81,7 @@ class RedWebUi(object):
     def __init__(self, uri, descend=False):
         self.descend_links = descend
         self.start = time.time()
+        timeout = nbhttp.schedule(max_runtime, self.timeoutError)
         print red_header.__doc__ % {
                         'js_uri': uri.replace('"', r'\"'), 
                         'html_uri': e(uri),
@@ -111,7 +115,8 @@ class RedWebUi(object):
                 else:
                     raise AssertionError, "Unidentified incomplete response error."
         else:
-            print self.presentFooter()   
+            print self.presentFooter()
+        timeout.delete()
         print "</body></html>"
 
     def processLink(self, link, tag, title):
@@ -166,6 +171,24 @@ window.status="%s";
         """ % \
             e(str(message))
         sys.stdout.flush()
+
+    def timeoutError(self):
+        """ Max runtime reached."""
+        print error_template % ("RED timeout.")
+        print """
+<!--
+*** Outstanding Connections
+"""
+        for conn in red_fetcher.outstanding_requests:
+            print "***", conn.uri
+            pprint.pprint(conn.__dict__)
+            pprint.pprint(conn._client.__dict__)
+            pprint.pprint(conn._client._tcp_conn.__dict__)
+
+        print """
+-->
+        """
+        nbhttp.stop()
 
 
 class DetailPresenter(object):
@@ -517,11 +540,12 @@ class TablePresenter(object):
 
 
 if __name__ == "__main__":
-    form = cgi.FieldStorage()
     try:
         test_uri = sys.argv[1]
-        descend = False
+        descend = True
     except IndexError:
+        import cgitb; cgitb.enable(logdir=logdir)
+        form = cgi.FieldStorage()
         test_uri = form.getfirst("uri", "")
         descend = form.getfirst('descend', False)
     print "Content-Type: text/html; charset=utf-8"
