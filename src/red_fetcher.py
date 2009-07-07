@@ -45,7 +45,7 @@ import nbhttp
 import red_speak as rs 
 import response_analyse as ra
 
-outstanding_requests = 0 # how many requests we have left
+outstanding_requests = [] # requests in process
 total_requests = 0
 
 class RedHttpClient(nbhttp.Client):
@@ -109,6 +109,7 @@ class RedFetcher:
         self.ims_support = None
         self.gzip_support = None
         self.gzip_savings = 0
+        self._client = None # we only keep this for debugging
         self._md5_processor = hashlib.md5()
         self._decompress = zlib.decompressobj(-zlib.MAX_WBITS).decompress
         self._in_gzip_body = False
@@ -136,13 +137,14 @@ class RedFetcher:
         """
         global outstanding_requests
         global total_requests
-        outstanding_requests += 1
+        outstanding_requests.append(self)
         total_requests += 1
-        c = RedHttpClient(self._response_start)
+        self._client = RedHttpClient(self._response_start)
         if self.status_cb and self.type:
             self.status_cb("fetching %s (%s)" % (self.uri, self.type))
-        req_body, req_done = c.req_start(self.method, self.uri, self.req_hdrs, nbhttp.dummy)
-        if outstanding_requests == 1:
+        req_body, req_done = self._client.req_start(
+                                    self.method, self.uri, self.req_hdrs, nbhttp.dummy)
+        if len(outstanding_requests) == 1:
             nbhttp.run()
         if self.req_body != None:
             req_body(self.req_body)
@@ -250,8 +252,10 @@ class RedFetcher:
                                          calc_md5=c_md5_calc)
         # analyse, check to see if we're done
         self.done()
-        outstanding_requests -= 1
-        if outstanding_requests == 0:
+        outstanding_requests.remove(self)
+        if self.status_cb:
+            self.status_cb("%s outstanding requests" % len(outstanding_requests))
+        if len(outstanding_requests) == 0:
             nbhttp.stop()
 
     @staticmethod
@@ -301,4 +305,4 @@ if "__main__" == __name__:
     class TestFetcher(RedFetcher):
         def done(self):
             print self.messages
-    TestFetcher(uri, req_hdrs=req_hdrs, status_cb=status_p, type='test')
+    TestFetcher(uri, req_hdrs=req_hdrs, status_cb=status_p, req_type='test')
