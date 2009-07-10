@@ -157,7 +157,7 @@ ul li.bad {
 	color: #aaa;
 	font-size: 0.8em;
 }
-#preview{
+#preview {
 	position: absolute;
 	border: 1px solid #ddd;
 	background: #666;
@@ -165,4 +165,20 @@ ul li.bad {
 	display: none;
 	color: #efefef;
 	font-size: 0.75em;
+}
+.prob_title {
+	display: none;
+	position: absolute;
+	border: 2px solid #33d;
+	background: #fefefe;
+	padding: 6px;
+	display: none;
+	color: #111;
+	font-size: 0.9em;
+	width: 144px;
+	white-space: normal;
+	text-align: left;
+	border-radius: 0.75em;
+	-moz-border-radius: 0.75em;
+	-webkit-border-radius: 0.75em;
 }

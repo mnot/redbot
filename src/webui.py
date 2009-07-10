@@ -485,9 +485,12 @@ class TablePresenter(object):
                 if problem not in self.problems:
                     self.problems.append(problem)
                 pr_enum.append(self.problems.index(problem))
+            # add the problem number to the <tr> so we can highlight appropriately
             out[0] = out[0] % u" ".join(["%d" % p for p in pr_enum])
-            out.append(u" ".join(["%d" % (p + 1) for p in pr_enum]))
-                
+            # append the actual problem numbers to the final <td>
+            for p in pr_enum:
+                (s, (c, l, m, lm), sr, v) = self.problems[p]
+                out.append("<span class='prob_num'> %s <span class='prob_title'>%s</span></span>" % (p + 1, e(m[lang]%v)))                
         else:
             out.append('<td colspan="11">%s' % red.res_error['desc'])
         out.append(u"</td>")
