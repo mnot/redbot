@@ -447,7 +447,7 @@ class TablePresenter(object):
             out.append(u"""<td class="uri"><a href="%s" title="%s"%s>
                 %s<span class="fade1">%s</span><span class="fade2">%s</span><span class="fade3">%s</span>
                 </a></td>""" % (
-                        u"?uri=%s" % e(red.uri), e(red.uri), cl, e(red.uri[:m-3]),
+                        u"?uri=%s" % e(red.uri), e(red.uri), cl, e(red.uri[:m-2]),
                         e(red.uri[m-2]), e(red.uri[m-1]), e(red.uri[m]),
                         )
             )
