@@ -182,3 +182,11 @@ ul li.bad {
 	-moz-border-radius: 0.75em;
 	-webkit-border-radius: 0.75em;
 }
+.news {
+	text-align: center;
+	font-size: 1.0em;
+	font-weight: normal;
+}
+.news-banner {
+	color: #999;
+}

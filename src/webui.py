@@ -41,6 +41,9 @@ req_hdrs = []
 # how many seconds to allow it to run for
 max_runtime = 30
 
+# file containing news to display on front page
+news_file = "news.html"
+
 ### End configuration ######################################################
 
 import cgi
@@ -115,7 +118,10 @@ class RedWebUi(object):
                 else:
                     raise AssertionError, "Unidentified incomplete response error."
         else:
+            print "<div id='main'>"
+            print self.presentNews()
             print self.presentFooter()
+            print "</div>"
         timeout.delete()
         print "</body></html>"
 
@@ -135,6 +141,14 @@ class RedWebUi(object):
                 tag
             ))    
         self.links[tag].add(link)
+
+    def presentNews(self):
+        if news_file:
+            try:
+                news = open(news_file, 'r').read()
+                return news
+            except IOError:
+                return ""
 
     def presentFooter(self):
         elapsed = time.time() - self.start
