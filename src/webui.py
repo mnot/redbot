@@ -142,11 +142,12 @@ class RedWebUi(object):
 <div class="footer">
 <p class="version">this is RED %(version)s.</p>
 <p class="navigation"> 
-<a href="http://REDbot.org/about/">about RED</a> |
-<a href="http://REDbot.org/terms/">terms of use</a> | 
-<a href="http://REDbot.org/project">RED project</a> |
+<a href="http://REDbot.org/about/">about</a> |
+<a href="http://blog.REDbot.org/">blog</a> |
+<a href="http://REDbot.org/project">project</a> |
 <a href="javascript:location%%20=%%20'http://redbot.org/?uri='+escape(location);%%20void%%200" 
-title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet 
+title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet|
+<a href="http://REDbot.org/terms/">terms of use</a>
 </p>
 </div>
 
