@@ -197,8 +197,10 @@ window.status="%s";
         for conn in red_fetcher.outstanding_requests:
             print "***", conn.uri
             pprint.pprint(conn.__dict__)
-            pprint.pprint(conn._client.__dict__)
-            pprint.pprint(conn._client._tcp_conn.__dict__)
+            if conn._client:
+                pprint.pprint(conn._client.__dict__)
+            if conn._client._tcp_conn:
+                pprint.pprint(conn._client._tcp_conn.__dict__)
 
         print """
 -->
