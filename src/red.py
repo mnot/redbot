@@ -84,13 +84,14 @@ class ResourceExpertDroid(RedFetcher):
         Response is available; perform further processing that's specific to
         the "main" response.
         """
-        self.checkClock()
-        self.checkCaching()
-        ConnegCheck(self)
-        RangeRequest(self)
-        ETagValidate(self)
-        LmValidate(self)
-
+        if self.res_complete:
+            self.checkClock()
+            self.checkCaching()
+            ConnegCheck(self)
+            RangeRequest(self)
+            ETagValidate(self)
+            LmValidate(self)
+ 
     def checkClock(self):
         "Check for clock skew and dateless origin server."
         if not self.parsed_hdrs.has_key('date'):
