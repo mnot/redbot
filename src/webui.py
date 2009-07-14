@@ -558,13 +558,46 @@ class TablePresenter(object):
         out.append(u"</ol>\n")
         return nl.join(out)
 
+# adapted from cgitb.Hook
+def except_handler(etype, evalue, etb):
+    "Log uncaught exceptions and display a friendly error."
+    import cgitb
+    try:
+        doc = cgitb.html((etype, evalue, etb), 5)
+    except:                         # just in case something goes wrong
+        import traceback
+        doc = ''.join(traceback.format_exception(etype, evalue, etb))
+    print cgitb.reset()
+    msg = "A problem has occurred, but it probably isn't your fault. "
+    if logdir is not None:
+        import os, tempfile
+        try:
+            (fd, path) = tempfile.mkstemp(suffix='.html', dir=logdir)
+            fh = os.fdopen(fd, 'w')
+            fh.write(doc)
+            fh.write("<h2>Outstanding Connections</h2>\n<pre>")
+            for conn in red_fetcher.outstanding_requests:
+                fh.write("*** %s\n" % conn.uri)
+                pprint.pprint(conn.__dict__, fh)
+                if conn._client:
+                    pprint.pprint(conn._client.__dict__, fh)
+                if conn._client._tcp_conn:
+                    pprint.pprint(conn._client._tcp_conn.__dict__, fh)
+            fh.write("</pre>\n")
+            fh.close()
+            msg += "RED has remembered it, and we'll try to fix it soon."
+        except:
+            msg += "RED tried to save it, but it couldn't! Oops."
+    print error_template % msg
+    sys.stdout.flush()
 
 if __name__ == "__main__":
     try:
         test_uri = sys.argv[1]
         descend = True
     except IndexError:
-        import cgitb; cgitb.enable(logdir=logdir)
+        import sys
+        sys.excepthook = except_handler
         form = cgi.FieldStorage()
         test_uri = form.getfirst("uri", "")
         descend = form.getfirst('descend', False)
