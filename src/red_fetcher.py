@@ -115,10 +115,7 @@ class RedFetcher:
         self._in_gzip_body = False
         self._gzip_header_buffer = ""
         self._gzip_ok = True # turn False if we have a problem
-        try:
-            self._makeRequest()
-        except socket.gaierror:
-            self._response_done(nbhttp.error.ERR_CONNECT)
+        self._makeRequest()
         
     def setMessage(self, subject, msg, subreq=None, **vrs):
         "Set a message."
@@ -144,11 +141,11 @@ class RedFetcher:
             self.status_cb("fetching %s (%s)" % (self.uri, self.type))
         req_body, req_done = self._client.req_start(
                                     self.method, self.uri, self.req_hdrs, nbhttp.dummy)
-        if len(outstanding_requests) == 1:
-            nbhttp.run()
         if self.req_body != None:
             req_body(self.req_body)
         req_done(None)
+        if len(outstanding_requests) == 1:
+            nbhttp.run()
 
     def _response_start(self, version, status, phrase, res_headers, res_pause):
         "Process the response start-line and headers."
@@ -236,20 +233,21 @@ class RedFetcher:
         else:
             raise AssertionError, "Unknown response error: %s" % err
 
-        # check payload basics
-        if self.parsed_hdrs.has_key('content-length'):
-            if self.res_body_len == self.parsed_hdrs['content-length']:
-                self.setMessage('header-content-length', rs.CL_CORRECT)
-            else:
-                self.setMessage('header-content-length', rs.CL_INCORRECT, 
-                                         body_length=self.res_body_len)                    
-        if self.parsed_hdrs.has_key('content-md5'):
-            c_md5_calc = base64.encodestring(self.res_body_md5)[:-1]
-            if self.parsed_hdrs['content-md5'] == c_md5_calc:
-                self.setMessage('header-content-md5', rs.CMD5_CORRECT)
-            else:
-                self.setMessage('header-content-md5', rs.CMD5_INCORRECT, 
-                                         calc_md5=c_md5_calc)
+        if self.res_complete:
+            # check payload basics
+            if self.parsed_hdrs.has_key('content-length'):
+                if self.res_body_len == self.parsed_hdrs['content-length']:
+                    self.setMessage('header-content-length', rs.CL_CORRECT)
+                else:
+                    self.setMessage('header-content-length', rs.CL_INCORRECT, 
+                                             body_length=self.res_body_len)                    
+            if self.parsed_hdrs.has_key('content-md5'):
+                c_md5_calc = base64.encodestring(self.res_body_md5)[:-1]
+                if self.parsed_hdrs['content-md5'] == c_md5_calc:
+                    self.setMessage('header-content-md5', rs.CMD5_CORRECT)
+                else:
+                    self.setMessage('header-content-md5', rs.CMD5_INCORRECT, 
+                                             calc_md5=c_md5_calc)
         # analyse, check to see if we're done
         self.done()
         outstanding_requests.remove(self)
