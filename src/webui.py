@@ -562,15 +562,19 @@ class TablePresenter(object):
 def except_handler(etype, evalue, etb):
     "Log uncaught exceptions and display a friendly error."
     import cgitb
-    try:
-        doc = cgitb.html((etype, evalue, etb), 5)
-    except:                         # just in case something goes wrong
-        import traceback
-        doc = ''.join(traceback.format_exception(etype, evalue, etb))
     print cgitb.reset()
-    msg = "A problem has occurred, but it probably isn't your fault. "
-    if logdir is not None:
-        import os, tempfile
+    if logdir is None:
+            print error_template % """
+A problem has occurred, but it probably isn't your fault. 
+"""
+    else:
+        import os
+        import tempfile
+        import traceback
+        try:
+            doc = cgitb.html((etype, evalue, etb), 5)
+        except:                         # just in case something goes wrong
+            doc = ''.join(traceback.format_exception(etype, evalue, etb))
         try:
             (fd, path) = tempfile.mkstemp(suffix='.html', dir=logdir)
             fh = os.fdopen(fd, 'w')
@@ -585,10 +589,19 @@ def except_handler(etype, evalue, etb):
                     pprint.pprint(conn._client._tcp_conn.__dict__, fh)
             fh.write("</pre>\n")
             fh.close()
-            msg += "RED has remembered it, and we'll try to fix it soon."
+            print error_template % """
+A problem has occurred, but it probably isn't your fault. 
+RED has remembered it, and we'll try to fix it soon."""
         except:
-            msg += "RED tried to save it, but it couldn't! Oops."
-    print error_template % msg
+            print error_template % """\
+A problem has occurred, but it probably isn't your fault. 
+RED tried to save it, but it couldn't! Oops.<br>
+Please e-mail the information below to
+<a href='mailto:redbot@redbot.org'>redbot@redbot.org</a> 
+and we'll look into it."""
+            print "<pre>"
+            print ''.join(traceback.format_exception(etype, evalue, etb))
+            print "</pre>"
     sys.stdout.flush()
 
 if __name__ == "__main__":
@@ -596,7 +609,6 @@ if __name__ == "__main__":
         test_uri = sys.argv[1]
         descend = True
     except IndexError:
-        import sys
         sys.excepthook = except_handler
         form = cgi.FieldStorage()
         test_uri = form.getfirst("uri", "")
