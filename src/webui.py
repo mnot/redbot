@@ -195,7 +195,7 @@ window.status="%s";
 *** Outstanding Connections
 """
         for conn in red_fetcher.outstanding_requests:
-            print "***", conn.uri
+            print "***", conn.uri.encode('utf-8', 'replace')
             pprint.pprint(conn.__dict__)
             if conn._client:
                 pprint.pprint(conn._client.__dict__)
@@ -581,7 +581,7 @@ A problem has occurred, but it probably isn't your fault.
             fh.write(doc)
             fh.write("<h2>Outstanding Connections</h2>\n<pre>")
             for conn in red_fetcher.outstanding_requests:
-                fh.write("*** %s\n" % conn.uri)
+                fh.write("*** %s\n" % conn.uri.encode('utf-8', 'replace'))
                 pprint.pprint(conn.__dict__, fh)
                 if conn._client:
                     pprint.pprint(conn._client.__dict__, fh)
