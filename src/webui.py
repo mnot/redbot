@@ -597,7 +597,7 @@ RED has remembered it, and we'll try to fix it soon."""
 A problem has occurred, but it probably isn't your fault. 
 RED tried to save it, but it couldn't! Oops.<br>
 Please e-mail the information below to
-<a href='mailto:redbot@redbot.org'>redbot@redbot.org</a> 
+<a href='mailto:red@redbot.org'>red@redbot.org</a> 
 and we'll look into it."""
             print "<pre>"
             print ''.join(traceback.format_exception(etype, evalue, etb))
