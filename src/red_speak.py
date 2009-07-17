@@ -193,6 +193,8 @@ BAD_SYNTAX = (GENERAL, BAD,
     }
 )
 
+# Specific headers
+
 KEEP_ALIVE_HEADER = (CONNECTION, INFO,
     {
     'en': u"The Keep-Alive header isn't necessary."
@@ -478,6 +480,160 @@ LOCATION_NOT_ABSOLUTE = (GENERAL, BAD,
      if the body contains a base URI).</p>
      The correct value for this field is (probably):<br>
      <code>%(full_uri)s</code>"""
+    }
+)
+
+CONTENT_TYPE_OPTIONS = (GENERAL, INFO,
+    {
+     'en': u"%(response)s instructs Internet Explorer not to 'sniff' its media type."
+    },
+    {
+     'en': u"""Many Web browers "sniff" the media type of responses to figure out
+     whether they're HTML, RSS or another format, no matter what the 
+     <code>Content-Type</code> header says.<p>
+     This header instructs Microsoft's Internet Explorer not to do this, but to
+     always respect the Content-Type header. It probably won't have any effect in
+     other clients.<p>
+     See <a href="http://blogs.msdn.com/ie/archive/2008/09/02/ie8-security-part-vi-beta-2-update.aspx">this blog entry</a> for more information about this header."""
+    }
+)
+
+CONTENT_TYPE_OPTIONS_UNKNOWN = (GENERAL, WARN,
+    {
+     'en': u"%(response)s contains an X-Content-Type-Options header with an unknown value."
+    },
+    {
+     'en': u"""Only one value is currently defined for this header, <code>nosniff</code>.
+     Using other values here won't necessarily cause problems, but they probably
+     won't have any effect either.<p>
+     See <a href="http://blogs.msdn.com/ie/archive/2008/09/02/ie8-security-part-vi-beta-2-update.aspx">this blog entry</a> for more information about this header."""
+    }
+)
+
+DOWNLOAD_OPTIONS = (GENERAL, BAD,
+    {
+     'en': u"%(response)s can't be directly opened directly by Internet Explorer when downloaded."
+    },
+    {
+     'en': u"""When the <code>X-Download-Options</code> header is present 
+     with the value <code>noopen</code>, Internet Explorer users are prevented 
+     from directly opening a file download; instead, they must first save the 
+     file locally. When the locally saved file is later opened, it no longer 
+     executes in the security context of your site, helping to prevent script 
+     injection.<p>
+     This header probably won't have any effect in other clients.<p>
+     See <a href="http://blogs.msdn.com/ie/archive/2008/07/02/ie8-security-part-v-comprehensive-protection.aspx">this blog article</a> for more details."""
+    }
+)
+
+DOWNLOAD_OPTIONS_UNKNOWN = (GENERAL, WARN,
+    {
+     'en': u"%(response)s contains an X-Download-Options header with an unknown value."
+    },
+    {
+     'en': u"""Only one value is currently defined for this header, <code>noopen</code>.
+     Using other values here won't necessarily cause problems, but they probably
+     won't have any effect either.<p>
+     See <a href="http://blogs.msdn.com/ie/archive/2008/07/02/ie8-security-part-v-comprehensive-protection.aspx">this blog article</a> for more details."""
+    }
+)
+
+FRAME_OPTIONS_DENY = (GENERAL, INFO,
+    {
+     'en': u"%(response)s prevents some browsers from rendering it if it will be contained within a frame."
+    },
+    {
+     'en': u"""The <code>X-Frame-Options</code> response header controls how
+     IE8 handles HTML frames; the <code>DENY</code> value prevents this content
+     from being rendered within a frame, which defends against certain types of
+     attacks.<p>
+     Currently this is supported by IE8 and Safari 4.<p>
+     See <a href="http://blogs.msdn.com/ie/archive/2009/01/27/ie8-security-part-vii-clickjacking-defenses.aspx">this blog entry</a> for more information.
+     """
+    }
+)
+
+FRAME_OPTIONS_SAMEORIGIN = (GENERAL, INFO,
+    {
+     'en': u"%(response)s prevents some browsers from rendering it if it will be contained within a frame on another site."
+    },
+    {
+     'en': u"""The <code>X-Frame-Options</code> response header controls how
+     IE8 handles HTML frames; the <code>DENY</code> value prevents this content
+     from being rendered within a frame on another site, which defends against certain types of
+     attacks.<p>
+     Currently this is supported by IE8 and Safari 4.<p>
+     See <a href="http://blogs.msdn.com/ie/archive/2009/01/27/ie8-security-part-vii-clickjacking-defenses.aspx">this blog entry</a> for more information.
+     """
+    }
+)
+
+FRAME_OPTIONS_UNKNOWN = (GENERAL, WARN,
+    {
+     'en': u"%(response)s contains an X-Frame-Options header with an unknown value."
+    },
+    {
+     'en': u"""Only two values are currently defined for this header, <code>DENY</code>
+     and <code>SAMEORIGIN</code>.
+     Using other values here won't necessarily cause problems, but they probably
+     won't have any effect either.<p>
+     See <a href="http://blogs.msdn.com/ie/archive/2009/01/27/ie8-security-part-vii-clickjacking-defenses.aspx">this blog entry</a> for more information.
+     """
+    }
+)
+
+SMART_TAG_NO_WORK = (GENERAL, WARN,
+    {
+     'en': u"The %(field_name)s header doesn't have any effect on smart tags."
+    },
+    {
+     'en': u"""This header doesn't have any effect on Microsoft Smart Tags, 
+     except in certain beta versions of IE6. To turn them off, you'll need
+     to make changes in the HTML content itself."""
+    }
+)
+
+UA_COMPATIBLE = (GENERAL, BAD,
+    {
+     'en': u"%(response)s indicates that IE8 should go into compatibility mode."
+    },
+    {
+     'en': u"""Internet Explorer 8 allows responses to indicate that they should
+     be handled as if it were a previous version of the browser, to allow old
+     content to be easily updated to work with the new version.<p>
+     See <a href="http://blogs.msdn.com/ie/archive/2008/06/10/introducing-ie-emulateie7.aspx">this blog entry</a> for more information."""
+    }
+)
+
+UA_COMPATIBLE_REPEAT = (GENERAL, BAD,
+    {
+     'en': u"%(response)s has multiple X-UA-Compatible directives targetted at the same UA."
+    },
+    {
+     'en': u"""Internet Explorer 8 allows responses to indicate that they should
+     be handled as if it were a previous version of the browser, to allow old
+     content to be easily updated to work with the new version.<p>
+     This response has more than one such directive targetted at one browser;
+     this may cause unpredictable results.<p>
+     See <a href="http://blogs.msdn.com/ie/archive/2008/06/10/introducing-ie-emulateie7.aspx">this blog entry</a> for more information."""
+    }
+)
+
+
+# http://blogs.msdn.com/ie/archive/2008/07/02/ie8-security-part-iv-the-xss-filter.aspx
+XSS_PROTECTION = (GENERAL, INFO,
+    {
+     'en': u"%(response)s disables XSS filtering in IE8."
+    },
+    {
+     'en': u"""Internet Explorer 8 has built-in Cross-Site Scripting (XSS)
+     attack protection; it tries to automatically filter requests that 
+     fit a particular profile.<p>
+     %(response)s has explicitly disabled this protection. In some scenarios,
+     this is useful to do, if the protection interferes with the application.<p>
+     This header probably won't have any effect in other clients.<p>
+     See <a href="http://blogs.msdn.com/ie/archive/2008/07/02/ie8-security-part-iv-the-xss-filter.aspx">this blog entry</a> for more information.
+     """
     }
 )
 

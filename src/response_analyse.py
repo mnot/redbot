@@ -507,23 +507,61 @@ class ResponseHeaderParser(object):
 
     @GenericHeaderSyntax
     def x_content_type_options(self, name, values):
-        # TODO: http://blogs.msdn.com/ie/archive/2008/09/02/ie8-security-part-vi-beta-2-update.aspx
-        pass
+        if 'nosniff' in values:
+            self.setMessage(name, rs.CONTENT_TYPE_OPTIONS)
+        else:
+            self.setMessage(name, rs.CONTENT_TYPE_OPTIONS_UNKNOWN)
+        return values
     
     @GenericHeaderSyntax
     def x_download_options(self, name, values):
-        # TODO: http://blogs.msdn.com/ie/archive/2008/09/02/ie8-security-part-vi-beta-2-update.aspx
-        pass
+        if 'noopen' in values:
+            self.setMessage(name, rs.DOWNLOAD_OPTIONS)
+        else:
+            self.setMessage(name, rs.DOWNLOAD_OPTIONS_UNKNOWN)
+        return values
 
     @GenericHeaderSyntax
     def x_frame_options(self, name, values):
-        # TODO: http://blogs.msdn.com/ie/archive/2009/01/27/ie8-security-part-vii-clickjacking-defenses.aspx
-        pass
+        if 'DENY' in values:
+            self.setMessage(name, rs.FRAME_OPTIONS_DENY)
+        elif 'SAMEORIGIN' in values:
+            self.setMessage(name, rs.FRAME_OPTIONS_SAMEORIGIN)
+        else:
+            self.setMessage(name, rs.FRAME_OPTIONS_UNKNOWN)
+        return values
 
     @GenericHeaderSyntax
+    def x_meta_mssmarttagspreventparsing(self, name, values):
+        self.setMessage(name, rs.SMART_TAG_NO_WORK)
+        return values
+
+    @GenericHeaderSyntax
+    @CheckFieldSyntax(PARAMETER, "http://blogs.msdn.com/ie/archive/2008/06/10/introducing-ie-emulateie7.aspx")
     def x_ua_compatible(self, name, values):
-        # TODO: explain - http://blogs.msdn.com/ie/archive/2008/06/10/introducing-ie-emulateie7.aspx
-        pass
+        directives = {}
+        for directive in values:
+            try:
+                attr, value = directive.split("=", 1)
+            except ValueError:
+                attr = directive
+                value = None
+            if directives.has_key(attr):
+                self.setMessage(name, rs.UA_COMPATIBLE_REPEAT)
+            directives[attr] = value
+        uac_list = u"\n".join([u"<li>%s - %s</li>" % (e(k), e(v)) for 
+                            k, v in directives.items()])
+        self.setMessage(name, rs.UA_COMPATIBLE, uac_list=uac_list)
+        return directives
+
+
+    @GenericHeaderSyntax
+    @SingleFieldValue
+    @CheckFieldSyntax(DIGITS, 'http://blogs.msdn.com/ie/archive/2008/07/02/ie8-security-part-iv-the-xss-filter.aspx')
+    def x_xss_protection(self, name, values):
+        if int(values[-1]) == 0:
+            self.setMessage(name, rs.XSS_PROTECTION)
+        return values[-1]
 
     @GenericHeaderSyntax
     @SingleFieldValue
