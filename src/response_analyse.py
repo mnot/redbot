@@ -467,6 +467,7 @@ class ResponseHeaderParser(object):
 
     @GenericHeaderSyntax
     @CheckFieldSyntax(TOK_PARAM, rfc2616 % "sec-14.41")
+    # TODO: accommodate transfer-parameters
     def transfer_encoding(self, name, values):
         values = [v.lower() for v in values]
         if 'identity' in values:
