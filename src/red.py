@@ -123,16 +123,16 @@ class ResourceExpertDroid(RedFetcher):
             self.store_shared = self.store_private = False
             self.setMessage('method', rs.METHOD_UNCACHEABLE, method=self.method)
             return # bail; nothing else to see here
-        elif cc_dict.has_key('no-store'):
+        elif 'no-store' in cc_keys:
             self.store_shared = self.store_private = False
             self.setMessage('header-cache-control', rs.NO_STORE)
             return # bail; nothing else to see here
-        elif cc_dict.has_key('private'):
+        elif 'private' in cc_keys:
             self.store_shared = False
             self.store_private = True
             self.setMessage('header-cache-control', rs.PRIVATE_CC)
         elif 'authorization' in [k.lower() for k, v in self.req_hdrs] and \
-          not cc_dict.has_key('public'):
+          not 'public' in cc_keys:
             self.store_shared = False
             self.store_private = True
             self.setMessage('header-cache-control', rs.PRIVATE_AUTH)
@@ -141,7 +141,7 @@ class ResourceExpertDroid(RedFetcher):
             self.setMessage('header-cache-control', rs.STOREABLE)
 
         # no-cache?
-        if cc_dict.has_key('no-cache'):
+        if 'no-cache' in cc_keys:
             self.setMessage('header-cache-control', rs.NO_CACHE)
             return # TODO: differentiate when there aren't LM or ETag present.
 
@@ -200,11 +200,11 @@ class ResourceExpertDroid(RedFetcher):
         freshness_lifetime = 0
         has_explicit_freshness = False
         freshness_hdrs = ['header-date', 'header-expires']
-        if cc_dict.has_key('s-maxage'): # TODO: differentiate message for s-maxage
+        if 's-maxage' in cc_keys: # TODO: differentiate message for s-maxage
             freshness_lifetime = cc_dict['s-maxage']
             freshness_hdrs.append('header-cache-control')
             has_explicit_freshness = True
-        elif cc_dict.has_key('max-age'):
+        elif 'max-age' in cc_keys:
             freshness_lifetime = cc_dict['max-age']
             freshness_hdrs.append('header-cache-control')
             has_explicit_freshness = True
@@ -241,10 +241,10 @@ class ResourceExpertDroid(RedFetcher):
             self.setMessage('header-last-modified', rs.HEURISTIC_FRESHNESS)
 
         # can stale responses be served?
-        if cc_dict.has_key('must-revalidate'):
+        if 'must-revalidate' in cc_keys:
             self.stale_serveable = False
             self.setMessage('header-cache-control', rs.STALE_MUST_REVALIDATE) 
-        elif cc_dict.has_key('proxy-revalidate') or cc_dict.has_key('s-maxage'):
+        elif 'proxy-revalidate' in cc_keys or 's-maxage' in cc_keys:
             self.stale_serveable = False
             self.setMessage('header-cache-control', rs.STALE_PROXY_REVALIDATE) 
         else:
@@ -252,7 +252,7 @@ class ResourceExpertDroid(RedFetcher):
             self.setMessage('header-cache-control', rs.STALE_SERVABLE)
 
         # public?
-        if cc_dict.has_key('public'):
+        if 'public' in cc_keys:
             self.setMessage('header-cache-control', rs.PUBLIC)
 
 
