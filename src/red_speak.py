@@ -1141,6 +1141,104 @@ STALE_PROXY_REVALIDATE = (CACHING, INFO,
     }
 )
 
+CHECK_SINGLE = (CACHING, WARN,
+    {
+     'en': u"Only one of the pre-check and post-check Cache-Control directives is present."
+    },
+    {
+     'en': u"""Microsoft Internet Explorer implements two <code>Cache-Control</code>
+     extensions, <code>pre-check</code> and <code>post-check</code>, to give
+     more control over how its cache stores responses.<p>
+     %(response)s uses only one of these directives; as a result, Internet
+     Explorer will ignore the directive, since it requires both to be present.<p>
+     See <a href="http://blogs.msdn.com/ieinternals/archive/2009/07/20/Using-post_2D00_check-and-pre_2D00_check-cache-directives.aspx">this blog entry</a> for more information.
+     """
+    }
+)
+
+CHECK_NOT_INTEGER = (CACHING, WARN,
+    {
+     'en': u"One of the pre-check/post-check Cache-Control directives has a non-integer value."
+    },
+    {
+     'en': u"""Microsoft Internet Explorer implements two <code>Cache-Control</code>
+     extensions, <code>pre-check</code> and <code>post-check</code>, to give
+     more control over how its cache stores responses.<p>
+     Their values are required to be integers, but here at least one is not. As a 
+     result, Internet Explorer will ignore the directive.<p>
+     See <a href="http://blogs.msdn.com/ieinternals/archive/2009/07/20/Using-post_2D00_check-and-pre_2D00_check-cache-directives.aspx">this blog entry</a> for more information.
+     """
+    }
+)
+
+CHECK_ALL_ZERO = (CACHING, WARN,
+    {
+     'en': u"The pre-check and post-check Cache-Control directives are both '0'."
+    },
+    {
+     'en': u"""Microsoft Internet Explorer implements two <code>Cache-Control</code>
+     extensions, <code>pre-check</code> and <code>post-check</code>, to give
+     more control over how its cache stores responses.<p>
+     %(response)s gives a value of "0" for both; as a result, Internet
+     Explorer will ignore the directive, since it requires both to be present.<p>
+     In other words, setting these to zero has <strong>no effect</strong> (besides
+     wasting bandwidth), and may trigger bugs in some beta versions of IE.<p>
+     See <a href="http://blogs.msdn.com/ieinternals/archive/2009/07/20/Using-post_2D00_check-and-pre_2D00_check-cache-directives.aspx">this blog entry</a> for more information.
+     """
+    }
+)
+
+CHECK_POST_BIGGER = (CACHING, WARN,
+    {
+     'en': u"The post-check Cache-control directive's value is larger than pre-check's."
+    },
+    {
+     'en': u"""Microsoft Internet Explorer implements two <code>Cache-Control</code>
+     extensions, <code>pre-check</code> and <code>post-check</code>, to give
+     more control over how its cache stores responses.<p>
+     %(response)s assigns a higher value to <code>post-check</code> than to 
+     <code>pre-check</code>; this means that Internet Explorer will treat 
+     <code>post-check</code> as if its value is the same as <code>pre-check</code>'s.<p>
+     See <a href="http://blogs.msdn.com/ieinternals/archive/2009/07/20/Using-post_2D00_check-and-pre_2D00_check-cache-directives.aspx">this blog entry</a> for more information.
+     """
+    }
+)
+
+CHECK_POST_ZERO = (CACHING, BAD,
+    {
+     'en': u"The post-check Cache-control directive's value is '0'."
+    },
+    {
+     'en': u"""Microsoft Internet Explorer implements two <code>Cache-Control</code>
+     extensions, <code>pre-check</code> and <code>post-check</code>, to give
+     more control over how its cache stores responses.<p>
+     %(response)s assigns a value of "0" to <code>post-check</code>, which means
+     that Internet Explorer will reload the content as soon as it enters the
+     browser cache, effectively <strong>doubling the load on the server</strong>.<p>
+     See <a href="http://blogs.msdn.com/ieinternals/archive/2009/07/20/Using-post_2D00_check-and-pre_2D00_check-cache-directives.aspx">this blog entry</a> for more information.
+     """
+    }
+)
+
+CHECK_POST_PRE = (CACHING, INFO,
+    {
+     'en': u"%(response)s may be refreshed in the background by Internet Explorer."
+    },
+    {
+     'en': u"""Microsoft Internet Explorer implements two <code>Cache-Control</code>
+     extensions, <code>pre-check</code> and <code>post-check</code>, to give
+     more control over how its cache stores responses.<p>
+     Once it has been cached for more than %(post-check)s seconds, a new request
+     will result in the cached response being served while it is refreshed in the 
+     background. However, if it has been cached for more than %(pre-check)s seconds,
+     the browser will download a fresh response before showing it to the user.<p>
+     Note that these directives do not have any effect on other clients or caches.<p>
+     See <a href="http://blogs.msdn.com/ieinternals/archive/2009/07/20/Using-post_2D00_check-and-pre_2D00_check-cache-directives.aspx">this blog entry</a> for more information.
+     """
+    }
+)
+
+
 ### ETag Validation
 
 INM_304 = (VALIDATION, GOOD,

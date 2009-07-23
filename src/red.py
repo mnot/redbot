@@ -116,6 +116,7 @@ class ResourceExpertDroid(RedFetcher):
         # TODO: check for spurious 'public' directive (e.g., sun.com)
         # TODO: check for capitalisation on standard directives
         cc_dict = dict(self.parsed_hdrs.get('cache-control', []))
+        cc_keys = cc_dict.keys()
 
         # Who can store this?
         if self.method not in cacheable_methods:
@@ -144,6 +145,29 @@ class ResourceExpertDroid(RedFetcher):
             self.setMessage('header-cache-control', rs.NO_CACHE)
             return # TODO: differentiate when there aren't LM or ETag present.
 
+        # pre-check / post-check
+        if 'pre-check' in cc_keys or 'post-check' in cc_keys:
+            if 'pre-check' not in cc_keys or 'post_check' not in cc_keys:
+                self.setMessage('header-cache-control', rs.CHECK_SINGLE)
+            else:
+                pre_check = post_check = None
+                try:
+                    pre_check = int(cc_dict['pre-check'])
+                    post_check = int(cc_dict['post-check'])
+                except ValueError:
+                    self.setMessage('header-cache-control', rs.CHECK_NOT_INTEGER)
+                if pre_check is not None and post_check is not None:
+                    if pre_check == 0 and post_check == 0:
+                        self.setMessage('header-cache-control', rs.CHECK_ALL_ZERO)
+                    elif post_check > pre_check:
+                        self.setMessage('header-cache-control', rs.CHECK_POST_BIGGER)
+                        post_check = pre_check
+                    elif post_check == 0:
+                        self.setMessage('header-cache-control', rs.CHECK_POST_ZERO)
+                    else:
+                        self.setMessage('header-cache-control', rs.CHECK_POST_PRE,
+                                        pre_check=pre_check, post_check=post_check)                
+                
         # vary?
         vary = self.parsed_hdrs.get('vary', set())
         if "*" in vary:
