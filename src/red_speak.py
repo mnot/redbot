@@ -510,7 +510,7 @@ CONTENT_TYPE_OPTIONS_UNKNOWN = (GENERAL, WARN,
     }
 )
 
-DOWNLOAD_OPTIONS = (GENERAL, BAD,
+DOWNLOAD_OPTIONS = (GENERAL, INFO,
     {
      'en': u"%(response)s can't be directly opened directly by Internet Explorer when downloaded."
     },
@@ -593,7 +593,7 @@ SMART_TAG_NO_WORK = (GENERAL, WARN,
     }
 )
 
-UA_COMPATIBLE = (GENERAL, BAD,
+UA_COMPATIBLE = (GENERAL, INFO,
     {
      'en': u"%(response)s indicates that IE8 should go into compatibility mode."
     },
@@ -619,8 +619,6 @@ UA_COMPATIBLE_REPEAT = (GENERAL, BAD,
     }
 )
 
-
-# http://blogs.msdn.com/ie/archive/2008/07/02/ie8-security-part-iv-the-xss-filter.aspx
 XSS_PROTECTION = (GENERAL, INFO,
     {
      'en': u"%(response)s disables XSS filtering in IE8."
