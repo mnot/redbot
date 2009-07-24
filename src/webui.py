@@ -78,7 +78,7 @@ nl = u"\n"
 class RedWebUi(object):
     """
     A Web UI for RED.
-    
+
     Given a URI, run RED on it and present the results to STDOUT as HTML.
     """
     def __init__(self, uri, descend=False):
@@ -86,16 +86,16 @@ class RedWebUi(object):
         self.start = time.time()
         timeout = nbhttp.schedule(max_runtime, self.timeoutError)
         print red_header.__doc__ % {
-                        'js_uri': uri.replace('"', r'\"'), 
+                        'js_uri': uri.replace('"', r'\"'),
                         'html_uri': e(uri),
-                        } 
+                        }
         self.links = {}          # {type: set(link...)}
         self.link_count = 0
         self.link_droids = []    # list of REDs
         if uri:
             link_parser = link_parse.HTMLLinkParser(uri, self.processLink)
             self.red = red.ResourceExpertDroid(
-                uri, 
+                uri,
                 req_hdrs=req_hdrs,
                 status_cb=self.updateStatus,
                 body_procs=[link_parser.feed],
@@ -134,12 +134,12 @@ class RedWebUi(object):
           link not in self.links[tag]:
             self.link_droids.append((
                 red.ResourceExpertDroid(
-                    link, 
+                    link,
                     req_hdrs=req_hdrs,
                     status_cb=self.updateStatus
                 ),
                 tag
-            ))    
+            ))
         self.links[tag].add(link)
 
     def presentNews(self):
@@ -155,17 +155,17 @@ class RedWebUi(object):
         return u"""\
 <div class="footer">
 <p class="version">this is RED %(version)s.</p>
-<p class="navigation"> 
+<p class="navigation">
 <a href="http://REDbot.org/about/">about</a> |
 <a href="http://blog.REDbot.org/">blog</a> |
 <a href="http://REDbot.org/project">project</a> |
 <a href="http://REDbot.org/terms/">terms of use</a> |
-<a href="javascript:location%%20=%%20'http://redbot.org/?uri='+escape(location);%%20void%%200" 
+<a href="javascript:location%%20=%%20'http://redbot.org/?uri='+escape(location);%%20void%%200"
 title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
 </p>
 </div>
 
-<!-- 
+<!--
 That took %(requests)s requests and %(elapsed)2.2f seconds.
 -->
 """ % {
@@ -216,7 +216,7 @@ class DetailPresenter(object):
     msg_categories = [
         rs.GENERAL, rs.CONNECTION, rs.CONNEG, rs.CACHING, rs.VALIDATION, rs.RANGE
     ]
-    
+
     # Media types that browsers can view natively
     viewable_types = [
         'text/plain',
@@ -233,43 +233,43 @@ class DetailPresenter(object):
         'text/x-javascript',
         'text/css',
     ]
-    
+
     # Validator uris, by media type
     validators = {
         'text/html': "http://validator.w3.org/check?uri=%s",
         'text/css': "http://jigsaw.w3.org/css-validator/validator?uri=%s&",
-        'application/xhtml+xml': "http://validator.w3.org/check?uri=%s",    
+        'application/xhtml+xml': "http://validator.w3.org/check?uri=%s",
         'application/atom+xml': "http://feedvalidator.org/check.cgi?url=%s",
         'application/rss+xml': "http://feedvalidator.org/check.cgi?url=%s",
     }
-    
+
     # HTML template for the main response body
     template = u"""\
     <div id="main">
-    
+
     <pre>%(response)s</pre>
-    
+
     <p class="options">
         %(options)s
     </p>
-    
+
     %(messages)s
 
     %(footer)s
-    
+
     <div class='hidden_desc' id='link_list'>%(links)s</div>
-    
+
     </div>
 
     <div class="mesg_sidebar" id="long_mesg"></div>
-        
+
     """
 
     def __init__(self, ui, red):
         self.ui = ui
         self.red = red
         self.header_presenter = HeaderPresenter(self.red)
-        
+
     def presentResults(self):
         "Fill in the template with RED's results."
         result_strings = {
@@ -285,8 +285,8 @@ class DetailPresenter(object):
         "Return the HTTP response line and headers as HTML"
         return \
         u"    <span class='status'>HTTP/%s %s %s</span>\n" % (
-            e(str(self.red.res_version)), 
-            e(str(self.red.res_status)), 
+            e(str(self.red.res_version)),
+            e(str(self.red.res_status)),
             e(str(self.red.res_phrase))
         ) + \
         nl.join([self.presentHeader(f,v) for (f,v) in self.red.res_hdrs])
@@ -304,16 +304,16 @@ class DetailPresenter(object):
             return nl
         out = [u"<h3>%s</h3>\n<ul>\n" % category]
         for (s, (c, l, m, lm), sr, v) in messages:
-            out.append(u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span>" % 
+            out.append(u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span>" %
                     (l, e(s), e(m[lang]%v), lm[lang]%v)
             )
             out.append(u"</li>")
             smsgs = [msg for msg in getattr(sr, "messages", []) if msg[1][1] in [rs.BAD]]
-            if smsgs: 
+            if smsgs:
                 out.append(u"<ul>")
                 for (s, (c, l, m, lm), sms, v) in smsgs:
                     out.append(
-                        u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span></li>" % 
+                        u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span></li>" %
                         (l, e(s), e(m[lang]%v), lm[lang]%v)
                     )
                 out.append(u"</ul>")
@@ -336,13 +336,13 @@ class DetailPresenter(object):
             options.append(u"<a href='?descend=True&uri=%s'>check links</a>" %
                            self.red.uri)
         if self.validators.has_key(media_type):
-            options.append(u"<a href='%s'>validate body</a>" % 
+            options.append(u"<a href='%s'>validate body</a>" %
                            self.validators[media_type] % self.red.uri)
         return nl.join(options)
 
     link_order = [
-          ('link', 'Head Links'), 
-          ('script', 'Script Links'), 
+          ('link', 'Head Links'),
+          ('script', 'Script Links'),
           ('frame', 'Frame Links'),
           ('iframe', 'IFrame links'),
           ('img', 'Image Links'),
@@ -372,12 +372,12 @@ class HeaderPresenter(object):
        - Escape HTML sequences to avoid XSS attacks
        - Wrap long lines
     However if a method is present that corresponds to the header's
-    field-name, that method will be run instead to represent the value. 
+    field-name, that method will be run instead to represent the value.
     """
 
     def __init__(self, red):
         self.red = red
-        
+
     def Show(self, name, value):
         "Return the given header name/value pair after presentation processing"
         name = name.lower()
@@ -409,7 +409,7 @@ class HeaderPresenter(object):
 class TablePresenter(object):
     # HTML template for the main response body
     template = u"""\
-        
+
     <table>
     %(table)s
     </table>
@@ -417,15 +417,15 @@ class TablePresenter(object):
     %(problems)s
 
     <div class="mesg_banner" id="long_mesg"> </div>
-    
+
     %(footer)s
-    
+
     """
     def __init__(self, ui, red):
         self.ui = ui
         self.red = red
         self.problems = []
-        
+
     def presentResults(self):
         "Fill in the template with RED's results."
         result_strings = {
@@ -436,8 +436,8 @@ class TablePresenter(object):
         return (self.template % result_strings).encode("utf-8")
 
     link_order = [
-          ('link', 'Head Links'), 
-          ('script', 'Script Links'), 
+          ('link', 'Head Links'),
+          ('script', 'Script Links'),
           ('frame', 'Frame Links'),
           ('iframe', 'IFrame Links'),
           ('img', 'Image Links'),
@@ -452,7 +452,7 @@ class TablePresenter(object):
                 out.append(self.presentTableHeader(heading + " (%s)" % len(droids)))
                 out += [self.presentDroid(d) for d in droids]
         return nl.join(out)
-            
+
     def presentDroid(self, red):
         out = [u'<tr class="droid %s">']
         m = 50
@@ -507,7 +507,7 @@ class TablePresenter(object):
             # append the actual problem numbers to the final <td>
             for p in pr_enum:
                 (s, (c, l, m, lm), sr, v) = self.problems[p]
-                out.append("<span class='prob_num'> %s <span class='prob_title'>%s</span></span>" % (p + 1, e(m[lang]%v)))                
+                out.append("<span class='prob_num'> %s <span class='prob_title'>%s</span></span>" % (p + 1, e(m[lang]%v)))
         else:
             out.append('<td colspan="11">%s' % red.res_error['desc'])
         out.append(u"</td>")
@@ -531,7 +531,7 @@ class TablePresenter(object):
         <th title="Issues encountered.">problems</th>
         </tr>
         """ % (heading or "URI")
-    
+
     def presentTime(self, value):
         if value is None:
             return u'<td>-</td>'
@@ -547,11 +547,11 @@ class TablePresenter(object):
             return u'<td><img src="icon/help1.png" alt="?" title="unknown"/></td>'
         else:
             raise AssertionError, 'unknown value'
-        
+
     def presentProblems(self):
         out = ['<br /><h2>Problems</h2><ol>']
         for (s, (c, l, m, lm), sr, v) in self.problems:
-            out.append(u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span>" % 
+            out.append(u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span>" %
                     (l, e(s), e(m[lang]%v), lm[lang]%v)
             )
             out.append(u"</li>")
@@ -565,7 +565,7 @@ def except_handler(etype, evalue, etb):
     print cgitb.reset()
     if logdir is None:
             print error_template % """
-A problem has occurred, but it probably isn't your fault. 
+A problem has occurred, but it probably isn't your fault.
 """
     else:
         import os
@@ -590,14 +590,14 @@ A problem has occurred, but it probably isn't your fault.
             fh.write("</pre>\n")
             fh.close()
             print error_template % """
-A problem has occurred, but it probably isn't your fault. 
+A problem has occurred, but it probably isn't your fault.
 RED has remembered it, and we'll try to fix it soon."""
         except:
             print error_template % """\
-A problem has occurred, but it probably isn't your fault. 
+A problem has occurred, but it probably isn't your fault.
 RED tried to save it, but it couldn't! Oops.<br>
 Please e-mail the information below to
-<a href='mailto:red@redbot.org'>red@redbot.org</a> 
+<a href='mailto:red@redbot.org'>red@redbot.org</a>
 and we'll look into it."""
             print "<pre>"
             print ''.join(traceback.format_exception(etype, evalue, etb))
