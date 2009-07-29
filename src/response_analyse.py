@@ -75,18 +75,18 @@ COMMENT = r'(?:\((?:[^\(\)]|\\\(|\\\))*\))' # does not handle nesting or check c
 COMMA = r'(?:\s*(?:,\s*)+)'
 DIGITS = r'(?:[0-9]+)'
 DATE = r"""(?:\w{3},\ [0-9]{2}\ \w{3}\ [0-9]{4}\ [0-9]{2}:[0-9]{2}:[0-9]{2}\ GMT |
-         \w{6,9},\ [0-9]{2}\-\w{3}\-[0-9]{2}\ [0-9]{2}:[0-9]{2}:[0-9]{2}\ GMT | 
+         \w{6,9},\ [0-9]{2}\-\w{3}\-[0-9]{2}\ [0-9]{2}:[0-9]{2}:[0-9]{2}\ GMT |
          \w{3}\ \w{3}\ [0-9 ][0-9]\ [0-9]{2}:[0-9]{2}:[0-9]{2}\ [0-9]{4})
         """
 
 
 def GenericHeaderSyntax(meth):
     """
-    Decorator to take a list of header values, split on commas (except where 
-    escaped) and return a list of header field-values. This will not work for 
-    Set-Cookie (which contains an unescaped comma) and similar headers 
+    Decorator to take a list of header values, split on commas (except where
+    escaped) and return a list of header field-values. This will not work for
+    Set-Cookie (which contains an unescaped comma) and similar headers
     containing bare dates.
-    
+
     E.g.,
       ["foo,bar", "baz, bat"]
     becomes
@@ -94,7 +94,7 @@ def GenericHeaderSyntax(meth):
     """
     def new(self, name, values):
         values = sum(
-            [[f.strip() for f in re.findall(r'((?:[^",]|%s)+)(?=%s|\s*$)' % 
+            [[f.strip() for f in re.findall(r'((?:[^",]|%s)+)(?=%s|\s*$)' %
              (QUOTED_STRING, COMMA), v)] for v in values], []
         ) or ['']
         return meth(self, name, values)
@@ -129,10 +129,10 @@ def CheckFieldSyntax(exp, ref):
 
 class ResponseHeaderParser(object):
     """
-    Parse and check the response for obvious syntactic errors, 
+    Parse and check the response for obvious syntactic errors,
     as well as semantic errors that are self-contained (i.e.,
     it can be determined without examining other headers, etc.).
-    """    
+    """
     def __init__(self, red):
         self.red = red
         hdr_dict = {}
@@ -169,7 +169,7 @@ class ResponseHeaderParser(object):
         red.res_hdrs = clean_res_hdrs
         # check the total header block size
         if header_block_size > max_ttl_hdr:
-            self.setMessage('header', rs.HEADER_BLOCK_TOO_LARGE, 
+            self.setMessage('header', rs.HEADER_BLOCK_TOO_LARGE,
                             header_block_size=header_block_size)
         # build a dictionary of header values
         for nn, (fn, values) in hdr_dict.items():
@@ -205,8 +205,8 @@ class ResponseHeaderParser(object):
     @staticmethod
     def _unquoteString(instr):
         """
-        Unquote a string; does NOT unquote control characters. 
-    
+        Unquote a string; does NOT unquote control characters.
+
         @param instr: string to be unquoted
         @type instr: string
         @return: unquoted string
@@ -219,18 +219,18 @@ class ResponseHeaderParser(object):
             instr = instr[1:-1]
             instr = re.sub(r'\\(.)', r'\1', instr)
         return instr
-            
+
     @staticmethod
     def _splitString(instr, item, split):
         """
         Split instr as a list of items separated by splits.
-    
+
         @param instr: string to be split
         @param item: regex for item to be split out
         @param split: regex for splitter
         @return: list of strings
         """
-        if not instr: 
+        if not instr:
             return []
         return [h.strip() for h in re.findall(r'%s(?=%s|\s*$)' % (item, split), instr)]
 
@@ -246,16 +246,16 @@ class ResponseHeaderParser(object):
     @SingleFieldValue
     @CheckFieldSyntax(DIGITS, rfc2616 % "sec-14.6")
     def age(self, name, values):
-        try: 
+        try:
             age = int(values[-1])
         except ValueError:
             self.setMessage(name, rs.AGE_NOT_INT)
             return None
-        if age < 0: 
+        if age < 0:
             self.setMessage(name, rs.AGE_NEGATIVE)
             return None
         return age
-    
+
     @GenericHeaderSyntax
     @CheckFieldSyntax(TOKEN, rfc2616 % "sec-14.7")
     def allow(self, name, values):
@@ -286,11 +286,11 @@ class ResponseHeaderParser(object):
     def content_base(self, name, values):
         self.setMessage(name, rs.HEADER_DEPRECATED, ref=rfc2616 % "sec-19.6.3")
         return values[-1]
-        
+
     def content_disposition(self, name, values):
         # TODO: check syntax, parse
         pass
-        
+
     @GenericHeaderSyntax
     @CheckFieldSyntax(TOKEN, rfc2616 % "sec-14.11")
     def content_encoding(self, name, values):
@@ -302,7 +302,7 @@ class ResponseHeaderParser(object):
                 self.setMessage(name, rs.ENCODING_UNWANTED, encoding=e(value))
                 break
         return values
-        
+
     @GenericHeaderSyntax
     @SingleFieldValue
     @CheckFieldSyntax(DIGITS, rfc2616 % "sec-14.13")
@@ -378,7 +378,7 @@ class ResponseHeaderParser(object):
             directives.add((attr, value))
         self.setMessage(name, rs.KEEP_ALIVE_HEADER)
         return values
-        
+
     @SingleFieldValue
     def last_modified(self, name, values):
         try:
@@ -390,7 +390,7 @@ class ResponseHeaderParser(object):
             self.setMessage(name, rs.LM_FUTURE)
             return
         else:
-            self.setMessage(name, rs.LM_PRESENT, 
+            self.setMessage(name, rs.LM_PRESENT,
               last_modified_string=relative_time(date, self.red.timestamp))
         return date
 
@@ -426,12 +426,12 @@ class ResponseHeaderParser(object):
     x_cnection = \
     _onnection = \
     SCRAMBLED_CONNECTION
-        
+
     @GenericHeaderSyntax
     def p3p(self, name, values):
         # TODO: check syntax, values
         pass
-                
+
     @GenericHeaderSyntax
     def pragma(self, name, values):
         values = set([v.lower() for v in values])
@@ -441,7 +441,7 @@ class ResponseHeaderParser(object):
         if others:
             self.setMessage(name, rs.PRAGMA_OTHER)
         return values
-                
+
     @GenericHeaderSyntax
     @CheckFieldSyntax(r"(?:%s|%s)" % (DIGITS, DATE), rfc2616 % "sec-14.37")
     @SingleFieldValue
@@ -451,11 +451,11 @@ class ResponseHeaderParser(object):
     def server(self, name, values):
         # TODO: check syntax, flag servers?
         pass
-        
+
     @SingleFieldValue
     def soapaction(self, name, values):
         return values[-1]
-        
+
     def set_cookie(self, name, values):
         # TODO: check syntax, values?
         pass
@@ -486,7 +486,7 @@ class ResponseHeaderParser(object):
     def vary(self, name, values):
         values = set([v.lower() for v in values])
         return values
-        
+
     @GenericHeaderSyntax
     @CheckFieldSyntax(r'(?:%s/)?%s\s+[^,\s]+(?:\s+%s)?' % (TOKEN, TOKEN, COMMENT),
                       rfc2616 % "sec-14.45")
@@ -495,12 +495,12 @@ class ResponseHeaderParser(object):
                [u"<li><code>%s</code></li>" % e(v) for v in values]
                            ) + u"</ul>"
         self.setMessage(name, rs.VIA_PRESENT, via_list=via_list)
-        
+
     @GenericHeaderSyntax
     def warning(self, name, values):
         # TODO: check syntax, values?
         pass
-    
+
     @GenericHeaderSyntax
     def x_cache(self, name, values):
         # TODO: explain
@@ -513,7 +513,7 @@ class ResponseHeaderParser(object):
         else:
             self.setMessage(name, rs.CONTENT_TYPE_OPTIONS_UNKNOWN)
         return values
-    
+
     @GenericHeaderSyntax
     def x_download_options(self, name, values):
         if 'noopen' in values:
@@ -550,7 +550,7 @@ class ResponseHeaderParser(object):
             if directives.has_key(attr):
                 self.setMessage(name, rs.UA_COMPATIBLE_REPEAT)
             directives[attr] = value
-        uac_list = u"\n".join([u"<li>%s - %s</li>" % (e(k), e(v)) for 
+        uac_list = u"\n".join([u"<li>%s - %s</li>" % (e(k), e(v)) for
                             k, v in directives.items()])
         self.setMessage(name, rs.UA_COMPATIBLE, uac_list=uac_list)
         return directives
@@ -578,12 +578,12 @@ class ResponseHeaderParser(object):
     xx_pad = \
     x_browseralignment = \
     NETSCAPE_PAD
-    
+
     @SingleFieldValue
     def x_pingback(self, name, values):
         #TODO: message, perhaps allow a ping
         pass
-    
+
 class ResponseStatusChecker:
     """
     Given a RED, check out the status
@@ -602,9 +602,9 @@ class ResponseStatusChecker:
             ident = 'status %s' % name
         else:
             ident = 'status'
-        self.red.setMessage(ident, msg, 
+        self.red.setMessage(ident, msg,
                              status=self.red.res_status,
-                             enc_status=e(self.red.res_status), 
+                             enc_status=e(self.red.res_status),
                              **vars
                              )
 
@@ -690,7 +690,7 @@ class ResponseStatusChecker:
     def status413(self):        # Request Entity Too Large
         self.setMessage('', rs.STATUS_REQUEST_ENTITY_TOO_LARGE)
     def status414(self):        # Request-URI Too Long
-        self.setMessage('uri', rs.STATUS_URI_TOO_LONG, 
+        self.setMessage('uri', rs.STATUS_URI_TOO_LONG,
                         uri_len=len(self.red.uri))
     def status415(self):        # Unsupported Media Type
         self.setMessage('', rs.STATUS_UNSUPPORTED_MEDIA_TYPE)
@@ -728,7 +728,7 @@ class ResponseStatusChecker:
 
 
 def relative_time(utime, now=None, show_sign=1):
-    ''' 
+    '''
     Given two times, return a string that explains how far apart they are.
     show_sign can be:
       0 - don't show
@@ -742,14 +742,14 @@ def relative_time(utime, now=None, show_sign=1):
         2:    ('none', 'behind', 'ahead'),
     }
 
-    if  utime == None: 
+    if  utime == None:
         return None
-    if now == None:    
+    if now == None:
         now = time.time()
     age = int(now - utime)
-    if age == 0: 
+    if age == 0:
         return signs[show_sign][0]
-        
+
     a = abs(age)
     yrs = int(a / 60 / 60 / 24 / 7 / 52)
     wks = int(a / 60 / 60 / 24 / 7) % 52
@@ -758,35 +758,34 @@ def relative_time(utime, now=None, show_sign=1):
     mnt = int(a / 60) % 60
     sec = int(a % 60)
 
-    if age > 0: 
+    if age > 0:
         sign = signs[show_sign][1]
-    else: 
+    else:
         sign = signs[show_sign][2]
-    if not sign: 
+    if not sign:
         sign = signs[show_sign][0]
 
     arr = []
-    if yrs == 1: 
+    if yrs == 1:
         arr.append(str(yrs) + ' year')
-    elif yrs > 1: 
+    elif yrs > 1:
         arr.append(str(yrs) + ' years')
-    if wks == 1: 
+    if wks == 1:
         arr.append(str(wks) + ' week')
-    elif wks > 1: 
+    elif wks > 1:
         arr.append(str(wks) + ' weeks')
-    if day == 1: 
+    if day == 1:
         arr.append(str(day) + ' day')
-    elif day > 1: 
+    elif day > 1:
         arr.append(str(day) + ' days')
-    if hrs: 
-        arr.append(str(hrs) + ' hr') 
-    if mnt: 
+    if hrs:
+        arr.append(str(hrs) + ' hr')
+    if mnt:
         arr.append(str(mnt) + ' min')
     if sec:
         arr.append(str(sec) + ' sec')
     arr = arr[:2]        # resolution
-    if show_sign: 
+    if show_sign:
         arr.append(sign)
     return " ".join(arr)
-    
-    
+

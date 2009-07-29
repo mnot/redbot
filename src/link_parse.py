@@ -37,22 +37,22 @@ RHP = response_analyse.ResponseHeaderParser
 class HTMLLinkParser(HTMLParser):
     """
     Parse the links out of an HTML document in a very forgiving way.
-    
+
     feed() accepts a RedFetcher object (which it uses HTTP response headers
     from) and a chunk of the document at a time.
-    
+
     When links are found, process_link will be called for eac with the
     following arguments;
       - link (absolute URI as a unicode string)
       - tag (name of the element that contained it)
       - title (title attribute as a unicode string, if any)
     """
-    
+
     link_parseable_types = [
         'text/html',
         'application/xhtml+xml',
     ]
-    
+
     def __init__(self, base_uri, process_link):
         self.base = base_uri
         self.process_link = process_link
@@ -79,7 +79,7 @@ class HTMLLinkParser(HTMLParser):
                 HTMLParser.feed(self, chunk)
             except: # oh, well...
                 pass
-        
+
     def handle_starttag(self, tag, attrs):
         attr_d = dict(attrs)
         title = attr_d.get('title', '').strip()
@@ -111,10 +111,10 @@ class HTMLLinkParser(HTMLParser):
 
     def handle_charref(self, name):
         return entitydefs.get(name, '')
-                    
+
     def handle_entityref(self, name):
         return entitydefs.get(name, '')
-        
+
     def error(self, message):
         return
 

@@ -42,7 +42,7 @@ import zlib
 from cgi import escape as e
 
 import nbhttp
-import red_speak as rs 
+import red_speak as rs
 import response_analyse as ra
 
 outstanding_requests = [] # requests in process
@@ -52,16 +52,16 @@ class RedHttpClient(nbhttp.Client):
     connect_timeout = 8
     read_timeout = 8
 
-class RedFetcher: 
+class RedFetcher:
     """
     Fetches the given URI (with the provided method, headers and body) and calls:
       - status_cb as it progresses, and
       - every function in the body_procs list with each chunk of the body, and
       - done when it's done.
     If provided, type indicates the type of the request, and is used to
-    help set messages and status_cb appropriately. 
-    
-    Messages is a list of messages, each of which being a tuple that 
+    help set messages and status_cb appropriately.
+
+    Messages is a list of messages, each of which being a tuple that
     follows the following form:
       (
        subject,     # The subject(s) of the msg, as a space-separated string.
@@ -116,7 +116,7 @@ class RedFetcher:
         self._gzip_header_buffer = ""
         self._gzip_ok = True # turn False if we have a problem
         self._makeRequest()
-        
+
     def setMessage(self, subject, msg, subreq=None, **vrs):
         "Set a message."
         vrs['response'] = rs.response.get(self.type, rs.response['this'])['en']
@@ -239,14 +239,14 @@ class RedFetcher:
                 if self.res_body_len == self.parsed_hdrs['content-length']:
                     self.setMessage('header-content-length', rs.CL_CORRECT)
                 else:
-                    self.setMessage('header-content-length', rs.CL_INCORRECT, 
-                                             body_length=self.res_body_len)                    
+                    self.setMessage('header-content-length', rs.CL_INCORRECT,
+                                             body_length=self.res_body_len)
             if self.parsed_hdrs.has_key('content-md5'):
                 c_md5_calc = base64.encodestring(self.res_body_md5)[:-1]
                 if self.parsed_hdrs['content-md5'] == c_md5_calc:
                     self.setMessage('header-content-md5', rs.CMD5_CORRECT)
                 else:
-                    self.setMessage('header-content-md5', rs.CMD5_INCORRECT, 
+                    self.setMessage('header-content-md5', rs.CMD5_INCORRECT,
                                              calc_md5=c_md5_calc)
         # analyse, check to see if we're done
         self.done()
@@ -261,7 +261,7 @@ class RedFetcher:
         "Parse a GZIP header"
         # adapted from gzip.py
         FTEXT, FHCRC, FEXTRA, FNAME, FCOMMENT = 1, 2, 4, 8, 16
-        if len(content) < 10: 
+        if len(content) < 10:
             raise IndexError, "Header not complete yet"
         magic = content[:2]
         if magic != '\037\213':

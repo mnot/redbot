@@ -3,7 +3,7 @@ A collection of messages that the RED can emit.
 
 Each should be in the form:
 
-MESSAGE_ID = (classification, level, 
+MESSAGE_ID = (classification, level,
     {'lang': u'message'}
     {'lang': u'long message'}
 )
@@ -16,7 +16,7 @@ Both message forms may contain %(var)s style variable interpolation.
 
 PLEASE NOTE: the message field is automatically HTML escaped in webui.py, so
 it can contain arbitrary text (as long as it's unicode). However, the long
-message IS NOT ESCAPED, and therefore all variables to be interpolated into 
+message IS NOT ESCAPED, and therefore all variables to be interpolated into
 it (but not the short version) need to be escaped.
 """
 
@@ -81,7 +81,7 @@ URI_BAD_SYNTAX = (GENERAL, BAD,
     },
     {
     'en': u"""This URI doesn't validate successfully. Look for illegal characters \
-    and other problems; see <a href='http://www.ietf.org/rfc/rfc3986.txt'>RFC3986</a> 
+    and other problems; see <a href='http://www.ietf.org/rfc/rfc3986.txt'>RFC3986</a>
     for more information."""
     }
 )
@@ -125,7 +125,7 @@ HEADER_NAME_ENCODING = (GENERAL, BAD,
     },
     {
      'en': u"""HTTP header field-names can only contain ASCII characters. RED
-     has detected (and possibly removed) non-ASCII characters in this header 
+     has detected (and possibly removed) non-ASCII characters in this header
      name."""
     }
 )
@@ -135,7 +135,7 @@ HEADER_VALUE_ENCODING = (GENERAL, INFO,
      'en': u"The %(header_name)s header's value contains non-ASCII characters."
     },
     {
-     'en': u"""HTTP headers use the ISO-8859-1 character set, but in most 
+     'en': u"""HTTP headers use the ISO-8859-1 character set, but in most
      cases are pure ASCII (a subset of this encoding).<p>
      This header has non-ASCII characters, which RED has interpreted as
      being encoded in ISO-8859-1. If another encoding is used (e.g., UTF-8),
@@ -148,9 +148,9 @@ HEADER_DEPRECATED = (GENERAL, WARN,
     'en': u"The %(header_name)s header is deprecated."
     },
     {
-    'en': u"""This header field is no longer recommended for use, because of 
-    interoperability problems and/or lack of use. See 
-    <a href="%(ref)s">its documentation</a> for more information.""" 
+    'en': u"""This header field is no longer recommended for use, because of
+    interoperability problems and/or lack of use. See
+    <a href="%(ref)s">its documentation</a> for more information."""
     }
 )
 
@@ -159,7 +159,7 @@ SINGLE_HEADER_REPEAT = (GENERAL, BAD,
     'en': u"Only one %(field_name)s header is allowed in a response."
     },
     {
-    'en': u"""This header is designed to only occur once in a message. When it 
+    'en': u"""This header is designed to only occur once in a message. When it
     occurs more than once, a receiver needs to choose the one to use, which
     can lead to interoperability problems, since different implementations may
     choose different instances to use.<p>
@@ -176,10 +176,10 @@ BODY_NOT_ALLOWED = (CONNECTION, BAD,
      'en': u"""HTTP defines a few special situations where a response does not
      allow a body. This includes 101, 204 and 304 responses, as well as responses
      to the <code>HEAD</code> method.<p>
-     %(response)s had a body, despite it being disallowed. Clients receiving 
+     %(response)s had a body, despite it being disallowed. Clients receiving
      it may treat the body as the next response in the connection, leading to
      interoperability and security issues."""
-    }               
+    }
 )
 
 BAD_SYNTAX = (GENERAL, BAD,
@@ -200,10 +200,10 @@ KEEP_ALIVE_HEADER = (CONNECTION, INFO,
     'en': u"The Keep-Alive header isn't necessary."
     },
     {
-    'en': u"""HTTP/1.0-style persistent connections rely upon the 
+    'en': u"""HTTP/1.0-style persistent connections rely upon the
     <code>Connection: Keep-Alive</code> header to indicate that the server
     is willing to keep the connection open for another request.<p>
-    It also defines the <code>Keep-Alive</code> header, since connection 
+    It also defines the <code>Keep-Alive</code> header, since connection
     tokens refer to headers, and it was desireable to reserve the name.<p>
     However, it isn't necessary to actually send the <code>Keep-Alive</code>
     header to use persistent connections; <code>Connection: Keep-Alive</code>
@@ -223,7 +223,7 @@ SCRAMBLED_CONNECTION = (CONNECTION, INFO,
      'en': u"""The <code>Connection</code> header is used to indicate what
      headers are hop-by-hop, and to signal that the connection should not be
      reused by the client, with the <code>close</code> directive.<p>
-     The <code>%(field_name)s</code> field usually means that a HTTP load 
+     The <code>%(field_name)s</code> field usually means that a HTTP load
      balancer, proxy or other intermediary in front of the server has replaced
      the <code>Connection</code> header, to allow the connection to be reused.<p>
      It takes this form because the most efficient way to strip the server's
@@ -238,8 +238,8 @@ NETSCAPE_PAD = (CONNECTION, INFO,
      'en': u"%(response)s has a padding header."
     },
     {
-     'en': u"""The <code>%(field_name)s</code> header is used to "pad" the 
-     response header size; very old versions of the Netscape browser had a 
+     'en': u"""The <code>%(field_name)s</code> header is used to "pad" the
+     response header size; very old versions of the Netscape browser had a
      bug whereby a response whose headers were exactly 256 or 257 bytes long,
      the browser would consider the response (e.g., an image) invalid.<p>
      Since the affected browsers (specifically, Netscape 2.x, 3.x and 4.0 up to
@@ -262,8 +262,8 @@ AGE_NOT_INT = (CACHING, BAD,
     'en': u"The Age header's value should be an integer."
     },
     {
-    'en': u"""The <code>Age</code> header indicates the age of the response; i.e., 
-    how long it has been cached since it was generated. The value given was not 
+    'en': u"""The <code>Age</code> header indicates the age of the response; i.e.,
+    how long it has been cached since it was generated. The value given was not
     an integer, so it is not a valid age."""
     }
 )
@@ -273,8 +273,8 @@ AGE_NEGATIVE = (CACHING, BAD,
     'en': u"The Age headers' value must be a positive integer."
     },
     {
-    'en': u"""The <code>Age</code> header indicates the age of the response; i.e., 
-    how long it has been cached since it was generated. The value given was 
+    'en': u"""The <code>Age</code> header indicates the age of the response; i.e.,
+    how long it has been cached since it was generated. The value given was
     negative, so it is not a valid age."""
     }
 )
@@ -285,7 +285,7 @@ BAD_CHUNK = (CONNECTION, BAD,
     },
     {
      'en': u"""The response indicates it uses HTTP chunked encoding, but there
-     was a problem decoding the chunking.<p>     
+     was a problem decoding the chunking.<p>
      A valid chunk looks something like this:<p>
      <code>[chunk-size in hex]\\r\\n[chunk-data]\\r\\n</code><p>
      However, the chunk sent started like this:<p>
@@ -304,8 +304,8 @@ BAD_GZIP = (CONNEG, BAD,
     'en': u"%(response)s was compressed using GZip, but the header wasn't valid."
     },
     {
-    'en': u"""GZip-compressed responses have a header that contains metadata. 
-    %(response)s's header wasn't valid; the error encountered was 
+    'en': u"""GZip-compressed responses have a header that contains metadata.
+    %(response)s's header wasn't valid; the error encountered was
     "<code>%(gzip_error)s</code>"."""
     }
 )
@@ -331,7 +331,7 @@ ENCODING_UNWANTED = (CONNEG, WARN,
      'en': u"""%(response)s's <code>Content-Encoding</code> header indicates it
      has the %(encoding)s content-coding applied, but RED didn't ask for it
      to be.<p>
-     Normally, clients ask for the encodings they want in the 
+     Normally, clients ask for the encodings they want in the
      <code>Accept-Encoding</code> request header. Using encodings that the
      client doesn't explicitly request can lead to interoperability problems."""
     }
@@ -357,7 +357,7 @@ TRANSFER_CODING_UNWANTED = (CONNECTION, BAD,
      'en': u"""%(response)s's <code>Transfer-Encoding</code> header indicates it
      has the %(encoding)s transfer-coding applied, but RED didn't ask for it
      to be.<p>
-     Normally, clients ask for the encodings they want in the 
+     Normally, clients ask for the encodings they want in the
      <code>TE</code> request header. Using codings that the
      client doesn't explicitly request can lead to interoperability problems."""
     }
@@ -368,11 +368,11 @@ BAD_DATE_SYNTAX = (GENERAL, BAD,
     'en': u"The %(field_name)s header's value isn't a valid date."
     },
     {
-    'en': u"""HTTP dates have very specific syntax, and sending an invalid date can 
+    'en': u"""HTTP dates have very specific syntax, and sending an invalid date can
     cause a number of problems, especially around caching. Common problems include
-    sending "1 May" instead of "01 May" (the month is a fixed-width field), and 
-    sending a date in a timezone other than GMT. See 
-    <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3">the 
+    sending "1 May" instead of "01 May" (the month is a fixed-width field), and
+    sending a date in a timezone other than GMT. See
+    <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3">the
     HTTP specification</a> for more information."""
     }
 )
@@ -382,31 +382,31 @@ LM_FUTURE = (CACHING, BAD,
     'en': u"The Last-Modified time is in the future."
     },
     {
-    'en': u"""The <code>Last-Modified</code> header indicates the last point in 
-    time that the resource has changed. %(response)s's 
-    <code>Last-Modified</code> time is in the future, which doesn't have any 
+    'en': u"""The <code>Last-Modified</code> header indicates the last point in
+    time that the resource has changed. %(response)s's
+    <code>Last-Modified</code> time is in the future, which doesn't have any
     defined meaning in HTTP."""
     }
 )
 
-LM_PRESENT = (CACHING, INFO, 
+LM_PRESENT = (CACHING, INFO,
     {
     'en': u"The resource last changed %(last_modified_string)s."
     },
     {
-    'en': u"""The <code>Last-Modified</code> header indicates the last point in 
+    'en': u"""The <code>Last-Modified</code> header indicates the last point in
     time that the resource has changed. It is used in HTTP for validating cached
     responses, and for calculating heuristic freshness in caches."""
     }
 )
 
-MIME_VERSION = (GENERAL, INFO, 
+MIME_VERSION = (GENERAL, INFO,
     {
     'en': u"The MIME-Version header generally isn't necessary in HTTP."
     },
     {
-    'en': u"""<code>MIME_Version</code> is a MIME header, not a HTTP header; it's 
-    only used when HTTP messages are moved over MIME-based protocols 
+    'en': u"""<code>MIME_Version</code> is a MIME header, not a HTTP header; it's
+    only used when HTTP messages are moved over MIME-based protocols
     (e.g., SMTP), which is uncommon."""
     }
 )
@@ -416,19 +416,19 @@ PRAGMA_NO_CACHE = (CACHING, WARN,
     'en': u"Pragma: no-cache is a request directive, not a response directive."
     },
     {
-    'en': u"""<code>Pragma</code> is a very old request header that is sometimes 
-    used as a response header, even though this is not specified behaviour. 
+    'en': u"""<code>Pragma</code> is a very old request header that is sometimes
+    used as a response header, even though this is not specified behaviour.
     <code>Cache-Control: no-cache</code> is more appropriate."""
     }
 )
 
 PRAGMA_OTHER = (GENERAL, WARN,
     {
-    'en': u"""Pragma only defines the 'no-cache' request directive, and is 
+    'en': u"""Pragma only defines the 'no-cache' request directive, and is
     deprecated for other uses."""
     },
     {
-    'en': u"""<code>Pragma</code> is a very old request header that is sometimes 
+    'en': u"""<code>Pragma</code> is a very old request header that is sometimes
     used as a response header, even though this is not specified behaviour."""
     }
 )
@@ -438,17 +438,17 @@ VIA_PRESENT = (GENERAL, INFO,
     'en': u"One or more intermediaries are present."
     },
     {
-    'en': u"""The <code>Via</code> header indicates that one or more 
-    intermediaries are present between RED and the origin server for the 
+    'en': u"""The <code>Via</code> header indicates that one or more
+    intermediaries are present between RED and the origin server for the
     resource.<p>
     This may indicate that a proxy is in between RED and the server, or that
     the server uses a "reverse proxy" or CDN in front of it.<p>
     %(via_list)s
     <p>
     There field has three space-separated components; first, the HTTP version
-    of the message that the intermediary received, then the identity of the 
-    intermediary (usually but not always its hostname), and then optionally a 
-    product identifier or comment (usually used to identify the software being 
+    of the message that the intermediary received, then the identity of the
+    intermediary (usually but not always its hostname), and then optionally a
+    product identifier or comment (usually used to identify the software being
     used)."""
     }
 )
@@ -461,7 +461,7 @@ LOCATION_UNDEFINED = (GENERAL, WARN,
      'en': u"""The <code>Location</code> header is used for specific purposes
      in HTTP; mostly to indicate the URI of another resource (e.g., in
      redirection, or when a new resource is created).<p>
-     In other status codes (such as this one) it doesn't have a defined meaning, 
+     In other status codes (such as this one) it doesn't have a defined meaning,
      so any use of it won't be interoperable.<p>
      Sometimes <code>Location</code> is confused with <code>Content-Location</code>,
      which indicates a URI for the payload of the message that it appears in."""
@@ -489,7 +489,7 @@ CONTENT_TYPE_OPTIONS = (GENERAL, INFO,
     },
     {
      'en': u"""Many Web browers "sniff" the media type of responses to figure out
-     whether they're HTML, RSS or another format, no matter what the 
+     whether they're HTML, RSS or another format, no matter what the
      <code>Content-Type</code> header says.<p>
      This header instructs Microsoft's Internet Explorer not to do this, but to
      always respect the Content-Type header. It probably won't have any effect in
@@ -515,11 +515,11 @@ DOWNLOAD_OPTIONS = (GENERAL, INFO,
      'en': u"%(response)s can't be directly opened directly by Internet Explorer when downloaded."
     },
     {
-     'en': u"""When the <code>X-Download-Options</code> header is present 
-     with the value <code>noopen</code>, Internet Explorer users are prevented 
-     from directly opening a file download; instead, they must first save the 
-     file locally. When the locally saved file is later opened, it no longer 
-     executes in the security context of your site, helping to prevent script 
+     'en': u"""When the <code>X-Download-Options</code> header is present
+     with the value <code>noopen</code>, Internet Explorer users are prevented
+     from directly opening a file download; instead, they must first save the
+     file locally. When the locally saved file is later opened, it no longer
+     executes in the security context of your site, helping to prevent script
      injection.<p>
      This header probably won't have any effect in other clients.<p>
      See <a href="http://blogs.msdn.com/ie/archive/2008/07/02/ie8-security-part-v-comprehensive-protection.aspx">this blog article</a> for more details."""
@@ -587,7 +587,7 @@ SMART_TAG_NO_WORK = (GENERAL, WARN,
      'en': u"The %(field_name)s header doesn't have any effect on smart tags."
     },
     {
-     'en': u"""This header doesn't have any effect on Microsoft Smart Tags, 
+     'en': u"""This header doesn't have any effect on Microsoft Smart Tags,
      except in certain beta versions of IE6. To turn them off, you'll need
      to make changes in the HTML content itself."""
     }
@@ -625,7 +625,7 @@ XSS_PROTECTION = (GENERAL, INFO,
     },
     {
      'en': u"""Internet Explorer 8 has built-in Cross-Site Scripting (XSS)
-     attack protection; it tries to automatically filter requests that 
+     attack protection; it tries to automatically filter requests that
      fit a particular profile.<p>
      %(response)s has explicitly disabled this protection. In some scenarios,
      this is useful to do, if the protection interferes with the application.<p>
@@ -656,9 +656,9 @@ RANGE_CORRECT = (RANGE, GOOD,
     'en': u"A ranged request returned the correct partial content."
     },
     {
-    'en': u"""This resource advertises support for ranged requests with 
-    <code>Accept-Ranges</code>; that is, it allows clients to specify that only 
-    part of it should be sent. RED has tested this by requesting part 
+    'en': u"""This resource advertises support for ranged requests with
+    <code>Accept-Ranges</code>; that is, it allows clients to specify that only
+    part of it should be sent. RED has tested this by requesting part
     of this response, which was returned correctly."""
     }
 )
@@ -668,17 +668,17 @@ RANGE_INCORRECT = (RANGE, BAD,
     'en': u'A ranged request returned partial content, but it was incorrect.'
     },
     {
-    'en': u"""This resource advertises support for ranged requests with 
-    <code>Accept-Ranges</code>; that is, it allows clients to specify that only 
-    part of the response should be sent. RED has tested this by requesting part 
-    of this response, but the partial response doesn't correspond with the full 
-    response retrieved at the same time. This could indicate that the range 
+    'en': u"""This resource advertises support for ranged requests with
+    <code>Accept-Ranges</code>; that is, it allows clients to specify that only
+    part of the response should be sent. RED has tested this by requesting part
+    of this response, but the partial response doesn't correspond with the full
+    response retrieved at the same time. This could indicate that the range
     implementation isn't working properly.
     <p>RED sent<br/>
     <code>Range: %(range)s</code>
-    <p>RED expected %(range_expected_bytes)s bytes:<br/> 
+    <p>RED expected %(range_expected_bytes)s bytes:<br/>
     <code>%(range_expected)s</code>
-    <p>RED received %(range_received_bytes)s bytes:<br/> 
+    <p>RED received %(range_received_bytes)s bytes:<br/>
     <code>%(range_received)s</code>"""
     }
 )
@@ -688,10 +688,10 @@ RANGE_FULL = (RANGE, WARN,
     'en': u"A ranged request returned the full rather than partial content."
     },
     {
-    'en': u"""This resource advertises support for ranged requests with 
-    <code>Accept-Ranges</code>; that is, it allows clients to specify that only 
-    part of the response should be sent. RED has tested this by requesting part 
-    of this response, but the entire response was returned. In other words, 
+    'en': u"""This resource advertises support for ranged requests with
+    <code>Accept-Ranges</code>; that is, it allows clients to specify that only
+    part of the response should be sent. RED has tested this by requesting part
+    of this response, but the entire response was returned. In other words,
     although the resource advertises support for partial content, it
     doesn't appear to actually do so."""
     }
@@ -704,7 +704,7 @@ RANGE_STATUS = (RANGE, INFO,
     {
     'en': u"""This resource advertises support for ranged requests; that is, it allows
     clients to specify that only part of the response should be sent. RED has tested
-    this by requesting part of this response, but a %(enc_range_status)s 
+    this by requesting part of this response, but a %(enc_range_status)s
     response code was returned, which RED was not expecting."""
     }
 )
@@ -716,8 +716,8 @@ RANGE_NEG_MISMATCH = (RANGE, BAD,
     {
      'en': u"""This resource supports ranged requests and also supports negotiation for
      gzip compression, but doesn't support compression for both full and partial responses.<p>
-     This can cause problems for clients when they compare the partial and full responses, 
-     since the partial response is expressed as a byte range, and compression changes the 
+     This can cause problems for clients when they compare the partial and full responses,
+     since the partial response is expressed as a byte range, and compression changes the
      bytes."""
     }
 )
@@ -729,9 +729,9 @@ CL_CORRECT = (GENERAL, GOOD,
     'en': u'The Content-Length header is correct.'
     },
     {
-    'en': u"""<code>Content-Length</code> is used by HTTP to delimit messages; 
-    that is, to mark the end of one message and the beginning of the next. RED 
-    has checked the length of the body and found the <code>Content-Length</code> 
+    'en': u"""<code>Content-Length</code> is used by HTTP to delimit messages;
+    that is, to mark the end of one message and the beginning of the next. RED
+    has checked the length of the body and found the <code>Content-Length</code>
     to be correct."""
     }
 )
@@ -741,22 +741,22 @@ CL_INCORRECT = (GENERAL, BAD,
     'en': u"%(response)s's Content-Length header is incorrect."
     },
     {
-    'en': u"""<code>Content-Length</code> is used by HTTP to delimit messages; 
-    that is, to mark the end of one message and the beginning of the next. RED 
-    has checked the length of the body and found the <code>Content-Length</code> 
-    is not correct. This can cause problems not only with connection handling, 
+    'en': u"""<code>Content-Length</code> is used by HTTP to delimit messages;
+    that is, to mark the end of one message and the beginning of the next. RED
+    has checked the length of the body and found the <code>Content-Length</code>
+    is not correct. This can cause problems not only with connection handling,
     but also caching, since an incomplete response is considered uncacheable.<p>
     The actual body size sent was %(body_length)s bytes."""
     }
 )
 
-CMD5_CORRECT = (GENERAL, GOOD, 
+CMD5_CORRECT = (GENERAL, GOOD,
     {
     'en': u'The Content-MD5 header is correct.'
     },
     {
-    'en': u"""<code>Content-MD5</code> is a hash of the body, and can be used to 
-    ensure integrity of the response. RED has checked its value and found it to 
+    'en': u"""<code>Content-MD5</code> is a hash of the body, and can be used to
+    ensure integrity of the response. RED has checked its value and found it to
     be correct."""
     }
 )
@@ -766,9 +766,9 @@ CMD5_INCORRECT = (GENERAL, BAD,
     'en': u'The Content-MD5 header is incorrect.'
     },
     {
-    'en': u"""<code>Content-MD5</code> is a hash of the body, and can be used to 
-    ensure integrity of the response. RED has checked its value and found it to 
-    be incorrect; i.e., the given <code>Content-MD5</code> does not match what 
+    'en': u"""<code>Content-MD5</code> is a hash of the body, and can be used to
+    ensure integrity of the response. RED has checked its value and found it to
+    be incorrect; i.e., the given <code>Content-MD5</code> does not match what
     RED thinks it should be (%(calc_md5)s)."""
     }
 )
@@ -780,9 +780,9 @@ CONNEG_GZIP = (CONNEG, GOOD,
     'en': u'Content negotiation for gzip compression is supported.'
     },
     {
-    'en': u"""HTTP supports compression of responses by negotiating for 
-    <code>Content-Encoding</code>. When RED asked for a compressed response, 
-    the resource provided one, saving %(savings)s%% of its original size 
+    'en': u"""HTTP supports compression of responses by negotiating for
+    <code>Content-Encoding</code>. When RED asked for a compressed response,
+    the resource provided one, saving %(savings)s%% of its original size
     (%(orig_size)s bytes).<p>
     The compressed response's headers displayed."""
     }
@@ -793,8 +793,8 @@ CONNEG_NO_GZIP = (CONNEG, INFO,
     'en': u'Content negotiation for gzip compression isn\'t supported.'
     },
     {
-    'en': u"""HTTP supports compression of responses by negotiating for 
-    <code>Content-Encoding</code>. When RED asked for a compressed response, 
+    'en': u"""HTTP supports compression of responses by negotiating for
+    <code>Content-Encoding</code>. When RED asked for a compressed response,
     the resource did not provide one."""
     }
 )
@@ -818,9 +818,9 @@ CONNEG_GZIP_WITHOUT_ASKING = (CONNEG, BAD,
     'en': u"A gzip-compressed response was sent when it wasn't asked for."
     },
     {
-    'en': u"""HTTP supports compression of responses by negotiating for 
-    <code>Content-Encoding</code>. Even though RED didn't ask for a compressed 
-    response, the resource provided one anyway. Doing so can break clients that 
+    'en': u"""HTTP supports compression of responses by negotiating for
+    <code>Content-Encoding</code>. Even though RED didn't ask for a compressed
+    response, the resource provided one anyway. Doing so can break clients that
     aren't expecting a compressed response."""
     }
 )
@@ -830,17 +830,17 @@ VARY_INCONSISTENT = (CONNEG, BAD,
     'en': u"The resource doesn't send Vary consistently."
     },
     {
-    'en': u"""HTTP requires that the <code>Vary</code> response header be sent 
-    consistently for all responses if they change based upon different aspects 
+    'en': u"""HTTP requires that the <code>Vary</code> response header be sent
+    consistently for all responses if they change based upon different aspects
     of the request.<p>
-    This resource has both compressed and uncompressed variants 
-    available, negotiated by the <code>Accept-Encoding</code> request header, 
+    This resource has both compressed and uncompressed variants
+    available, negotiated by the <code>Accept-Encoding</code> request header,
     but it sends different Vary headers for each;<p>
     <ul>
       <li>"<code>%(conneg_vary)s</code>" when the response is compressed, and</li>
       <li>"<code>%(no_conneg_vary)s</code>" when it is not.</li>
     </ul>
-    <p>This can cause problems for downstream caches, because they 
+    <p>This can cause problems for downstream caches, because they
     cannot consistently determine what the cache key for a given URI is."""
     }
 )
@@ -850,11 +850,11 @@ ETAG_DOESNT_CHANGE = (CONNEG, BAD,
     'en': u"The ETag doesn't change between representations."
     },
     {
-    'en': u"""HTTP requires that the <code>ETag</code>s for two different 
-    responses associated with the same URI be different as well, to help caches 
+    'en': u"""HTTP requires that the <code>ETag</code>s for two different
+    responses associated with the same URI be different as well, to help caches
     and other receivers disambiguate them. This resource, however, sent the same
-    ETag for both the compressed and uncompressed versions of it (negotiated by 
-    <code>Accept-Encoding</code>. This can cause interoperability problems, 
+    ETag for both the compressed and uncompressed versions of it (negotiated by
+    <code>Accept-Encoding</code>. This can cause interoperability problems,
     especially with caches."""
     }
 )
@@ -866,8 +866,8 @@ DATE_CORRECT = (GENERAL, GOOD,
     'en': u"The server's clock is correct."
     },
     {
-    'en': u"""HTTP's caching model assumes reasonable synchronisation between 
-    clocks on the server and client; using RED's local clock, the server's clock 
+    'en': u"""HTTP's caching model assumes reasonable synchronisation between
+    clocks on the server and client; using RED's local clock, the server's clock
     appears to be well-synchronised."""
     }
 )
@@ -877,9 +877,9 @@ DATE_INCORRECT = (GENERAL, BAD,
     'en': u"The server's clock is %(clock_skew_string)s."
     },
     {
-    'en': u"""HTTP's caching model assumes reasonable synchronisation between 
-    clocks on the server and client; using RED's local clock, the server's clock 
-    does not appear to be well-synchronised. Problems can include responses that 
+    'en': u"""HTTP's caching model assumes reasonable synchronisation between
+    clocks on the server and client; using RED's local clock, the server's clock
+    does not appear to be well-synchronised. Problems can include responses that
     should be cacheable not being cacheable (especially if their freshness
     lifetime is short)."""
     }
@@ -903,7 +903,7 @@ DATE_CLOCKLESS_BAD_HDR = (CACHING, BAD,
     {
      'en': u"""Because both the <code>Expires</code> and <code>Last-Modified</code>
      headers are date-based, it's necessary to know when the message was generated
-     for them to be useful; otherwise, clock drift, transit times between nodes as 
+     for them to be useful; otherwise, clock drift, transit times between nodes as
      well as caching could skew their application."""
     }
 )
@@ -924,7 +924,7 @@ NO_STORE = (CACHING, INFO,
      'en': u"%(response)s can't be stored by a cache."
     },
     {
-    'en': u"""The <code>Cache-Control: no-store</code> directive indicates that 
+    'en': u"""The <code>Cache-Control: no-store</code> directive indicates that
     this response can't be stored by a cache."""
     }
 )
@@ -947,8 +947,8 @@ PRIVATE_AUTH = (CACHING, INFO,
     },
     {
     'en': u"""Because the request was authenticated and this response doesn't contain
-    a <code>Cache-Control: public</code> directive, this response can only be 
-    stored by caches that are specific to a single user; for example, a browser 
+    a <code>Cache-Control: public</code> directive, this response can only be
+    stored by caches that are specific to a single user; for example, a browser
     cache. Shared caches, such as those in proxies, cannot store
     it."""
     }
@@ -959,7 +959,7 @@ STOREABLE = (CACHING, INFO,
      'en': u"""%(response)s can be stored by any cache."""
     },
     {
-     'en': u"""A cache can store this response; it may or may not be able to 
+     'en': u"""A cache can store this response; it may or may not be able to
      use it to satisfy a particular request."""
     }
 )
@@ -969,10 +969,10 @@ NO_CACHE = (CACHING, INFO,
      'en': u"%(response)s cannot be served from cache without validation."
     },
     {
-     'en': u"""The <code>Cache-Control: no-cache</code> directive means that 
+     'en': u"""The <code>Cache-Control: no-cache</code> directive means that
      while caches <strong>can</strong> store this response, they cannot use
-     it to satisfy a request unless it has been validated (either with an 
-     <code>If-None-Match</code> or <code>If-Modified-Since</code> conditional) 
+     it to satisfy a request unless it has been validated (either with an
+     <code>If-None-Match</code> or <code>If-Modified-Since</code> conditional)
      for that request.<p>
      If the response doesn't have a <code>Last-Modified</code> or
      <code>ETag</code> header, it effectively can't be used by a cache."""
@@ -984,8 +984,8 @@ VARY_ASTERISK = (CACHING, WARN,
     'en': u"Vary: * effectively makes responses for this URI uncacheable."
     },
     {
-    'en': u"""<code>Vary *</code> indicates that responses for this resource vary 
-    by some aspect that can't (or won't) be described by the server. This makes 
+    'en': u"""<code>Vary *</code> indicates that responses for this resource vary
+    by some aspect that can't (or won't) be described by the server. This makes
     this response effectively uncacheable."""
     }
 )
@@ -1005,10 +1005,10 @@ VARY_HOST = (CACHING, WARN,
     },
     {
     'en': u"""Some servers (e.g., <a href="http://httpd.apache.org/">Apache</a>
-    with 
-    <a href="http://httpd.apache.org/docs/2.0/mod/mod_rewrite.html">mod_rewrite</a>) 
-    will send <code>Host</code> in the <code>Vary</code> header, in the belief 
-    that since it affects how the server selects what to send back, 
+    with
+    <a href="http://httpd.apache.org/docs/2.0/mod/mod_rewrite.html">mod_rewrite</a>)
+    will send <code>Host</code> in the <code>Vary</code> header, in the belief
+    that since it affects how the server selects what to send back,
     this is necessary.<p>
     This is not the case; HTTP specifies that the URI is the basis of the cache
     key, and the URI incorporates the <code>Host</code> header.<p>
@@ -1035,10 +1035,10 @@ PUBLIC = (CACHING, WARN,
      'en': u"Cache-Control: public is rarely necessary."
     },
     {
-     'en': u"""The <code>Cache-Control: public</code> directive is useful 
+     'en': u"""The <code>Cache-Control: public</code> directive is useful
      to make a response cacheable even when the request had an
      <code>Authorization</code> header (i.e., HTTP authentication was in use).<p>
-     This is useful if your site uses HTTP authentication; often, only some 
+     This is useful if your site uses HTTP authentication; often, only some
      resources need to be authenticated, but clients will send the
      <code>Authentication</code> header for all requests covered by the
      realm.<p>
@@ -1046,7 +1046,7 @@ PUBLIC = (CACHING, WARN,
      will store SSL-protected responses on disk when <code>public</code> is
      present; otherwise, they are only cached in memory.<p>
      <p>Therefore, SSL-protected or HTTP-authenticated (NOT cookie-authenticated)
-     resources <em>may</em> have use for <code>public</code> to improve 
+     resources <em>may</em> have use for <code>public</code> to improve
      cacheability, if used judiciously.<p>
      However, other resources <strong>do not need to send <code>public</code>
      </strong>; it does not make the response "more cacheable", and only
@@ -1059,9 +1059,9 @@ CURRENT_AGE = (CACHING, INFO,
      'en': u"%(response)s has been cached for %(current_age)s."
     },
     {
-    'en': u"""The <code>Age</code> header indicates the age of the response; 
-    i.e., how long it has been cached since it was generated. HTTP takes this 
-    as well as any apparent clock skew into account in computing how old the 
+    'en': u"""The <code>Age</code> header indicates the age of the response;
+    i.e., how long it has been cached since it was generated. HTTP takes this
+    as well as any apparent clock skew into account in computing how old the
     response already is."""
     }
 )
@@ -1088,13 +1088,13 @@ FRESHNESS_STALE = (CACHING, INFO,
 
 HEURISTIC_FRESHNESS = (CACHING, INFO,
     {
-     'en': u"%(response)s allows heuristic freshness to be used." 
+     'en': u"%(response)s allows heuristic freshness to be used."
     },
     {
      'en': u"""When the response doesn't have explicit freshness information (like a <code>
      Cache-Control: max-age</code> directive, or <code>Expires</code> header), caches are
      allowed to estimate how fresh the response is using a heuristic.<p>
-     Usually, but not always, this is done using the <code>Last-Modified</code> header. For 
+     Usually, but not always, this is done using the <code>Last-Modified</code> header. For
      example, if your response was last modified a week ago, a cache might decide to consider
      the response fresh for a day."""
     }
@@ -1105,10 +1105,10 @@ STALE_SERVABLE = (CACHING, INFO,
      'en': u"%(response)s can be served stale."
     },
     {
-    'en': u"""HTTP allows stale responses to be served under some circumstances; 
-    for example, if the origin server can't be contacted, a stale response can 
-    be used (even if it doesn't have explicit freshness information).<p>This 
-    behaviour can be prevented by using the <code>Cache-Control: must-revalidate</code> 
+    'en': u"""HTTP allows stale responses to be served under some circumstances;
+    for example, if the origin server can't be contacted, a stale response can
+    be used (even if it doesn't have explicit freshness information).<p>This
+    behaviour can be prevented by using the <code>Cache-Control: must-revalidate</code>
     response directive."""
     }
 )
@@ -1118,10 +1118,10 @@ STALE_MUST_REVALIDATE = (CACHING, INFO,
      'en': u"%(response)s cannot be served stale by caches."
     },
     {
-    'en': u"""The <code>Cache-Control: must-revalidate</code> directive forbids 
-    caches from using stale responses to satisfy requests.<p>For example, 
-    caches often use stale responses when they cannot connect to the origin 
-    server; when this directive is present, they will return an error rather 
+    'en': u"""The <code>Cache-Control: must-revalidate</code> directive forbids
+    caches from using stale responses to satisfy requests.<p>For example,
+    caches often use stale responses when they cannot connect to the origin
+    server; when this directive is present, they will return an error rather
     than a stale response."""
     }
 )
@@ -1131,12 +1131,12 @@ STALE_PROXY_REVALIDATE = (CACHING, INFO,
      'en': u"%(response)s cannot be served stale by shared caches."
     },
     {
-    'en': u"""The presence of the <code>Cache-Control: proxy-revalidate</code> 
-    and/or <code>s-maxage</code> directives forbids shared caches (e.g., proxy 
-    caches) from using stale responses to satisfy requests.<p>For example, 
-    caches often use stale responses when they cannot connect to the origin 
-    server; when this directive is present, they will return an error rather 
-    than a stale response.<p>These directives do not affect private caches; for 
+    'en': u"""The presence of the <code>Cache-Control: proxy-revalidate</code>
+    and/or <code>s-maxage</code> directives forbids shared caches (e.g., proxy
+    caches) from using stale responses to satisfy requests.<p>For example,
+    caches often use stale responses when they cannot connect to the origin
+    server; when this directive is present, they will return an error rather
+    than a stale response.<p>These directives do not affect private caches; for
     example, those in browsers."""
     }
 )
@@ -1164,7 +1164,7 @@ CHECK_NOT_INTEGER = (CACHING, WARN,
      'en': u"""Microsoft Internet Explorer implements two <code>Cache-Control</code>
      extensions, <code>pre-check</code> and <code>post-check</code>, to give
      more control over how its cache stores responses.<p>
-     Their values are required to be integers, but here at least one is not. As a 
+     Their values are required to be integers, but here at least one is not. As a
      result, Internet Explorer will ignore the directive.<p>
      See <a href="http://blogs.msdn.com/ieinternals/archive/2009/07/20/Using-post_2D00_check-and-pre_2D00_check-cache-directives.aspx">this blog entry</a> for more information.
      """
@@ -1196,8 +1196,8 @@ CHECK_POST_BIGGER = (CACHING, WARN,
      'en': u"""Microsoft Internet Explorer implements two <code>Cache-Control</code>
      extensions, <code>pre-check</code> and <code>post-check</code>, to give
      more control over how its cache stores responses.<p>
-     %(response)s assigns a higher value to <code>post-check</code> than to 
-     <code>pre-check</code>; this means that Internet Explorer will treat 
+     %(response)s assigns a higher value to <code>post-check</code> than to
+     <code>pre-check</code>; this means that Internet Explorer will treat
      <code>post-check</code> as if its value is the same as <code>pre-check</code>'s.<p>
      See <a href="http://blogs.msdn.com/ieinternals/archive/2009/07/20/Using-post_2D00_check-and-pre_2D00_check-cache-directives.aspx">this blog entry</a> for more information.
      """
@@ -1229,7 +1229,7 @@ CHECK_POST_PRE = (CACHING, INFO,
      extensions, <code>pre-check</code> and <code>post-check</code>, to give
      more control over how its cache stores responses.<p>
      Once it has been cached for more than %(post-check)s seconds, a new request
-     will result in the cached response being served while it is refreshed in the 
+     will result in the cached response being served while it is refreshed in the
      background. However, if it has been cached for more than %(pre-check)s seconds,
      the browser will download a fresh response before showing it to the user.<p>
      Note that these directives do not have any effect on other clients or caches.<p>
@@ -1246,11 +1246,11 @@ INM_304 = (VALIDATION, GOOD,
     'en': u"If-None-Match conditional requests are supported."
     },
     {
-    'en': u"""HTTP allows clients to make conditional requests to see if a copy 
-    that they hold is still valid. Since this response has an <code>ETag</code>, 
-    clients should be able to use an <code>If-None-Match</code> request header 
-    for validation. RED has done this and found that the resource sends a 
-    <code>304 Not Modified</code> response, indicating that it supports 
+    'en': u"""HTTP allows clients to make conditional requests to see if a copy
+    that they hold is still valid. Since this response has an <code>ETag</code>,
+    clients should be able to use an <code>If-None-Match</code> request header
+    for validation. RED has done this and found that the resource sends a
+    <code>304 Not Modified</code> response, indicating that it supports
     <code>ETag</code> validation."""
     }
 )
@@ -1260,11 +1260,11 @@ INM_FULL = (VALIDATION, WARN,
     'en': u"An If-None-Match conditional request returned the full content unchanged."
     },
     {
-    'en': u"""HTTP allows clients to make conditional requests to see if a copy 
-    that they hold is still valid. Since this response has an <code>ETag</code>, 
-    clients should be able to use an <code>If-None-Match</code> request header 
-    for validation. RED has done this and found that the resource sends a full 
-    response even though it hadn't changed, indicating that it doesn't support 
+    'en': u"""HTTP allows clients to make conditional requests to see if a copy
+    that they hold is still valid. Since this response has an <code>ETag</code>,
+    clients should be able to use an <code>If-None-Match</code> request header
+    for validation. RED has done this and found that the resource sends a full
+    response even though it hadn't changed, indicating that it doesn't support
     <code>ETag</code> validation."""
     }
 )
@@ -1274,11 +1274,11 @@ INM_UNKNOWN = (VALIDATION, INFO,
      'en': u"An If-None-Match conditional request returned the full content, but it had changed."
     },
     {
-    'en': u"""HTTP allows clients to make conditional requests to see if a copy 
-    that they hold is still valid. Since this response has an <code>ETag</code>, 
-    clients should be able to use an <code>If-None-Match</code> request header 
-    for validation. RED has done this, but the response changed between the 
-    original request and the validating request, so RED can't tell whether or 
+    'en': u"""HTTP allows clients to make conditional requests to see if a copy
+    that they hold is still valid. Since this response has an <code>ETag</code>,
+    clients should be able to use an <code>If-None-Match</code> request header
+    for validation. RED has done this, but the response changed between the
+    original request and the validating request, so RED can't tell whether or
     not <code>ETag</code> validation is supported."""
     }
 )
@@ -1288,11 +1288,11 @@ INM_STATUS = (VALIDATION, INFO,
     'en': u"An If-None-Match conditional request returned a %(inm_status)s status."
     },
     {
-    'en': u"""HTTP allows clients to make conditional requests to see if a copy 
-    that they hold is still valid. Since this response has an <code>ETag</code>, 
-    clients should be able to use an <code>If-None-Match</code> request header 
-    for validation. RED has done this, but the response had a %(enc_inm_status)s 
-    status code, so RED can't tell whether or not <code>ETag</code> validation 
+    'en': u"""HTTP allows clients to make conditional requests to see if a copy
+    that they hold is still valid. Since this response has an <code>ETag</code>,
+    clients should be able to use an <code>If-None-Match</code> request header
+    for validation. RED has done this, but the response had a %(enc_inm_status)s
+    status code, so RED can't tell whether or not <code>ETag</code> validation
     is supported."""
     }
 )
@@ -1304,12 +1304,12 @@ IMS_304 = (VALIDATION, GOOD,
     'en': u"If-Modified-Since conditional requests are supported."
     },
     {
-    'en': u"""HTTP allows clients to make conditional requests to see if a copy 
-    that they hold is still valid. Since this response has a 
-    <code>Last-Modified</code> header, clients should be able to use an 
+    'en': u"""HTTP allows clients to make conditional requests to see if a copy
+    that they hold is still valid. Since this response has a
+    <code>Last-Modified</code> header, clients should be able to use an
     <code>If-Modified-Since</code> request header for validation.<p>
-    RED has done this and found that the resource sends a 
-    <code>304 Not Modified</code> response, indicating that it supports 
+    RED has done this and found that the resource sends a
+    <code>304 Not Modified</code> response, indicating that it supports
     <code>Last-Modified</code> validation."""
     }
 )
@@ -1319,12 +1319,12 @@ IMS_FULL = (VALIDATION, WARN,
     'en': u"An If-Modified-Since conditional request returned the full content unchanged."
     },
     {
-    'en': u"""HTTP allows clients to make conditional requests to see if a copy 
-    that they hold is still valid. Since this response has a 
-    <code>Last-Modified</code> header, clients should be able to use an 
+    'en': u"""HTTP allows clients to make conditional requests to see if a copy
+    that they hold is still valid. Since this response has a
+    <code>Last-Modified</code> header, clients should be able to use an
     <code>If-Modified-Since</code> request header for validation.<p>
-    RED has done this and found that the resource sends a full response even 
-    though it hadn't changed, indicating that it doesn't support 
+    RED has done this and found that the resource sends a full response even
+    though it hadn't changed, indicating that it doesn't support
     <code>Last-Modified</code> validation."""
     }
 )
@@ -1334,12 +1334,12 @@ IMS_UNKNOWN = (VALIDATION, INFO,
      'en': u"An If-Modified-Since conditional request returned the full content, but it had changed."
     },
     {
-    'en': u"""HTTP allows clients to make conditional requests to see if a copy 
-    that they hold is still valid. Since this response has a 
-    <code>Last-Modified</code> header, clients should be able to use an 
+    'en': u"""HTTP allows clients to make conditional requests to see if a copy
+    that they hold is still valid. Since this response has a
+    <code>Last-Modified</code> header, clients should be able to use an
     <code>If-Modified-Since</code> request header for validation.<p>
-    RED has done this, but the response changed between the original request and 
-    the validating request, so RED can't tell whether or not 
+    RED has done this, but the response changed between the original request and
+    the validating request, so RED can't tell whether or not
     <code>Last-Modified</code> validation is supported."""
     }
 )
@@ -1349,12 +1349,12 @@ IMS_STATUS = (VALIDATION, INFO,
     'en': u"An If-Modified-Since conditional request returned a %(ims_status)s status."
     },
     {
-    'en': u"""HTTP allows clients to make conditional requests to see if a copy 
-    that they hold is still valid. Since this response has a 
-    <code>Last-Modified</code> header, clients should be able to use an 
+    'en': u"""HTTP allows clients to make conditional requests to see if a copy
+    that they hold is still valid. Since this response has a
+    <code>Last-Modified</code> header, clients should be able to use an
     <code>If-Modified-Since</code> request header for validation.<p>
-    RED has done this, but the response had a %(enc_ims_status)s status code, so 
-    RED can't tell whether or not <code>Last-Modified</code> validation is 
+    RED has done this, but the response had a %(enc_ims_status)s status code, so
+    RED can't tell whether or not <code>Last-Modified</code> validation is
     supported."""
     }
 )
@@ -1366,7 +1366,7 @@ UNEXPECTED_CONTINUE = (GENERAL, BAD,
      'en': u"A 100 Continue response was sent when it wasn't asked for."
     },
     {
-     'en': u"""HTTP allows clients to ask a server if a request with a body 
+     'en': u"""HTTP allows clients to ask a server if a request with a body
      (e.g., uploading a large file) will succeed before sending it, using
      a mechanism called "Expect/continue".<p>
      When used, the client sends an <code>Expect: 100-continue</code>, in
@@ -1375,7 +1375,7 @@ UNEXPECTED_CONTINUE = (GENERAL, BAD,
      request should continue.<p>
      This response has a <code>100 Continue</code> status code, but RED
      did not ask for it (with the <code>Expect</code> request header). Sending
-     this status code without it being requested can cause interoperability 
+     this status code without it being requested can cause interoperability
      problems."""
     }
 )
@@ -1417,9 +1417,9 @@ CREATED_WITHOUT_LOCATION = (GENERAL, BAD,
      'en': u"A new resource was created without its location being sent."
     },
     {
-     'en': u"""The <code>201 Created</code> status code indicates that 
+     'en': u"""The <code>201 Created</code> status code indicates that
      processing the request had the side effect of creating a new resource.<p>
-     HTTP specifies that the URL of the new resource is to be indicated in 
+     HTTP specifies that the URL of the new resource is to be indicated in
      the <code>Location</code> header, but it isn't present in this response."""
     }
 )
@@ -1446,7 +1446,7 @@ PARTIAL_NOT_REQUESTED = (GENERAL, BAD,
      'en': u"""The <code>206 Partial Response</code> status code indicates that
      the response body is only partial.<p>
      However, the client needs to ask for it with the <code>Range</code> header.<p>
-     RED did not request a partial response; sending one without the client 
+     RED did not request a partial response; sending one without the client
      requesting it leads to interoperability problems."""
     }
 )
@@ -1467,7 +1467,7 @@ STATUS_DEPRECATED = (GENERAL, BAD,
      'en': u"The %(status)s status code is deprecated."
     },
     {
-     'en': u"""When a status code is deprecated, it should not be used, 
+     'en': u"""When a status code is deprecated, it should not be used,
      because its meaning is not well-defined enough to ensure interoperability."""
     }
 )
@@ -1489,7 +1489,7 @@ STATUS_NONSTANDARD = (GENERAL, BAD,
     {
      'en': u"""Non-standard status codes are not well-defined and interoperable.
      Instead of defining your own status code, you should reuse one of the more
-     generic ones; for example, 400 for a client-side problem, or 500 for a 
+     generic ones; for example, 400 for a client-side problem, or 500 for a
      server-side problem."""
     }
 )
@@ -1517,7 +1517,7 @@ STATUS_NOT_FOUND = (GENERAL, INFO,
      'en': u"The resource could not be found."
     },
     {
-     'en': u"""The server couldn't find any resource to serve for the 
+     'en': u"""The server couldn't find any resource to serve for the
      given URI."""
     }
 )

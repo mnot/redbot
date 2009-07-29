@@ -16,7 +16,7 @@ $(document).ready(function(){
 		var classes = this.className.split(" ");
 		for (var i=0; i < classes.length; i++) {
 			var c = classes[i];
-			if (c != 'hdr') { 
+			if (c != 'hdr') {
 			 var marker_class = c;
 			}
 		};
@@ -31,7 +31,7 @@ $(document).ready(function(){
 		var classes = this.className.split(" ");
 		for (var i=0; i < classes.length; i++) {
 			var c = classes[i];
-			if (true) { 
+			if (true) {
 			 var marker_class = c;
 			}
 		};
@@ -39,7 +39,7 @@ $(document).ready(function(){
 		tid = setTimeout(function(){
 			$("li.msg").fadeTo(50, 1.0);
 		}, 100);
-	});	
+	});
 
 	$("tr.droid").hoverIntent(
 	function(){
@@ -47,7 +47,7 @@ $(document).ready(function(){
 		$("li.msg").fadeTo(100, 0.15);
 		for (var i=0; i < classes.length; i++) {
 			var c = classes[i];
-			if (c != 'droid') { 
+			if (c != 'droid') {
 				$("li.msg:eq(" + c +")").fadeTo(50, 1.0);
 			}
 		};
@@ -59,8 +59,8 @@ $(document).ready(function(){
 		tid = setTimeout(function(){
 			$("li.msg").fadeTo(50, 1.0);
 		}, 100);
-	});	
-	
+	});
+
 	$("li.msg").hoverIntent(function(){
 		classes = this.className.split(" ");
 		for (var i=0; i < classes.length; i++) {
@@ -74,13 +74,13 @@ $(document).ready(function(){
 		for (var i=0; i < classes.length; i++) {
 			var c = classes[i];
 			$("span." + c ).css({"font-weight": "normal", "color": "#ddd"});
-		};	
+		};
 	});
 
 	$("h3").click(function(){
 		$(this).next().slideToggle("normal");
 	});
-	
+
 	$("a.link_view").click(function(){
 		$(".mesg_sidebar").css({"position": "absolute"});
 		$("#long_mesg").html($("#link_list").html());
@@ -90,7 +90,7 @@ $(document).ready(function(){
 	var uri = "%(js_uri)s";
 	$(document).ready(function(){
 		if (uri) {
-			$("#uri").val(uri);		
+			$("#uri").val(uri);
 		} else if (! $("#uri").val()) {
 			$("#uri").val(check_phrase);
 			$("#uri").css({'color': '#ccc'});
@@ -118,7 +118,7 @@ $(document).ready(function(){
 		$(this).children(".prob_title")
 			.css("top", (e.pageY - 20) + "px")
 			.css("left", (e.pageX - 168) + "px");
-	});			
+	});
 
 	$("a.preview").hoverIntent(function(e){
 		this.old_t = this.title;
@@ -132,13 +132,13 @@ $(document).ready(function(){
 	}, function(){
 		$("#preview").remove();
 		this.title = this.old_t;
-	});	
+	});
 
 	$("a.preview").mousemove(function(e){
 		$("#preview")
 			.css("top", (e.pageY - 10) + "px")
 			.css("left", (e.pageX + 25) + "px");
-	});			
+	});
 
 });
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 """
-The Resource Expert Droid. 
+The Resource Expert Droid.
 
-RED will examine a HTTP resource for problems and other interesting 
+RED will examine a HTTP resource for problems and other interesting
 characteristics, making a list of these observation messages available
 for presentation to the user. It does so by potentially making a number
 of requests to probe the resource's behaviour.
@@ -58,10 +58,10 @@ class ResourceExpertDroid(RedFetcher):
     as an optional status callback and list of body processors, examine the
     URI for issues and notable conditions, making any necessary additional
     requests.
-    
-    Note that this primary request negotiates for gzip content-encoding; 
+
+    Note that this primary request negotiates for gzip content-encoding;
     see ConnegCheck.
-    
+
     After processing the response-specific attributes of RedFetcher will be
     populated, as well as its messages; see that class for details.
     """
@@ -70,15 +70,15 @@ class ResourceExpertDroid(RedFetcher):
         req_hdrs = req_hdrs or []
         req_hdrs.append(('Accept-Encoding', 'gzip'))
         req_hdrs.append(("User-Agent", "RED/%s (http://redbot.org/about)" % __version__))
-        RedFetcher.__init__(self, uri, method, req_hdrs, req_body, 
+        RedFetcher.__init__(self, uri, method, req_hdrs, req_body,
                             status_cb, body_procs, req_type=method)
 
         # check the URI
         if not re.match("^\s*%s\s*$" % absolute_URI, uri, re.VERBOSE):
             self.setMessage('uri', rs.URI_BAD_SYNTAX)
         if len(uri) > max_uri:
-            self.setMessage('uri', rs.URI_TOO_LONG, uri_len=len(uri))            
-            
+            self.setMessage('uri', rs.URI_TOO_LONG, uri_len=len(uri))
+
     def done(self):
         """
         Response is available; perform further processing that's specific to
@@ -91,7 +91,7 @@ class ResourceExpertDroid(RedFetcher):
             RangeRequest(self)
             ETagValidate(self)
             LmValidate(self)
- 
+
     def checkClock(self):
         "Check for clock skew and dateless origin server."
         if not self.parsed_hdrs.has_key('date'):
@@ -103,7 +103,7 @@ class ResourceExpertDroid(RedFetcher):
         skew = self.parsed_hdrs['date'] - \
           self.timestamp + self.parsed_hdrs.get('age', 0)
         if abs(skew) > max_clock_skew:
-            self.setMessage('header-date', rs.DATE_INCORRECT, 
+            self.setMessage('header-date', rs.DATE_INCORRECT,
                              clock_skew_string=relative_time(skew, 0, 2)
                              )
         else:
@@ -166,8 +166,8 @@ class ResourceExpertDroid(RedFetcher):
                         self.setMessage('header-cache-control', rs.CHECK_POST_ZERO)
                     else:
                         self.setMessage('header-cache-control', rs.CHECK_POST_PRE,
-                                        pre_check=pre_check, post_check=post_check)                
-                
+                                        pre_check=pre_check, post_check=post_check)
+
         # vary?
         vary = self.parsed_hdrs.get('vary', set())
         if "*" in vary:
@@ -184,7 +184,7 @@ class ResourceExpertDroid(RedFetcher):
 
         # calculate age
         if self.parsed_hdrs.has_key('date'):
-            apparent_age = max(0, 
+            apparent_age = max(0,
               int(self.timestamp - self.parsed_hdrs['date']))
         else:
             apparent_age = 0
@@ -193,9 +193,9 @@ class ResourceExpertDroid(RedFetcher):
         current_age_str = relative_time(current_age, 0, 0)
         self.age = age
         if age >= 1:
-            self.setMessage('header-age header-date', rs.CURRENT_AGE, 
+            self.setMessage('header-age header-date', rs.CURRENT_AGE,
                                      current_age=current_age_str)
-        
+
         # calculate freshness
         freshness_lifetime = 0
         has_explicit_freshness = False
@@ -223,13 +223,13 @@ class ResourceExpertDroid(RedFetcher):
 
         self.freshness_lifetime = freshness_lifetime
         if freshness_left > 0:
-            self.setMessage(" ".join(freshness_hdrs), rs.FRESHNESS_FRESH, 
+            self.setMessage(" ".join(freshness_hdrs), rs.FRESHNESS_FRESH,
                              freshness_lifetime=freshness_lifetime_str,
                              freshness_left=freshness_left_str,
                              current_age = current_age_str
                              )
         else:
-            self.setMessage(" ".join(freshness_hdrs), rs.FRESHNESS_STALE, 
+            self.setMessage(" ".join(freshness_hdrs), rs.FRESHNESS_STALE,
                              freshness_lifetime=freshness_lifetime_str,
                              freshness_left=freshness_left_str,
                              current_age = current_age_str
@@ -243,10 +243,10 @@ class ResourceExpertDroid(RedFetcher):
         # can stale responses be served?
         if 'must-revalidate' in cc_keys:
             self.stale_serveable = False
-            self.setMessage('header-cache-control', rs.STALE_MUST_REVALIDATE) 
+            self.setMessage('header-cache-control', rs.STALE_MUST_REVALIDATE)
         elif 'proxy-revalidate' in cc_keys or 's-maxage' in cc_keys:
             self.stale_serveable = False
-            self.setMessage('header-cache-control', rs.STALE_PROXY_REVALIDATE) 
+            self.setMessage('header-cache-control', rs.STALE_PROXY_REVALIDATE)
         else:
             self.stale_serveable = True
             self.setMessage('header-cache-control', rs.STALE_SERVABLE)
@@ -259,8 +259,8 @@ class ResourceExpertDroid(RedFetcher):
 class ConnegCheck(RedFetcher):
     """
     See if content negotiation for compression is supported, and how.
-    
-    Note that this depends on the "main" request being sent with 
+
+    Note that this depends on the "main" request being sent with
     Accept-Encoding: gzip
     """
     def __init__(self, red):
@@ -268,7 +268,7 @@ class ConnegCheck(RedFetcher):
         if "gzip" in red.parsed_hdrs.get('content-encoding', []):
             req_hdrs = [h for h in red.req_hdrs if
                         h[0].lower() != 'accept-encoding']
-            RedFetcher.__init__(self, red.uri, red.method, req_hdrs, red.req_body, 
+            RedFetcher.__init__(self, red.uri, red.method, req_hdrs, red.req_body,
                                 red.status_cb, [], "conneg")
         else:
             self.red.gzip_support = False
@@ -277,7 +277,7 @@ class ConnegCheck(RedFetcher):
         if self.res_body_len > 0:
             savings = int(100 * ((float(self.res_body_len) - \
                                   self.red.res_body_len) / self.res_body_len))
-        else: 
+        else:
             savings = 0
         self.red.gzip_support = True
         self.red.gzip_savings = savings
@@ -291,7 +291,7 @@ class ConnegCheck(RedFetcher):
         # FIXME: verify that the status/body/hdrs are the same; if it's different, alert
         no_conneg_vary_headers = self.parsed_hdrs.get('vary', [])
         if 'gzip' in self.parsed_hdrs.get('content-encoding', []):
-            self.red.setMessage('header-vary header-content-encoding', 
+            self.red.setMessage('header-vary header-content-encoding',
                                  rs.CONNEG_GZIP_WITHOUT_ASKING)
         if no_conneg_vary_headers != vary_headers:
             self.red.setMessage('header-vary', rs.VARY_INCONSISTENT,
@@ -313,11 +313,11 @@ class RangeRequest(RedFetcher):
             self.range_start = red.res_body_sample[sample_num][0]
             self.range_end = self.range_start + sample_len
             self.range_target = red.res_body_sample[sample_num][1][:sample_len + 1]
-            if self.range_start == self.range_end: return # wow, that's a small body.    
+            if self.range_start == self.range_end: return # wow, that's a small body.
             req_hdrs = red.req_hdrs + [
                     ('Range', "bytes=%s-%s" % (self.range_start, self.range_end))
             ]
-            RedFetcher.__init__(self, red.uri, red.method, req_hdrs, red.req_body, 
+            RedFetcher.__init__(self, red.uri, red.method, req_hdrs, red.req_body,
                                 red.status_cb, [], "range")
         else:
             self.red.partial_support = False
@@ -328,7 +328,7 @@ class RangeRequest(RedFetcher):
             # TODO: check content-range
             if ('gzip' in self.red.parsed_hdrs.get('content-encoding', [])) == \
                ('gzip' not in self.parsed_hdrs.get('content-encoding', [])):
-                self.red.setMessage('header-accept-ranges header-content-encoding', 
+                self.red.setMessage('header-accept-ranges header-content-encoding',
                                 rs.RANGE_NEG_MISMATCH, self)
                 return
             if self.res_body == self.range_target:
@@ -343,17 +343,17 @@ class RangeRequest(RedFetcher):
                     range_expected_bytes = len(self.range_target),
                     range_received=e(self.res_body.encode('string_escape')),
                     range_received_bytes = self.res_body_len
-                ) 
+                )
         # TODO: address 416 directly
         elif self.res_status == self.red.res_status:
             self.red.partial_support = False
             self.red.setMessage('header-accept-ranges', rs.RANGE_FULL)
         else:
-            self.red.setMessage('header-accept-ranges', rs.RANGE_STATUS, 
+            self.red.setMessage('header-accept-ranges', rs.RANGE_STATUS,
                                 range_status=self.res_status,
                                 enc_range_status=e(self.res_status))
-        
-            
+
+
 class ETagValidate(RedFetcher):
     "If an ETag is present, see if it will validate."
     def __init__(self, red):
@@ -369,11 +369,11 @@ class ETagValidate(RedFetcher):
             req_hdrs = red.req_hdrs + [
                 ('If-None-Match', etag_str),
             ]
-            RedFetcher.__init__(self, red.uri, red.method, req_hdrs, red.req_body, 
+            RedFetcher.__init__(self, red.uri, red.method, req_hdrs, red.req_body,
                                 red.status_cb, [], "ETag validation")
         else:
             self.red.inm_support = False
-            
+
     def done(self):
         if self.res_status == '304':
             self.red.inm_support = True
@@ -385,23 +385,23 @@ class ETagValidate(RedFetcher):
             else:
                 self.red.setMessage('header-etag', rs.INM_UNKNOWN, self)
         else:
-            self.red.setMessage('header-etag', rs.INM_STATUS, self, 
+            self.red.setMessage('header-etag', rs.INM_STATUS, self,
                                 inm_status=self.res_status,
                                 enc_inm_status=e(self.res_status)
                                 )
         # TODO: check entity headers
-            
+
 class LmValidate(RedFetcher):
     "If Last-Modified is present, see if it will validate."
     def __init__(self, red):
         self.red = red
         if red.parsed_hdrs.has_key('last-modified'):
-            date_str = time.strftime('%a, %d %b %Y %H:%M:%S GMT', 
+            date_str = time.strftime('%a, %d %b %Y %H:%M:%S GMT',
                                      time.gmtime(red.parsed_hdrs['last-modified']))
             req_hdrs = red.req_hdrs + [
                 ('If-Modified-Since', date_str),
             ]
-            RedFetcher.__init__(self, red.uri, red.method, req_hdrs, red.req_body, 
+            RedFetcher.__init__(self, red.uri, red.method, req_hdrs, red.req_body,
                                 red.status_cb, [], "LM validation")
         else:
             self.red.ims_support = False
@@ -417,12 +417,12 @@ class LmValidate(RedFetcher):
             else:
                 self.red.setMessage('header-last-modified', rs.IMS_UNKNOWN, self)
         else:
-            self.red.setMessage('header-last-modified', rs.IMS_STATUS, self, 
+            self.red.setMessage('header-last-modified', rs.IMS_STATUS, self,
                                  ims_status=self.res_status,
                                  enc_ims_status=e(self.res_status)
                                  )
         # TODO: check entity headers
-            
+
 
 
 if "__main__" == __name__:
@@ -430,5 +430,5 @@ if "__main__" == __name__:
     uri = sys.argv[1]
     def status_p(msg):
         print msg
-    red = ResourceExpertDroid(uri, status_cb=status_p)        
+    red = ResourceExpertDroid(uri, status_cb=status_p)
     print red.messages
