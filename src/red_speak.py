@@ -969,7 +969,7 @@ NO_CACHE = (CACHING, INFO,
      'en': u"%(response)s cannot be served from cache without validation."
     },
     {
-     'en': u"""The <code>Cache-Control: no-store</code> directive means that 
+     'en': u"""The <code>Cache-Control: no-cache</code> directive means that 
      while caches <strong>can</strong> store this response, they cannot use
      it to satisfy a request unless it has been validated (either with an 
      <code>If-None-Match</code> or <code>If-Modified-Since</code> conditional) 
