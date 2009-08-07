@@ -36,7 +36,6 @@ THE SOFTWARE.
 
 import base64
 import hashlib
-import socket
 import time
 import zlib
 from cgi import escape as e
