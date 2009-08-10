@@ -80,7 +80,7 @@ URI_BAD_SYNTAX = (GENERAL, BAD,
     'en': u"The URI's syntax isn't valid."
     },
     {
-    'en': u"""This URI doesn't validate successfully. Look for illegal characters \
+    'en': u"""This isn't a valid URI. Look for illegal characters \
     and other problems; see <a href='http://www.ietf.org/rfc/rfc3986.txt'>RFC3986</a>
     for more information."""
     }
@@ -91,7 +91,7 @@ FIELD_NAME_BAD_SYNTAX = (GENERAL, BAD,
      'en': u'"%(field_name)s" is not a valid header field-name.'
     },
     {
-    'en': u"Header field names are limited to the TOKEN production in HTTP; i.e., \
+    'en': u"Header names are limited to the TOKEN production in HTTP; i.e., \
     they can't contain parenthesis, angle brackes (&lt;&gt;), ampersands (@), \
     commas, semicolons, colons, backslashes (\\), forward slashes (/), quotes, \
     square brackets ([]), question marks, equals signs (=), curly brackets ({}) \
@@ -162,9 +162,9 @@ SINGLE_HEADER_REPEAT = (GENERAL, BAD,
     'en': u"""This header is designed to only occur once in a message. When it
     occurs more than once, a receiver needs to choose the one to use, which
     can lead to interoperability problems, since different implementations may
-    choose different instances to use.<p>
+    make different choices.<p>
     For the purposes of its tests, RED uses the last instance of the header that
-    is present; other implementations may choose a different one."""
+    is present; other implementations may behave differently."""
     }
 )
 
@@ -424,12 +424,11 @@ PRAGMA_NO_CACHE = (CACHING, WARN,
 
 PRAGMA_OTHER = (GENERAL, WARN,
     {
-    'en': u"""Pragma only defines the 'no-cache' request directive, and is
-    deprecated for other uses."""
+    'en': u"""The Pragma header is being used in an undefined way."""
     },
     {
-    'en': u"""<code>Pragma</code> is a very old request header that is sometimes
-    used as a response header, even though this is not specified behaviour."""
+    'en': u"""HTTP only defines <code>Pragma: no-cache</code>; other uses of
+    this header are deprecated."""
     }
 )
 
@@ -455,7 +454,7 @@ VIA_PRESENT = (GENERAL, INFO,
 
 LOCATION_UNDEFINED = (GENERAL, WARN,
     {
-     'en': u"%(response)s doesn't have a defined meaning for the Location header."
+     'en': u"%(response)s doesn't define any meaning for the Location header."
     },
     {
      'en': u"""The <code>Location</code> header is used for specific purposes
@@ -804,7 +803,7 @@ CONNEG_NO_VARY = (CONNEG, BAD,
     'en': u"%(response)s is negotiated, but doesn't have an appropriate Vary header."
     },
     {
-    'en': u"""Any response that's content negotiated needs to have a
+    'en': u"""All content negotiated responses need to have a
     <code>Vary</code> header that reflects the header(s) used to select the
     response.<p>
     %(response)s was negotiated for <code>gzip</code> content encoding, so
@@ -852,8 +851,9 @@ ETAG_DOESNT_CHANGE = (CONNEG, BAD,
     {
     'en': u"""HTTP requires that the <code>ETag</code>s for two different
     responses associated with the same URI be different as well, to help caches
-    and other receivers disambiguate them. This resource, however, sent the same
-    ETag for both the compressed and uncompressed versions of it (negotiated by
+    and other receivers disambiguate them.<p>
+    This resource, however, sent the same
+    ETag for both its compressed and uncompressed versions (negotiated by
     <code>Accept-Encoding</code>. This can cause interoperability problems,
     especially with caches."""
     }
@@ -992,10 +992,15 @@ VARY_ASTERISK = (CACHING, WARN,
 
 VARY_USER_AGENT = (CACHING, WARN,
     {
-     'en': u"Vary: User-Agent is bad practice."
+     'en': u"Vary: User-Agent can cause cache inefficiency."
     },
     {
-    'en': u""""""
+    'en': u"""Sending <code>Vary: User-Agent</code> requires caches to store
+    a separate copy of the response for every <code>User-Agent</code> request
+    header they see.<p>
+    Since there are so many different <code>User-Agent</code>s, this can
+    "bloat" caches with many copies of the same thing, or cause them to give
+    up on storing these responses at all."""
     }
 )
 
@@ -1035,22 +1040,18 @@ PUBLIC = (CACHING, WARN,
      'en': u"Cache-Control: public is rarely necessary."
     },
     {
-     'en': u"""The <code>Cache-Control: public</code> directive is useful
-     to make a response cacheable even when the request had an
+     'en': u"""The <code>Cache-Control: public</code> directive
+     makes a response cacheable even when the request had an
      <code>Authorization</code> header (i.e., HTTP authentication was in use).<p>
-     This is useful if your site uses HTTP authentication; often, only some
-     resources need to be authenticated, but clients will send the
-     <code>Authentication</code> header for all requests covered by the
-     realm.<p>
      Additionally, <a href="http://firefox.org/">Firefox</a>'s cache
      will store SSL-protected responses on disk when <code>public</code> is
      present; otherwise, they are only cached in memory.<p>
      <p>Therefore, SSL-protected or HTTP-authenticated (NOT cookie-authenticated)
      resources <em>may</em> have use for <code>public</code> to improve
      cacheability, if used judiciously.<p>
-     However, other resources <strong>do not need to send <code>public</code>
+     However, other responses <strong>do not need to contain <code>public</code>
      </strong>; it does not make the response "more cacheable", and only
-     makes the response headers larger."""
+     makes the headers larger."""
     }
 )
 
