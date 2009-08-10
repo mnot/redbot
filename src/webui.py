@@ -184,7 +184,7 @@ window.status="%s";
 -->
 </script>
         """ % \
-            e(str(message))
+            e(message.encode('utf-8', 'replace'))
         sys.stdout.flush()
 
     def timeoutError(self):
