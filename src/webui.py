@@ -107,6 +107,7 @@ class RedWebUi(object):
                 else:
                     print DetailPresenter(self, self.red).presentResults()
             else:
+                print "<div id='main'>"
                 if self.red.res_error['desc'] == nbhttp.error.ERR_CONNECT['desc']:
                     print error_template % "Could not connect to the server (%s)" % \
                         self.red.res_error.get('detail', "unknown")
@@ -117,6 +118,8 @@ class RedWebUi(object):
                     print error_template % self.red.res_error['desc']
                 else:
                     raise AssertionError, "Unidentified incomplete response error."
+                print self.presentFooter()
+                print "</div>"
         else:
             print "<div id='main'>"
             print self.presentNews()
