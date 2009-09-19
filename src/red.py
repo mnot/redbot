@@ -112,7 +112,7 @@ class ResourceExpertDroid(RedFetcher):
     def checkCaching(self):
         "Examine HTTP caching characteristics."
         # TODO: check URI for query string, message about HTTP/1.0 if so
-        # TODO: assure that there aren't any dup standard directives
+        # known Cache-Control directives that don't allow duplicates
         known_cc = ["max-age", "no-store", "s-maxage", "public", "private"
             "pre-check", "post-check", "stale-while-revalidate", "stale-if-error",
         ]
@@ -121,11 +121,16 @@ class ResourceExpertDroid(RedFetcher):
         cc_dict = dict(cc_list)
         cc_keys = cc_dict.keys()
 
-        # check for mis-capitalised directives
+        # check for mis-capitalised directives /
+        # assure there aren't any dup directives
         for cc in cc_keys:
             if cc.lower() in known_cc and cc != cc.lower:
                 self.setMessage('header-cache-control', rs.CC_MISCAP,
                     cc_lower = cc.lower(), cc=cc
+                )
+            if cc in known_cc and cc_list.count(cc) > 1:
+                self.setmessage('header-cache-control', rs.CC_DUP,
+                    cc=cc
                 )
 
         # Who can store this?
