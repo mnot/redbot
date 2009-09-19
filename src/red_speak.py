@@ -996,11 +996,25 @@ NO_CACHE = (CACHING, INFO,
      while caches <strong>can</strong> store this response, they cannot use
      it to satisfy a request unless it has been validated (either with an
      <code>If-None-Match</code> or <code>If-Modified-Since</code> conditional)
-     for that request.<p>
-     If the response doesn't have a <code>Last-Modified</code> or
-     <code>ETag</code> header, it effectively can't be used by a cache."""
+     for that request.<p>"""
     }
 )
+
+NO_CACHE_NO_VALIDATOR = (CACHING, INFO,
+    {
+     'en': u"%(response)s cannot be served from cache without validation."
+    },
+    {
+     'en': u"""The <code>Cache-Control: no-cache</code> directive means that
+     while caches <strong>can</strong> store this response, they cannot use
+     it to satisfy a request unless it has been validated (either with an
+     <code>If-None-Match</code> or <code>If-Modified-Since</code> conditional)
+     for that request.<p>
+     %(response)s doesn't have a <code>Last-Modified</code> or
+     <code>ETag</code> header, so it effectively can't be used by a cache."""
+    }
+)
+
 
 VARY_ASTERISK = (CACHING, WARN,
     {

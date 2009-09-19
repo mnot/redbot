@@ -157,8 +157,12 @@ class ResourceExpertDroid(RedFetcher):
 
         # no-cache?
         if 'no-cache' in cc_keys:
-            self.setMessage('header-cache-control', rs.NO_CACHE)
-            return # TODO: differentiate when there aren't LM or ETag present.
+            if "last-modified" not in self.parsed_hdrs.keys() and \
+               "etag" not in self.parsed_hdrs.keys():
+                self.setMessage('header-cache-control', rs.NO_CACHE_NO_VALIDATOR)
+            else:
+                self.setMessage('header-cache-control', rs.NO_CACHE)
+            return
 
         # pre-check / post-check
         if 'pre-check' in cc_keys or 'post-check' in cc_keys:
