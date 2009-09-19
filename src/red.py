@@ -113,7 +113,6 @@ class ResourceExpertDroid(RedFetcher):
         "Examine HTTP caching characteristics."
         # TODO: check URI for query string, message about HTTP/1.0 if so
         # TODO: assure that there aren't any dup standard directives
-        # TODO: check for spurious 'public' directive (e.g., sun.com)
         # TODO: check for capitalisation on standard directives
         cc_dict = dict(self.parsed_hdrs.get('cache-control', []))
         cc_keys = cc_dict.keys()
