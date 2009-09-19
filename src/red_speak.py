@@ -919,6 +919,29 @@ METHOD_UNCACHEABLE = (CACHING, INFO,
     }
 )
 
+CC_MISCAP = (CACHING, WARN,
+    {
+     'en': u"%(response)s %(cc)s directive appears to have incorrect capitalisation."
+    },
+    {
+     'en': u"""Cache-Control directive names are case-sensitive, and will not
+     be recognised by most implementations if the capitalisation is wrong.<p>
+     Did you mean to use %(cc_lower)s instead of %(cc)s?"""
+    }
+)
+
+CC_DUP = (CACHING, WARN,
+    {
+     'en': u"%(response)s %(cc)s directive appears more than once."
+    },
+    {
+     'en': u"""The %(cc)s Cache-Control directive is only defined to appear
+     once; it is used more than once here, so implementations may use different
+     instances (e.g., the first, or the last), making their behaviour
+     unpredictable."""
+    }
+)
+
 NO_STORE = (CACHING, INFO,
     {
      'en': u"%(response)s can't be stored by a cache."
