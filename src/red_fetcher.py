@@ -65,7 +65,7 @@ class RedFetcher:
       (
        subject,     # The subject(s) of the msg, as a space-separated string.
                     # e.g., "header-cache-control header-expires"
-       message,     # The message structure; see red.speak.py
+       message,     # The message structure; see red_speak.py
        subrequest,  # Optionally, a RedFetcher object representing a
                     # request with additional details about another request
                     # made in order to generate the message
