@@ -71,6 +71,14 @@ class Message:
         self.subrequest = subrequest
         self.vars = vrs or {}
 
+    def __eq__(self, other):
+        if self.__class__ == other.__class__ and \
+            self.vars == other.vars and\
+            self.subject == other.subject:
+                return True
+        else:
+            return False
+
 
 response = {
     'this': {'en': 'This response'},
