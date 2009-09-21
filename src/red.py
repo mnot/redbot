@@ -117,14 +117,15 @@ class ResourceExpertDroid(RedFetcher):
             "pre-check", "post-check", "stale-while-revalidate", "stale-if-error",
         ]
 
-        cc_list = self.parsed_hdrs.get('cache-control', [])
-        cc_dict = dict(cc_list)
+        cc_set = self.parsed_hdrs.get('cache-control', [])
+        cc_list = [k for (k,v) in cc_set]
+        cc_dict = dict(cc_set)
         cc_keys = cc_dict.keys()
 
         # check for mis-capitalised directives /
         # assure there aren't any dup directives
         for cc in cc_keys:
-            if cc.lower() in known_cc and cc != cc.lower:
+            if cc.lower() in known_cc and cc != cc.lower():
                 self.setMessage('header-cache-control', rs.CC_MISCAP,
                     cc_lower = cc.lower(), cc=cc
                 )
