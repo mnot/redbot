@@ -116,10 +116,10 @@ class RedFetcher:
         self._gzip_ok = True # turn False if we have a problem
         self._makeRequest()
 
-    def setMessage(self, subject, msg, subreq=None, **vrs):
+    def setMessage(self, subject, msg, subreq=None, **vars):
         "Set a message."
-        vrs['response'] = rs.response.get(self.type, rs.response['this'])['en']
-        self.messages.append((subject, msg, subreq, vrs))
+        vars['response'] = rs.response.get(self.type, rs.response['this'])['en']
+        self.messages.append(msg(subject, subreq, vars))
 
     def done(self):
         "Callback for when the response is complete and analysed."

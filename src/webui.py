@@ -302,22 +302,22 @@ class DetailPresenter(object):
 
     def presentCategory(self, category):
         "For a given category, return all of the messages in it as an HTML list"
-        messages = [msg for msg in self.red.messages if msg[1][0] == category]
+        messages = [msg for msg in self.red.messages if msg.category == category]
         if not messages:
             return nl
         out = [u"<h3>%s</h3>\n<ul>\n" % category]
-        for (s, (c, l, m, lm), sr, v) in messages:
+        for m in messages:
             out.append(u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span>" %
-                    (l, e(s), e(m[lang]%v), lm[lang]%v)
+                    (m.level, e(m.subject), e(m.summary[lang] % m.vars), m.text[lang] % m.vars)
             )
             out.append(u"</li>")
-            smsgs = [msg for msg in getattr(sr, "messages", []) if msg[1][1] in [rs.BAD]]
+            smsgs = [msg for msg in getattr(m.subrequest, "messages", []) if msg.level in [rs.BAD]]
             if smsgs:
                 out.append(u"<ul>")
-                for (s, (c, l, m, lm), sms, v) in smsgs:
+                for sm in smsgs:
                     out.append(
                         u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span></li>" %
-                        (l, e(s), e(m[lang]%v), lm[lang]%v)
+                        (sm.level, e(sm.subject), e(sm.summary[lang] % sm.vars), sm.text[lang] % sm.v)
                     )
                 out.append(u"</ul>")
         out.append(u"</ul>\n")
@@ -496,8 +496,7 @@ class TablePresenter(object):
             else:
                 out.append(self.presentYesNo(red.gzip_support))
             out.append(self.presentYesNo(red.partial_support))
-            problems = [(m[0], m[1], None, m[3]) for m in red.messages \
-                        if m[1][1] in [rs.WARN, rs.BAD]]
+            problems = [m for m in red.messages if m.level in [rs.WARN, rs.BAD]]
     # TODO:        problems += sum([m[2].messages for m in red.messages if m[2] != None], [])
             out.append(u"<td>")
             pr_enum = []
@@ -509,8 +508,8 @@ class TablePresenter(object):
             out[0] = out[0] % u" ".join(["%d" % p for p in pr_enum])
             # append the actual problem numbers to the final <td>
             for p in pr_enum:
-                (s, (c, l, m, lm), sr, v) = self.problems[p]
-                out.append("<span class='prob_num'> %s <span class='prob_title'>%s</span></span>" % (p + 1, e(m[lang]%v)))
+                m = self.problems[p]
+                out.append("<span class='prob_num'> %s <span class='prob_title'>%s</span></span>" % (p + 1, e(m.summary[lang] % m.vars)))
         else:
             out.append('<td colspan="11">%s' % red.res_error['desc'])
         out.append(u"</td>")
@@ -553,9 +552,9 @@ class TablePresenter(object):
 
     def presentProblems(self):
         out = ['<br /><h2>Problems</h2><ol>']
-        for (s, (c, l, m, lm), sr, v) in self.problems:
+        for m in self.problems:
             out.append(u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span>" %
-                    (l, e(s), e(m[lang]%v), lm[lang]%v)
+                    (m.level, e(m.subject), e(m.summary[lang] % m.vars), m.text[lang] % m.vars)
             )
             out.append(u"</li>")
         out.append(u"</ol>\n")
