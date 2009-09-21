@@ -39,7 +39,7 @@ logdir = 'exceptions'
 req_hdrs = []
 
 # how many seconds to allow it to run for
-max_runtime = 30
+max_runtime = 60
 
 # file containing news to display on front page
 news_file = "news.html"
