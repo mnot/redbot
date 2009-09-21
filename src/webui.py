@@ -317,7 +317,7 @@ class DetailPresenter(object):
                 for sm in smsgs:
                     out.append(
                         u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span></li>" %
-                        (sm.level, e(sm.subject), e(sm.summary[lang] % sm.vars), sm.text[lang] % sm.v)
+                        (sm.level, e(sm.subject), e(sm.summary[lang] % sm.vars), sm.text[lang] % sm.vars)
                     )
                 out.append(u"</ul>")
         out.append(u"</ul>\n")
