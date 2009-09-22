@@ -308,7 +308,7 @@ class DetailPresenter(object):
             e(token_name), e(name), self.header_presenter.Show(name, value))
 
     def presentCategory(self, category):
-        "For a given category, return all of the messages in it as an HTML list"
+        "For a given category, return all of the non-detail messages in it as an HTML list"
         messages = [msg for msg in self.red.messages if msg.category == category]
         if not messages:
             return nl
@@ -318,7 +318,7 @@ class DetailPresenter(object):
                     (m.level, e(m.subject), e(m.summary[lang] % m.vars), m.text[lang] % m.vars)
             )
             out.append(u"</li>")
-            smsgs = [msg for msg in getattr(m.subrequest, "messages", []) if msg.level in [rs.BAD]]
+            smsgs = [msg for msg in getattr(m.subrequest, "messages", []) if msg.level in [rs.l.BAD]]
             if smsgs:
                 out.append(u"<ul>")
                 for sm in smsgs:
