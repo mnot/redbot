@@ -139,7 +139,7 @@ class RedFetcher:
         if self.status_cb and self.type:
             self.status_cb("fetching %s (%s)" % (self.uri, self.type))
         req_body, req_done = self._client.req_start(
-                                    self.method, self.uri, self.req_hdrs, nbhttp.dummy)
+            self.method, self.uri.encode('utf-8', 'replace'), self.req_hdrs, nbhttp.dummy)
         if self.req_body != None:
             req_body(self.req_body)
         req_done(None)

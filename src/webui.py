@@ -3,6 +3,7 @@
 """
 A Web UI for RED, the Resource Expert Droid.
 """
+import types
 
 __author__ = "Mark Nottingham <mnot@mnot.net>"
 __copyright__ = """\
@@ -86,10 +87,11 @@ class RedWebUi(object):
         self.descend_links = descend
         self.start = time.time()
         timeout = nbhttp.schedule(max_runtime, self.timeoutError)
-        print red_header.__doc__ % {
-                        'js_uri': uri.replace('"', r'\"'),
-                        'html_uri': e(uri),
-                        }
+        header = red_header.__doc__ % {
+            'html_uri': e(uri),
+            'js_uri': uri.replace('"', r'\"'),
+        }
+        print header.encode('utf-8', 'replace')
         self.links = {}          # {type: set(link...)}
         self.link_count = 0
         self.link_droids = []    # list of REDs
@@ -161,7 +163,7 @@ class RedWebUi(object):
 
     def presentFooter(self):
         elapsed = time.time() - self.start
-        return u"""\
+        return """\
 <div class="footer">
 <p class="version">this is RED %(version)s.</p>
 <p class="navigation">
@@ -187,14 +189,14 @@ That took %(requests)s requests and %(elapsed)2.2f seconds.
     @staticmethod
     def updateStatus(message):
         "Update the status bar of the browser"
-        print u"""
+        msg = u"""
 <script language="JavaScript">
 <!--
 window.status="%s";
 -->
 </script>
-        """ % \
-            e(message.encode('utf-8', 'replace'))
+        """ % e(message)
+        print msg.encode('utf-8', 'replace')
         sys.stdout.flush()
 
     def timeoutError(self):
@@ -622,7 +624,7 @@ if __name__ == "__main__":
     except IndexError:
         sys.excepthook = except_handler
         form = cgi.FieldStorage()
-        test_uri = form.getfirst("uri", "")
+        test_uri = form.getfirst("uri", "").decode('utf-8', 'replace')
         descend = form.getfirst('descend', False)
     print "Content-Type: text/html; charset=utf-8"
     if test_uri:
