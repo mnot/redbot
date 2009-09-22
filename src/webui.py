@@ -48,6 +48,7 @@ news_file = "news.html"
 
 import cgi
 import operator
+import os
 import pprint
 import sys
 import textwrap
@@ -92,6 +93,11 @@ class RedWebUi(object):
         self.links = {}          # {type: set(link...)}
         self.link_count = 0
         self.link_droids = []    # list of REDs
+        self.base_uri = "http://%s%s%s" % ( # FIXME: only supports HTTP
+          os.environ.get('HTTP_HOST'),
+          os.environ.get('SCRIPT_NAME'),
+          os.environ.get('PATH_INFO', '')
+        )
         if uri:
             link_parser = link_parse.HTMLLinkParser(uri, self.processLink)
             self.red = red.ResourceExpertDroid(
@@ -163,7 +169,7 @@ class RedWebUi(object):
 <a href="http://blog.REDbot.org/">blog</a> |
 <a href="http://REDbot.org/project">project</a> |
 <a href="http://REDbot.org/terms/">terms of use</a> |
-<a href="javascript:location%%20=%%20'http://redbot.org/?uri='+escape(location);%%20void%%200"
+<a href="javascript:location%%20=%%20'%(baseuri)s?uri='+escape(location);%%20void%%200"
 title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
 </p>
 </div>
@@ -172,6 +178,7 @@ title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
 That took %(requests)s requests and %(elapsed)2.2f seconds.
 -->
 """ % {
+       'baseuri': self.base_uri,
        'version': red.__version__,
        'requests': red_fetcher.total_requests,
        'elapsed': elapsed
