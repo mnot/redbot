@@ -224,7 +224,7 @@ class DetailPresenter(object):
     """
     # the order of message categories to display
     msg_categories = [
-        rs.GENERAL, rs.CONNECTION, rs.CONNEG, rs.CACHING, rs.VALIDATION, rs.RANGE
+        rs.c.GENERAL, rs.c.CONNECTION, rs.c.CONNEG, rs.c.CACHING, rs.c.VALIDATION, rs.c.RANGE
     ]
 
     # Media types that browsers can view natively
@@ -503,7 +503,7 @@ class TablePresenter(object):
             else:
                 out.append(self.presentYesNo(red.gzip_support))
             out.append(self.presentYesNo(red.partial_support))
-            problems = [m for m in red.messages if m.level in [rs.WARN, rs.BAD]]
+            problems = [m for m in red.messages if m.level in [rs.l.WARN, rs.l.BAD]]
     # TODO:        problems += sum([m[2].messages for m in red.messages if m[2] != None], [])
             out.append(u"<td>")
             pr_enum = []
