@@ -416,7 +416,9 @@ class HeaderPresenter(object):
     @staticmethod
     def I(value, sub_width):
         "wrap a line to fit in the header box"
-        tr = textwrap.TextWrapper(width=65-sub_width, subsequent_indent=" "*8)
+        hdr_sz = 65
+        sw = 65 - min(hdr_sz-1, sub_width)
+        tr = textwrap.TextWrapper(width=sw, subsequent_indent=" "*8, break_long_words=True)
         return tr.fill(value)
 
 
