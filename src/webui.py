@@ -312,7 +312,9 @@ class DetailPresenter(object):
         messages = [msg for msg in self.red.messages if msg.category == category]
         if not messages:
             return nl
-        out = [u"<h3>%s</h3>\n<ul>\n" % category]
+        out = []
+        if [msg for msg in messages if msg.level != rs.l.DETAIL]:
+            out.append(u"<h3>%s</h3>\n<ul>\n" % category)
         for m in messages:
             out.append(u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span>" %
                     (m.level, e(m.subject), e(m.summary[lang] % m.vars), m.text[lang] % m.vars)

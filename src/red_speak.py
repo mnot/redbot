@@ -56,9 +56,10 @@ c = _Classifications()
 # message levels
 class _Levels:
     GOOD = u'good'
+    WARN = u'warning'
     BAD = u'bad'
     INFO = u'info'
-    WARN = u'warning'
+    DETAIL = u'detail'
 l = _Levels()
 
 class Message:
@@ -235,7 +236,7 @@ class BAD_SYNTAX(Message):
 
 class KEEP_ALIVE_HEADER(Message):
     category = c.CONNECTION
-    level = l.INFO
+    level = l.DETAIL
     summary = {
     'en': u"The Keep-Alive header isn't necessary."
     }
@@ -253,7 +254,7 @@ class KEEP_ALIVE_HEADER(Message):
 
 class SCRAMBLED_CONNECTION(Message):
     category = c.CONNECTION
-    level = l.INFO
+    level = l.DETAIL
     summary = {
      'en': u"%(response)s has a scrambled Connection header."
     }
@@ -272,7 +273,7 @@ class SCRAMBLED_CONNECTION(Message):
 
 class NETSCAPE_PAD(Message):
     category = c.CONNECTION
-    level = l.INFO
+    level = l.DETAIL
     summary = {
      'en': u"%(response)s has a padding header."
     }
@@ -447,12 +448,13 @@ class LM_PRESENT(Message):
     text = {
     'en': u"""The <code>Last-Modified</code> header indicates the last point in
     time that the resource has changed. It is used in HTTP for validating cached
-    responses, and for calculating heuristic freshness in caches."""
+    responses, and for calculating heuristic freshness in caches.<p>
+    This resource last changed %(last_modified_string)s."""
     }
 
 class MIME_VERSION(Message):
     category = c.GENERAL
-    level = l.INFO
+    level = l.DETAIL
     summary = {
     'en': u"The MIME-Version header generally isn't necessary in HTTP."
     }

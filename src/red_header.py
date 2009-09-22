@@ -27,6 +27,9 @@ $(document).ready(function(){
 			clearTimeout(tid);
 			tid = false;
 		};
+                $(".mesg_sidebar").css({"position": "fixed"});
+		$("#long_mesg").html($("li.msg." + marker_class + ".detail > .hidden_desc").html());
+
 	}, function(){
 		var classes = this.className.split(" ");
 		for (var i=0; i < classes.length; i++) {

@@ -125,6 +125,9 @@ ul li.bad {
 	color: #111;
 	list-style-image: url(icon/infomation-16.png);
 }
+.detail {
+        display: none;
+}
 .fade1 { opacity: 0.75; }
 .fade2 { opacity: 0.5; }
 .fade3 { opacity: 0.25; }
