@@ -47,7 +47,6 @@ news_file = "news.html"
 
 ### End configuration ######################################################
 
-import cgi
 import operator
 import os
 import pprint
@@ -83,27 +82,24 @@ class RedWebUi(object):
 
     Given a URI, run RED on it and present the results to STDOUT as HTML.
     """
-    def __init__(self, uri, descend=False):
+    def __init__(self, test_uri, base_uri, output, descend=False):
+        self.base_uri = base_uri
         self.descend_links = descend
+        self.output = output
         self.start = time.time()
         timeout = nbhttp.schedule(max_runtime, self.timeoutError)
         header = red_header.__doc__ % {
-            'html_uri': e(uri),
-            'js_uri': uri.replace('"', r'\"'),
+            'html_uri': e(test_uri),
+            'js_uri': test_uri.replace('"', r'\"'),
         }
-        print header.encode('utf-8', 'replace')
+        self.output(header.encode('utf-8', 'replace'))
         self.links = {}          # {type: set(link...)}
         self.link_count = 0
         self.link_droids = []    # list of REDs
-        self.base_uri = "http://%s%s%s" % ( # FIXME: only supports HTTP
-          os.environ.get('HTTP_HOST'),
-          os.environ.get('SCRIPT_NAME'),
-          os.environ.get('PATH_INFO', '')
-        )
-        if uri:
-            link_parser = link_parse.HTMLLinkParser(uri, self.processLink)
+        if test_uri:
+            link_parser = link_parse.HTMLLinkParser(test_uri, self.processLink)
             self.red = red.ResourceExpertDroid(
-                uri,
+                test_uri,
                 req_hdrs=req_hdrs,
                 status_cb=self.updateStatus,
                 body_procs=[link_parser.feed],
@@ -111,30 +107,30 @@ class RedWebUi(object):
             self.updateStatus('Done.')
             if self.red.res_complete:
                 if self.descend_links and self.link_count > 0:
-                    print TablePresenter(self, self.red).presentResults()
+                    self.output(TablePresenter(self, self.red).presentResults())
                 else:
-                    print DetailPresenter(self, self.red).presentResults()
+                    self.output(DetailPresenter(self, self.red).presentResults())
             else:
-                print "<div id='main'>"
+                self.output("<div id='main'>")
                 if self.red.res_error['desc'] == nbhttp.error.ERR_CONNECT['desc']:
-                    print error_template % "Could not connect to the server (%s)" % \
-                        self.red.res_error.get('detail', "unknown")
+                    self.output(error_template % "Could not connect to the server (%s)" % \
+                        self.red.res_error.get('detail', "unknown"))
                 elif self.red.res_error['desc'] == nbhttp.error.ERR_URL['desc']:
-                    print error_template % self.red.res_error.get(
-                                          'detail', "RED can't fetch that URL.")
+                    self.output(error_template % self.red.res_error.get(
+                                          'detail', "RED can't fetch that URL."))
                 elif self.red.res_error['desc'] == nbhttp.error.ERR_READ_TIMEOUT['desc']:
-                    print error_template % self.red.res_error['desc']
+                    self.output(error_template % self.red.res_error['desc'])
                 else:
                     raise AssertionError, "Unidentified incomplete response error."
-                print self.presentFooter()
-                print "</div>"
+                self.output(self.presentFooter())
+                self.output("</div>")
         else:
-            print "<div id='main'>"
-            print self.presentNews()
-            print self.presentFooter()
-            print "</div>"
+            self.output("<div id='main'>")
+            self.output(self.presentNews())
+            self.output(self.presentFooter())
+            self.output("</div>")
         timeout.delete()
-        print "</body></html>"
+        self.output("</body></html>")
 
     def processLink(self, link, tag, title):
         "Handle a link from content"
@@ -186,8 +182,7 @@ That took %(requests)s requests and %(elapsed)2.2f seconds.
        'elapsed': elapsed
        }
 
-    @staticmethod
-    def updateStatus(message):
+    def updateStatus(self, message):
         "Update the status bar of the browser"
         msg = u"""
 <script language="JavaScript">
@@ -196,27 +191,22 @@ window.status="%s";
 -->
 </script>
         """ % e(message)
-        print msg.encode('utf-8', 'replace')
+        self.output(msg.encode('utf-8', 'replace'))
         sys.stdout.flush()
 
     def timeoutError(self):
         """ Max runtime reached."""
-        print error_template % ("RED timeout.")
-        print """
-<!--
-*** Outstanding Connections
-"""
+        self.output(error_template % ("RED timeout."))
+        self.output("<!-- Outstanding Connections\n")
         for conn in red_fetcher.outstanding_requests:
-            print "***", conn.uri.encode('utf-8', 'replace')
+            self.output("***", conn.uri.encode('utf-8', 'replace'))
             pprint.pprint(conn.__dict__)
             if conn._client:
                 pprint.pprint(conn._client.__dict__)
             if conn._client._tcp_conn:
                 pprint.pprint(conn._client._tcp_conn.__dict__)
 
-        print """
--->
-        """
+        self.output("-->\n")
         nbhttp.stop()
 
 
@@ -620,6 +610,9 @@ and we'll look into it."""
     sys.stdout.flush()
 
 if __name__ == "__main__":
+    import cgi
+    def output(o):
+        print o
     try:
         test_uri = sys.argv[1]
         descend = True
@@ -628,10 +621,15 @@ if __name__ == "__main__":
         form = cgi.FieldStorage()
         test_uri = form.getfirst("uri", "").decode('utf-8', 'replace')
         descend = form.getfirst('descend', False)
-    print "Content-Type: text/html; charset=utf-8"
+    base_uri = "http://%s%s%s" % ( # FIXME: only supports HTTP
+      os.environ.get('HTTP_HOST'),
+      os.environ.get('SCRIPT_NAME'),
+      os.environ.get('PATH_INFO', '')
+    )
+    output("Content-Type: text/html; charset=utf-8")
     if test_uri:
-        print "Cache-Control: max-age=60, must-revalidate"
+        output("Cache-Control: max-age=60, must-revalidate")
     else:
-        print "Cache-Control: max-age=3600"
+        output("Cache-Control: max-age=3600")
     print
-    RedWebUi(test_uri, descend)
+    RedWebUi(test_uri, base_uri, output, descend)
