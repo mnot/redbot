@@ -130,7 +130,7 @@ class ResourceExpertDroid(RedFetcher):
                     cc_lower = cc.lower(), cc=cc
                 )
             if cc in known_cc and cc_list.count(cc) > 1:
-                self.setmessage('header-cache-control', rs.CC_DUP,
+                self.setMessage('header-cache-control', rs.CC_DUP,
                     cc=cc
                 )
 
