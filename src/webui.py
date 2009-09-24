@@ -61,6 +61,7 @@ assert sys.version_info[0] == 2 and sys.version_info[1] >= 5, "Please use Python
 import link_parse
 import nbhttp
 import red
+import red_defns
 import red_fetcher
 import red_header
 import red_speak as rs
@@ -263,6 +264,8 @@ class DetailPresenter(object):
 
     </div>
 
+    <div class='hidden_desc' id='defn_list'>%(defns)s</div>
+
     <div class="mesg_sidebar" id="long_mesg"></div>
 
     """
@@ -271,6 +274,7 @@ class DetailPresenter(object):
         self.ui = ui
         self.red = red
         self.header_presenter = HeaderPresenter(self.red)
+        self.defns = []
 
     def presentResults(self):
         "Fill in the template with RED's results."
@@ -280,6 +284,7 @@ class DetailPresenter(object):
             'messages': nl.join([self.presentCategory(cat) for cat in self.msg_categories]),
             'links': self.presentLinks(),
             'footer': self.ui.presentFooter(),
+            'defns': self.presentDefns(),
         }
         return (self.template % result_strings).encode("utf-8")
 
@@ -296,8 +301,17 @@ class DetailPresenter(object):
     def presentHeader(self, name, value):
         "Return an individual HTML header as HTML"
         token_name = name.lower()
+        py_name = "HDR_" + name.upper().replace("-", "_")
+        if hasattr(red_defns, py_name):
+            defn = getattr(red_defns, py_name)[lang] % {
+                'field_name': name,
+            }
+            self.defns.append(u"<li id='header-%s'>%s</li>" % (token_name, defn))
         return u"    <span class='header-%s hdr'>%s:%s</span>" % (
             e(token_name), e(name), self.header_presenter.Show(name, value))
+
+    def presentDefns(self):
+        return "<ul>" + "".join([defn for defn in self.defns]) + "</ul>"
 
     def presentCategory(self, category):
         "For a given category, return all of the non-detail messages in it as an HTML list"
@@ -305,7 +319,7 @@ class DetailPresenter(object):
         if not messages:
             return nl
         out = []
-        if [msg for msg in messages if msg.level != rs.l.DETAIL]:
+        if [msg for msg in messages]:
             out.append(u"<h3>%s</h3>\n<ul>\n" % category)
         for m in messages:
             out.append(u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span>" %

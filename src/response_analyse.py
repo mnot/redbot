@@ -376,7 +376,6 @@ class ResponseHeaderParser(object):
                 value = None
             attr = attr.lower()
             directives.add((attr, value))
-        self.setMessage(name, rs.KEEP_ALIVE_HEADER)
         return values
 
     @SingleFieldValue
@@ -414,18 +413,6 @@ class ResponseHeaderParser(object):
     def mime_version(self, name, values):
         self.setMessage(name, rs.MIME_VERSION)
         return values
-
-    @GenericHeaderSyntax
-    def SCRAMBLED_CONNECTION(self, name, values):
-        self.setMessage(name, rs.SCRAMBLED_CONNECTION)
-        return values
-    nncoection = \
-    cneonction = \
-    yyyyyyyyyy = \
-    xxxxxxxxxx = \
-    x_cnection = \
-    _onnection = \
-    SCRAMBLED_CONNECTION
 
     @GenericHeaderSyntax
     def p3p(self, name, values):

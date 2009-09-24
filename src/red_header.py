@@ -9,11 +9,14 @@
 <script src="./jquery.hoverIntent.js"></script>
 <script>
 var tid = false;
-var tid2 = false;
 
 $(document).ready(function(){
     $("span.hdr").hover(
     function(e){
+        if (tid != false) {
+            clearTimeout(tid);
+            tid = false;
+        }
         var classes = this.className.split(" ");
         for (var i=0; i < classes.length; i++) {
             var c = classes[i];
@@ -25,41 +28,38 @@ $(document).ready(function(){
         $("li.msg:not(." + marker_class + ")").fadeTo(100, 0.15);
         $("li.msg." + marker_class).fadeTo(50, 1.0);
         $(".mesg_sidebar").css({"position": "fixed"});
-        var detail_msg = $("li.msg." + marker_class + ".detail > .hidden_desc").html();
+        var detail_msg = $("li#" + marker_class).html();
         if (detail_msg) {
-            if (tid2 != false) {
-                clearTimeout(tid2);
-                tid2 = false;
-            }
             $("#popup")
                 .fadeIn("fast")
                 .css("top", (e.pageY - 15) + "px")
                 .css("left", (e.pageX + 15) + "px")
                 .html(detail_msg);
+        } else {
+            $("#popup").hide();
         }
-    }, function(){
+    }, function(e){
         var classes = this.className.split(" ");
         for (var i=0; i < classes.length; i++) {
             var c = classes[i];
-            if (true) {
+            if (c != 'hdr') {
                 var marker_class = c;
             }
         };
         $("span." + marker_class).css({"font-weight": "normal", "color": "#ddd"});
         tid = setTimeout(function(){
             $("li.msg").fadeTo(50, 1.0);
-        }, 100);
-        tid2 = setTimeout(function(){
             $("#popup").fadeOut("fast");
-        }, 200);
+        }, 150);
     });
 
     $("#popup").hover(function(){
-        if (tid2 != false) {
-            clearTimeout(tid2);
-            tid2 = false;
+        if (tid != false) {
+            clearTimeout(tid);
+            tid = false;
         }
     }, function(){
+        $("li.msg").fadeTo(50, 1.0);
         $("#popup").fadeOut("fast");
     });
 

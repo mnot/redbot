@@ -234,59 +234,6 @@ class BAD_SYNTAX(Message):
 
 # Specific headers
 
-class KEEP_ALIVE_HEADER(Message):
-    category = c.CONNECTION
-    level = l.DETAIL
-    summary = {
-    'en': u"The Keep-Alive header isn't necessary."
-    }
-    text = {
-    'en': u"""The <code>Keep-Alive</code> header is completely optional; it
-    is defined primarily because the <code>keep-alive</code> connection token
-    implies that such a header exists, not because anyone actually uses it.<p>
-    Some implementations (e.g., <a href="http://httpd.apache.org/">Apache</a>)
-    do generate a <code>Keep-Alive</code> header to convey how many requests
-    they're willing to serve on a single connection, what the connection timeout
-    is and other information. However, this isn't usually used by clients.<p>
-    It's safe to remove this header if you wish to save a few bytes in the 
-    response."""
-    }
-
-class SCRAMBLED_CONNECTION(Message):
-    category = c.CONNECTION
-    level = l.DETAIL
-    summary = {
-     'en': u"%(response)s has a scrambled Connection header."
-    }
-    text = {
-     'en': u"""The <code>Connection</code> header is used to indicate what
-     headers are hop-by-hop, and to signal that the connection should not be
-     reused by the client, with the <code>close</code> directive.<p>
-     The <code>%(field_name)s</code> field usually means that a HTTP load
-     balancer, proxy or other intermediary in front of the server has replaced
-     the <code>Connection</code> header, to allow the connection to be reused.<p>
-     It takes this form because the most efficient way to strip the server's
-     <code>Connection</code> header is to rewrite its name into something
-     that isn't recognisable.
-     """
-    }
-
-class NETSCAPE_PAD(Message):
-    category = c.CONNECTION
-    level = l.DETAIL
-    summary = {
-     'en': u"%(response)s has a padding header."
-    }
-    text = {
-     'en': u"""The <code>%(field_name)s</code> header is used to "pad" the
-     response header size; very old versions of the Netscape browser had a
-     bug whereby a response whose headers were exactly 256 or 257 bytes long,
-     the browser would consider the response (e.g., an image) invalid.<p>
-     Since the affected browsers (specifically, Netscape 2.x, 3.x and 4.0 up to
-     beta 2) are no longer widely used, it's probably safe to omit this header.
-     """
-    }
-
 class BAD_CC_SYNTAX(Message):
     category = c.CACHING
     level = l.BAD
