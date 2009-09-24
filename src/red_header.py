@@ -9,10 +9,11 @@
 <script src="./jquery.hoverIntent.js"></script>
 <script>
 var tid = false;
+var tid2 = false;
 
 $(document).ready(function(){
 	$("span.hdr").hover(
-	function(){
+	function(e){
 		var classes = this.className.split(" ");
 		for (var i=0; i < classes.length; i++) {
 			var c = classes[i];
@@ -28,10 +29,20 @@ $(document).ready(function(){
 			tid = false;
 		};
                 $(".mesg_sidebar").css({"position": "fixed"});
-		$("#long_mesg").html($("li.msg." + marker_class + ".detail > .hidden_desc").html());
-
+                var detail_msg = $("li.msg." + marker_class + ".detail > .hidden_desc").html();
+                if (detail_msg) {
+                    if (tid2 != false) {
+                        clearTimeout(tid2);
+                        tid2 = false;
+                    }
+                    $("#popup")
+                            .fadeIn("fast")
+                            .css("top", (e.pageY - 15) + "px")
+                            .css("left", (e.pageX + 15) + "px")
+                            .html(detail_msg);
+                }
 	}, function(){
-		var classes = this.className.split(" ");
+ 		var classes = this.className.split(" ");
 		for (var i=0; i < classes.length; i++) {
 			var c = classes[i];
 			if (true) {
@@ -42,7 +53,19 @@ $(document).ready(function(){
 		tid = setTimeout(function(){
 			$("li.msg").fadeTo(50, 1.0);
 		}, 100);
+		tid2 = setTimeout(function(){
+			$("#popup").fadeOut("fast");
+		}, 200);
 	});
+
+        $("#popup").hover(function(){
+            if (tid2 != false) {
+                clearTimeout(tid2);
+                tid2 = false;
+            }
+        }, function(){
+            $("#popup").fadeOut("fast");
+        });
 
 /* commented out because of issues with bullets disappearing
         $("span.hdr").click(
@@ -171,6 +194,8 @@ $(document).ready(function(){
 </head>
 
 <body>
+
+<div id="popup">foo</div>
 
 <div id="header">
 <h1><span class="hilight">R</span>esource <span class="hilight">E</span>xpert <span class="hilight">D</span>roid</h1>

@@ -169,6 +169,19 @@ ul li.bad {
 	color: #efefef;
 	font-size: 0.75em;
 }
+#popup {
+	position: absolute;
+	border: 1px solid #ddd;
+        border-radius: 0.5em;
+	-moz-border-radius: 0.5em;
+	-webkit-border-radius: 0.5em;
+	background: #666;
+	padding: 6px;
+	color: #efefef;
+	font-size: 0.75em;
+        width: 500px;
+        z-index: 10;
+}
 .prob_title {
 	display: none;
 	position: absolute;
