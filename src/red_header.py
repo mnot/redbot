@@ -24,10 +24,6 @@ $(document).ready(function(){
         $("span." + marker_class).css({"font-weight": "bold", "color": "white"});
         $("li.msg:not(." + marker_class + ")").fadeTo(100, 0.15);
         $("li.msg." + marker_class).fadeTo(50, 1.0);
-        if (tid != false) {
-            clearTimeout(tid);
-            tid = false;
-        };
         $(".mesg_sidebar").css({"position": "fixed"});
         var detail_msg = $("li.msg." + marker_class + ".detail > .hidden_desc").html();
         if (detail_msg) {
@@ -195,7 +191,7 @@ $(document).ready(function(){
 
 <body>
 
-<div id="popup">foo</div>
+<div id="popup"></div>
 
 <div id="header">
 <h1><span class="hilight">R</span>esource <span class="hilight">E</span>xpert <span class="hilight">D</span>roid</h1>

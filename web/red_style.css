@@ -181,6 +181,7 @@ ul li.bad {
 	font-size: 0.75em;
         width: 500px;
         z-index: 10;
+        display: none;
 }
 .prob_title {
 	display: none;
