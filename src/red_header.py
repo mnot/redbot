@@ -16,17 +16,17 @@ $(document).ready(function(){
     function(e){
         var classes = this.className.split(" ");
         for (var i=0; i < classes.length; i++) {
-                var c = classes[i];
-                if (c != 'hdr') {
-                 var marker_class = c;
-                }
+            var c = classes[i];
+            if (c != 'hdr') {
+                var marker_class = c;
+            }
         };
         $("span." + marker_class).css({"font-weight": "bold", "color": "white"});
         $("li.msg:not(." + marker_class + ")").fadeTo(100, 0.15);
         $("li.msg." + marker_class).fadeTo(50, 1.0);
         if (tid != false) {
-                clearTimeout(tid);
-                tid = false;
+            clearTimeout(tid);
+            tid = false;
         };
         $(".mesg_sidebar").css({"position": "fixed"});
         var detail_msg = $("li.msg." + marker_class + ".detail > .hidden_desc").html();
@@ -36,25 +36,25 @@ $(document).ready(function(){
                 tid2 = false;
             }
             $("#popup")
-                    .fadeIn("fast")
-                    .css("top", (e.pageY - 15) + "px")
-                    .css("left", (e.pageX + 15) + "px")
-                    .html(detail_msg);
+                .fadeIn("fast")
+                .css("top", (e.pageY - 15) + "px")
+                .css("left", (e.pageX + 15) + "px")
+                .html(detail_msg);
         }
     }, function(){
         var classes = this.className.split(" ");
         for (var i=0; i < classes.length; i++) {
-                var c = classes[i];
-                if (true) {
-                 var marker_class = c;
-                }
+            var c = classes[i];
+            if (true) {
+                var marker_class = c;
+            }
         };
         $("span." + marker_class).css({"font-weight": "normal", "color": "#ddd"});
         tid = setTimeout(function(){
-                $("li.msg").fadeTo(50, 1.0);
+            $("li.msg").fadeTo(50, 1.0);
         }, 100);
         tid2 = setTimeout(function(){
-                $("#popup").fadeOut("fast");
+            $("#popup").fadeOut("fast");
         }, 200);
     });
 
@@ -94,54 +94,54 @@ $(document).ready(function(){
         var classes = this.className.split(" ");
         $("li.msg").fadeTo(100, 0.15);
         for (var i=0; i < classes.length; i++) {
-                var c = classes[i];
-                if (c != 'droid') {
-                        $("li.msg:eq(" + c +")").fadeTo(50, 1.0);
-                }
+            var c = classes[i];
+            if (c != 'droid') {
+                $("li.msg:eq(" + c +")").fadeTo(50, 1.0);
+            }
         };
         if (tid != false) {
-                clearTimeout(tid);
-                tid = false;
+            clearTimeout(tid);
+            tid = false;
         };
     }, function(){
         tid = setTimeout(function(){
-                $("li.msg").fadeTo(50, 1.0);
+            $("li.msg").fadeTo(50, 1.0);
         }, 100);
     });
 
     $("li.msg").hoverIntent(function(){
         classes = this.className.split(" ");
         for (var i=0; i < classes.length; i++) {
-                var c = classes[i];
-                $("span." + c ).css({"font-weight": "bold", "color": "white"});
+            var c = classes[i];
+            $("span." + c ).css({"font-weight": "bold", "color": "white"});
         };
         $(".mesg_sidebar").css({"position": "fixed"});
         $("#long_mesg").html($("span:first", this).html());
     }, function(){
         classes = this.className.split(" ");
         for (var i=0; i < classes.length; i++) {
-                var c = classes[i];
-                $("span." + c ).css({"font-weight": "normal", "color": "#ddd"});
+            var c = classes[i];
+            $("span." + c ).css({"font-weight": "normal", "color": "#ddd"});
         };
     });
 
     $("h3").click(function(){
-            $(this).next().slideToggle("normal");
+        $(this).next().slideToggle("normal");
     });
 
     $("a.link_view").click(function(){
-            $(".mesg_sidebar").css({"position": "absolute"});
-            $("#long_mesg").html($("#link_list").html());
+        $(".mesg_sidebar").css({"position": "absolute"});
+        $("#long_mesg").html($("#link_list").html());
     });
 
     var check_phrase = "Enter a HTTP URI to check";
     var uri = "%(js_uri)s";
     $(document).ready(function(){
         if (uri) {
-                $("#uri").val(uri);
+            $("#uri").val(uri);
         } else if (! $("#uri").val()) {
-                $("#uri").val(check_phrase);
-                $("#uri").css({'color': '#ccc'});
+            $("#uri").val(check_phrase);
+            $("#uri").css({'color': '#ccc'});
         }
     });
 
