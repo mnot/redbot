@@ -556,16 +556,6 @@ class ResponseHeaderParser(object):
     def x_xrds_location(self, name, values):
         pass
 
-    @GenericHeaderSyntax
-    def NETSCAPE_PAD(self, name, values):
-        self.setMessage(name, rs.NETSCAPE_PAD)
-        return values
-    x_pad_for_netscrape_bug = \
-    x_pad = \
-    xx_pad = \
-    x_browseralignment = \
-    NETSCAPE_PAD
-
     @SingleFieldValue
     def x_pingback(self, name, values):
         #TODO: message, perhaps allow a ping
