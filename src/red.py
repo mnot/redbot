@@ -123,7 +123,7 @@ class ResourceExpertDroid(RedFetcher):
         cc_keys = cc_dict.keys()
 
         # check for mis-capitalised directives /
-        # assure there aren't any dup directives
+        # assure there aren't any dup directives with different values
         for cc in cc_keys:
             if cc.lower() in known_cc and cc != cc.lower():
                 self.setMessage('header-cache-control', rs.CC_MISCAP,
