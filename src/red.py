@@ -67,10 +67,12 @@ class ResourceExpertDroid(RedFetcher):
     """
     def __init__(self, uri, method="GET", req_hdrs=None, req_body=None,
                  status_cb=None, body_procs=None):
-        req_hdrs = req_hdrs or []
-        req_hdrs.append(('Accept-Encoding', 'gzip'))
-        req_hdrs.append(("User-Agent", "RED/%s (http://redbot.org/about)" % __version__))
-        RedFetcher.__init__(self, uri, method, req_hdrs, req_body,
+        self.orig_req_hdrs = req_hdrs or []
+        if 'user-agent' not in [i[0].lower() for i in self.orig_req_hdrs]:
+            self.orig_req_hdrs.append(
+                ("User-Agent", "RED/%s (http://redbot.org/about)" % __version__))
+        rh = self.orig_req_hdrs + [('Accept-Encoding', 'gzip')]
+        RedFetcher.__init__(self, uri, method, rh, req_body,
                             status_cb, body_procs, req_type=method)
 
         # check the URI
@@ -286,7 +288,7 @@ class ConnegCheck(RedFetcher):
     def __init__(self, red):
         self.red = red
         if "gzip" in red.parsed_hdrs.get('content-encoding', []):
-            req_hdrs = [h for h in red.req_hdrs if
+            req_hdrs = [h for h in red.orig_req_hdrs if
                         h[0].lower() != 'accept-encoding']
             RedFetcher.__init__(self, red.uri, red.method, req_hdrs, red.req_body,
                                 red.status_cb, [], "conneg")
@@ -334,6 +336,7 @@ class RangeRequest(RedFetcher):
             self.range_end = self.range_start + sample_len
             self.range_target = red.res_body_sample[sample_num][1][:sample_len + 1]
             if self.range_start == self.range_end: return # wow, that's a small body.
+            # TODO: currently uses the compressed version (if available. Revisit.
             req_hdrs = red.req_hdrs + [
                     ('Range', "bytes=%s-%s" % (self.range_start, self.range_end))
             ]

@@ -1,3 +1,6 @@
+
+/* layout, major elements */
+
 body {
 	background-color: #efefef;
 	color: #111;
@@ -7,8 +10,9 @@ body {
 h1 {
 	color: #555;
 	padding: 0;
-	font-size: 1.2em;
-	width: 600px;
+        margin: 8px 0px;
+	font-size: 1.5em;
+	width: 100%;
 }
 .hilight {
 	color: #d33;
@@ -21,6 +25,27 @@ h3 {
 	margin: 0;
 	padding: 0;
 }
+#head {
+	width: 650px;
+}
+.hidden {
+	display: none;
+}
+.version {
+	padding-top: 5em;
+	text-align: center;
+	color: #aaa;
+	font-size: 0.6em;
+}
+.navigation {
+	text-align: center;
+	color: #aaa;
+	font-size: 0.8em;
+}
+
+
+
+/* message lists */
 
 ul {
 	margin-top: 0.2em;
@@ -30,7 +55,56 @@ ul ul {
 	padding-left: 0.6em;
 	margin-bottom: 0.4em;
 }
-pre {
+
+
+/* request */
+
+input#uri {
+	font-size: 1.1em;
+	width: 100%;
+}
+.add_req_hdr {
+        -webkit-border-bottom-right-radius: 1em;
+        -webkit-border-bottom-left-radius: 1em;
+        -moz-border-radius-bottomleft: 1em;
+        -moz-border-radius-bottomright: 1em;
+        background-color: #aaa;
+        width: 100%;
+        margin: 0em;
+}
+#add_req_hdr {
+        font-size: 0.65em;
+        margin-left: 2em;
+        color: white;
+        text-decoration: none;
+}
+.delete_req_hdr {
+        font-size: 0.65em;
+        margin-left: 0.5em;
+        color: white;
+        text-decoration: none;
+}
+.req_hdr {
+        background-color: #aaa;
+	width: 100%;
+        white-space: nowrap;
+}
+.hdr_name, .hdr_val {
+        font-size: 0.7em;
+}
+input.hdr_val {
+        width: 200px;
+        max-width: 200px;
+}
+option[value="other..."] {
+        font-style: italic;
+        color: #999;
+}
+
+
+/* response detail */
+
+#response {
 	background-color: #111;
 	color: #ddd;
 	border-radius: 1em;
@@ -39,20 +113,26 @@ pre {
 	border: 1px solid black;
 	padding: 1em 0em;
 	margin-bottom: 0em;
-	width: 100%;
 }
-pre a {
+
+#response a {
 	color: #ccf;
 }
-input[type="text"] {
-	font-size: 1.1em;
-	width: 600px;
+.options {
+	margin-top: 0.2em;
+	margin-bottom: 2em;
+	padding-top: 0em;
+	text-align: center;
+	font-size: 0.6em;
 }
-label {
-	font-size: 0.85em;
-	color: #666;
+.options a {
+	padding-right: 2em;
 }
-table {
+
+
+/* summary table */
+
+table#summary {
 	font-size: 0.8em;
 	width: 100%;
 	border-spacing: 0;
@@ -64,43 +144,34 @@ table {
 	border: 1px solid black;
 	padding: 1em;
 }
-th {
+table#summary th {
 	text-align: left;
 	padding: 2em 0.5em 0.25em 0.5em;
 	border-bottom: 1px solid #666;
 	vertical-align: bottom;
 }
-td {
+table#summary td {
 	text-align: center;
 	padding: 0.25em 0.4em;
 	white-space: nowrap;
 }
-tr:hover td {
+table#summary tr:hover td {
 	background-color: #333;
 }
-td.uri {
+table#summary td.uri {
 	text-align: left;
 	font-family: monospace;
 }
-td a {
+table#summary td a {
 	color: #ccf;
 }
-#main {
-	float: left;
-	width: 600px;
-}
-.mesg_sidebar {
-	position: fixed;
-	left: 710px;
-	right: 3em;
-	top: 115px;
-	border: 0;
-	padding: 0;
-	margin: 0;
-	max-width: 500px;
-}
-.mesg_banner {
-}
+.fade1 { opacity: 0.75; }
+.fade2 { opacity: 0.5; }
+.fade3 { opacity: 0.25; }
+
+
+/* message levels */
+
 .good {
 	color: #060;
 	list-style-image: url(icon/accept1.png);
@@ -125,80 +196,31 @@ ul li.bad {
 	color: #111;
 	list-style-image: url(icon/infomation-16.png);
 }
-.detail {
-        display: none;
-}
-.fade1 { opacity: 0.75; }
-.fade2 { opacity: 0.5; }
-.fade3 { opacity: 0.25; }
-.options {
-	margin-top: 0.2em;
-	margin-bottom: 2em;
-	padding-top: 0em;
-	text-align: center;
-	font-size: 0.6em;
-}
-.options a {
-	padding-right: 2em;
-}
-.hidden_desc {
-	display: none;
-}
-.stats {
-	text-align: center;
-	color: #aaa;
-	font-size: 0.6em;
-}
-.version {
-	padding-top: 5em;
-	text-align: center;
-	color: #aaa;
-	font-size: 0.6em;
-}
-.navigation {
-	text-align: center;
-	color: #aaa;
-	font-size: 0.8em;
-}
-#preview {
-	position: absolute;
-	border: 1px solid #ddd;
-	background: #666;
-	padding: 6px;
-	display: none;
-	color: #efefef;
-	font-size: 0.75em;
-}
+
+
+/* popups */
+
 #popup {
 	position: absolute;
-	border: 1px solid #ddd;
         border-radius: 0.5em;
 	-moz-border-radius: 0.5em;
 	-webkit-border-radius: 0.5em;
-	background: #666;
-	padding: 6px;
-	color: #efefef;
+	background-color: #679;
+        opacity: 0.95;
+	padding: 9px;
+	color: white;
 	font-size: 0.85em;
-        width: 500px;
         z-index: 10;
         display: none;
 }
-.prob_title {
-	display: none;
-	position: absolute;
-	border: 2px solid #33d;
-	background: #fefefe;
-	padding: 6px;
-	display: none;
-	color: #111;
-	font-size: 0.9em;
-	width: 144px;
-	white-space: normal;
-	text-align: left;
-	border-radius: 0.75em;
-	-moz-border-radius: 0.75em;
-	-webkit-border-radius: 0.75em;
+
+#popup img {
+        max-width: 440px;
 }
+
+
+/* news */
+
 .news {
 	text-align: center;
 	font-size: 1.0em;

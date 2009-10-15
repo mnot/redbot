@@ -59,7 +59,6 @@ class _Levels:
     WARN = u'warning'
     BAD = u'bad'
     INFO = u'info'
-    DETAIL = u'detail'
 l = _Levels()
 
 class Message:
@@ -401,7 +400,7 @@ class LM_PRESENT(Message):
 
 class MIME_VERSION(Message):
     category = c.GENERAL
-    level = l.DETAIL
+    level = l.INFO
     summary = {
     'en': u"The MIME-Version header generally isn't necessary in HTTP."
     }

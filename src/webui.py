@@ -36,9 +36,6 @@ lang = "en"
 # Where to store exceptions; set to None to disable traceback logging
 logdir = 'exceptions'
 
-# any request headers that we want to *always* send.
-req_hdrs = []
-
 # how many seconds to allow it to run for
 max_runtime = 60
 
@@ -81,22 +78,27 @@ class RedWebUi(object):
     """
     A Web UI for RED.
 
-    Given a URI, run RED on it and present the results to STDOUT as HTML.
+    Given a URI, run RED on it and present the results to output as HTML.
+    If descend is true, spider the links and present a summary.
     """
-    def __init__(self, test_uri, base_uri, output, descend=False):
+    def __init__(self, test_uri, req_hdrs, base_uri, output, descend=False):
         self.base_uri = base_uri
         self.descend_links = descend
         self.output = output
         self.start = time.time()
         timeout = nbhttp.schedule(max_runtime, self.timeoutError)
         header = red_header.__doc__ % {
+            'version': red.__version__,
             'html_uri': e(test_uri),
-            'js_uri': test_uri.replace('"', r'\"'),
+            'js_uri': clean_js(test_uri),
+            'js_req_hdrs': ", ".join(['["%s", "%s"]' % (
+                clean_js(n), clean_js(v)) for n,v in req_hdrs])
         }
         self.output(header.encode('utf-8', 'replace'))
         self.links = {}          # {type: set(link...)}
         self.link_count = 0
-        self.link_droids = []    # list of REDs
+        self.link_droids = []    # list of REDs for summary output
+        self.hidden_text = []    # list of things to hide for popups
         if test_uri:
             link_parser = link_parse.HTMLLinkParser(test_uri, self.processLink)
             self.red = red.ResourceExpertDroid(
@@ -111,6 +113,11 @@ class RedWebUi(object):
                     self.output(TablePresenter(self, self.red).presentResults())
                 else:
                     self.output(DetailPresenter(self, self.red).presentResults())
+                elapsed = time.time() - self.start
+                self.updateStatus("RED made %(requests)s requests in %(elapsed)2.2f seconds." % {
+                   'requests': red_fetcher.total_requests,
+                   'elapsed': elapsed
+                });
             else:
                 self.output("<div id='main'>")
                 if self.red.res_error['desc'] == nbhttp.error.ERR_CONNECT['desc']:
@@ -125,8 +132,7 @@ class RedWebUi(object):
                     raise AssertionError, "Unidentified incomplete response error."
                 self.output(self.presentFooter())
                 self.output("</div>")
-        else:
-            self.output("<div id='main'>")
+        else:  # no test_uri
             self.output(self.presentNews())
             self.output(self.presentFooter())
             self.output("</div>")
@@ -151,6 +157,7 @@ class RedWebUi(object):
         self.links[tag].add(link)
 
     def presentNews(self):
+        "Show link to news, if any"
         if news_file:
             try:
                 news = open(news_file, 'r').read()
@@ -158,8 +165,13 @@ class RedWebUi(object):
             except IOError:
                 return ""
 
+    def presentHiddenList(self):
+        "return a list of hidden items to be used by the UI"
+        return "<ul>" + "\n".join(["<li id='%s'>%s</li>" % (id, text) for \
+            (id, text) in self.hidden_text]) + "</ul>"
+
     def presentFooter(self):
-        elapsed = time.time() - self.start
+        "page footer"
         return """\
 <div class="footer">
 <p class="version">this is RED %(version)s.</p>
@@ -173,14 +185,9 @@ title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
 </p>
 </div>
 
-<!--
-That took %(requests)s requests and %(elapsed)2.2f seconds.
--->
 """ % {
        'baseuri': self.base_uri,
        'version': red.__version__,
-       'requests': red_fetcher.total_requests,
-       'elapsed': elapsed
        }
 
     def updateStatus(self, message):
@@ -248,25 +255,23 @@ class DetailPresenter(object):
 
     # HTML template for the main response body
     template = u"""\
-    <div id="main">
-
-    <pre>%(response)s</pre>
+    <pre id='response'>%(response)s</pre>
 
     <p class="options">
         %(options)s
     </p>
 
+    <div id='details'>
     %(messages)s
-
+    </div>
+    
     %(footer)s
-
-    <div class='hidden_desc' id='link_list'>%(links)s</div>
 
     </div>
 
-    <div class='hidden_desc' id='defn_list'>%(defns)s</div>
+    <div class='hidden' id='link_list'>%(links)s</div>
 
-    <div class="mesg_sidebar" id="long_mesg"></div>
+    <div class='hidden' id='hidden_list'>%(hidden_list)s</div>
 
     """
 
@@ -274,7 +279,6 @@ class DetailPresenter(object):
         self.ui = ui
         self.red = red
         self.header_presenter = HeaderPresenter(self.red)
-        self.defns = []
 
     def presentResults(self):
         "Fill in the template with RED's results."
@@ -284,7 +288,7 @@ class DetailPresenter(object):
             'messages': nl.join([self.presentCategory(cat) for cat in self.msg_categories]),
             'links': self.presentLinks(),
             'footer': self.ui.presentFooter(),
-            'defns': self.presentDefns(),
+            'hidden_list': self.ui.presentHiddenList(),
         }
         return (self.template % result_strings).encode("utf-8")
 
@@ -300,18 +304,15 @@ class DetailPresenter(object):
 
     def presentHeader(self, name, value):
         "Return an individual HTML header as HTML"
-        token_name = name.lower()
+        token_name = "header-%s" % name.lower()
         py_name = "HDR_" + name.upper().replace("-", "_")
-        if hasattr(red_defns, py_name):
+        if hasattr(red_defns, py_name) and token_name not in [i[0] for i in self.ui.hidden_text]:
             defn = getattr(red_defns, py_name)[lang] % {
                 'field_name': name,
             }
-            self.defns.append(u"<li id='header-%s'>%s</li>" % (token_name, defn))
-        return u"    <span class='header-%s hdr'>%s:%s</span>" % (
+            self.ui.hidden_text.append((token_name, defn))
+        return u"    <span name='%s' class='hdr'>%s:%s</span>" % (
             e(token_name), e(name), self.header_presenter.Show(name, value))
-
-    def presentDefns(self):
-        return "<ul>" + "".join([defn for defn in self.defns]) + "</ul>"
 
     def presentCategory(self, category):
         "For a given category, return all of the non-detail messages in it as an HTML list"
@@ -322,18 +323,19 @@ class DetailPresenter(object):
         if [msg for msg in messages]:
             out.append(u"<h3>%s</h3>\n<ul>\n" % category)
         for m in messages:
-            out.append(u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span>" %
-                    (m.level, e(m.subject), e(m.summary[lang] % m.vars), m.text[lang] % m.vars)
+            out.append(u"<li class='%s %s msg' name='msgid-%s'><span>%s</span></li>" %
+                    (m.level, e(m.subject), id(m), e(m.summary[lang] % m.vars))
             )
-            out.append(u"</li>")
+            self.ui.hidden_text.append(("msgid-%s" % id(m), m.text[lang] % m.vars))
             smsgs = [msg for msg in getattr(m.subrequest, "messages", []) if msg.level in [rs.l.BAD]]
             if smsgs:
                 out.append(u"<ul>")
                 for sm in smsgs:
                     out.append(
-                        u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span></li>" %
-                        (sm.level, e(sm.subject), e(sm.summary[lang] % sm.vars), sm.text[lang] % sm.vars)
+                        u"<li class='%s %s msg' name='msgid-%s'><span>%s</span></li>" %
+                        (sm.level, e(sm.subject), id(sm), e(sm.summary[lang] % sm.vars))
                     )
+                    self.ui.hidden_text.append(("msgid-%s" % id(sm), sm.text[lang] % sm.vars))
                 out.append(u"</ul>")
         out.append(u"</ul>\n")
         return nl.join(out)
@@ -427,16 +429,22 @@ class HeaderPresenter(object):
 
 
 class TablePresenter(object):
+    """
+    Present a summary of multiple RED responses.
+    """
     # HTML template for the main response body
     template = u"""\
+    </div>
 
-    <table>
+    <table id='summary'>
     %(table)s
     </table>
 
+    <div id='details'>
     %(problems)s
+    </div>
 
-    <div class="mesg_banner" id="long_mesg"> </div>
+    <div class='hidden' id='hidden_list'>%(hidden_list)s</div>
 
     %(footer)s
 
@@ -451,7 +459,8 @@ class TablePresenter(object):
         result_strings = {
             'table': self.presentTables(),
             'problems': self.presentProblems(),
-            'footer': self.ui.presentFooter()
+            'footer': self.ui.presentFooter(),
+            'hidden_list': self.ui.presentHiddenList(),
         }
         return (self.template % result_strings).encode("utf-8")
 
@@ -526,7 +535,7 @@ class TablePresenter(object):
             # append the actual problem numbers to the final <td>
             for p in pr_enum:
                 m = self.problems[p]
-                out.append("<span class='prob_num'> %s <span class='prob_title'>%s</span></span>" % (p + 1, e(m.summary[lang] % m.vars)))
+                out.append("<span class='prob_num'> %s <span class='hidden'>%s</span></span>" % (p + 1, e(m.summary[lang] % m.vars)))
         else:
             out.append('<td colspan="11">%s' % red.res_error['desc'])
         out.append(u"</td>")
@@ -570,10 +579,10 @@ class TablePresenter(object):
     def presentProblems(self):
         out = ['<br /><h2>Problems</h2><ol>']
         for m in self.problems:
-            out.append(u"<li class='%s %s msg'>%s<span class='hidden_desc'>%s</span>" %
-                    (m.level, e(m.subject), e(m.summary[lang] % m.vars), m.text[lang] % m.vars)
+            out.append(u"<li class='%s %s msg' name='msgid-%s'><span>%s</span></li>" %
+                    (m.level, e(m.subject), id(m), e(m.summary[lang] % m.vars))
             )
-            out.append(u"</li>")
+            self.ui.hidden_text.append(("msgid-%s" % id(m), m.text[lang] % m.vars))
         out.append(u"</ol>\n")
         return nl.join(out)
 
@@ -623,6 +632,14 @@ and we'll look into it."""
             print "</pre>"
     sys.stdout.flush()
 
+def clean_js(instr):
+    "Make sure instr is safe for writing into a double-quoted JavaScript string."
+    if not instr: return ""
+    instr = instr.replace('"', r'\"')
+    if instr[-1] == '\\':
+        instr += '\\'
+    return instr
+
 if __name__ == "__main__":
     import cgi
     def output(o):
@@ -634,6 +651,10 @@ if __name__ == "__main__":
         sys.excepthook = except_handler
         form = cgi.FieldStorage()
         test_uri = form.getfirst("uri", "").decode('utf-8', 'replace')
+        req_hdrs = [tuple(rh.split(":", 1))
+                    for rh in form.getlist("req_hdr")
+                    if rh.find(":") > 0
+                   ]
         descend = form.getfirst('descend', False)
     base_uri = "http://%s%s%s" % ( # FIXME: only supports HTTP
       os.environ.get('HTTP_HOST'),
@@ -646,4 +667,4 @@ if __name__ == "__main__":
     else:
         output("Cache-Control: max-age=3600")
     print
-    RedWebUi(test_uri, base_uri, output, descend)
+    RedWebUi(test_uri, req_hdrs, base_uri, output, descend)
