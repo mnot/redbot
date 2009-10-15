@@ -207,7 +207,7 @@ window.status="%s";
         self.output(error_template % ("RED timeout."))
         self.output("<!-- Outstanding Connections\n")
         for conn in red_fetcher.outstanding_requests:
-            self.output("***", conn.uri.encode('utf-8', 'replace'))
+            self.output("*** %s" % conn.uri.encode('utf-8', 'replace'))
             pprint.pprint(conn.__dict__)
             if conn._client:
                 pprint.pprint(conn._client.__dict__)
