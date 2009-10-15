@@ -58,6 +58,8 @@ jQuery.fn.hoverPopup = function(fnText, fnOver, fnOut) {
 $(document).ready(function(){
     var hidden_list = $("#hidden_list");
 
+    /* popup */
+
     $("#popup").hoverIntent(function(){
         if (tid != false) {
             clearTimeout(tid);
@@ -66,6 +68,9 @@ $(document).ready(function(){
     }, function(){
         $("#popup").fadeOut("fast");
     });
+
+
+    /* single response display */
 
     $("span.hdr").hoverPopup(
         function(e){
