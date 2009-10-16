@@ -71,7 +71,27 @@ QUOTED_STRING = r'(?:"(?:[ \t\x21\x23-\x5B\x5D-\x7E]|\\[\x01-\x09\x0B-\x0C\x0E\x
 PARAMETER = r'(?:%(TOKEN)s(?:=(?:%(TOKEN)s|%(QUOTED_STRING)s))?)' % locals()
 TOK_PARAM = r'(?:%(TOKEN)s(?:\s*;\s*%(PARAMETER)s)*)' % locals()
 PRODUCT = r'(?:%(TOKEN)s(?:/%(TOKEN)s)?)' % locals()
-COMMENT = r'(?:\((?:[^\(\)]|\\\(|\\\))*\))' # does not handle nesting or check chars
+COMMENT = r"""(?:
+    \((?:
+        [^\(\)] |
+        \\\( |
+        \\\) |
+        (?:
+            \((?:
+                [^\(\)] |
+                \\\( |
+                \\\) |
+                (?:
+                    \((?:
+                        [^\(\)] |
+                        \\\( |
+                        \\\)
+                    )*\)
+                )
+            )*\)
+        )
+    )*\)
+)""" # only handles two levels of nested comments; does not check chars
 COMMA = r'(?:\s*(?:,\s*)+)'
 DIGITS = r'(?:[0-9]+)'
 DATE = r"""(?:\w{3},\ [0-9]{2}\ \w{3}\ [0-9]{4}\ [0-9]{2}:[0-9]{2}:[0-9]{2}\ GMT |
