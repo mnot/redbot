@@ -18,6 +18,7 @@ jQuery.fn.hoverPopup = function(fnText, fnOver, fnOut) {
         }
         var text = fnText.call(this, e);
         if (text) {
+            var top = $(this).position().top + 15;
             var popup_width = 450;
             var popup_x;
             if (popup_width + 10 > window.innerWidth) {
@@ -26,16 +27,23 @@ jQuery.fn.hoverPopup = function(fnText, fnOver, fnOut) {
             } else if (e.pageX + popup_width + 10 < window.innerWidth) {
                 popup_x = e.pageX + 5;
             } else if (e.pageX - popup_width - 5 > 5) {
-                popup_x = e.pageX - popup_width - 5;
+                popup_x = e.pageX - popup_width + 5;
             } else {
                 popup_x = 5;
             }
             $("#popup")
                 .fadeIn("fast")
-                .css("top", (e.pageY + 5) + "px")
+                .css("top", top + "px")
                 .css("left", popup_x + "px")
                 .css("width", popup_width + "px")
                 .html(text);
+            var margin = 28;
+            var height = $("#popup").height();
+            var winheight = $(window).height();
+            if (top + height > winheight - margin) {
+                var placement = winheight - margin - height;
+                $("#popup").animate({ top:placement });
+            }
         } else {
             $("#popup").hide();
         }
