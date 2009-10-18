@@ -179,7 +179,6 @@ class RedWebUi(object):
 <a href="http://REDbot.org/about/">about</a> |
 <a href="http://blog.REDbot.org/">blog</a> |
 <a href="http://REDbot.org/project">project</a> |
-<a href="http://REDbot.org/terms/">terms of use</a> |
 <a href="javascript:location%%20=%%20'%(baseuri)s?uri='+escape(location);%%20void%%200"
 title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
 </p>
