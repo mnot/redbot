@@ -118,19 +118,6 @@ $(document).ready(function(){
         }
     );
 
-    $("span.hdr").toggle(
-        function(){
-            var name = $(this).attr('name');
-            $("li.msg." + name).slideDown("fast");
-            $("li.msg:not('." + name + "')").slideUp("fast");
-        },
-        function(){
-            $("li.msg").slideDown("fast", function(){
-                $("li.msg").css('display', 'list-item')
-            });
-        }
-    );
-
     $("h3").click(function(){
         $(this).next().slideToggle("normal");
     });
