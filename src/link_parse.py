@@ -29,7 +29,6 @@ THE SOFTWARE.
 
 from htmlentitydefs import entitydefs
 from HTMLParser import HTMLParser
-from urlparse import urljoin
 
 import response_analyse
 RHP = response_analyse.ResponseHeaderParser
@@ -51,6 +50,7 @@ class HTMLLinkParser(HTMLParser):
     link_parseable_types = [
         'text/html',
         'application/xhtml+xml',
+        'application/atom+xml'
     ]
 
     def __init__(self, base_uri, process_link):
@@ -89,7 +89,7 @@ class HTMLLinkParser(HTMLParser):
                 self.count += 1
                 if "#" in target:
                     target = target[:target.index('#')]
-                self.process_link(urljoin(self.base, target), tag, title)
+                self.process_link(target, tag, title)
         elif tag == 'base':
             self.base = attr_d.get('href', self.base)
         elif tag == 'meta' and attr_d.get('http-equiv', '').lower() == 'content-type':

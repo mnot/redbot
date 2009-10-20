@@ -170,6 +170,25 @@ table#summary td a {
 .fade3 { opacity: 0.25; }
 
 
+/* response body */
+
+#body {
+        display: none;
+}
+
+#body.prettyprint {
+        font: 0.80em/1.00em Consolas, "Lucida Console", Monaco, monospace;
+        overflow: auto;
+        background-color: #fafafa;
+        border: none;
+	border-radius: 1em;
+	-moz-border-radius: 1em;
+	-webkit-border-radius: 1em;
+        padding: 9px;
+}
+
+
+
 /* message levels */
 
 .good {

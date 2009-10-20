@@ -5,9 +5,11 @@
 	<link rel="stylesheet" type='text/css' href="red_style.css">
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta name="ROBOTS" content="INDEX, NOFOLLOW" />
-<script src="jquery.js"></script>
-<script src="jquery.hoverIntent.js"></script>
-<script language="JavaScript">
+        <link href="prettify.css" type="text/css" rel="stylesheet" />
+        <script type="text/javascript" src="prettify.js"></script>
+        <script src="jquery.js"></script>
+        <script src="jquery.hoverIntent.js"></script>
+        <script language="JavaScript">
 
 var tid = false;
 jQuery.fn.hoverPopup = function(fnText, fnOver, fnOut) {
@@ -122,11 +124,20 @@ $(document).ready(function(){
         $(this).next().slideToggle("normal");
     });
 
-    $("a.link_view").click(function(){
-        $("#details").html($("#link_list").html());
+    $("#body_view").toggle(function() {
+        $("#details").fadeOut('fast', function() {
+            $("#body").fadeIn('fast');
+            prettyPrint();
+            $("#body_view").text("show messages");
+        });
+        return false;
+    }, function() {
+        $("#body").fadeOut('fast', function() {
+            $("#details").fadeIn('fast');
+            $("#body_view").text("show body");
+        });
+        return false;
     });
-
-
 
     /* URI */
 

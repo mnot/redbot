@@ -47,6 +47,7 @@ news_file = "news.html"
 import operator
 import os
 import pprint
+import re
 import sys
 import textwrap
 import time
@@ -99,13 +100,16 @@ class RedWebUi(object):
         self.link_count = 0
         self.link_droids = []    # list of REDs for summary output
         self.hidden_text = []    # list of things to hide for popups
+        self.body_sample = ""    # sample of the response body
+        self.body_sample_size = 1024 * 32 # how big to allow the sample to be
+        self._sample_seen = 0
         if test_uri:
-            link_parser = link_parse.HTMLLinkParser(test_uri, self.processLink)
+            self.link_parser = link_parse.HTMLLinkParser(test_uri, self.processLink)
             self.red = red.ResourceExpertDroid(
                 test_uri,
                 req_hdrs=req_hdrs,
                 status_cb=self.updateStatus,
-                body_procs=[link_parser.feed],
+                body_procs=[self.link_parser.feed, self.storeSample],
             )
             self.updateStatus('Done.')
             if self.red.res_complete:
@@ -148,13 +152,21 @@ class RedWebUi(object):
           link not in self.links[tag]:
             self.link_droids.append((
                 red.ResourceExpertDroid(
-                    link,
+                    urljoin(self.link_parser.base, link),
                     req_hdrs=req_hdrs,
                     status_cb=self.updateStatus
                 ),
                 tag
             ))
         self.links[tag].add(link)
+
+    def storeSample(self, response, chunk):
+        """store the first self.sample_size bytes of the response"""
+        if self._sample_seen < self.body_sample_size:
+            uni_chunk = unicode(chunk, self.link_parser.doc_enc or self.link_parser.http_enc, 'ignore')
+            max_chunk = self.body_sample_size - self._sample_seen
+            self.body_sample += uni_chunk[:max_chunk]
+            self._sample_seen += len(uni_chunk)
 
     def presentNews(self):
         "Show link to news, if any"
@@ -164,6 +176,21 @@ class RedWebUi(object):
                 return news
             except IOError:
                 return ""
+
+    def presentBody(self):
+        # TODO: alert if it's not the entire body
+        safe_sample = e(self.body_sample)
+        for tag, link_set in self.links.items():
+            for link in link_set:
+                def link_to(matchobj):
+                    return r"%s<a href='%s' class='nocode'>%s</a>%s" % (
+                        matchobj.group(1),
+                        u"?uri=%s" % e(urljoin(self.link_parser.base, link)),
+                        e(link),
+                        matchobj.group(1)
+                    )
+                safe_sample = re.sub(r"(['\"])%s\1" % re.escape(link), link_to, safe_sample)
+        return """<pre id="body" class="prettyprint">%s</pre>""" % safe_sample
 
     def presentHiddenList(self):
         "return a list of hidden items to be used by the UI"
@@ -263,12 +290,12 @@ class DetailPresenter(object):
     <div id='details'>
     %(messages)s
     </div>
-    
+
+    %(body)s
+
     %(footer)s
 
     </div>
-
-    <div class='hidden' id='link_list'>%(links)s</div>
 
     <div class='hidden' id='hidden_list'>%(hidden_list)s</div>
 
@@ -285,7 +312,7 @@ class DetailPresenter(object):
             'response': self.presentResponse(),
             'options': self.presentOptions(),
             'messages': nl.join([self.presentCategory(cat) for cat in self.msg_categories]),
-            'links': self.presentLinks(),
+            'body': self.ui.presentBody(),
             'footer': self.ui.presentFooter(),
             'hidden_list': self.ui.presentHiddenList(),
         }
@@ -343,46 +370,14 @@ class DetailPresenter(object):
         "Return things that the user can do with the URI as HTML links"
         options = []
         media_type = self.red.parsed_hdrs.get('content-type', [""])[0]
-        if media_type in self.viewable_types:
-            if media_type[:6] == 'image/':
-                cl = " class='preview'"
-            else:
-                cl = ""
-            options.append(u"<a href='%s'%s>view</a>" % (self.red.uri, cl))
-        if self.ui.link_count > 0:
-            options.append(u"<a href='#link_list' class='link_view' title='%s'>view links</a>" %
-                           self.red.uri)
-            options.append(u"<a href='?descend=True&uri=%s'>check links</a>" %
-                           self.red.uri)
+        options.append(u"<a href='#' id='body_view'>view body</a>")
         if self.validators.has_key(media_type):
             options.append(u"<a href='%s'>validate body</a>" %
                            self.validators[media_type] % self.red.uri)
+        if self.ui.link_count > 0:
+            options.append(u"<a href='?descend=True&uri=%s'>check assets</a>" %
+                           self.red.uri)
         return nl.join(options)
-
-    link_order = [
-          ('link', 'Head Links'),
-          ('script', 'Script Links'),
-          ('frame', 'Frame Links'),
-          ('iframe', 'IFrame links'),
-          ('img', 'Image Links'),
-          ('a', 'Body Links')
-    ]
-    def presentLinks(self):
-        "Return an HTML list of the links in the response, as RED URIs"
-        out = []
-        for tag, name in self.link_order:
-            link_set = self.ui.links.get(tag, set())
-            if len(link_set) > 0:
-                link_list = list(link_set)
-                link_list.sort()
-                out.append(u"<h3>%s</h3>" % name)
-                out.append(u"<ul>")
-                for link in link_list:
-                    al = u"?uri=%s" % e(link)
-                    out.append(u"<li><a href='%s'>%s</a></li>" % (
-                                 al, e(link)))
-                out.append(u"</ul>")
-        return nl.join(out)
 
 
 class HeaderPresenter(object):
@@ -421,8 +416,8 @@ class HeaderPresenter(object):
     @staticmethod
     def I(value, sub_width):
         "wrap a line to fit in the header box"
-        hdr_sz = 65
-        sw = 65 - min(hdr_sz-1, sub_width)
+        hdr_sz = 75
+        sw = hdr_sz - min(hdr_sz-1, sub_width)
         tr = textwrap.TextWrapper(width=sw, subsequent_indent=" "*8, break_long_words=True)
         return tr.fill(value)
 
