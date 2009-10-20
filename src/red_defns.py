@@ -370,7 +370,7 @@ HDR_LAST_MODIFIED = {
 
 HDR_ACCEPT_RANGES = {
     'en': u"""The <code>Accept-Ranges</code> header allows the server to
-        indicate its acceptance of range requests for a
+        indicate that it accepts range requests for a
         resource."""
 }
 
@@ -392,7 +392,7 @@ HDR_CACHE_CONTROL = {
         the request/response chain. Cache
         directives are unidirectional in that the presence
         of a directive in a request does not imply that the
-        same directive is to be given in the response."""
+        same directive is in effect in the response."""
 }
 
 HDR_EXPIRES = {
@@ -429,8 +429,8 @@ HDR_WARNING = {
 
 HDR_AUTHORIZATION = {
     'en': u"""The <code>Authorization</code> request header
-        consists of credentials containing the authentication information
-        of the user agent for the origin server."""
+        contains authentication information
+        for the user agent to the origin server."""
 }
 
 HDR_PROXY_AUTHENTICATE = {
@@ -443,9 +443,8 @@ HDR_PROXY_AUTHENTICATE = {
 
 HDR_PROXY_AUTHORIZATION = {
     'en': u"""The <code>Proxy-Authorization</code> request header
-        consists of credentials
-        containing the authentication information of the
-        user agent for the proxy and/or realm of the
+        contains authentication information for the
+        user agent to the proxy and/or realm of the
         resource being requested."""
 }
 
