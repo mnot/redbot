@@ -3,7 +3,6 @@
 """
 A Web UI for RED, the Resource Expert Droid.
 """
-import types
 
 __author__ = "Mark Nottingham <mnot@mnot.net>"
 __copyright__ = """\
