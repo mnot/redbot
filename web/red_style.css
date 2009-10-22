@@ -42,7 +42,12 @@ h3 {
 	color: #aaa;
 	font-size: 0.8em;
 }
-
+.note {
+        text-align: center;
+        font-size: 0.8em;
+        color: #999;
+        font-style: italic;
+}
 
 
 /* message lists */
@@ -176,7 +181,7 @@ table#summary td a {
         display: none;
 }
 
-#body.prettyprint {
+#body .prettyprint {
         font: 0.80em/1.00em Consolas, "Lucida Console", Monaco, monospace;
         overflow: auto;
         background-color: #fafafa;

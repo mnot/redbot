@@ -102,7 +102,8 @@ class RedWebUi(object):
         self.hidden_text = []    # list of things to hide for popups
         self.body_sample = ""    # sample of the response body
         self.body_sample_size = 1024 * 32 # how big to allow the sample to be
-        self._sample_seen = 0
+        self.sample_seen = 0
+        self.sample_complete = True
         if test_uri:
             self.link_parser = link_parse.HTMLLinkParser(test_uri, self.processLink)
             self.red = red.ResourceExpertDroid(
@@ -162,24 +163,23 @@ class RedWebUi(object):
 
     def storeSample(self, response, chunk):
         """store the first self.sample_size bytes of the response"""
-        if self._sample_seen < self.body_sample_size:
-            uni_chunk = unicode(chunk, self.link_parser.doc_enc or self.link_parser.http_enc, 'ignore')
-            max_chunk = self.body_sample_size - self._sample_seen
-            self.body_sample += uni_chunk[:max_chunk]
-            self._sample_seen += len(uni_chunk)
-
-    def presentNews(self):
-        "Show link to news, if any"
-        if news_file:
-            try:
-                news = open(news_file, 'r').read()
-                return news
-            except IOError:
-                return ""
+        if self.sample_seen + len(chunk) < self.body_sample_size:
+            self.body_sample += chunk
+            self.sample_seen += len(chunk)
+        elif self.sample_seen < self.body_sample_size:
+            max_chunk = self.body_sample_size - self.sample_seen
+            self.body_sample += chunk[:max_chunk]
+            self.sample_seen += len(chunk)
+            self.sample_complete = False
+        else:
+            self.sample_complete = False
 
     def presentBody(self):
-        # TODO: alert if it's not the entire body
-        safe_sample = e(self.body_sample)
+        """show the stored body sample"""
+        uni_sample = unicode(self.body_sample,
+            self.link_parser.doc_enc or self.link_parser.http_enc, 'ignore')
+        safe_sample = e(uni_sample)
+        message = ""
         for tag, link_set in self.links.items():
             for link in link_set:
                 def link_to(matchobj):
@@ -190,7 +190,18 @@ class RedWebUi(object):
                         matchobj.group(1)
                     )
                 safe_sample = re.sub(r"(['\"])%s\1" % re.escape(link), link_to, safe_sample)
-        return """<pre id="body" class="prettyprint">%s</pre>""" % safe_sample
+        if not self.sample_complete:
+            message = "<p class='note'>RED isn't showing the whole body, because it's so big!</p>"
+        return """<pre class="prettyprint">%s</pre>\n%s""" % (safe_sample, message)
+
+    def presentNews(self):
+        "Show link to news, if any"
+        if news_file:
+            try:
+                news = open(news_file, 'r').read()
+                return news
+            except IOError:
+                return ""
 
     def presentHiddenList(self):
         "return a list of hidden items to be used by the UI"
@@ -291,7 +302,9 @@ class DetailPresenter(object):
     %(messages)s
     </div>
 
+    <div id='body'>
     %(body)s
+    </div>
 
     %(footer)s
 
