@@ -2,13 +2,13 @@
 <html>
 <head>
 	<title>RED: &lt;%(html_uri)s&gt;</title>
-	<link rel="stylesheet" type='text/css' href="red_style.css">
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta name="ROBOTS" content="INDEX, NOFOLLOW" />
-        <link href="prettify.css" type="text/css" rel="stylesheet" />
-        <script type="text/javascript" src="prettify.js"></script>
-        <script src="jquery.js"></script>
-        <script src="jquery.hoverIntent.js"></script>
+	<link rel="stylesheet" type="text/css" href="%(static)s/red_style.css">
+        <link rel="stylesheet" type="text/css" href="%(static)s/prettify.css">
+        <script src="%(static)s/prettify.js "type="text/javascript"></script>
+        <script src="%(static)s/jquery.js"></script>
+        <script src="%(static)s/jquery.hoverIntent.js"></script>
         <script language="JavaScript">
 
 var tid = false;

@@ -38,7 +38,10 @@ logdir = 'exceptions'
 # how many seconds to allow it to run for
 max_runtime = 60
 
-# file containing news to display on front page
+# URI root for static assets (absolute or relative, but no trailing '/')
+static_root = 'static'
+
+# file containing news to display on front page; None to disable
 news_file = "news.html"
 
 ### End configuration ######################################################
@@ -88,6 +91,7 @@ class RedWebUi(object):
         self.start = time.time()
         timeout = nbhttp.schedule(max_runtime, self.timeoutError)
         header = red_header.__doc__ % {
+            'static': static_root,
             'version': red.__version__,
             'html_uri': e(test_uri),
             'js_uri': clean_js(test_uri),
