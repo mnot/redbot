@@ -75,7 +75,10 @@ class HTMLLinkParser(HTMLParser):
             self.http_enc = response.parsed_hdrs['content-type'][1].get('charset', self.http_enc)
             try:
                 if chunk.__class__.__name__ != 'unicode':
-                    chunk = unicode(chunk, self.doc_enc or self.http_enc, 'ignore')
+                    try:
+                        chunk = unicode(chunk, self.doc_enc or self.http_enc, 'ignore')
+                    except LookupError:
+                        pass
                 HTMLParser.feed(self, chunk)
             except: # oh, well...
                 pass

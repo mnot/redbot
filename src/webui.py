@@ -179,8 +179,11 @@ class RedWebUi(object):
 
     def presentBody(self):
         """show the stored body sample"""
-        uni_sample = unicode(self.body_sample,
-            self.link_parser.doc_enc or self.link_parser.http_enc, 'ignore')
+        try:
+            uni_sample = unicode(self.body_sample,
+                self.link_parser.doc_enc or self.link_parser.http_enc, 'ignore')
+        except LookupError:
+            uni_sample = self.body_sample
         safe_sample = e(uni_sample)
         message = ""
         for tag, link_set in self.links.items():
