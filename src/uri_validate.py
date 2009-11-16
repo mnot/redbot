@@ -38,7 +38,7 @@ DIGIT = r"[\x30-\x39]"
 
 ALPHA = r"[\x41-\x5A\x61-\x7A]"
 
-HEXDIG = r"[\x30-\x39ABCDEF]"
+HEXDIG = r"[\x30-\x39A-Fa-f]"
 
 #   pct-encoded   = "%" HEXDIG HEXDIG
 pct_encoded = r" %% %(HEXDIG)s %(HEXDIG)s"  % locals()
