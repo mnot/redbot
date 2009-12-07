@@ -3,6 +3,7 @@
 <head>
 	<title>RED: &lt;%(html_uri)s&gt;</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7" />
 	<meta name="ROBOTS" content="INDEX, NOFOLLOW" />
 	<link rel="stylesheet" type="text/css" href="%(static)s/red_style.css">
         <link rel="stylesheet" type="text/css" href="%(static)s/prettify.css">
@@ -202,62 +203,13 @@ $(document).ready(function(){
         return false;
     });
 
-    $(".delete_req_hdr").live("click", function(){
-        var req_hdr = $(this).closest(".req_hdr");
-        req_hdr.remove();
-        return false;
-    });
-
-
-    $("select.hdr_name").live("change", function(){
-        var req_hdr = $(this).closest(".req_hdr");
-        var hdr_name = $(".hdr_name > option:selected", req_hdr).val()
-        var hdr_val = "";
-        if (hdr_name in known_req_hdrs) {
-            if (known_req_hdrs[hdr_name] == null) {
-                hdr_val = "<input class='hdr_val' type='text'/>";
-            } else {
-                hdr_val = "<select class='hdr_val'>";
-                for (val in known_req_hdrs[hdr_name]) {
-                    hdr_val += "<option>" + known_req_hdrs[hdr_name][val] + "</option>";
-                }
-                hdr_val += "<option value='other...'>other...</option>";
-                hdr_val += "</select>";
-            }
-            $(".hdr_val", req_hdr).replaceWith(hdr_val);
-        } else if (hdr_name == "other...") {
-            $(".hdr_name", req_hdr).replaceWith("<input class='hdr_name' type='text'/>");
-            $(".hdr_val", req_hdr).replaceWith("<input class='hdr_val' type='text'/>");
+    /* catch enter to work around IE8 */
+    $("input").keypress(function (e) {
+        if (e.which == 13) {
+            $("#request_form").submit();
         }
     });
 
-    $("select.hdr_val").live("change", function(){
-        var req_hdr = $(this).closest(".req_hdr");
-        var hdr_name = $(".hdr_name > option:selected", req_hdr).val()
-        var hdr_val = "";
-        if ($(".hdr_val > option:selected", req_hdr).val() == "other...") {
-            $(".hdr_val", req_hdr).replaceWith("<input class='hdr_val' type='text'/>");
-        } else {
-            hdr_val = $(".hdr_val > option:selected", req_hdr).val();
-        }
-        $("input[type=hidden]", req_hdr).val(hdr_name + ":" + hdr_val);
-    });
-
-    $("input.hdr_name, input.hdr_val").live("change", function() {
-        var req_hdr = $(this).closest(".req_hdr");
-        var hdr_name = $(".hdr_name", req_hdr).val();
-        var hdr_val = $(".hdr_val:text", req_hdr).val();
-        $("input[type=hidden]", req_hdr).val(hdr_name + ":" + hdr_val);
-    });
-
-    $("input.hdr_name").live("change", function() {
-        var req_hdr = $(this).closest(".req_hdr");
-        var hdr_name = $(".hdr_name:text", req_hdr).val();
-        if (red_req_hdrs.indexOf(hdr_name.toLowerCase()) > -1) {
-            alert("The " + hdr_name + " request header is used by RED in its \
-tests. Setting it yourself can lead to unpredictable results; please remove it.");
-        }
-    });
 });
 
 
@@ -288,7 +240,7 @@ function add_req_hdr(hdr_name, hdr_val){
             if (known_hdr_vals == null) {
                 $(".hdr_val", req_hdr).replaceWith('<input class="hdr_val" type="text"/>');
                 $(".hdr_val", req_hdr).val(hdr_val);
-            } else if (known_hdr_vals.indexOf(hdr_val) >= 0) {
+            } else if (jQuery.inArray(hdr_val, known_hdr_vals) > -1) {
                 var val_html = "<select class='hdr_val'>";
                 val_html += "<option />";
                 for (i in known_hdr_vals) {
@@ -315,6 +267,68 @@ function add_req_hdr(hdr_name, hdr_val){
         $(".hdr_val", req_hdr).val(hdr_val);
         $("input[type=hidden]", req_hdr).val(hdr_name + ":" + hdr_val);
     }
+
+    /* populate the value when the header name is changed */
+    $("select.hdr_name:last").bind("change", function(){
+        var req_hdr = $(this).closest(".req_hdr");
+        var hdr_name = $(".hdr_name > option:selected", req_hdr).val()
+        var hdr_val = "";
+        if (hdr_name in known_req_hdrs) {
+            if (known_req_hdrs[hdr_name] == null) {
+                hdr_val = "<input class='hdr_val' type='text'/>";
+                $(".hdr_val", req_hdr).replaceWith(hdr_val);
+                bind_text_changes(req_hdr);
+            } else {
+                hdr_val = "<select class='hdr_val'>";
+                for (val in known_req_hdrs[hdr_name]) {
+                    hdr_val += "<option>" + known_req_hdrs[hdr_name][val] + "</option>";
+                }
+                hdr_val += "<option value='other...'>other...</option>";
+                hdr_val += "</select>";
+                $(".hdr_val", req_hdr).replaceWith(hdr_val);
+                $("select.hdr_val", req_hdr).bind("change", function(){
+                    var hdr_val = "";
+                    if ($(".hdr_val > option:selected", req_hdr).val() == "other...") {
+                        $(".hdr_val", req_hdr).replaceWith("<input class='hdr_val' type='text'/>");
+                        bind_text_changes(req_hdr);
+                    } else {
+                        hdr_val = $(".hdr_val > option:selected", req_hdr).val();
+                    }
+                    $("input[type=hidden]", req_hdr).val(hdr_name + ":" + hdr_val);
+                });
+            }
+        } else if (hdr_name == "other...") {
+            $(".hdr_name", req_hdr).replaceWith("<input class='hdr_name' type='text'/>");
+            $(".hdr_val", req_hdr).replaceWith("<input class='hdr_val' type='text'/>");
+            bind_text_changes(req_hdr);
+
+            /* alert on dangerous changes */
+            $("input.hdr_name", req_hdr).bind("change", function() {
+                var hdr_name = $(".hdr_name:text", req_hdr).val();
+                if (jQuery.inArray(hdr_name.toLowerCase(), red_req_hdrs) > -1) {
+                    alert("The " + hdr_name + " request header is used by RED in its \
+tests. Setting it yourself can lead to unpredictable results; please remove it.");
+                }
+            });
+        }
+    });
+
+    /* handle the delete button */
+    $(".delete_req_hdr:last").bind("click", function(){
+        var req_hdr = $(this).closest(".req_hdr");
+        req_hdr.remove();
+        return false;
+    });
+
+}
+
+function bind_text_changes(req_hdr) {
+           /* handle textbox changes */
+            $("input.hdr_name, input.hdr_val", req_hdr).bind("change", function() {
+                var hdr_name = $(".hdr_name", req_hdr).val();
+                var hdr_val = $(".hdr_val:text", req_hdr).val();
+                $("input[type=hidden]", req_hdr).val(hdr_name + ":" + hdr_val);
+            });
 }
 
 function init_req_hdrs() {
@@ -360,7 +374,7 @@ var red_req_hdrs = [
 <div id="request">
     <h1><span class="hilight">R</span>esource <span class="hilight">E</span>xpert <span class="hilight">D</span>roid</h1>
 
-    <form method="GET" onLoad="init_req_hdrs();">
+    <form method="GET" onLoad="init_req_hdrs();" id="request_form">
         <input type="url" name="uri" value="%(html_uri)s" id="uri"/><br />
         <div id="req_hdrs"></div>
         <div class="add_req_hdr">
