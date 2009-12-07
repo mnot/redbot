@@ -257,7 +257,7 @@ class RedFetcher:
 
     @staticmethod
     def _read_gzip_header(content):
-        "Parse a GZIP header"
+        "Parse a string for a GZIP header; if present, return remainder of gzipped content."
         # adapted from gzip.py
         FTEXT, FHCRC, FEXTRA, FNAME, FCOMMENT = 1, 2, 4, 8, 16
         if len(content) < 10:
