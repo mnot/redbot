@@ -4,7 +4,7 @@
 body {
     background-color: #f9f9f4;
     color: #111;
-    font: 1.05em/1.15em sans-serif;
+    font: 12pt/14pt Arial, "Helvetica Neue", Helvetica, sans-serif;
     margin: 1em 3em;
 }
 h1 {
@@ -54,13 +54,15 @@ h3 {
 
 ul {
     margin-top: 0.2em;
-    margin-left: 1em;
+    margin-left: 12pt;
 }
 ul ul {
-    padding-left: 0.6em;
+    padding-left: 9pt;
     margin-bottom: 0.4em;
 }
-
+li {
+    padding-left: 4pt;
+}
 
 /* request */
 
@@ -110,6 +112,8 @@ option[value="other..."] {
 /* response detail */
 
 #response {
+    font-size: 10pt;
+    font-family: "Lucida Console", Courier, monospace;
     background-color: #111;
     color: #ddd;
     border-radius: 1em;
