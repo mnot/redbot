@@ -183,13 +183,16 @@ table#summary td a {
 
 #body {
     display: none;
+    position: absolute;
+    right: 3em;
+    left: 3em;
 }
 
 #body .prettyprint {
     font: 0.80em/1.00em Consolas, "Lucida Console", Monaco, monospace;
-    overflow: auto;
-    background-color: #fafafa;
-    border: none;
+    overflow: hidden;
+    background-color: #fff;
+    border: 1px solid #ccc;
     border-radius: 1em;
     -moz-border-radius: 1em;
     -webkit-border-radius: 1em;
