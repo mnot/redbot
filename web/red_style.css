@@ -2,13 +2,13 @@
 /* layout, major elements */
 
 body {
-    background-color: #efefef;
+    background-color: #f9f9f4;
     color: #111;
     font: 1.05em/1.15em sans-serif;
     margin: 1em 3em;
 }
 h1 {
-    color: #555;
+    color: #444;
     padding: 0;
     margin: 8px 0px;
     font-size: 1.5em;
@@ -73,9 +73,9 @@ input#uri {
     -webkit-border-bottom-left-radius: 1em;
     -moz-border-radius-bottomleft: 1em;
     -moz-border-radius-bottomright: 1em;
-    background-color: #aaa;
+    background-color: #a9a9a4;
     width: 100%;
-    margin: 0em;
+    margin: 0;
 }
 #add_req_hdr {
     font-size: 0.65em;
@@ -90,7 +90,7 @@ input#uri {
     text-decoration: none;
 }
 .req_hdr {
-    background-color: #aaa;
+    background-color: #a9a9a4;
     width: 100%;
     white-space: nowrap;
 }
