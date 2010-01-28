@@ -53,6 +53,7 @@ import re
 import sys
 import textwrap
 import time
+import urllib
 from urlparse import urljoin
 from cgi import escape as e
 
@@ -392,10 +393,10 @@ class DetailPresenter(object):
         options.append(u"<a href='#' id='body_view'>view body</a>")
         if self.validators.has_key(media_type):
             options.append(u"<a href='%s'>validate body</a>" %
-                           self.validators[media_type] % self.red.uri)
+                           self.validators[media_type] % urllib.quote(self.red.uri))
         if self.ui.link_count > 0:
             options.append(u"<a href='?descend=True&uri=%s'>check assets</a>" %
-                           self.red.uri)
+                           urllib.quote(self.red.uri))
         return nl.join(options)
 
 
