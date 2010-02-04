@@ -237,7 +237,7 @@ title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
     def updateStatus(self, message):
         "Update the status bar of the browser"
         msg = u"""
-<script language="JavaScript">
+<script>
 <!--
 window.status="%s";
 -->
