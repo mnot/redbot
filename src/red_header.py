@@ -1,16 +1,16 @@
 """\
+<!DOCTYPE html>
 <html>
 <head>
 	<title>RED: &lt;%(html_uri)s&gt;</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7" />
 	<meta name="ROBOTS" content="INDEX, NOFOLLOW" />
 	<link rel="stylesheet" type="text/css" href="%(static)s/red_style.css">
         <link rel="stylesheet" type="text/css" href="%(static)s/prettify.css">
-        <script src="%(static)s/prettify.js "type="text/javascript"></script>
+        <script src="%(static)s/prettify.js" type="text/javascript"></script>
         <script src="%(static)s/jquery.js"></script>
         <script src="%(static)s/jquery.hoverIntent.js"></script>
-        <script language="JavaScript">
+        <script>
 
 var tid = false;
 jQuery.fn.hoverPopup = function(fnText, fnOver, fnOut) {
@@ -381,6 +381,6 @@ var red_req_hdrs = [
             <a href="#" id="add_req_hdr">add a header</a>
         </div>
     </form>
-    <script language="JavaScript">init_req_hdrs();</script>
+    <script>init_req_hdrs();</script>
 </div>
 """
