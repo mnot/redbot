@@ -296,7 +296,7 @@ class ResponseHeaderParser(object):
             if attr in ['max-age', 's-maxage']:
                 try:
                     value = int(value)
-                except ValueError:
+                except (ValueError, TypeError):
                     self.setMessage(name, rs.BAD_CC_SYNTAX, bad_cc_attr=attr)
                     continue
             directives.add((attr, value))
