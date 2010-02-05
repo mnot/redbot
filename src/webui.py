@@ -344,7 +344,7 @@ class DetailPresenter(object):
         u"    <span class='status'>HTTP/%s %s %s</span>\n" % (
             e(str(self.red.res_version)),
             e(str(self.red.res_status)),
-            e(str(self.red.res_phrase))
+            e(self.red.res_phrase)
         ) + \
         nl.join([self.presentHeader(f,v) for (f,v) in self.red.res_hdrs])
 
