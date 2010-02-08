@@ -137,6 +137,8 @@ class RedWebUi(object):
                                           'detail', "RED can't fetch that URL."))
                 elif self.red.res_error['desc'] == nbhttp.error.ERR_READ_TIMEOUT['desc']:
                     self.output(error_template % self.red.res_error['desc'])
+                elif self.red.res_error['desc'] == nbhttp.error.ERR_HTTP_VERSION['desc']:
+                    self.output(error_template % "<code>%s</code> isn't HTTP." % e(self.red.res_error.get('detail', '')[:20]))
                 else:
                     raise AssertionError, "Unidentified incomplete response error."
                 self.output(self.presentFooter())
