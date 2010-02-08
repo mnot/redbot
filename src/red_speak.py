@@ -92,6 +92,21 @@ response = {
     'range': {'en': 'The partial response'},
 }
 
+class PROTOCOL_UNKNOWN(Message):
+    category = c.GENERAL
+    level = l.BAD
+    summary = {
+    'en': u"%(response)s doesn't look like HTTP."
+    }
+    text = {
+    'en': u"""%(response)s gives its HTTP version as "%(version_sample)s."
+    RED (and almost any other HTTP client) will only recognise
+    <code>HTTP/1.0</code> or <code>HTTP/1.1</code>.<p>
+    This might be caused by part of a previous message overflowing into the
+    next one (often because the <code>Content-Length</code> was misleading),
+    or because a protocol other than HTTP is in use."""
+    }
+
 class URI_TOO_LONG(Message):
     category = c.GENERAL
     level = l.WARN

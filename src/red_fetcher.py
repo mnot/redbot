@@ -229,6 +229,10 @@ class RedFetcher:
             self.res_complete = False
         elif err['desc'] == nbhttp.error.ERR_READ_TIMEOUT['desc']:
             self.res_complete = False
+        elif err['desc'] == nbhttp.error.ERR_HTTP_VERSION['desc']:
+            self.res_complete = False
+            self.setMessage('http-version-unknown', rs.PROTOCOL_UNKNOWN,
+                                version_sample=e(err.get('detail', '')[:20]))
         else:
             raise AssertionError, "Unknown response error: %s" % err
 
