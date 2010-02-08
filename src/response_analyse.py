@@ -587,7 +587,6 @@ class ResponseStatusChecker:
     code and perform appropriate tests on it.
     """
     def __init__(self, red):
-        assert red.parsed_hdrs, "ResponseHeaderParser MUST be run first."
         self.red = red
         try:
             getattr(self, "status%s" % red.res_status)()
