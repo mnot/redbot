@@ -46,6 +46,7 @@ news_file = "news.html"
 
 ### End configuration ######################################################
 
+import cgi
 import operator
 import os
 import pprint
@@ -54,7 +55,7 @@ import sys
 import textwrap
 import time
 import urllib
-from urlparse import urljoin
+from urlparse import urljoin, urlsplit
 from cgi import escape as e
 
 assert sys.version_info[0] == 2 and sys.version_info[1] >= 5, "Please use Python 2.5 or greater"
@@ -569,7 +570,7 @@ class TablePresenter(object):
         <th title="How long a cache can treat the response as fresh.">fresh</th>
         <th title="Whether a cache can serve the response once it becomes stale (e.g., when it can't contact the origin server).">serve<br>stale</th>
         <th title="Whether If-Modified-Since validation is supported, using Last-Modified.">IMS</th>
-        <th title="Whether If-None-Match vaidation is supported, using ETags.">INM</th>
+        <th title="Whether If-None-Match validation is supported, using ETags.">INM</th>
         <th title="Whether negotiation for gzip compression is supported; if so, the percent of the original size saved.">gzip</th>
         <th title="Whether partial responses are supported.">partial<br>content</th>
         <th title="Issues encountered.">problems</th>
@@ -656,22 +657,17 @@ def clean_js(instr):
         instr += '\\'
     return instr
 
-if __name__ == "__main__":
-    import cgi
+def cgi_main():
     def output(o):
         print o
-    try:
-        test_uri = sys.argv[1]
-        descend = True
-    except IndexError:
-        sys.excepthook = except_handler
-        form = cgi.FieldStorage()
-        test_uri = form.getfirst("uri", "").decode('utf-8', 'replace')
-        req_hdrs = [tuple(rh.split(":", 1))
-                    for rh in form.getlist("req_hdr")
-                    if rh.find(":") > 0
-                   ]
-        descend = form.getfirst('descend', False)
+    sys.excepthook = except_handler
+    form = cgi.FieldStorage()
+    test_uri = form.getfirst("uri", "").decode('utf-8', 'replace')
+    req_hdrs = [tuple(rh.split(":", 1))
+                for rh in form.getlist("req_hdr")
+                if rh.find(":") > 0
+               ]
+    descend = form.getfirst('descend', False)
     base_uri = "http://%s%s%s" % ( # FIXME: only supports HTTP
       os.environ.get('HTTP_HOST'),
       os.environ.get('SCRIPT_NAME'),
@@ -684,3 +680,47 @@ if __name__ == "__main__":
         output("Cache-Control: max-age=3600")
     print
     RedWebUi(test_uri, req_hdrs, base_uri, output, descend)
+
+def standalone_main(port, static_dir):
+    static_files = {}
+    for file in os.listdir(static_dir):
+        sys.stderr.write("Loading %s...\n" % file)
+        try:
+            # FIXME: need to load icons
+            static_files["/static/%s" % file] = open(os.path.join(static_dir, file)).read()
+        except IOError:
+            sys.stderr.write("failed.\n")
+    def red_handler(method, uri, req_hdrs, res_start, req_pause):
+        p_uri = urlsplit(uri)
+        if static_files.has_key(p_uri.path):
+            res_body, res_done = res_start("200", "OK", [], nbhttp.dummy)
+            res_body(static_files[p_uri.path])
+            res_done(None)
+        elif p_uri.path == "/":
+            query = cgi.parse_qs(p_uri.query)
+            test_uri = query.get('uri', [""])[0]
+            test_hdrs = [] #FIXME
+            base_uri = "/"
+            descend = query.has_key('descend')
+            res_hdrs = [('Content-Type', 'text/html; charset=utf-8')] #FIXME: need to send proper content-type back, caching headers
+            res_body, res_done = res_start("200", "OK", res_hdrs, nbhttp.dummy)
+            sys.stderr.write("%s %s %s\n" % (str(descend), test_uri, test_hdrs))
+            RedWebUi(test_uri, test_hdrs, base_uri, res_body, descend)
+            res_done(None)
+        else:
+            res_body, res_done = res_start("404", "Not Found", [], nbhttp.dummy)
+            res_done(None)
+        return nbhttp.dummy, nbhttp.dummy
+    nbhttp.Server("", port, red_handler)
+    nbhttp.run() # FIXME: catch errors
+    # FIXME: catch interrupts
+    # FIXME: run/stop in red_fetcher
+
+if __name__ == "__main__":
+    try:
+        # FIXME: usage
+        port = sys.argv[1]
+        static_dir = sys.argv[2]
+        standalone_main(int(port), static_dir)
+    except IndexError:
+        cgi_main()
