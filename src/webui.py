@@ -659,6 +659,7 @@ def clean_js(instr):
     return instr
 
 def cgi_main():
+    """Run RED as a CGI Script."""
     def output(o):
         print o
     sys.excepthook = except_handler
@@ -683,6 +684,7 @@ def cgi_main():
     RedWebUi(test_uri, req_hdrs, base_uri, output, descend)
 
 def standalone_main(port, static_dir):
+    """Run RED as a standalone Web server."""
     static_files = {}
     for file in os.listdir(static_dir):
         sys.stderr.write("Loading %s...\n" % file)
@@ -716,12 +718,22 @@ def standalone_main(port, static_dir):
     nbhttp.run() # FIXME: catch errors
     # FIXME: catch interrupts
     # FIXME: run/stop in red_fetcher
+    # FIXME: logging
+
+def standalone_monitor(port, static_dir):
+    """Fork a process as a standalone Web server and watch it."""
+    from multiprocessing import Process
+    while True:
+        p = Process(target=standalone_main, args=(port, static_dir))
+        sys.stderr.write("* Starting RED process...\n")
+        p.start()
+        p.join()
 
 if __name__ == "__main__":
     try:
         # FIXME: usage
         port = sys.argv[1]
         static_dir = sys.argv[2]
-        standalone_main(int(port), static_dir)
+        standalone_monitor(int(port), static_dir)
     except IndexError:
         cgi_main()
