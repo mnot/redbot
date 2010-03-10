@@ -107,7 +107,7 @@ class RedWebUi(object):
         self.link_droids = []    # list of REDs for summary output
         self.hidden_text = []    # list of things to hide for popups
         self.body_sample = ""    # sample of the response body
-        self.body_sample_size = 1024 * 32 # how big to allow the sample to be
+        self.body_sample_size = 1024 * 128 # how big to allow the sample to be
         self.sample_seen = 0
         self.sample_complete = True
         if test_uri:
