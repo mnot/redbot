@@ -67,6 +67,7 @@ class HTMLLinkParser(HTMLParser):
             'iframe': 'src',
         }
         self.count = 0
+        self.errors = 0
         HTMLParser.__init__(self)
 
     def feed(self, response, chunk):
@@ -80,8 +81,8 @@ class HTMLLinkParser(HTMLParser):
                     except LookupError:
                         pass
                 HTMLParser.feed(self, chunk)
-            except: # oh, well...
-                pass
+            except Exception, why: # oh, well...
+                self.errors += 1
 
     def handle_starttag(self, tag, attrs):
         attr_d = dict(attrs)
@@ -119,7 +120,7 @@ class HTMLLinkParser(HTMLParser):
         return entitydefs.get(name, '')
 
     def error(self, message):
-        return
+        self.errors += 1
 
 
 if "__main__" == __name__:
