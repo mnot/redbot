@@ -11,7 +11,7 @@ They should be processed with re.VERBOSE.
 
 __author__ = "Mark Nottingham <mnot@mnot.net>"
 __license__ = """
-Copyright (c) 2009 Mark Nottingham (code portions)
+Copyright (c) 2009-2010 Mark Nottingham (code portions)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
