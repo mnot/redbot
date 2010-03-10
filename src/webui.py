@@ -88,6 +88,7 @@ class RedWebUi(object):
     """
     def __init__(self, test_uri, req_hdrs, base_uri, output, descend=False):
         self.base_uri = base_uri
+        self.req_hdrs = req_hdrs
         self.descend_links = descend
         self.output = output
         self.start = time.time()
@@ -161,7 +162,7 @@ class RedWebUi(object):
             self.link_droids.append((
                 red.ResourceExpertDroid(
                     urljoin(self.link_parser.base, link),
-                    req_hdrs=req_hdrs,
+                    req_hdrs=self.req_hdrs,
                     status_cb=self.updateStatus
                 ),
                 tag
