@@ -243,11 +243,11 @@ title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
         "Update the status bar of the browser"
         msg = u"""
 <script>
-<!--
+<!-- %3.3f
 window.status="%s";
 -->
 </script>
-        """ % e(message)
+        """ % (time.time() - self.start, e(message))
         self.output(msg.encode('utf-8', 'replace'))
         sys.stdout.flush()
 
