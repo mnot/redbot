@@ -644,6 +644,7 @@ A problem has occurred, but it probably isn't your fault.
             e_line = etb.tb_frame.f_lineno
             dir = os.path.join(logdir, os.path.split(e_file)[-1])
             if not os.path.exists(dir):
+                os.umask(0777)
                 os.makedirs(dir)
             (fd, path) = tempfile.mkstemp(prefix="%s_" % e_line, suffix='.html', dir=dir)
             fh = os.fdopen(fd, 'w')
