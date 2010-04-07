@@ -1,4 +1,4 @@
-#!/usr/bin/env python -u
+#!/usr/bin/env python
 
 """
 A Web UI for RED, the Resource Expert Droid.
@@ -674,6 +674,7 @@ def cgi_main():
     def output(o):
         print o
     sys.excepthook = except_handler
+    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0) 
     form = cgi.FieldStorage()
     test_uri = form.getfirst("uri", "").decode('utf-8', 'replace')
     req_hdrs = [tuple(rh.split(":", 1))
