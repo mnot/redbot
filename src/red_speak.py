@@ -1021,7 +1021,7 @@ class STOREABLE(Message):
     category = c.CACHING
     level = l.INFO
     summary = {
-     'en': u"""%(response)s can be stored by any cache."""
+     'en': u"""%(response)s is allowed to be stored by caches."""
     }
     text = {
      'en': u"""A cache can store this response; it may or may not be able to
@@ -1032,7 +1032,7 @@ class NO_CACHE(Message):
     category = c.CACHING
     level = l.INFO
     summary = {
-     'en': u"%(response)s cannot be served from cache without validation."
+     'en': u"%(response)s cannot be used by a cache without validation."
     }
     text = {
      'en': u"""The <code>Cache-Control: no-cache</code> directive means that
@@ -1171,29 +1171,63 @@ class FRESHNESS_STALE(Message):
     }
     text = {
     'en': u"""A cache considers a HTTP response stale when its age (here, %(current_age)s)
-    is equal to or exceeds its freshness lifetime (in this case, %(freshness_lifetime)s)."""
+    is equal to or exceeds its freshness lifetime (in this case, %(freshness_lifetime)s).<p>
+    HTTP allows caches to use stale responses to satisfy requests only under exceptional 
+    circumstances; e.g., when they lose contact with the origin server."""
     }
 
-class HEURISTIC_FRESHNESS(Message):
+class FRESHNESS_HEURISTIC(Message):
     category = c.CACHING
     level = l.INFO
     summary = {
-     'en': u"%(response)s allows heuristic freshness to be used."
+     'en': u"%(response)s allows a cache to assign its own freshness lifetime."
     }
     text = {
-     'en': u"""When the response doesn't have explicit freshness information (like a <code>
+     'en': u"""When responses with certain status codes don't have explicit freshness information (like a <code>
      Cache-Control: max-age</code> directive, or <code>Expires</code> header), caches are
-     allowed to estimate how fresh the response is using a heuristic.<p>
+     allowed to estimate how fresh it is using a heuristic.<p>
      Usually, but not always, this is done using the <code>Last-Modified</code> header. For
      example, if your response was last modified a week ago, a cache might decide to consider
      the response fresh for a day."""
+    }
+
+class FRESHNESS_NONE(Message):
+    category = c.CACHING
+    level = l.INFO
+    summary = {
+     'en': u"%(response)s can only be served by a cache under exceptional circumstances."
+    }
+    text = {
+     'en': u"""%(response)s doesn't have explicit freshness information (like a <code>
+     Cache-Control: max-age</code> directive, or <code>Expires</code> header), and this
+     status code doesn't allow caches to calculate their own.<p>
+     Therefore, while caches may be allowed to store it, they can't use it, except in unusual 
+     cirucumstances, such a when the origin server can't be contacted.<p>
+     This behaviour can be prevented by using the <code>Cache-Control: must-revalidate</code>
+     response directive.<p>
+     Note that many caches will not store the response at all, because it is not generally useful to do so.
+     """
+    }
+
+class FRESH_SERVABLE(Message):
+    category = c.CACHING
+    level = l.INFO
+    summary = {
+     'en': u"%(response)s may still be served by a cache once it becomes stale."
+    }
+    text = {
+    'en': u"""HTTP allows stale responses to be served under some circumstances;
+    for example, if the origin server can't be contacted, a stale response can
+    be used (even if it doesn't have explicit freshness information).<p>
+    This behaviour can be prevented by using the <code>Cache-Control: must-revalidate</code>
+    response directive."""
     }
 
 class STALE_SERVABLE(Message):
     category = c.CACHING
     level = l.INFO
     summary = {
-     'en': u"%(response)s can be served stale."
+     'en': u"%(response)s may be served by a cache, even though it is stale."
     }
     text = {
     'en': u"""HTTP allows stale responses to be served under some circumstances;
@@ -1203,11 +1237,11 @@ class STALE_SERVABLE(Message):
     response directive."""
     }
 
-class STALE_MUST_REVALIDATE(Message):
+class FRESH_MUST_REVALIDATE(Message):
     category = c.CACHING
     level = l.INFO
     summary = {
-     'en': u"%(response)s cannot be served stale by caches."
+     'en': u"%(response)s cannot be served by a cache once it becomes stale."
     }
     text = {
     'en': u"""The <code>Cache-Control: must-revalidate</code> directive forbids
@@ -1217,11 +1251,41 @@ class STALE_MUST_REVALIDATE(Message):
     than a stale response."""
     }
 
+class STALE_MUST_REVALIDATE(Message):
+    category = c.CACHING
+    level = l.INFO
+    summary = {
+     'en': u"%(response)s cannot be served by a cache, because it is stale."
+    }
+    text = {
+    'en': u"""The <code>Cache-Control: must-revalidate</code> directive forbids
+    caches from using stale responses to satisfy requests.<p>For example,
+    caches often use stale responses when they cannot connect to the origin
+    server; when this directive is present, they will return an error rather
+    than a stale response."""
+    }
+
+class FRESH_PROXY_REVALIDATE(Message):
+    category = c.CACHING
+    level = l.INFO
+    summary = {
+     'en': u"%(response)s cannot be served by a shared cache once it becomes stale."
+    }
+    text = {
+    'en': u"""The presence of the <code>Cache-Control: proxy-revalidate</code>
+    and/or <code>s-maxage</code> directives forbids shared caches (e.g., proxy
+    caches) from using stale responses to satisfy requests.<p>For example,
+    caches often use stale responses when they cannot connect to the origin
+    server; when this directive is present, they will return an error rather
+    than a stale response.<p>These directives do not affect private caches; for
+    example, those in browsers."""
+    }
+
 class STALE_PROXY_REVALIDATE(Message):
     category = c.CACHING
     level = l.INFO
     summary = {
-     'en': u"%(response)s cannot be served stale by shared caches."
+     'en': u"%(response)s cannot be served by a shared cache, because it is stale."
     }
     text = {
     'en': u"""The presence of the <code>Cache-Control: proxy-revalidate</code>

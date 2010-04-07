@@ -244,34 +244,42 @@ class ResourceExpertDroid(RedFetcher):
         freshness_lifetime_str = relative_time(int(freshness_lifetime), 0, 0)
 
         self.freshness_lifetime = freshness_lifetime
-        if freshness_left > 0:
-            self.setMessage(" ".join(freshness_hdrs), rs.FRESHNESS_FRESH,
-                             freshness_lifetime=freshness_lifetime_str,
-                             freshness_left=freshness_left_str,
-                             current_age = current_age_str
-                             )
-        else:
-            self.setMessage(" ".join(freshness_hdrs), rs.FRESHNESS_STALE,
-                             freshness_lifetime=freshness_lifetime_str,
-                             freshness_left=freshness_left_str,
-                             current_age = current_age_str
-                             )
-
+        fresh = freshness_left > 0
+        if has_explicit_freshness:
+            if fresh:
+                self.setMessage(" ".join(freshness_hdrs), rs.FRESHNESS_FRESH,
+                                 freshness_lifetime=freshness_lifetime_str,
+                                 freshness_left=freshness_left_str,
+                                 current_age = current_age_str
+                                 )
+            else:
+                self.setMessage(" ".join(freshness_hdrs), rs.FRESHNESS_STALE,
+                                 freshness_lifetime=freshness_lifetime_str,
+                                 freshness_left=freshness_left_str,
+                                 current_age = current_age_str
+                                 )
         # can heuristic freshness be used?
-        if self.res_status in heuristic_cacheable_status and \
-          not has_explicit_freshness:
-            self.setMessage('header-last-modified', rs.HEURISTIC_FRESHNESS)
+        elif self.res_status in heuristic_cacheable_status:
+            self.setMessage('header-last-modified', rs.FRESHNESS_HEURISTIC)
+        else:
+            self.setMessage('', rs.FRESHNESS_NONE)
 
         # can stale responses be served?
         if 'must-revalidate' in cc_keys:
-            self.stale_serveable = False
-            self.setMessage('header-cache-control', rs.STALE_MUST_REVALIDATE)
+            if fresh:
+                self.setMessage('header-cache-control', rs.FRESH_MUST_REVALIDATE)
+            elif has_explicit_freshness:
+                self.setMessage('header-cache-control', rs.STALE_MUST_REVALIDATE)
         elif 'proxy-revalidate' in cc_keys or 's-maxage' in cc_keys:
-            self.stale_serveable = False
-            self.setMessage('header-cache-control', rs.STALE_PROXY_REVALIDATE)
+            if fresh:
+                self.setMessage('header-cache-control', rs.FRESH_PROXY_REVALIDATE)
+            elif has_explicit_freshness:
+                self.setMessage('header-cache-control', rs.STALE_PROXY_REVALIDATE)
         else:
-            self.stale_serveable = True
-            self.setMessage('header-cache-control', rs.STALE_SERVABLE)
+            if fresh:
+                self.setMessage('header-cache-control', rs.FRESH_SERVABLE)
+            elif has_explicit_freshness:
+                self.setMessage('header-cache-control', rs.STALE_SERVABLE)
 
         # public?
         if 'public' in cc_keys:
