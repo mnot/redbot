@@ -638,9 +638,9 @@ A problem has occurred, but it probably isn't your fault.
         except:                         # just in case something goes wrong
             doc = ''.join(traceback.format_exception(etype, evalue, etb))
         try:
-            e_file = etb.tb_frame.f_locals['__file__']
             while etb.tb_next != None:
                 etb = etb.tb_next
+            e_file = etb.tb_frame.f_code.co_filename
             e_line = etb.tb_frame.f_lineno
             dir = os.path.join(logdir, os.path.split(e_file)[-1])
             if not os.path.exists(dir):
