@@ -6,11 +6,18 @@
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta name="ROBOTS" content="INDEX, NOFOLLOW" />
 	<link rel="stylesheet" type="text/css" href="%(static)s/red_style.css">
-        <link rel="stylesheet" type="text/css" href="%(static)s/prettify.css">
-        <script src="%(static)s/prettify.js" type="text/javascript"></script>
-        <script src="%(static)s/jquery.js"></script>
-        <script src="%(static)s/jquery.hoverIntent.js"></script>
-        <script>
+	<!--[if IE]> 
+    <style type="text/css">
+        #right_column {
+        	width: 650px;
+            float: left;
+    </style>
+    <![endif]-->
+    <link rel="stylesheet" type="text/css" href="%(static)s/prettify.css">
+    <script src="%(static)s/prettify.js" type="text/javascript"></script>
+    <script src="%(static)s/jquery.js"></script>
+    <script src="%(static)s/jquery.hoverIntent.js"></script>
+    <script>
 
 var tid = false;
 jQuery.fn.hoverPopup = function(fnText, fnOver, fnOut) {
@@ -370,7 +377,6 @@ var red_req_hdrs = [
 
 <div id="popup"></div>
 
-<div id='head'>
 <div id="request">
     <h1><span class="hilight">R</span>esource <span class="hilight">E</span>xpert <span class="hilight">D</span>roid</h1>
 

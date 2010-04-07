@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python -u
 
 """
 A Web UI for RED, the Resource Expert Droid.
@@ -222,6 +222,7 @@ class RedWebUi(object):
     def presentFooter(self):
         "page footer"
         return """\
+<br clear="all"/> <!-- FIXME -->
 <div class="footer">
 <p class="version">this is RED %(version)s.</p>
 <p class="navigation">
@@ -257,10 +258,10 @@ window.status="%s";
         for conn in red_fetcher.outstanding_requests:
             self.output("*** %s" % conn.uri.encode('utf-8', 'replace'))
             pprint.pprint(conn.__dict__)
-            if conn._client:
-                pprint.pprint(conn._client.__dict__)
-            if conn._client._tcp_conn:
-                pprint.pprint(conn._client._tcp_conn.__dict__)
+            if conn.client:
+                pprint.pprint(conn.client.__dict__)
+            if conn.client._tcp_conn:
+                pprint.pprint(conn.client._tcp_conn.__dict__)
 
         self.output("-->\n")
         nbhttp.stop()
@@ -303,23 +304,27 @@ class DetailPresenter(object):
 
     # HTML template for the main response body
     template = u"""\
+    <div id="left_column">
     <pre id='response'>%(response)s</pre>
 
     <p class="options">
         %(options)s
     </p>
+    </div>
 
+    <div id="right_column">
     <div id='details'>
     %(messages)s
     </div>
+    </div>
 
+    <br clear="all"/> <!-- FIXME -->
+    
     <div id='body'>
     %(body)s
     </div>
-
+    
     %(footer)s
-
-    </div>
 
     <div class='hidden' id='hidden_list'>%(hidden_list)s</div>
 
@@ -394,6 +399,12 @@ class DetailPresenter(object):
         "Return things that the user can do with the URI as HTML links"
         options = []
         media_type = self.red.parsed_hdrs.get('content-type', [""])[0]
+        options.append(u"response headers: %i bytes" % self.red.client.input_header_length)
+        options.append(u"body: %i bytes" % self.red.res_body_len)
+        transfer_overhead = self.red.client.input_transfer_length - self.red.res_body_len
+        if transfer_overhead > 0:
+            options.append(u"transfer overhead: %i bytes" % transfer_overhead)
+        options.append(None)
         options.append(u"<a href='#' id='body_view'>view body</a>")
         if self.validators.has_key(media_type):
             options.append(u"<a href='%s'>validate body</a>" %
@@ -401,7 +412,7 @@ class DetailPresenter(object):
         if self.ui.link_count > 0:
             options.append(u"<a href='?descend=True&uri=%s'>check assets</a>" %
                            urllib.quote(self.red.uri))
-        return nl.join(options)
+        return nl.join([option and "<span class='option'>%s</span>" % option or "<br>" for option in options])
 
 
 class HeaderPresenter(object):
@@ -629,10 +640,10 @@ A problem has occurred, but it probably isn't your fault.
             for conn in red_fetcher.outstanding_requests:
                 fh.write("*** %s\n" % conn.uri.encode('utf-8', 'replace'))
                 pprint.pprint(conn.__dict__, fh)
-                if conn._client:
-                    pprint.pprint(conn._client.__dict__, fh)
-                if conn._client._tcp_conn:
-                    pprint.pprint(conn._client._tcp_conn.__dict__, fh)
+                if conn.client:
+                    pprint.pprint(conn.client.__dict__, fh)
+                if conn.client._tcp_conn:
+                    pprint.pprint(conn.client._tcp_conn.__dict__, fh)
             fh.write("</pre>\n")
             fh.close()
             print error_template % """
@@ -725,9 +736,10 @@ def standalone_monitor(port, static_dir):
     from multiprocessing import Process
     while True:
         p = Process(target=standalone_main, args=(port, static_dir))
-        sys.stderr.write("* Starting RED process...\n")
+        sys.stderr.write("* Starting RED server...\n")
         p.start()
         p.join()
+        # TODO: listen to socket and drop privs
 
 if __name__ == "__main__":
     try:

@@ -5,7 +5,28 @@ body {
     background-color: #f9f9f4;
     color: #111;
     font: 12pt/14pt Arial, "Helvetica Neue", Helvetica, sans-serif;
-    margin: 1em 3em;
+    margin: 1em 50px;
+	max-width: 1100px;
+}
+#left_column {
+	width: 650px;
+    float: left;
+    margin: 0em;
+    padding: 0em;
+}
+#right_column {
+	width: 400px;
+    float: right;
+    margin: 1em 0em 0em 40px;
+    padding: 0em;
+}
+@media screen and (max-width: 1200px) {
+	#left_column, #right_column {
+	    width: 650px;
+	    margin: 0em;
+	    padding: 0em;
+	    float: left;
+	}
 }
 h1 {
     color: #444;
@@ -24,9 +45,6 @@ h3 {
     font-size: 0.9em;
     margin: 0;
     padding: 0;
-}
-#head {
-    width: 650px;
 }
 .hidden {
     display: none;
@@ -67,8 +85,8 @@ li {
 /* request */
 
 input#uri {
+	width: 645px;
     font-size: 1.1em;
-    width: 100%;
 }
 .add_req_hdr {
     -webkit-border-bottom-right-radius: 1em;
@@ -76,7 +94,7 @@ input#uri {
     -moz-border-radius-bottomleft: 1em;
     -moz-border-radius-bottomright: 1em;
     background-color: #a9a9a4;
-    width: 100%;
+	width: 650px;
     margin: 0;
 }
 #add_req_hdr {
@@ -93,7 +111,7 @@ input#uri {
 }
 .req_hdr {
     background-color: #a9a9a4;
-    width: 100%;
+    width: 650px;
     white-space: nowrap;
 }
 .hdr_name, .hdr_val {
@@ -134,7 +152,7 @@ option[value="other..."] {
     text-align: center;
     font-size: 0.6em;
 }
-.options a {
+.options > * {
     padding-right: 2em;
 }
 
@@ -152,6 +170,7 @@ table#summary {
     -webkit-border-radius: 1em;
     border: 1px solid black;
     padding: 1em;
+	margin-top: 1em;
 }
 table#summary th {
     text-align: left;
@@ -199,8 +218,6 @@ table#summary td a {
     -webkit-border-radius: 1em;
     padding: 9px;
 }
-
-
 
 /* message levels */
 

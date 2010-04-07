@@ -108,7 +108,7 @@ class RedFetcher:
         self.ims_support = None
         self.gzip_support = None
         self.gzip_savings = 0
-        self._client = None # we only keep this for debugging
+        self.client = None
         self._md5_processor = hashlib.md5()
         self._decompress = zlib.decompressobj(-zlib.MAX_WBITS).decompress
         self._in_gzip_body = False
@@ -135,10 +135,10 @@ class RedFetcher:
         global total_requests
         outstanding_requests.append(self)
         total_requests += 1
-        self._client = RedHttpClient(self._response_start)
+        self.client = RedHttpClient(self._response_start)
         if self.status_cb and self.type:
             self.status_cb("fetching %s (%s)" % (self.uri, self.type))
-        req_body, req_done = self._client.req_start(
+        req_body, req_done = self.client.req_start(
             self.method, self.uri.encode('utf-8', 'replace'), self.req_hdrs, nbhttp.dummy)
         if self.req_body != None:
             req_body(self.req_body)
