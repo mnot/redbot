@@ -617,7 +617,10 @@ class TablePresenter(object):
 
 # adapted from cgitb.Hook
 def except_handler(etype, evalue, etb):
-    "Log uncaught exceptions and display a friendly error."
+    """
+    Log uncaught exceptions and display a friendly error.
+    Assumes output to STDOUT (i.e., CGI only).
+    """
     import cgitb
     print cgitb.reset()
     if logdir is None:
@@ -625,7 +628,6 @@ def except_handler(etype, evalue, etb):
 A problem has occurred, but it probably isn't your fault.
 """
     else:
-        import os
         import tempfile
         import traceback
         try:
@@ -633,7 +635,14 @@ A problem has occurred, but it probably isn't your fault.
         except:                         # just in case something goes wrong
             doc = ''.join(traceback.format_exception(etype, evalue, etb))
         try:
-            (fd, path) = tempfile.mkstemp(suffix='.html', dir=logdir)
+            e_file = etb.tb_frame.f_locals['__file__']
+            while etb.tb_next != None:
+                etb = etb.tb_next
+            e_line = etb.tb_frame.f_lineno
+            dir = os.path.join(logdir, os.path.split(e_file)[-1])
+            if not os.path.exists(dir):
+                os.makedirs(dir)
+            (fd, path) = tempfile.mkstemp(prefix="%s_" % e_line, suffix='.html', dir=dir)
             fh = os.fdopen(fd, 'w')
             fh.write(doc)
             fh.write("<h2>Outstanding Connections</h2>\n<pre>")
@@ -656,8 +665,14 @@ RED tried to save it, but it couldn't! Oops.<br>
 Please e-mail the information below to
 <a href='mailto:red@redbot.org'>red@redbot.org</a>
 and we'll look into it."""
+            print "<h3>Original Error</h3>"
             print "<pre>"
             print ''.join(traceback.format_exception(etype, evalue, etb))
+            print "</pre>"
+            print "<h3>Write Error</h3>"
+            print "<pre>"
+            type, value, tb = sys.exc_info()
+            print ''.join(traceback.format_exception(type, value, tb))
             print "</pre>"
     sys.stdout.flush()
 
