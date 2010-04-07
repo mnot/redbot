@@ -545,7 +545,7 @@ class ResponseHeaderParser(object):
         return values
 
     @GenericHeaderSyntax
-    @CheckFieldSyntax(PARAMETER, "http://blogs.msdn.com/ie/archive/2008/06/10/introducing-ie-emulateie7.aspx")
+    @CheckFieldSyntax(PARAMETER, "http://msdn.microsoft.com/en-us/library/cc288325(VS.85).aspx")
     def x_ua_compatible(self, name, values):
         directives = {}
         for directive in values:

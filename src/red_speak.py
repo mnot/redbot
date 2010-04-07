@@ -609,13 +609,12 @@ class UA_COMPATIBLE(Message):
     category = c.GENERAL
     level = l.INFO
     summary = {
-     'en': u"%(response)s indicates that IE8 should go into compatibility mode."
+     'en': u"%(response)s explicitly sets a rendering mode for Internet Explorer 8."
     }
     text = {
-     'en': u"""Internet Explorer 8 allows responses to indicate that they should
-     be handled as if it were a previous version of the browser, to allow old
-     content to be easily updated to work with the new version.<p>
-     See <a href="http://blogs.msdn.com/ie/archive/2008/06/10/introducing-ie-emulateie7.aspx">this blog entry</a> for more information."""
+     'en': u"""Internet Explorer 8 allows responses to explicitly set the rendering
+     mode used for a given page (known a the "compatibility mode").<p>
+     See <a href="http://msdn.microsoft.com/en-us/library/cc288325(VS.85).aspx">Microsoft's documentation</a> for more information."""
     }
 
 class UA_COMPATIBLE_REPEAT(Message):
@@ -625,12 +624,11 @@ class UA_COMPATIBLE_REPEAT(Message):
      'en': u"%(response)s has multiple X-UA-Compatible directives targetted at the same UA."
     }
     text = {
-     'en': u"""Internet Explorer 8 allows responses to indicate that they should
-     be handled as if it were a previous version of the browser, to allow old
-     content to be easily updated to work with the new version.<p>
+     'en': u"""Internet Explorer 8 allows responses to explicitly set the rendering mode
+     used for a page.<p>
      This response has more than one such directive targetted at one browser;
      this may cause unpredictable results.<p>
-     See <a href="http://blogs.msdn.com/ie/archive/2008/06/10/introducing-ie-emulateie7.aspx">this blog entry</a> for more information."""
+     See <a href="http://msdn.microsoft.com/en-us/library/cc288325(VS.85).aspx">this blog entry</a> for more information."""
     }
 
 class XSS_PROTECTION(Message):
