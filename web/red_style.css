@@ -268,12 +268,19 @@ ul li.bad {
 }
 
 
+/* footer */
+
+.footer {
+	max-width: 650px;
+}
+
 /* news */
 
 .news {
     text-align: center;
     font-size: 1.0em;
     font-weight: normal;
+	width: 650px;
 }
 .news-banner {
     color: #999;
