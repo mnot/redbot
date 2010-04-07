@@ -399,20 +399,23 @@ class DetailPresenter(object):
         "Return things that the user can do with the URI as HTML links"
         options = []
         media_type = self.red.parsed_hdrs.get('content-type', [""])[0]
-        options.append(u"response headers: %i bytes" % self.red.client.input_header_length)
-        options.append(u"body: %i bytes" % self.red.res_body_len)
+        options.append((u"response headers: %i bytes" % self.red.client.input_header_length, 
+            "how large the response header block is, including the status line"))
+        options.append((u"body: %i bytes" % self.red.res_body_len,
+            "how large the response body is"))
         transfer_overhead = self.red.client.input_transfer_length - self.red.res_body_len
         if transfer_overhead > 0:
-            options.append(u"transfer overhead: %i bytes" % transfer_overhead)
+            options.append((u"transfer overhead: %i bytes" % transfer_overhead,
+            "how much using chunked encoding adds to the response size"))
         options.append(None)
-        options.append(u"<a href='#' id='body_view'>view body</a>")
+        options.append((u"<a href='#' id='body_view'>view body</a>", ""))
         if self.validators.has_key(media_type):
-            options.append(u"<a href='%s'>validate body</a>" %
-                           self.validators[media_type] % urllib.quote(self.red.uri))
+            options.append((u"<a href='%s'>validate body</a>" %
+                           self.validators[media_type] % urllib.quote(self.red.uri), ""))
         if self.ui.link_count > 0:
-            options.append(u"<a href='?descend=True&uri=%s'>check assets</a>" %
-                           urllib.quote(self.red.uri))
-        return nl.join([option and "<span class='option'>%s</span>" % option or "<br>" for option in options])
+            options.append((u"<a href='?descend=True&uri=%s'>check assets</a>" %
+                           urllib.quote(self.red.uri), "run RED on images, frames and embedded links"))
+        return nl.join([o and "<span class='option' title='%s'>%s</span>" % (o[1], o[0]) or "<br>" for o in options])
 
 
 class HeaderPresenter(object):
