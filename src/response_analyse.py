@@ -335,6 +335,8 @@ class ResponseHeaderParser(object):
 
     def content_range(self, name, values):
         # TODO: check syntax, values?
+        if self.red.res_status not in ["206", "416"]:
+            self.setMessage(name, rs.CONTENT_RANGE_MEANINGLESS)
         return values
 
     @GenericHeaderSyntax

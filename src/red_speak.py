@@ -1598,6 +1598,20 @@ class CREATED_WITHOUT_LOCATION(Message):
      the <code>Location</code> header, but it isn't present in this response."""
     }
 
+class CONTENT_RANGE_MEANINGLESS(Message):
+    category = c.RANGE
+    level = l.WARN
+    summary = {
+      'en': u"%(response)s shouldn't have a Content-Range header."
+    }
+    text = {
+      'en': u"""HTTP only defines meaning for the <code>Content-Range</code>
+      header in responses with a <code>206 Partial Content</code> or
+      <code>416 Requested Range Not Satisfiable</code> status code.<p>
+      Putting a <code>Content-Range</code> header in this response may
+      confuse caches and clients."""
+    }
+
 class PARTIAL_WITHOUT_RANGE(Message):
     category = c.GENERAL
     level = l.BAD
