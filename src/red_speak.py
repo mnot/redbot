@@ -802,7 +802,7 @@ class CONNEG_GZIP(Message):
     category = c.CONNEG
     level = l.GOOD
     summary = {
-    'en': u'Content negotiation for gzip compression is supported.'
+    'en': u'Content negotiation for gzip compression is supported, saving %(savings)s%%.'
     }
     text = {
     'en': u"""HTTP supports compression of responses by negotiating for
