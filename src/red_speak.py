@@ -1197,7 +1197,7 @@ class FRESHNESS_STALE(Message):
 
 class FRESHNESS_HEURISTIC(Message):
     category = c.CACHING
-    level = l.INFO
+    level = l.WARN
     summary = {
      'en': u"%(response)s allows a cache to assign its own freshness lifetime."
     }
@@ -1207,7 +1207,9 @@ class FRESHNESS_HEURISTIC(Message):
      allowed to estimate how fresh it is using a heuristic.<p>
      Usually, but not always, this is done using the <code>Last-Modified</code> header. For
      example, if your response was last modified a week ago, a cache might decide to consider
-     the response fresh for a day."""
+     the response fresh for a day.<p>
+     Consider adding a <code>Cache-Control</code> header; otherwise, it may be cached for longer
+     or shorter than you'd like."""
     }
 
 class FRESHNESS_NONE(Message):
