@@ -917,6 +917,25 @@ class DATE_INCORRECT(Message):
     lifetime is short)."""
     }
 
+class AGE_PENALTY(Message):
+    category = c.CACHING
+    level = l.WARN
+    summary = {
+     'en': u"%(response)s may cause inefficiency in downstream caches."
+    }
+    text = {
+     'en': u"""It appears that this response has been cached by a reverse proxy or 
+     <abbr title="Content Delivery Network">CDN</abbr>, because the <code>Age</code>
+     header is present, but the <code>Date</code> header is more recent than it indicates.<p>
+     Doing so can unintentionally cause it inefficiency in downstream
+     caches, because they will calculate that it is less fresh than it otherwise 
+     would be.<p>
+     Generally, reverse proxies should either omit the <code>Age</code> header, or
+     leave the <code>Date</code> header alone.<p>
+     See <a href="http://www2.research.att.com/~edith/Papers/HTML/usits01/index.html">
+     this paper</a> for more information."""
+    }
+
 class DATE_CLOCKLESS(Message):
     category = c.GENERAL
     level = l.WARN

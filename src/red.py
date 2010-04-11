@@ -87,29 +87,11 @@ class ResourceExpertDroid(RedFetcher):
         the "main" response.
         """
         if self.res_complete:
-            self.checkClock()
             self.checkCaching()
             ConnegCheck(self)
             RangeRequest(self)
             ETagValidate(self)
             LmValidate(self)
-
-    def checkClock(self):
-        "Check for clock skew and dateless origin server."
-        if not self.parsed_hdrs.has_key('date'):
-            self.setMessage('', rs.DATE_CLOCKLESS)
-            if self.parsed_hdrs.has_key('expires') or \
-              self.parsed_hdrs.has_key('last-modified'):
-                self.setMessage('header-expires header-last-modified', rs.DATE_CLOCKLESS_BAD_HDR)
-            return
-        skew = self.parsed_hdrs['date'] - \
-          self.timestamp + self.parsed_hdrs.get('age', 0)
-        if abs(skew) > max_clock_skew:
-            self.setMessage('header-date', rs.DATE_INCORRECT,
-                             clock_skew_string=relative_time(skew, 0, 2)
-                             )
-        else:
-            self.setMessage('header-date', rs.DATE_CORRECT)
 
     def checkCaching(self):
         "Examine HTTP caching characteristics."
@@ -217,6 +199,25 @@ class ResourceExpertDroid(RedFetcher):
         if age >= 1:
             self.setMessage('header-age header-date', rs.CURRENT_AGE,
                                      current_age=current_age_str)
+
+        # Check for clock skew and dateless origin server.
+        if not self.parsed_hdrs.has_key('date'):
+            self.setMessage('', rs.DATE_CLOCKLESS)
+            if self.parsed_hdrs.has_key('expires') or \
+              self.parsed_hdrs.has_key('last-modified'):
+                self.setMessage('header-expires header-last-modified', rs.DATE_CLOCKLESS_BAD_HDR)
+            return
+        skew = self.parsed_hdrs['date'] - \
+        self.timestamp + self.parsed_hdrs.get('age', 0)
+        if abs(skew) > max_clock_skew:
+            if abs(age - skew) > max_clock_skew:
+                self.setMessage('header-date', rs.DATE_INCORRECT,
+                               clock_skew_string=relative_time(skew, 0, 2)
+                               )
+            else:
+                self.setMessage('header-date header-age', rs.AGE_PENALTY)
+        else:
+            self.setMessage('header-date', rs.DATE_CORRECT)
 
         # calculate freshness
         freshness_lifetime = 0
