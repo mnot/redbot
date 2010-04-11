@@ -977,7 +977,7 @@ class CC_MISCAP(Message):
     category = c.CACHING
     level = l.WARN
     summary = {
-     'en': u"%(response)s %(cc)s directive appears to have incorrect capitalisation."
+     'en': u"The %(cc)s Cache-Control directive appears to have incorrect capitalisation."
     }
     text = {
      'en': u"""Cache-Control directive names are case-sensitive, and will not
@@ -989,7 +989,7 @@ class CC_DUP(Message):
     category = c.CACHING
     level = l.WARN
     summary = {
-     'en': u"%(response)s %(cc)s directive appears more than once."
+     'en': u"The %(cc)s Cache-Control directive appears more than once."
     }
     text = {
      'en': u"""The %(cc)s Cache-Control directive is only defined to appear
@@ -1013,7 +1013,7 @@ class PRIVATE_CC(Message):
     category = c.CACHING
     level = l.INFO
     summary = {
-     'en': u"%(response)s can only be stored by a private cache."
+     'en': u"%(response)s only allows a private cache to store it."
     }
     text = {
     'en': u"""The <code>Cache-Control: private</code> directive indicates that the
@@ -1026,7 +1026,7 @@ class PRIVATE_AUTH(Message):
     category = c.CACHING
     level = l.INFO
     summary = {
-     'en': u"%(response)s can only be stored by a private cache."
+     'en': u"%(response)s only allows a private cache to store it."
     }
     text = {
     'en': u"""Because the request was authenticated and this response doesn't contain
@@ -1040,7 +1040,7 @@ class STOREABLE(Message):
     category = c.CACHING
     level = l.INFO
     summary = {
-     'en': u"""%(response)s is allowed to be stored by caches."""
+     'en': u"""%(response)s allows all caches to store it."""
     }
     text = {
      'en': u"""A cache can store this response; it may or may not be able to
@@ -1051,7 +1051,7 @@ class NO_CACHE(Message):
     category = c.CACHING
     level = l.INFO
     summary = {
-     'en': u"%(response)s cannot be used by a cache without validation."
+     'en': u"%(response)s cannot be served from cache without validation."
     }
     text = {
      'en': u"""The <code>Cache-Control: no-cache</code> directive means that
@@ -1081,7 +1081,7 @@ class VARY_ASTERISK(Message):
     category = c.CACHING
     level = l.WARN
     summary = {
-    'en': u"Vary: * effectively makes responses for this URI uncacheable."
+    'en': u"Vary: * effectively makes this response uncacheable."
     }
     text = {
     'en': u"""<code>Vary *</code> indicates that responses for this resource vary
