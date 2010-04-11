@@ -187,12 +187,13 @@ class ResourceExpertDroid(RedFetcher):
             # TODO: enumerate the axes in a message
 
         # calculate age
-        if self.parsed_hdrs.has_key('date'):
+        age_hdr = self.parsed_hdrs.get('age', 0)
+        date_hdr = self.parsed_hdrs.get('date', 0)
+        if date_hdr > 0:
             apparent_age = max(0,
-              int(self.timestamp - self.parsed_hdrs['date']))
+              int(self.timestamp - date_hdr))
         else:
             apparent_age = 0
-        age_hdr = self.parsed_hdrs.get('age', 0)
         current_age = max(apparent_age, age_hdr)
         current_age_str = relative_time(current_age, 0, 0)
         self.age = current_age
@@ -201,21 +202,18 @@ class ResourceExpertDroid(RedFetcher):
                                      current_age=current_age_str)
 
         # Check for clock skew and dateless origin server.
-        if not self.parsed_hdrs.has_key('date'):
+        skew = date_hdr - self.timestamp + age_hdr
+        if not date_hdr:
             self.setMessage('', rs.DATE_CLOCKLESS)
             if self.parsed_hdrs.has_key('expires') or \
               self.parsed_hdrs.has_key('last-modified'):
                 self.setMessage('header-expires header-last-modified', rs.DATE_CLOCKLESS_BAD_HDR)
-            return
-        skew = self.parsed_hdrs['date'] - \
-        self.timestamp + self.parsed_hdrs.get('age', 0)
-        if abs(skew) > max_clock_skew:
-            if abs(current_age - skew) > max_clock_skew:
-                self.setMessage('header-date', rs.DATE_INCORRECT,
-                               clock_skew_string=relative_time(skew, 0, 2)
-                               )
-            else:
-                self.setMessage('header-date header-age', rs.AGE_PENALTY)
+        elif age_hdr > max_clock_skew and current_age - skew < max_clock_skew:
+            self.setMessage('header-date header-age', rs.AGE_PENALTY)
+        elif abs(skew) > max_clock_skew:
+            self.setMessage('header-date', rs.DATE_INCORRECT,
+                           clock_skew_string=relative_time(skew, 0, 2)
+            )
         else:
             self.setMessage('header-date', rs.DATE_CORRECT)
 
