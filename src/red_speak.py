@@ -927,7 +927,7 @@ class AGE_PENALTY(Message):
      'en': u"""It appears that this response has been cached by a reverse proxy or 
      <abbr title="Content Delivery Network">CDN</abbr>, because the <code>Age</code>
      header is present, but the <code>Date</code> header is more recent than it indicates.<p>
-     Doing so can unintentionally cause it inefficiency in downstream
+     Doing so can unintentionally cause inefficiency in downstream
      caches, because they will calculate that it is less fresh than it otherwise 
      would be.<p>
      Generally, reverse proxies should either omit the <code>Age</code> header, or
