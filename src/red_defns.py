@@ -78,7 +78,7 @@ HDR_CTEONNT_LENGTH = {
      balancer, proxy or other intermediary in front of the server has rewritten
      the <code>Content-Length</code> header, to allow it to insert its own.<p>
      Usually, this is done because an intermediary has dynamically compressed
-     the resopnse.<p>
+     the response.<p>
      It takes this form because the most efficient way of assuring that clients
      don't see the header is to rearrange or change individual characters in its
      name.
