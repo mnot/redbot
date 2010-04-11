@@ -192,11 +192,11 @@ class ResourceExpertDroid(RedFetcher):
               int(self.timestamp - self.parsed_hdrs['date']))
         else:
             apparent_age = 0
-        age = self.parsed_hdrs.get('age', 0)
-        current_age = max(apparent_age, self.parsed_hdrs.get('age', 0))
+        age_hdr = self.parsed_hdrs.get('age', 0)
+        current_age = max(apparent_age, age_hdr)
         current_age_str = relative_time(current_age, 0, 0)
-        self.age = age
-        if age >= 1:
+        self.age = current_age
+        if current_age >= 1:
             self.setMessage('header-age header-date', rs.CURRENT_AGE,
                                      current_age=current_age_str)
 
@@ -210,7 +210,7 @@ class ResourceExpertDroid(RedFetcher):
         skew = self.parsed_hdrs['date'] - \
         self.timestamp + self.parsed_hdrs.get('age', 0)
         if abs(skew) > max_clock_skew:
-            if abs(age - skew) > max_clock_skew:
+            if abs(current_age - skew) > max_clock_skew:
                 self.setMessage('header-date', rs.DATE_INCORRECT,
                                clock_skew_string=relative_time(skew, 0, 2)
                                )
