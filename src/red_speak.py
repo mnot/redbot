@@ -921,7 +921,7 @@ class AGE_PENALTY(Message):
     category = c.CACHING
     level = l.WARN
     summary = {
-     'en': u"%(response)s may cause inefficiency in downstream caches."
+     'en': u"It appears that the Date header has been changed by an intermediary."
     }
     text = {
      'en': u"""It appears that this response has been cached by a reverse proxy or 
