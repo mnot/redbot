@@ -319,7 +319,8 @@ class ConnegCheck(RedFetcher):
             self.red.setMessage('header-vary header-%s', rs.CONNEG_NO_VARY)
         # FIXME: verify that the status/body/hdrs are the same; if it's different, alert
         no_conneg_vary_headers = self.parsed_hdrs.get('vary', [])
-        if 'gzip' in self.parsed_hdrs.get('content-encoding', []):
+        if 'gzip' in self.parsed_hdrs.get('content-encoding', []) or \
+           'x-gzip' in self.parsed_hdrs.get('content-encoding', []):
             self.red.setMessage('header-vary header-content-encoding',
                                  rs.CONNEG_GZIP_WITHOUT_ASKING)
         if no_conneg_vary_headers != vary_headers:
