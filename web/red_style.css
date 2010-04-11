@@ -35,6 +35,10 @@ h1 {
     font-size: 1.5em;
     width: 100%;
 }
+h1 a {
+	color: #444;
+	text-decoration: none;
+}
 .hilight {
     color: #d33;
 }

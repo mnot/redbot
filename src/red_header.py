@@ -378,7 +378,7 @@ var red_req_hdrs = [
 <div id="popup"></div>
 
 <div id="request">
-    <h1><span class="hilight">R</span>esource <span class="hilight">E</span>xpert <span class="hilight">D</span>roid</h1>
+    <h1><a href="?"><span class="hilight">R</span>esource <span class="hilight">E</span>xpert <span class="hilight">D</span>roid</a></h1>
 
     <form method="GET" onLoad="init_req_hdrs();" id="request_form">
         <input type="url" name="uri" value="%(html_uri)s" id="uri"/><br />
