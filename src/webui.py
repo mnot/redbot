@@ -79,7 +79,7 @@ error_template = u"""\
 """
 
 nl = u"\n"
-locale.setlocale(locale.LC_ALL, 'en_US') # FIXME
+locale.setlocale(locale.LC_ALL, '') # FIXME
 
 class RedWebUi(object):
     """
