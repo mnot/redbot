@@ -293,7 +293,6 @@ class ResponseHeaderParser(object):
             except ValueError:
                 attr = directive
                 value = None
-            attr = attr.lower()
             if attr in ['max-age', 's-maxage']:
                 try:
                     value = int(value)
