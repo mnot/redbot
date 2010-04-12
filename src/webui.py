@@ -79,7 +79,11 @@ error_template = u"""\
 """
 
 nl = u"\n"
-locale.setlocale(locale.LC_ALL, '') # FIXME
+
+try:
+    locale.setlocale(locale.LC_ALL, locale.normalize(lang))
+except:
+    locale.setlocale(locale.LC_ALL, '')
 
 class RedWebUi(object):
     """
