@@ -194,11 +194,11 @@ class ResourceExpertDroid(RedFetcher):
         else:
             apparent_age = 0
         current_age = max(apparent_age, age_hdr)
-        current_age_str = relative_time(current_age, 0, 0)
-        self.age = current_age
-        if current_age >= 1:
+        age_str = relative_time(age_hdr, 0, 0)
+        self.age = age_hdr
+        if age_hdr >= 1:
             self.setMessage('header-age header-date', rs.CURRENT_AGE,
-                                     current_age=current_age_str)
+                            age=age_str)
 
         # Check for clock skew and dateless origin server.
         skew = date_hdr - self.timestamp + age_hdr
@@ -206,7 +206,8 @@ class ResourceExpertDroid(RedFetcher):
             self.setMessage('', rs.DATE_CLOCKLESS)
             if self.parsed_hdrs.has_key('expires') or \
               self.parsed_hdrs.has_key('last-modified'):
-                self.setMessage('header-expires header-last-modified', rs.DATE_CLOCKLESS_BAD_HDR)
+                self.setMessage('header-expires header-last-modified', 
+                                rs.DATE_CLOCKLESS_BAD_HDR)
         elif age_hdr > max_clock_skew and current_age - skew < max_clock_skew:
             self.setMessage('header-date header-age', rs.AGE_PENALTY)
         elif abs(skew) > max_clock_skew:
@@ -256,6 +257,7 @@ class ResourceExpertDroid(RedFetcher):
                                  freshness_left=freshness_left_str,
                                  current_age = current_age_str
                                  )
+
         # can heuristic freshness be used?
         elif self.res_status in heuristic_cacheable_status:
             self.setMessage('header-last-modified', rs.FRESHNESS_HEURISTIC)
@@ -280,7 +282,7 @@ class ResourceExpertDroid(RedFetcher):
                 self.setMessage('header-cache-control', rs.STALE_SERVABLE)
 
         # public?
-        if 'public' in cc_keys:
+        if 'public' in cc_keys: # TODO: check for authentication in request
             self.setMessage('header-cache-control', rs.PUBLIC)
 
 
