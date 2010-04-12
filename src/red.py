@@ -312,7 +312,8 @@ class ConnegCheck(RedFetcher):
         self.red.gzip_savings = savings
         self.red.setMessage('header-content-encoding', rs.CONNEG_GZIP, self,
                              savings=savings,
-                             orig_size=self.res_body_len
+                             orig_size=self.res_body_len,
+                             gzip_size=self.red.res_body_len
                              )
         vary_headers = self.red.parsed_hdrs.get('vary', [])
         if (not "accept-encoding" in vary_headers) and (not "*" in vary_headers):

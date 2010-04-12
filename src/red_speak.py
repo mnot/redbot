@@ -808,8 +808,8 @@ class CONNEG_GZIP(Message):
     'en': u"""HTTP supports compression of responses by negotiating for
     <code>Content-Encoding</code>. When RED asked for a compressed response,
     the resource provided one, saving %(savings)s%% of its original size
-    (%(orig_size)s bytes).<p>
-    The compressed response's headers displayed."""
+    (from %(orig_size)s to %(gzip_size)s bytes).<p>
+    The compressed response's headers are displayed."""
     }
 
 class CONNEG_NO_GZIP(Message):
