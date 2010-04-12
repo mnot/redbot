@@ -42,7 +42,7 @@ from cgi import escape as e
 
 import red_speak as rs
 from red_fetcher import RedFetcher
-from response_analyse import relative_time
+from response_analyse import relative_time, f_num
 from uri_validate import absolute_URI
 
 ### configuration
@@ -50,7 +50,6 @@ cacheable_methods = ['GET']
 heuristic_cacheable_status = ['200', '203', '206', '300', '301', '410']
 max_uri = 8 * 1024
 max_clock_skew = 5  # seconds
-
 
 class ResourceExpertDroid(RedFetcher):
     """
@@ -79,7 +78,7 @@ class ResourceExpertDroid(RedFetcher):
         if not re.match("^\s*%s\s*$" % absolute_URI, uri, re.VERBOSE):
             self.setMessage('uri', rs.URI_BAD_SYNTAX)
         if len(uri) > max_uri:
-            self.setMessage('uri', rs.URI_TOO_LONG, uri_len=len(uri))
+            self.setMessage('uri', rs.URI_TOO_LONG, uri_len=f_num(len(uri)))
 
     def done(self):
         """
@@ -178,7 +177,7 @@ class ResourceExpertDroid(RedFetcher):
             self.setMessage('header-vary', rs.VARY_ASTERISK)
             return # bail; nothing else to see here
         elif len(vary) > 3:
-            self.setMessage('header-vary', rs.VARY_COMPLEX, vary_count=len(vary))
+            self.setMessage('header-vary', rs.VARY_COMPLEX, vary_count=f_num(len(vary)))
         else:
             if "user-agent" in vary:
                 self.setMessage('header-vary', rs.VARY_USER_AGENT)
@@ -312,8 +311,8 @@ class ConnegCheck(RedFetcher):
         self.red.gzip_savings = savings
         self.red.setMessage('header-content-encoding', rs.CONNEG_GZIP, self,
                              savings=savings,
-                             orig_size=self.res_body_len,
-                             gzip_size=self.red.res_body_len
+                             orig_size=f_num(self.res_body_len),
+                             gzip_size=f_num(self.red.res_body_len)
                              )
         vary_headers = self.red.parsed_hdrs.get('vary', [])
         if (not "accept-encoding" in vary_headers) and (not "*" in vary_headers):
@@ -372,9 +371,9 @@ class RangeRequest(RedFetcher):
                 self.red.setMessage('header-accept-ranges', rs.RANGE_INCORRECT, self,
                     range="bytes=%s-%s" % (self.range_start, self.range_end),
                     range_expected=e(self.range_target.encode('string_escape')),
-                    range_expected_bytes = len(self.range_target),
+                    range_expected_bytes = f_num(len(self.range_target)),
                     range_received=e(self.res_body.encode('string_escape')),
-                    range_received_bytes = self.res_body_len
+                    range_received_bytes = f_num(self.res_body_len)
                 )
         # TODO: address 416 directly
         elif self.res_status == self.red.res_status:
@@ -454,7 +453,6 @@ class LmValidate(RedFetcher):
                                  enc_ims_status=e(self.res_status)
                                  )
         # TODO: check entity headers
-
 
 
 if "__main__" == __name__:

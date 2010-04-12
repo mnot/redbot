@@ -47,6 +47,7 @@ news_file = "news.html"
 ### End configuration ######################################################
 
 import cgi
+import locale
 import operator
 import os
 import pprint
@@ -67,7 +68,7 @@ import red_defns
 import red_fetcher
 import red_header
 import red_speak as rs
-from response_analyse import relative_time
+from response_analyse import relative_time, f_num
 
 # HTML template for error bodies
 error_template = u"""\
@@ -78,6 +79,7 @@ error_template = u"""\
 """
 
 nl = u"\n"
+locale.setlocale(locale.LC_ALL, 'en_US') # FIXME
 
 class RedWebUi(object):
     """
@@ -399,13 +401,13 @@ class DetailPresenter(object):
         "Return things that the user can do with the URI as HTML links"
         options = []
         media_type = self.red.parsed_hdrs.get('content-type', [""])[0]
-        options.append((u"response headers: %i bytes" % self.red.client.input_header_length, 
+        options.append((u"response headers: %s bytes" % f_num(self.red.client.input_header_length), 
             "how large the response header block is, including the status line"))
-        options.append((u"body: %i bytes" % self.red.res_body_len,
+        options.append((u"body: %s bytes" % f_num(self.red.res_body_len),
             "how large the response body is"))
         transfer_overhead = self.red.client.input_transfer_length - self.red.res_body_len
         if transfer_overhead > 0:
-            options.append((u"transfer overhead: %i bytes" % transfer_overhead,
+            options.append((u"transfer overhead: %s bytes" % f_num(transfer_overhead),
             "how much using chunked encoding adds to the response size"))
         options.append(None)
         options.append((u"<a href='#' id='body_view'>view body</a>", ""))

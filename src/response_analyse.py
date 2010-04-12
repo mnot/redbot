@@ -47,6 +47,7 @@ THE SOFTWARE.
 """
 
 import calendar
+import locale
 import re
 import time
 from cgi import escape as e
@@ -162,7 +163,7 @@ class ResponseHeaderParser(object):
             hdr_size = len(name) + len(value)
             if hdr_size > max_hdr_size:
                 self.setMessage(name.lower(), rs.HEADER_TOO_LARGE,
-                                header_name=name, header_size=hdr_size)
+                                header_name=name, header_size=f_num(hdr_size))
             header_block_size += hdr_size
             try:
                 name = name.decode('ascii', 'strict')
@@ -190,7 +191,7 @@ class ResponseHeaderParser(object):
         # check the total header block size
         if header_block_size > max_ttl_hdr:
             self.setMessage('header', rs.HEADER_BLOCK_TOO_LARGE,
-                            header_block_size=header_block_size)
+                            header_block_size=f_num(header_block_size))
         # build a dictionary of header values
         for nn, (fn, values) in hdr_dict.items():
             name_token = nn.replace('-', '_')
@@ -723,6 +724,10 @@ class ResponseStatusChecker:
     def status510(self):        # Not Extended
         pass
 
+
+def f_num(instr):
+    "Format a number according to the locale."
+    return locale.format("%d", instr, grouping=True)
 
 
 def relative_time(utime, now=None, show_sign=1):

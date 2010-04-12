@@ -43,6 +43,7 @@ from cgi import escape as e
 import nbhttp
 import red_speak as rs
 import response_analyse as ra
+from response_analyse import f_num
 
 outstanding_requests = [] # requests in process
 total_requests = 0
@@ -192,7 +193,7 @@ class RedFetcher:
                 except zlib.error, zlib_error:
                     self.setMessage('header-content-encoding', rs.BAD_ZLIB,
                                     zlib_error=e(str(zlib_error)),
-                                    ok_zlib_len=self.res_body_sample[-1][0],
+                                    ok_zlib_len=f_num(self.res_body_sample[-1][0]),
                                     chunk_sample=e(chunk[:20].encode('string_escape'))
                                     )
                     self._gzip_ok = False
@@ -241,7 +242,7 @@ class RedFetcher:
                     self.setMessage('header-content-length', rs.CL_CORRECT)
                 else:
                     self.setMessage('header-content-length', rs.CL_INCORRECT,
-                                             body_length=self.res_body_len)
+                                             body_length=f_num(self.res_body_len))
             if self.parsed_hdrs.has_key('content-md5'):
                 c_md5_calc = base64.encodestring(self.res_body_md5)[:-1]
                 if self.parsed_hdrs['content-md5'] == c_md5_calc:
