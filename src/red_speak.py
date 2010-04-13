@@ -910,15 +910,25 @@ class DATE_INCORRECT(Message):
     'en': u"The server's clock is %(clock_skew_string)s."
     }
     text = {
-    'en': u"""HTTP's caching model assumes reasonable synchronisation between
-    clocks on the server and client; using RED's local clock, the server's clock
-    does not appear to be well-synchronised. Problems can include responses that
-    should be cacheable not being cacheable (especially if their freshness
-    lifetime is short)."""
+    'en': u"""Using RED's local clock, the server's clock does not appear to 
+    be well-synchronised.<p>
+    HTTP's caching model assumes reasonable synchronisation between
+    clocks on the server and client; clock skew can cause responses that
+    should be cacheable to be considered uncacheable (especially if their freshness
+    lifetime is short).<p>
+    Ask your server administrator to synchronise the clock, e.g., using 
+    <a href="http://en.wikipedia.org/wiki/Network_Time_Protocol" 
+    title="Network Time Protocol">NTP</a>.</p>
+    Apparent clock skew can also be caused by caching the response without adjusting
+    the <code>Age</code> header; e.g., in a reverse proxy or 
+    <abbr title="Content Delivery Network">CDN</abbr>. See 
+    <a href="http://www2.research.att.com/~edith/Papers/HTML/usits01/index.html">
+    this paper</a> for more information.
+    """
     }
 
 class AGE_PENALTY(Message):
-    category = c.CACHING
+    category = c.GENERAL
     level = l.WARN
     summary = {
      'en': u"It appears that the Date header has been changed by an intermediary."
@@ -927,11 +937,9 @@ class AGE_PENALTY(Message):
      'en': u"""It appears that this response has been cached by a reverse proxy or 
      <abbr title="Content Delivery Network">CDN</abbr>, because the <code>Age</code>
      header is present, but the <code>Date</code> header is more recent than it indicates.<p>
-     Doing so can unintentionally cause inefficiency in downstream
-     caches, because they will calculate that it is less fresh than it otherwise 
-     would be.<p>
-     Generally, reverse proxies should either omit the <code>Age</code> header, or
-     leave the <code>Date</code> header alone.<p>
+     Generally, reverse proxies should either omit the <code>Age</code> header (if they
+     have another means of determining how fresh the response is), or
+     leave the <code>Date</code> header alone (i.e., act as a normal HTTP cache).<p>
      See <a href="http://www2.research.att.com/~edith/Papers/HTML/usits01/index.html">
      this paper</a> for more information."""
     }
@@ -1162,7 +1170,7 @@ class CURRENT_AGE(Message):
     category = c.CACHING
     level = l.INFO
     summary = {
-     'en': u"%(response)s has been cached for %(current_age)s."
+     'en': u"%(response)s has been cached for %(age)s."
     }
     text = {
     'en': u"""The <code>Age</code> header indicates the age of the response;
