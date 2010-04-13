@@ -1136,7 +1136,7 @@ class VARY_COMPLEX(Message):
     category = c.CACHING
     level = l.WARN
     summary = {
-     'en': u"This resource varies in %(vary_count)i ways."
+     'en': u"This resource varies in %(vary_count)s ways."
     }
     text = {
      'en': u"""The <code>Vary</code> mechanism allows a resource to describe the
