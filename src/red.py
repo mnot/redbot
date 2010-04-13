@@ -194,6 +194,7 @@ class ResourceExpertDroid(RedFetcher):
         else:
             apparent_age = 0
         current_age = max(apparent_age, age_hdr)
+        current_age_str = relative_time(current_age, 0, 0)        
         age_str = relative_time(age_hdr, 0, 0)
         self.age = age_hdr
         if age_hdr >= 1:
