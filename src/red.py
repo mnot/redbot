@@ -75,9 +75,9 @@ class ResourceExpertDroid(RedFetcher):
                             status_cb, body_procs, req_type=method)
 
         # check the URI
-        if not re.match("^\s*%s\s*$" % absolute_URI, uri, re.VERBOSE):
+        if not re.match("^\s*%s\s*$" % absolute_URI, self.uri, re.VERBOSE):
             self.setMessage('uri', rs.URI_BAD_SYNTAX)
-        if len(uri) > max_uri:
+        if len(self.uri) > max_uri:
             self.setMessage('uri', rs.URI_TOO_LONG, uri_len=f_num(len(uri)))
 
     def done(self):

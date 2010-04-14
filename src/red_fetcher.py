@@ -37,6 +37,8 @@ THE SOFTWARE.
 import base64
 import hashlib
 import time
+import urllib
+import urlparse
 import zlib
 from cgi import escape as e
 
@@ -75,9 +77,9 @@ class RedFetcher:
       )
     """
 
-    def __init__(self, uri, method="GET", req_hdrs=None, req_body=None,
+    def __init__(self, iri, method="GET", req_hdrs=None, req_body=None,
                  status_cb=None, body_procs=None, req_type=None):
-        self.uri = uri
+        self.uri = iri_to_uri(iri)
         self.method = method
         self.req_hdrs = req_hdrs or []
         self.req_body = req_body
@@ -140,7 +142,7 @@ class RedFetcher:
         if self.status_cb and self.type:
             self.status_cb("fetching %s (%s)" % (self.uri, self.type))
         req_body, req_done = self.client.req_start(
-            self.method, self.uri.encode('utf-8', 'replace'), self.req_hdrs, nbhttp.dummy)
+            self.method, self.uri, self.req_hdrs, nbhttp.dummy)
         if self.req_body != None:
             req_body(self.req_body)
         req_done(None)
@@ -294,6 +296,20 @@ class RedFetcher:
             content_l = content_l[2:]   # Read & discard the 16-bit header CRC
         return "".join(content_l)
 
+
+def iri_to_uri(iri):
+    "Takes a Unicode string that possibly contains an IRI and emits a URI."
+    scheme, authority, path, query, frag = urlparse.urlsplit(iri)
+    scheme = scheme.encode('utf-8')
+    if ":" in authority:
+        host, port = authority.split(":", 1)
+        authority = host.encode('idna') + ":%s" % port
+    else:
+        authority = authority.encode('idna')
+    path = urllib.quote(path.encode('utf-8'), safe="/;%[]=:$&()+,!?*@'~")
+    query = urllib.quote(query.encode('utf-8'), safe="/;%[]=:$&()+,!?*@'~")
+    frag = urllib.quote(frag.encode('utf-8'), safe="/;%[]=:$&()+,!?*@'~")
+    return urlparse.urlunsplit((scheme, authority, path, query, frag))
 
 
 if "__main__" == __name__:
