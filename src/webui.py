@@ -221,9 +221,9 @@ class RedWebUi(object):
           - '.js': javascript block (with script tag surrounding)
             included on every page view. 
         """
+        o = []
         if extra_dir and os.path.isdir(extra_dir):
             extra_files = [p for p in os.listdir(extra_dir) if os.path.splitext(p)[1] == type]
-            o = []
             for extra_file in extra_files:
                 extra_path = os.path.join(extra_dir, extra_file)
                 try:
