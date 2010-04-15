@@ -371,6 +371,7 @@ var red_req_hdrs = [
 ];
 
 </script>
+%(extra_js)s
 </head>
 
 <body>

@@ -41,12 +41,13 @@ max_runtime = 60
 # URI root for static assets (absolute or relative, but no trailing '/')
 static_root = 'static'
 
-# file containing news to display on front page; None to disable
-news_file = "news.html"
+# directory containing files to append to the front page; None to disable
+extra_dir = "extra"
 
 ### End configuration ######################################################
 
 import cgi
+import codecs
 import locale
 import operator
 import os
@@ -105,7 +106,8 @@ class RedWebUi(object):
             'html_uri': e(test_uri),
             'js_uri': clean_js(test_uri),
             'js_req_hdrs': ", ".join(['["%s", "%s"]' % (
-                clean_js(n), clean_js(v)) for n,v in req_hdrs])
+                clean_js(n), clean_js(v)) for n,v in req_hdrs]),
+            'extra_js': self.presentExtra('.js')
         }
         self.output(header.encode('utf-8', 'replace'))
         self.links = {}          # {type: set(link...)}
@@ -152,7 +154,7 @@ class RedWebUi(object):
                 self.output(self.presentFooter())
                 self.output("</div>")
         else:  # no test_uri
-            self.output(self.presentNews())
+            self.output(self.presentExtra())
             self.output(self.presentFooter())
             self.output("</div>")
         timeout.delete()
@@ -211,14 +213,18 @@ class RedWebUi(object):
             message = "<p class='note'>RED isn't showing the whole body, because it's so big!</p>"
         return """<pre class="prettyprint">%s</pre>\n%s""" % (safe_sample, message)
 
-    def presentNews(self):
-        "Show link to news, if any"
-        if news_file:
-            try:
-                news = open(news_file, 'r').read()
-                return news
-            except IOError:
-                return ""
+    def presentExtra(self, type='.html'):
+        "Show extra content, if any. MUST be UTF-8."
+        if extra_dir and os.path.isdir(extra_dir):
+            extra_files = [p for p in os.listdir(extra_dir) if os.path.splitext(p)[1] == type]
+            o = []
+            for extra_file in extra_files:
+                extra_path = os.path.join(extra_dir, extra_file)
+                try:
+                    o.append(codecs.open(extra_path, mode='r', encoding='utf-8', errors='replace').read())
+                except IOError, why:
+                    o.append("<!-- error opening %s: %s -->" % (extra_file, why))
+        return nl.join(o)
 
     def presentHiddenList(self):
         "return a list of hidden items to be used by the UI"
