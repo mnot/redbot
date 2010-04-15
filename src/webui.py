@@ -214,7 +214,13 @@ class RedWebUi(object):
         return """<pre class="prettyprint">%s</pre>\n%s""" % (safe_sample, message)
 
     def presentExtra(self, type='.html'):
-        "Show extra content, if any. MUST be UTF-8."
+        """
+        Show extra content from the extra_dir, if any. MUST be UTF-8.
+        Type controls the extension included; currently supported:
+          - '.html': shown only on start page, after input block
+          - '.js': javascript block (with script tag surrounding)
+            included on every page view. 
+        """
         if extra_dir and os.path.isdir(extra_dir):
             extra_files = [p for p in os.listdir(extra_dir) if os.path.splitext(p)[1] == type]
             o = []
