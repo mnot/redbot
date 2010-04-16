@@ -5,7 +5,7 @@
 	<title>RED: &lt;%(html_uri)s&gt;</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta name="ROBOTS" content="INDEX, NOFOLLOW" />
-	<link rel="stylesheet" type="text/css" href="%(static)s/red_style.css">
+    <link rel="stylesheet" type="text/css" href="%(static)s/style.css">
 	<!--[if IE]> 
     <style type="text/css">
         #right_column {
@@ -13,10 +13,7 @@
             float: left;
     </style>
     <![endif]-->
-    <link rel="stylesheet" type="text/css" href="%(static)s/prettify.css">
-    <script src="%(static)s/prettify.js" type="text/javascript"></script>
-    <script src="%(static)s/jquery.js"></script>
-    <script src="%(static)s/jquery.hoverIntent.js"></script>
+    <script src="%(static)s/script.js" type="text/javascript"></script>
     <script>
 
 var tid = false;
