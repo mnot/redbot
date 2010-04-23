@@ -196,7 +196,7 @@ class RedWebUi(object):
             uni_sample = unicode(self.body_sample,
                 self.link_parser.doc_enc or self.link_parser.http_enc, 'ignore')
         except LookupError:
-            uni_sample = self.body_sample
+            uni_sample = unicode(self.body_sample, 'utf-8', 'ignore')
         safe_sample = e(uni_sample)
         message = ""
         for tag, link_set in self.links.items():
