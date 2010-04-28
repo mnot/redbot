@@ -798,7 +798,7 @@ class CMD5_INCORRECT(Message):
 
 ### Conneg
 
-class CONNEG_GZIP(Message):
+class CONNEG_GZIP_GOOD(Message):
     category = c.CONNEG
     level = l.GOOD
     summary = {
@@ -809,6 +809,24 @@ class CONNEG_GZIP(Message):
     <code>Content-Encoding</code>. When RED asked for a compressed response,
     the resource provided one, saving %(savings)s%% of its original size
     (from %(orig_size)s to %(gzip_size)s bytes).<p>
+    The compressed response's headers are displayed."""
+    }
+
+class CONNEG_GZIP_BAD(Message):
+    category = c.CONNEG
+    level = l.WARN
+    summary = {
+    'en': u'Content negotiation for gzip compression makes the response %(savings)s%% larger.'
+    }
+    text = {
+    'en': u"""HTTP supports compression of responses by negotiating for
+    <code>Content-Encoding</code>. When RED asked for a compressed response,
+    the resource provided one, but it was %(savings)s%% <em>larger</em> than the original
+    response; from %(orig_size)s to %(gzip_size)s bytes.<p>
+    Often, this happens when the uncompressed response is very small, or can't be compressed
+    more; since gzip compression has some overhead, it can make the response larger. Turning compression
+    <strong>off</strong> for this resource may slightly improve response times and save 
+    bandwidth.<p>
     The compressed response's headers are displayed."""
     }
 
