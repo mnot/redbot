@@ -1274,7 +1274,7 @@ class STALE_SERVABLE(Message):
     category = c.CACHING
     level = l.INFO
     summary = {
-     'en': u"%(response)s may be served by a cache, even though it is stale."
+     'en': u"%(response)s might be served by a cache, even though it is stale."
     }
     text = {
     'en': u"""HTTP allows stale responses to be served under some circumstances;
