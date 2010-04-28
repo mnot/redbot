@@ -56,7 +56,7 @@ from urlparse import urljoin
 
 import nbhttp.error
 import red_speak as rs
-from uri_validate import absolute_URI, URI_reference
+from uri_validate import URI, URI_reference
 
 
 # base URL for RFC2616 references
@@ -427,7 +427,7 @@ class ResponseHeaderParser(object):
     def location(self, name, values):
         if self.red.res_status not in ["201", "300", "301", "302", "303", "305", "307"]:
             self.setMessage(name, rs.LOCATION_UNDEFINED)
-        if not re.match(r"^\s*(?:%s)\s*$" % absolute_URI, values[-1], re.VERBOSE):
+        if not re.match(r"^\s*%s\s*$" % URI, values[-1], re.VERBOSE):
             self.setMessage(name, rs.LOCATION_NOT_ABSOLUTE,
                             full_uri=e(urljoin(self.red.uri, values[-1])))
         return values[-1]
