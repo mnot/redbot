@@ -58,6 +58,7 @@ import sys
 import textwrap
 import time
 import urllib
+from urllib import quote as url_escape
 from urlparse import urljoin, urlsplit
 from cgi import escape as e
 
@@ -205,7 +206,7 @@ class RedWebUi(object):
                 def link_to(matchobj):
                     return r"%s<a href='%s' class='nocode'>%s</a>%s" % (
                         matchobj.group(1),
-                        u"?uri=%s" % urllib.quote(urljoin(
+                        u"?uri=%s" % url_escape(urljoin(
                             self.link_parser.base, link).encode(charset, 'replace'), safe="/;%[]:$()+,!?*@'~"),
                         e(link),
                         matchobj.group(1)
@@ -431,10 +432,10 @@ class DetailPresenter(object):
         options.append((u"<a href='#' id='body_view'>view body</a>", ""))
         if self.validators.has_key(media_type):
             options.append((u"<a href='%s'>validate body</a>" %
-                           self.validators[media_type] % urllib.quote(self.red.uri), ""))
+                           self.validators[media_type] % url_escape(self.red.uri), ""))
         if self.ui.link_count > 0:
             options.append((u"<a href='?descend=True&uri=%s'>check assets</a>" %
-                           urllib.quote(self.red.uri), "run RED on images, frames and embedded links"))
+                           url_escape(self.red.uri), "run RED on images, frames and embedded links"))
         return nl.join([o and "<span class='option' title='%s'>%s</span>" % (o[1], o[0]) or "<br>" for o in options])
 
 
