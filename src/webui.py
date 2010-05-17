@@ -204,7 +204,8 @@ class RedWebUi(object):
                 def link_to(matchobj):
                     return r"%s<a href='%s' class='nocode'>%s</a>%s" % (
                         matchobj.group(1),
-                        u"?uri=%s" % e(urljoin(self.link_parser.base, link)),
+                        u"?uri=%s" % urllib.quote(urljoin(
+                            self.link_parser.base, link).encode('utf-8', 'replace'), safe="/;%[]:$()+,!?*@'~"),
                         e(link),
                         matchobj.group(1)
                     )
