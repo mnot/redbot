@@ -31,6 +31,7 @@ THE SOFTWARE.
 
 # FIXME: make language configurable/dynamic
 lang = "en"
+charset = "utf-8"
 
 # Where to store exceptions; set to None to disable traceback logging
 logdir = 'exceptions'
@@ -109,7 +110,7 @@ class RedWebUi(object):
                 clean_js(n), clean_js(v)) for n,v in req_hdrs]),
             'extra_js': self.presentExtra('.js')
         }
-        self.output(header.encode('utf-8', 'replace'))
+        self.output(header.encode(charset, 'replace'))
         self.links = {}          # {type: set(link...)}
         self.link_count = 0
         self.link_droids = []    # list of REDs for summary output
@@ -196,7 +197,7 @@ class RedWebUi(object):
             uni_sample = unicode(self.body_sample,
                 self.link_parser.doc_enc or self.link_parser.http_enc, 'ignore')
         except LookupError:
-            uni_sample = unicode(self.body_sample, 'utf-8', 'ignore')
+            uni_sample = unicode(self.body_sample, charset, 'ignore')
         safe_sample = e(uni_sample)
         message = ""
         for tag, link_set in self.links.items():
@@ -205,7 +206,7 @@ class RedWebUi(object):
                     return r"%s<a href='%s' class='nocode'>%s</a>%s" % (
                         matchobj.group(1),
                         u"?uri=%s" % urllib.quote(urljoin(
-                            self.link_parser.base, link).encode('utf-8', 'replace'), safe="/;%[]:$()+,!?*@'~"),
+                            self.link_parser.base, link).encode(charset, 'replace'), safe="/;%[]:$()+,!?*@'~"),
                         e(link),
                         matchobj.group(1)
                     )
@@ -228,7 +229,7 @@ class RedWebUi(object):
             for extra_file in extra_files:
                 extra_path = os.path.join(extra_dir, extra_file)
                 try:
-                    o.append(codecs.open(extra_path, mode='r', encoding='utf-8', errors='replace').read())
+                    o.append(codecs.open(extra_path, mode='r', encoding=charset, errors='replace').read())
                 except IOError, why:
                     o.append("<!-- error opening %s: %s -->" % (extra_file, why))
         return nl.join(o)
@@ -267,7 +268,7 @@ window.status="%s";
 -->
 </script>
         """ % (time.time() - self.start, e(message))
-        self.output(msg.encode('utf-8', 'replace'))
+        self.output(msg.encode(charset, 'replace'))
         sys.stdout.flush()
 
     def timeoutError(self):
@@ -364,7 +365,7 @@ class DetailPresenter(object):
             'footer': self.ui.presentFooter(),
             'hidden_list': self.ui.presentHiddenList(),
         }
-        return (self.template % result_strings).encode("utf-8")
+        return (self.template % result_strings).encode(charset)
 
     def presentResponse(self):
         "Return the HTTP response line and headers as HTML"
@@ -513,7 +514,7 @@ class TablePresenter(object):
             'footer': self.ui.presentFooter(),
             'hidden_list': self.ui.presentHiddenList(),
         }
-        return (self.template % result_strings).encode("utf-8")
+        return (self.template % result_strings).encode(charset)
 
     link_order = [
           ('link', 'Head Links'),
@@ -714,7 +715,7 @@ def cgi_main():
     sys.excepthook = except_handler
     sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0) 
     form = cgi.FieldStorage()
-    test_uri = form.getfirst("uri", "").decode('utf-8', 'replace')
+    test_uri = form.getfirst("uri", "").decode(charset, 'replace')
     req_hdrs = [tuple(rh.split(":", 1))
                 for rh in form.getlist("req_hdr")
                 if rh.find(":") > 0
