@@ -58,7 +58,7 @@ import sys
 import textwrap
 import time
 import urllib
-from urllib import quote as url_escape
+from functools import partial
 from urlparse import urljoin, urlsplit
 from cgi import escape as e
 
@@ -106,9 +106,9 @@ class RedWebUi(object):
             'static': static_root,
             'version': red.__version__,
             'html_uri': e(test_uri),
-            'js_uri': clean_js(test_uri),
+            'js_uri': e_js(test_uri),
             'js_req_hdrs': ", ".join(['["%s", "%s"]' % (
-                clean_js(n), clean_js(v)) for n,v in req_hdrs]),
+                e_js(n), e_js(v)) for n,v in req_hdrs]),
             'extra_js': self.presentExtra('.js')
         }
         self.output(header.encode(charset, 'replace'))
@@ -206,7 +206,7 @@ class RedWebUi(object):
                 def link_to(matchobj):
                     return r"%s<a href='%s' class='nocode'>%s</a>%s" % (
                         matchobj.group(1),
-                        u"?uri=%s" % url_escape(urljoin(
+                        u"?uri=%s" % e_query_arg(urljoin(
                             self.link_parser.base, link).encode(charset, 'replace'), safe="/;%[]:$()+,!?*@'~"),
                         e(link),
                         matchobj.group(1)
@@ -432,10 +432,10 @@ class DetailPresenter(object):
         options.append((u"<a href='#' id='body_view'>view body</a>", ""))
         if self.validators.has_key(media_type):
             options.append((u"<a href='%s'>validate body</a>" %
-                           self.validators[media_type] % url_escape(self.red.uri), ""))
+                           self.validators[media_type] % e_query_arg(self.red.uri), ""))
         if self.ui.link_count > 0:
             options.append((u"<a href='?descend=True&uri=%s'>check assets</a>" %
-                           url_escape(self.red.uri), "run RED on images, frames and embedded links"))
+                           e_query_arg(self.red.uri), "run RED on images, frames and embedded links"))
         return nl.join([o and "<span class='option' title='%s'>%s</span>" % (o[1], o[0]) or "<br>" for o in options])
 
 
@@ -546,7 +546,7 @@ class TablePresenter(object):
             out.append(u"""<td class="uri"><a href="%s" title="%s"%s>
                 %s<span class="fade1">%s</span><span class="fade2">%s</span><span class="fade3">%s</span>
                 </a></td>""" % (
-                        u"?uri=%s" % e(red.uri), e(red.uri), cl, e(red.uri[:m-2]),
+                        u"?uri=%s" % e_query_arg(red.uri), e(red.uri), cl, e(red.uri[:m-2]),
                         e(red.uri[m-2]), e(red.uri[m-1]), e(red.uri[m]),
                         )
             )
@@ -639,6 +639,29 @@ class TablePresenter(object):
         out.append(u"</ol>\n")
         return nl.join(out)
 
+# Escaping functions. 
+uri_gen_delims = r":/?#[]@"
+uri_sub_delims = r"!$&'()*+,;="
+def unicode_url_escape(url, safe):
+    "URL esape a unicode string. Assume that anything already encoded is to be left alone."
+    # also include "~" because it doesn't need to be encoded, but Python does anyway :/
+    return urllib.quote(url.encode(charset, 'replace'), safe + '%~')
+e_url = partial(unicode_url_escape, safe=uri_gen_delims + uri_sub_delims)
+e_authority = partial(unicode_url_escape, safe=uri_sub_delims + r"[]:@")
+e_path = partial(unicode_url_escape, safe=uri_sub_delims + r":@/")
+e_path_seg = partial(unicode_url_escape, safe=uri_sub_delims + r":@") 
+e_query = partial(unicode_url_escape, safe=uri_sub_delims + r":@/?")
+e_query_arg = partial(unicode_url_escape, safe=r"!$'()*+,;:@/?")
+
+def e_js(instr):
+    "Make sure instr is safe for writing into a double-quoted JavaScript string."
+    if not instr: return ""
+    instr = instr.replace('"', r'\"')
+    if instr[-1] == '\\':
+        instr += '\\'
+    return instr
+
+
 # adapted from cgitb.Hook
 def except_handler(etype, evalue, etb):
     """
@@ -700,14 +723,6 @@ and we'll look into it."""
             print ''.join(traceback.format_exception(type, value, tb))
             print "</pre>"
     sys.stdout.flush()
-
-def clean_js(instr):
-    "Make sure instr is safe for writing into a double-quoted JavaScript string."
-    if not instr: return ""
-    instr = instr.replace('"', r'\"')
-    if instr[-1] == '\\':
-        instr += '\\'
-    return instr
 
 def cgi_main():
     """Run RED as a CGI Script."""
