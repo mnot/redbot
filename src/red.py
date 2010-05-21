@@ -419,6 +419,7 @@ class ETagValidate(RedFetcher):
         if self.res_status == '304':
             self.red.inm_support = True
             self.red.setMessage('header-etag', rs.INM_304, self)
+            # TODO : check Content- headers, esp. length.
         elif self.res_status == self.red.res_status:
             if self.res_body_md5 == self.red.res_body_md5:
                 self.red.inm_support = False
@@ -451,6 +452,7 @@ class LmValidate(RedFetcher):
         if self.res_status == '304':
             self.red.ims_support = True
             self.red.setMessage('header-last-modified', rs.IMS_304, self)
+            # TODO : check Content- headers, esp. length.
         elif self.res_status == self.red.res_status:
             if self.res_body_md5 == self.red.res_body_md5:
                 self.red.ims_support = False
