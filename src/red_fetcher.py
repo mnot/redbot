@@ -237,7 +237,9 @@ class RedFetcher:
         else:
             raise AssertionError, "Unknown response error: %s" % err
 
-        if self.res_complete:
+        if self.res_complete \
+          and self.method not in ['HEAD'] \
+          and self.res_status not in ['304']:
             # check payload basics
             if self.parsed_hdrs.has_key('content-length'):
                 if self.res_body_len == self.parsed_hdrs['content-length']:
