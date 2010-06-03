@@ -123,7 +123,7 @@ class RedWebUi(object):
         if test_uri:
             output_hdrs("200 OK", [ct_hdr, ("Cache-Control", "max-age=60, must-revalidate")])
             self.output(html_header.encode(charset, 'replace'))
-            self.link_parser = link_parse.HTMLLinkParser(test_uri, self.processLink)
+            self.link_parser = link_parse.HTMLLinkParser(test_uri, self.processLink, self.updateStatus)
             self.red = red.ResourceExpertDroid(
                 test_uri,
                 req_hdrs=req_hdrs,

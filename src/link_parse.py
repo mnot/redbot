@@ -53,9 +53,10 @@ class HTMLLinkParser(HTMLParser):
         'application/atom+xml'
     ]
 
-    def __init__(self, base_uri, process_link):
+    def __init__(self, base_uri, process_link, err):
         self.base = base_uri
         self.process_link = process_link
+        self.err = err
         self.http_enc = 'latin-1'
         self.doc_enc = None
         self.links = {
@@ -68,10 +69,14 @@ class HTMLLinkParser(HTMLParser):
         }
         self.count = 0
         self.errors = 0
+        self.last_err_pos = None
+        self.ok = True
         HTMLParser.__init__(self)
 
     def feed(self, response, chunk):
         "Feed a given chunk of HTML data to the parser"
+        if not self.ok:
+            return
         if response.parsed_hdrs.get('content-type', [None])[0] in self.link_parseable_types:
             self.http_enc = response.parsed_hdrs['content-type'][1].get('charset', self.http_enc)
             try:
@@ -81,7 +86,10 @@ class HTMLLinkParser(HTMLParser):
                     except LookupError:
                         pass
                 HTMLParser.feed(self, chunk)
+            except BadErrorIReallyMeanIt:
+                pass
             except Exception, why: # oh, well...
+                self.err("feed problem: %s" % why)
                 self.errors += 1
 
     def handle_starttag(self, tag, attrs):
@@ -121,7 +129,18 @@ class HTMLLinkParser(HTMLParser):
 
     def error(self, message):
         self.errors += 1
+        if self.getpos() == self.last_err_pos:
+            # we're in a loop; give up.
+            self.err("giving up on link parsing after %s errors" % self.errors)
+            self.ok = False
+            raise BadErrorIReallyMeanIt()
+        else:
+            self.last_err_pos = self.getpos()
+            self.err(message)
 
+class BadErrorIReallyMeanIt(Exception):
+    """See http://bugs.python.org/issue8885 for why this is necessary."""
+    pass
 
 if "__main__" == __name__:
     import sys
@@ -133,9 +152,12 @@ if "__main__" == __name__:
         def done(self):
             pass
         @staticmethod
+        def err(mesg):
+            sys.stderr.write("ERROR: %s\n" % mesg)
+        @staticmethod
         def show_link(link, tag, title):
             TestFetcher.count += 1
             out = "%.3d) [%s] %s" % (TestFetcher.count, tag, link)
             print out.encode('utf-8', 'strict')
-    p = HTMLLinkParser(uri, TestFetcher.show_link)
+    p = HTMLLinkParser(uri, TestFetcher.show_link, TestFetcher.err)
     TestFetcher(uri, req_hdrs=req_hdrs, body_procs=[p.feed])
