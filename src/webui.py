@@ -95,14 +95,14 @@ class RedWebUi(object):
     Given a URI, run RED on it and present the results to output as HTML.
     If descend is true, spider the links and present a summary.
     """
-    def __init__(self, test_uri, req_hdrs, base_uri, output, descend=False):
+    def __init__(self, test_uri, req_hdrs, base_uri, output_hdrs, output_body, descend=False):
         self.base_uri = base_uri
         self.req_hdrs = req_hdrs
         self.descend_links = descend
-        self.output = output
+        self.output = output_body
         self.start = time.time()
         timeout = nbhttp.schedule(max_runtime, self.timeoutError)
-        header = red_header.__doc__ % {
+        html_header = red_header.__doc__ % {
             'static': static_root,
             'version': red.__version__,
             'html_uri': e(test_uri),
@@ -111,7 +111,6 @@ class RedWebUi(object):
                 e_js(n), e_js(v)) for n,v in req_hdrs]),
             'extra_js': self.presentExtra('.js')
         }
-        self.output(header.encode(charset, 'replace'))
         self.links = {}          # {type: set(link...)}
         self.link_count = 0
         self.link_droids = []    # list of REDs for summary output
@@ -120,7 +119,10 @@ class RedWebUi(object):
         self.body_sample_size = 1024 * 128 # how big to allow the sample to be
         self.sample_seen = 0
         self.sample_complete = True
+        ct_hdr = ("Content-Type", "text/html; charset=utf-8")
         if test_uri:
+            output_hdrs("200 OK", [ct_hdr, ("Cache-Control", "max-age=60, must-revalidate")])
+            self.output(html_header.encode(charset, 'replace'))
             self.link_parser = link_parse.HTMLLinkParser(test_uri, self.processLink)
             self.red = red.ResourceExpertDroid(
                 test_uri,
@@ -140,7 +142,7 @@ class RedWebUi(object):
                    'elapsed': elapsed
                 });
             else:
-                self.output("<div id='main'>")
+                self.output("<div id='main'>\n")
                 if self.red.res_error['desc'] == nbhttp.error.ERR_CONNECT['desc']:
                     self.output(error_template % "Could not connect to the server (%s)" % \
                         self.red.res_error.get('detail', "unknown"))
@@ -154,13 +156,15 @@ class RedWebUi(object):
                 else:
                     raise AssertionError, "Unidentified incomplete response error."
                 self.output(self.presentFooter())
-                self.output("</div>")
+                self.output("</div>\n")
         else:  # no test_uri
+            output_hdrs("200 OK", [ct_hdr, ("Cache-Control", "max-age=300")])
+            self.output(html_header.encode(charset, 'replace'))
             self.output(self.presentExtra())
             self.output(self.presentFooter())
-            self.output("</div>")
+            self.output("</div>\n")
+        self.output("</body></html>\n")
         timeout.delete()
-        self.output("</body></html>")
 
     def processLink(self, link, tag, title):
         "Handle a link from content"
@@ -275,16 +279,20 @@ window.status="%s";
         """ Max runtime reached."""
         self.output(error_template % ("RED timeout."))
         self.output("<!-- Outstanding Connections\n")
+        class DummyStream:
+            def write(self, s):
+                self.output(s)
+        ds = DummyStream()
         for conn in red_fetcher.outstanding_requests:
-            self.output("*** %s" % conn.uri)
-            pprint.pprint(conn.__dict__)
+            self.output("*** %s\n" % conn.uri)
+            pprint.pprint(conn.__dict__, ds)
             if conn.client:
-                pprint.pprint(conn.client.__dict__)
+                pprint.pprint(conn.client.__dict__, ds)
             if conn.client._tcp_conn:
-                pprint.pprint(conn.client._tcp_conn.__dict__)
+                pprint.pprint(conn.client._tcp_conn.__dict__, ds)
 
         self.output("-->\n")
-        nbhttp.stop()
+        nbhttp.stop() # FIXME: not appropriate for standalone server
 
 
 class DetailPresenter(object):
@@ -725,8 +733,6 @@ and we'll look into it."""
 
 def cgi_main():
     """Run RED as a CGI Script."""
-    def output(o):
-        print o
     sys.excepthook = except_handler
     sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0) 
     form = cgi.FieldStorage()
@@ -741,13 +747,14 @@ def cgi_main():
       os.environ.get('SCRIPT_NAME'),
       os.environ.get('PATH_INFO', '')
     )
-    output("Content-Type: text/html; charset=utf-8")
-    if test_uri:
-        output("Cache-Control: max-age=60, must-revalidate")
-    else:
-        output("Cache-Control: max-age=3600")
-    print
-    RedWebUi(test_uri, req_hdrs, base_uri, output, descend)
+    def output_hdrs(status, res_hdrs):
+        sys.stdout.write("Status: %s\n" % status)
+        for k,v in res_hdrs:
+            sys.stdout.write("%s: %s\n" % (k,v))
+        sys.stdout.write("\n")
+    def output_body(o):
+        sys.stdout.write(o)
+    RedWebUi(test_uri, req_hdrs, base_uri, output_hdrs, output_body, descend)
 
 def standalone_main(port, static_dir):
     """Run RED as a standalone Web server."""
@@ -774,7 +781,7 @@ def standalone_main(port, static_dir):
             res_hdrs = [('Content-Type', 'text/html; charset=utf-8')] #FIXME: need to send proper content-type back, caching headers
             res_body, res_done = res_start("200", "OK", res_hdrs, nbhttp.dummy)
             sys.stderr.write("%s %s %s\n" % (str(descend), test_uri, test_hdrs))
-            RedWebUi(test_uri, test_hdrs, base_uri, res_body, descend)
+            RedWebUi(test_uri, test_hdrs, base_uri, res_body, output_hdr, descend)
             res_done(None)
         else:
             res_body, res_done = res_start("404", "Not Found", [], nbhttp.dummy)
