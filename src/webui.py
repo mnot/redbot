@@ -280,7 +280,8 @@ window.status="%s";
         self.output(error_template % ("RED timeout."))
         self.output("<!-- Outstanding Connections\n")
         class DummyStream:
-            def write(self, s):
+            @staticmethod
+            def write(s):
                 self.output(s)
         ds = DummyStream()
         for conn in red_fetcher.outstanding_requests:
