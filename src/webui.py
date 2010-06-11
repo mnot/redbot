@@ -711,8 +711,8 @@ A problem has occurred, but it probably isn't your fault.
                 if conn.client._tcp_conn:
                     pprint.pprint(conn.client._tcp_conn.__dict__, fh)
             fh.write("</pre>\n")
-            os.fchmod(fh, stat.S_IROTH)
             fh.close()
+            os.chmod(path, stat.S_IROTH)
             print error_template % """
 A problem has occurred, but it probably isn't your fault.
 RED has remembered it, and we'll try to fix it soon."""
