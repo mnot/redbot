@@ -683,6 +683,7 @@ def except_handler(etype, evalue, etb):
 A problem has occurred, but it probably isn't your fault.
 """
     else:
+        import stat
         import tempfile
         import traceback
         try:
@@ -710,6 +711,7 @@ A problem has occurred, but it probably isn't your fault.
                 if conn.client._tcp_conn:
                     pprint.pprint(conn.client._tcp_conn.__dict__, fh)
             fh.write("</pre>\n")
+            os.fchmod(fh, stat.S_IROTH)
             fh.close()
             print error_template % """
 A problem has occurred, but it probably isn't your fault.
