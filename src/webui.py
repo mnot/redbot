@@ -704,7 +704,7 @@ A problem has occurred, but it probably isn't your fault.
             fh.write(doc)
             fh.write("<h2>Outstanding Connections</h2>\n<pre>")
             for conn in red_fetcher.outstanding_requests:
-                fh.write("*** %s\n" % conn.uri)
+                fh.write("*** %s - %s\n" % (conn.uri, hex(id(conn))))
                 pprint.pprint(conn.__dict__, fh)
                 if conn.client:
                     pprint.pprint(conn.client.__dict__, fh)
