@@ -474,7 +474,7 @@ class HeaderPresenter(object):
         svalue = value.lstrip()
         space = len(value) - len(svalue)
         return u"%s<a href='?uri=%s'>%s</a>" % ( " " * space,
-            e(urljoin(self.red.uri, svalue)), self.I(e(svalue), len(name)))
+            e_query_arg(urljoin(self.red.uri, svalue)), self.I(e(svalue), len(name)))
     content_location = \
     location = \
     x_xrds_location = \
