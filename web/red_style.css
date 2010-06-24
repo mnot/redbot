@@ -144,6 +144,7 @@ option[value="other..."] {
     border: 1px solid black;
     padding: 1em 0em;
     margin-bottom: 0em;
+	overflow-x: auto;
 }
 
 #response a {
