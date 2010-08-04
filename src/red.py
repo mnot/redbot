@@ -221,17 +221,21 @@ class ResourceExpertDroid(RedFetcher):
         # calculate freshness
         freshness_lifetime = 0
         has_explicit_freshness = False
-        freshness_hdrs = ['header-date', 'header-expires']
+        has_cc_freshness = False
+        freshness_hdrs = ['header-date']
         if 's-maxage' in cc_keys: # TODO: differentiate message for s-maxage
             freshness_lifetime = cc_dict['s-maxage']
             freshness_hdrs.append('header-cache-control')
             has_explicit_freshness = True
+            has_cc_freshness = True
         elif 'max-age' in cc_keys:
             freshness_lifetime = cc_dict['max-age']
             freshness_hdrs.append('header-cache-control')
             has_explicit_freshness = True
+            has_cc_freshness = True
         elif self.parsed_hdrs.has_key('expires'):
             has_explicit_freshness = True
+            freshness_hdrs.append('header-expires')
             if self.parsed_hdrs.has_key('date'):
                 freshness_lifetime = self.parsed_hdrs['expires'] - \
                     self.parsed_hdrs['date']
@@ -252,8 +256,14 @@ class ResourceExpertDroid(RedFetcher):
                                  freshness_left=freshness_left_str,
                                  current_age = current_age_str
                                  )
+            elif has_cc_freshness and self.age > freshness_lifetime:
+                self.setMessage(" ".join(freshness_hdrs), rs.FRESHNESS_STALE_CACHE,
+                                 freshness_lifetime=freshness_lifetime_str,
+                                 freshness_left=freshness_left_str,
+                                 current_age = current_age_str
+                                 )
             else:
-                self.setMessage(" ".join(freshness_hdrs), rs.FRESHNESS_STALE,
+                self.setMessage(" ".join(freshness_hdrs), rs.FRESHNESS_STALE_ALREADY,
                                  freshness_lifetime=freshness_lifetime_str,
                                  freshness_left=freshness_left_str,
                                  current_age = current_age_str

@@ -1208,11 +1208,25 @@ class FRESHNESS_FRESH(Message):
     is less than its freshness lifetime (in this case, %(freshness_lifetime)s)."""
     }
 
-class FRESHNESS_STALE(Message):
+class FRESHNESS_STALE_CACHE(Message):
+    category = c.CACHING
+    level = l.WARNING
+    summary = {
+     'en': u"%(response)s has been served stale by a cache."
+    }
+    text = {
+    'en': u"""An HTTP response is stale when its age (here, %(current_age)s)
+    is equal to or exceeds its freshness lifetime (in this case, %(freshness_lifetime)s).<p>
+    HTTP allows caches to use stale responses to satisfy requests only under exceptional 
+    circumstances; e.g., when they lose contact with the origin server. Either that has happened
+    here, or the cache has ignored the response's freshness directives."""
+    }
+
+class FRESHNESS_STALE_ALREADY(Message):
     category = c.CACHING
     level = l.INFO
     summary = {
-     'en': u"%(response)s is stale."
+     'en': u"%(response)s is already stale."
     }
     text = {
     'en': u"""A cache considers a HTTP response stale when its age (here, %(current_age)s)
