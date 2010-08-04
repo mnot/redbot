@@ -1210,7 +1210,7 @@ class FRESHNESS_FRESH(Message):
 
 class FRESHNESS_STALE_CACHE(Message):
     category = c.CACHING
-    level = l.WARNING
+    level = l.WARN
     summary = {
      'en': u"%(response)s has been served stale by a cache."
     }
