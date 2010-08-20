@@ -60,6 +60,8 @@ class OutputFormatter(object):
 
 class TxtOutputFormatter(OutputFormatter):
     def print_headers(self):
+        print "HTTP/%s %s %s" % (self.droid.res_version,
+            self.droid.res_status, self.droid.res_phrase)
         print "Response Headers:"
         print nl.join(["%s:%s" % header for header in self.droid.res_hdrs])
 
@@ -108,6 +110,8 @@ class TxtOutputFormatter(OutputFormatter):
 
 class RstOutputFormatter(OutputFormatter):
     def print_headers(self):
+        print "HTTP/%s %s %s" % (self.droid.res_version,
+            self.droid.res_status, self.droid.res_phrase)
         print "Response headers"
         print "----------------"
         print ""
