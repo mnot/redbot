@@ -11,4 +11,5 @@ setup(name='redbot',
       packages=['redbot'],
       package_dir={'redbot': 'src'},
       scripts=['scripts/redbot'],
+      classifiers=['Programming Language :: Python'],
 )
