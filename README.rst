@@ -26,7 +26,7 @@ Unpack the RED tarball. There are a number of interesting files:
 - src/\*.py - RED's Python library files
 - web/\* - RED's CSS stylesheet and JavaScript libraries
 
-Running 
+Running:: 
 
   python setup.py install
   
