@@ -55,8 +55,8 @@ from email.utils import parsedate as lib_parsedate
 from urlparse import urljoin
 
 import nbhttp.error
-import red_speak as rs
-from uri_validate import URI, URI_reference
+import redbot.speak as rs
+from redbot.uri_validate import URI, URI_reference
 
 
 # base URL for RFC2616 references

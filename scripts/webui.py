@@ -64,14 +64,10 @@ from cgi import escape as e
 
 assert sys.version_info[0] == 2 and sys.version_info[1] >= 5, "Please use Python 2.5 or greater"
 
-import link_parse
 import nbhttp
-import red
-import red_defns
-import red_fetcher
-import red_header
-import red_speak as rs
-from response_analyse import relative_time, f_num
+from redbot import link_parse, red, defns, fetch, html_header
+import redbot.speak as rs
+from redbot.response_analyse import relative_time, f_num
 
 # HTML template for error bodies
 error_template = u"""\
@@ -102,7 +98,7 @@ class RedWebUi(object):
         self.output = output_body
         self.start = time.time()
         timeout = nbhttp.schedule(max_runtime, self.timeoutError)
-        html_header = red_header.__doc__ % {
+        page_header = html_header.__doc__ % {
             'static': static_root,
             'version': red.__version__,
             'html_uri': e(test_uri),
@@ -122,7 +118,7 @@ class RedWebUi(object):
         ct_hdr = ("Content-Type", "text/html; charset=utf-8")
         if test_uri:
             output_hdrs("200 OK", [ct_hdr, ("Cache-Control", "max-age=60, must-revalidate")])
-            self.output(html_header.encode(charset, 'replace'))
+            self.output(page_header.encode(charset, 'replace'))
             self.link_parser = link_parse.HTMLLinkParser(test_uri, self.processLink, self.updateStatus)
             self.red = red.ResourceExpertDroid(
                 test_uri,
@@ -138,7 +134,7 @@ class RedWebUi(object):
                     self.output(DetailPresenter(self, self.red).presentResults())
                 elapsed = time.time() - self.start
                 self.updateStatus("RED made %(requests)s requests in %(elapsed)2.2f seconds." % {
-                   'requests': red_fetcher.total_requests,
+                   'requests': fetch.total_requests,
                    'elapsed': elapsed
                 });
             else:
@@ -159,7 +155,7 @@ class RedWebUi(object):
                 self.output("</div>\n")
         else:  # no test_uri
             output_hdrs("200 OK", [ct_hdr, ("Cache-Control", "max-age=300")])
-            self.output(html_header.encode(charset, 'replace'))
+            self.output(page_header.encode(charset, 'replace'))
             self.output(self.presentExtra())
             self.output(self.presentFooter())
             self.output("</div>\n")
@@ -284,7 +280,7 @@ window.status="%s";
             def write(s):
                 self.output(s)
         ds = DummyStream()
-        for conn in red_fetcher.outstanding_requests:
+        for conn in fetch.outstanding_requests:
             self.output("*** %s\n" % conn.uri)
             pprint.pprint(conn.__dict__, ds)
             if conn.client:
@@ -390,8 +386,8 @@ class DetailPresenter(object):
         "Return an individual HTML header as HTML"
         token_name = "header-%s" % name.lower()
         py_name = "HDR_" + name.upper().replace("-", "_")
-        if hasattr(red_defns, py_name) and token_name not in [i[0] for i in self.ui.hidden_text]:
-            defn = getattr(red_defns, py_name)[lang] % {
+        if hasattr(defns, py_name) and token_name not in [i[0] for i in self.ui.hidden_text]:
+            defn = getattr(defns, py_name)[lang] % {
                 'field_name': name,
             }
             self.ui.hidden_text.append((token_name, defn))
@@ -703,7 +699,7 @@ A problem has occurred, but it probably isn't your fault.
             fh = os.fdopen(fd, 'w')
             fh.write(doc)
             fh.write("<h2>Outstanding Connections</h2>\n<pre>")
-            for conn in red_fetcher.outstanding_requests:
+            for conn in fetch.outstanding_requests:
                 fh.write("*** %s - %s\n" % (conn.uri, hex(id(conn))))
                 pprint.pprint(conn.__dict__, fh)
                 if conn.client:

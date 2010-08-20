@@ -43,9 +43,9 @@ import zlib
 from cgi import escape as e
 
 import nbhttp
-import red_speak as rs
-import response_analyse as ra
-from response_analyse import f_num
+import redbot.speak as rs
+import redbot.response_analyse as ra
+from redbot.response_analyse import f_num
 
 outstanding_requests = [] # requests in process
 total_requests = 0

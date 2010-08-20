@@ -40,10 +40,10 @@ import time
 import random
 from cgi import escape as e
 
-import red_speak as rs
-from red_fetcher import RedFetcher
-from response_analyse import relative_time, f_num
-from uri_validate import absolute_URI
+import redbot.speak as rs
+from redbot.fetch import RedFetcher
+from redbot.response_analyse import relative_time, f_num
+from redbot.uri_validate import absolute_URI
 
 ### configuration
 cacheable_methods = ['GET']

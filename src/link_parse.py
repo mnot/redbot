@@ -30,8 +30,7 @@ THE SOFTWARE.
 from htmlentitydefs import entitydefs
 from HTMLParser import HTMLParser
 
-import response_analyse
-RHP = response_analyse.ResponseHeaderParser
+from redbot.response_analyse import ResponseHeaderParser as RHP
 
 class HTMLLinkParser(HTMLParser):
     """
