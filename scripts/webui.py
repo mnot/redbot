@@ -94,7 +94,6 @@ class RedWebUi(object):
     def __init__(self, test_uri, req_hdrs, base_uri, output_hdrs, output_body, descend=False):
         self.base_uri = base_uri
         self.req_hdrs = req_hdrs
-        self.descend_links = descend
         self.output = output_body
         self.start = time.time()
         timeout = nbhttp.schedule(max_runtime, self.timeoutError)
@@ -107,9 +106,6 @@ class RedWebUi(object):
                 e_js(n), e_js(v)) for n,v in req_hdrs]),
             'extra_js': self.presentExtra('.js')
         }
-        self.links = {}          # {type: set(link...)}
-        self.link_count = 0
-        self.link_droids = []    # list of REDs for summary output
         self.hidden_text = []    # list of things to hide for popups
         self.body_sample = ""    # sample of the response body
         self.body_sample_size = 1024 * 128 # how big to allow the sample to be
@@ -119,7 +115,7 @@ class RedWebUi(object):
         if test_uri:
             output_hdrs("200 OK", [ct_hdr, ("Cache-Control", "max-age=60, must-revalidate")])
             self.output(page_header.encode(charset, 'replace'))
-            self.link_parser = link_parse.HTMLLinkParser(test_uri, self.processLink, self.updateStatus)
+            self.link_parser = link_parse.HTMLLinkParser(test_uri, self.updateStatus, descend)
             self.red = red.ResourceExpertDroid(
                 test_uri,
                 req_hdrs=req_hdrs,
@@ -128,7 +124,7 @@ class RedWebUi(object):
             )
             self.updateStatus('Done.')
             if self.red.res_complete:
-                if self.descend_links and self.link_count > 0:
+                if descend and self.link_parser.link_count > 0:
                     self.output(TablePresenter(self, self.red).presentResults())
                 else:
                     self.output(DetailPresenter(self, self.red).presentResults())
@@ -162,23 +158,6 @@ class RedWebUi(object):
         self.output("</body></html>\n")
         timeout.delete()
 
-    def processLink(self, link, tag, title):
-        "Handle a link from content"
-        self.link_count += 1
-        if not self.links.has_key(tag):
-            self.links[tag] = set()
-        if self.descend_links and tag not in ['a'] and \
-          link not in self.links[tag]:
-            self.link_droids.append((
-                red.ResourceExpertDroid(
-                    urljoin(self.link_parser.base, link),
-                    req_hdrs=self.req_hdrs,
-                    status_cb=self.updateStatus
-                ),
-                tag
-            ))
-        self.links[tag].add(link)
-
     def storeSample(self, response, chunk):
         """store the first self.sample_size bytes of the response"""
         if self.sample_seen + len(chunk) < self.body_sample_size:
@@ -201,7 +180,7 @@ class RedWebUi(object):
             uni_sample = unicode(self.body_sample, charset, 'ignore')
         safe_sample = e(uni_sample)
         message = ""
-        for tag, link_set in self.links.items():
+        for tag, link_set in self.link_parser.links.items():
             for link in link_set:
                 def link_to(matchobj):
                     return r"%s<a href='%s' class='nocode'>%s</a>%s" % (
@@ -437,7 +416,7 @@ class DetailPresenter(object):
         if self.validators.has_key(media_type):
             options.append((u"<a href='%s'>validate body</a>" %
                            self.validators[media_type] % e_query_arg(self.red.uri), ""))
-        if self.ui.link_count > 0:
+        if self.ui.link_parser.link_count > 0:
             options.append((u"<a href='?descend=True&uri=%s'>check assets</a>" %
                            e_query_arg(self.red.uri), "run RED on images, frames and embedded links"))
         return nl.join([o and "<span class='option' title='%s'>%s</span>" % (o[1], o[0]) or "<br>" for o in options])
@@ -532,7 +511,7 @@ class TablePresenter(object):
         out = [self.presentTableHeader()]
         out.append(self.presentDroid(self.red))
         for hdr_tag, heading in self.link_order:
-            droids = [d[0] for d in self.ui.link_droids if d[1] == hdr_tag]
+            droids = [d[0] for d in self.ui.link_parser.link_droids if d[1] == hdr_tag]
             if droids:
                 droids.sort(key=operator.attrgetter('uri'))
                 out.append(self.presentTableHeader(heading + " (%s)" % len(droids)))

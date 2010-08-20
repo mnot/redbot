@@ -29,7 +29,9 @@ THE SOFTWARE.
 
 from htmlentitydefs import entitydefs
 from HTMLParser import HTMLParser
+from urlparse import urljoin
 
+from redbot import red, response_analyse
 from redbot.response_analyse import ResponseHeaderParser as RHP
 
 class HTMLLinkParser(HTMLParser):
@@ -52,13 +54,16 @@ class HTMLLinkParser(HTMLParser):
         'application/atom+xml'
     ]
 
-    def __init__(self, base_uri, process_link, err):
+    def __init__(self, base_uri, err, descend=False):
         self.base = base_uri
-        self.process_link = process_link
         self.err = err
+        self.descend = descend
+        self.links = {}          # {type: set(link...)}
+        self.link_count = 0
+        self.link_droids = []    # list of REDs for summary output        
         self.http_enc = 'latin-1'
         self.doc_enc = None
-        self.links = {
+        self.link_types = {
             'link': 'href',
             'a': 'href',
             'img': 'src',
@@ -66,7 +71,6 @@ class HTMLLinkParser(HTMLParser):
             'frame': 'src',
             'iframe': 'src',
         }
-        self.count = 0
         self.errors = 0
         self.last_err_pos = None
         self.ok = True
@@ -88,16 +92,35 @@ class HTMLLinkParser(HTMLParser):
             except BadErrorIReallyMeanIt:
                 pass
             except Exception, why: # oh, well...
-                self.err("feed problem: %s" % why)
+                if self.err:
+                    self.err("feed problem: %s" % why)
                 self.errors += 1
+        else:
+            self.ok = False
+
+    def process_link(self, link, tag, title):
+        "Handle a link from content"
+        self.link_count += 1
+        if not self.links.has_key(tag):
+            self.links[tag] = set()
+        if self.descend and tag not in ['a'] and \
+          link not in self.links[tag]:
+            self.link_droids.append((
+                red.ResourceExpertDroid(
+                    urljoin(self.base, link),
+# FIXME:                    req_hdrs=self.req_hdrs,
+                    status_cb=self.err
+                ),
+                tag
+            ))
+        self.links[tag].add(link)
 
     def handle_starttag(self, tag, attrs):
         attr_d = dict(attrs)
         title = attr_d.get('title', '').strip()
-        if tag in self.links.keys():
-            target = attr_d.get(self.links[tag], "")
+        if tag in self.link_types.keys():
+            target = attr_d.get(self.link_types[tag], "")
             if target:
-                self.count += 1
                 if "#" in target:
                     target = target[:target.index('#')]
                 self.process_link(target, tag, title)
@@ -130,12 +153,14 @@ class HTMLLinkParser(HTMLParser):
         self.errors += 1
         if self.getpos() == self.last_err_pos:
             # we're in a loop; give up.
-            self.err("giving up on link parsing after %s errors" % self.errors)
+            if self.err:
+                self.err("giving up on link parsing after %s errors" % self.errors)
             self.ok = False
             raise BadErrorIReallyMeanIt()
         else:
             self.last_err_pos = self.getpos()
-            self.err(message)
+            if self.err:
+                self.err(message)
 
 class BadErrorIReallyMeanIt(Exception):
     """See http://bugs.python.org/issue8885 for why this is necessary."""
@@ -143,20 +168,15 @@ class BadErrorIReallyMeanIt(Exception):
 
 if "__main__" == __name__:
     import sys
-    from red_fetcher import RedFetcher
+    from redbot.fetch import RedFetcher
     uri = sys.argv[1]
     req_hdrs = [('Accept-Encoding', 'gzip')]
     class TestFetcher(RedFetcher):
-        count = 0
         def done(self):
             pass
         @staticmethod
         def err(mesg):
             sys.stderr.write("ERROR: %s\n" % mesg)
-        @staticmethod
-        def show_link(link, tag, title):
-            TestFetcher.count += 1
-            out = "%.3d) [%s] %s" % (TestFetcher.count, tag, link)
-            print out.encode('utf-8', 'strict')
-    p = HTMLLinkParser(uri, TestFetcher.show_link, TestFetcher.err)
+    p = HTMLLinkParser(uri, TestFetcher.err)
     TestFetcher(uri, req_hdrs=req_hdrs, body_procs=[p.feed])
+    print "%s links" % p.link_count
