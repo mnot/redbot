@@ -79,7 +79,6 @@ class RedFetcher:
 
     def __init__(self, iri, method="GET", req_hdrs=None, req_body=None,
                  status_cb=None, body_procs=None, req_type=None):
-        self.uri = iri_to_uri(iri)
         self.method = method
         self.req_hdrs = req_hdrs or []
         self.req_body = req_body
@@ -117,6 +116,11 @@ class RedFetcher:
         self._in_gzip_body = False
         self._gzip_header_buffer = ""
         self._gzip_ok = True # turn False if we have a problem
+        try:
+            self.uri = iri_to_uri(iri)
+        except UnicodeError, why:
+            # TODO: log unicode problem
+            return
         self._makeRequest()
 
     def setMessage(self, subject, msg, subreq=None, **vars):
