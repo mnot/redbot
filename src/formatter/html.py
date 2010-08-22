@@ -39,6 +39,7 @@ from cgi import escape as e
 from functools import partial
 from urlparse import urljoin
 
+import nbhttp.error as nberror
 import redbot.speak as rs
 from redbot import defns, html_header, link_parse, droid
 from redbot.formatter import Formatter
@@ -55,9 +56,9 @@ class BaseHtmlFormatter(Formatter):
     media_type = "text/html"
     descend_links = False
     
-    def __init__(self, uri, lang, output):
-        Formatter.__init__(self, uri, lang, output)
-        self.link_parser = link_parse.HTMLLinkParser(uri, self.status, self.descend_links)
+    def __init__(self, *args):
+        Formatter.__init__(self, *args)
+        self.link_parser = link_parse.HTMLLinkParser(self.uri, self.status, self.descend_links)
         self.hidden_text = []
         self.start = time.time()
 
@@ -70,9 +71,8 @@ class BaseHtmlFormatter(Formatter):
             'version': droid.__version__,
             'html_uri': e(self.uri),
             'js_uri': e_js(self.uri),
-# FIXME                'js_req_hdrs': ", ".join(['["%s", "%s"]' % (
-#                    e_js(n), e_js(v)) for n,v in red.req_hdrs]),
-            'js_req_hdrs': '',
+            'js_req_hdrs': ", ".join(['["%s", "%s"]' % (
+                e_js(n), e_js(v)) for n,v in self.req_hdrs]),
             'extra_js': self.format_extra('.js')
         })
 
@@ -135,7 +135,7 @@ title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
 </div>
 
 """ % {
-       'baseuri': self.link_parser.base, # FIXME: NOOOOOOOOOO
+       'baseuri': self.ui_uri,
        'version': droid.__version__,
        }
        
@@ -204,8 +204,17 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     </body></html>
     """
 
-    def __init__(self, uri, lang, output):
-        BaseHtmlFormatter.__init__(self, uri, lang, output)
+    error_template = u"""\
+
+    <p class="error">
+     %s
+    </p>
+    """    
+    
+    name = "html"
+
+    def __init__(self, *args):
+        BaseHtmlFormatter.__init__(self, *args)
         self.body_sample = ""    # sample of the response body
         self.body_sample_size = 1024 * 128 # how big to allow the sample to be
         self.sample_seen = 0
@@ -217,14 +226,29 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         
     def finish_output(self, red):
         self.header_presenter = HeaderPresenter(red.uri)
-        self.output(self.template % {
-            'response': self.format_response(red),
-            'options': self.format_options(red),
-            'messages': nl.join([self.format_category(cat, red) for cat in self.msg_categories]),
-            'body': self.format_body_sample(),
-            'footer': self.format_footer(),
-            'hidden_list': self.format_hidden_list(),
-        })
+        if red.res_complete:
+            self.output(self.template % {
+                'response': self.format_response(red),
+                'options': self.format_options(red),
+                'messages': nl.join([self.format_category(cat, red) for cat in self.msg_categories]),
+                'body': self.format_body_sample(),
+                'footer': self.format_footer(),
+                'hidden_list': self.format_hidden_list(),
+            })
+        else:
+            if red.res_error['desc'] == nberror.ERR_CONNECT['desc']:
+                self.output(self.error_template % "Could not connect to the server (%s)" % \
+                    red.res_error.get('detail', "unknown"))
+            elif red.res_error['desc'] == nberror.ERR_URL['desc']:
+                self.output(self.error_template % red.res_error.get(
+                    'detail', "RED can't fetch that URL."))
+            elif red.res_error['desc'] == nberror.ERR_READ_TIMEOUT['desc']:
+                self.output(self.error_template % red.res_error['desc'])
+            elif red.res_error['desc'] == nberror.ERR_HTTP_VERSION['desc']:
+                self.output(self.error_template % "<code>%s</code> isn't HTTP." % \
+                    e(red.res_error.get('detail', '')[:20]))
+            else:
+                raise AssertionError, "Unidentified incomplete response error."
         self.status("Done.")
 
     def format_response(self, red):
@@ -400,9 +424,12 @@ class TableHtmlFormatter(BaseHtmlFormatter):
 
     """
     descend_links = True
+    can_multiple = True
+    name = "html"
+
     
-    def __init__(self, uri, lang, output):
-        BaseHtmlFormatter.__init__(self, uri, lang, output)
+    def __init__(self, *args):
+        BaseHtmlFormatter.__init__(self, *args)
         self.problems = []
 
     def finish_output(self, red):

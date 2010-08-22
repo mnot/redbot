@@ -62,7 +62,8 @@ assert sys.version_info[0] == 2 and sys.version_info[1] >= 5, "Please use Python
 
 import nbhttp
 from redbot import droid, fetch
-from redbot.formatter.html import BaseHtmlFormatter, SingleEntryHtmlFormatter, TableHtmlFormatter
+from redbot.formatter import find_formatter
+from redbot.formatter.html import BaseHtmlFormatter
 
 # HTML template for error bodies
 error_template = u"""\
@@ -84,17 +85,12 @@ class RedWebUi(object):
     Given a URI, run RED on it and present the results to output as HTML.
     If descend is true, spider the links and present a summary.
     """
-    def __init__(self, test_uri, req_hdrs, base_uri, output_hdrs, output_body, descend=False):
-        self.req_hdrs = req_hdrs
-        self.base_uri = base_uri
+    def __init__(self, test_uri, req_hdrs, base_uri, format, output_hdrs, output_body, descend=False):
         self.output_body = output_body
         self.start = time.time()
         timeout = nbhttp.schedule(max_runtime, self.timeoutError)
         if test_uri:
-            if descend:
-                formatter = TableHtmlFormatter(test_uri, lang, self.output)
-            else:
-                formatter = SingleEntryHtmlFormatter(test_uri, lang, self.output)
+            formatter = find_formatter(format, descend)(base_uri, test_uri, req_hdrs, lang, self.output)
             output_hdrs("200 OK", [
                 ("Content-Type", "%s; charset=%s" % (formatter.media_type, charset)), 
                 ("Cache-Control", "max-age=60, must-revalidate")
@@ -106,35 +102,20 @@ class RedWebUi(object):
                 status_cb=formatter.status,
                 body_procs=[formatter.feed],
             )
-            if self.red.res_complete:
-                formatter.finish_output(self.red)
-                elapsed = time.time() - self.start
-                formatter.status("RED made %(requests)s requests in %(elapsed)2.2f seconds." % {
-                   'requests': fetch.total_requests,
-                   'elapsed': elapsed
-                });
-            else:
-                # FIXME: needs to go to formatter
-                if self.red.res_error['desc'] == nbhttp.error.ERR_CONNECT['desc']:
-                    self.output(error_template % "Could not connect to the server (%s)" % \
-                        self.red.res_error.get('detail', "unknown"))
-                elif self.red.res_error['desc'] == nbhttp.error.ERR_URL['desc']:
-                    self.output(error_template % self.red.res_error.get(
-                                          'detail', "RED can't fetch that URL."))
-                elif self.red.res_error['desc'] == nbhttp.error.ERR_READ_TIMEOUT['desc']:
-                    self.output(error_template % self.red.res_error['desc'])
-                elif self.red.res_error['desc'] == nbhttp.error.ERR_HTTP_VERSION['desc']:
-                    self.output(error_template % "<code>%s</code> isn't HTTP." % e(self.red.res_error.get('detail', '')[:20]))
-                else:
-                    raise AssertionError, "Unidentified incomplete response error."
+            formatter.finish_output(self.red)
+            elapsed = time.time() - self.start
+            formatter.status("RED made %(requests)s requests in %(elapsed)2.2f seconds." % {
+               'requests': fetch.total_requests,
+               'elapsed': elapsed
+            });
         else:  # no test_uri
-            formatter = BaseHtmlFormatter(test_uri, lang, self.output)
+            formatter = BaseHtmlFormatter(test_uri, req_hdrs, lang, self.output)
             output_hdrs("200 OK", [
                 ("Content-Type", "%s; charset=%s" % (formatter.media_type, charset)), 
                 ("Cache-Control", "max-age=300")
             ])
             formatter.start_output()
-            formatter.finish_output()
+            formatter.finish_output(None)
         timeout.delete()
 
     def output(self, chunk):
@@ -143,21 +124,6 @@ class RedWebUi(object):
     def timeoutError(self):
         """ Max runtime reached."""
         self.output(error_template % ("RED timeout."))
-        self.output("<!-- Outstanding Connections\n")
-        class DummyStream:
-            @staticmethod
-            def write(s):
-                self.output(s)
-        ds = DummyStream()
-        for conn in fetch.outstanding_requests:
-            self.output("*** %s\n" % conn.uri)
-            pprint.pprint(conn.__dict__, ds)
-            if conn.client:
-                pprint.pprint(conn.client.__dict__, ds)
-            if conn.client._tcp_conn:
-                pprint.pprint(conn.client._tcp_conn.__dict__, ds)
-
-        self.output("-->\n")
         nbhttp.stop() # FIXME: not appropriate for standalone server
 
 
@@ -237,6 +203,7 @@ def cgi_main():
                 for rh in form.getlist("req_hdr")
                 if rh.find(":") > 0
                ]
+    format = form.getfirst('format', 'html')
     descend = form.getfirst('descend', False)
     base_uri = "http://%s%s%s" % ( # FIXME: only supports HTTP
       os.environ.get('HTTP_HOST'),
@@ -250,7 +217,7 @@ def cgi_main():
         sys.stdout.write("\n")
     def output_body(o):
         sys.stdout.write(o)
-    RedWebUi(test_uri, req_hdrs, base_uri, output_hdrs, output_body, descend)
+    RedWebUi(test_uri, req_hdrs, base_uri, format, output_hdrs, output_body, descend)
 
 def standalone_main(port, static_dir):
     """Run RED as a standalone Web server."""
