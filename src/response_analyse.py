@@ -407,12 +407,12 @@ class ResponseHeaderParser(object):
         except ValueError:
             self.setMessage(name, rs.BAD_DATE_SYNTAX)
             return None
-        if date > self.red.timestamp:
+        if date > self.red.res_ts:
             self.setMessage(name, rs.LM_FUTURE)
             return
         else:
             self.setMessage(name, rs.LM_PRESENT,
-              last_modified_string=relative_time(date, self.red.timestamp))
+              last_modified_string=relative_time(date, self.red.res_ts))
         return date
 
     @GenericHeaderSyntax

@@ -64,7 +64,7 @@ class BaseHtmlFormatter(Formatter):
     def feed(self, red, chunk):
         self.link_parser.feed(red, chunk)
 
-    def start_output(self): # FIXME: ugh, namespace conflict
+    def start_output(self):
         self.output(html_header.__doc__ % {
             'static': static_root,
             'version': droid.__version__,

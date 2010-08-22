@@ -190,7 +190,7 @@ class ResourceExpertDroid(RedFetcher):
         date_hdr = self.parsed_hdrs.get('date', 0)
         if date_hdr > 0:
             apparent_age = max(0,
-              int(self.timestamp - date_hdr))
+              int(self.res_ts - date_hdr))
         else:
             apparent_age = 0
         current_age = max(apparent_age, age_hdr)
@@ -202,7 +202,7 @@ class ResourceExpertDroid(RedFetcher):
                             age=age_str)
 
         # Check for clock skew and dateless origin server.
-        skew = date_hdr - self.timestamp + age_hdr
+        skew = date_hdr - self.res_ts + age_hdr
         if not date_hdr:
             self.setMessage('', rs.DATE_CLOCKLESS)
             if self.parsed_hdrs.has_key('expires') or \
@@ -241,7 +241,7 @@ class ResourceExpertDroid(RedFetcher):
                     self.parsed_hdrs['date']
             else:
                 freshness_lifetime = self.parsed_hdrs['expires'] - \
-                    self.timestamp # ?
+                    self.res_ts # ?
 
         freshness_left = freshness_lifetime - current_age
         freshness_left_str = relative_time(abs(int(freshness_left)), 0, 0)

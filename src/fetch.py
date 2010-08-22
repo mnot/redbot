@@ -85,7 +85,9 @@ class RedFetcher:
         self.status_cb = status_cb
         self.body_procs = body_procs or []
         self.type = req_type
-        self.timestamp = None # when the request was started
+        self.req_ts = None # when the request was started
+        self.res_ts = None # when the response was started
+        self.res_done_ts = None # when the response was finished
         # response attributes; populated by RedFetcher
         self.res_version = ""
         self.res_status = None
@@ -147,6 +149,7 @@ class RedFetcher:
             self.status_cb("fetching %s (%s)" % (self.uri, self.type))
         req_body, req_done = self.client.req_start(
             self.method, self.uri, self.req_hdrs, nbhttp.dummy)
+        self.req_ts = nbhttp.now()
         if self.req_body != None:
             req_body(self.req_body)
         req_done(None)
@@ -155,7 +158,7 @@ class RedFetcher:
 
     def _response_start(self, version, status, phrase, res_headers, res_pause):
         "Process the response start-line and headers."
-        self.timestamp = time.time()
+        self.res_ts = nbhttp.now()
         self.res_version = version
         self.res_status = status.decode('iso-8859-1', 'replace')
         self.res_phrase = phrase.decode('iso-8859-1', 'replace')
@@ -215,6 +218,7 @@ class RedFetcher:
         "Finish anaylsing the response, handling any parse errors."
         global outstanding_requests
         self.res_complete = True
+        self.res_done_ts = nbhttp.now()
         self.res_error = err
         if self.status_cb and self.type:
             self.status_cb("fetched %s (%s)" % (self.uri, self.type))
