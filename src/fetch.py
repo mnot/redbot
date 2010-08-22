@@ -98,6 +98,7 @@ class RedFetcher:
         self.res_body_len = 0
         self.res_body_md5 = None
         self.res_body_sample = [] # array of (offset, chunk), max size 4. Bytes, not unicode.
+        self.res_body_decode_len = 0
         self.res_complete = False
         self.res_error = None # any parse errors encountered; see nbhttp.error
         # interesting things about the response; set by a variety of things
@@ -167,6 +168,7 @@ class RedFetcher:
         if self.res_status == "206":
             # Store only partial responses completely, for error reporting
             self.res_body += chunk
+            self.res_body_decode_len += len(chunk)
             # Don't actually try to make sense of a partial body...
             return
         content_codings = self.parsed_hdrs.get('content-encoding', [])
@@ -200,6 +202,7 @@ class RedFetcher:
             else:
                 # we can't handle other codecs, so punt on body processing.
                 return
+        self.res_body_decode_len += len(chunk)
         if self._gzip_ok:
             for processor in self.body_procs:
                 processor(self, chunk)
