@@ -102,16 +102,6 @@ class RedFetcher:
         self.res_error = None # any parse errors encountered; see nbhttp.error
         # interesting things about the response; set by a variety of things
         self.messages = [] # messages (see above)
-        self.age = None
-        self.store_shared = None
-        self.store_private = None
-        self.freshness_lifetime = None
-        self.stale_serveable = None
-        self.partial_support = None
-        self.inm_support = None
-        self.ims_support = None
-        self.gzip_support = None
-        self.gzip_savings = 0
         self.client = None
         self._md5_processor = hashlib.md5()
         self._decompress = zlib.decompressobj(-zlib.MAX_WBITS).decompress

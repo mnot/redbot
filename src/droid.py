@@ -66,6 +66,16 @@ class ResourceExpertDroid(RedFetcher):
     """
     def __init__(self, uri, method="GET", req_hdrs=None, req_body=None,
                  status_cb=None, body_procs=None):
+        self.age = None
+        self.store_shared = None
+        self.store_private = None
+        self.freshness_lifetime = None
+        self.stale_serveable = None
+        self.partial_support = None
+        self.inm_support = None
+        self.ims_support = None
+        self.gzip_support = None
+        self.gzip_savings = 0
         self.orig_req_hdrs = req_hdrs or []
         if 'user-agent' not in [i[0].lower() for i in self.orig_req_hdrs]:
             self.orig_req_hdrs.append(
