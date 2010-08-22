@@ -7,7 +7,7 @@ RedFetcher fetches a single URI and analyses that response for common
 problems and other interesting characteristics. It only makes one request,
 based upon the provided headers.
 
-See red.py for the main RED engine and webui.py for the Web front-end.
+See droid.py for the main RED engine and webui.py for the Web front-end.
 """
 
 __version__ = "1"

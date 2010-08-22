@@ -61,7 +61,7 @@ from cgi import escape as e
 assert sys.version_info[0] == 2 and sys.version_info[1] >= 5, "Please use Python 2.5 or greater"
 
 import nbhttp
-from redbot import red, fetch
+from redbot import droid, fetch
 from redbot.formatter.html import BaseHtmlFormatter, SingleEntryHtmlFormatter, TableHtmlFormatter
 
 # HTML template for error bodies
@@ -100,7 +100,7 @@ class RedWebUi(object):
                 ("Cache-Control", "max-age=60, must-revalidate")
             ])
             formatter.start_output()
-            self.red = red.ResourceExpertDroid(
+            self.red = droid.ResourceExpertDroid(
                 test_uri,
                 req_hdrs=req_hdrs,
                 status_cb=formatter.status,

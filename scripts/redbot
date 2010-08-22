@@ -34,7 +34,7 @@ assert sys.version_info[0] == 2 and sys.version_info[1] >= 5, "Please use Python
 from optparse import OptionParser
 import string
 
-from redbot import red, html_header
+from redbot import droid, html_header
 import redbot.speak as rs
 
 nl = "\n"
@@ -45,8 +45,8 @@ class OutputFormatter(object):
         rs.c.GENERAL, rs.c.CONNECTION, rs.c.CONNEG, rs.c.CACHING, rs.c.VALIDATION, rs.c.RANGE
     ]
 
-    def __init__(self, droid):
-        self.droid = droid
+    def __init__(self, red):
+        self.red = red
 
     def print_headers(self):
         return
@@ -60,13 +60,13 @@ class OutputFormatter(object):
 
 class TxtOutputFormatter(OutputFormatter):
     def print_headers(self):
-        print "HTTP/%s %s %s" % (self.droid.res_version,
-            self.droid.res_status, self.droid.res_phrase)
+        print "HTTP/%s %s %s" % (self.red.res_version,
+            self.red.res_status, self.red.res_phrase)
         print "Response Headers:"
-        print nl.join(["%s:%s" % header for header in self.droid.res_hdrs])
+        print nl.join(["%s:%s" % header for header in self.red.res_hdrs])
 
     def print_recommendation(self, category):
-        messages = [msg for msg in self.droid.messages if msg.category == category]
+        messages = [msg for msg in self.red.messages if msg.category == category]
         if not messages:
             return nl
         out = []
@@ -110,19 +110,19 @@ class TxtOutputFormatter(OutputFormatter):
 
 class RstOutputFormatter(OutputFormatter):
     def print_headers(self):
-        print "HTTP/%s %s %s" % (self.droid.res_version,
-            self.droid.res_status, self.droid.res_phrase)
+        print "HTTP/%s %s %s" % (self.red.res_version,
+            self.red.res_status, self.red.res_phrase)
         print "Response headers"
         print "----------------"
         print ""
         print "::"
         print ""
-        print nl.join([ "\t%s:%s" % header for header in self.droid.res_hdrs])
+        print nl.join([ "\t%s:%s" % header for header in self.red.res_hdrs])
         #declaring flag definitions
         print RstOutputFormatter.flag_definition()
 
     def print_recommendation(self, category):
-        messages = [msg for msg in self.droid.messages if msg.category == category]
+        messages = [msg for msg in self.red.messages if msg.category == category]
         if not messages:
             return nl
         out = []
@@ -189,7 +189,7 @@ def dump(obj):
 
 def main():
     usage   = """Usage: %prog [options] <url>"""
-    version = """Redbot: The Resource Expert Droid, version %s, http://redbot.org/ """ % red.__version__
+    version = """Redbot: The Resource Expert Droid, version %s, http://redbot.org/ """ % droid.__version__
 
     available_output_formats = ["txt", "rst"]
 
@@ -213,9 +213,9 @@ def main():
         option_parser.error("Please provide a correct output format")
 
     url = args[0]
-    droid = red.ResourceExpertDroid(url)
+    red = droid.ResourceExpertDroid(url)
 
-    OutputFormatter = OutputFormatterFactory.create(options.output_format, droid)
+    OutputFormatter = OutputFormatterFactory.create(options.output_format, red)
     OutputFormatter.print_headers()
 
     if options.show_recommendations == True:

@@ -40,7 +40,7 @@ from functools import partial
 from urlparse import urljoin
 
 import redbot.speak as rs
-from redbot import defns, html_header, link_parse, red
+from redbot import defns, html_header, link_parse, droid
 from redbot.formatter import Formatter
 from redbot.response_analyse import relative_time, f_num
 
@@ -67,7 +67,7 @@ class BaseHtmlFormatter(Formatter):
     def start_output(self): # FIXME: ugh, namespace conflict
         self.output(html_header.__doc__ % {
             'static': static_root,
-            'version': red.__version__,
+            'version': droid.__version__,
             'html_uri': e(self.uri),
             'js_uri': e_js(self.uri),
 # FIXME                'js_req_hdrs': ", ".join(['["%s", "%s"]' % (
@@ -136,7 +136,7 @@ title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
 
 """ % {
        'baseuri': self.link_parser.base, # FIXME: NOOOOOOOOOO
-       'version': red.__version__,
+       'version': droid.__version__,
        }
        
 

@@ -31,7 +31,7 @@ from htmlentitydefs import entitydefs
 from HTMLParser import HTMLParser
 from urlparse import urljoin
 
-from redbot import red, response_analyse
+from redbot import droid, response_analyse
 from redbot.response_analyse import ResponseHeaderParser as RHP
 
 class HTMLLinkParser(HTMLParser):
@@ -106,7 +106,7 @@ class HTMLLinkParser(HTMLParser):
         if self.descend and tag not in ['a'] and \
           link not in self.links[tag]:
             self.link_droids.append((
-                red.ResourceExpertDroid(
+                droid.ResourceExpertDroid(
                     urljoin(self.base, link),
 # FIXME:                    req_hdrs=self.req_hdrs,
                     status_cb=self.err
