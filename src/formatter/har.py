@@ -36,7 +36,7 @@ except ImportError:
 import redbot.speak as rs
 
 from nbhttp import get_hdr
-from redbot import defns, html_header, link_parse, droid
+from redbot import defns, droid
 from redbot.formatter import Formatter
 
 #TODO: RED-specific fields
@@ -45,14 +45,12 @@ class HarFormatter(Formatter):
     """
     Format a RED object (and any descendants) as HAR.
     """
-    descend_links = True
     can_multiple = True
     name = "har"
     media_type = "application/json"
     
     def __init__(self, *args):
         Formatter.__init__(self, *args)
-        self.link_parser = link_parse.HTMLLinkParser(self.uri, self.status, self.descend_links)
         self.har = {
             'log': {
                 "version": "1.1",
@@ -65,30 +63,24 @@ class HarFormatter(Formatter):
             },
         }
         self.last_id = 0
-        self.start_ts = None
 
     def start_output(self):
         pass
         
-    def feed(self, red, chunk):
-        self.link_parser.feed(red, chunk)
-
     def status(self, msg):
         pass
 
-    def finish_output(self, red):
-        "Fill in the template with RED's results."
-        self.walk(red)
-        self.output(json.dumps(self.har, indent=4))
-        self.status("Done.")
-        
-    def walk(self, red):
-        self.start_ts = red.req_ts
-        page_id = self.add_page(red)
-        self.add_entry(red, page_id)
-        for linked_red in [d[0] for d in self.link_parser.link_droids]:
-            self.add_entry(linked_red, page_id)
+    def feed(self, red, sample):
+        pass
 
+    def finish_output(self, ired):
+        "Fill in the template with RED's results."
+        page_id = self.add_page(ired)
+        self.add_entry(ired, page_id)
+        for linked_red in [d[0] for d in ired.link_droids]:
+            self.add_entry(linked_red, page_id)
+        self.output(json.dumps(self.har, indent=4))
+        
     def add_entry(self, red, page_ref=None):
         entry = {
             "startedDateTime": isoformat(red.req_ts),

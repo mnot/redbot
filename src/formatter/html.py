@@ -41,7 +41,7 @@ from urlparse import urljoin
 import nbhttp
 import nbhttp.error as nberror
 import redbot.speak as rs
-from redbot import defns, html_header, link_parse, droid, fetch
+from redbot import defns, html_header, droid, fetch
 from redbot.formatter import Formatter
 from redbot.response_analyse import relative_time, f_num
 
@@ -54,16 +54,14 @@ class BaseHtmlFormatter(Formatter):
     """
     Base class for HTML formatters."""
     media_type = "text/html"
-    descend_links = False
     
     def __init__(self, *args):
         Formatter.__init__(self, *args)
-        self.link_parser = link_parse.HTMLLinkParser(self.uri, self.status, self.descend_links)
         self.hidden_text = []
         self.start = nbhttp.now()
 
     def feed(self, red, chunk):
-        self.link_parser.feed(red, chunk)
+        pass
 
     def start_output(self):
         self.output(html_header.__doc__ % {
@@ -227,7 +225,6 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         self.sample_complete = True
 
     def feed(self, red, chunk):
-        self.link_parser.feed(red, chunk)
         self.store_body_sample(red, chunk)
         
     def finish_output(self, red):
@@ -238,7 +235,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 'response': self.format_response(red),
                 'options': self.format_options(red),
                 'messages': nl.join([self.format_category(cat, red) for cat in self.msg_categories]),
-                'body': self.format_body_sample(),
+                'body': self.format_body_sample(red),
                 'footer': self.format_footer(),
                 'hidden_list': self.format_hidden_list(),
             })
@@ -279,21 +276,21 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         return u"    <span name='%s' class='hdr'>%s:%s</span>" % (
             e(token_name), e(name), self.header_presenter.Show(name, value))
 
-    def format_body_sample(self):
+    def format_body_sample(self, red):
         """show the stored body sample"""
         try:
             uni_sample = unicode(self.body_sample,
-                self.link_parser.doc_enc or self.link_parser.http_enc, 'ignore')
+                red.link_parser.doc_enc or red.link_parser.http_enc, 'ignore')
         except LookupError:
             uni_sample = unicode(self.body_sample, 'utf-8', 'ignore')
         safe_sample = e(uni_sample)
         message = ""
-        for tag, link_set in self.link_parser.links.items():
+        for tag, link_set in red.links.items():
             for link in link_set:
                 def link_to(matchobj):
                     return r"%s<a href='%s' class='nocode'>%s</a>%s" % (
                         matchobj.group(1),
-                        u"?uri=%s" % e_query_arg(urljoin(self.link_parser.base, link)),
+                        u"?uri=%s" % e_query_arg(urljoin(red.link_parser.base, link)),
                         e(link),
                         matchobj.group(1)
                     )
@@ -345,7 +342,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         if self.validators.has_key(media_type):
             options.append((u"<a href='%s'>validate body</a>" %
                            self.validators[media_type] % e_query_arg(red.uri), ""))
-        if self.link_parser.link_count > 0:
+        if red.link_count > 0:
             options.append((u"<a href='?descend=True&uri=%s'>check assets</a>" %
                            e_query_arg(red.uri), "run RED on images, frames and embedded links"))
         return nl.join([o and "<span class='option' title='%s'>%s</span>" % (o[1], o[0]) or "<br>" for o in options])
@@ -428,7 +425,6 @@ class TableHtmlFormatter(BaseHtmlFormatter):
 
     </body></html>
     """
-    descend_links = True
     can_multiple = True
     name = "html"
 
@@ -457,7 +453,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         out = [self.format_table_header()]
         out.append(self.format_droid(red))
         for hdr_tag, heading in self.link_order:
-            droids = [d[0] for d in self.link_parser.link_droids if d[1] == hdr_tag]
+            droids = [d[0] for d in red.link_droids if d[1] == hdr_tag]
             if droids:
                 droids.sort(key=operator.attrgetter('uri'))
                 out.append(self.format_table_header(heading + " (%s)" % len(droids)))

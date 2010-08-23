@@ -59,7 +59,7 @@ def main():
         option_parser.error("Unrecognised output format.")
 
     url = args[0]
-    red = droid.ResourceExpertDroid(url)
+    red = droid.InspectingResourceExpertDroid(url)
     
     formatter = find_formatter(options.output_format, 'txt', False)(sys.argv[0], url, [], lang, output)
     formatter.start_output()

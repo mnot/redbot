@@ -96,13 +96,14 @@ class RedWebUi(object):
                 ("Cache-Control", "max-age=60, must-revalidate")
             ])
             formatter.start_output()
-            self.red = droid.ResourceExpertDroid(
+            ired = droid.InspectingResourceExpertDroid(
                 test_uri,
                 req_hdrs=req_hdrs,
                 status_cb=formatter.status,
                 body_procs=[formatter.feed],
+                descend=descend
             )
-            formatter.finish_output(self.red)
+            formatter.finish_output(ired)
         else:  # no test_uri
             formatter = BaseHtmlFormatter(base_uri, test_uri, req_hdrs, lang, self.output)
             output_hdrs("200 OK", [

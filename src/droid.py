@@ -39,8 +39,10 @@ import re
 import time
 import random
 from cgi import escape as e
+from urlparse import urljoin
 
 import redbot.speak as rs
+from redbot import link_parse
 from redbot.fetch import RedFetcher
 from redbot.response_analyse import relative_time, f_num
 from redbot.uri_validate import absolute_URI
@@ -50,6 +52,7 @@ cacheable_methods = ['GET']
 heuristic_cacheable_status = ['200', '203', '206', '300', '301', '410']
 max_uri = 8 * 1024
 max_clock_skew = 5  # seconds
+
 
 class ResourceExpertDroid(RedFetcher):
     """
@@ -65,7 +68,11 @@ class ResourceExpertDroid(RedFetcher):
     populated, as well as its messages; see that class for details.
     """
     def __init__(self, uri, method="GET", req_hdrs=None, req_body=None,
-                 status_cb=None, body_procs=None):
+                status_cb=None, body_procs=None):
+        self.orig_req_hdrs = req_hdrs or []
+        self.status_cb = status_cb
+        
+        # Extra metadata that the "main" RED will be adorned with 
         self.age = None
         self.store_shared = None
         self.store_private = None
@@ -76,7 +83,7 @@ class ResourceExpertDroid(RedFetcher):
         self.ims_support = None
         self.gzip_support = None
         self.gzip_savings = 0
-        self.orig_req_hdrs = req_hdrs or []
+
         if 'user-agent' not in [i[0].lower() for i in self.orig_req_hdrs]:
             self.orig_req_hdrs.append(
                 ("User-Agent", "RED/%s (http://redbot.org/about)" % __version__))
@@ -95,13 +102,13 @@ class ResourceExpertDroid(RedFetcher):
         Response is available; perform further processing that's specific to
         the "main" response.
         """
-        if self.res_complete:
+        if self.res_complete:            
             self.checkCaching()
             ConnegCheck(self)
             RangeRequest(self)
             ETagValidate(self)
             LmValidate(self)
-
+        
     def checkCaching(self):
         "Examine HTTP caching characteristics."
         # TODO: check URI for query string, message about HTTP/1.0 if so
@@ -305,6 +312,41 @@ class ResourceExpertDroid(RedFetcher):
         # public?
         if 'public' in cc_keys: # TODO: check for authentication in request
             self.setMessage('header-cache-control', rs.PUBLIC)
+
+
+class InspectingResourceExpertDroid(ResourceExpertDroid):
+    """
+    A RED that parses the response body to look for links. If descend
+    is True, it will also spider linked resources and populate
+    self.link_droids with their REDs.
+    """
+    def __init__(self, uri, method="GET", req_hdrs=None, req_body=None,
+                status_cb=None, body_procs=None, descend=False):
+        self.link_parser = link_parse.HTMLLinkParser(uri, self.process_link, status_cb)
+        body_procs = ( body_procs or [] ) + [self.link_parser.feed]
+        self.descend = descend
+        self.links = {}          # {type: set(link...)}
+        self.link_count = 0
+        self.link_droids = []    # list of linked REDs (if descend=True)        
+        ResourceExpertDroid.__init__(self, uri, method, req_hdrs, req_body,
+                status_cb, body_procs)
+
+    def process_link(self, link, tag, title):
+        "Handle a link from content"
+        self.link_count += 1
+        if not self.links.has_key(tag):
+            self.links[tag] = set()
+        if self.descend and tag not in ['a'] and link not in self.links[tag]:
+            self.link_droids.append((
+                ResourceExpertDroid(
+                    urljoin(self.link_parser.base, link),
+                    req_hdrs=self.orig_req_hdrs,
+                    status_cb=self.status_cb
+                ),
+                tag
+            ))
+        self.links[tag].add(link)
+
 
 
 class ConnegCheck(RedFetcher):

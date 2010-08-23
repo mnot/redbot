@@ -31,7 +31,7 @@ import nbhttp.error as nberror
 import redbot.speak as rs
 
 from nbhttp import get_hdr
-from redbot import defns, html_header, link_parse, droid
+from redbot import defns, html_header, droid
 from redbot.formatter import Formatter
 
 nl = u"\n"
