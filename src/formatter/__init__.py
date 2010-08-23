@@ -29,7 +29,7 @@ THE SOFTWARE.
 
 from collections import defaultdict
 
-__all__ = ['html', 'text']
+__all__ = ['html', 'text', 'har']
 
 _formatters = defaultdict(list)
 
