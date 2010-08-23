@@ -37,7 +37,7 @@ from redbot.formatter import find_formatter, available_formatters
 import redbot.speak as rs
 
 lang = "en"  ## FIXME: add as CL option
-
+charset = "utf-8"
 
 def main():
     usage   = """Usage: %prog [options] <url>"""
@@ -65,7 +65,7 @@ def main():
     url = args[0]
     red = droid.ResourceExpertDroid(url)
     
-    formatter = find_formatter(options.output_format, False)(sys.argv[0], url, [], lang, output)
+    formatter = find_formatter(options.output_format, 'txt', False)(sys.argv[0], url, [], lang, output)
     formatter.start_output()
     formatter.finish_output(red)
 
@@ -75,7 +75,7 @@ def main():
 
 
 def output(out):
-    print out
+    sys.stdout.write(out.encode(charset, 'replace'))
 
 
 if __name__ == "__main__":

@@ -34,10 +34,10 @@ __all__ = ['html', 'text']
 default_formatter = "html"
 _formatters = defaultdict(list)
 
-def find_formatter(name, multiple=False):
+def find_formatter(name, default="html", multiple=False):
     if name not in _formatters.keys():
-        name = default_formatter
-    # find single-preferred formatters fist
+        name = default
+    # find single-preferred formatters first
     if not multiple:
         for candidate in _formatters[name]:
             if not candidate.can_multiple:

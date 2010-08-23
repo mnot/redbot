@@ -90,7 +90,7 @@ class RedWebUi(object):
         self.start = time.time()
         timeout = nbhttp.schedule(max_runtime, self.timeoutError)
         if test_uri:
-            formatter = find_formatter(format, descend)(base_uri, test_uri, req_hdrs, lang, self.output)
+            formatter = find_formatter(format, 'html', descend)(base_uri, test_uri, req_hdrs, lang, self.output)
             output_hdrs("200 OK", [
                 ("Content-Type", "%s; charset=%s" % (formatter.media_type, charset)), 
                 ("Cache-Control", "max-age=60, must-revalidate")
