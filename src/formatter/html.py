@@ -97,9 +97,9 @@ window.status="%s";
         self.status("RED made %(requests)s requests in %(elapsed)2.3f seconds." % {
            'requests': fetch.total_requests,
            'elapsed': nbhttp.now() - self.start
-        });
+        })
 
-    def format_extra(self, type='.html'):
+    def format_extra(self, etype='.html'):
         """
         Show extra content from the extra_dir, if any. MUST be UTF-8.
         Type controls the extension included; currently supported:
@@ -109,7 +109,7 @@ window.status="%s";
         """
         o = []
         if extra_dir and os.path.isdir(extra_dir):
-            extra_files = [p for p in os.listdir(extra_dir) if os.path.splitext(p)[1] == type]
+            extra_files = [p for p in os.listdir(extra_dir) if os.path.splitext(p)[1] == etype]
             for extra_file in extra_files:
                 extra_path = os.path.join(extra_dir, extra_file)
                 try:
@@ -120,8 +120,8 @@ window.status="%s";
 
     def format_hidden_list(self):
         "return a list of hidden items to be used by the UI"
-        return "<ul>" + "\n".join(["<li id='%s'>%s</li>" % (id, text) for \
-            (id, text) in self.hidden_text]) + "</ul>"
+        return "<ul>" + "\n".join(["<li id='%s'>%s</li>" % (lid, text) for \
+            (lid, text) in self.hidden_text]) + "</ul>"
 
     def format_footer(self):
         "page footer"
@@ -341,10 +341,10 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         options.append((u"<a href='#' id='body_view'>view body</a>", ""))
         if self.validators.has_key(media_type):
             options.append((u"<a href='%s'>validate body</a>" %
-                           self.validators[media_type] % e_query_arg(red.uri), ""))
+               self.validators[media_type] % e_query_arg(red.uri), ""))
         if red.link_count > 0:
             options.append((u"<a href='?descend=True&uri=%s'>check assets</a>" %
-                           e_query_arg(red.uri), "run RED on images, frames and embedded links"))
+               e_query_arg(red.uri), "run RED on images, frames and embedded links"))
         return nl.join([o and "<span class='option' title='%s'>%s</span>" % (o[1], o[0]) or "<br>" for o in options])
 
     def store_body_sample(self, red, chunk):
@@ -375,7 +375,10 @@ class HeaderPresenter(object):
         self.uri = uri
 
     def Show(self, name, value):
-        "Return the given header name/value pair after presentation processing"
+        """
+        Return the given header name/value pair after 
+        presentation processing.
+        """
         name = name.lower()
         name_token = name.replace('-', '_')
         if name_token[0] != "_" and hasattr(self, name_token):
@@ -388,8 +391,11 @@ class HeaderPresenter(object):
         value = value.rstrip()
         svalue = value.lstrip()
         space = len(value) - len(svalue)
-        return u"%s<a href='?uri=%s'>%s</a>" % ( " " * space,
-            e_query_arg(urljoin(self.uri, svalue)), self.I(e(svalue), len(name)))
+        return u"%s<a href='?uri=%s'>%s</a>" % (
+            " " * space,
+            e_query_arg(urljoin(self.uri, svalue)), 
+            self.I(e(svalue), len(name))
+        )
     content_location = \
     location = \
     x_xrds_location = \
@@ -400,7 +406,9 @@ class HeaderPresenter(object):
         "wrap a line to fit in the header box"
         hdr_sz = 75
         sw = hdr_sz - min(hdr_sz-1, sub_width)
-        tr = textwrap.TextWrapper(width=sw, subsequent_indent=" "*8, break_long_words=True)
+        tr = textwrap.TextWrapper(
+            width=sw, subsequent_indent=" "*8, break_long_words=True
+        )
         return tr.fill(value)
 
 
@@ -569,8 +577,12 @@ class TableHtmlFormatter(BaseHtmlFormatter):
 uri_gen_delims = r":/?#[]@"
 uri_sub_delims = r"!$&'()*+,;="
 def unicode_url_escape(url, safe):
-    "URL esape a unicode string. Assume that anything already encoded is to be left alone."
-    # also include "~" because it doesn't need to be encoded, but Python does anyway :/
+    """
+    URL esape a unicode string. Assume that anything already encoded 
+    is to be left alone.
+    """
+    # also include "~" because it doesn't need to be encoded, 
+    # but Python does anyway :/
     return urllib.quote(url.encode('utf-8', 'replace'), safe + '%~')
 e_url = partial(unicode_url_escape, safe=uri_gen_delims + uri_sub_delims)
 e_authority = partial(unicode_url_escape, safe=uri_sub_delims + r"[]:@")
@@ -580,8 +592,12 @@ e_query = partial(unicode_url_escape, safe=uri_sub_delims + r":@/?")
 e_query_arg = partial(unicode_url_escape, safe=r"!$'()*+,;:@/?")
 
 def e_js(instr):
-    "Make sure instr is safe for writing into a double-quoted JavaScript string."
-    if not instr: return ""
+    """
+    Make sure instr is safe for writing into a double-quoted 
+    JavaScript string.
+    """
+    if not instr: 
+        return ""
     instr = instr.replace('"', r'\"')
     if instr[-1] == '\\':
         instr += '\\'

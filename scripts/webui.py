@@ -48,15 +48,12 @@ extra_dir = "extra"
 ### End configuration ######################################################
 
 import cgi
-import codecs
 import locale
 import os
 import pprint
-import re
 import sys
 import time
 from urlparse import urlsplit
-from cgi import escape as e
 
 assert sys.version_info[0] == 2 and sys.version_info[1] >= 5, "Please use Python 2.5 or greater"
 
@@ -150,11 +147,11 @@ A problem has occurred, but it probably isn't your fault.
                 etb = etb.tb_next
             e_file = etb.tb_frame.f_code.co_filename
             e_line = etb.tb_frame.f_lineno
-            dir = os.path.join(logdir, os.path.split(e_file)[-1])
-            if not os.path.exists(dir):
+            ldir = os.path.join(logdir, os.path.split(e_file)[-1])
+            if not os.path.exists(ldir):
                 os.umask(0000)
-                os.makedirs(dir)
-            (fd, path) = tempfile.mkstemp(prefix="%s_" % e_line, suffix='.html', dir=dir)
+                os.makedirs(ldir)
+            (fd, path) = tempfile.mkstemp(prefix="%s_" % e_line, suffix='.html', dir=ldir)
             fh = os.fdopen(fd, 'w')
             fh.write(doc)
             fh.write("<h2>Outstanding Connections</h2>\n<pre>")
@@ -184,8 +181,8 @@ and we'll look into it."""
             print "</pre>"
             print "<h3>Write Error</h3>"
             print "<pre>"
-            type, value, tb = sys.exc_info()
-            print ''.join(traceback.format_exception(type, value, tb))
+            etype, value, tb = sys.exc_info()
+            print ''.join(traceback.format_exception(etype, value, tb))
             print "</pre>"
     sys.stdout.flush()
 
@@ -208,8 +205,8 @@ def cgi_main():
     )
     def output_hdrs(status, res_hdrs):
         sys.stdout.write("Status: %s\n" % status)
-        for k,v in res_hdrs:
-            sys.stdout.write("%s: %s\n" % (k,v))
+        for k, v in res_hdrs:
+            sys.stdout.write("%s: %s\n" % (k, v))
         sys.stdout.write("\n")
     def output_body(o):
         sys.stdout.write(o)

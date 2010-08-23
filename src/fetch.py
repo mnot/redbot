@@ -36,7 +36,6 @@ THE SOFTWARE.
 
 import base64
 import hashlib
-import time
 import urllib
 import urlparse
 import zlib
@@ -116,10 +115,10 @@ class RedFetcher:
             return
         self._makeRequest()
 
-    def setMessage(self, subject, msg, subreq=None, **vars):
+    def setMessage(self, subject, msg, subreq=None, **kw):
         "Set a message."
-        vars['response'] = rs.response.get(self.type, rs.response['this'])['en']
-        self.messages.append(msg(subject, subreq, vars))
+        kw['response'] = rs.response.get(self.type, rs.response['this'])['en']
+        self.messages.append(msg(subject, subreq, kw))
 
     def done(self):
         "Callback for when the response is complete and analysed."

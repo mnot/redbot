@@ -33,10 +33,8 @@ try:
 except ImportError:
     import simplejson as json 
     
-import redbot.speak as rs
-
 from nbhttp import get_hdr
-from redbot import defns, droid
+from redbot import droid
 from redbot.formatter import Formatter
 
 #TODO: RED-specific fields
@@ -151,11 +149,12 @@ class HarFormatter(Formatter):
         return page_id
 
     def format_headers(self, hdrs):
-        return [ {'name': n, 'value': v} for n,v in hdrs ]
+        return [ {'name': n, 'value': v} for n, v in hdrs ]
 
 
 def isoformat(timestamp):
     class TZ(datetime.tzinfo):
-        def utcoffset(self, dt): return datetime.timedelta(minutes=0)
+        def utcoffset(self, dt): 
+            return datetime.timedelta(minutes=0)
     return "%sZ" % datetime.datetime.utcfromtimestamp(timestamp).isoformat()
       

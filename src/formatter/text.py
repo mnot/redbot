@@ -30,8 +30,6 @@ THE SOFTWARE.
 import nbhttp.error as nberror
 import redbot.speak as rs
 
-from nbhttp import get_hdr
-from redbot import defns, html_header, droid
 from redbot.formatter import Formatter
 
 nl = u"\n"
@@ -46,7 +44,8 @@ class TextFormatter(Formatter):
     media_type = "text/plain"
 
     msg_categories = [
-        rs.c.GENERAL, rs.c.CONNECTION, rs.c.CONNEG, rs.c.CACHING, rs.c.VALIDATION, rs.c.RANGE
+        rs.c.GENERAL, rs.c.CONNECTION, rs.c.CONNEG, 
+        rs.c.CACHING, rs.c.VALIDATION, rs.c.RANGE
     ]
 
     error_template = "Error: %s\n"
@@ -79,7 +78,7 @@ class TextFormatter(Formatter):
                 self.output(self.error_template % red.res_error['desc'])
             elif red.res_error['desc'] == nberror.ERR_HTTP_VERSION['desc']:
                 self.output(self.error_template % "<code>%s</code> isn't HTTP." % \
-                    e(red.res_error.get('detail', '')[:20]))
+                    red.res_error.get('detail', '')[:20])
             else:
                 raise AssertionError, "Unidentified incomplete response error."
 
