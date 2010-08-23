@@ -50,10 +50,6 @@ def main():
                              action="store", dest="output_format",
                              help="one of: %s" % ", ".join(available_formatters()))
 
-    option_parser.add_option("-r", "--show-recommendations",
-                             action="store_true", dest="show_recommendations",
-                             help="whether or not to show recommendations")
-
     (options, args) = option_parser.parse_args()
     
     if len(args) != 1:
@@ -68,10 +64,6 @@ def main():
     formatter = find_formatter(options.output_format, 'txt', False)(sys.argv[0], url, [], lang, output)
     formatter.start_output()
     formatter.finish_output(red)
-
-# FIXME: either get rid of -r or re-enable it.
-#    if options.show_recommendations == True:
-#        OutputFormatter.print_recommendations()
 
 
 def output(out):
