@@ -36,7 +36,7 @@ from redbot import droid
 from redbot.formatter import find_formatter, available_formatters
 import redbot.speak as rs
 
-lang = "en"  ## FIXME: add as CL option
+lang = "en"  # TODO: add as CL option
 charset = "utf-8"
 
 def main():
