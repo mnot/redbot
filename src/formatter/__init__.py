@@ -29,7 +29,7 @@ THE SOFTWARE.
 
 from collections import defaultdict
 
-__all__ = ['html']
+__all__ = ['html', 'text']
 
 default_formatter = "html"
 _formatters = defaultdict(list)
@@ -46,6 +46,9 @@ def find_formatter(name, multiple=False):
         if candidate.can_multiple:
             return candidate
     raise RuntimeError, "Can't find a format"
+
+def available_formatters():
+    return _formatters.keys()
 
 class FormatterType(type):
     """

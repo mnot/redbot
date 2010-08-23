@@ -4,7 +4,7 @@
 HAR Formatter for REDbot.
 """
 
-__author__ = "Mark Nottingham <mnot@mnot.net>"
+__author__ = "Jerome Renard <jerome.renard@gmail.com>"
 __copyright__ = """\
 Copyright (c) 2008-2010 Mark Nottingham
 
@@ -27,9 +27,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import datetime
-import json # FIXME: requires 2.6
-
 import redbot.speak as rs
 
 from nbhttp import get_hdr
@@ -42,7 +39,7 @@ class TextFormatter(Formatter):
     """
     Format a RED object as text.
     """
-    name = "text"
+    name = "txt"
     media_type = "text/plain"
 
     msg_categories = [
