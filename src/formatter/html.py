@@ -128,7 +128,7 @@ window.status="%s";
     def format_footer(self):
         "page footer"
         return """\
-<br clear="all"/> <!-- FIXME -->
+<br />
 <div class="footer">
 <p class="version">this is RED %(version)s.</p>
 <p class="navigation">
@@ -198,7 +198,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     </div>
     </div>
 
-    <br clear="all"/> <!-- FIXME -->
+    <br />
     
     <div id='body'>
     %(body)s
