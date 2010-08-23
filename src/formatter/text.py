@@ -35,6 +35,8 @@ from redbot.formatter import Formatter
 
 nl = u"\n"
 
+# FIXME: error handling
+
 class TextFormatter(Formatter):
     """
     Format a RED object as text.

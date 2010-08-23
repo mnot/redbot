@@ -69,6 +69,7 @@ def main():
     formatter.start_output()
     formatter.finish_output(red)
 
+# FIXME: either get rid of -r or re-enable it.
 #    if options.show_recommendations == True:
 #        OutputFormatter.print_recommendations()
 

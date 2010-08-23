@@ -109,7 +109,7 @@ class RedWebUi(object):
                'elapsed': elapsed
             });
         else:  # no test_uri
-            formatter = BaseHtmlFormatter(test_uri, req_hdrs, lang, self.output)
+            formatter = BaseHtmlFormatter(base_uri, test_uri, req_hdrs, lang, self.output)
             output_hdrs("200 OK", [
                 ("Content-Type", "%s; charset=%s" % (formatter.media_type, charset)), 
                 ("Cache-Control", "max-age=300")

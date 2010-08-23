@@ -36,8 +36,8 @@ from nbhttp import get_hdr
 from redbot import defns, html_header, link_parse, droid
 from redbot.formatter import Formatter
 
-#TODO: error handling
-#TODO: RED-specific fields
+#FIXME: error handling
+#FIXME: RED-specific fields
 
 class HarFormatter(Formatter):
     """
