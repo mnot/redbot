@@ -28,16 +28,18 @@ THE SOFTWARE.
 """
 
 import datetime
-import json # FIXME: requires 2.6
-
+try:
+    import json
+except ImportError:
+    import simplejson as json 
+    
 import redbot.speak as rs
 
 from nbhttp import get_hdr
 from redbot import defns, html_header, link_parse, droid
 from redbot.formatter import Formatter
 
-#FIXME: error handling
-#FIXME: RED-specific fields
+#TODO: RED-specific fields
 
 class HarFormatter(Formatter):
     """
