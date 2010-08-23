@@ -128,7 +128,7 @@ class HarFormatter(Formatter):
             'dns': -1,
             'connect': -1,
             'blocked': 0,
-            'send': 0, # FIXME
+            'send': 0, 
             'wait': int((red.res_ts - red.req_ts) * 1000),
             'receive': int((red.res_done_ts - red.res_ts) * 1000),
         }
