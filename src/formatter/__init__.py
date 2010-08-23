@@ -31,7 +31,6 @@ from collections import defaultdict
 
 __all__ = ['html', 'text']
 
-default_formatter = "html"
 _formatters = defaultdict(list)
 
 def find_formatter(name, default="html", multiple=False):
