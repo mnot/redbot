@@ -62,13 +62,14 @@ class FormatterType(type):
 
 
 class Formatter(object):
-    __metaclass__ = FormatterType
-#    class __metaclass__(type):
-#        def __init__(cls, name, bases, attrs):
-#            type.__init__(name, bases, attrs, {})
-#            if attrs.get('name', None) != None:
-#                _formatters[attrs['name']].append(cls)
+    """
+    A formatter for RED objects. start_output() is called first,
+    followed by zero or more calls to feed() and status(), finishing
+    with finish_output().
     
+    Is available to UIs based upon the 'name' attribute.
+    """
+    __metaclass__ = FormatterType    
     media_type = None # the media type of the format.
     name = None # name of the format.
     can_multiple = False # formatter can represent multiple responses.
