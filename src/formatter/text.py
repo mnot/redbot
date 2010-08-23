@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import nbhttp.error as nberror
 import redbot.speak as rs
 
 from nbhttp import get_hdr
@@ -35,7 +36,7 @@ from redbot.formatter import Formatter
 
 nl = u"\n"
 
-# FIXME: error handling
+# TODO: errors and status on stderr with CLI?
 
 class TextFormatter(Formatter):
     """
@@ -47,6 +48,8 @@ class TextFormatter(Formatter):
     msg_categories = [
         rs.c.GENERAL, rs.c.CONNECTION, rs.c.CONNEG, rs.c.CACHING, rs.c.VALIDATION, rs.c.RANGE
     ]
+
+    error_template = "Error: %s\n"
 
     def __init__(self, *args):
         Formatter.__init__(self, *args)
@@ -62,8 +65,24 @@ class TextFormatter(Formatter):
 
     def finish_output(self, red):
         "Fill in the template with RED's results."
-        self.output(self.format_headers(red) + nl + nl)
-        self.output(self.format_recommendations(red) + nl)
+        if red.res_complete:
+            self.output(self.format_headers(red) + nl + nl)
+            self.output(self.format_recommendations(red) + nl)
+        else:
+            if red.res_error['desc'] == nberror.ERR_CONNECT['desc']:
+                self.output(self.error_template % "Could not connect to the server (%s)" % \
+                    red.res_error.get('detail', "unknown"))
+            elif red.res_error['desc'] == nberror.ERR_URL['desc']:
+                self.output(self.error_template % red.res_error.get(
+                    'detail', "RED can't fetch that URL."))
+            elif red.res_error['desc'] == nberror.ERR_READ_TIMEOUT['desc']:
+                self.output(self.error_template % red.res_error['desc'])
+            elif red.res_error['desc'] == nberror.ERR_HTTP_VERSION['desc']:
+                self.output(self.error_template % "<code>%s</code> isn't HTTP." % \
+                    e(red.res_error.get('detail', '')[:20]))
+            else:
+                raise AssertionError, "Unidentified incomplete response error."
+
 
     def format_headers(self, red):
         out = [u"HTTP/%s %s %s" % (
