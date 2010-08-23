@@ -103,11 +103,6 @@ class RedWebUi(object):
                 body_procs=[formatter.feed],
             )
             formatter.finish_output(self.red)
-            elapsed = time.time() - self.start
-            formatter.status("RED made %(requests)s requests in %(elapsed)2.2f seconds." % {
-               'requests': fetch.total_requests,
-               'elapsed': elapsed
-            });
         else:  # no test_uri
             formatter = BaseHtmlFormatter(base_uri, test_uri, req_hdrs, lang, self.output)
             output_hdrs("200 OK", [

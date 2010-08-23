@@ -32,16 +32,16 @@ import operator
 import os
 import re
 import textwrap
-import time
 import urllib
 
 from cgi import escape as e
 from functools import partial
 from urlparse import urljoin
 
+import nbhttp
 import nbhttp.error as nberror
 import redbot.speak as rs
-from redbot import defns, html_header, link_parse, droid
+from redbot import defns, html_header, link_parse, droid, fetch
 from redbot.formatter import Formatter
 from redbot.response_analyse import relative_time, f_num
 
@@ -60,7 +60,7 @@ class BaseHtmlFormatter(Formatter):
         Formatter.__init__(self, *args)
         self.link_parser = link_parse.HTMLLinkParser(self.uri, self.status, self.descend_links)
         self.hidden_text = []
-        self.start = time.time()
+        self.start = nbhttp.now()
 
     def feed(self, red, chunk):
         self.link_parser.feed(red, chunk)
@@ -82,7 +82,7 @@ class BaseHtmlFormatter(Formatter):
         """
         self.output(self.format_extra())
         self.output(self.format_footer())
-        self.output("</div></body></html>\n")
+        self.output("</body></html>\n")
 
  
     def status(self, message):
@@ -93,7 +93,13 @@ class BaseHtmlFormatter(Formatter):
 window.status="%s";
 -->
 </script>
-        """ % (time.time() - self.start, e(message)))
+        """ % (nbhttp.now() - self.start, e(message)))
+
+    def final_status(self):
+        self.status("RED made %(requests)s requests in %(elapsed)2.3f seconds." % {
+           'requests': fetch.total_requests,
+           'elapsed': nbhttp.now() - self.start
+        });
 
     def format_extra(self, type='.html'):
         """
@@ -225,6 +231,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         self.store_body_sample(red, chunk)
         
     def finish_output(self, red):
+        self.final_status()
         self.header_presenter = HeaderPresenter(red.uri)
         if red.res_complete:
             self.output(self.template % {
@@ -249,7 +256,6 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     e(red.res_error.get('detail', '')[:20]))
             else:
                 raise AssertionError, "Unidentified incomplete response error."
-        self.status("Done.")
 
     def format_response(self, red):
         "Return the HTTP response line and headers as HTML"
@@ -408,8 +414,6 @@ class TableHtmlFormatter(BaseHtmlFormatter):
     """
     # HTML template for the main response body
     template = u"""\
-    </div>
-
     <table id='summary'>
     %(table)s
     </table>
@@ -422,6 +426,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
 
     %(footer)s
 
+    </body></html>
     """
     descend_links = True
     can_multiple = True
@@ -433,14 +438,13 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         self.problems = []
 
     def finish_output(self, red):
-        "Fill in the template with RED's results."
+        self.final_status()
         self.output(self.template % {
             'table': self.format_tables(red),
             'problems': self.format_problems(),
             'footer': self.format_footer(),
             'hidden_list': self.format_hidden_list(),
         })
-        self.status("Done.")
 
     link_order = [
           ('link', 'Head Links'),
