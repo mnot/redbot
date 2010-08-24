@@ -32,12 +32,12 @@ try:
     import json
 except ImportError:
     import simplejson as json 
-    
+
+import redbot.speak as rs
 from nbhttp import get_hdr
 from redbot import droid
 from redbot.formatter import Formatter
 
-#TODO: RED-specific fields
 
 class HarFormatter(Formatter):
     """
@@ -83,6 +83,7 @@ class HarFormatter(Formatter):
         entry = {
             "startedDateTime": isoformat(red.req_ts),
             "time": int((red.res_done_ts - red.req_ts) * 1000),
+            "_red_messages": self.format_messages(red)
         }
         if page_ref:
             entry['pageref'] = "page%s" % page_ref
@@ -151,6 +152,24 @@ class HarFormatter(Formatter):
     def format_headers(self, hdrs):
         return [ {'name': n, 'value': v} for n, v in hdrs ]
 
+    def format_messages(self, red):
+        out = []
+        for m in red.messages:
+            msg = {
+                "category": m.subject,
+                "level": m.level,
+                "summary": m.summary[self.lang] % m.vars
+            }
+            smsgs = [i for i in getattr(
+                m.subrequest, "messages", []) if i.level in [rs.l.BAD]]
+            msg["subrequests"] = \
+            [{
+                "category": sm.subject,
+                "level": sm.level,
+                "summary": sm.summary[self.lang]
+            } for sm in smsgs]
+            out.append(msg)
+        return out
 
 def isoformat(timestamp):
     class TZ(datetime.tzinfo):
