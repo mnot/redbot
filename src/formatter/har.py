@@ -156,7 +156,8 @@ class HarFormatter(Formatter):
         out = []
         for m in red.messages:
             msg = {
-                "category": m.subject,
+                "subject": m.subject,
+                "category": sm.category,
                 "level": m.level,
                 "summary": m.summary[self.lang] % m.vars
             }
@@ -164,7 +165,8 @@ class HarFormatter(Formatter):
                 m.subrequest, "messages", []) if i.level in [rs.l.BAD]]
             msg["subrequests"] = \
             [{
-                "category": sm.subject,
+                "subject": sm.subject,
+                "category": sm.category,
                 "level": sm.level,
                 "summary": sm.summary[self.lang]
             } for sm in smsgs]
