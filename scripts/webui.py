@@ -27,6 +27,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import cgi
+import locale
+import os
+import pprint
+import sys
+import time
+from urlparse import urlsplit
+
+assert sys.version_info[0] == 2 and sys.version_info[1] >= 5, "Please use Python 2.5 or greater"
+
+import nbhttp
+from redbot import droid, fetch
+from redbot.formatter import find_formatter, html
+
 ### Configuration ##########################################################
 
 # FIXME: make language configurable/dynamic
@@ -40,27 +54,13 @@ logdir = 'exceptions'
 max_runtime = 60
 
 # URI root for static assets (absolute or relative, but no trailing '/')
-static_root = 'static'
+html.static_root = 'static'
 
 # directory containing files to append to the front page; None to disable
-extra_dir = "extra"
+html.extra_dir = "extra"
 
 ### End configuration ######################################################
 
-import cgi
-import locale
-import os
-import pprint
-import sys
-import time
-from urlparse import urlsplit
-
-assert sys.version_info[0] == 2 and sys.version_info[1] >= 5, "Please use Python 2.5 or greater"
-
-import nbhttp
-from redbot import droid, fetch
-from redbot.formatter import find_formatter
-from redbot.formatter.html import BaseHtmlFormatter
 
 # HTML template for error bodies
 error_template = u"""\
@@ -87,9 +87,11 @@ class RedWebUi(object):
         self.start = time.time()
         timeout = nbhttp.schedule(max_runtime, self.timeoutError)
         if test_uri:
-            formatter = find_formatter(format, 'html', descend)(base_uri, test_uri, req_hdrs, lang, self.output)
+            formatter = find_formatter(format, 'html', descend)(
+                base_uri, test_uri, req_hdrs, lang, self.output)
             output_hdrs("200 OK", [
-                ("Content-Type", "%s; charset=%s" % (formatter.media_type, charset)), 
+                ("Content-Type", "%s; charset=%s" % (
+                    formatter.media_type, charset)), 
                 ("Cache-Control", "max-age=60, must-revalidate")
             ])
             formatter.start_output()
@@ -102,9 +104,11 @@ class RedWebUi(object):
             )
             formatter.finish_output(ired)
         else:  # no test_uri
-            formatter = BaseHtmlFormatter(base_uri, test_uri, req_hdrs, lang, self.output)
+            formatter = html.BaseHtmlFormatter(
+                base_uri, test_uri, req_hdrs, lang, self.output)
             output_hdrs("200 OK", [
-                ("Content-Type", "%s; charset=%s" % (formatter.media_type, charset)), 
+                ("Content-Type", "%s; charset=%s" % (
+                    formatter.media_type, charset)), 
                 ("Cache-Control", "max-age=300")
             ])
             formatter.start_output()

@@ -47,8 +47,9 @@ from redbot.response_analyse import relative_time, f_num
 
 nl = u"\n"
 
-static_root = 'static'  #FIXME: config
-extra_dir = 'extra'
+# Configuration; override to change.
+static_root = 'static' # where status resources are located
+extra_dir = 'extra' # where extra resources are located
 
 class BaseHtmlFormatter(Formatter):
     """
