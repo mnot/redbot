@@ -157,7 +157,7 @@ class HarFormatter(Formatter):
         for m in red.messages:
             msg = {
                 "subject": m.subject,
-                "category": sm.category,
+                "category": m.category,
                 "level": m.level,
                 "summary": m.summary[self.lang] % m.vars
             }
