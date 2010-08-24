@@ -53,7 +53,7 @@ class RedHttpClient(nbhttp.Client):
     connect_timeout = 8
     read_timeout = 8
 
-class RedFetcher:
+class RedFetcher(object):
     """
     Fetches the given URI (with the provided method, headers and body) and calls:
       - status_cb as it progresses, and
@@ -104,7 +104,7 @@ class RedFetcher:
         self.messages = [] # messages (see above)
         self.client = None
         self._md5_processor = hashlib.md5()
-        self._decompress = zlib.decompressobj(-zlib.MAX_WBITS).decompress
+        self._gzip_processor = zlib.decompressobj(-zlib.MAX_WBITS).decompress
         self._in_gzip_body = False
         self._gzip_header_buffer = ""
         self._gzip_ok = True # turn False if we have a problem
@@ -189,7 +189,7 @@ class RedFetcher:
                         self._gzip_ok = False
                         return
                 try:
-                    chunk = self._decompress(chunk)
+                    chunk = self._gzip_processor.decompress(chunk)
                 except zlib.error, zlib_error:
                     self.setMessage('header-content-encoding', rs.BAD_ZLIB,
                                     zlib_error=e(str(zlib_error)),
@@ -215,6 +215,9 @@ class RedFetcher:
         if self.status_cb and self.type:
             self.status_cb("fetched %s (%s)" % (self.uri, self.type))
         self.res_body_md5 = self._md5_processor.digest()
+        # clean up so we can be pickled
+        del self._md5_processor 
+        del self._gzip_processor
         if err == None:
             pass
         elif err['desc'] == nbhttp.error.ERR_BODY_FORBIDDEN['desc']:
