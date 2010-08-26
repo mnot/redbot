@@ -95,9 +95,9 @@ window.status="%s";
         """ % (nbhttp.now() - self.start, e(message)))
 
     def final_status(self):
-        self.status("RED made %(requests)s requests in %(elapsed)2.3f seconds." % {
-           'requests': fetch.total_requests,
-           'elapsed': nbhttp.now() - self.start
+        self.status("RED made %(reqs)s requests in %(elapse)2.3f seconds." % {
+           'reqs': fetch.total_requests,
+           'elapse': nbhttp.now() - self.start
         })
 
     def format_extra(self, etype='.html'):
@@ -110,13 +110,20 @@ window.status="%s";
         """
         o = []
         if extra_dir and os.path.isdir(extra_dir):
-            extra_files = [p for p in os.listdir(extra_dir) if os.path.splitext(p)[1] == etype]
+            extra_files = [
+                p for p in os.listdir(extra_dir) if \
+                os.path.splitext(p)[1] == etype
+            ]
             for extra_file in extra_files:
                 extra_path = os.path.join(extra_dir, extra_file)
                 try:
-                    o.append(codecs.open(extra_path, mode='r', encoding='utf-8', errors='replace').read())
+                    o.append(
+                        codecs.open(extra_path, mode='r', 
+                            encoding='utf-8', errors='replace').read()
+                    )
                 except IOError, why:
-                    o.append("<!-- error opening %s: %s -->" % (extra_file, why))
+                    o.append("<!-- error opening %s: %s -->" % (
+                        extra_file, why))
         return nl.join(o)
 
     def format_hidden_list(self):
@@ -235,14 +242,16 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             self.output(self.template % {
                 'response': self.format_response(red),
                 'options': self.format_options(red),
-                'messages': nl.join([self.format_category(cat, red) for cat in self.msg_categories]),
+                'messages': nl.join([self.format_category(cat, red) \
+                    for cat in self.msg_categories]),
                 'body': self.format_body_sample(red),
                 'footer': self.format_footer(),
                 'hidden_list': self.format_hidden_list(),
             })
         else:
             if red.res_error['desc'] == nberror.ERR_CONNECT['desc']:
-                self.output(self.error_template % "Could not connect to the server (%s)" % \
+                self.output(self.error_template % \
+                    "Could not connect to the server (%s)" % \
                     red.res_error.get('detail', "unknown"))
             elif red.res_error['desc'] == nberror.ERR_URL['desc']:
                 self.output(self.error_template % red.res_error.get(
@@ -250,10 +259,11 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             elif red.res_error['desc'] == nberror.ERR_READ_TIMEOUT['desc']:
                 self.output(self.error_template % red.res_error['desc'])
             elif red.res_error['desc'] == nberror.ERR_HTTP_VERSION['desc']:
-                self.output(self.error_template % "<code>%s</code> isn't HTTP." % \
+                self.output(self.error_template % \
+                    "<code>%s</code> isn't HTTP." % \
                     e(red.res_error.get('detail', '')[:20]))
             else:
-                raise AssertionError, "Unidentified incomplete response error."
+                raise AssertionError, "Unknown incomplete response error."
 
     def format_response(self, red):
         "Return the HTTP response line and headers as HTML"
@@ -269,7 +279,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         "Return an individual HTML header as HTML"
         token_name = "header-%s" % name.lower()
         py_name = "HDR_" + name.upper().replace("-", "_")
-        if hasattr(defns, py_name) and token_name not in [i[0] for i in self.hidden_text]:
+        if hasattr(defns, py_name) and token_name not in \
+          [i[0] for i in self.hidden_text]:
             defn = getattr(defns, py_name)[self.lang] % {
                 'field_name': name,
             }
@@ -291,17 +302,23 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 def link_to(matchobj):
                     return r"%s<a href='%s' class='nocode'>%s</a>%s" % (
                         matchobj.group(1),
-                        u"?uri=%s" % e_query_arg(urljoin(red.link_parser.base, link)),
+                        u"?uri=%s" % e_query_arg(
+                            urljoin(red.link_parser.base, link)),
                         e(link),
                         matchobj.group(1)
                     )
-                safe_sample = re.sub(r"(['\"])%s\1" % re.escape(link), link_to, safe_sample)
+                safe_sample = re.sub(r"(['\"])%s\1" % \
+                    re.escape(link), link_to, safe_sample)
         if not self.sample_complete:
             message = "<p class='note'>RED isn't showing the whole body, because it's so big!</p>"
-        return """<pre class="prettyprint">%s</pre>\n%s""" % (safe_sample, message)
+        return """<pre class="prettyprint">%s</pre>\n%s""" % (
+            safe_sample, message)
 
     def format_category(self, category, red):
-        "For a given category, return all of the non-detail messages in it as an HTML list"
+        """
+        For a given category, return all of the non-detail 
+        messages in it as an HTML list.
+        """
         messages = [msg for msg in red.messages if msg.category == category]
         if not messages:
             return nl
@@ -309,19 +326,32 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         if [msg for msg in messages]:
             out.append(u"<h3>%s</h3>\n<ul>\n" % category)
         for m in messages:
-            out.append(u"<li class='%s %s msg' name='msgid-%s'><span>%s</span></li>" %
-                    (m.level, e(m.subject), id(m), e(m.summary[self.lang] % m.vars))
+            out.append(
+             u"<li class='%s %s msg' name='msgid-%s'><span>%s</span></li>" % (
+                m.level, 
+                e(m.subject), 
+                id(m), 
+                e(m.summary[self.lang] % m.vars)
+             )
             )
-            self.hidden_text.append(("msgid-%s" % id(m), m.text[self.lang] % m.vars))
-            smsgs = [msg for msg in getattr(m.subrequest, "messages", []) if msg.level in [rs.l.BAD]]
+            self.hidden_text.append(
+                ("msgid-%s" % id(m), m.text[self.lang] % m.vars)
+            )
+            smsgs = [msg for msg in getattr(m.subrequest, "messages", []) if \
+                msg.level in [rs.l.BAD]]
             if smsgs:
                 out.append(u"<ul>")
                 for sm in smsgs:
-                    out.append(
-                        u"<li class='%s %s msg' name='msgid-%s'><span>%s</span></li>" %
-                        (sm.level, e(sm.subject), id(sm), e(sm.summary[self.lang] % sm.vars))
+                    out.append(u"<li class='%s %s msg' name='msgid-%s'><span>%s</span></li>" % (
+                            sm.level, 
+                            e(sm.subject), 
+                            id(sm), 
+                            e(sm.summary[self.lang] % sm.vars)
+                        )
                     )
-                    self.hidden_text.append(("msgid-%s" % id(sm), sm.text[self.lang] % sm.vars))
+                    self.hidden_text.append(
+                        ("msgid-%s" % id(sm), sm.text[self.lang] % sm.vars)
+                    )
                 out.append(u"</ul>")
         out.append(u"</ul>\n")
         return nl.join(out)
@@ -330,23 +360,40 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         "Return things that the user can do with the URI as HTML links"
         options = []
         media_type = red.parsed_hdrs.get('content-type', [""])[0]
-        options.append((u"response headers: %s bytes" % f_num(red.client.input_header_length), 
-            "how large the response header block is, including the status line"))
+        options.append(
+            (u"response headers: %s bytes" % \
+             f_num(red.client.input_header_length), 
+             "how large the response headers are, including the status line"
+            )
+        )
         options.append((u"body: %s bytes" % f_num(red.res_body_len),
             "how large the response body is"))
-        transfer_overhead = red.client.input_transfer_length - red.res_body_len
+        transfer_overhead = red.client.input_transfer_length - \
+            red.res_body_len
         if transfer_overhead > 0:
-            options.append((u"transfer overhead: %s bytes" % f_num(transfer_overhead),
-            "how much using chunked encoding adds to the response size"))
+            options.append(
+                (
+                 u"transfer overhead: %s bytes" % f_num(transfer_overhead),
+                 "how much using chunked encoding adds to the response size"
+                )
+            )
         options.append(None)
         options.append((u"<a href='#' id='body_view'>view body</a>", ""))
         if self.validators.has_key(media_type):
             options.append((u"<a href='%s'>validate body</a>" %
                self.validators[media_type] % e_query_arg(red.uri), ""))
         if red.link_count > 0:
-            options.append((u"<a href='?descend=True&uri=%s'>check assets</a>" %
-               e_query_arg(red.uri), "run RED on images, frames and embedded links"))
-        return nl.join([o and "<span class='option' title='%s'>%s</span>" % (o[1], o[0]) or "<br>" for o in options])
+            options.append(
+                (
+                 u"<a href='?descend=True&uri=%s'>check assets</a>" % \
+                     e_query_arg(red.uri), 
+                "run RED on images, frames and embedded links"
+                )
+            )
+        return nl.join(
+            [o and "<span class='option' title='%s'>%s</span>" % (o[1], o[0])
+             or "<br>" for o in options]
+        )
 
     def store_body_sample(self, red, chunk):
         """store the first self.sample_size bytes of the response"""
@@ -465,7 +512,9 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             droids = [d[0] for d in red.link_droids if d[1] == hdr_tag]
             if droids:
                 droids.sort(key=operator.attrgetter('uri'))
-                out.append(self.format_table_header(heading + " (%s)" % len(droids)))
+                out.append(
+                    self.format_table_header(heading + " (%s)" % len(droids))
+                )
                 out += [self.format_droid(d) for d in droids]
         return nl.join(out)
 
@@ -477,21 +526,34 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         else:
             cl = ""
         if len(red.uri) > m:
-            out.append(u"""<td class="uri"><a href="%s" title="%s"%s>
-                %s<span class="fade1">%s</span><span class="fade2">%s</span><span class="fade3">%s</span>
-                </a></td>""" % (
-                        u"?uri=%s" % e_query_arg(red.uri), e(red.uri), cl, e(red.uri[:m-2]),
-                        e(red.uri[m-2]), e(red.uri[m-1]), e(red.uri[m]),
-                        )
+            out.append(u"""<td class="uri"><a href="%s" title="%s"%s>%s<span class="fade1">%s</span><span class="fade2">%s</span><span class="fade3">%s</span></a></td>""" % (
+                    u"?uri=%s" % e_query_arg(red.uri), 
+                    e(red.uri), 
+                    cl, 
+                    e(red.uri[:m-2]),
+                    e(red.uri[m-2]), 
+                    e(red.uri[m-1]), 
+                    e(red.uri[m]),
+                )
             )
         else:
-            out.append(u'<td class="uri"><a href="%s" title="%s"%s>%s</a></td>' % (
-                        u"?uri=%s" % e(red.uri), e(red.uri), cl, e(red.uri)))
+            out.append(
+                u'<td class="uri"><a href="%s" title="%s"%s>%s</a></td>' % (
+                    u"?uri=%s" % e(red.uri), 
+                    e(red.uri), 
+                    cl, 
+                    e(red.uri)
+                )
+            )
         if red.res_complete:
             if red.res_status in ['301', '302', '303', '307'] and \
               red.parsed_hdrs.has_key('location'):
-                out.append(u'<td><a href="?descend=True&uri=%s">%s</a></td>' % (
-                   urljoin(red.uri, red.parsed_hdrs['location']), red.res_status))
+                out.append(
+                    u'<td><a href="?descend=True&uri=%s">%s</a></td>' % (
+                        urljoin(red.uri, red.parsed_hdrs['location']),
+                        red.res_status
+                    )
+                )
             elif red.res_status in ['400', '404', '410']:
                 out.append(u'<td class="bad">%s</td>' % red.res_status)
             else:
@@ -509,7 +571,8 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             else:
                 out.append(self.format_yes_no(red.gzip_support))
             out.append(self.format_yes_no(red.partial_support))
-            problems = [m for m in red.messages if m.level in [rs.l.WARN, rs.l.BAD]]
+            problems = [m for m in red.messages if \
+                m.level in [rs.l.WARN, rs.l.BAD]]
     # TODO:        problems += sum([m[2].messages for m in red.messages if m[2] != None], [])
             out.append(u"<td>")
             pr_enum = []
@@ -517,12 +580,15 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                 if problem not in self.problems:
                     self.problems.append(problem)
                 pr_enum.append(self.problems.index(problem))
-            # add the problem number to the <tr> so we can highlight appropriately
+            # add the problem number to the <tr> so we can highlight
             out[0] = out[0] % u" ".join(["%d" % p for p in pr_enum])
             # append the actual problem numbers to the final <td>
             for p in pr_enum:
                 m = self.problems[p]
-                out.append("<span class='prob_num'> %s <span class='hidden'>%s</span></span>" % (p + 1, e(m.summary[self.lang] % m.vars)))
+                out.append("<span class='prob_num'> %s <span class='hidden'>%s</span></span>" % (
+                    p + 1, e(m.summary[self.lang] % m.vars)
+                    )
+                )
         else:
             out.append('<td colspan="11">%s' % red.res_error['desc'])
         out.append(u"</td>")
@@ -566,10 +632,16 @@ class TableHtmlFormatter(BaseHtmlFormatter):
     def format_problems(self):
         out = ['<br /><h2>Problems</h2><ol>']
         for m in self.problems:
-            out.append(u"<li class='%s %s msg' name='msgid-%s'><span>%s</span></li>" %
-                    (m.level, e(m.subject), id(m), e(m.summary[self.lang] % m.vars))
+            out.append(u"<li class='%s %s msg' name='msgid-%s'><span>%s</span></li>" % (
+                    m.level, 
+                    e(m.subject), 
+                    id(m), 
+                    e(m.summary[self.lang] % m.vars)
+                )
             )
-            self.hidden_text.append(("msgid-%s" % id(m), m.text[self.lang] % m.vars))
+            self.hidden_text.append(
+                ("msgid-%s" % id(m), m.text[self.lang] % m.vars)
+            )
         out.append(u"</ol>\n")
         return nl.join(out)
 
