@@ -115,6 +115,12 @@ class RedFetcher(object):
             return
         self._makeRequest()
 
+    def __getstate__(self):
+        state = self.__dict__
+        del state['status_cb']
+        del state['body_procs']
+        return state
+
     def setMessage(self, subject, msg, subreq=None, **kw):
         "Set a message."
         kw['response'] = rs.response.get(self.type, rs.response['this'])['en']

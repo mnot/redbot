@@ -73,6 +73,16 @@ class HTMLLinkParser(HTMLParser):
         self.ok = True
         HTMLParser.__init__(self)
 
+    def __getstate__(self):
+        return {
+            'base': self.base,
+            'http_enc': self.http_enc,
+            'doc_enc': self.doc_enc,
+            'errors': self.errors,
+            'last_err_pos': self.last_err_pos,
+            'ok': self.ok,
+        }
+
     def feed(self, response, chunk):
         "Feed a given chunk of HTML data to the parser"
         if not self.ok:
