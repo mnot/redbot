@@ -141,7 +141,7 @@ window.status="%s";
 <a href="http://REDbot.org/about/">about</a> |
 <a href="http://blog.REDbot.org/">blog</a> |
 <a href="http://REDbot.org/project">project</a> |
-<a href="javascript:location%%20=%%20'%(baseuri)s?uri='+escape(location);%%20void%%200"
+<a href="javascript:location%%20=%%20'%(baseuri)s?uri='+encodeURIComponent(location);%%20void%%200"
 title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
 </p>
 </div>
@@ -382,6 +382,9 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         if self.validators.has_key(media_type):
             options.append((u"<a href='%s'>validate body</a>" %
                self.validators[media_type] % e_query_arg(red.uri), ""))
+        options.append(
+            (u"<a href='?id=%s&format=har'>har</a>" % red.path, "")
+        )
         if red.link_count > 0:
             options.append(
                 (
