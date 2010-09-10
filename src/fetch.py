@@ -104,7 +104,7 @@ class RedFetcher(object):
         self.messages = [] # messages (see above)
         self.client = None
         self._md5_processor = hashlib.md5()
-        self._gzip_processor = zlib.decompressobj(-zlib.MAX_WBITS).decompress
+        self._gzip_processor = zlib.decompressobj(-zlib.MAX_WBITS)
         self._in_gzip_body = False
         self._gzip_header_buffer = ""
         self._gzip_ok = True # turn False if we have a problem
