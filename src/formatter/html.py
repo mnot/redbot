@@ -382,9 +382,9 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         if self.validators.has_key(media_type):
             options.append((u"<a href='%s'>validate body</a>" %
                self.validators[media_type] % e_query_arg(red.uri), ""))
-        options.append(
-            (u"<a href='?id=%s&format=har'>har</a>" % red.path, "")
-        )
+#        options.append(
+#            (u"<a href='?id=%s&format=har'>har</a>" % red.path, "")
+#        )
         if red.link_count > 0:
             options.append(
                 (
