@@ -61,7 +61,8 @@ process. This is where RED stores temporary files, and you should configure
 a cron job to regularly clean it. For example::
 
   0 1 0 0 0 find /tmp/redbot/ -mtime +15 -exec rm {} \;
-  
+
+If you don't want to store responses temporarily, set tmp_dir to 'None'.  
 
 Support, Reporting Issues and Contributing
 ------------------------------------------

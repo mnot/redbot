@@ -56,6 +56,7 @@ logdir = 'exceptions'
 max_runtime = 60
 
 # Where to save temporary files (you should run a cron job to clean this...).
+# Set to None to disable.
 tmp_dir = "/tmp/redbot/"
 
 # URI root for static assets (absolute or relative, but no trailing '/')
@@ -75,6 +76,10 @@ error_template = u"""\
 </p>
 """
 
+# A bit of a hack to tell the HTML formatter it's OK to use tmp urls.
+if tmp_dir:
+    html.use_tmp_urls = True
+
 try:
     locale.setlocale(locale.LC_ALL, locale.normalize(lang))
 except:
@@ -92,7 +97,7 @@ class RedWebUi(object):
         self.output_body = output_body
         self.start = time.time()
         timeout = nbhttp.schedule(max_runtime, self.timeoutError)
-        if test_file:
+        if test_file and tmp_dir:
             tmp_fd = open(os.path.join(tmp_dir, test_file))
             #FIXME: catch errors
             ired = pickle.load(tmp_fd)

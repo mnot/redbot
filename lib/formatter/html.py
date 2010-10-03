@@ -50,6 +50,7 @@ nl = u"\n"
 # Configuration; override to change.
 static_root = 'static' # where status resources are located
 extra_dir = 'extra' # where extra resources are located
+use_tmp_urls = False # whether to use tempfile URLs
 
 class BaseHtmlFormatter(Formatter):
     """
@@ -381,8 +382,12 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         options.append((u"<a href='#' id='body_view'>view body</a>", 
             "View this response body (with any gzip compression removed)"
         ))
+        if use_tmp_urls:
+            har_locator = "id=%s" % red.path
+        else:
+            har_locator = "uri=%s" % e_query_arg(red.uri)            
         options.append(
-            (u"<a href='?id=%s&format=har'>view har</a>" % red.path, 
+            (u"<a href='?%s&format=har'>view har</a>" % har_locator, 
             "View a HAR (HTTP ARchive) file for this response"
         ))
         if self.validators.has_key(media_type):
