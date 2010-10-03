@@ -479,6 +479,9 @@ class TableHtmlFormatter(BaseHtmlFormatter):
     <table id='summary'>
     %(table)s
     </table>
+    <p class="options">
+        %(options)s
+    </p>
 
     <div id='details'>
     %(problems)s
@@ -503,6 +506,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         self.output(self.template % {
             'table': self.format_tables(red),
             'problems': self.format_problems(),
+            'options': self.format_options(red),
             'footer': self.format_footer(),
             'hidden_list': self.format_hidden_list(),
         })
@@ -637,6 +641,24 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             return u'<td><img src="static/icon/help1.png" alt="?" title="unknown"/></td>'
         else:
             raise AssertionError, 'unknown value'
+
+    def format_options(self, red):
+        "Return things that the user can do with the URI as HTML links"
+        options = []
+        media_type = red.parsed_hdrs.get('content-type', [""])[0]
+        if use_tmp_urls:
+            har_locator = "id=%s" % red.path
+        else:
+            har_locator = "uri=%s" % e_query_arg(red.uri)            
+        options.append((
+          u"<a href='?%s&decend=True&format=har'>view har</a>" % har_locator,
+          u"View a HAR (HTTP ARchive) file for this response"
+        ))
+        return nl.join(
+            [o and "<span class='option' title='%s'>%s</span>" % (o[1], o[0])
+             or "<br>" for o in options]
+        )
+
 
     def format_problems(self):
         out = ['<br /><h2>Problems</h2><ol>']
