@@ -50,15 +50,14 @@ nl = u"\n"
 # Configuration; override to change.
 static_root = 'static' # where status resources are located
 extra_dir = 'extra' # where extra resources are located
-use_tmp_urls = False # whether to use tempfile URLs
 
 class BaseHtmlFormatter(Formatter):
     """
     Base class for HTML formatters."""
     media_type = "text/html"
     
-    def __init__(self, *args):
-        Formatter.__init__(self, *args)
+    def __init__(self, *args, **kw):
+        Formatter.__init__(self, *args, **kw)
         self.hidden_text = []
         self.start = nbhttp.now()
 
@@ -73,7 +72,8 @@ class BaseHtmlFormatter(Formatter):
             'js_uri': e_js(self.uri),
             'js_req_hdrs': ", ".join(['["%s", "%s"]' % (
                 e_js(n), e_js(v)) for n,v in self.req_hdrs]),
-            'extra_js': self.format_extra('.js')
+            'extra_js': self.format_extra('.js'),
+            'test_id': self.kw.get('test_id', "")
         })
 
     def finish_output(self, red):
@@ -226,8 +226,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     
     name = "html"
 
-    def __init__(self, *args):
-        BaseHtmlFormatter.__init__(self, *args)
+    def __init__(self, *args, **kw):
+        BaseHtmlFormatter.__init__(self, *args, **kw)
         self.body_sample = ""    # sample of the response body
         self.body_sample_size = 1024 * 128 # how big to allow the sample to be
         self.sample_seen = 0
@@ -382,14 +382,19 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         options.append((u"<a href='#' id='body_view'>view body</a>", 
             "View this response body (with any gzip compression removed)"
         ))
-        if use_tmp_urls:
-            har_locator = "id=%s" % red.path
+        if self.kw.get('test_id', None):
+            har_locator = "id=%s" % self.kw['test_id']
         else:
             har_locator = "uri=%s" % e_query_arg(red.uri)            
         options.append(
             (u"<a href='?%s&format=har'>view har</a>" % har_locator, 
             "View a HAR (HTTP ARchive) file for this response"
         ))
+        if self.kw['allow_save']:
+            options.append((
+                u"<a href='#' id='save'>save</a>", 
+                "Save these results for future reference"
+            ))
         if self.validators.has_key(media_type):
             options.append((u"<a href='%s'>validate body</a>" %
                self.validators[media_type] % e_query_arg(red.uri), ""))
@@ -497,8 +502,8 @@ class TableHtmlFormatter(BaseHtmlFormatter):
     name = "html"
 
     
-    def __init__(self, *args):
-        BaseHtmlFormatter.__init__(self, *args)
+    def __init__(self, *args, **kw):
+        BaseHtmlFormatter.__init__(self, *args, **kw)
         self.problems = []
 
     def finish_output(self, red):
@@ -646,8 +651,8 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         "Return things that the user can do with the URI as HTML links"
         options = []
         media_type = red.parsed_hdrs.get('content-type', [""])[0]
-        if use_tmp_urls:
-            har_locator = "id=%s" % red.path
+        if self.kw.get('test_id', None):
+            har_locator = "id=%s" % self.kw['test_id']
         else:
             har_locator = "uri=%s" % e_query_arg(red.uri)            
         options.append((

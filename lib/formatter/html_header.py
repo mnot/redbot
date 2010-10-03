@@ -144,6 +144,10 @@ $(document).ready(function(){
         return false;
     });
 
+    $("#save").click(function() {
+        $("#save_form").submit();
+    })
+
     /* URI */
 
     var check_phrase = "Enter a HTTP URI to check";
@@ -374,6 +378,7 @@ var red_req_hdrs = [
 <body>
 
 <div id="popup"></div>
+<form method="POST" id="save_form" action="?id=%(test_id)s&save=True"></form>
 
 <div id="request">
     <h1><a href="?"><span class="hilight">R</span>esource <span class="hilight">E</span>xpert <span class="hilight">D</span>roid</a></h1>

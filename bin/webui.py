@@ -32,6 +32,7 @@ import cPickle as pickle
 import locale
 import os
 import pprint
+import shutil
 import sys
 import tempfile
 import time
@@ -57,7 +58,11 @@ max_runtime = 60
 
 # Where to save temporary files (you should run a cron job to clean this...).
 # Set to None to disable.
-tmp_dir = "/tmp/redbot/"
+tmp_dir = '/tmp/redbot/'
+
+# Where to keep files for future reference, when users save them. None
+# to disable saving.
+save_dir = '/var/redbot/'
 
 # URI root for static assets (absolute or relative, but no trailing '/')
 html.static_root = 'static'
@@ -76,10 +81,6 @@ error_template = u"""\
 </p>
 """
 
-# A bit of a hack to tell the HTML formatter it's OK to use tmp urls.
-if tmp_dir:
-    html.use_tmp_urls = True
-
 try:
     locale.setlocale(locale.LC_ALL, locale.normalize(lang))
 except:
@@ -92,30 +93,55 @@ class RedWebUi(object):
     Given a URI, run RED on it and present the results to output as HTML.
     If descend is true, spider the links and present a summary.
     """
-    def __init__(self, test_file, test_uri, req_hdrs, base_uri, 
-        format, output_hdrs, output_body, descend=False):
+    def __init__(self, test_id, test_uri, req_hdrs, base_uri, 
+        format, output_hdrs, output_body, descend=False, save=False):
         self.output_body = output_body
         self.start = time.time()
         timeout = nbhttp.schedule(max_runtime, self.timeoutError)
-        if test_file and tmp_dir:
-            tmp_fd = open(os.path.join(tmp_dir, test_file))
+        if save and save_dir and test_id:
+            # FIXME: catch errors
+            shutil.copyfile(
+                os.path.join(tmp_dir, test_id),
+                os.path.join(save_dir, test_id)
+            )
+            output_hdrs("303 See Other", [
+                ("Location", "?id=%s" % test_id)
+            ])
+            output_body("Redirecting...")
+        elif test_id:
+            test_id = os.path.basename(test_id)
+            save_path = os.path.join(save_dir, test_id)
+            if save_dir and os.path.exists(os.path.join(save_dir, test_id)):
+                fd = open(os.path.join(save_dir, test_id))
+                allow_save = False
+            else:
+                fd = open(os.path.join(tmp_dir, test_id))
+                allow_save = True
             #FIXME: catch errors
-            ired = pickle.load(tmp_fd)
-            tmp_fd.close()
+            ired = pickle.load(fd)
+            fd.close()
             formatter = find_formatter(format, 'html', descend)(
-                base_uri, ired.uri, ired.req_hdrs, lang, self.output)
+                base_uri, ired.uri, ired.req_hdrs, lang, self.output,
+                allow_save=allow_save, test_id=test_id
+            )
             output_hdrs("200 OK", [
                 ("Content-Type", "%s; charset=%s" % (
                     formatter.media_type, charset)), 
-                ("Cache-Control", "max-age=60, must-revalidate")
+                ("Cache-Control", "max-age=3600, must-revalidate")
             ])
             formatter.start_output()
             formatter.finish_output(ired)
         elif test_uri:
             # FIXME: catch errors
-            tmp_fd, tmp_path = tempfile.mkstemp(dir=tmp_dir)
+            if tmp_dir and os.path.exists(tmp_dir):
+                tmp_fd, tmp_path = tempfile.mkstemp(prefix='', dir=tmp_dir)
+                test_id = os.path.split(tmp_path)[1]
+            else:
+                test_id = None
             formatter = find_formatter(format, 'html', descend)(
-                base_uri, test_uri, req_hdrs, lang, self.output)
+                base_uri, test_uri, req_hdrs, lang, self.output,
+                allow_save=save_dir, test_id=test_id
+            )
             output_hdrs("200 OK", [
                 ("Content-Type", "%s; charset=%s" % (
                     formatter.media_type, charset)), 
@@ -129,7 +155,6 @@ class RedWebUi(object):
                 body_procs=[formatter.feed],
                 descend=descend
             )
-            ired.path = os.path.split(tmp_path)[1]
             formatter.finish_output(ired)
             # FIXME: catch errors
             tmp_file = os.fdopen(tmp_fd, 'w')
@@ -235,6 +260,10 @@ def cgi_main():
     format = form.getfirst('format', 'html')
     file_id = form.getfirst("id", None)
     descend = form.getfirst('descend', False)
+    if os.environ.get("REQUEST_METHOD") == "POST":
+        save = form.getfirst('save', False)
+    else:
+        save = False
     base_uri = "http://%s%s%s" % ( # FIXME: only supports HTTP
       os.environ.get('HTTP_HOST'),
       os.environ.get('SCRIPT_NAME'),
@@ -248,8 +277,9 @@ def cgi_main():
     def output_body(o):
         sys.stdout.write(o)
     RedWebUi(file_id, test_uri, req_hdrs, base_uri, format, 
-        output_hdrs, output_body, descend)
+        output_hdrs, output_body, descend, save)
 
+# FIXME: standalone server needs to be updated.
 def standalone_main(port, static_dir):
     """Run RED as a standalone Web server."""
     static_files = {}

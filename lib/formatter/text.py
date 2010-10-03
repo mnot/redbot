@@ -50,8 +50,8 @@ class TextFormatter(Formatter):
 
     error_template = "Error: %s\n"
 
-    def __init__(self, *args):
-        Formatter.__init__(self, *args)
+    def __init__(self, *args, **kw):
+        Formatter.__init__(self, *args, **kw)
 
     def start_output(self):
         pass

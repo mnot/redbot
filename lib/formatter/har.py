@@ -47,8 +47,8 @@ class HarFormatter(Formatter):
     name = "har"
     media_type = "application/json"
     
-    def __init__(self, *args):
-        Formatter.__init__(self, *args)
+    def __init__(self, *args, **kw):
+        Formatter.__init__(self, *args, **kw)
         self.har = {
             'log': {
                 "version": "1.1",
