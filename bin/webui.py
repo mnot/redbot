@@ -38,7 +38,8 @@ import tempfile
 import time
 from urlparse import urlsplit
 
-assert sys.version_info[0] == 2 and sys.version_info[1] >= 5, "Please use Python 2.5 or greater"
+assert sys.version_info[0] == 2 and sys.version_info[1] >= 5, \
+    "Please use Python 2.5 or greater"
 
 import nbhttp
 from redbot import droid, fetch
@@ -229,7 +230,9 @@ A problem has occurred, but it probably isn't your fault.
             if not os.path.exists(ldir):
                 os.umask(0000)
                 os.makedirs(ldir)
-            (fd, path) = tempfile.mkstemp(prefix="%s_" % e_line, suffix='.html', dir=ldir)
+            (fd, path) = tempfile.mkstemp(
+                prefix="%s_" % e_line, suffix='.html', dir=ldir
+            )
             fh = os.fdopen(fd, 'w')
             fh.write(doc)
             fh.write("<h2>Outstanding Connections</h2>\n<pre>")
@@ -304,7 +307,9 @@ def standalone_main(port, static_dir):
         sys.stderr.write("Loading %s...\n" % file)
         try:
             # FIXME: need to load icons
-            static_files["/static/%s" % file] = open(os.path.join(static_dir, file)).read()
+            static_files["/static/%s" % file] = open(
+                os.path.join(static_dir, file)
+            ).read()
         except IOError:
             sys.stderr.write("failed.\n")
     def red_handler(method, uri, req_hdrs, res_start, req_pause):
@@ -319,13 +324,22 @@ def standalone_main(port, static_dir):
             test_hdrs = [] #FIXME
             base_uri = "/"
             descend = query.has_key('descend')
-            res_hdrs = [('Content-Type', 'text/html; charset=utf-8')] #FIXME: need to send proper content-type back, caching headers
-            res_body, res_done = res_start("200", "OK", res_hdrs, nbhttp.dummy)
-            sys.stderr.write("%s %s %s\n" % (str(descend), test_uri, test_hdrs))
-            RedWebUi(test_uri, test_hdrs, base_uri, res_body, output_hdr, descend)
+            res_hdrs = [('Content-Type', 'text/html; charset=utf-8')] 
+            #FIXME: need to send proper content-type back, caching headers
+            res_body, res_done = res_start(
+                "200", "OK", res_hdrs, nbhttp.dummy
+            )
+            sys.stderr.write("%s %s %s\n" % (
+                str(descend), test_uri, test_hdrs
+            ))
+            RedWebUi(test_uri, test_hdrs, base_uri, 
+                res_body, output_hdr, descend
+            )
             res_done(None)
         else:
-            res_body, res_done = res_start("404", "Not Found", [], nbhttp.dummy)
+            res_body, res_done = res_start(
+                "404", "Not Found", [], nbhttp.dummy
+            )
             res_done(None)
         return nbhttp.dummy, nbhttp.dummy
     nbhttp.Server("", port, red_handler)
