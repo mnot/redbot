@@ -385,10 +385,10 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         if self.kw.get('test_id', None):
             har_locator = "id=%s" % self.kw['test_id']
         else:
-            har_locator = "uri=%s" % e_query_arg(red.uri)            
+            har_locator = "uri=%s" % e_query_arg(red.uri)
         options.append(
             (u"<a href='?%s&format=har'>view har</a>" % har_locator, 
-            "View a HAR (HTTP ARchive) file for this response"
+            "View a HAR (HTTP ARchive, a JSON format) file for this response"
         ))
         if self.kw['allow_save']:
             options.append((
