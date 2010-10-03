@@ -28,10 +28,12 @@ THE SOFTWARE.
 """
 
 import cgi
+import cPickle as pickle
 import locale
 import os
 import pprint
 import sys
+import tempfile
 import time
 from urlparse import urlsplit
 
@@ -52,6 +54,9 @@ logdir = 'exceptions'
 
 # how many seconds to allow it to run for
 max_runtime = 60
+
+# Where to save temporary files (you should run a cron job to clean this...)
+tmp_dir = "/tmp/redbot/tmp"
 
 # URI root for static assets (absolute or relative, but no trailing '/')
 html.static_root = 'static'
@@ -82,11 +87,28 @@ class RedWebUi(object):
     Given a URI, run RED on it and present the results to output as HTML.
     If descend is true, spider the links and present a summary.
     """
-    def __init__(self, test_uri, req_hdrs, base_uri, format, output_hdrs, output_body, descend=False):
+    def __init__(self, test_file, test_uri, req_hdrs, base_uri, 
+        format, output_hdrs, output_body, descend=False):
         self.output_body = output_body
         self.start = time.time()
         timeout = nbhttp.schedule(max_runtime, self.timeoutError)
-        if test_uri:
+        if test_file:
+            tmp_fd = open(os.path.join(tmp_dir, test_file))
+            #FIXME: catch errors
+            ired = pickle.load(tmp_fd)
+            tmp_fd.close()
+            formatter = find_formatter(format, 'html', descend)(
+                base_uri, ired.uri, ired.req_hdrs, lang, self.output)
+            output_hdrs("200 OK", [
+                ("Content-Type", "%s; charset=%s" % (
+                    formatter.media_type, charset)), 
+                ("Cache-Control", "max-age=60, must-revalidate")
+            ])
+            formatter.start_output()
+            formatter.finish_output(ired)
+        elif test_uri:
+            # FIXME: catch errors
+            tmp_fd, tmp_path = tempfile.mkstemp(dir=tmp_dir)
             formatter = find_formatter(format, 'html', descend)(
                 base_uri, test_uri, req_hdrs, lang, self.output)
             output_hdrs("200 OK", [
@@ -102,13 +124,19 @@ class RedWebUi(object):
                 body_procs=[formatter.feed],
                 descend=descend
             )
+            ired.path = os.path.split(tmp_path)[1]
             formatter.finish_output(ired)
+            # FIXME: catch errors
+            tmp_file = os.fdopen(tmp_fd, 'w')
+            pickle.dump(ired, tmp_file)
+            tmp_file.close()
         else:  # no test_uri
             formatter = html.BaseHtmlFormatter(
                 base_uri, test_uri, req_hdrs, lang, self.output)
             output_hdrs("200 OK", [
                 ("Content-Type", "%s; charset=%s" % (
-                    formatter.media_type, charset)), 
+                    formatter.media_type, charset)
+                ), 
                 ("Cache-Control", "max-age=300")
             ])
             formatter.start_output()
@@ -117,7 +145,7 @@ class RedWebUi(object):
 
     def output(self, chunk):
         self.output_body(chunk.encode(charset, 'replace'))
-
+        
     def timeoutError(self):
         """ Max runtime reached."""
         self.output(error_template % ("RED timeout."))
@@ -140,7 +168,6 @@ A problem has occurred, but it probably isn't your fault.
 """
     else:
         import stat
-        import tempfile
         import traceback
         try:
             doc = cgitb.html((etype, evalue, etb), 5)
@@ -201,6 +228,7 @@ def cgi_main():
                 if rh.find(":") > 0
                ]
     format = form.getfirst('format', 'html')
+    file_id = form.getfirst("id", None)
     descend = form.getfirst('descend', False)
     base_uri = "http://%s%s%s" % ( # FIXME: only supports HTTP
       os.environ.get('HTTP_HOST'),
@@ -214,7 +242,8 @@ def cgi_main():
         sys.stdout.write("\n")
     def output_body(o):
         sys.stdout.write(o)
-    RedWebUi(test_uri, req_hdrs, base_uri, format, output_hdrs, output_body, descend)
+    RedWebUi(file_id, test_uri, req_hdrs, base_uri, format, 
+        output_hdrs, output_body, descend)
 
 def standalone_main(port, static_dir):
     """Run RED as a standalone Web server."""

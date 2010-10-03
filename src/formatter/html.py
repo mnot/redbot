@@ -378,21 +378,22 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 )
             )
         options.append(None)
-        options.append((u"<a href='#' id='body_view'>view body</a>", ""))
+        options.append((u"<a href='#' id='body_view'>view body</a>", 
+            "View this response body (with any gzip compression removed)"
+        ))
+        options.append(
+            (u"<a href='?id=%s&format=har'>view har</a>" % red.path, 
+            "View a HAR (HTTP ARchive) file for this response"
+        ))
         if self.validators.has_key(media_type):
             options.append((u"<a href='%s'>validate body</a>" %
                self.validators[media_type] % e_query_arg(red.uri), ""))
-#        options.append(
-#            (u"<a href='?id=%s&format=har'>har</a>" % red.path, "")
-#        )
         if red.link_count > 0:
-            options.append(
-                (
+            options.append((
                  u"<a href='?descend=True&uri=%s'>check assets</a>" % \
                      e_query_arg(red.uri), 
                 "run RED on images, frames and embedded links"
-                )
-            )
+            ))
         return nl.join(
             [o and "<span class='option' title='%s'>%s</span>" % (o[1], o[0])
              or "<br>" for o in options]
