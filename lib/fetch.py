@@ -141,6 +141,9 @@ class RedFetcher(object):
         global total_requests
         outstanding_requests.append(self)
         total_requests += 1
+        if 'user-agent' not in [i[0].lower() for i in self.req_hdrs]:
+            self.req_hdrs.append(
+                ("User-Agent", "RED/%s (http://redbot.org/)" % __version__))    
         self.client = RedHttpClient(self._response_start)
         if self.status_cb and self.type:
             self.status_cb("fetching %s (%s)" % (self.uri, self.type))

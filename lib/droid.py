@@ -83,10 +83,6 @@ class ResourceExpertDroid(RedFetcher):
         self.ims_support = None
         self.gzip_support = None
         self.gzip_savings = 0
-
-        if 'user-agent' not in [i[0].lower() for i in self.orig_req_hdrs]:
-            self.orig_req_hdrs.append(
-                ("User-Agent", "RED/%s (http://redbot.org/)" % __version__))
         rh = self.orig_req_hdrs + [('Accept-Encoding', 'gzip')]
         RedFetcher.__init__(self, uri, method, rh, req_body,
                             status_cb, body_procs, req_type=method)

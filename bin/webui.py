@@ -62,8 +62,8 @@ max_runtime = 60
 # to disable saving.
 save_dir = '/var/redbot/'
 
-# how long to store things when users save them, in seconds.
-save_time = 365 * 24 * 60 * 60
+# how long to store things when users save them, in days.
+save_days = 30
 
 # URI root for static assets (absolute or relative, but no trailing '/')
 html.static_root = 'static'
@@ -102,8 +102,11 @@ class RedWebUi(object):
         if save and save_dir and test_id:
             try:
                 os.utime(
-                    os.path.join(save_dir, test_id),
-                    (nbhttp.now(), nbhttp.now() + save_time)
+                    os.path.join(save_dir, test_id), 
+                    (
+                        nbhttp.now(), 
+                        nbhttp.now() + (save_days * 24 * 60 * 60)
+                    )
                 )
                 output_hdrs("303 See Other", [
                     ("Location", "?id=%s" % test_id)
