@@ -352,7 +352,9 @@ class InspectingResourceExpertDroid(ResourceExpertDroid):
     """
     def __init__(self, uri, method="GET", req_hdrs=None, req_body=None,
                 status_cb=None, body_procs=None, descend=False):
-        self.link_parser = link_parse.HTMLLinkParser(uri, self.process_link, status_cb)
+        self.link_parser = link_parse.HTMLLinkParser(
+            uri, self.process_link, status_cb
+        )
         body_procs = ( body_procs or [] ) + [self.link_parser.feed]
         self.descend = descend
         self.links = {}          # {type: set(link...)}
