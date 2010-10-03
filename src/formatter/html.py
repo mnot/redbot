@@ -41,8 +41,8 @@ from urlparse import urljoin
 import nbhttp
 import nbhttp.error as nberror
 import redbot.speak as rs
-from redbot import defns, html_header, droid, fetch
-from redbot.formatter import Formatter
+from redbot import defns, droid, fetch
+from redbot.formatter import Formatter, html_header
 from redbot.response_analyse import relative_time, f_num
 
 nl = u"\n"
