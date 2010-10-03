@@ -218,6 +218,9 @@ class RedFetcher(object):
         self.res_body_decode_len += len(chunk)
         if self._gzip_ok:
             for processor in self.body_procs:
+                # TODO: figure out why raising an error in a body_proc
+                # results in a "server dropped the connection" instead of
+                # a hard error.
                 processor(self, chunk)
 
     def _response_done(self, err):

@@ -228,7 +228,6 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 
     def __init__(self, *args, **kw):
         BaseHtmlFormatter.__init__(self, *args, **kw)
-        self.body_sample = ""    # sample of the response body
         self.body_sample_size = 1024 * 128 # how big to allow the sample to be
         self.sample_seen = 0
         self.sample_complete = True
@@ -291,11 +290,13 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 
     def format_body_sample(self, red):
         """show the stored body sample"""
+        if not hasattr(red, "body_sample"):
+            return ""
         try:
-            uni_sample = unicode(self.body_sample,
+            uni_sample = unicode(red.body_sample,
                 red.link_parser.doc_enc or red.link_parser.http_enc, 'ignore')
         except LookupError:
-            uni_sample = unicode(self.body_sample, 'utf-8', 'ignore')
+            uni_sample = unicode(red.body_sample, 'utf-8', 'ignore')
         safe_sample = e(uni_sample)
         message = ""
         for tag, link_set in red.links.items():
@@ -411,12 +412,14 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 
     def store_body_sample(self, red, chunk):
         """store the first self.sample_size bytes of the response"""
+        if not hasattr(red, "body_sample"):
+            red.body_sample = ""
         if self.sample_seen + len(chunk) < self.body_sample_size:
-            self.body_sample += chunk
+            red.body_sample += chunk
             self.sample_seen += len(chunk)
         elif self.sample_seen < self.body_sample_size:
             max_chunk = self.body_sample_size - self.sample_seen
-            self.body_sample += chunk[:max_chunk]
+            red.body_sample += chunk[:max_chunk]
             self.sample_seen += len(chunk)
             self.sample_complete = False
         else:
