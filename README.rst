@@ -23,10 +23,10 @@ Installing RED
 
 Unpack the RED tarball. There are a number of interesting files:
 
-- scripts/webui.py - the Web CGI script for running RED
-- scripts/redbot - the command-line interface
-- src/\*.py - RED's Python library files
-- web/\* - RED's CSS stylesheet and JavaScript libraries
+- bin/webui.py - the Web CGI script for running RED
+- bin/redbot - the command-line interface
+- lib/ - RED's Python library files
+- share/ - RED's CSS stylesheet and JavaScript libraries
 
 Running:: 
 
