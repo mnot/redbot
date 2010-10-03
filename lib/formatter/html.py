@@ -638,12 +638,17 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             return u'<td>%s</td>' % relative_time(value, 0, 0)
 
     def format_yes_no(self, value):
+        icon_tpl = u'<td><img src="%s/icon/%%s" alt="%%s"/></td>' % \
+            static_root
         if value is True:
-            return u'<td><img src="static/icon/accept1.png" alt="yes" title="yes"/></td>'
+            return icon_tpl % ("accept1.png", "yes")
+            return u'<td><img src="%s/icon/accept1.png" alt="yes" title="yes"/></td>'
         elif value is False:
-            return u'<td><img src="static/icon/remove-16.png" alt="no" title="no"/></td>'
+            return icon_tpl % ("remove-16.png", "no")
+            return u'<td><img src="%s/icon/remove-16.png" alt="no" title="no"/></td>'
         elif value is None:
-            return u'<td><img src="static/icon/help1.png" alt="?" title="unknown"/></td>'
+            return icon_tpl % ("help1.png", "unknown")
+            return u'<td><img src="%s/icon/help1.png" alt="?" title="unknown"/></td>'
         else:
             raise AssertionError, 'unknown value'
 
