@@ -56,13 +56,12 @@ logdir = 'exceptions'
 # how many seconds to allow it to run for
 max_runtime = 60
 
-# Where to save temporary files (you should run a cron job to clean this...).
-# Set to None to disable.
-tmp_dir = '/tmp/redbot/'
-
 # Where to keep files for future reference, when users save them. None
 # to disable saving.
 save_dir = '/var/redbot/'
+
+# how long to store things when users save them, in seconds.
+save_time = 365 * 24 * 60 * 60
 
 # URI root for static assets (absolute or relative, but no trailing '/')
 html.static_root = 'static'
@@ -100,9 +99,9 @@ class RedWebUi(object):
         timeout = nbhttp.schedule(max_runtime, self.timeoutError)
         if save and save_dir and test_id:
             # FIXME: catch errors
-            shutil.copyfile(
-                os.path.join(tmp_dir, test_id),
-                os.path.join(save_dir, test_id)
+            os.utime(
+                os.path.join(save_dir, test_id),
+                (nbhttp.now(), nbhttp.now() + save_time)
             )
             output_hdrs("303 See Other", [
                 ("Location", "?id=%s" % test_id)
@@ -110,19 +109,15 @@ class RedWebUi(object):
             output_body("Redirecting...")
         elif test_id:
             test_id = os.path.basename(test_id)
-            save_path = os.path.join(save_dir, test_id)
-            if save_dir and os.path.exists(os.path.join(save_dir, test_id)):
-                fd = open(os.path.join(save_dir, test_id))
-                allow_save = False
-            else:
-                fd = open(os.path.join(tmp_dir, test_id))
-                allow_save = True
+            fd = open(os.path.join(save_dir, test_id))
+            mtime = os.fstat(fd.fileno()).st_mtime
             #FIXME: catch errors
+            is_saved = mtime > nbhttp.now()
             ired = pickle.load(fd)
             fd.close()
             formatter = find_formatter(format, 'html', descend)(
                 base_uri, ired.uri, ired.req_hdrs, lang, self.output,
-                allow_save=allow_save, test_id=test_id
+                allow_save=(not is_saved), test_id=test_id
             )
             output_hdrs("200 OK", [
                 ("Content-Type", "%s; charset=%s" % (
@@ -133,9 +128,9 @@ class RedWebUi(object):
             formatter.finish_output(ired)
         elif test_uri:
             # FIXME: catch errors
-            if tmp_dir and os.path.exists(tmp_dir):
-                tmp_fd, tmp_path = tempfile.mkstemp(prefix='', dir=tmp_dir)
-                test_id = os.path.split(tmp_path)[1]
+            if save_dir and os.path.exists(save_dir):
+                fd, path = tempfile.mkstemp(prefix='', dir=save_dir)
+                test_id = os.path.split(path)[1]
             else:
                 test_id = None
             formatter = find_formatter(format, 'html', descend)(
@@ -157,7 +152,7 @@ class RedWebUi(object):
             )
             formatter.finish_output(ired)
             # FIXME: catch errors
-            tmp_file = os.fdopen(tmp_fd, 'w')
+            tmp_file = os.fdopen(fd, 'w')
             pickle.dump(ired, tmp_file)
             tmp_file.close()
         else:  # no test_uri
