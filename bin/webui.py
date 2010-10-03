@@ -133,7 +133,7 @@ class RedWebUi(object):
             ired = pickle.load(fd)
             fd.close()
             formatter = find_formatter(format, 'html', descend)(
-                base_uri, ired.uri, ired.req_hdrs, lang, self.output,
+                base_uri, ired.uri, ired.orig_req_hdrs, lang, self.output,
                 allow_save=(not is_saved), test_id=test_id
             )
             output_hdrs("200 OK", [
