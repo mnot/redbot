@@ -29,6 +29,7 @@ THE SOFTWARE.
 
 import cgi
 import cPickle as pickle
+import gzip
 import locale
 import os
 import pprint
@@ -117,9 +118,9 @@ class RedWebUi(object):
         elif test_id:
             try:
                 test_id = os.path.basename(test_id)
-                fd = open(os.path.join(save_dir, test_id))
+                fd = gzip.open(os.path.join(save_dir, test_id))
                 mtime = os.fstat(fd.fileno()).st_mtime
-            except (OSError, IOError):
+            except (OSError, IOError, gzip.error):
                 output_hdrs("404 Not Found", [
                     ("Content-Type", "text/html; charset=%s" % charset), 
                     ("Cache-Control", "max-age=600, must-revalidate")
@@ -131,7 +132,19 @@ class RedWebUi(object):
                 timeout.delete()
                 return
             is_saved = mtime > nbhttp.now()
-            ired = pickle.load(fd)
+            try:
+                ired = pickle.load(fd)
+            except (pickle.PickleError, EOFError):
+                output_hdrs("500 Internal Server Error", [
+                    ("Content-Type", "text/html; charset=%s" % charset), 
+                    ("Cache-Control", "max-age=600, must-revalidate")
+                ])
+                # TODO: better error page (through formatter?)
+                self.output_body(error_template % 
+                    "I'm sorry, I had a problem reading that response."
+                )
+                timeout.delete()
+                return
             fd.close()
             formatter = find_formatter(format, 'html', descend)(
                 base_uri, ired.uri, ired.orig_req_hdrs, lang, self.output,
@@ -173,10 +186,10 @@ class RedWebUi(object):
             )
             formatter.finish_output(ired)
             try:
-                tmp_file = os.fdopen(fd, 'w')
+                tmp_file = gzip.open(path, 'w')
                 pickle.dump(ired, tmp_file)
                 tmp_file.close()
-            except IOError:
+            except (IOError, gzip.error, pickle.PickleError):
                 pass # we don't cry if we can't store it.
         else:  # no test_uri
             formatter = html.BaseHtmlFormatter(
