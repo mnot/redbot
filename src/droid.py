@@ -534,5 +534,5 @@ if "__main__" == __name__:
     uri = sys.argv[1]
     def status_p(msg):
         print msg
-    red = ResourceExpertDroid(uri, status_cb=status_p)
+    red = InspectingResourceExpertDroid(uri, status_cb=status_p)
     print red.messages
