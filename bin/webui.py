@@ -98,20 +98,37 @@ class RedWebUi(object):
         self.start = time.time()
         timeout = nbhttp.schedule(max_runtime, self.timeoutError)
         if save and save_dir and test_id:
-            # FIXME: catch errors
-            os.utime(
-                os.path.join(save_dir, test_id),
-                (nbhttp.now(), nbhttp.now() + save_time)
-            )
-            output_hdrs("303 See Other", [
-                ("Location", "?id=%s" % test_id)
-            ])
-            output_body("Redirecting...")
+            try:
+                os.utime(
+                    os.path.join(save_dir, test_id),
+                    (nbhttp.now(), nbhttp.now() + save_time)
+                )
+                output_hdrs("303 See Other", [
+                    ("Location", "?id=%s" % test_id)
+                ])
+                output_body("Redirecting...")
+            except (OSError, IOError):
+                output_hdrs("500 Internal Server Error", [
+                    ("Content-Type", "text/html; charset=%s" % charset), 
+                ])
+                # TODO: better error message (through formatter?)
+                output_body(error_template % "Sorry, I couldn't save that.")
         elif test_id:
-            test_id = os.path.basename(test_id)
-            fd = open(os.path.join(save_dir, test_id))
-            mtime = os.fstat(fd.fileno()).st_mtime
-            #FIXME: catch errors
+            try:
+                test_id = os.path.basename(test_id)
+                fd = open(os.path.join(save_dir, test_id))
+                mtime = os.fstat(fd.fileno()).st_mtime
+            except (OSError, IOError):
+                output_hdrs("404 Not Found", [
+                    ("Content-Type", "text/html; charset=%s" % charset), 
+                    ("Cache-Control", "max-age=600, must-revalidate")
+                ])
+                # TODO: better error page (through formatter?)
+                self.output_body(error_template % 
+                    "I'm sorry, I can't find that saved response."
+                )
+                timeout.delete()
+                return
             is_saved = mtime > nbhttp.now()
             ired = pickle.load(fd)
             fd.close()
@@ -127,10 +144,13 @@ class RedWebUi(object):
             formatter.start_output()
             formatter.finish_output(ired)
         elif test_uri:
-            # FIXME: catch errors
             if save_dir and os.path.exists(save_dir):
-                fd, path = tempfile.mkstemp(prefix='', dir=save_dir)
-                test_id = os.path.split(path)[1]
+                try:
+                    fd, path = tempfile.mkstemp(prefix='', dir=save_dir)
+                    test_id = os.path.split(path)[1]
+                except (OSError, IOError):
+                    # Don't try to store it. 
+                    test_id = None
             else:
                 test_id = None
             formatter = find_formatter(format, 'html', descend)(
@@ -151,10 +171,12 @@ class RedWebUi(object):
                 descend=descend
             )
             formatter.finish_output(ired)
-            # FIXME: catch errors
-            tmp_file = os.fdopen(fd, 'w')
-            pickle.dump(ired, tmp_file)
-            tmp_file.close()
+            try:
+                tmp_file = os.fdopen(fd, 'w')
+                pickle.dump(ired, tmp_file)
+                tmp_file.close()
+            except IOError:
+                pass # we don't cry if we can't store it.
         else:  # no test_uri
             formatter = html.BaseHtmlFormatter(
                 base_uri, test_uri, req_hdrs, lang, self.output)
