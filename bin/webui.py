@@ -55,8 +55,8 @@ logdir = 'exceptions'
 # how many seconds to allow it to run for
 max_runtime = 60
 
-# Where to save temporary files (you should run a cron job to clean this...)
-tmp_dir = "/tmp/redbot/tmp"
+# Where to save temporary files (you should run a cron job to clean this...).
+tmp_dir = "/tmp/redbot/"
 
 # URI root for static assets (absolute or relative, but no trailing '/')
 html.static_root = 'static'

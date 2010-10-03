@@ -52,8 +52,16 @@ this will configure RED to be at the URI "http://example.com/".
 
 The contents of the share directory also need to be made available on the
 server; by default, they're in the 'static' subdirectory of the script's URI.
-This can be changed using the 'static_root' configuration variable in
+This can be changed using the 'html.static_root' configuration variable in
 webui.py.
+
+You should also create the directory referenced by the 'tmp_dir' configuration
+variable in webui.py, and make sure that it's writable to the Web server 
+process. This is where RED stores temporary files, and you should configure
+a cron job to regularly clean it. For example::
+
+  0 1 0 0 0 find /tmp/redbot/ -mtime +15 -exec rm {} \;
+  
 
 Support, Reporting Issues and Contributing
 ------------------------------------------
