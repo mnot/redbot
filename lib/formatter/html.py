@@ -642,13 +642,10 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             static_root
         if value is True:
             return icon_tpl % ("accept1.png", "yes")
-            return u'<td><img src="%s/icon/accept1.png" alt="yes" title="yes"/></td>'
         elif value is False:
             return icon_tpl % ("remove-16.png", "no")
-            return u'<td><img src="%s/icon/remove-16.png" alt="no" title="no"/></td>'
         elif value is None:
             return icon_tpl % ("help1.png", "unknown")
-            return u'<td><img src="%s/icon/help1.png" alt="?" title="unknown"/></td>'
         else:
             raise AssertionError, 'unknown value'
 
