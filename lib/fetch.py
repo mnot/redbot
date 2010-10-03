@@ -55,7 +55,8 @@ class RedHttpClient(nbhttp.Client):
 
 class RedFetcher(object):
     """
-    Fetches the given URI (with the provided method, headers and body) and calls:
+    Fetches the given URI (with the provided method, headers and body) and
+    calls:
       - status_cb as it progresses, and
       - every function in the body_procs list with each chunk of the body, and
       - done when it's done.
@@ -93,10 +94,10 @@ class RedFetcher(object):
         self.res_phrase = ""
         self.res_hdrs = []
         self.parsed_hdrs = {}
-        self.res_body = "" # note: only partial responses get this populated; bytes, not unicode
+        self.res_body = "" # note: only partial responses; bytes, not unicode
         self.res_body_len = 0
         self.res_body_md5 = None
-        self.res_body_sample = [] # array of (offset, chunk), max size 4. Bytes, not unicode.
+        self.res_body_sample = [] # [(offset, chunk)]{,4} Bytes, not unicode
         self.res_body_decode_len = 0
         self.res_complete = False
         self.res_error = None # any parse errors encountered; see nbhttp.error
@@ -132,9 +133,9 @@ class RedFetcher(object):
 
     def _makeRequest(self):
         """
-        Make an asynchronous HTTP request to uri, calling status_cb as it's updated and
-        done_cb when it's done. Reason is used to explain what the request is in the
-        status callback.
+        Make an asynchronous HTTP request to uri, calling status_cb as it's
+        updated and done_cb when it's done. Reason is used to explain what the
+        request is in the status callback.
         """
         global outstanding_requests
         global total_requests
@@ -152,7 +153,9 @@ class RedFetcher(object):
         if len(outstanding_requests) == 1:
             nbhttp.run()
 
-    def _response_start(self, version, status, phrase, res_headers, res_pause):
+    def _response_start(self, version, status, phrase, 
+        res_headers, res_pause
+    ):
         "Process the response start-line and headers."
         self.res_ts = nbhttp.now()
         self.res_version = version
@@ -184,24 +187,29 @@ class RedFetcher(object):
                 if not self._in_gzip_body:
                     self._gzip_header_buffer += chunk
                     try:
-                        chunk = self._read_gzip_header(self._gzip_header_buffer)
+                        chunk = self._read_gzip_header(
+                            self._gzip_header_buffer
+                        )
                         self._in_gzip_body = True
                     except IndexError:
                         return # not a full header yet
                     except IOError, gzip_error:
-                        self.setMessage('header-content-encoding', rs.BAD_GZIP,
+                        self.setMessage('header-content-encoding',
+                                        rs.BAD_GZIP,
                                         gzip_error=e(str(gzip_error))
-                                        )
+                        )
                         self._gzip_ok = False
                         return
                 try:
                     chunk = self._gzip_processor.decompress(chunk)
                 except zlib.error, zlib_error:
-                    self.setMessage('header-content-encoding', rs.BAD_ZLIB,
-                                    zlib_error=e(str(zlib_error)),
-                                    ok_zlib_len=f_num(self.res_body_sample[-1][0]),
-                                    chunk_sample=e(chunk[:20].encode('string_escape'))
-                                    )
+                    self.setMessage(
+                        'header-content-encoding', 
+                        rs.BAD_ZLIB,
+                        zlib_error=e(str(zlib_error)),
+                        ok_zlib_len=f_num(self.res_body_sample[-1][0]),
+                        chunk_sample=e(chunk[:20].encode('string_escape'))
+                    )
                     self._gzip_ok = False
                     return
             else:
@@ -254,8 +262,10 @@ class RedFetcher(object):
                 if self.res_body_len == self.parsed_hdrs['content-length']:
                     self.setMessage('header-content-length', rs.CL_CORRECT)
                 else:
-                    self.setMessage('header-content-length', rs.CL_INCORRECT,
-                                             body_length=f_num(self.res_body_len))
+                    self.setMessage('header-content-length', 
+                                    rs.CL_INCORRECT,
+                                    body_length=f_num(self.res_body_len)
+                    )
             if self.parsed_hdrs.has_key('content-md5'):
                 c_md5_calc = base64.encodestring(self.res_body_md5)[:-1]
                 if self.parsed_hdrs['content-md5'] == c_md5_calc:
@@ -267,20 +277,27 @@ class RedFetcher(object):
         self.done()
         outstanding_requests.remove(self)
         if self.status_cb:
-            self.status_cb("%s outstanding requests" % len(outstanding_requests))
+            self.status_cb("%s outstanding requests" % \
+                len(outstanding_requests)
+            )
         if len(outstanding_requests) == 0:
             nbhttp.stop()
 
     @staticmethod
     def _read_gzip_header(content):
-        "Parse a string for a GZIP header; if present, return remainder of gzipped content."
+        """
+        Parse a string for a GZIP header; if present, return remainder of
+        gzipped content.
+        """
         # adapted from gzip.py
         FTEXT, FHCRC, FEXTRA, FNAME, FCOMMENT = 1, 2, 4, 8, 16
         if len(content) < 10:
             raise IndexError, "Header not complete yet"
         magic = content[:2]
         if magic != '\037\213':
-            raise IOError, u'Not a gzip header (magic is hex %s, should be 1f8b)' % magic.encode('hex-codec')
+            raise IOError, \
+                u'Not a gzip header (magic is hex %s, should be 1f8b)' % \
+                magic.encode('hex-codec')
         method = ord( content[2:3] )
         if method != 8:
             raise IOError, 'Unknown compression method'
@@ -292,7 +309,8 @@ class RedFetcher(object):
             xlen = xlen + 256*ord(content_l.pop())
             content_l = content_l[xlen:]
         if flag & FNAME:
-            # Read and discard a null-terminated string containing the filename
+            # Read and discard a null-terminated string 
+            # containing the filename
             while True:
                 s = content_l.pop()
                 if not content_l or s == '\000':
