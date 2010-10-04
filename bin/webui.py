@@ -151,7 +151,7 @@ class RedWebUi(object):
             fd.close()
             formatter = find_formatter(format, 'html', descend)(
                 base_uri, ired.uri, ired.orig_req_hdrs, lang, self.output,
-                allow_save=(not is_saved), test_id=test_id
+                allow_save=(not is_saved), is_saved=True, test_id=test_id
             )
             output_hdrs("200 OK", [
                 ("Content-Type", "%s; charset=%s" % (
@@ -172,7 +172,7 @@ class RedWebUi(object):
                 test_id = None
             formatter = find_formatter(format, 'html', descend)(
                 base_uri, test_uri, req_hdrs, lang, self.output,
-                allow_save=save_dir, test_id=test_id
+                allow_save=save_dir, is_saved=False, test_id=test_id
             )
             output_hdrs("200 OK", [
                 ("Content-Type", "%s; charset=%s" % (
