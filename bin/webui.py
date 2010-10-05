@@ -173,7 +173,7 @@ class RedWebUi(object):
                 test_id = None
             formatter = find_formatter(format, 'html', descend)(
                 base_uri, test_uri, req_hdrs, lang, self.output,
-                allow_save=save_dir, is_saved=False, test_id=test_id
+                allow_save=test_id, is_saved=False, test_id=test_id
             )
             output_hdrs("200 OK", [
                 ("Content-Type", "%s; charset=%s" % (
@@ -189,12 +189,13 @@ class RedWebUi(object):
                 descend=descend
             )
             formatter.finish_output(ired)
-            try:
-                tmp_file = gzip.open(path, 'w')
-                pickle.dump(ired, tmp_file)
-                tmp_file.close()
-            except (IOError, zlib.error, pickle.PickleError):
-                pass # we don't cry if we can't store it.
+            if test_id:
+                try:
+                    tmp_file = gzip.open(path, 'w')
+                    pickle.dump(ired, tmp_file)
+                    tmp_file.close()
+                except (IOError, zlib.error, pickle.PickleError):
+                    pass # we don't cry if we can't store it.
         else:  # no test_uri
             formatter = html.BaseHtmlFormatter(
                 base_uri, test_uri, req_hdrs, lang, self.output)
