@@ -96,10 +96,10 @@ input#uri {
     font-size: 1.1em;
 }
 .add_req_hdr {
-    -webkit-border-bottom-right-radius: 1em;
-    -webkit-border-bottom-left-radius: 1em;
-    -moz-border-radius-bottomleft: 1em;
-    -moz-border-radius-bottomright: 1em;
+    -webkit-border-bottom-right-radius: 0.5em;
+    -webkit-border-bottom-left-radius: 0.5em;
+    -moz-border-radius-bottomleft: 0.5em;
+    -moz-border-radius-bottomright: 0.5em;
     background-color: #a9a9a4;
 	width: 650px;
     margin: 0;
@@ -141,9 +141,9 @@ option[value="other..."] {
     font-family: Courier, monospace;
     background-color: #111;
     color: #ddd;
-    border-radius: 1em;
-    -moz-border-radius: 1em;
-    -webkit-border-radius: 1em;
+    border-radius: 0.5em;
+    -moz-border-radius: 0.5em;
+    -webkit-border-radius: 0.5em;
     border: 1px solid black;
     padding: 1em 0em;
     margin-bottom: 0em;
