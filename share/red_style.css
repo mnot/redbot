@@ -40,7 +40,10 @@ h1 a {
 	text-decoration: none;
 }
 .hilight {
-    color: #d33;
+  color: #d33;
+}
+.save {
+	color: #aaa;
 }
 h2 {
     font-size: 1.1em;

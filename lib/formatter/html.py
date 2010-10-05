@@ -65,6 +65,10 @@ class BaseHtmlFormatter(Formatter):
         pass
 
     def start_output(self):
+        if self.kw.get('is_saved', None):
+            extra_title = " <span class='save'>saved results for...</span>"
+        else:
+            extra_title = ""
         self.output(html_header.__doc__ % {
             'static': static_root,
             'version': droid.__version__,
@@ -73,7 +77,8 @@ class BaseHtmlFormatter(Formatter):
             'js_req_hdrs': ", ".join(['["%s", "%s"]' % (
                 e_js(n), e_js(v)) for n,v in self.req_hdrs]),
             'extra_js': self.format_extra('.js'),
-            'test_id': self.kw.get('test_id', "")
+            'test_id': self.kw.get('test_id', ""),
+            'extra_title': extra_title
         })
 
     def finish_output(self, red):

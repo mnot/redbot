@@ -381,7 +381,7 @@ var red_req_hdrs = [
 <form method="POST" id="save_form" action="?id=%(test_id)s&save=True"></form>
 
 <div id="request">
-    <h1><a href="?"><span class="hilight"><abbr title="Resource Expert Droid">RED</abbr></span>bot</a></h1>
+    <h1><a href="?"><span class="hilight"><abbr title="Resource Expert Droid">RED</abbr></span>bot</a>%(extra_title)s</h1>
 
     <form method="GET" onLoad="init_req_hdrs();" id="request_form">
         <input type="url" name="uri" value="%(html_uri)s" id="uri"/><br />
