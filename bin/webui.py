@@ -60,7 +60,7 @@ max_runtime = 60
 
 # Where to keep files for future reference, when users save them. None
 # to disable saving.
-save_dir = '/var/redbot/'
+save_dir = '/var/state/redbot/'
 
 # how long to store things when users save them, in days.
 save_days = 30
