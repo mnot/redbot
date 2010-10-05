@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>RED: &lt;%(html_uri)s&gt;</title>
+	<title>REDbot: &lt;%(html_uri)s&gt;</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta name="ROBOTS" content="INDEX, NOFOLLOW" />
     <link rel="stylesheet" type="text/css" href="%(static)s/style.css">
@@ -381,7 +381,7 @@ var red_req_hdrs = [
 <form method="POST" id="save_form" action="?id=%(test_id)s&save=True"></form>
 
 <div id="request">
-    <h1><a href="?"><span class="hilight">R</span>esource <span class="hilight">E</span>xpert <span class="hilight">D</span>roid</a></h1>
+    <h1><a href="?"><span class="hilight"><abbr title="Resource Expert Droid">RED</abbr></span>bot</a></h1>
 
     <form method="GET" onLoad="init_req_hdrs();" id="request_form">
         <input type="url" name="uri" value="%(html_uri)s" id="uri"/><br />
