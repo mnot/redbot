@@ -38,6 +38,7 @@ import sys
 import tempfile
 import time
 from urlparse import urlsplit
+import zlib
 
 assert sys.version_info[0] == 2 and sys.version_info[1] >= 5, \
     "Please use Python 2.5 or greater"
@@ -123,7 +124,7 @@ class RedWebUi(object):
                 test_id = os.path.basename(test_id)
                 fd = gzip.open(os.path.join(save_dir, test_id))
                 mtime = os.fstat(fd.fileno()).st_mtime
-            except (OSError, IOError, gzip.error):
+            except (OSError, IOError, zlib.error):
                 output_hdrs("404 Not Found", [
                     ("Content-Type", "text/html; charset=%s" % charset), 
                     ("Cache-Control", "max-age=600, must-revalidate")
@@ -192,7 +193,7 @@ class RedWebUi(object):
                 tmp_file = gzip.open(path, 'w')
                 pickle.dump(ired, tmp_file)
                 tmp_file.close()
-            except (IOError, gzip.error, pickle.PickleError):
+            except (IOError, zlib.error, pickle.PickleError):
                 pass # we don't cry if we can't store it.
         else:  # no test_uri
             formatter = html.BaseHtmlFormatter(
