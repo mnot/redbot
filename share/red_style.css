@@ -100,7 +100,7 @@ input#uri {
     -webkit-border-bottom-left-radius: 0.5em;
     -moz-border-radius-bottomleft: 0.5em;
     -moz-border-radius-bottomright: 0.5em;
-    background-color: #a9a9a4;
+    background-color: #898984;
 	width: 650px;
     margin: 0;
 }
@@ -117,7 +117,7 @@ input#uri {
     text-decoration: none;
 }
 .req_hdr {
-    background-color: #a9a9a4;
+    background-color: #898984;
     width: 650px;
     white-space: nowrap;
 }
