@@ -378,7 +378,9 @@ var red_req_hdrs = [
 <body>
 
 <div id="popup"></div>
-<form method="POST" id="save_form" action="?id=%(test_id)s&save=True"></form>
+<form method="POST" id="save_form"
+ action="?id=%(test_id)s&save=True%(descend)s">
+</form>
 
 <div id="request">
     <h1><a href="?"><span class="hilight"><abbr title="Resource Expert Droid">RED</abbr></span>bot</a>%(extra_title)s</h1>

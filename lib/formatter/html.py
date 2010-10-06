@@ -69,6 +69,10 @@ class BaseHtmlFormatter(Formatter):
             extra_title = " <span class='save'>saved results for...</span>"
         else:
             extra_title = ""
+        if self.kw.get('descend', False):
+            descend = "&descend=True"
+        else:
+            descend = ''
         self.output(html_header.__doc__ % {
             'static': static_root,
             'version': droid.__version__,
@@ -78,7 +82,8 @@ class BaseHtmlFormatter(Formatter):
                 e_js(n), e_js(v)) for n,v in self.req_hdrs]),
             'extra_js': self.format_extra('.js'),
             'test_id': self.kw.get('test_id', ""),
-            'extra_title': extra_title
+            'extra_title': extra_title,
+            'descend': descend
         })
 
     def finish_output(self, red):
@@ -670,6 +675,12 @@ class TableHtmlFormatter(BaseHtmlFormatter):
           u"<a href='?%s&decend=True&format=har'>view har</a>" % har_locator,
           u"View a HAR (HTTP ARchive) file for this response"
         ))
+        if not self.kw.get('is_saved', False):
+            if self.kw.get('allow_save', False):
+                options.append((
+                    u"<a href='#' id='save'>save</a>", 
+                    "Save these results for future reference"
+                ))
         return nl.join(
             [o and "<span class='option' title='%s'>%s</span>" % (o[1], o[0])
              or "<br>" for o in options]

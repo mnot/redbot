@@ -109,8 +109,11 @@ class RedWebUi(object):
                         nbhttp.now() + (save_days * 24 * 60 * 60)
                     )
                 )
+                location = "?id=%s" % test_id
+                if descend:
+                    location = "%s&descend=True" % location
                 output_hdrs("303 See Other", [
-                    ("Location", "?id=%s" % test_id)
+                    ("Location", location)
                 ])
                 output_body("Redirecting...")
             except (OSError, IOError):
@@ -173,7 +176,8 @@ class RedWebUi(object):
                 test_id = None
             formatter = find_formatter(format, 'html', descend)(
                 base_uri, test_uri, req_hdrs, lang, self.output,
-                allow_save=test_id, is_saved=False, test_id=test_id
+                allow_save=test_id, is_saved=False, test_id=test_id,
+                descend=descend
             )
             output_hdrs("200 OK", [
                 ("Content-Type", "%s; charset=%s" % (
