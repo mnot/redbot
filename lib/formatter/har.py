@@ -56,6 +56,10 @@ class HarFormatter(Formatter):
                     "name": "REDbot",
                     "version": droid.__version__,
                 },
+                "browser": {
+                    "name": "REDbot",
+                    "version": droid.__version,
+                },
                 "pages": [],
                 "entries": [],
             },
