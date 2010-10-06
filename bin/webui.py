@@ -152,7 +152,8 @@ class RedWebUi(object):
                 )
                 timeout.delete()
                 return
-            fd.close()
+            finally:
+                fd.close()
             formatter = find_formatter(format, 'html', descend)(
                 base_uri, ired.uri, ired.orig_req_hdrs, lang, self.output,
                 allow_save=(not is_saved), is_saved=True, test_id=test_id
