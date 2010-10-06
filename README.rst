@@ -60,7 +60,7 @@ configuration variable in webui.py, and make sure that it's writable to the
 Web server process. This is where RED stores files, and you should
 configure a cron job to regularly clean it. For example::
 
-  0 1 0 0 0 find /var/redbot/ -mtime +15 -exec rm {} \;
+  0 * * * * find /var/state/redbot/ -mmin +360 -exec rm {} \;
 
 If you don't want to allow users to store responses, set save_dir to 'None'.  
 
