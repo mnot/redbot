@@ -58,7 +58,7 @@ class HarFormatter(Formatter):
                 },
                 "browser": {
                     "name": "REDbot",
-                    "version": droid.__version,
+                    "version": droid.__version__,
                 },
                 "pages": [],
                 "entries": [],
