@@ -729,7 +729,7 @@ def e_js(instr):
     """
     if not instr: 
         return ""
+    instr = instr.replace('\\', '\\\\')
     instr = instr.replace('"', r'\"')
-    if instr[-1] == '\\':
-        instr += '\\'
+    instr = instr.replace('<', r'\x3c')
     return instr
