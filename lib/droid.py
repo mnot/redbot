@@ -83,7 +83,7 @@ class ResourceExpertDroid(RedFetcher):
         self.ims_support = None
         self.gzip_support = None
         self.gzip_savings = 0
-        rh = self.orig_req_hdrs + [('Accept-Encoding', 'gzip')]
+        rh = self.orig_req_hdrs + [('Accept-Encoding', 'gzip, deflate')]
         RedFetcher.__init__(self, uri, method, rh, req_body,
                             status_cb, body_procs, req_type=method)
 
