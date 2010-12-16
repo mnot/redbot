@@ -99,7 +99,6 @@ class HarFormatter(Formatter):
             'cookies': [],
             'headers': self.format_headers(red.req_hdrs),
             'queryString': [],
-            'postData': {},
             'headersSize': -1,
             'bodySize': -1,
         }
