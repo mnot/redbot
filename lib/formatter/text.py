@@ -173,9 +173,6 @@ class TextListFormatter(BaseTextFormatter):
     def __init__(self, *args, **kw):
         BaseTextFormatter.__init__(self, *args, **kw)
 
-    def start_output(self):
-        pass
-
     def finish_output(self, red):
         "Fill in the template with RED's results."
         for hdr_tag, heading in self.link_order:
@@ -187,7 +184,6 @@ class TextListFormatter(BaseTextFormatter):
                     self.output(self.format_uri(droid) + nl + nl)
                     self.output(self.format_headers(droid) + nl + nl)
                     self.output(self.format_recommendations(droid) + nl + nl)
-
 
     def format_uri(self, red):
         return self.colorize("uri", red.uri)
