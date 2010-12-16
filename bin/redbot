@@ -44,14 +44,17 @@ def main():
     version = """Redbot: The Resource Expert Droid, version %s, http://redbot.org/ """ % droid.__version__
 
     option_parser = OptionParser(usage=usage, version=version)
-    option_parser.set_defaults(version=False,output_format="txt", show_recommendations=False)
+    option_parser.set_defaults(version=False, descend=False, output_format="txt", show_recommendations=False)
 
+    option_parser.add_option("-a", "--assets",
+                             action="store_true", dest="descend",
+                             help="check assets, if the URL contains HTML")
     option_parser.add_option("-o", "--output-format",
                              action="store", dest="output_format",
                              help="one of: %s" % ", ".join(available_formatters()))
 
     (options, args) = option_parser.parse_args()
-    
+
     if len(args) != 1:
         option_parser.error("Please specify a URL.")
 
@@ -59,9 +62,9 @@ def main():
         option_parser.error("Unrecognised output format.")
 
     url = args[0]
-    red = droid.InspectingResourceExpertDroid(url)
-    
-    formatter = find_formatter(options.output_format, 'txt', False)(sys.argv[0], url, [], lang, output)
+    red = droid.InspectingResourceExpertDroid(url, descend=options.descend)
+
+    formatter = find_formatter(options.output_format, 'txt', options.descend)(sys.argv[0], url, [], lang, output)
     formatter.start_output()
     formatter.finish_output(red)
 
