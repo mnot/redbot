@@ -41,7 +41,6 @@ nl = u"\n"
 class BaseTextFormatter(Formatter):
     """
     Base class for text formatters."""
-    name = "txt"
     media_type = "text/plain"
 
     msg_categories = [

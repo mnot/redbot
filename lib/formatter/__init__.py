@@ -44,7 +44,7 @@ def find_formatter(name, default="html", multiple=False):
     for candidate in _formatters[name]:            
         if candidate.can_multiple:
             return candidate
-    raise RuntimeError, "Can't find a format"
+    raise RuntimeError, "Can't find a format in %s" % _formatters
 
 def available_formatters():
     return _formatters.keys()
