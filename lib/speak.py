@@ -694,9 +694,10 @@ class RANGE_INCORRECT(Message):
     <p>RED sent<br/>
     <code>Range: %(range)s</code>
     <p>RED expected %(range_expected_bytes)s bytes:<br/>
-    <code>%(range_expected)s</code>
+    <code>%(range_expected).100s</code>
     <p>RED received %(range_received_bytes)s bytes:<br/>
-    <code>%(range_received)s</code>"""
+    <code>%(range_received).100s</code>
+    <p><em>(showing samples of up to 100 characters)</em></p>"""
     }
 
 class RANGE_FULL(Message):
