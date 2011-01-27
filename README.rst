@@ -37,7 +37,7 @@ Running::
 
   python setup.py install
   
-installs RED's library as well as the command-line version as 'redbot'. 
+installs RED's libraries as well as the command-line version as 'redbot'. 
 
 Setting up your Web Server
 --------------------------
