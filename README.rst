@@ -59,7 +59,7 @@ webui.py.
 
 You should also create the directory referenced by the 'save_dir'
 configuration variable in webui.py, and make sure that it's writable to the
-Web server process. This is where RED stores files, and you should
+Web server process. This is where RED stores state files, and you should
 configure a cron job to regularly clean it. For example::
 
   0 * * * * find /var/state/redbot/ -mmin +360 -exec rm {} \;
