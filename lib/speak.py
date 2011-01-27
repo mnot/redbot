@@ -699,6 +699,18 @@ class RANGE_INCORRECT(Message):
     <code>%(range_received)s</code>"""
     }
 
+class RANGE_CHANGED(Message):
+    category = c.RANGE
+    level = l.WARN
+    summary = {
+    'en' : u"A ranged request returned another representation."
+    }
+    text = {
+    'en' : u"""A new representation was retrieved when checking support of
+    ranged request. This is not an error, it just indicates that RED
+    cannot draw any conclusion at this time."""
+    }
+
 class RANGE_FULL(Message):
     category = c.RANGE
     level = l.WARN
