@@ -15,11 +15,13 @@ RED needs:
 1. Python 2.5 or greater; see <http://python.org/>
 2. The nbhttp library; see <http://github.com/mnot/nbhttp/>
 3. The json library (included with Python 2.6 or greater); see
-   <http://pypi.python.org/pypi/simplejson/>
-3. Optionally, RED will take advantage of the pyevent extension, if installed.
-   See PyEvent <http://code.google.com/p/pyevent/>.
-4. To use RED on the Web, you'll need a Web server that implements the CGI
+   <http://pypi.python.org/pypi/simplejson/>.
+4. To use RED on the Web, you'll need a Web server that implements the CGI 
    interface; e.g., Apache <http://httpd.apache.org/>.
+
+Optionally, RED will take advantage of the pyevent extension, if installed.
+See PyEvent <http://code.google.com/p/pyevent/>.
+
 
 Installing RED
 --------------
