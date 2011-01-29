@@ -476,26 +476,34 @@ class RangeRequest(RedFetcher):
                     self
                 )
                 return
-            if self.res_body == self.range_target:
-                self.red.partial_support = True
-                self.red.setMessage('header-accept-ranges', 
-                                    rs.RANGE_CORRECT, self
-                )
+            if self.parsed_hdrs.get('etag', 1) == self.red.parsed_hdrs.get('etag', 2):
+                if self.res_body == self.range_target:
+                    self.red.partial_support = True
+                    self.red.setMessage('header-accept-ranges', 
+                                        rs.RANGE_CORRECT, self
+                    )
+                else:
+                    # the body samples are just bags of bits
+                    self.red.partial_support = False
+                    self.red.setMessage(
+                        'header-accept-ranges',
+                        rs.RANGE_INCORRECT,
+                        self,
+                        range="bytes=%s-%s" % (self.range_start, self.range_end),
+                        range_expected=e(
+                            self.range_target.encode('string_escape')
+                        ),
+                        range_expected_bytes = f_num(len(self.range_target)),
+                        range_received=e(self.res_body.encode('string_escape')),
+                        range_received_bytes = f_num(self.res_body_len)
+                    )
             else:
-                # the body samples are just bags of bits
-                self.red.partial_support = False
                 self.red.setMessage(
                     'header-accept-ranges',
-                    rs.RANGE_INCORRECT,
-                    self,
-                    range="bytes=%s-%s" % (self.range_start, self.range_end),
-                    range_expected=e(
-                        self.range_target.encode('string_escape')
-                    ),
-                    range_expected_bytes = f_num(len(self.range_target)),
-                    range_received=e(self.res_body.encode('string_escape')),
-                    range_received_bytes = f_num(self.res_body_len)
+                    rs.RANGE_CHANGED,
+                    self
                 )
+
         # TODO: address 416 directly
         elif self.res_status == self.red.res_status:
             self.red.partial_support = False
