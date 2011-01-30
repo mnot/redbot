@@ -259,7 +259,9 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 'hidden_list': self.format_hidden_list(),
             })
         else:
-            if red.res_error['desc'] == nberror.ERR_CONNECT['desc']:
+            if res.res_error == None:
+                pass # usually a global timeout...
+            elif red.res_error['desc'] == nberror.ERR_CONNECT['desc']:
                 self.output(self.error_template % \
                     "Could not connect to the server (%s)" % \
                     red.res_error.get('detail', "unknown"))
@@ -626,7 +628,9 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                     )
                 )
         else:
-            out.append('<td colspan="11">%s' % red.res_error['desc'])
+            out.append('<td colspan="11">%s' % red.res_error.get(
+                'desc', "Response incomplete"
+            ))
         out.append(u"</td>")
         out.append(u'</tr>')
         return nl.join(out)
