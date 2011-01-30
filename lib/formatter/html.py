@@ -312,10 +312,14 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         for tag, link_set in red.links.items():
             for link in link_set:
                 def link_to(matchobj):
+                    try:
+                        qlink = urljoin(red.link_parser.base, link)
+                    except ValueError, why:
+                        pass # TODO: pass link problem upstream?
+                             # e.g., ValueError("Invalid IPv6 URL")
                     return r"%s<a href='%s' class='nocode'>%s</a>%s" % (
                         matchobj.group(1),
-                        u"?uri=%s" % e_query_arg(
-                            urljoin(red.link_parser.base, link)),
+                        u"?uri=%s" % e_query_arg(qlink),
                         e(link),
                         matchobj.group(1)
                     )
