@@ -454,7 +454,7 @@ class HeaderPresenter(object):
     """
 
     def __init__(self, uri):
-        self.uri = uri
+        self.URI = uri
 
     def Show(self, name, value):
         """
@@ -475,7 +475,7 @@ class HeaderPresenter(object):
         space = len(value) - len(svalue)
         return u"%s<a href='?uri=%s'>%s</a>" % (
             " " * space,
-            e_query_arg(urljoin(self.uri, svalue)), 
+            e_query_arg(urljoin(self.URI, svalue)), 
             self.I(e(svalue), len(name))
         )
     content_location = \
