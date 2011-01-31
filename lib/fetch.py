@@ -246,7 +246,10 @@ class RedFetcher(object):
             self.res_body_len += len(err.get('detail', ''))
         elif err['desc'] == nbhttp.error.ERR_CHUNK['desc']:
             self.setMessage('header-transfer-encoding', rs.BAD_CHUNK,
-                                chunk_sample=e(err.get('detail', '')[:20]))
+                chunk_sample=e(
+                    err.get('detail', '')[:20].encode('string_escape')
+                )
+            )
         elif err['desc'] == nbhttp.error.ERR_CONNECT['desc']:
             self.res_complete = False
         elif err['desc'] == nbhttp.error.ERR_LEN_REQ['desc']:
