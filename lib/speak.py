@@ -635,18 +635,37 @@ class XSS_PROTECTION(Message):
     category = c.GENERAL
     level = l.INFO
     summary = {
-     'en': u"%(response)s disables XSS filtering in IE8."
+     'en': u"%(response)s disables XSS filtering in IE8+."
     }
     text = {
-     'en': u"""Internet Explorer 8 has built-in Cross-Site Scripting (XSS)
-     attack protection; it tries to automatically filter requests that
-     fit a particular profile.<p>
+     'en': u"""Recent versions of Internet Explorer have built-in Cross-Site
+     Scripting (XSS) attack protection; they try to automatically filter
+     requests that fit a particular profile.<p>
      %(response)s has explicitly disabled this protection. In some scenarios,
      this is useful to do, if the protection interferes with the application.<p>
-     This header probably won't have any effect in other clients.<p>
-     See <a href="http://blogs.msdn.com/ie/archive/2008/07/02/ie8-security-part-iv-the-xss-filter.aspx">this blog entry</a> for more information.
+     This header probably won't have any effect on other clients.<p>
+     See <a href="http://blogs.msdn.com/b/ieinternals/archive/2011/01/31/controlling-the-internet-explorer-xss-filter-with-the-x-xss-protection-http-header.aspx">this blog entry</a> for more information.
      """
     }
+
+class XSS_PROTECTION_BLOCK(Message):
+    category = c.GENERAL
+    level = l.INFO
+    summary = {
+     'en': u"%(response)s blocks XSS attacks in IE8+."
+    }
+    text = {
+     'en': u"""Recent versions of Internet Explorer have built-in Cross-Site
+     Scripting (XSS) attack protection; they try to automatically filter
+     requests that fit a particular profile.<p>
+     Usually, IE will rewrite the attacking HTML, so that the attack is
+     neutralised, but the content can still be seen. %(response)s instructs IE
+     to not show such pages at all, but rather to display an error.<p>
+     This header probably won't have any effect on other clients.<p>
+     See <a href="http://blogs.msdn.com/b/ieinternals/archive/2011/01/31/controlling-the-internet-explorer-xss-filter-with-the-x-xss-protection-http-header.aspx">this blog entry</a> for more information.
+     """
+    }
+
 
 ### Ranges
 

@@ -567,10 +567,12 @@ class ResponseHeaderParser(object):
 
     @GenericHeaderSyntax
     @SingleFieldValue
-    @CheckFieldSyntax(DIGITS, 'http://blogs.msdn.com/ie/archive/2008/07/02/ie8-security-part-iv-the-xss-filter.aspx')
+    @CheckFieldSyntax(r'(?:[10](?:\s*;\s*%(PARAMETER)s)*)' % globals(), 'http://blogs.msdn.com/b/ieinternals/archive/2011/01/31/controlling-the-internet-explorer-xss-filter-with-the-x-xss-protection-http-header.aspx')
     def x_xss_protection(self, name, values):
-        if int(values[-1]) == 0:
+        if int(values[-1].split(';', 1)[0]) == 0:
             self.setMessage(name, rs.XSS_PROTECTION)
+        elif values[-1].split(';', 1)[1].strip() == 'mode=block': # 1
+            self.setMessage(name, rs.XSS_PROTECTION_BLOCK)
         return values[-1]
 
     @GenericHeaderSyntax
