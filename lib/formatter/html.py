@@ -259,7 +259,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 'hidden_list': self.format_hidden_list(),
             })
         else:
-            if res.res_error == None:
+            if red.res_error == None:
                 pass # usually a global timeout...
             elif red.res_error['desc'] == nberror.ERR_CONNECT['desc']:
                 self.output(self.error_template % \
