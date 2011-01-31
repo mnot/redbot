@@ -112,7 +112,7 @@ class RedFetcher(object):
         try:
             self.uri = iri_to_uri(iri)
         except UnicodeError, why:
-            # TODO: log unicode problem
+            self.res_error = nbhttp.error.ERR_URL
             return
         self._makeRequest()
 
@@ -120,6 +120,8 @@ class RedFetcher(object):
         state = self.__dict__
         del state['status_cb']
         del state['body_procs']
+        del state['_md5_processor']
+        del state['_gzip_processor']
         return state
 
     def setMessage(self, subject, msg, subreq=None, **kw):
@@ -235,9 +237,6 @@ class RedFetcher(object):
         if self.status_cb and self.type:
             self.status_cb("fetched %s (%s)" % (self.uri, self.type))
         self.res_body_md5 = self._md5_processor.digest()
-        # clean up so we can be pickled
-        del self._md5_processor 
-        del self._gzip_processor
         if err == None:
             pass
         elif err['desc'] == nbhttp.error.ERR_BODY_FORBIDDEN['desc']:

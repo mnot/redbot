@@ -247,8 +247,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         
     def finish_output(self, red):
         self.final_status()
-        self.header_presenter = HeaderPresenter(red.uri)
         if red.res_complete:
+            self.header_presenter = HeaderPresenter(red.uri)
             self.output(self.template % {
                 'response': self.format_response(red),
                 'options': self.format_options(red),
