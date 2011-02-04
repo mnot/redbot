@@ -2,10 +2,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>REDbot: &lt;%(html_uri)s&gt;</title>
+	<title>REDbot: &lt;{{html_uri}}&gt;</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta name="ROBOTS" content="INDEX, NOFOLLOW" />
-    <link rel="stylesheet" type="text/css" href="%(static)s/style.css">
+    <link rel="stylesheet" type="text/css" href="{{static}}/style.css">
 	<!--[if IE]> 
     <style type="text/css">
         #right_column {
@@ -13,7 +13,7 @@
             float: left;
     </style>
     <![endif]-->
-    <script src="%(static)s/script.js" type="text/javascript"></script>
+    <script src="{{static}}/script.js" type="text/javascript"></script>
     <script>
 
 var tid = false;
@@ -151,7 +151,7 @@ $(document).ready(function(){
     /* URI */
 
     var check_phrase = "Enter a http:// URI to check";
-    var uri = "%(js_uri)s";
+    var uri = "{{js_uri}}";
     if (uri) {
         $("#uri").val(uri);
     } else if (! $("#uri").val()) {
@@ -217,7 +217,8 @@ $(document).ready(function(){
             $("#request_form").submit();
         }
     });
-
+    
+    init_req_hdrs();
 });
 
 
@@ -279,10 +280,20 @@ function add_req_hdr(hdr_name, hdr_val){
     /* populate the value when the header name is changed */
     $("select.hdr_name:last").bind("change", function(){
         var req_hdr = $(this).closest(".req_hdr");
-        var hdr_name = $(".hdr_name > option:selected", req_hdr).val()
+        var hdr_name = $(".hdr_name > option:selected", req_hdr).val();
         var hdr_val = "";
         if (hdr_name in known_req_hdrs) {
-            if (known_req_hdrs[hdr_name] == null) {
+            if (hdr_name == 'Authorization') {
+                hdr_val = '<div style="display:inline"><span class="hdr_val">Basic</span> ';
+                hdr_val += '<input class="hdr_val username" type="text" placeholder="username" />';
+                hdr_val += '<input class="hdr_val" type="password" placeholder="password" /></div>';
+                $(".hdr_val", req_hdr).replaceWith(hdr_val);
+                $("input.hdr_name, input.hdr_val", req_hdr).change(function() {
+                    var username = $('input[class~=username]', req_hdr).val();
+                    var password = $('input[type=password]', req_hdr).val();
+                    $("input[type=hidden]", req_hdr).val(hdr_name+': Basic '+$.base64.encode(username+':'+password)).val();
+                });
+            } else if (known_req_hdrs[hdr_name] == null) {
                 hdr_val = "<input class='hdr_val' type='text'/>";
                 $(".hdr_val", req_hdr).replaceWith(hdr_val);
                 bind_text_changes(req_hdr);
@@ -332,7 +343,7 @@ tests. Setting it yourself can lead to unpredictable results; please remove it."
 
 function bind_text_changes(req_hdr) {
            /* handle textbox changes */
-            $("input.hdr_name, input.hdr_val", req_hdr).bind("change", function() {
+            $("input.hdr_name, input.hdr_val", req_hdr).change(function() {
                 var hdr_name = $(".hdr_name", req_hdr).val();
                 var hdr_val = $(".hdr_val:text", req_hdr).val();
                 $("input[type=hidden]", req_hdr).val(hdr_name + ":" + hdr_val);
@@ -340,7 +351,7 @@ function bind_text_changes(req_hdr) {
 }
 
 function init_req_hdrs() {
-    var req_hdrs = [%(js_req_hdrs)s];
+    var req_hdrs = [{{js_req_hdrs}}];
     for (i in req_hdrs) {
         var req_hdr = req_hdrs[i];
         add_req_hdr(req_hdr[0], req_hdr[1]);
@@ -350,11 +361,12 @@ function init_req_hdrs() {
 
 
 var known_req_hdrs = {
+    'Authorization': null,
     'Accept-Language': ['', 'en', 'en-us', 'en-uk', 'fr'],
     'Cache-Control': ['', 'no-cache', 'only-if-cached'],
     'Cookie': null,
     'Referer': null,
-    'User-Agent': [ "RED/%(version)s (http://redbot.org/about)",
+    'User-Agent': [ "RED/{{version}} (http://redbot.org/about)",
                     "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Win64; x64; Trident/4.0)",
                     "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; )",
                     "Mozilla/5.0 (X11; U; Linux x86_64; en-US) Gecko Firefox/3.0.8",
@@ -372,21 +384,21 @@ var red_req_hdrs = [
 ];
 
 </script>
-%(extra_js)s
+{{extra_js}}
 </head>
 
 <body>
 
 <div id="popup"></div>
 <form method="POST" id="save_form"
- action="?id=%(test_id)s&save=True%(descend)s">
+ action="?id={{test_id}}&save=True{{descend}}">
 </form>
 
 <div id="request">
-    <h1><a href="?"><span class="hilight"><abbr title="Resource Expert Droid">RED</abbr></span>bot</a>%(extra_title)s</h1>
+    <h1><a href="?"><span class="hilight"><abbr title="Resource Expert Droid">RED</abbr></span>bot</a>{{extra_title}}</h1>
 
-    <form method="GET" onLoad="init_req_hdrs();" id="request_form">
-        <input type="url" name="uri" value="%(html_uri)s" id="uri"/><br />
+    <form method="GET" id="request_form">
+        <input type="url" name="uri" value="{{html_uri}}" id="uri"/><br />
         <div id="req_hdrs"></div>
         <div class="add_req_hdr">
             <a href="#" id="add_req_hdr">add a header</a>
