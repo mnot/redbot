@@ -66,6 +66,19 @@ configure a cron job to regularly clean it. For example::
 
 If you don't want to allow users to store responses, set save_dir to 'None'.  
 
+Running under mod_python
+------------------------
+
+It's also possible to run RED as a mod_python handler. For example::
+
+  AddHandler mod_python .py
+  PythonHandler webui::mod_python_handler
+
+If you use mod_python, make sure your server has enough memory for the 
+number of Apache children you configure; each child should use anywhere from
+20M-35M of RAM.
+
+
 Support, Reporting Issues and Contributing
 ------------------------------------------
 

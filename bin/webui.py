@@ -226,73 +226,170 @@ class RedWebUi(object):
 
 
 # adapted from cgitb.Hook
-def except_handler(etype, evalue, etb):
-    """
-    Log uncaught exceptions and display a friendly error.
-    Assumes output to STDOUT (i.e., CGI only).
-    """
-    import cgitb
-    print cgitb.reset()
-    if logdir is None:
-            print error_template % """
+def except_handler_factory(out=None):
+    if not out:
+        out = sys.stdout.write
+        
+    def except_handler(etype=None, evalue=None, etb=None):
+        """
+        Log uncaught exceptions and display a friendly error.
+        """
+        if not etype or not evalue or not etb:
+            (etype, evalue, etb) = sys.exc_info()
+        import cgitb
+        out(cgitb.reset())
+        if logdir is None:
+                out(error_template % """
+    A problem has occurred, but it probably isn't your fault.
+    """)
+        else:
+            import stat
+            import traceback
+            try:
+                doc = cgitb.html((etype, evalue, etb), 5)
+            except:                         # just in case something goes wrong
+                doc = ''.join(traceback.format_exception(etype, evalue, etb))
+            try:
+                while etb.tb_next != None:
+                    etb = etb.tb_next
+                e_file = etb.tb_frame.f_code.co_filename
+                e_line = etb.tb_frame.f_lineno
+                ldir = os.path.join(logdir, os.path.split(e_file)[-1])
+                if not os.path.exists(ldir):
+                    os.umask(0000)
+                    os.makedirs(ldir)
+                (fd, path) = tempfile.mkstemp(
+                    prefix="%s_" % e_line, suffix='.html', dir=ldir
+                )
+                fh = os.fdopen(fd, 'w')
+                fh.write(doc)
+                fh.write("<h2>Outstanding Connections</h2>\n<pre>")
+                for conn in fetch.outstanding_requests:
+                    fh.write("*** %s - %s\n" % (conn.uri, hex(id(conn))))
+                    pprint.pprint(conn.__dict__, fh)
+                    if conn.client:
+                        pprint.pprint(conn.client.__dict__, fh)
+                    if conn.client._tcp_conn:
+                        pprint.pprint(conn.client._tcp_conn.__dict__, fh)
+                fh.write("</pre>\n")
+                fh.close()
+                os.chmod(path, stat.S_IROTH)
+                out(error_template % """\
 A problem has occurred, but it probably isn't your fault.
-"""
-    else:
-        import stat
-        import traceback
-        try:
-            doc = cgitb.html((etype, evalue, etb), 5)
-        except:                         # just in case something goes wrong
-            doc = ''.join(traceback.format_exception(etype, evalue, etb))
-        try:
-            while etb.tb_next != None:
-                etb = etb.tb_next
-            e_file = etb.tb_frame.f_code.co_filename
-            e_line = etb.tb_frame.f_lineno
-            ldir = os.path.join(logdir, os.path.split(e_file)[-1])
-            if not os.path.exists(ldir):
-                os.umask(0000)
-                os.makedirs(ldir)
-            (fd, path) = tempfile.mkstemp(
-                prefix="%s_" % e_line, suffix='.html', dir=ldir
-            )
-            fh = os.fdopen(fd, 'w')
-            fh.write(doc)
-            fh.write("<h2>Outstanding Connections</h2>\n<pre>")
-            for conn in fetch.outstanding_requests:
-                fh.write("*** %s - %s\n" % (conn.uri, hex(id(conn))))
-                pprint.pprint(conn.__dict__, fh)
-                if conn.client:
-                    pprint.pprint(conn.client.__dict__, fh)
-                if conn.client._tcp_conn:
-                    pprint.pprint(conn.client._tcp_conn.__dict__, fh)
-            fh.write("</pre>\n")
-            fh.close()
-            os.chmod(path, stat.S_IROTH)
-            print error_template % """
-A problem has occurred, but it probably isn't your fault.
-RED has remembered it, and we'll try to fix it soon."""
-        except:
-            print error_template % """\
+RED has remembered it, and we'll try to fix it soon.""")
+            except:
+                out(error_template % """\
 A problem has occurred, but it probably isn't your fault.
 RED tried to save it, but it couldn't! Oops.<br>
 Please e-mail the information below to
 <a href='mailto:red@redbot.org'>red@redbot.org</a>
-and we'll look into it."""
-            print "<h3>Original Error</h3>"
-            print "<pre>"
-            print ''.join(traceback.format_exception(etype, evalue, etb))
-            print "</pre>"
-            print "<h3>Write Error</h3>"
-            print "<pre>"
-            etype, value, tb = sys.exc_info()
-            print ''.join(traceback.format_exception(etype, value, tb))
-            print "</pre>"
-    sys.stdout.flush()
+and we'll look into it.""")
+                out("<h3>Original Error</h3>")
+                out("<pre>")
+                out(''.join(traceback.format_exception(etype, evalue, etb)))
+                out("</pre>")
+                out("<h3>Write Error</h3>")
+                out("<pre>")
+                etype, value, tb = sys.exc_info()
+                out(''.join(traceback.format_exception(etype, value, tb)))
+                out("</pre>")
+        sys.stdout.flush()
+        
+    return except_handler
+
+
+
+def mod_python_handler(r):
+    """Run RED as a mod_python handler."""
+    from mod_python import apache
+    status_lookup = {
+     100: apache.HTTP_CONTINUE                     ,
+     101: apache.HTTP_SWITCHING_PROTOCOLS          ,
+     102: apache.HTTP_PROCESSING                   ,
+     200: apache.HTTP_OK                           ,
+     201: apache.HTTP_CREATED                      ,
+     202: apache.HTTP_ACCEPTED                     ,
+     200: apache.HTTP_OK                           ,
+     200: apache.HTTP_OK                           ,
+     201: apache.HTTP_CREATED                      ,
+     202: apache.HTTP_ACCEPTED                     ,
+     203: apache.HTTP_NON_AUTHORITATIVE            ,
+     204: apache.HTTP_NO_CONTENT                   ,
+     205: apache.HTTP_RESET_CONTENT                ,
+     206: apache.HTTP_PARTIAL_CONTENT              ,
+     207: apache.HTTP_MULTI_STATUS                 ,
+     300: apache.HTTP_MULTIPLE_CHOICES             ,
+     301: apache.HTTP_MOVED_PERMANENTLY            ,
+     302: apache.HTTP_MOVED_TEMPORARILY            ,
+     303: apache.HTTP_SEE_OTHER                    ,
+     304: apache.HTTP_NOT_MODIFIED                 ,
+     305: apache.HTTP_USE_PROXY                    ,
+     307: apache.HTTP_TEMPORARY_REDIRECT           ,
+     400: apache.HTTP_BAD_REQUEST                  ,
+     401: apache.HTTP_UNAUTHORIZED                 ,
+     402: apache.HTTP_PAYMENT_REQUIRED             ,
+     403: apache.HTTP_FORBIDDEN                    ,
+     404: apache.HTTP_NOT_FOUND                    ,
+     405: apache.HTTP_METHOD_NOT_ALLOWED           ,
+     406: apache.HTTP_NOT_ACCEPTABLE               ,
+     407: apache.HTTP_PROXY_AUTHENTICATION_REQUIRED,
+     408: apache.HTTP_REQUEST_TIME_OUT             ,
+     409: apache.HTTP_CONFLICT                     ,
+     410: apache.HTTP_GONE                         ,
+     411: apache.HTTP_LENGTH_REQUIRED              ,
+     412: apache.HTTP_PRECONDITION_FAILED          ,
+     413: apache.HTTP_REQUEST_ENTITY_TOO_LARGE     ,
+     414: apache.HTTP_REQUEST_URI_TOO_LARGE        ,
+     415: apache.HTTP_UNSUPPORTED_MEDIA_TYPE       ,
+     416: apache.HTTP_RANGE_NOT_SATISFIABLE        ,
+     417: apache.HTTP_EXPECTATION_FAILED           ,
+     422: apache.HTTP_UNPROCESSABLE_ENTITY         ,
+     423: apache.HTTP_LOCKED                       ,
+     424: apache.HTTP_FAILED_DEPENDENCY            ,
+     426: apache.HTTP_UPGRADE_REQUIRED             ,
+     500: apache.HTTP_INTERNAL_SERVER_ERROR        ,
+     501: apache.HTTP_NOT_IMPLEMENTED              ,
+     502: apache.HTTP_BAD_GATEWAY                  ,
+     503: apache.HTTP_SERVICE_UNAVAILABLE          ,
+     504: apache.HTTP_GATEWAY_TIME_OUT             ,
+     505: apache.HTTP_VERSION_NOT_SUPPORTED        ,
+     506: apache.HTTP_VARIANT_ALSO_VARIES          ,
+     507: apache.HTTP_INSUFFICIENT_STORAGE         ,
+     510: apache.HTTP_NOT_EXTENDED                 ,
+    }    
+    
+    qs = cgi.parse_qs(r.args or "")
+    test_uri = qs.get('uri', [''])[0].decode(charset, 'replace')
+    r.content_type = "text/html"
+    req_hdrs = [tuple(rh.split(":", 1))
+                for rh in qs.get("req_hdr", [])
+                if rh.find(":") > 0
+               ]
+    format = qs.get('format', ['html'])[0]
+    file_id = qs.get('id', [None])[0] 
+    descend = qs.get('descend', [False])[0]
+    if r.method == "POST":
+        save = qs.get('save', [False])[0]
+    else:
+        save = False
+    def output_hdrs (status, hdrs):
+        for hdr in hdrs:
+            r.status = status_lookup.get(
+                status, 
+                apache.HTTP_INTERNAL_SERVER_ERROR
+            )
+            r.headers_out[hdr[0]] = hdr[1]
+    try:
+        RedWebUi(file_id, test_uri, req_hdrs, r.unparsed_uri, format, 
+            output_hdrs, r.write, descend, save)
+    except:
+        except_handler_factory(r.write)()
+    return apache.OK
+    
 
 def cgi_main():
     """Run RED as a CGI Script."""
-    sys.excepthook = except_handler
+    sys.excepthook = except_handler_factory()
     sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0) 
     form = cgi.FieldStorage()
     test_uri = form.getfirst("uri", "").decode(charset, 'replace')
