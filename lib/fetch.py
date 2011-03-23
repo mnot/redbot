@@ -100,7 +100,7 @@ class RedFetcher(object):
         self.res_body_sample = [] # [(offset, chunk)]{,4} Bytes, not unicode
         self.res_body_decode_len = 0
         self.res_complete = False
-        self.res_error = None # any parse errors encountered; see nbhttp.error
+        self.res_error = {} # any parse errors encountered; see nbhttp.error
         # interesting things about the response; set by a variety of things
         self.messages = [] # messages (see above)
         self.client = None
