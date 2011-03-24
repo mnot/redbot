@@ -48,6 +48,7 @@ from redbot.response_analyse import f_num
 
 outstanding_requests = [] # requests in process
 total_requests = 0
+control_loop = True
 
 class RedHttpClient(nbhttp.Client):
     connect_timeout = 8
@@ -100,7 +101,7 @@ class RedFetcher(object):
         self.res_body_sample = [] # [(offset, chunk)]{,4} Bytes, not unicode
         self.res_body_decode_len = 0
         self.res_complete = False
-        self.res_error = {} # any parse errors encountered; see nbhttp.error
+        self.res_error = None # any parse errors encountered; see nbhttp.error
         # interesting things about the response; set by a variety of things
         self.messages = [] # messages (see above)
         self.client = None
@@ -117,7 +118,7 @@ class RedFetcher(object):
         self._makeRequest()
 
     def __getstate__(self):
-        state = self.__dict__
+        state = self.__dict__.copy()
         del state['status_cb']
         del state['body_procs']
         del state['_md5_processor']
@@ -155,7 +156,7 @@ class RedFetcher(object):
         if self.req_body != None:
             req_body(self.req_body)
         req_done(None)
-        if len(outstanding_requests) == 1:
+        if control_loop and len(outstanding_requests) == 1:
             nbhttp.run()
 
     def _response_start(self, version, status, phrase, 
@@ -288,7 +289,7 @@ class RedFetcher(object):
             self.status_cb("%s outstanding requests" % \
                 len(outstanding_requests)
             )
-        if len(outstanding_requests) == 0:
+        if control_loop and len(outstanding_requests) == 0:
             nbhttp.stop()
 
     @staticmethod
