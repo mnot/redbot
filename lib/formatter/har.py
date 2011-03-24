@@ -80,7 +80,9 @@ class HarFormatter(Formatter):
         page_id = self.add_page(ired)
         self.add_entry(ired, page_id)
         for linked_red in [d[0] for d in ired.link_droids]:
-            self.add_entry(linked_red, page_id)
+            # filter out incomplete responses
+            if linked_red.res_complete:
+                self.add_entry(linked_red, page_id)
         self.output(json.dumps(self.har, indent=4))
         
     def add_entry(self, red, page_ref=None):
