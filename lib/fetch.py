@@ -289,8 +289,6 @@ class RedFetcher(object):
             self.status_cb("%s outstanding requests" % \
                 len(outstanding_requests)
             )
-        if control_loop and len(outstanding_requests) == 0:
-            nbhttp.stop()
 
     @staticmethod
     def _read_gzip_header(content):

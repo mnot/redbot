@@ -236,6 +236,7 @@ class RedWebUi(object):
             req_hdrs=self.req_hdrs,
             status_cb=formatter.status,
             body_procs=[formatter.feed],
+            done_cb=self.body_done,
             descend=self.descend
         )
         formatter.finish_output(ired)
@@ -246,7 +247,6 @@ class RedWebUi(object):
                 tmp_file.close()
             except (IOError, zlib.error, pickle.PickleError):
                 pass # we don't cry if we can't store it.
-        self.body_done()
 
     def show_default(self):
         """Show the default page."""
@@ -436,7 +436,7 @@ def mod_python_handler(r):
         )
         for hdr in hdrs:
             r.headers_out[hdr[0]] = hdr[1]
-        return r.write, nbhttp.dummy
+        return r.write, nbhttp.stop
     query_string = cgi.parse_qs(r.args or "")
     try:
         RedWebUi(r.unparsed_uri, r.method, query_string, output_hdrs)
@@ -460,7 +460,7 @@ def cgi_main():
         for k, v in res_hdrs:
             sys.stdout.write("%s: %s\n" % (k, v))
         sys.stdout.write("\n")
-        return sys.stdout.write, nbhttp.dummy
+        return sys.stdout.write, nbhttp.stop
     try:
         RedWebUi(base_uri, method, query_string, output_hdrs)
     except:

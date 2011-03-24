@@ -94,6 +94,11 @@ class ResourceExpertDroid(RedFetcher):
         if len(uri) > max_uri:
             self.setMessage('uri', rs.URI_TOO_LONG, uri_len=f_num(len(uri)))
 
+    def __getstate__(self):
+        state = RedFetcher.__getstate__(self)
+        del state['done_cb']
+        return state
+
     def done(self):
         """
         Response is available; perform further processing that's specific to
@@ -350,7 +355,7 @@ class InspectingResourceExpertDroid(ResourceExpertDroid):
     self.link_droids with their REDs.
     """
     def __init__(self, uri, method="GET", req_hdrs=None, req_body=None,
-                status_cb=None, body_procs=None, descend=False):
+                status_cb=None, body_procs=None, done_cb=None, descend=False):
         self.link_parser = link_parse.HTMLLinkParser(
             uri, self.process_link, status_cb
         )
@@ -359,8 +364,17 @@ class InspectingResourceExpertDroid(ResourceExpertDroid):
         self.links = {}          # {type: set(link...)}
         self.link_count = 0
         self.link_droids = []    # list of linked REDs (if descend=True)        
+        self.link_droids_done = 0
         ResourceExpertDroid.__init__(self, uri, method, req_hdrs, req_body,
-                status_cb, body_procs)
+                status_cb, body_procs, done_cb)
+
+    def done(self):
+        if self.link_droids_done == len(self.link_droids):
+            ResourceExpertDroid.done(self)
+
+    def link_droid_done(self):
+        self.link_droids_done += 1
+        self.done()
 
     def process_link(self, link, tag, title):
         "Handle a link from content"
@@ -372,7 +386,8 @@ class InspectingResourceExpertDroid(ResourceExpertDroid):
                 ResourceExpertDroid(
                     urljoin(self.link_parser.base, link),
                     req_hdrs=self.orig_req_hdrs,
-                    status_cb=self.status_cb
+                    status_cb=self.status_cb,
+                    done_cb=self.link_droid_done
                 ),
                 tag
             ))
