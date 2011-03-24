@@ -314,7 +314,7 @@ def except_handler_factory(out=None):
             import traceback
             try:
                 doc = cgitb.html((etype, evalue, etb), 5)
-            except:                         # just in case something goes wrong
+            except:                  # just in case something goes wrong
                 doc = ''.join(traceback.format_exception(etype, evalue, etb))
             if debug:
                 out(doc)
