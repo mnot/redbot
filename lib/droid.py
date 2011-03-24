@@ -68,9 +68,10 @@ class ResourceExpertDroid(RedFetcher):
     populated, as well as its messages; see that class for details.
     """
     def __init__(self, uri, method="GET", req_hdrs=None, req_body=None,
-                status_cb=None, body_procs=None):
+                status_cb=None, body_procs=None, done_cb=None):
         self.orig_req_hdrs = req_hdrs or []
         self.status_cb = status_cb
+        self.done_cb = done_cb
         
         # Extra metadata that the "main" RED will be adorned with 
         self.age = None
@@ -104,6 +105,8 @@ class ResourceExpertDroid(RedFetcher):
             RangeRequest(self)
             ETagValidate(self)
             LmValidate(self)
+        if self.done_cb:
+            self.done_cb()
         
     def checkCaching(self):
         "Examine HTTP caching characteristics."

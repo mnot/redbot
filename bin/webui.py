@@ -466,6 +466,7 @@ def cgi_main():
     except:
         except_handler_factory(sys.stdout.write)()
 
+
 # FIXME: standalone server not yet working
 def standalone_main(port, static_dir):
     """Run RED as a standalone Web server."""
@@ -523,8 +524,6 @@ def standalone_main(port, static_dir):
     except KeyboardInterrupt:
         sys.stderr.write("Stopping...\n")
         nbhttp.stop()
-    except:
-        except_handler_factory(sys.stderr.write)()
     # FIXME: run/stop in red_fetcher
     # FIXME: logging
 
