@@ -72,6 +72,9 @@ html.static_root = 'static'
 # directory containing files to append to the front page; None to disable
 html.extra_dir = "extra"
 
+# show errors in the browser
+debug = True
+
 ### End configuration ######################################################
 
 
@@ -151,12 +154,11 @@ class RedWebUi(object):
                 error_template % "Sorry, I couldn't save that."
             )
             self.body_done()
-                
+
     def load_saved_test(self):
         """Load a saved test by test_id."""
         try:
-            test_id = os.path.basename(self.test_id) # FIXME
-            fd = gzip.open(os.path.join(save_dir, test_id))
+            fd = gzip.open(os.path.join(save_dir, os.path.basename(test_id)))
             mtime = os.fstat(fd.fileno()).st_mtime
         except (OSError, IOError, zlib.error):
             self.output_body, self.body_done = self.output_hdrs(
@@ -209,7 +211,7 @@ class RedWebUi(object):
         if save_dir and os.path.exists(save_dir):
             try:
                 fd, path = tempfile.mkstemp(prefix='', dir=save_dir)
-                test_id = os.path.split(path)[1] # FIXME
+                test_id = os.path.split(path)[1]
             except (OSError, IOError):
                 # Don't try to store it. 
                 test_id = None
@@ -217,8 +219,8 @@ class RedWebUi(object):
             test_id = None
         formatter = find_formatter(format, 'html', self.descend)(
             self.base_uri, self.test_uri, self.req_hdrs, lang,
-            self.output, allow_save=self.test_id, is_saved=False,
-            test_id=self.test_id, descend=self.descend
+            self.output, allow_save=test_id, is_saved=False,
+            test_id=test_id, descend=self.descend
         )
         self.output_body, self.body_done = self.output_hdrs(
             "200 OK", [
@@ -235,7 +237,7 @@ class RedWebUi(object):
             descend=self.descend
         )
         formatter.finish_output(ired)
-        if self.test_id:
+        if test_id:
             try:
                 tmp_file = gzip.open(path, 'w')
                 pickle.dump(ired, tmp_file)
@@ -312,6 +314,9 @@ def except_handler_factory(out=None):
                 doc = cgitb.html((etype, evalue, etb), 5)
             except:                         # just in case something goes wrong
                 doc = ''.join(traceback.format_exception(etype, evalue, etb))
+            if debug:
+                out(doc)
+                return
             try:
                 while etb.tb_next != None:
                     etb = etb.tb_next
@@ -458,7 +463,7 @@ def cgi_main():
     RedWebUi(base_uri, method, query_string, output_hdrs)
 
 
-# FIXME: standalone server needs to be updated.
+# FIXME: standalone server not yet working
 def standalone_main(port, static_dir):
     """Run RED as a standalone Web server."""
     
