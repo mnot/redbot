@@ -193,7 +193,7 @@ class RedWebUi(object):
             return
         finally:
             fd.close()
-        formatter = find_formatter(format, 'html', self.descend)(
+        formatter = find_formatter(self.format, 'html', self.descend)(
             self.base_uri, ired.uri, ired.orig_req_hdrs, lang,
             self.output, allow_save=(not is_saved), is_saved=True,
             test_id=self.test_id
@@ -219,7 +219,7 @@ class RedWebUi(object):
                 test_id = None
         else:
             test_id = None
-        formatter = find_formatter(format, 'html', self.descend)(
+        formatter = find_formatter(self.format, 'html', self.descend)(
             self.base_uri, self.test_uri, self.req_hdrs, lang,
             self.output, allow_save=test_id, is_saved=False,
             test_id=test_id, descend=self.descend
