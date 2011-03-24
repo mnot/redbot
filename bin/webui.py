@@ -73,7 +73,7 @@ html.static_root = 'static'
 html.extra_dir = "extra"
 
 # show errors in the browser
-debug = True
+debug = False
 
 ### End configuration ######################################################
 
@@ -158,7 +158,9 @@ class RedWebUi(object):
     def load_saved_test(self):
         """Load a saved test by test_id."""
         try:
-            fd = gzip.open(os.path.join(save_dir, os.path.basename(test_id)))
+            fd = gzip.open(os.path.join(
+                save_dir, os.path.basename(self.test_id)
+            ))
             mtime = os.fstat(fd.fileno()).st_mtime
         except (OSError, IOError, zlib.error):
             self.output_body, self.body_done = self.output_hdrs(
