@@ -302,7 +302,7 @@ def except_handler_factory(out=None):
         Log uncaught exceptions and display a friendly error.
         """
         if not etype or not evalue or not etb:
-            (etype, evalue, etb) = sys.exc_info()
+            etype, evalue, etb = sys.exc_info()
         import cgitb
         out(cgitb.reset())
         if logdir is None:
@@ -363,7 +363,6 @@ and we'll look into it.""")
                 etype, value, tb = sys.exc_info()
                 out(''.join(traceback.format_exception(etype, value, tb)))
                 out("</pre>")
-        sys.stdout.flush()
         
     return except_handler
 
@@ -447,7 +446,6 @@ def mod_python_handler(r):
 
 def cgi_main():
     """Run RED as a CGI Script."""
-    sys.excepthook = except_handler_factory()
     sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0) 
     base_uri = "http://%s%s%s" % ( # FIXME: only supports HTTP
       os.environ.get('HTTP_HOST'),
@@ -462,8 +460,10 @@ def cgi_main():
             sys.stdout.write("%s: %s\n" % (k, v))
         sys.stdout.write("\n")
         return sys.stdout.write, nbhttp.dummy
-    RedWebUi(base_uri, method, query_string, output_hdrs)
-
+    try:
+        RedWebUi(base_uri, method, query_string, output_hdrs)
+    except:
+        except_handler_factory(sys.stdout.write)()
 
 # FIXME: standalone server not yet working
 def standalone_main(port, static_dir):
