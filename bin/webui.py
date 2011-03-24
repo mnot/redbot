@@ -429,11 +429,12 @@ def mod_python_handler(r):
     
     r.content_type = "text/html"
     def output_hdrs (status, hdrs):
+        code, phrase = status.split(None, 1)
+        r.status = status_lookup.get(
+            int(code), 
+            apache.HTTP_INTERNAL_SERVER_ERROR
+        )
         for hdr in hdrs:
-            r.status = status_lookup.get(
-                int(status), 
-                apache.HTTP_INTERNAL_SERVER_ERROR
-            )
             r.headers_out[hdr[0]] = hdr[1]
         return r.write, nbhttp.dummy
     query_string = cgi.parse_qs(r.args or "")
