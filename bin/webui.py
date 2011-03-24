@@ -96,8 +96,9 @@ class RedWebUi(object):
     If descend is true, spider the links and present a summary.
     """
     def __init__(self, test_id, test_uri, req_hdrs, base_uri, 
-        format, output_hdrs, output_body, descend=False, save=False):
-        self.output_body = output_body
+        format, output_hdrs, descend=False, save=False):
+        self.output_body = None
+        self.body_done = None
         self.start = time.time()
         timeout = nbhttp.schedule(max_runtime, self.timeoutError)
         if save and save_dir and test_id:
@@ -112,23 +113,29 @@ class RedWebUi(object):
                 location = "?id=%s" % test_id
                 if descend:
                     location = "%s&descend=True" % location
-                output_hdrs("303 See Other", [
+                self.output_body, self.body_done = output_hdrs(
+                    "303 See Other", [
                     ("Location", location)
                 ])
-                output_body("Redirecting...")
+                self.output_body("Redirecting...")
             except (OSError, IOError):
-                output_hdrs("500 Internal Server Error", [
+                self.output_body, self.body_done = output_hdrs(
+                    "500 Internal Server Error", [
                     ("Content-Type", "text/html; charset=%s" % charset), 
                 ])
                 # TODO: better error message (through formatter?)
-                output_body(error_template % "Sorry, I couldn't save that.")
+                self.output_body(
+                    error_template % "Sorry, I couldn't save that."
+                )
+                self.body_done()
         elif test_id:
             try:
                 test_id = os.path.basename(test_id)
                 fd = gzip.open(os.path.join(save_dir, test_id))
                 mtime = os.fstat(fd.fileno()).st_mtime
             except (OSError, IOError, zlib.error):
-                output_hdrs("404 Not Found", [
+                self.output_body, self.body_done = output_hdrs(
+                    "404 Not Found", [
                     ("Content-Type", "text/html; charset=%s" % charset), 
                     ("Cache-Control", "max-age=600, must-revalidate")
                 ])
@@ -136,13 +143,15 @@ class RedWebUi(object):
                 self.output_body(error_template % 
                     "I'm sorry, I can't find that saved response."
                 )
+                self.body_done()
                 timeout.delete()
                 return
             is_saved = mtime > nbhttp.now()
             try:
                 ired = pickle.load(fd)
             except (pickle.PickleError, EOFError):
-                output_hdrs("500 Internal Server Error", [
+                self.output_body, self.body_done = output_hdrs(
+                    "500 Internal Server Error", [
                     ("Content-Type", "text/html; charset=%s" % charset), 
                     ("Cache-Control", "max-age=600, must-revalidate")
                 ])
@@ -150,6 +159,7 @@ class RedWebUi(object):
                 self.output_body(error_template % 
                     "I'm sorry, I had a problem reading that response."
                 )
+                self.body_done()
                 timeout.delete()
                 return
             finally:
@@ -158,13 +168,15 @@ class RedWebUi(object):
                 base_uri, ired.uri, ired.orig_req_hdrs, lang, self.output,
                 allow_save=(not is_saved), is_saved=True, test_id=test_id
             )
-            output_hdrs("200 OK", [
+            self.output_body, self.body_done = output_hdrs(
+                "200 OK", [
                 ("Content-Type", "%s; charset=%s" % (
                     formatter.media_type, charset)), 
                 ("Cache-Control", "max-age=3600, must-revalidate")
             ])
             formatter.start_output()
             formatter.finish_output(ired)
+            self.body_done()
         elif test_uri:
             if save_dir and os.path.exists(save_dir):
                 try:
@@ -180,7 +192,8 @@ class RedWebUi(object):
                 allow_save=test_id, is_saved=False, test_id=test_id,
                 descend=descend
             )
-            output_hdrs("200 OK", [
+            self.output_body, self.body_done = output_hdrs(
+                "200 OK", [
                 ("Content-Type", "%s; charset=%s" % (
                     formatter.media_type, charset)), 
                 ("Cache-Control", "max-age=60, must-revalidate")
@@ -201,10 +214,12 @@ class RedWebUi(object):
                     tmp_file.close()
                 except (IOError, zlib.error, pickle.PickleError):
                     pass # we don't cry if we can't store it.
+            self.body_done()
         else:  # no test_uri
             formatter = html.BaseHtmlFormatter(
                 base_uri, test_uri, req_hdrs, lang, self.output)
-            output_hdrs("200 OK", [
+            self.output_body, self.body_done = output_hdrs(
+                "200 OK", [
                 ("Content-Type", "%s; charset=%s" % (
                     formatter.media_type, charset)
                 ), 
@@ -212,6 +227,7 @@ class RedWebUi(object):
             ])
             formatter.start_output()
             formatter.finish_output(None)
+            self.body_done()
         timeout.delete()
 
     def output(self, chunk):
@@ -220,6 +236,7 @@ class RedWebUi(object):
     def timeoutError(self):
         """ Max runtime reached."""
         self.output(error_template % ("RED timeout."))
+        self.body_done()
         nbhttp.stop() # FIXME: not appropriate for standalone server
 
 
@@ -379,9 +396,10 @@ def mod_python_handler(r):
                 apache.HTTP_INTERNAL_SERVER_ERROR
             )
             r.headers_out[hdr[0]] = hdr[1]
+        return r.write, nbhttp.dummy
     try:
         RedWebUi(file_id, test_uri, req_hdrs, r.unparsed_uri, format, 
-            output_hdrs, r.write, descend, save)
+            output_hdrs, descend, save)
     except:
         except_handler_factory(r.write)()
     return apache.OK
@@ -414,24 +432,29 @@ def cgi_main():
         for k, v in res_hdrs:
             sys.stdout.write("%s: %s\n" % (k, v))
         sys.stdout.write("\n")
-    def output_body(o):
-        sys.stdout.write(o)
+        return sys.stdout.write, nbhttp.dummy
     RedWebUi(file_id, test_uri, req_hdrs, base_uri, format, 
-        output_hdrs, output_body, descend, save)
+        output_hdrs, descend, save)
+
 
 # FIXME: standalone server needs to be updated.
 def standalone_main(port, static_dir):
     """Run RED as a standalone Web server."""
     static_files = {}
-    for file in os.listdir(static_dir):
-        sys.stderr.write("Loading %s...\n" % file)
-        try:
-            # FIXME: need to load icons
-            static_files["/static/%s" % file] = open(
-                os.path.join(static_dir, file)
-            ).read()
-        except IOError:
-            sys.stderr.write("failed.\n")
+    def static_walker(arg, dirname, names):
+        for name in names:
+            try:
+                path = os.path.join(dirname, name)
+                if os.path.isdir(path):
+                    continue
+                uri = os.path.relpath(path, static_dir)
+                static_files["/static/%s" % uri] = open(path).read()
+            except IOError:
+                sys.stderr.write(
+                  "* Problem loading %s\n" % path
+                )
+    os.path.walk(static_dir, static_walker, "")
+    sys.stderr.write("* Static files loaded.\n")
     def red_handler(method, uri, req_hdrs, res_start, req_pause):
         p_uri = urlsplit(uri)
         if static_files.has_key(p_uri.path):
@@ -439,23 +462,35 @@ def standalone_main(port, static_dir):
             res_body(static_files[p_uri.path])
             res_done(None)
         elif p_uri.path == "/":
-            query = cgi.parse_qs(p_uri.query)
-            test_uri = query.get('uri', [""])[0]
-            test_hdrs = [] #FIXME
-            base_uri = "/"
-            descend = query.has_key('descend')
-            res_hdrs = [('Content-Type', 'text/html; charset=utf-8')] 
-            #FIXME: need to send proper content-type back, caching headers
-            res_body, res_done = res_start(
-                "200", "OK", res_hdrs, nbhttp.dummy
-            )
+            qs = cgi.parse_qs(p_uri.query)
+            test_uri = qs.get('uri', [''])[0].decode(charset, 'replace')
+            req_hdrs = [tuple(rh.split(":", 1))
+                        for rh in qs.get("req_hdr", [])
+                        if rh.find(":") > 0
+                       ]
+            format = qs.get('format', ['html'])[0]
+            file_id = qs.get('id', [None])[0] 
+            descend = qs.get('descend', [False])[0]
+            if method == "POST":
+                save = qs.get('save', [False])[0]
+            else:
+                save = False
+
+            # logging
             sys.stderr.write("%s %s %s\n" % (
-                str(descend), test_uri, test_hdrs
+                str(descend), test_uri, req_hdrs
             ))
-            RedWebUi(test_uri, test_hdrs, base_uri, 
-                res_body, output_hdr, descend
-            )
-            res_done(None)
+            def dummy_start (status, hdrs):
+                code, phrase = status.split(None, 1)
+                return res_start(code, phrase, hdrs, nbhttp.dummy)
+        
+            try:
+                RedWebUi(file_id, test_uri, req_hdrs, '/', format, 
+                    dummy_start, descend, save)
+            except:
+                except_handler_factory(sys.stdout.write)()
+                nbhttp.stop()
+                sys.exit(1)
         else:
             res_body, res_done = res_start(
                 "404", "Not Found", [], nbhttp.dummy
@@ -463,8 +498,12 @@ def standalone_main(port, static_dir):
             res_done(None)
         return nbhttp.dummy, nbhttp.dummy
     nbhttp.Server("", port, red_handler)
-    nbhttp.run() # FIXME: catch errors
-    # FIXME: catch interrupts
+    
+    try:
+        nbhttp.run() # FIXME: catch other errors
+    except KeyboardInterrupt:
+        sys.stderr.write("Stopping...\n")
+        nbhttp.stop()
     # FIXME: run/stop in red_fetcher
     # FIXME: logging
 
@@ -481,8 +520,10 @@ def standalone_monitor(port, static_dir):
 if __name__ == "__main__":
     try:
         # FIXME: usage
-        port = sys.argv[1]
+        port = int(sys.argv[1])
         static_dir = sys.argv[2]
-        standalone_monitor(int(port), static_dir)
+        sys.stderr.write("Starting standalone server...\n")
+        standalone_main(port, static_dir)
+#        standalone_monitor(int(port), static_dir)
     except IndexError:
         cgi_main()
