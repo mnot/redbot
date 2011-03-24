@@ -115,7 +115,6 @@ class RedFetcher(object):
         except UnicodeError, why:
             self.res_error = nbhttp.error.ERR_URL
             return
-        self._makeRequest()
 
     def __getstate__(self):
         state = self.__dict__.copy()
@@ -134,7 +133,7 @@ class RedFetcher(object):
         "Callback for when the response is complete and analysed."
         raise NotImplementedError
 
-    def _makeRequest(self):
+    def start(self):
         """
         Make an asynchronous HTTP request to uri, calling status_cb as it's
         updated and done_cb when it's done. Reason is used to explain what the
@@ -357,4 +356,7 @@ if "__main__" == __name__:
     class TestFetcher(RedFetcher):
         def done(self):
             print self.messages
-    TestFetcher(uri, req_hdrs=req_hdrs, status_cb=status_p, req_type='test')
+    tf = TestFetcher(
+        uri, req_hdrs=req_hdrs, status_cb=status_p, req_type='test'
+    )
+    tf.start()

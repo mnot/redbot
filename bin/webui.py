@@ -239,6 +239,7 @@ class RedWebUi(object):
             done_cb=self.body_done,
             descend=self.descend
         )
+        ired.start()
         formatter.finish_output(ired)
         if test_id:
             try:

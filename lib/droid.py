@@ -391,6 +391,7 @@ class InspectingResourceExpertDroid(ResourceExpertDroid):
                 ),
                 tag
             ))
+            self.link_droids[-1][0].start()
         self.links[tag].add(link)
 
 
@@ -409,6 +410,7 @@ class ConnegCheck(RedFetcher):
                         h[0].lower() != 'accept-encoding']
             RedFetcher.__init__(self, red.uri, red.method, req_hdrs,
                                 red.req_body, red.status_cb, [], "conneg")
+            self.start()
         else:
             self.red.gzip_support = False
 
@@ -479,6 +481,7 @@ class RangeRequest(RedFetcher):
             RedFetcher.__init__(self, red.uri, red.method, 
                 req_hdrs, red.req_body, red.status_cb, [], "range"
             )
+            self.start()            
         else:
             self.red.partial_support = False
 
@@ -550,6 +553,7 @@ class ETagValidate(RedFetcher):
             RedFetcher.__init__(self, red.uri, red.method, req_hdrs,
                 red.req_body, red.status_cb, [], "ETag validation"
             )
+            self.start()
         else:
             self.red.inm_support = False
 
@@ -586,6 +590,7 @@ class LmValidate(RedFetcher):
             RedFetcher.__init__(self, red.uri, red.method, req_hdrs,
                 red.req_body, red.status_cb, [], "LM validation"
             )
+            self.start()
         else:
             self.red.ims_support = False
 
@@ -617,4 +622,5 @@ if "__main__" == __name__:
     def status_p(msg):
         print msg
     red = InspectingResourceExpertDroid(uri, status_cb=status_p)
+    red.start()
     print red.messages
