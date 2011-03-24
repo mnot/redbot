@@ -487,6 +487,9 @@ def standalone_main(port, static_dir):
     os.path.walk(static_dir, static_walker, "")
     sys.stderr.write("* Static files loaded.\n")
 
+    # Don't let the fetcher mess with the nbhttp loop
+    fetch.control_loop = False
+
     def red_handler (method, uri, req_hdrs, res_start, req_pause):
         p_uri = urlsplit(uri)
         if static_files.has_key(p_uri.path):
@@ -496,14 +499,10 @@ def standalone_main(port, static_dir):
         elif p_uri.path == "/":
             query_string = cgi.parse_qs(p_uri.query)
 
-            # logging
-            sys.stderr.write("%s %s %s\n" % (
-                str(descend), test_uri, req_hdrs
-            ))
             def output_hdrs (status, hdrs):
                 code, phrase = status.split(None, 1)
                 return res_start(code, phrase, hdrs, nbhttp.dummy)
-        
+
             try:
                 RedWebUi('/', method, query_string, output_hdrs)
             except:
