@@ -49,7 +49,7 @@ from redbot.formatter import find_formatter, html
 
 ### Configuration ##########################################################
 
-# FIXME: make language configurable/dynamic
+# TODO: make language configurable/dynamic
 lang = "en"
 charset = "utf-8"
 
@@ -458,7 +458,7 @@ def mod_python_handler(r):
 def cgi_main():
     """Run RED as a CGI Script."""
     sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0) 
-    base_uri = "http://%s%s%s" % ( # FIXME: only supports HTTP
+    base_uri = "http://%s%s%s" % ( # TODO: only supports HTTP
       os.environ.get('HTTP_HOST'),
       os.environ.get('SCRIPT_NAME'),
       os.environ.get('PATH_INFO', '')

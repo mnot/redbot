@@ -50,7 +50,7 @@ from redbot.uri_validate import absolute_URI
 ### configuration
 cacheable_methods = ['GET']
 heuristic_cacheable_status = ['200', '203', '206', '300', '301', '410']
-max_uri = 8 * 1024 # FIXME: httpbis recommends 8000
+max_uri = 8 * 1024 # TODO: httpbis recommends 8000
 max_clock_skew = 5  # seconds
 
 
@@ -458,7 +458,7 @@ class ConnegCheck(RedFetcher):
         if (not "accept-encoding" in vary_headers) \
         and (not "*" in vary_headers):
             self.red.setMessage('header-vary header-%s', rs.CONNEG_NO_VARY)
-        # FIXME: verify that the status/body/hdrs are the same; 
+        # TODO: verify that the status/body/hdrs are the same; 
         # if it's different, alert
         no_conneg_vary_headers = self.parsed_hdrs.get('vary', [])
         if 'gzip' in self.parsed_hdrs.get('content-encoding', []) or \

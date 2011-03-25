@@ -253,7 +253,7 @@ class RedFetcher(object):
         elif err['desc'] == nbhttp.error.ERR_CONNECT['desc']:
             self.res_complete = False
         elif err['desc'] == nbhttp.error.ERR_LEN_REQ['desc']:
-            pass # FIXME: length required
+            pass # TODO: length required
         elif err['desc'] == nbhttp.error.ERR_URL['desc']:
             self.res_complete = False
         elif err['desc'] == nbhttp.error.ERR_READ_TIMEOUT['desc']:
