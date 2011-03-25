@@ -219,28 +219,37 @@ class RedWebUi(object):
                 test_id = None
         else:
             test_id = None
+
         formatter = find_formatter(self.format, 'html', self.descend)(
             self.base_uri, self.test_uri, self.req_hdrs, lang,
             self.output, allow_save=test_id, is_saved=False,
             test_id=test_id, descend=self.descend
         )
+
         self.output_body, self.body_done = self.output_hdrs(
             "200 OK", [
             ("Content-Type", "%s; charset=%s" % (
                 formatter.media_type, charset)), 
             ("Cache-Control", "max-age=60, must-revalidate")
         ])
-        formatter.start_output()
+        
+        def done():
+            formatter.finish_output()
+            self.body_done()
+        
         ired = droid.InspectingResourceExpertDroid(
             self.test_uri,
             req_hdrs=self.req_hdrs,
             status_cb=formatter.status,
             body_procs=[formatter.feed],
-            done_cb=self.body_done,
+            done_cb=done,
             descend=self.descend
         )
-        ired.start()
-        formatter.finish_output(ired)
+        import sys
+        formatter.set_red(ired)
+        formatter.start_output()
+        ired.run()
+        
         if test_id:
             try:
                 tmp_file = gzip.open(path, 'w')
@@ -263,7 +272,7 @@ class RedWebUi(object):
             ("Cache-Control", "max-age=300")
         ])
         formatter.start_output()
-        formatter.finish_output(None)
+        formatter.finish_output()
         self.body_done()
 
     def parse_qs(self, method, qs):
@@ -456,6 +465,7 @@ def cgi_main():
     )
     method = os.environ.get('REQUEST_METHOD')
     query_string = cgi.parse_qs(os.environ.get('QUERY_STRING', ""))
+    
     def output_hdrs(status, res_hdrs):
         sys.stdout.write("Status: %s\n" % status)
         for k, v in res_hdrs:
@@ -468,7 +478,7 @@ def cgi_main():
         except_handler_factory(sys.stdout.write)()
 
 
-# FIXME: standalone server not yet working
+# TODO: standalone server not yet working
 def standalone_main(port, static_dir):
     """Run RED as a standalone Web server."""
     
@@ -525,8 +535,8 @@ def standalone_main(port, static_dir):
     except KeyboardInterrupt:
         sys.stderr.write("Stopping...\n")
         nbhttp.stop()
-    # FIXME: run/stop in red_fetcher
-    # FIXME: logging
+    # TODO: logging
+    # TODO: extra resources
 
 def standalone_monitor (port, static_dir):
     """Fork a process as a standalone Web server and watch it."""

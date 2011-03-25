@@ -86,6 +86,13 @@ class Formatter(object):
         self.lang = lang
         self.output = output
         self.kw = kw
+        self.red = None
+
+    def set_red(self, red):
+        """
+        Set the RED to format.
+        """
+        self.red = red
         
     def feed(self, red, sample):
         """
@@ -105,7 +112,7 @@ class Formatter(object):
         """
         raise NotImplementedError        
         
-    def finish_output(self, red):
+    def finish_output(self):
         """
         Finalise output.
         """

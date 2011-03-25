@@ -39,7 +39,7 @@ from functools import partial
 from urlparse import urljoin
 
 import nbhttp
-import nbhttp.error as nberror
+import nbhttp.error as nberr
 import redbot.speak as rs
 from redbot import defns, droid, fetch
 from redbot.formatter import Formatter, html_header
@@ -86,7 +86,7 @@ class BaseHtmlFormatter(Formatter):
             'descend': descend
         })
 
-    def finish_output(self, red):
+    def finish_output(self):
         """
         Default to no input. 
         """
@@ -243,37 +243,37 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         self.sample_complete = True
 
     def feed(self, red, chunk):
-        self.store_body_sample(red, chunk)
+        self.store_body_sample(chunk)
         
-    def finish_output(self, red):
+    def finish_output(self):
         self.final_status()
-        if red.res_complete:
-            self.header_presenter = HeaderPresenter(red.uri)
+        if self.red.res_complete:
+            self.header_presenter = HeaderPresenter(self.red.uri)
             self.output(self.template % {
-                'response': self.format_response(red),
-                'options': self.format_options(red),
-                'messages': nl.join([self.format_category(cat, red) \
+                'response': self.format_response(self.red),
+                'options': self.format_options(self.red),
+                'messages': nl.join([self.format_category(cat, self.red) \
                     for cat in self.msg_categories]),
-                'body': self.format_body_sample(red),
+                'body': self.format_body_sample(self.red),
                 'footer': self.format_footer(),
                 'hidden_list': self.format_hidden_list(),
             })
         else:
-            if red.res_error == None:
+            if self.red.res_error == None:
                 pass # usually a global timeout...
-            elif red.res_error['desc'] == nberror.ERR_CONNECT['desc']:
+            elif self.red.res_error['desc'] == nberr.ERR_CONNECT['desc']:
                 self.output(self.error_template % \
                     "Could not connect to the server (%s)" % \
-                    red.res_error.get('detail', "unknown"))
-            elif red.res_error['desc'] == nberror.ERR_URL['desc']:
-                self.output(self.error_template % red.res_error.get(
+                    self.red.res_error.get('detail', "unknown"))
+            elif self.red.res_error['desc'] == nberr.ERR_URL['desc']:
+                self.output(self.error_template % self.red.res_error.get(
                     'detail', "RED can't fetch that URL."))
-            elif red.res_error['desc'] == nberror.ERR_READ_TIMEOUT['desc']:
-                self.output(self.error_template % red.res_error['desc'])
-            elif red.res_error['desc'] == nberror.ERR_HTTP_VERSION['desc']:
+            elif self.red.res_error['desc'] == nberr.ERR_READ_TIMEOUT['desc']:
+                self.output(self.error_template % self.red.res_error['desc'])
+            elif self.red.res_error['desc'] == nberr.ERR_HTTP_VERSION['desc']:
                 self.output(self.error_template % \
                     "<code>%s</code> isn't HTTP." % \
-                    e(red.res_error.get('detail', '')[:20]))
+                    e(self.red.res_error.get('detail', '')[:20]))
             else:
                 raise AssertionError, "Unknown incomplete response error."
 
@@ -427,16 +427,16 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
              or "<br>" for o in options]
         )
 
-    def store_body_sample(self, red, chunk):
+    def store_body_sample(self, chunk):
         """store the first self.sample_size bytes of the response"""
-        if not hasattr(red, "body_sample"):
-            red.body_sample = ""
+        if not hasattr(self.red, "body_sample"):
+            self.red.body_sample = ""
         if self.sample_seen + len(chunk) < self.body_sample_size:
-            red.body_sample += chunk
+            self.red.body_sample += chunk
             self.sample_seen += len(chunk)
         elif self.sample_seen < self.body_sample_size:
             max_chunk = self.body_sample_size - self.sample_seen
-            red.body_sample += chunk[:max_chunk]
+            self.red.body_sample += chunk[:max_chunk]
             self.sample_seen += len(chunk)
             self.sample_complete = False
         else:
@@ -526,12 +526,12 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         BaseHtmlFormatter.__init__(self, *args, **kw)
         self.problems = []
 
-    def finish_output(self, red):
+    def finish_output(self):
         self.final_status()
         self.output(self.template % {
-            'table': self.format_tables(red),
+            'table': self.format_tables(self.red),
             'problems': self.format_problems(),
-            'options': self.format_options(red),
+            'options': self.format_options(self.red),
             'footer': self.format_footer(),
             'hidden_list': self.format_hidden_list(),
         })

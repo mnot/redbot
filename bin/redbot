@@ -64,9 +64,13 @@ def main():
     url = args[0]
     red = droid.InspectingResourceExpertDroid(url, descend=options.descend)
 
-    formatter = find_formatter(options.output_format, 'txt', options.descend)(sys.argv[0], url, [], lang, output)
+    formatter = find_formatter(options.output_format, 'txt', options.descend)(
+        sys.argv[0], url, [], lang, output
+    )
+    formatter.set_red(red)
+    red.run()
     formatter.start_output()
-    formatter.finish_output(red)
+    formatter.finish_output()
 
 
 def output(out):

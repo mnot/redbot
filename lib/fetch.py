@@ -133,7 +133,7 @@ class RedFetcher(object):
         "Callback for when the response is complete and analysed."
         raise NotImplementedError
 
-    def start(self):
+    def run(self):
         """
         Make an asynchronous HTTP request to uri, calling status_cb as it's
         updated and done_cb when it's done. Reason is used to explain what the
@@ -155,6 +155,7 @@ class RedFetcher(object):
         if self.req_body != None:
             req_body(self.req_body)
         req_done(None)
+        # FIXME: this should be in the server container, not here
         if control_loop and len(outstanding_requests) == 1:
             nbhttp.run()
 
@@ -281,13 +282,8 @@ class RedFetcher(object):
                 else:
                     self.setMessage('header-content-md5', rs.CMD5_INCORRECT,
                                              calc_md5=c_md5_calc)
-        # analyse, check to see if we're done
         self.done()
         outstanding_requests.remove(self)
-        if self.status_cb:
-            self.status_cb("%s outstanding requests" % \
-                len(outstanding_requests)
-            )
 
     @staticmethod
     def _read_gzip_header(content):
@@ -359,4 +355,4 @@ if "__main__" == __name__:
     tf = TestFetcher(
         uri, req_hdrs=req_hdrs, status_cb=status_p, req_type='test'
     )
-    tf.start()
+    tf.run()

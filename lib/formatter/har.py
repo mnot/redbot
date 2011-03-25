@@ -75,11 +75,12 @@ class HarFormatter(Formatter):
     def feed(self, red, sample):
         pass
 
-    def finish_output(self, ired):
+    def finish_output(self):
         "Fill in the template with RED's results."
-        page_id = self.add_page(ired)
-        self.add_entry(ired, page_id)
-        for linked_red in [d[0] for d in ired.link_droids]:
+        page_id = self.add_page(self.red)
+        if self.red.res_complete:
+            self.add_entry(self.red, page_id)
+        for linked_red in [d[0] for d in self.red.link_droids]:
             # filter out incomplete responses
             if linked_red.res_complete:
                 self.add_entry(linked_red, page_id)

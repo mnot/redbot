@@ -50,7 +50,7 @@ from redbot.uri_validate import absolute_URI
 ### configuration
 cacheable_methods = ['GET']
 heuristic_cacheable_status = ['200', '203', '206', '300', '301', '410']
-max_uri = 8 * 1024
+max_uri = 8 * 1024 # FIXME: httpbis recommends 8000
 max_clock_skew = 5  # seconds
 
 
@@ -84,6 +84,7 @@ class ResourceExpertDroid(RedFetcher):
         self.ims_support = None
         self.gzip_support = None
         self.gzip_savings = 0
+        self.outstanding_tasks = 0
         rh = self.orig_req_hdrs + [('Accept-Encoding', 'gzip')]
         RedFetcher.__init__(self, uri, method, rh, req_body,
                             status_cb, body_procs, req_type=method)
@@ -104,13 +105,18 @@ class ResourceExpertDroid(RedFetcher):
         Response is available; perform further processing that's specific to
         the "main" response.
         """
-        if self.res_complete:            
+        if self.res_complete:
             self.checkCaching()
-            ConnegCheck(self)
-            RangeRequest(self)
-            ETagValidate(self)
-            LmValidate(self)
-        if self.done_cb:
+            tasks = [ConnegCheck, RangeRequest, ETagValidate, LmValidate]
+            self.outstanding_tasks = len(tasks)
+            for task in tasks:
+                task(self, self.done_deq)
+        else:
+            self.done_cb()
+        
+    def done_deq(self):
+        self.outstanding_tasks -= 1
+        if self.outstanding_tasks == 0 and self.done_cb:
             self.done_cb()
         
     def checkCaching(self):
@@ -365,16 +371,20 @@ class InspectingResourceExpertDroid(ResourceExpertDroid):
         self.link_count = 0
         self.link_droids = []    # list of linked REDs (if descend=True)        
         self.link_droids_done = 0
+        self.main_request_done = False
         ResourceExpertDroid.__init__(self, uri, method, req_hdrs, req_body,
                 status_cb, body_procs, done_cb)
 
     def done(self):
+        self.main_request_done = True
         if self.link_droids_done == len(self.link_droids):
-            ResourceExpertDroid.done(self)
+            ResourceExpertDroid.done(self)            
 
     def link_droid_done(self):
         self.link_droids_done += 1
-        self.done()
+        if self.main_request_done and \
+          self.link_droids_done == len(self.link_droids):
+            ResourceExpertDroid.done(self)        
 
     def process_link(self, link, tag, title):
         "Handle a link from content"
@@ -391,7 +401,7 @@ class InspectingResourceExpertDroid(ResourceExpertDroid):
                 ),
                 tag
             ))
-            self.link_droids[-1][0].start()
+            self.link_droids[-1][0].run()
         self.links[tag].add(link)
 
 
@@ -403,16 +413,23 @@ class ConnegCheck(RedFetcher):
     Note that this depends on the "main" request being sent with
     Accept-Encoding: gzip
     """
-    def __init__(self, red):
+    def __init__(self, red, done_cb):
         self.red = red
+        self.done_cb = done_cb
         if "gzip" in red.parsed_hdrs.get('content-encoding', []):
             req_hdrs = [h for h in red.orig_req_hdrs if
                         h[0].lower() != 'accept-encoding']
             RedFetcher.__init__(self, red.uri, red.method, req_hdrs,
                                 red.req_body, red.status_cb, [], "conneg")
-            self.start()
+            self.run()
         else:
             self.red.gzip_support = False
+            self.done_cb()
+
+    def __getstate__(self):
+        state = RedFetcher.__getstate__(self)
+        del state['done_cb']
+        return state
 
     def done(self):
         if self.res_body_len > 0:
@@ -457,12 +474,14 @@ class ConnegCheck(RedFetcher):
         == self.red.parsed_hdrs.get('etag', 2):
             self.red.setMessage('header-etag', rs.ETAG_DOESNT_CHANGE) 
             # TODO: weakness?
+        self.done_cb()
 
 
 class RangeRequest(RedFetcher):
     "Check for partial content support (if advertised)"
-    def __init__(self, red):
+    def __init__(self, red, done_cb):
         self.red = red
+        self.done_cb = done_cb
         if 'bytes' in red.parsed_hdrs.get('accept-ranges', []):
             if len(red.res_body_sample) == 0: return
             sample_num = random.randint(0, len(red.res_body_sample) - 1)
@@ -481,9 +500,15 @@ class RangeRequest(RedFetcher):
             RedFetcher.__init__(self, red.uri, red.method, 
                 req_hdrs, red.req_body, red.status_cb, [], "range"
             )
-            self.start()            
+            self.run()            
         else:
             self.red.partial_support = False
+            self.done_cb()
+
+    def __getstate__(self):
+        state = RedFetcher.__getstate__(self)
+        del state['done_cb']
+        return state
 
     def done(self):
         if self.res_status == '206':
@@ -533,12 +558,14 @@ class RangeRequest(RedFetcher):
             self.red.setMessage('header-accept-ranges', rs.RANGE_STATUS,
                                 range_status=self.res_status,
                                 enc_range_status=e(self.res_status))
+        self.done_cb()
 
 
 class ETagValidate(RedFetcher):
     "If an ETag is present, see if it will validate."
-    def __init__(self, red):
+    def __init__(self, red, done_cb):
         self.red = red
+        self.done_cb = done_cb
         if red.parsed_hdrs.has_key('etag'):
             weak, etag = red.parsed_hdrs['etag']
             if weak:
@@ -553,9 +580,15 @@ class ETagValidate(RedFetcher):
             RedFetcher.__init__(self, red.uri, red.method, req_hdrs,
                 red.req_body, red.status_cb, [], "ETag validation"
             )
-            self.start()
+            self.run()
         else:
             self.red.inm_support = False
+            self.done_cb()
+
+    def __getstate__(self):
+        state = RedFetcher.__getstate__(self)
+        del state['done_cb']
+        return state
 
     def done(self):
         if self.res_status == '304':
@@ -574,11 +607,13 @@ class ETagValidate(RedFetcher):
                                 enc_inm_status=e(self.res_status)
                                 )
         # TODO: check entity headers
+        self.done_cb()
 
 class LmValidate(RedFetcher):
     "If Last-Modified is present, see if it will validate."
-    def __init__(self, red):
+    def __init__(self, red, done_cb):
         self.red = red
+        self.done_cb = done_cb
         if red.parsed_hdrs.has_key('last-modified'):
             date_str = time.strftime(
                 '%a, %d %b %Y %H:%M:%S GMT',
@@ -590,9 +625,15 @@ class LmValidate(RedFetcher):
             RedFetcher.__init__(self, red.uri, red.method, req_hdrs,
                 red.req_body, red.status_cb, [], "LM validation"
             )
-            self.start()
+            self.run()
         else:
             self.red.ims_support = False
+            self.done_cb()
+
+    def __getstate__(self):
+        state = RedFetcher.__getstate__(self)
+        del state['done_cb']
+        return state
 
     def done(self):
         if self.res_status == '304':
@@ -614,6 +655,7 @@ class LmValidate(RedFetcher):
                                  enc_ims_status=e(self.res_status)
                                  )
         # TODO: check entity headers
+        self.done_cb()
 
 
 if "__main__" == __name__:
@@ -622,5 +664,5 @@ if "__main__" == __name__:
     def status_p(msg):
         print msg
     red = InspectingResourceExpertDroid(uri, status_cb=status_p)
-    red.start()
+    red.run()
     print red.messages

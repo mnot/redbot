@@ -29,7 +29,7 @@ THE SOFTWARE.
 
 import operator
 
-import nbhttp.error as nberror
+import nbhttp.error as nberr
 import redbot.speak as rs
 
 from redbot.formatter import Formatter
@@ -70,23 +70,23 @@ class BaseTextFormatter(Formatter):
     def status(self, msg):
         pass
 
-    def finish_output(self, red):
+    def finish_output(self):
         "Fill in the template with RED's results."
-        if red.res_complete:
-            self.output(self.format_headers(red) + nl + nl)
-            self.output(self.format_recommendations(red) + nl)
+        if self.red.res_complete:
+            self.output(self.format_headers(self.red) + nl + nl)
+            self.output(self.format_recommendations(self.red) + nl)
         else:
-            if red.res_error['desc'] == nberror.ERR_CONNECT['desc']:
+            if self.red.res_error['desc'] == nberr.ERR_CONNECT['desc']:
                 self.output(self.error_template % "Could not connect to the server (%s)" % \
-                    red.res_error.get('detail', "unknown"))
-            elif red.res_error['desc'] == nberror.ERR_URL['desc']:
-                self.output(self.error_template % red.res_error.get(
+                    self.red.res_error.get('detail', "unknown"))
+            elif self.red.res_error['desc'] == nberr.ERR_URL['desc']:
+                self.output(self.error_template % self.red.res_error.get(
                     'detail', "RED can't fetch that URL."))
-            elif red.res_error['desc'] == nberror.ERR_READ_TIMEOUT['desc']:
-                self.output(self.error_template % red.res_error['desc'])
-            elif red.res_error['desc'] == nberror.ERR_HTTP_VERSION['desc']:
+            elif self.red.res_error['desc'] == nberr.ERR_READ_TIMEOUT['desc']:
+                self.output(self.error_template % self.red.res_error['desc'])
+            elif self.red.res_error['desc'] == nberr.ERR_HTTP_VERSION['desc']:
                 self.output(self.error_template % "<code>%s</code> isn't HTTP." % \
-                    red.res_error.get('detail', '')[:20])
+                    self.red.res_error.get('detail', '')[:20])
             else:
                 raise AssertionError, "Unidentified incomplete response error."
 
@@ -168,14 +168,13 @@ class TextListFormatter(BaseTextFormatter):
     media_type = "text/plain"
     can_multiple = True
 
-
     def __init__(self, *args, **kw):
         BaseTextFormatter.__init__(self, *args, **kw)
 
-    def finish_output(self, red):
+    def finish_output(self):
         "Fill in the template with RED's results."
         for hdr_tag, heading in self.link_order:
-            droids = [d[0] for d in red.link_droids if d[1] == hdr_tag]
+            droids = [d[0] for d in self.red.link_droids if d[1] == hdr_tag]
             self.output("%s\n%s (%d)\n%s\n" % ("="*80, heading, len(droids), "="*80))
             if droids:
                 droids.sort(key=operator.attrgetter('uri'))
