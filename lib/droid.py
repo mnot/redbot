@@ -50,7 +50,7 @@ from redbot.uri_validate import absolute_URI
 ### configuration
 cacheable_methods = ['GET']
 heuristic_cacheable_status = ['200', '203', '206', '300', '301', '410']
-max_uri = 8 * 1024 # TODO: httpbis recommends 8000
+max_uri = 8000
 max_clock_skew = 5  # seconds
 
 
