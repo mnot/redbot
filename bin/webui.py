@@ -298,9 +298,6 @@ class RedWebUi(object):
         """ Max runtime reached."""
         self.output(error_template % ("RED timeout."))
         self.body_done()
-        nbhttp.stop() # FIXME: not appropriate for standalone server
-
-
 
 
 # adapted from cgitb.Hook
