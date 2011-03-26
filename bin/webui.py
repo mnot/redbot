@@ -371,6 +371,7 @@ and we'll look into it.""")
                 etype, value, tb = sys.exc_info()
                 out(''.join(traceback.format_exception(etype, value, tb)))
                 out("</pre>")
+        sys.exit(1) # We're in an uncertain state, so we must die horribly.
         
     return except_handler
 
