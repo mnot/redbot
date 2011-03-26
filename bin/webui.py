@@ -530,7 +530,7 @@ def standalone_main(port, static_dir):
     nbhttp.Server("", port, red_handler)
     
     try:
-        nbhttp.run() # FIXME: catch other errors
+        nbhttp.run()
     except KeyboardInterrupt:
         sys.stderr.write("Stopping...\n")
         nbhttp.stop()
