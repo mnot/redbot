@@ -41,25 +41,34 @@ charset = "utf-8"
 
 def main():
     usage   = """Usage: %prog [options] <url>"""
-    version = """Redbot: The Resource Expert Droid, version %s, http://redbot.org/ """ % droid.__version__
+    version = """Redbot version %s, http://redbot.org/ """ % droid.__version__
 
-    option_parser = OptionParser(usage=usage, version=version)
-    option_parser.set_defaults(version=False, descend=False, output_format="txt", show_recommendations=False)
+    opt_parser = OptionParser(usage=usage, version=version)
+    opt_parser.set_defaults(
+        version=False, 
+        descend=False, 
+        output_format="txt", 
+        show_recommendations=False
+    )
 
-    option_parser.add_option("-a", "--assets",
-                             action="store_true", dest="descend",
-                             help="check assets, if the URL contains HTML")
-    option_parser.add_option("-o", "--output-format",
-                             action="store", dest="output_format",
-                             help="one of: %s" % ", ".join(available_formatters()))
+    opt_parser.add_option(
+        "-a", "--assets",
+        action="store_true", dest="descend",
+        help="check assets, if the URL contains HTML"
+    )
+    opt_parser.add_option(
+        "-o", "--output-format",
+        action="store", dest="output_format",
+        help="one of: %s" % ", ".join(available_formatters())
+    )
 
-    (options, args) = option_parser.parse_args()
+    (options, args) = opt_parser.parse_args()
 
     if len(args) != 1:
-        option_parser.error("Please specify a URL.")
+        opt_parser.error("Please specify a URL.")
 
     if options.output_format not in available_formatters():
-        option_parser.error("Unrecognised output format.")
+        opt_parser.error("Unrecognised output format.")
 
     url = args[0]
     red = droid.InspectingResourceExpertDroid(url, descend=options.descend)
