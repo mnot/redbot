@@ -32,6 +32,7 @@ assert sys.version_info[0] == 2 and sys.version_info[1] >= 5, "Please use Python
 
 from optparse import OptionParser
 
+import nbhttp
 from redbot import droid
 from redbot.formatter import find_formatter, available_formatters
 import redbot.speak as rs
@@ -71,7 +72,11 @@ def main():
         opt_parser.error("Unrecognised output format.")
 
     url = args[0]
-    red = droid.InspectingResourceExpertDroid(url, descend=options.descend)
+    red = droid.InspectingResourceExpertDroid(
+        url,
+        done_cb=nbhttp.stop,
+        descend=options.descend
+    )
 
     formatter = find_formatter(options.output_format, 'txt', options.descend)(
         sys.argv[0], url, [], lang, output
