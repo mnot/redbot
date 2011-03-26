@@ -205,7 +205,8 @@ class RedWebUi(object):
             ("Cache-Control", "max-age=3600, must-revalidate")
         ])
         formatter.start_output()
-        formatter.finish_output(ired)
+        formatter.set_red(ired)
+        formatter.finish_output()
         self.body_done()
 
     def run_test(self):
@@ -518,7 +519,7 @@ def standalone_main(port, static_dir):
             try:
                 RedWebUi('/', method, query_string, output_hdrs)
             except:
-                except_handler_factory(sys.stdout.write)()
+                except_handler_factory(sys.stdout.write)() # FIXME: target
                 nbhttp.stop()
                 sys.exit(1)
         else:
@@ -555,6 +556,6 @@ if __name__ == "__main__":
         static_dir = sys.argv[2]
         sys.stderr.write("Starting standalone server...\n")
         standalone_main(port, static_dir)
-#        standalone_monitor(int(port), static_dir)
+#        standalone_monitor(port, static_dir)
     except IndexError:
         cgi_main()
