@@ -396,7 +396,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 )
             )
         options.append(None)
-        options.append((u"<a href='#' id='body_view'>view body</a>", 
+        options.append((u"<a href='#' id='body_view' accesskey='b'>view body</a>", 
             "View this response body (with any gzip compression removed)"
         ))
         if self.kw.get('test_id', None):
@@ -404,21 +404,21 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         else:
             har_locator = "uri=%s" % e_query_arg(red.uri)
         options.append(
-            (u"<a href='?%s&format=har'>view har</a>" % har_locator, 
+            (u"<a href='?%s&format=har' accesskey='h'>view har</a>" % har_locator, 
             "View a HAR (HTTP ARchive, a JSON format) file for this response"
         ))
         if not self.kw.get('is_saved', False):
             if self.kw.get('allow_save', False):
                 options.append((
-                    u"<a href='#' id='save'>save</a>", 
+                    u"<a href='#' id='save' accesskey='s'>save</a>", 
                     "Save these results for future reference"
                 ))
             if self.validators.has_key(media_type):
-                options.append((u"<a href='%s'>validate body</a>" %
+                options.append((u"<a href='%s' accesskey='v'>validate body</a>" %
                    self.validators[media_type] % e_query_arg(red.uri), ""))
             if red.link_count > 0:
                 options.append((
-                     u"<a href='?descend=True&uri=%s'>check assets</a>" % \
+                     u"<a href='?descend=True&uri=%s' accesskey='a'>check assets</a>" % \
                          e_query_arg(red.uri), 
                     "run RED on images, frames and embedded links"
                 ))
