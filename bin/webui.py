@@ -101,7 +101,7 @@ class RedWebUi(object):
     def __init__(self, base_uri, method, query_string, output_hdrs):
         self.base_uri = base_uri
         self.method = method
-        self.output_hdrs = output_hdrs
+        self._output_hdrs = output_hdrs
         
         self.output_body = None
         self.body_done = None
@@ -125,6 +125,11 @@ class RedWebUi(object):
             self.show_default()
         timeout.delete()
 
+    def output_hdrs(self, *args):
+        (output_body, body_done) = self._output_hdrs(*args)
+        self.output_body = output_body
+        self.body_done = body_done
+
     def save_test(self):
         """Save a previously run test_id."""
         try:
@@ -139,13 +144,13 @@ class RedWebUi(object):
             location = "?id=%s" % self.test_id
             if self.descend:
                 location = "%s&descend=True" % location
-            self.output_body, self.body_done = self.output_hdrs(
+            self.output_hdrs(
                 "303 See Other", [
                 ("Location", location)
             ])
             self.output_body("Redirecting to the saved test page...")
         except (OSError, IOError):
-            self.output_body, self.body_done = self.output_hdrs(
+            self.output_hdrs(
                 "500 Internal Server Error", [
                 ("Content-Type", "text/html; charset=%s" % charset), 
             ])
@@ -163,7 +168,7 @@ class RedWebUi(object):
             ))
             mtime = os.fstat(fd.fileno()).st_mtime
         except (OSError, IOError, zlib.error):
-            self.output_body, self.body_done = self.output_hdrs(
+            self.output_hdrs(
                 "404 Not Found", [
                 ("Content-Type", "text/html; charset=%s" % charset), 
                 ("Cache-Control", "max-age=600, must-revalidate")
@@ -179,7 +184,7 @@ class RedWebUi(object):
         try:
             ired = pickle.load(fd)
         except (pickle.PickleError, EOFError):
-            self.output_body, self.body_done = self.output_hdrs(
+            self.output_hdrs(
                 "500 Internal Server Error", [
                 ("Content-Type", "text/html; charset=%s" % charset), 
                 ("Cache-Control", "max-age=600, must-revalidate")
@@ -198,7 +203,7 @@ class RedWebUi(object):
             self.output, allow_save=(not is_saved), is_saved=True,
             test_id=self.test_id
         )
-        self.output_body, self.body_done = self.output_hdrs(
+        self.output_hdrs(
             "200 OK", [
             ("Content-Type", "%s; charset=%s" % (
                 formatter.media_type, charset)), 
@@ -227,7 +232,7 @@ class RedWebUi(object):
             test_id=test_id, descend=self.descend
         )
 
-        self.output_body, self.body_done = self.output_hdrs(
+        self.output_hdrs(
             "200 OK", [
             ("Content-Type", "%s; charset=%s" % (
                 formatter.media_type, charset)), 
@@ -265,7 +270,7 @@ class RedWebUi(object):
             self.base_uri, self.test_uri, self.req_hdrs, 
             lang, self.output
         )
-        self.output_body, self.body_done = self.output_hdrs(
+        self.output_hdrs(
             "200 OK", [
             ("Content-Type", "%s; charset=%s" % (
                 formatter.media_type, charset)
@@ -553,7 +558,11 @@ if __name__ == "__main__":
         port = int(sys.argv[1])
         static_dir = sys.argv[2]
         sys.stderr.write("Starting standalone server...\n")
-        standalone_main(port, static_dir)
+        if debug:
+            import pdb
+            pdb.run('standalone_main(port, static_dir)')
+        else:
+            standalone_main(port, static_dir)
 #        standalone_monitor(port, static_dir)
     except IndexError:
         cgi_main()
