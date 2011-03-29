@@ -54,7 +54,7 @@ class HTMLLinkParser(HTMLParser):
         'application/atom+xml'
     ]
 
-    def __init__(self, base_uri, process_link, err):
+    def __init__(self, base_uri, process_link, err=None):
         self.base = base_uri
         self.process_link = process_link
         self.err = err
