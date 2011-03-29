@@ -92,7 +92,7 @@ class Formatter(object):
         """
         Set the RED to format.
         """
-        self.red = red
+        self.red = red # FIXME: cyclic reference
         
     def feed(self, red, sample):
         """

@@ -70,8 +70,8 @@ class ResourceExpertDroid(RedFetcher):
     def __init__(self, uri, method="GET", req_hdrs=None, req_body=None,
                 status_cb=None, body_procs=None, done_cb=None):
         self.orig_req_hdrs = req_hdrs or []
-        self.status_cb = status_cb
-        self.done_cb = done_cb
+        self.status_cb = status_cb # FIXME: cyclic reference
+        self.done_cb = done_cb # FIXME: cyclic reference
         
         # Extra metadata that the "main" RED will be adorned with 
         self.age = None
@@ -363,9 +363,9 @@ class InspectingResourceExpertDroid(ResourceExpertDroid):
     def __init__(self, uri, method="GET", req_hdrs=None, req_body=None,
                 status_cb=None, body_procs=None, done_cb=None, descend=False):
         self.link_parser = link_parse.HTMLLinkParser(
-            uri, self.process_link, status_cb
+            uri, self.process_link, status_cb # FIXME: cyclic reference
         )
-        body_procs = ( body_procs or [] ) + [self.link_parser.feed]
+        body_procs = ( body_procs or [] ) + [self.link_parser.feed] # FIXME: cyclic reference
         self.descend = descend
         self.links = {}          # {type: set(link...)}
         self.link_count = 0
@@ -415,7 +415,7 @@ class ConnegCheck(RedFetcher):
     """
     def __init__(self, red, done_cb):
         self.red = red
-        self.done_cb = done_cb
+        self.done_cb = done_cb # FIXME: cyclic reference
         if "gzip" in red.parsed_hdrs.get('content-encoding', []):
             req_hdrs = [h for h in red.orig_req_hdrs if
                         h[0].lower() != 'accept-encoding']
@@ -481,7 +481,7 @@ class RangeRequest(RedFetcher):
     "Check for partial content support (if advertised)"
     def __init__(self, red, done_cb):
         self.red = red
-        self.done_cb = done_cb
+        self.done_cb = done_cb # FIXME: cyclic reference
         if 'bytes' in red.parsed_hdrs.get('accept-ranges', []):
             if len(red.res_body_sample) == 0: return
             sample_num = random.randint(0, len(red.res_body_sample) - 1)
@@ -565,7 +565,7 @@ class ETagValidate(RedFetcher):
     "If an ETag is present, see if it will validate."
     def __init__(self, red, done_cb):
         self.red = red
-        self.done_cb = done_cb
+        self.done_cb = done_cb # FIXME: cyclic reference
         if red.parsed_hdrs.has_key('etag'):
             weak, etag = red.parsed_hdrs['etag']
             if weak:
@@ -613,7 +613,7 @@ class LmValidate(RedFetcher):
     "If Last-Modified is present, see if it will validate."
     def __init__(self, red, done_cb):
         self.red = red
-        self.done_cb = done_cb
+        self.done_cb = done_cb # FIXME: cyclic reference
         if red.parsed_hdrs.has_key('last-modified'):
             date_str = time.strftime(
                 '%a, %d %b %Y %H:%M:%S GMT',
