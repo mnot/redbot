@@ -114,7 +114,7 @@ class RedWebUi(object):
         self.parse_qs(method, query_string)
         
         self.start = time.time()
-        timeout = nbhttp.schedule(max_runtime, self.timeoutError)
+        self.timeout = nbhttp.schedule(max_runtime, self.timeoutError)
         if self.save and save_dir and self.test_id:
             self.save_test()
         elif self.test_id:
@@ -123,12 +123,14 @@ class RedWebUi(object):
             self.run_test()
         else:
             self.show_default()
-        timeout.delete()
 
     def output_hdrs(self, *args):
         (output_body, body_done) = self._output_hdrs(*args)
         self.output_body = output_body
-        self.body_done = body_done
+        def remove_timeout():
+            self.timeout.delete()
+            body_done()
+        self.body_done = remove_timeout
 
     def save_test(self):
         """Save a previously run test_id."""
@@ -158,7 +160,7 @@ class RedWebUi(object):
             self.output_body(
                 error_template % "Sorry, I couldn't save that."
             )
-            self.body_done()
+        self.body_done()
 
     def load_saved_test(self):
         """Load a saved test by test_id."""
@@ -178,7 +180,6 @@ class RedWebUi(object):
                 "I'm sorry, I can't find that saved response."
             )
             self.body_done()
-            timeout.delete()
             return
         is_saved = mtime > nbhttp.now()
         try:
@@ -194,7 +195,6 @@ class RedWebUi(object):
                 "I'm sorry, I had a problem reading that response."
             )
             self.body_done()
-            timeout.delete()
             return
         finally:
             fd.close()
