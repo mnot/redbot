@@ -1,4 +1,4 @@
-JSFILES = jquery.js jquery.hoverIntent.js prettify.js
+JSFILES = jquery.js jquery.hoverIntent.js jquery.base64.js prettify.js
 CSSFILES = red_style.css prettify.css
 YUI_COMPRESSOR_JAR = ~/Applications/yuicompressor-2.4.3.jar
 

@@ -38,6 +38,7 @@ from cgi import escape as e
 from functools import partial
 from urlparse import urljoin
 
+import pystache
 import nbhttp
 import nbhttp.error as nberr
 import redbot.speak as rs
@@ -75,7 +76,7 @@ class BaseHtmlFormatter(Formatter):
             descend = "&descend=True"
         else:
             descend = ''
-        self.output(html_header.__doc__ % {
+        self.output(pystache.render(html_header.__doc__, {
             'static': static_root,
             'version': droid.__version__,
             'html_uri': e(self.uri),
@@ -86,7 +87,7 @@ class BaseHtmlFormatter(Formatter):
             'test_id': self.kw.get('test_id', ""),
             'extra_title': extra_title,
             'descend': descend
-        })
+        }))
 
     def finish_output(self):
         """
