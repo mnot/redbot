@@ -935,7 +935,7 @@ class ETAG_DOESNT_CHANGE(Message):
     and other receivers disambiguate them.<p>
     This resource, however, sent the same
     ETag for both its compressed and uncompressed versions (negotiated by
-    <code>Accept-Encoding</code>. This can cause interoperability problems,
+    <code>Accept-Encoding</code>). This can cause interoperability problems,
     especially with caches."""
     }
 
