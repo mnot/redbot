@@ -1149,7 +1149,7 @@ class VARY_ASTERISK(Message):
 
 class VARY_USER_AGENT(Message):
     category = c.CACHING
-    level = l.WARN
+    level = l.INFO
     summary = {
      'en': u"Vary: User-Agent can cause cache inefficiency."
     }
@@ -1159,7 +1159,10 @@ class VARY_USER_AGENT(Message):
     header they see.<p>
     Since there are so many different <code>User-Agent</code>s, this can
     "bloat" caches with many copies of the same thing, or cause them to give
-    up on storing these responses at all."""
+    up on storing these responses at all.<p>
+    Consider having different URIs for the various versions of your content 
+    instead; this will give finer control over caching without sacrificing
+    efficiency."""
     }
 
 class VARY_HOST(Message):
