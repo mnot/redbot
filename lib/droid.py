@@ -461,7 +461,7 @@ class RangeRequest(RedFetcher):
     "Check for partial content support (if advertised)"
     def __init__(self, red):
         self.base = red.state
-        req_hdrs = self.base.req_hdrs
+        req_hdrs = list(self.base.req_hdrs)
         if len(self.base.res_body_sample) != 0:
             sample_num = random.randint(0, len(self.base.res_body_sample) - 1)
             sample_len = min(
@@ -552,7 +552,7 @@ class ETagValidate(RedFetcher):
     "If an ETag is present, see if it will validate."
     def __init__(self, red):
         self.base = red.state
-        req_hdrs = self.base.req_hdrs
+        req_hdrs = list(self.base.req_hdrs)
         if self.base.parsed_hdrs.has_key('etag'):
             weak, etag = self.base.parsed_hdrs['etag']
             if weak:
@@ -602,7 +602,7 @@ class LmValidate(RedFetcher):
     "If Last-Modified is present, see if it will validate."
     def __init__(self, red):
         self.base = red.state
-        req_hdrs = self.base.req_hdrs
+        req_hdrs = list(self.base.req_hdrs)
         if self.base.parsed_hdrs.has_key('last-modified'):
             date_str = time.strftime(
                 '%a, %d %b %Y %H:%M:%S GMT',
