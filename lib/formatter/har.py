@@ -85,6 +85,7 @@ class HarFormatter(Formatter):
             if linked_red.res_complete:
                 self.add_entry(linked_red, page_id)
         self.output(json.dumps(self.har, indent=4))
+        self.done()
         
     def add_entry(self, red, page_ref=None):
         entry = {
@@ -118,7 +119,7 @@ class HarFormatter(Formatter):
                 'mimeType': (get_hdr(red.res_hdrs, 'content-type') or [""])[0],
             },
             'redirectURL': (get_hdr(red.res_hdrs, 'location') or [""])[0],
-            'headersSize': red.client.input_header_length,
+            'headersSize': red.header_length,
             'bodySize': red.res_body_len,
         }
         

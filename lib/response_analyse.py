@@ -148,6 +148,7 @@ def CheckFieldSyntax(exp, ref):
         return new
     return wrap
 
+
 class ResponseHeaderParser(object):
     """
     Parse and check the response for obvious syntactic errors,

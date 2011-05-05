@@ -74,17 +74,20 @@ def main():
     url = args[0]
     red = droid.InspectingResourceExpertDroid(
         url,
-        done_cb=nbhttp.stop,
         descend=options.descend
     )
 
     formatter = find_formatter(options.output_format, 'txt', options.descend)(
         sys.argv[0], url, [], lang, output
     )
-    formatter.set_red(red)
-    red.run()
+    formatter.set_red(red.state)
     formatter.start_output()
-    formatter.finish_output()
+    
+    def done():
+        formatter.finish_output()
+        nbhttp.stop()
+    red.run(done)
+    nbhttp.run()
 
 
 def output(out):

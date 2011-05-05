@@ -32,7 +32,6 @@ import cPickle as pickle
 import gzip
 import locale
 import os
-import pprint
 import shutil
 import sys
 import tempfile
@@ -130,6 +129,7 @@ class RedWebUi(object):
         def remove_timeout():
             self.timeout.delete()
             body_done()
+            self.body_done = None
         self.body_done = remove_timeout
 
     def save_test(self):
@@ -209,6 +209,7 @@ class RedWebUi(object):
                 formatter.media_type, charset)), 
             ("Cache-Control", "max-age=3600, must-revalidate")
         ])
+
         formatter.start_output()
         formatter.set_red(ired)
         formatter.finish_output()
@@ -239,31 +240,30 @@ class RedWebUi(object):
             ("Cache-Control", "max-age=60, must-revalidate")
         ])
         
-        def done():
-            formatter.finish_output()
-            self.body_done()
-        
         ired = droid.InspectingResourceExpertDroid(
             self.test_uri,
             req_hdrs=self.req_hdrs,
             status_cb=formatter.status,
             body_procs=[formatter.feed],
-            done_cb=done,
             descend=self.descend
         )
-        import sys
-        formatter.set_red(ired)
+#        sys.stdout.write(pickle.dumps(ired.state))
+        formatter.set_red(ired.state)
         formatter.start_output()
-        ired.run()
-        
-        if test_id:
-            try:
-                tmp_file = gzip.open(path, 'w')
-                pickle.dump(ired, tmp_file)
-                tmp_file.close()
-            except (IOError, zlib.error, pickle.PickleError):
-                pass # we don't cry if we can't store it.
 
+        def done():
+            formatter.finish_output()
+            self.body_done()
+            if test_id:
+                try:
+                    tmp_file = gzip.open(path, 'w')
+                    pickle.dump(ired.state, tmp_file)
+                    tmp_file.close()
+                except (IOError, zlib.error, pickle.PickleError):
+                    pass # we don't cry if we can't store it.
+#            objgraph.show_growth()        
+        ired.run(done)
+        
     def show_default(self):
         """Show the default page."""
         formatter = html.BaseHtmlFormatter(
@@ -346,15 +346,6 @@ def except_handler_factory(out=None):
                 )
                 fh = os.fdopen(fd, 'w')
                 fh.write(doc)
-                fh.write("<h2>Outstanding Connections</h2>\n<pre>")
-                for conn in fetch.outstanding_requests:
-                    fh.write("*** %s - %s\n" % (conn.uri, hex(id(conn))))
-                    pprint.pprint(conn.__dict__, fh)
-                    if conn.client:
-                        pprint.pprint(conn.client.__dict__, fh)
-                    if conn.client._tcp_conn:
-                        pprint.pprint(conn.client._tcp_conn.__dict__, fh)
-                fh.write("</pre>\n")
                 fh.close()
                 os.chmod(path, stat.S_IROTH)
                 out(error_template % """\
@@ -478,11 +469,11 @@ def cgi_main():
         return sys.stdout.write, nbhttp.stop
     try:
         RedWebUi(base_uri, method, query_string, output_hdrs)
+        nbhttp.run()
     except:
         except_handler_factory(sys.stdout.write)()
 
 
-# TODO: standalone server not yet working
 def standalone_main(port, static_dir):
     """Run RED as a standalone Web server."""
     
@@ -503,9 +494,6 @@ def standalone_main(port, static_dir):
     os.path.walk(static_dir, static_walker, "")
     sys.stderr.write("* Static files loaded.\n")
 
-    # Don't let the fetcher mess with the nbhttp loop
-    fetch.control_loop = False
-
     def red_handler (method, uri, req_hdrs, res_start, req_pause):
         p_uri = urlsplit(uri)
         if static_files.has_key(p_uri.path):
@@ -522,7 +510,15 @@ def standalone_main(port, static_dir):
             try:
                 RedWebUi('/', method, query_string, output_hdrs)
             except:
-                except_handler_factory(sys.stdout.write)() # FIXME: target
+                sys.stderr.write("""
+
+*** FATAL ERROR
+RED has encountered a fatal error which it really, really can't recover from
+in standalone server mode. Details follow.
+
+""")
+                except_handler_factory(sys.stderr.write)()
+                sys.stderr.write("\n")
                 nbhttp.stop()
                 sys.exit(1)
         else:
@@ -553,16 +549,33 @@ def standalone_monitor (port, static_dir):
         # TODO: listen to socket and drop privs
 
 if __name__ == "__main__":
-    try:
-        # FIXME: usage
-        port = int(sys.argv[1])
-        static_dir = sys.argv[2]
-        sys.stderr.write("Starting standalone server...\n")
-        if debug:
-            import pdb
-            pdb.run('standalone_main(port, static_dir)')
-        else:
-            standalone_main(port, static_dir)
-#        standalone_monitor(port, static_dir)
-    except IndexError:
+    if os.environ.has_key('GATEWAY_INTERFACE'):  # CGI
         cgi_main()
+    else:
+        # standalone server
+        from optparse import OptionParser
+        usage = "Usage: %prog [options] port static_dir"
+        version = "RED version %s" % droid.__version__
+        option_parser = OptionParser(usage=usage, version=version)
+        (options, args) = option_parser.parse_args()
+        if len(args) < 2:
+            option_parser.error(
+                "Please specify a port and a static directory."
+            )
+        try:
+            port = int(args[0])
+        except ValueError:
+            option_parser.error(
+                "Port is not an integer."
+            )
+    
+        static_dir = args[1]
+        sys.stderr.write(
+            "Starting standalone server on PID %s...\n" % os.getpid()
+        )
+
+#       import pdb
+#       pdb.run('standalone_main(port, static_dir)')
+        standalone_main(port, static_dir)
+#       standalone_monitor(port, static_dir)
+            

@@ -76,7 +76,9 @@ class BaseTextFormatter(Formatter):
             self.output(self.format_headers(self.red) + nl + nl)
             self.output(self.format_recommendations(self.red) + nl)
         else:
-            if self.red.res_error['desc'] == nberr.ERR_CONNECT['desc']:
+            if self.red.res_error == None:
+                pass
+            elif self.red.res_error['desc'] == nberr.ERR_CONNECT['desc']:
                 self.output(self.error_template % "Could not connect to the server (%s)" % \
                     self.red.res_error.get('detail', "unknown"))
             elif self.red.res_error['desc'] == nberr.ERR_URL['desc']:
@@ -158,6 +160,9 @@ class TextFormatter(BaseTextFormatter):
     def __init__(self, *args, **kw):
         BaseTextFormatter.__init__(self, *args, **kw)
 
+    def finish_output(self):
+        BaseTextFormatter.finish_output(self)
+        self.done()
 
 
 class TextListFormatter(BaseTextFormatter):
@@ -173,15 +178,20 @@ class TextListFormatter(BaseTextFormatter):
 
     def finish_output(self):
         "Fill in the template with RED's results."
+        BaseTextFormatter.finish_output(self)
+        sep = "=" * 78
         for hdr_tag, heading in self.link_order:
             droids = [d[0] for d in self.red.link_droids if d[1] == hdr_tag]
-            self.output("%s\n%s (%d)\n%s\n" % ("="*80, heading, len(droids), "="*80))
+            self.output("%s\n%s (%d)\n%s\n" % (
+                sep, heading, len(droids), sep
+            ))
             if droids:
                 droids.sort(key=operator.attrgetter('uri'))
                 for droid in droids:
                     self.output(self.format_uri(droid) + nl + nl)
                     self.output(self.format_headers(droid) + nl + nl)
                     self.output(self.format_recommendations(droid) + nl + nl)
+        self.done()
 
     def format_uri(self, red):
         return self.colorize("uri", red.uri)

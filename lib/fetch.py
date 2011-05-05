@@ -46,23 +46,14 @@ import redbot.speak as rs
 import redbot.response_analyse as ra
 from redbot.response_analyse import f_num
 
-outstanding_requests = [] # requests in process
-total_requests = 0
-control_loop = True
-
 class RedHttpClient(nbhttp.Client):
     connect_timeout = 8
     read_timeout = 8
 
-class RedFetcher(object):
+
+class RedState(object):
     """
-    Fetches the given URI (with the provided method, headers and body) and
-    calls:
-      - status_cb as it progresses, and
-      - every function in the body_procs list with each chunk of the body, and
-      - done when it's done.
-    If provided, type indicates the type of the request, and is used to
-    help set messages and status_cb appropriately.
+    Holder for test state.
 
     Messages is a list of messages, each of which being a tuple that
     follows the following form:
@@ -77,14 +68,11 @@ class RedFetcher(object):
                     # into the message; e.g., time_left="5d3h"
       )
     """
-
-    def __init__(self, iri, method="GET", req_hdrs=None, req_body=None,
-                 status_cb=None, body_procs=None, req_type=None):
+    
+    def __init__(self, iri, method, req_hdrs, req_body, req_type):
         self.method = method
         self.req_hdrs = req_hdrs or []
         self.req_body = req_body
-        self.status_cb = status_cb
-        self.body_procs = body_procs or []
         self.type = req_type
         self.req_ts = None # when the request was started
         self.res_ts = None # when the response was started
@@ -99,22 +87,79 @@ class RedFetcher(object):
         self.res_body_len = 0
         self.res_body_md5 = None
         self.res_body_sample = [] # [(offset, chunk)]{,4} Bytes, not unicode
+        self.res_body_enc = None
         self.res_body_decode_len = 0
         self.res_complete = False
+        self.transfer_length = None
+        self.header_length = None
         self.res_error = None # any parse errors encountered; see nbhttp.error
         # interesting things about the response; set by a variety of things
         self.messages = [] # messages (see above)
-        self.client = None
+        try:
+            self.uri = self.iri_to_uri(iri)
+        except UnicodeError, why:
+            self.res_error = nbhttp.error.ERR_URL
+            self.uri = None
+
+    def setMessage(self, subject, msg, subreq=None, **kw):
+        "Set a message."
+        kw['response'] = rs.response.get(
+            self.type, rs.response['this']
+        )['en']
+        self.messages.append(msg(subject, subreq, kw))
+        
+    @staticmethod
+    def iri_to_uri(iri):
+        "Takes a Unicode string that can contain an IRI and emits a URI."
+        scheme, authority, path, query, frag = urlparse.urlsplit(iri)
+        scheme = scheme.encode('utf-8')
+        if ":" in authority:
+            host, port = authority.split(":", 1)
+            authority = host.encode('idna') + ":%s" % port
+        else:
+            authority = authority.encode('idna')
+        path = urllib.quote(
+          path.encode('utf-8'), 
+          safe="/;%[]=:$&()+,!?*@'~"
+        )
+        query = urllib.quote(
+          query.encode('utf-8'), 
+          safe="/;%[]=:$&()+,!?*@'~"
+        )
+        frag = urllib.quote(
+          frag.encode('utf-8'), 
+          safe="/;%[]=:$&()+,!?*@'~"
+        )
+        return urlparse.urlunsplit((scheme, authority, path, query, frag))
+    
+
+class RedFetcher(object):
+    """
+    Fetches the given URI (with the provided method, headers and body) and
+    calls:
+      - status_cb as it progresses, and
+      - every function in the body_procs list with each chunk of the body, and
+      - done_cb when all tasks are done.
+    If provided, type indicates the type of the request, and is used to
+    help set messages and status_cb appropriately.
+    
+    The done() method is called when the response is done, NOT when all 
+    tasks are done. It can add tasks by calling add_task().
+
+    """
+
+    def __init__(self, iri, method="GET", req_hdrs=None, req_body=None,
+                 status_cb=None, body_procs=None, req_type=None):
+        self.state = RedState(iri, method, req_hdrs, req_body, req_type)
+        self.status_cb = status_cb
+        self.body_procs = body_procs or []
+        self.done_cb = None
+        self.outstanding_tasks = 0
         self._md5_processor = hashlib.md5()
         self._gzip_processor = zlib.decompressobj(-zlib.MAX_WBITS)
         self._in_gzip_body = False
         self._gzip_header_buffer = ""
         self._gzip_ok = True # turn False if we have a problem
-        try:
-            self.uri = iri_to_uri(iri)
-        except UnicodeError, why:
-            self.res_error = nbhttp.error.ERR_URL
-            return
 
     def __getstate__(self):
         state = self.__dict__.copy()
@@ -124,68 +169,90 @@ class RedFetcher(object):
         del state['_gzip_processor']
         return state
 
-    def setMessage(self, subject, msg, subreq=None, **kw):
-        "Set a message."
-        kw['response'] = rs.response.get(self.type, rs.response['this'])['en']
-        self.messages.append(msg(subject, subreq, kw))
+    def add_task(self, task, *args):
+        self.outstanding_tasks += 1
+        task(*args, done_cb=self.finish_task)
+        
+    def finish_task(self):
+        self.outstanding_tasks -= 1
+        assert self.outstanding_tasks >= 0
+        if self.outstanding_tasks == 0:
+            if self.done_cb:
+                self.done_cb()
+                self.done_cb = None
+            # clean up potentially cyclic references
+            self.status_cb = None
+            self.body_procs = None
 
     def done(self):
         "Callback for when the response is complete and analysed."
         raise NotImplementedError
 
-    def run(self):
+    def preflight(self):
+        """
+        Callback to check to see if we should bother running. Return True 
+        if so; False if not. 
+        """
+        return True
+
+    def run(self, done_cb=None):
         """
         Make an asynchronous HTTP request to uri, calling status_cb as it's
         updated and done_cb when it's done. Reason is used to explain what the
         request is in the status callback.
         """
-        global outstanding_requests
-        global total_requests
-        outstanding_requests.append(self)
-        total_requests += 1
-        if 'user-agent' not in [i[0].lower() for i in self.req_hdrs]:
-            self.req_hdrs.append(
+        self.outstanding_tasks += 1
+        self.done_cb = done_cb
+        state = self.state
+        if not self.preflight() or state.uri == None:
+            # generally a good sign that we're not going much further.
+            self.finish_task()
+            return
+        if 'user-agent' not in [i[0].lower() for i in state.req_hdrs]:
+            state.req_hdrs.append(
                 ("User-Agent", "RED/%s (http://redbot.org/)" % __version__))    
         self.client = RedHttpClient(self._response_start)
-        if self.status_cb and self.type:
-            self.status_cb("fetching %s (%s)" % (self.uri, self.type))
+        if self.status_cb and state.type:
+            self.status_cb("fetching %s (%s)" % (state.uri, state.type))
         req_body, req_done = self.client.req_start(
-            self.method, self.uri, self.req_hdrs, nbhttp.dummy)
-        self.req_ts = nbhttp.now()
-        if self.req_body != None:
-            req_body(self.req_body)
+            state.method, state.uri, state.req_hdrs, nbhttp.dummy)
+        state.req_ts = nbhttp.now()
+        if state.req_body != None:
+            req_body(state.req_body)
         req_done(None)
-        # FIXME: this should be in the server container, not here
-        if control_loop and len(outstanding_requests) == 1:
-            nbhttp.run()
 
     def _response_start(self, version, status, phrase, 
         res_headers, res_pause
     ):
         "Process the response start-line and headers."
-        self.res_ts = nbhttp.now()
-        self.res_version = version
-        self.res_status = status.decode('iso-8859-1', 'replace')
-        self.res_phrase = phrase.decode('iso-8859-1', 'replace')
-        self.res_hdrs = res_headers
-        ra.ResponseHeaderParser(self)
-        ra.ResponseStatusChecker(self)
+        state = self.state
+        state.res_ts = nbhttp.now()
+        state.res_version = version
+        state.res_status = status.decode('iso-8859-1', 'replace')
+        state.res_phrase = phrase.decode('iso-8859-1', 'replace')
+        state.res_hdrs = res_headers
+        ra.ResponseHeaderParser(state)
+        ra.ResponseStatusChecker(state)
+        state.res_body_enc = state.parsed_hdrs.get(
+            'content-type', [None, {}]
+        )[1].get('charset', 'utf-8') # default isn't really UTF-8, but oh well
         return self._response_body, self._response_done
 
     def _response_body(self, chunk):
         "Process a chunk of the response body."
+        state = self.state
         self._md5_processor.update(chunk)
-        self.res_body_sample.append((self.res_body_len, chunk))
-        if len(self.res_body_sample) > 4:
-            self.res_body_sample.pop(0)
-        self.res_body_len += len(chunk)
-        if self.res_status == "206":
+        state.res_body_sample.append((state.res_body_len, chunk))
+        if len(state.res_body_sample) > 4:
+            state.res_body_sample.pop(0)
+        state.res_body_len += len(chunk)
+        if state.res_status == "206":
             # Store only partial responses completely, for error reporting
-            self.res_body += chunk
-            self.res_body_decode_len += len(chunk)
+            state.res_body += chunk
+            state.res_body_decode_len += len(chunk)
             # Don't actually try to make sense of a partial body...
             return
-        content_codings = self.parsed_hdrs.get('content-encoding', [])
+        content_codings = state.parsed_hdrs.get('content-encoding', [])
         content_codings.reverse()
         for coding in content_codings:
             # TODO: deflate support
@@ -200,7 +267,7 @@ class RedFetcher(object):
                     except IndexError:
                         return # not a full header yet
                     except IOError, gzip_error:
-                        self.setMessage('header-content-encoding',
+                        state.setMessage('header-content-encoding',
                                         rs.BAD_GZIP,
                                         gzip_error=e(str(gzip_error))
                         )
@@ -209,11 +276,11 @@ class RedFetcher(object):
                 try:
                     chunk = self._gzip_processor.decompress(chunk)
                 except zlib.error, zlib_error:
-                    self.setMessage(
+                    state.setMessage(
                         'header-content-encoding', 
                         rs.BAD_ZLIB,
                         zlib_error=e(str(zlib_error)),
-                        ok_zlib_len=f_num(self.res_body_sample[-1][0]),
+                        ok_zlib_len=f_num(state.res_body_sample[-1][0]),
                         chunk_sample=e(chunk[:20].encode('string_escape'))
                     )
                     self._gzip_ok = False
@@ -221,69 +288,72 @@ class RedFetcher(object):
             else:
                 # we can't handle other codecs, so punt on body processing.
                 return
-        self.res_body_decode_len += len(chunk)
+        state.res_body_decode_len += len(chunk)
         if self._gzip_ok:
             for processor in self.body_procs:
                 # TODO: figure out why raising an error in a body_proc
                 # results in a "server dropped the connection" instead of
                 # a hard error.
-                processor(self, chunk)
+                processor(self.state, chunk)
 
     def _response_done(self, err):
         "Finish anaylsing the response, handling any parse errors."
-        global outstanding_requests
-        self.res_complete = True
-        self.res_done_ts = nbhttp.now()
-        self.res_error = err
-        if self.status_cb and self.type:
-            self.status_cb("fetched %s (%s)" % (self.uri, self.type))
-        self.res_body_md5 = self._md5_processor.digest()
+        state = self.state
+        state.res_complete = True
+        state.res_done_ts = nbhttp.now()
+        state.transfer_length = self.client.input_transfer_length
+        state.header_length = self.client.input_header_length
+        self.client = None
+        state.res_error = err
+        if self.status_cb and state.type:
+            self.status_cb("fetched %s (%s)" % (state.uri, state.type))
+        state.res_body_md5 = self._md5_processor.digest()
         if err == None:
             pass
         elif err['desc'] == nbhttp.error.ERR_BODY_FORBIDDEN['desc']:
-            self.setMessage('header-none', rs.BODY_NOT_ALLOWED)
+            state.setMessage('header-none', rs.BODY_NOT_ALLOWED)
         elif err['desc'] == nbhttp.error.ERR_EXTRA_DATA['desc']:
-            self.res_body_len += len(err.get('detail', ''))
+            state.res_body_len += len(err.get('detail', ''))
         elif err['desc'] == nbhttp.error.ERR_CHUNK['desc']:
-            self.setMessage('header-transfer-encoding', rs.BAD_CHUNK,
+            state.setMessage('header-transfer-encoding', rs.BAD_CHUNK,
                 chunk_sample=e(
                     err.get('detail', '')[:20].encode('string_escape')
                 )
             )
         elif err['desc'] == nbhttp.error.ERR_CONNECT['desc']:
-            self.res_complete = False
+            state.res_complete = False
         elif err['desc'] == nbhttp.error.ERR_LEN_REQ['desc']:
             pass # TODO: length required
         elif err['desc'] == nbhttp.error.ERR_URL['desc']:
-            self.res_complete = False
+            state.res_complete = False
         elif err['desc'] == nbhttp.error.ERR_READ_TIMEOUT['desc']:
-            self.res_complete = False
+            state.res_complete = False
         elif err['desc'] == nbhttp.error.ERR_HTTP_VERSION['desc']:
-            self.res_complete = False
+            state.res_complete = False
         else:
             raise AssertionError, "Unknown response error: %s" % err
 
-        if self.res_complete \
-          and self.method not in ['HEAD'] \
-          and self.res_status not in ['304']:
+        if state.res_complete \
+          and state.method not in ['HEAD'] \
+          and state.res_status not in ['304']:
             # check payload basics
-            if self.parsed_hdrs.has_key('content-length'):
-                if self.res_body_len == self.parsed_hdrs['content-length']:
-                    self.setMessage('header-content-length', rs.CL_CORRECT)
+            if state.parsed_hdrs.has_key('content-length'):
+                if state.res_body_len == state.parsed_hdrs['content-length']:
+                    state.setMessage('header-content-length', rs.CL_CORRECT)
                 else:
-                    self.setMessage('header-content-length', 
+                    state.setMessage('header-content-length', 
                                     rs.CL_INCORRECT,
-                                    body_length=f_num(self.res_body_len)
+                                    body_length=f_num(state.res_body_len)
                     )
-            if self.parsed_hdrs.has_key('content-md5'):
-                c_md5_calc = base64.encodestring(self.res_body_md5)[:-1]
-                if self.parsed_hdrs['content-md5'] == c_md5_calc:
-                    self.setMessage('header-content-md5', rs.CMD5_CORRECT)
+            if state.parsed_hdrs.has_key('content-md5'):
+                c_md5_calc = base64.encodestring(state.res_body_md5)[:-1]
+                if state.parsed_hdrs['content-md5'] == c_md5_calc:
+                    state.setMessage('header-content-md5', rs.CMD5_CORRECT)
                 else:
-                    self.setMessage('header-content-md5', rs.CMD5_INCORRECT,
-                                             calc_md5=c_md5_calc)
+                    state.setMessage('header-content-md5', rs.CMD5_INCORRECT,
+                                     calc_md5=c_md5_calc)
         self.done()
-        outstanding_requests.remove(self)
+        self.finish_task()
 
     @staticmethod
     def _read_gzip_header(content):
@@ -328,19 +398,6 @@ class RedFetcher(object):
         return "".join(content_l)
 
 
-def iri_to_uri(iri):
-    "Takes a Unicode string that possibly contains an IRI and emits a URI."
-    scheme, authority, path, query, frag = urlparse.urlsplit(iri)
-    scheme = scheme.encode('utf-8')
-    if ":" in authority:
-        host, port = authority.split(":", 1)
-        authority = host.encode('idna') + ":%s" % port
-    else:
-        authority = authority.encode('idna')
-    path = urllib.quote(path.encode('utf-8'), safe="/;%[]=:$&()+,!?*@'~")
-    query = urllib.quote(query.encode('utf-8'), safe="/;%[]=:$&()+,!?*@'~")
-    frag = urllib.quote(frag.encode('utf-8'), safe="/;%[]=:$&()+,!?*@'~")
-    return urlparse.urlunsplit((scheme, authority, path, query, frag))
 
 
 if "__main__" == __name__:
@@ -351,8 +408,9 @@ if "__main__" == __name__:
         print msg
     class TestFetcher(RedFetcher):
         def done(self):
-            print self.messages
+            print self.state.messages
     tf = TestFetcher(
         uri, req_hdrs=req_hdrs, status_cb=status_p, req_type='test'
     )
     tf.run()
+    nbhttp.run()

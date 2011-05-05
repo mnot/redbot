@@ -33,6 +33,17 @@ __all__ = ['html', 'text', 'har']
 
 _formatters = defaultdict(list)
 
+class FormatterType(type):
+    """
+    Type for Formatters that populates _formatters, to keep track
+    of names and their mapping to Formatter-derived classes.
+    """
+    def __new__(mcs, name, bases, attrs):
+        cls = super(FormatterType, mcs).__new__(mcs, name, bases, attrs)
+        if attrs.get('name', None) != None:
+            _formatters[attrs['name']].append(cls)
+        return cls
+
 def find_formatter(name, default="html", multiple=False):
     if name not in _formatters.keys():
         name = default
@@ -48,17 +59,6 @@ def find_formatter(name, default="html", multiple=False):
 
 def available_formatters():
     return _formatters.keys()
-
-class FormatterType(type):
-    """
-    Type for Formatters that populates _formatters, to keep track
-    of names and their mapping to Formatter-derived classes.
-    """
-    def __new__(mcs, name, bases, attrs):
-        cls = super(FormatterType, mcs).__new__(mcs, name, bases, attrs)
-        if attrs.get('name', None) != None:
-            _formatters[attrs['name']].append(cls)
-        return cls
 
 
 class Formatter(object):
@@ -90,10 +90,15 @@ class Formatter(object):
 
     def set_red(self, red):
         """
-        Set the RED to format.
+        Set the RED state to format.
         """
-        self.red = red # FIXME: cyclic reference
+        self.red = red
         
+    def done(self):
+        """Clean up. Must be called by finish_output."""
+        self.red = None
+        self.output = None
+    
     def feed(self, red, sample):
         """
         Feed a body sample to processor(s).

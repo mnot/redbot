@@ -51,6 +51,8 @@ nl = u"\n"
 static_root = 'static' # where status resources are located
 extra_dir = 'extra' # where extra resources are located
 
+# TODO: make subrequests explorable
+
 class BaseHtmlFormatter(Formatter):
     """
     Base class for HTML formatters."""
@@ -93,6 +95,7 @@ class BaseHtmlFormatter(Formatter):
         self.output(self.format_extra())
         self.output(self.format_footer())
         self.output("</body></html>\n")
+        self.done()
 
  
     def status(self, message):
@@ -106,8 +109,9 @@ window.status="%s";
         """ % (nbhttp.now() - self.start, e(message)))
 
     def final_status(self):
-        self.status("RED made %(reqs)s requests in %(elapse)2.3f seconds." % {
-           'reqs': fetch.total_requests,
+#        self.status("RED made %(reqs)s requests in %(elapse)2.3f seconds." % {
+# FIXME           'reqs': fetch.total_requests,
+        self.status("RED finished in %(elapse)2.3f seconds." % {
            'elapse': nbhttp.now() - self.start
         })
 
@@ -276,6 +280,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     e(self.red.res_error.get('detail', '')[:20]))
             else:
                 raise AssertionError, "Unknown incomplete response error."
+        self.done()
 
     def format_response(self, red):
         "Return the HTTP response line and headers as HTML"
@@ -305,8 +310,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         if not hasattr(red, "body_sample"):
             return ""
         try:
-            uni_sample = unicode(red.body_sample,
-                red.link_parser.doc_enc or red.link_parser.http_enc, 'ignore')
+            uni_sample = unicode(red.body_sample, red.res_body_enc, 'ignore')
         except LookupError:
             uni_sample = unicode(red.body_sample, 'utf-8', 'ignore')
         safe_sample = e(uni_sample)
@@ -315,7 +319,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             for link in link_set:
                 def link_to(matchobj):
                     try:
-                        qlink = urljoin(red.link_parser.base, link)
+                        qlink = urljoin(red.base_uri, link)
                     except ValueError, why:
                         pass # TODO: pass link problem upstream?
                              # e.g., ValueError("Invalid IPv6 URL")
@@ -380,13 +384,13 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         media_type = red.parsed_hdrs.get('content-type', [""])[0]
         options.append(
             (u"response headers: %s bytes" % \
-             f_num(red.client.input_header_length), 
+             f_num(red.header_length), 
              "how large the response headers are, including the status line"
             )
         )
         options.append((u"body: %s bytes" % f_num(red.res_body_len),
             "how large the response body is"))
-        transfer_overhead = red.client.input_transfer_length - \
+        transfer_overhead = red.transfer_length - \
             red.res_body_len
         if transfer_overhead > 0:
             options.append(
@@ -535,6 +539,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             'footer': self.format_footer(),
             'hidden_list': self.format_hidden_list(),
         })
+        self.done()
 
     link_order = [
           ('link', 'Head Links'),
@@ -628,9 +633,11 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                     )
                 )
         else:
-            out.append('<td colspan="11">%s' % red.res_error.get(
-                'desc', "Response incomplete"
-            ))
+            if red.res_error == None:
+                err = "response incomplete"
+            else:
+                err = red.res_error.get('desc', 'unknown problem')
+            out.append('<td colspan="11">%s' % err)
         out.append(u"</td>")
         out.append(u'</tr>')
         return nl.join(out)
@@ -680,7 +687,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         else:
             har_locator = "uri=%s" % e_query_arg(red.uri)            
         options.append((
-          u"<a href='?%s&decend=True&format=har'>view har</a>" % har_locator,
+          u"<a href='?%s&descend=True&format=har'>view har</a>" % har_locator,
           u"View a HAR (HTTP ARchive) file for this response"
         ))
         if not self.kw.get('is_saved', False):

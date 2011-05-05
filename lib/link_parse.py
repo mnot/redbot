@@ -58,7 +58,6 @@ class HTMLLinkParser(HTMLParser):
         self.base = base_uri
         self.process_link = process_link
         self.err = err
-        self.http_enc = 'latin-1'
         self.doc_enc = None
         self.link_types = {
             'link': 'href',
@@ -76,7 +75,6 @@ class HTMLLinkParser(HTMLParser):
     def __getstate__(self):
         return {
             'base': self.base,
-            'http_enc': self.http_enc,
             'doc_enc': self.doc_enc,
             'errors': self.errors,
             'last_err_pos': self.last_err_pos,
@@ -87,12 +85,16 @@ class HTMLLinkParser(HTMLParser):
         "Feed a given chunk of HTML data to the parser"
         if not self.ok:
             return
-        if response.parsed_hdrs.get('content-type', [None])[0] in self.link_parseable_types:
-            self.http_enc = response.parsed_hdrs['content-type'][1].get('charset', self.http_enc)
+        if response.parsed_hdrs.get('content-type', [None])[0] in \
+          self.link_parseable_types:
             try:
                 if chunk.__class__.__name__ != 'unicode':
                     try:
-                        chunk = unicode(chunk, self.doc_enc or self.http_enc, 'ignore')
+                        chunk = unicode(
+                            chunk, 
+                            self.doc_enc or response.res_body_enc, 
+                            'ignore'
+                        )
                     except LookupError:
                         pass
                 HTMLParser.feed(self, chunk)
