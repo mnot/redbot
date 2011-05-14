@@ -61,6 +61,8 @@ class SubRequest(RedFetcher):
         """
         return list(self.base.orig_req_hdrs)
 
+    def setMessage(self, subject, msg, subreq=None, **kw):
+        self.base.setMessage(subject, msg, self.state.type, **kw)
 
 
 class ConnegCheck(SubRequest):
@@ -95,15 +97,15 @@ class ConnegCheck(SubRequest):
         self.base.gzip_support = True
         self.base.gzip_savings = savings
         if savings >= 0:
-            self.base.setMessage('header-content-encoding',
-                rs.CONNEG_GZIP_GOOD, self.state,
+            self.setMessage('header-content-encoding',
+                rs.CONNEG_GZIP_GOOD,
                 savings=savings,
                 orig_size=f_num(self.state.res_body_len),
                 gzip_size=f_num(self.base.res_body_len)
             )
         else:
-            self.base.setMessage('header-content-encoding',
-                rs.CONNEG_GZIP_BAD, self.state,
+            self.setMessage('header-content-encoding',
+                rs.CONNEG_GZIP_BAD,
                 savings=abs(savings),
                 orig_size=f_num(self.state.res_body_len),
                 gzip_size=f_num(self.base.res_body_len)
@@ -111,23 +113,23 @@ class ConnegCheck(SubRequest):
         vary_headers = self.base.parsed_hdrs.get('vary', [])
         if (not "accept-encoding" in vary_headers) \
         and (not "*" in vary_headers):
-            self.base.setMessage('header-vary header-%s', rs.CONNEG_NO_VARY)
+            self.setMessage('header-vary header-%s', rs.CONNEG_NO_VARY)
         # TODO: verify that the status/body/hdrs are the same; 
         # if it's different, alert
         no_conneg_vary_headers = self.state.parsed_hdrs.get('vary', [])
         if 'gzip' in self.state.parsed_hdrs.get('content-encoding', []) or \
            'x-gzip' in self.state.parsed_hdrs.get('content-encoding', []):
-            self.base.setMessage('header-vary header-content-encoding',
+            self.setMessage('header-vary header-content-encoding',
                                  rs.CONNEG_GZIP_WITHOUT_ASKING)
         if no_conneg_vary_headers != vary_headers:
-            self.base.setMessage('header-vary', 
+            self.setMessage('header-vary', 
                 rs.VARY_INCONSISTENT,
                 conneg_vary=e(", ".join(vary_headers)),
                 no_conneg_vary=e(", ".join(no_conneg_vary_headers))
             )
         if self.state.parsed_hdrs.get('etag', 1) \
            == self.base.parsed_hdrs.get('etag', 2):
-            self.base.setMessage('header-etag', rs.ETAG_DOESNT_CHANGE) 
+            self.setMessage('header-etag', rs.ETAG_DOESNT_CHANGE) 
             # TODO: weakness?
 
 
@@ -170,26 +172,21 @@ class RangeRequest(SubRequest):
             ce = 'content-encoding'
             if ('gzip' in self.base.parsed_hdrs.get(ce, [])) == \
                ('gzip' not in self.state.parsed_hdrs.get(ce, [])):
-                self.base.setMessage(
+                self.setMessage(
                     'header-accept-ranges header-content-encoding',
-                    rs.RANGE_NEG_MISMATCH, 
-                    self.state
+                    rs.RANGE_NEG_MISMATCH
                 )
                 return
             if self.state.parsed_hdrs.get('etag', 1) == \
               self.base.parsed_hdrs.get('etag', 2):
                 if self.state.res_body == self.range_target:
                     self.base.partial_support = True
-                    self.base.setMessage('header-accept-ranges', 
-                        rs.RANGE_CORRECT, 
-                        self.state
-                    )
+                    self.setMessage('header-accept-ranges', rs.RANGE_CORRECT)
                 else:
                     # the body samples are just bags of bits
                     self.base.partial_support = False
-                    self.base.setMessage('header-accept-ranges',
+                    self.setMessage('header-accept-ranges',
                         rs.RANGE_INCORRECT,
-                        self.state,
                         range="bytes=%s-%s" % (
                             self.range_start, self.range_end
                         ),
@@ -203,17 +200,14 @@ class RangeRequest(SubRequest):
                         range_received_bytes = f_num(self.state.res_body_len)
                     )
             else:
-                self.base.setMessage('header-accept-ranges',
-                    rs.RANGE_CHANGED,
-                    self.state
-                )
+                self.setMessage('header-accept-ranges', rs.RANGE_CHANGED)
 
         # TODO: address 416 directly
         elif self.state.res_status == self.base.res_status:
             self.base.partial_support = False
-            self.base.setMessage('header-accept-ranges', rs.RANGE_FULL)
+            self.setMessage('header-accept-ranges', rs.RANGE_FULL)
         else:
-            self.base.setMessage('header-accept-ranges', 
+            self.setMessage('header-accept-ranges', 
                 rs.RANGE_STATUS,
                 range_status=self.state.res_status,
                 enc_range_status=e(self.state.res_status)
@@ -248,21 +242,17 @@ class ETagValidate(SubRequest):
     def done(self):
         if self.state.res_status == '304':
             self.base.inm_support = True
-            self.base.setMessage('header-etag', rs.INM_304, self.state)
+            self.setMessage('header-etag', rs.INM_304, self.state)
             # TODO : check Content- headers, esp. length.
         elif self.state.res_status == self.base.res_status:
             if self.state.res_body_md5 == self.base.res_body_md5:
                 self.base.inm_support = False
-                self.base.setMessage('header-etag', rs.INM_FULL, self.state)
+                self.setMessage('header-etag', rs.INM_FULL)
             else:
-                self.base.setMessage('header-etag', 
-                    rs.INM_UNKNOWN, 
-                    self.state
-                )
+                self.setMessage('header-etag', rs.INM_UNKNOWN)
         else:
-            self.base.setMessage('header-etag', 
+            self.setMessage('header-etag', 
                 rs.INM_STATUS, 
-                self.state,
                 inm_status = self.state.res_status,
                 enc_inm_status = e(self.state.res_status)
             )
@@ -293,27 +283,17 @@ class LmValidate(SubRequest):
     def done(self):
         if self.state.res_status == '304':
             self.base.ims_support = True
-            self.base.setMessage('header-last-modified', 
-                rs.IMS_304, 
-                self.state
-            )
+            self.setMessage('header-last-modified', rs.IMS_304)
             # TODO : check Content- headers, esp. length.
         elif self.state.res_status == self.base.res_status:
             if self.state.res_body_md5 == self.base.res_body_md5:
                 self.base.ims_support = False
-                self.base.setMessage('header-last-modified', 
-                    rs.IMS_FULL, 
-                    self.state
-                )
+                self.setMessage('header-last-modified', rs.IMS_FULL)
             else:
-                self.base.setMessage('header-last-modified', 
-                    rs.IMS_UNKNOWN, 
-                    self.state
-                )
+                self.setMessage('header-last-modified', rs.IMS_UNKNOWN)
         else:
-            self.base.setMessage('header-last-modified', 
+            self.setMessage('header-last-modified', 
                 rs.IMS_STATUS, 
-                self.state,
                 ims_status = self.state.res_status,
                 enc_ims_status = e(self.state.res_status)
             )

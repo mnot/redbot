@@ -359,7 +359,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             self.hidden_text.append(
                 ("msgid-%s" % id(m), m.text[self.lang] % m.vars)
             )
-            smsgs = [msg for msg in getattr(m.subrequest, "messages", []) if \
+            subreq = red.subreqs.get(m.subrequest, None)
+            smsgs = [msg for msg in getattr(subreq, "messages", []) if \
                 msg.level in [rs.l.BAD]]
             if smsgs:
                 out.append(u"<ul>")
