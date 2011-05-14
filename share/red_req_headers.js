@@ -12,7 +12,7 @@ var known_req_hdrs = {
     "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Win64; x64; Trident/4.0)",
     "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; )",
     "Mozilla/5.0 (X11; U; Linux x86_64; en-US) Gecko Firefox/3.0.8",
-    "Opera/9.80 (Windows NT 5.1; U; cs) Presto/2.2.15 Version/10.00",
+    "Opera/9.80 (Windows NT 5.1; U; cs) Presto/2.2.15 Version/10.00"
   ]
 };
 
