@@ -4,7 +4,6 @@
 Cacheability checking function. Called on complete responses by RedFetcher.
 """
 
-__version__ = "1"
 __author__ = "Mark Nottingham <mnot@mnot.net>"
 __copyright__ = """\
 Copyright (c) 2008-2011 Mark Nottingham
