@@ -548,6 +548,7 @@ def standalone_monitor (port, static_dir):
         p.join()
         # TODO: listen to socket and drop privs
 
+
 if __name__ == "__main__":
     if os.environ.has_key('GATEWAY_INTERFACE'):  # CGI
         cgi_main()
