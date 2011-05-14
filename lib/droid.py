@@ -73,6 +73,7 @@ class ResourceExpertDroid(RedFetcher):
         rh = orig_req_hdrs + [('Accept-Encoding', 'gzip')]
         RedFetcher.__init__(self, uri, method, rh, req_body,
                             status_cb, body_procs, req_type=method)
+
         # Extra metadata that the "main" RED will be adorned with 
         self.state.orig_req_hdrs = orig_req_hdrs
         self.state.age = None
@@ -102,10 +103,10 @@ class ResourceExpertDroid(RedFetcher):
         """
         if self.state.res_complete:
             self.checkCaching()
-            self.add_task(ConnegCheck(self).run)
-            self.add_task(RangeRequest(self).run)
-            self.add_task(ETagValidate(self).run)
-            self.add_task(LmValidate(self).run)
+            self.add_task(ConnegCheck(self, 'Accept-Encoding').run)
+            self.add_task(RangeRequest(self, 'Range').run)
+            self.add_task(ETagValidate(self, 'ETag').run)
+            self.add_task(LmValidate(self, 'Last-Modified').run)
                 
     def checkCaching(self):
         "Examine HTTP caching characteristics."
@@ -386,19 +387,41 @@ class InspectingResourceExpertDroid(ResourceExpertDroid):
             self.state.base_uri = self.link_parser.base
 
 
-class ConnegCheck(RedFetcher):
+class SubRequest(RedFetcher):
+    """
+    A subrequest of a "main" ResourceExpertDroid, made to perform additional
+    behavioural tests on the resource.
+    
+    it both adorns the given red's state, and saves its own state in the
+    given red's subreqs dict.
+    """
+    def __init__(self, red, name):
+        self.base = red.state
+        req_hdrs = self.modify_req_hdrs()
+        RedFetcher.__init__(self, self.base.uri, self.base.method, req_hdrs,
+                            self.base.req_body, red.status_cb, [], name)
+        self.base.subreqs[name] = self.state
+    
+    def modify_req_hdrs(self):
+        """
+        Usually overidden; modifies the request's headers.
+        
+        Make sure it returns a copy of the orignals, not them.
+        """
+        return list(self.base.orig_req_hdrs)
+
+
+
+class ConnegCheck(SubRequest):
     """
     See if content negotiation for compression is supported, and how.
 
     Note that this depends on the "main" request being sent with
     Accept-Encoding: gzip
     """
-    def __init__(self, red):
-        self.base = red.state
-        req_hdrs = [h for h in self.base.orig_req_hdrs if
-                    h[0].lower() != 'accept-encoding']
-        RedFetcher.__init__(self, self.base.uri, self.base.method, req_hdrs,
-                            self.base.req_body, red.status_cb, [], "conneg")
+    def modify_req_hdrs(self):
+        return [h for h in self.base.orig_req_hdrs 
+            if h[0].lower() != 'accept-encoding']
 
     def preflight(self):
         if "gzip" in self.base.parsed_hdrs.get('content-encoding', []):
@@ -457,10 +480,10 @@ class ConnegCheck(RedFetcher):
             # TODO: weakness?
 
 
-class RangeRequest(RedFetcher):
+class RangeRequest(SubRequest):
     "Check for partial content support (if advertised)"
-    def __init__(self, red):
-        self.base = red.state
+
+    def modify_req_hdrs(self):
         req_hdrs = list(self.base.req_hdrs)
         if len(self.base.res_body_sample) != 0:
             sample_num = random.randint(0, len(self.base.res_body_sample) - 1)
@@ -475,9 +498,7 @@ class RangeRequest(RedFetcher):
             req_hdrs += [
                 ('Range', "bytes=%s-%s" % (self.range_start, self.range_end))
             ]
-        RedFetcher.__init__(self, self.base.uri, self.base.method, 
-            req_hdrs, self.base.req_body, red.status_cb, [], "range"
-        )
+        return req_hdrs
         
     def preflight(self):
         if 'bytes' in self.base.parsed_hdrs.get('accept-ranges', []):
@@ -548,10 +569,10 @@ class RangeRequest(RedFetcher):
             )
 
 
-class ETagValidate(RedFetcher):
+class ETagValidate(SubRequest):
     "If an ETag is present, see if it will validate."
-    def __init__(self, red):
-        self.base = red.state
+
+    def modify_req_hdrs(self):
         req_hdrs = list(self.base.req_hdrs)
         if self.base.parsed_hdrs.has_key('etag'):
             weak, etag = self.base.parsed_hdrs['etag']
@@ -564,9 +585,7 @@ class ETagValidate(RedFetcher):
             req_hdrs += [
                 ('If-None-Match', etag_str),
             ]
-        RedFetcher.__init__(self, self.base.uri, self.base.method, req_hdrs,
-            self.base.req_body, red.status_cb, [], "ETag validation"
-        )
+        return req_hdrs
             
     def preflight(self):
         if self.base.parsed_hdrs.has_key('etag'):
@@ -598,10 +617,10 @@ class ETagValidate(RedFetcher):
             )
         # TODO: check entity headers
 
-class LmValidate(RedFetcher):
+class LmValidate(SubRequest):
     "If Last-Modified is present, see if it will validate."
-    def __init__(self, red):
-        self.base = red.state
+
+    def modify_req_hdrs(self):
         req_hdrs = list(self.base.req_hdrs)
         if self.base.parsed_hdrs.has_key('last-modified'):
             date_str = time.strftime(
@@ -611,9 +630,7 @@ class LmValidate(RedFetcher):
             req_hdrs += [
                 ('If-Modified-Since', date_str),
             ]
-        RedFetcher.__init__(self, self.base.uri, self.base.method, req_hdrs,
-            self.base.req_body, red.status_cb, [], "LM validation"
-        )
+        return req_hdrs
 
     def preflight(self):
         if self.base.parsed_hdrs.has_key('last-modified'):

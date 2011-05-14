@@ -48,9 +48,9 @@ class RedState(object):
        subject,     # The subject(s) of the msg, as a space-separated string.
                     # e.g., "header-cache-control header-expires"
        message,     # The message structure; see red_speak.py
-       subrequest,  # Optionally, a RedFetcher object representing a
-                    # request with additional details about another request
-                    # made in order to generate the message
+       subrequest,  # Optionally, the req_type of a RedState object
+                    # (stored in .subreqs) representing a
+                    # subrequest made in order to generate the message
        **variables  # Optionally, key=value pairs intended for interpolation
                     # into the message; e.g., time_left="5d3h"
       )
@@ -82,6 +82,7 @@ class RedState(object):
         self.res_error = None # any parse errors encountered; see nbhttp.error
         # interesting things about the response; set by a variety of things
         self.messages = [] # messages (see above)
+        self.subreqs = {} # sub-requests' RedState objects
         try:
             self.uri = self.iri_to_uri(iri)
         except UnicodeError, why:
