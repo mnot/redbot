@@ -36,8 +36,6 @@ THE SOFTWARE.
 
 import base64
 import hashlib
-import urllib
-import urlparse
 import zlib
 from cgi import escape as e
 
@@ -45,92 +43,11 @@ import nbhttp
 import redbot.speak as rs
 import redbot.response_analyse as ra
 from redbot.response_analyse import f_num
+from redbot.state import RedState
 
 class RedHttpClient(nbhttp.Client):
     connect_timeout = 8
     read_timeout = 8
-
-
-class RedState(object):
-    """
-    Holder for test state.
-
-    Messages is a list of messages, each of which being a tuple that
-    follows the following form:
-      (
-       subject,     # The subject(s) of the msg, as a space-separated string.
-                    # e.g., "header-cache-control header-expires"
-       message,     # The message structure; see red_speak.py
-       subrequest,  # Optionally, a RedFetcher object representing a
-                    # request with additional details about another request
-                    # made in order to generate the message
-       **variables  # Optionally, key=value pairs intended for interpolation
-                    # into the message; e.g., time_left="5d3h"
-      )
-    """
-    
-    def __init__(self, iri, method, req_hdrs, req_body, req_type):
-        self.method = method
-        self.req_hdrs = req_hdrs or []
-        self.req_body = req_body
-        self.type = req_type
-        self.req_ts = None # when the request was started
-        self.res_ts = None # when the response was started
-        self.res_done_ts = None # when the response was finished
-        # response attributes; populated by RedFetcher
-        self.res_version = ""
-        self.res_status = None
-        self.res_phrase = ""
-        self.res_hdrs = []
-        self.parsed_hdrs = {}
-        self.res_body = "" # note: only partial responses; bytes, not unicode
-        self.res_body_len = 0
-        self.res_body_md5 = None
-        self.res_body_sample = [] # [(offset, chunk)]{,4} Bytes, not unicode
-        self.res_body_enc = None
-        self.res_body_decode_len = 0
-        self.res_complete = False
-        self.transfer_length = None
-        self.header_length = None
-        self.res_error = None # any parse errors encountered; see nbhttp.error
-        # interesting things about the response; set by a variety of things
-        self.messages = [] # messages (see above)
-        try:
-            self.uri = self.iri_to_uri(iri)
-        except UnicodeError, why:
-            self.res_error = nbhttp.error.ERR_URL
-            self.uri = None
-
-    def setMessage(self, subject, msg, subreq=None, **kw):
-        "Set a message."
-        kw['response'] = rs.response.get(
-            self.type, rs.response['this']
-        )['en']
-        self.messages.append(msg(subject, subreq, kw))
-        
-    @staticmethod
-    def iri_to_uri(iri):
-        "Takes a Unicode string that can contain an IRI and emits a URI."
-        scheme, authority, path, query, frag = urlparse.urlsplit(iri)
-        scheme = scheme.encode('utf-8')
-        if ":" in authority:
-            host, port = authority.split(":", 1)
-            authority = host.encode('idna') + ":%s" % port
-        else:
-            authority = authority.encode('idna')
-        path = urllib.quote(
-          path.encode('utf-8'), 
-          safe="/;%[]=:$&()+,!?*@'~"
-        )
-        query = urllib.quote(
-          query.encode('utf-8'), 
-          safe="/;%[]=:$&()+,!?*@'~"
-        )
-        frag = urllib.quote(
-          frag.encode('utf-8'), 
-          safe="/;%[]=:$&()+,!?*@'~"
-        )
-        return urlparse.urlunsplit((scheme, authority, path, query, frag))
     
 
 class RedFetcher(object):
@@ -396,7 +313,6 @@ class RedFetcher(object):
         if flag & FHCRC:
             content_l = content_l[2:]   # Read & discard the 16-bit header CRC
         return "".join(content_l)
-
 
 
 
