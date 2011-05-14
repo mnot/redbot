@@ -202,9 +202,9 @@ class ResponseHeaderParser(object):
                 if parsed_value != None:
                     self.red.parsed_hdrs[nn] = parsed_value
 
-    def setMessage(self, name, msg, **vars):
+    def setMessage(self, name, msg, **kw):
         ident = 'header-%s' % name.lower()
-        self.red.setMessage(ident, msg, field_name=name, **vars)
+        self.red.setMessage(ident, msg, field_name=name, **kw)
 
     @staticmethod
     def _parseDate(values):
@@ -254,7 +254,9 @@ class ResponseHeaderParser(object):
         """
         if not instr:
             return []
-        return [h.strip() for h in re.findall(r'%s(?=%s|\s*$)' % (item, split), instr)]
+        return [h.strip() for h in re.findall(
+            r'%s(?=%s|\s*$)' % (item, split), instr
+        )]
 
     @GenericHeaderSyntax
     def accept_ranges(self, name, values):
@@ -341,8 +343,10 @@ class ResponseHeaderParser(object):
         return values
 
     @GenericHeaderSyntax
-    @CheckFieldSyntax(r'(?:%(TOKEN)s/%(TOKEN)s(?:\s*;\s*%(PARAMETER)s)*)' % globals(),
-                      rfc2616 % "sec-14.17")
+    @CheckFieldSyntax(
+        r'(?:%(TOKEN)s/%(TOKEN)s(?:\s*;\s*%(PARAMETER)s)*)' % globals(),
+        rfc2616 % "sec-14.17"
+    )
     @SingleFieldValue
     def content_type(self, name, values):
         try:
@@ -421,12 +425,14 @@ class ResponseHeaderParser(object):
         # TODO: check syntax, values?
         pass
 
-    # The most common problem with Location is a non-absolute URI, so we separate
-    # that from the syntax check.
+    # The most common problem with Location is a non-absolute URI, 
+    # so we separate that from the syntax check.
     @CheckFieldSyntax(URI_reference, rfc2616 % "sec-14.30")
     @SingleFieldValue
     def location(self, name, values):
-        if self.red.res_status not in ["201", "300", "301", "302", "303", "305", "307"]:
+        if self.red.res_status not in [
+            "201", "300", "301", "302", "303", "305", "307"
+        ]:
             self.setMessage(name, rs.LOCATION_UNDEFINED)
         if not re.match(r"^\s*%s\s*$" % URI, values[-1], re.VERBOSE):
             self.setMessage(name, rs.LOCATION_NOT_ABSOLUTE,
@@ -498,8 +504,10 @@ class ResponseHeaderParser(object):
         return values
 
     @GenericHeaderSyntax
-    @CheckFieldSyntax(r'(?:%s/)?%s\s+[^,\s]+(?:\s+%s)?' % (TOKEN, TOKEN, COMMENT),
-                      rfc2616 % "sec-14.45")
+    @CheckFieldSyntax(
+        r'(?:%s/)?%s\s+[^,\s]+(?:\s+%s)?' % (TOKEN, TOKEN, COMMENT),
+        rfc2616 % "sec-14.45"
+    )
     def via(self, name, values):
         via_list = u"<ul>" + u"\n".join(
                [u"<li><code>%s</code></li>" % e(v) for v in values]
@@ -548,7 +556,10 @@ class ResponseHeaderParser(object):
         return values
 
     @GenericHeaderSyntax
-    @CheckFieldSyntax(PARAMETER, "http://msdn.microsoft.com/en-us/library/cc288325(VS.85).aspx")
+    @CheckFieldSyntax(
+        PARAMETER,
+        "http://msdn.microsoft.com/en-us/library/cc288325(VS.85).aspx"
+    )
     def x_ua_compatible(self, name, values):
         directives = {}
         for directive in values:
@@ -568,7 +579,9 @@ class ResponseHeaderParser(object):
 
     @GenericHeaderSyntax
     @SingleFieldValue
-    @CheckFieldSyntax(r'(?:[10](?:\s*;\s*%(PARAMETER)s)*)' % globals(), 'http://blogs.msdn.com/b/ieinternals/archive/2011/01/31/controlling-the-internet-explorer-xss-filter-with-the-x-xss-protection-http-header.aspx')
+    @CheckFieldSyntax(
+        r'(?:[10](?:\s*;\s*%(PARAMETER)s)*)' % globals(), 'http://blogs.msdn.com/b/ieinternals/archive/2011/01/31/controlling-the-internet-explorer-xss-filter-with-the-x-xss-protection-http-header.aspx'
+    )
     def x_xss_protection(self, name, values):
         if int(values[-1].split(';', 1)[0]) == 0:
             self.setMessage(name, rs.XSS_PROTECTION)
@@ -598,7 +611,7 @@ class ResponseStatusChecker:
         except AttributeError:
             self.setMessage('status', rs.STATUS_NONSTANDARD)
 
-    def setMessage(self, name, msg, **vars):
+    def setMessage(self, name, msg, **kw):
         if name:
             ident = 'status %s' % name
         else:
@@ -606,7 +619,7 @@ class ResponseStatusChecker:
         self.red.setMessage(ident, msg,
                              status=self.red.res_status,
                              enc_status=e(self.red.res_status),
-                             **vars
+                             **kw
                              )
 
     def status100(self):        # Continue
@@ -621,7 +634,10 @@ class ResponseStatusChecker:
         pass
     def status201(self):        # Created
         if self.red.method in nbhttp.safe_methods:
-            self.setMessage('status', rs.CREATED_SAFE_METHOD, method=self.red.method)
+            self.setMessage('status', 
+                rs.CREATED_SAFE_METHOD, 
+                method=self.red.method
+            )
         if not self.red.parsed_hdrs.has_key('location'):
             self.setMessage('header-location', rs.CREATED_WITHOUT_LOCATION)
     def status202(self):        # Accepted

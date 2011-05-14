@@ -43,7 +43,7 @@ assert sys.version_info[0] == 2 and sys.version_info[1] >= 5, \
     "Please use Python 2.5 or greater"
 
 import nbhttp
-from redbot import droid, fetch
+from redbot import droid
 from redbot.formatter import find_formatter, html
 
 ### Configuration ##########################################################
@@ -90,6 +90,7 @@ try:
 except:
     locale.setlocale(locale.LC_ALL, '')
 
+
 class RedWebUi(object):
     """
     A Web UI for RED.
@@ -123,8 +124,8 @@ class RedWebUi(object):
         else:
             self.show_default()
 
-    def output_hdrs(self, *args):
-        (output_body, body_done) = self._output_hdrs(*args)
+    def output_hdrs(self, *rgs):
+        (output_body, body_done) = self._output_hdrs(*rgs)
         self.output_body = output_body
         def remove_timeout():
             self.timeout.delete()
@@ -198,6 +199,7 @@ class RedWebUi(object):
             return
         finally:
             fd.close()
+            
         formatter = find_formatter(self.format, 'html', self.descend)(
             self.base_uri, ired.uri, ired.orig_req_hdrs, lang,
             self.output, allow_save=(not is_saved), is_saved=True,
@@ -319,7 +321,7 @@ def except_handler_factory(out=None):
         import cgitb
         out(cgitb.reset())
         if logdir is None:
-                out(error_template % """
+            out(error_template % """
     A problem has occurred, but it probably isn't your fault.
     """)
         else:

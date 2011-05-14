@@ -29,7 +29,6 @@ THE SOFTWARE.
 
 from htmlentitydefs import entitydefs
 from HTMLParser import HTMLParser
-from urlparse import urljoin
 
 from redbot import response_analyse
 from redbot.response_analyse import ResponseHeaderParser as RHP
@@ -118,7 +117,8 @@ class HTMLLinkParser(HTMLParser):
                 self.process_link(target, tag, title)
         elif tag == 'base':
             self.base = attr_d.get('href', self.base)
-        elif tag == 'meta' and attr_d.get('http-equiv', '').lower() == 'content-type':
+        elif tag == 'meta' and \
+          attr_d.get('http-equiv', '').lower() == 'content-type':
             ct = attr_d.get('content', None)
             if ct:
                 try:
@@ -127,7 +127,9 @@ class HTMLLinkParser(HTMLParser):
                     media_type, params = ct, ''
                 media_type = media_type.lower()
                 param_dict = {}
-                for param in RHP._splitString(params, response_analyse.PARAMETER, "\s*;\s*"):
+                for param in RHP._splitString(
+                    params, response_analyse.PARAMETER, "\s*;\s*"
+                ):
                     try:
                         a, v = param.split("=", 1)
                         param_dict[a.lower()] = RHP._unquoteString(v)
@@ -146,7 +148,9 @@ class HTMLLinkParser(HTMLParser):
         if self.getpos() == self.last_err_pos:
             # we're in a loop; give up.
             if self.err:
-                self.err("giving up on link parsing after %s errors" % self.errors)
+                self.err(
+                    "giving up on link parsing after %s errors" % self.errors
+                )
             self.ok = False
             raise BadErrorIReallyMeanIt()
         else:

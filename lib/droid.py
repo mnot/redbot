@@ -36,7 +36,6 @@ THE SOFTWARE.
 """
 
 import re
-from cgi import escape as e
 from urlparse import urljoin
 
 import redbot.speak as rs
@@ -147,9 +146,9 @@ class InspectingResourceExpertDroid(ResourceExpertDroid):
 
 if "__main__" == __name__:
     import sys
-    uri = sys.argv[1]
+    test_uri = sys.argv[1]
     def status_p(msg):
         print msg
-    red = InspectingResourceExpertDroid(uri, status_cb=status_p)
+    red = InspectingResourceExpertDroid(test_uri, status_cb=status_p)
     red.run()
-    print red.messages
+    print red.state.messages

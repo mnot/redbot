@@ -28,14 +28,15 @@ THE SOFTWARE.
 """
 
 import sys
-assert sys.version_info[0] == 2 and sys.version_info[1] >= 5, "Please use Python 2.5 or greater"
+assert sys.version_info[0] == 2 and sys.version_info[1] >= 5, \
+    "Please use Python 2.5 or greater"
 
 from optparse import OptionParser
 
 import nbhttp
 from redbot import droid
 from redbot.formatter import find_formatter, available_formatters
-import redbot.speak as rs
+
 
 lang = "en"  # TODO: add as CL option
 charset = "utf-8"

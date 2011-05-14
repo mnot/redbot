@@ -27,7 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from redbot.response_analyse import relative_time
+from redbot.response_analyse import relative_time, f_num
 import redbot.speak as rs
 
 ### configuration
@@ -46,7 +46,7 @@ def checkCaching(state):
     ]
 
     cc_set = state.parsed_hdrs.get('cache-control', [])
-    cc_list = [k for (k,v) in cc_set]
+    cc_list = [k for (k, v) in cc_set]
     cc_dict = dict(cc_set)
     cc_keys = cc_dict.keys()
 

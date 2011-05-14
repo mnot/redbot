@@ -71,6 +71,7 @@ class RedFetcher(object):
         self.state = RedState(iri, method, req_hdrs, req_body, req_type)
         self.status_cb = status_cb
         self.body_procs = body_procs or []
+        self.client = None
         self.done_cb = None
         self.outstanding_tasks = 0
         self._md5_processor = hashlib.md5()
@@ -323,14 +324,14 @@ class RedFetcher(object):
 if "__main__" == __name__:
     import sys
     uri = sys.argv[1]
-    req_hdrs = [('Accept-Encoding', 'gzip')]
+    test_req_hdrs = [('Accept-Encoding', 'gzip')]
     def status_p(msg):
         print msg
     class TestFetcher(RedFetcher):
         def done(self):
             print self.state.messages
     tf = TestFetcher(
-        uri, req_hdrs=req_hdrs, status_cb=status_p, req_type='test'
+        uri, req_hdrs=test_req_hdrs, status_cb=status_p, req_type='test'
     )
     tf.run()
     nbhttp.run()
