@@ -52,7 +52,7 @@ these configuration directives (e.g., in .htaccess, if enabled)::
 If the directory is the root directory for your server "example.com", 
 this will configure RED to be at the URI "http://example.com/".
 
-The contents of the share directory also need to be made available on the
+The contents of the share directory* also need to be made available on the
 server; by default, they're in the 'static' subdirectory of the script's URI.
 This can be changed using the 'html.static_root' configuration variable in
 webui.py.
@@ -65,6 +65,9 @@ configure a cron job to regularly clean it. For example::
   0 * * * * find /var/state/redbot/ -mmin +360 -exec rm {} \;
 
 If you don't want to allow users to store responses, set save_dir to 'None'.  
+
+* Note that you really only need script.js and style.js, but it doesn't hurt
+to have the rest.
 
 Running under mod_python
 ------------------------
