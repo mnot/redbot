@@ -5,7 +5,6 @@ Subrequests to do things like range requests, content negotiation checks,
 and validation.
 """
 
-__version__ = "1"
 __author__ = "Mark Nottingham <mnot@mnot.net>"
 __copyright__ = """\
 Copyright (c) 2008-2011 Mark Nottingham
@@ -258,6 +257,7 @@ class ETagValidate(SubRequest):
             )
         # TODO: check entity headers
 
+
 class LmValidate(SubRequest):
     "If Last-Modified is present, see if it will validate."
 
@@ -298,4 +298,3 @@ class LmValidate(SubRequest):
                 enc_ims_status = e(self.state.res_status)
             )
         # TODO: check entity headers
-

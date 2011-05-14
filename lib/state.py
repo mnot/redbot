@@ -7,7 +7,6 @@ RedState holds all test-related state that's useful for analysis; ephemeral
 objects (e.g., the HTTP client machinery) are kept elsewhere.
 """
 
-__version__ = "1"
 __author__ = "Mark Nottingham <mnot@mnot.net>"
 __copyright__ = """\
 Copyright (c) 2008-2011 Mark Nottingham
