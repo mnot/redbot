@@ -66,8 +66,7 @@ configure a cron job to regularly clean it. For example::
 
 If you don't want to allow users to store responses, set save_dir to 'None'.  
 
-* Note that you really only need script.js and style.js, but it doesn't hurt
-to have the rest.
+* Note that you really only need script.js and style.js, but it doesn't hurt to have the rest.
 
 Running under mod_python
 ------------------------
