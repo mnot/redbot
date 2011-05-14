@@ -40,6 +40,7 @@ import zlib
 from cgi import escape as e
 
 import nbhttp
+from redbot.cache_check import checkCaching
 import redbot.speak as rs
 import redbot.response_analyse as ra
 from redbot.response_analyse import f_num
@@ -249,6 +250,9 @@ class RedFetcher(object):
             state.res_complete = False
         else:
             raise AssertionError, "Unknown response error: %s" % err
+
+        if state.res_complete:
+            checkCaching(state)
 
         if state.res_complete \
           and state.method not in ['HEAD'] \
