@@ -405,7 +405,7 @@ class LM_PRESENT(Message):
 
 class CONTENT_TRANSFER_ENCODING(Message):
     category = c.GENERAL
-    level = l.INFO
+    level = l.WARN
     summary = {
     'en': u"The Content-Transfer-Encoding header isn't necessary in HTTP."
     }
@@ -419,7 +419,7 @@ class CONTENT_TRANSFER_ENCODING(Message):
 
 class MIME_VERSION(Message):
     category = c.GENERAL
-    level = l.INFO
+    level = l.WARN
     summary = {
     'en': u"The MIME-Version header isn't necessary in HTTP."
     }
