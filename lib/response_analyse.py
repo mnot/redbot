@@ -342,6 +342,10 @@ class ResponseHeaderParser(object):
             self.setMessage(name, rs.CONTENT_RANGE_MEANINGLESS)
         return values
 
+    def mime_version(self, name, values):
+        self.setMessage(name, rs.CONTENT_TRANSFER_ENCODING)
+        return values
+
     @GenericHeaderSyntax
     @CheckFieldSyntax(
         r'(?:%(TOKEN)s/%(TOKEN)s(?:\s*;\s*%(PARAMETER)s)*)' % globals(),

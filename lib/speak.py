@@ -398,16 +398,32 @@ class LM_PRESENT(Message):
     This resource last changed %(last_modified_string)s."""
     }
 
+class CONTENT_TRANSFER_ENCODING(Message):
+    category = c.GENERAL
+    level = l.INFO
+    summary = {
+    'en': u"The Content-Transfer-Encoding header isn't necessary in HTTP."
+    }
+    text = {
+    'en': u"""<code>Content-Transfer-Encoding</code> is a MIME header, not
+    a HTTP header; it's only used when HTTP messages are moved over
+    MIME-based protocols (e.g., SMTP), which is uncommon.<p>
+    You can safely remove this header.
+    """
+    }
+
 class MIME_VERSION(Message):
     category = c.GENERAL
     level = l.INFO
     summary = {
-    'en': u"The MIME-Version header generally isn't necessary in HTTP."
+    'en': u"The MIME-Version header isn't necessary in HTTP."
     }
     text = {
     'en': u"""<code>MIME_Version</code> is a MIME header, not a HTTP header; it's
     only used when HTTP messages are moved over MIME-based protocols
-    (e.g., SMTP), which is uncommon."""
+    (e.g., SMTP), which is uncommon.<p>
+    You can safely remove this header.
+    """
     }
 
 class PRAGMA_NO_CACHE(Message):
