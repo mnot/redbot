@@ -342,7 +342,7 @@ class ResponseHeaderParser(object):
             self.setMessage(name, rs.CONTENT_RANGE_MEANINGLESS)
         return values
 
-    def mime_version(self, name, values):
+    def content_transfer_encoding(self, name, values):
         self.setMessage(name, rs.CONTENT_TRANSFER_ENCODING)
         return values
 
