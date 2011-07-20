@@ -55,11 +55,14 @@ jQuery.fn.hoverPopup = function(fnText, fnOver, fnOut) {
   return jQuery.fn.hoverIntent.call(this, fnOverPopup, fnOutPopup);
 };
 
-$("#popup").hoverIntent(function(){
-  if (tid != false) {
-    clearTimeout(tid);
-    tid = false;
-  }
-}, function(){
-  $("#popup").fadeOut("fast");
+$(document).ready(function() {
+  $("#popup").hoverIntent(function(){
+    if (tid != false) {
+      clearTimeout(tid);
+      tid = false;
+    }
+  }, function(){
+    $("#popup").fadeOut("fast");
+  });
+  
 });

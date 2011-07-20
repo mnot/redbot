@@ -8,7 +8,7 @@ var known_req_hdrs = {
   'Cookie': null,
   'Referer': null,
   'User-Agent': [ 
-    "RED/" + redbot_version + " (http://redbot.org/about)",
+    "RED/" + config.redbot_version + " (http://redbot.org/about)",
     "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Win64; x64; Trident/4.0)",
     "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; )",
     "Mozilla/5.0 (X11; U; Linux x86_64; en-US) Gecko Firefox/3.0.8",
@@ -25,10 +25,6 @@ var red_req_hdrs = [
   'content-length'
 ];
 
-$("#add_req_hdr").click(function(){
-  add_req_hdr();
-  return false;
-});
 
 
 function add_req_hdr(hdr_name, hdr_val){
@@ -155,12 +151,15 @@ function bind_text_changes(req_hdr) {
   });
 }
 
-function init_req_hdrs() {
-  for (i in redbot_req_hdrs) {
-    var req_hdr = redbot_req_hdrs[i];
-    add_req_hdr(req_hdr[0], req_hdr[1]);
-  }
-  return false;
-}
 
-init_req_hdrs();
+$(document).ready(function() {
+  for (i in config.redbot_req_hdrs) {
+    var hdr = config.redbot_req_hdrs[i];
+    add_req_hdr(hdr[0], hdr[1]);
+  }
+  
+  $("#add_req_hdr").click(function(){
+    add_req_hdr();
+    return false;
+  });
+});

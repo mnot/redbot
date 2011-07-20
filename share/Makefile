@@ -1,4 +1,4 @@
-JSFILES = jquery.js jquery.hoverIntent.js prettify.js red_popup.js red_req_headers.js red_script.js 
+JSFILES = jquery.js jquery.hoverIntent.js prettify.js red_script.js red_popup.js red_req_headers.js 
 CSSFILES = red_style.css prettify.css
 YUI_COMPRESSOR_JAR = ~/Applications/yuicompressor-2.4.3.jar
 

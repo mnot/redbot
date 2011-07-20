@@ -13,23 +13,7 @@
             float: left;
     </style>
     <![endif]-->
-    <script type="text/javascript">
-        var redbot_uri = "%(js_uri)s";
-        var redbot_req_hdrs = [%(js_req_hdrs)s];
-        var redbot_version = "%(version)s";
-        function loadJS() {
-            var element = document.createElement("script");
-            element.src = "%(static)s/script.js";
-            document.body.appendChild(element);
-        }
-        if (window.addEventListener)
-            window.addEventListener("load", loadJS, false);
-        else if (window.attachEvent)
-            window.attachEvent("onload", loadJS);
-        else
-            window.onload = loadJS;
-    </script>
-    <!--script src="%(static)s/script.js" type="text/javascript"></script -->
+    <script src='%(static)s/script.js#%(config)s' type="text/javascript"></script>
     %(extra_js)s
 </head>
 
@@ -43,7 +27,7 @@
 <div id="request">
     <h1><a href="?"><span class="hilight"><abbr title="Resource Expert Droid">RED</abbr></span>bot</a>%(extra_title)s</h1>
 
-    <form method="GET" onLoad="init_req_hdrs();" id="request_form">
+    <form method="GET" id="request_form">
         <input type="url" name="uri" value="%(html_uri)s" id="uri"/><br />
         <div id="req_hdrs"></div>
         <div class="add_req_hdr">

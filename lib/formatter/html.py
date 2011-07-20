@@ -28,6 +28,7 @@ THE SOFTWARE.
 """
 
 import codecs
+import json
 import operator
 import os
 import re
@@ -80,6 +81,11 @@ class BaseHtmlFormatter(Formatter):
             'version': droid.__version__,
             'html_uri': e(self.uri),
             'js_uri': e_js(self.uri),
+            'config': urllib.quote(json.dumps({
+              'redbot_uri': self.uri,
+              'redbot_req_hdrs': self.req_hdrs,
+              'redbot_version': droid.__version__
+            })),
             'js_req_hdrs': ", ".join(['["%s", "%s"]' % (
                 e_js(n), e_js(v)) for n,v in self.req_hdrs]),
             'extra_js': self.format_extra('.js'),
