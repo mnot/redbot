@@ -16,7 +16,7 @@ class DummyRed(object):
         
     def setMessage(self, name, msg, **kw):
         self.messages.append(msg(name, None, kw))
-        self.msg_classes.append(msg)
+        self.msg_classes.append(msg.__name__)
 
 
 class ResponseHeaderParserTester(unittest.TestCase):
@@ -53,11 +53,11 @@ class ResponseHeaderParserTester(unittest.TestCase):
         ]:
             val = self.parseHeader('Content-Disposition', hdrs)
             self.assertEqual(expected_val, val)
-            self.assertEqual(len(
-                set(expected_msgs).symmetric_difference(
-                    set(self.red.msg_classes)
-                )), 0, self.red.msg_classes
+            diff = set(
+                [n.__name__ for n in expected_msgs]).symmetric_difference(
+                set(self.red.msg_classes)
             )
+            self.assertEqual(len(diff), 0, diff)
 
         
 if __name__ == "__main__":
