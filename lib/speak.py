@@ -2001,36 +2001,54 @@ class PARAM_STAR_QUOTED(Message):
      'en': u"""Parameter values that end in '*' have a specific format,
      defined in <a href="http://tools.ietf.org/html/rfc5987">RFC5987</a>,
      to allow non-ASCII text.<p>
-     The '%(params)s parameter has double-quotes around it, which is not
-     valid."""
+     The <code>%(params)s</code> parameter on the <code>%(field_name)s</code>
+     header has double-quotes around it, which is not valid."""
     }
 
 class PARAM_STAR_ERROR(Message):
     category = c.GENERAL
     level = l.BAD
     summary = {
-     'en': u"The %(params)s parameter's value is invalid."
+     'en': u"The %(param)s parameter's value is invalid."
     }
     text = {
      'en': u"""Parameter values that end in '*' have a specific format,
      defined in <a href="http://tools.ietf.org/html/rfc5987">RFC5987</a>,
      to allow non-ASCII text.<p>. 
-     The '%(params)s parameter is not valid; it needs to have three parts,
-     separated by single quotes (')."""
+     The <code>%(param)s</code> parameter on the <code>%(field_name)s</code>
+     header is not valid; it needs to have three parts, separated by single
+     quotes (')."""
+    }
+
+class PARAM_STAR_NOCHARSET(Message):
+    category = c.GENERAL
+    level = l.WARN
+    summary = {
+     'en': u"The %(param)s parameter's value doesn't define an encoding."
+    }
+    text = {
+     'en': u"""Parameter values that end in '*' have a specific format,
+     defined in <a href="http://tools.ietf.org/html/rfc5987">RFC5987</a>,
+     to allow non-ASCII text.<p>. 
+     The <code>%(param)s<code> parameter on the <code>%(field_name)s</code>
+     header doesn't declare its character encoding, which means that
+     recipients can't understand it. It should be <code>UTF-8</code>."""
     }
 
 class PARAM_STAR_CHARSET(Message):
     category = c.GENERAL
     level = l.WARN
     summary = {
-     'en': u"The %(params)s parameter's value uses an encoding other than UTF-8."
+     'en': u"The %(param)s parameter's value uses an encoding other than UTF-8."
     }
     text = {
      'en': u"""Parameter values that end in '*' have a specific format,
      defined in <a href="http://tools.ietf.org/html/rfc5987">RFC5987</a>,
      to allow non-ASCII text.<p>. 
-     The '%(params)s parameter uses the ('%(enc)s') encoding, which has
-     interoperability issues on some browsers. It should be UTF-8."""
+     The <code>%(param)s</code> parameter on the <code>%(field_name)s</code>
+     header uses the <code>'%(enc)s</code> encoding, which has
+     interoperability issues on some browsers. It should be
+     <code>UTF-8</code>."""
     }
 
 class DISPOSITION_UNKNOWN(Message):
@@ -2041,9 +2059,9 @@ class DISPOSITION_UNKNOWN(Message):
     }
     text = {
      'en': u"""The <code>Content-Disposition<code> header has two 
-     widely-known values; 'inline' and 'attachment'. '%(disposition)s' 
-     isn't recognised, and most implementations will default to 
-     'attachment'."""
+     widely-known values; <code>inline</code> and <code>attachment</code>.
+     <code>%(disposition)s</code>  isn't recognised, and most implementations
+     will default to handling it like <code>attachment</code>."""
     }
 
 class DISPOSITION_OMITS_FILENAME(Message):
