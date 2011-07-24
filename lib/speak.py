@@ -2033,6 +2033,19 @@ class PARAM_STAR_CHARSET(Message):
      interoperability issues on some browsers. It should be UTF-8."""
     }
 
+class DISPOSITION_UNKNOWN(Message):
+    category = c.GENERAL
+    level = l.WARN
+    summary = {
+     'en': u"The '%(disposition)s' Content-Disposition isn't known."
+    }
+    text = {
+     'en': u"""The <code>Content-Disposition<code> header has two 
+     widely-known values; 'inline' and 'attachment'. '%(disposition)s' 
+     isn't recognised, and most implementations will default to 
+     'attachment'."""
+    }
+
 class DISPOSITION_OMITS_FILENAME(Message):
     category = c.GENERAL
     level = l.WARN
