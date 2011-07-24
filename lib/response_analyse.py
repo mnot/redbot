@@ -287,15 +287,19 @@ class ResponseHeaderParser(object):
                     continue
                 enc = enc.lower()
                 lang = lang.lower()
-                if enc not in ['utf-8']:
+                if enc == '':
+                    self.setMessage(name, rs.PARAM_STAR_NOCHARSET, param=k)
+                    continue
+                elif enc not in ['utf-8']:
                     self.setMessage(name, 
                         rs.PARAM_STAR_CHARSET, 
                         param=k, 
                         enc=enc
                     )
+                    continue
                 # TODO: catch unquoting errors, range of chars, charset
                 unq_v = urllib.unquote(esc_v)
-                dec_v = unq_v.decode('utf-8')
+                dec_v = unq_v.decode(enc) # ok, because we limit enc above
                 param_dict[k.lower()] = dec_v
             else:
                 param_dict[k.lower()] = self._unquoteString(v)
