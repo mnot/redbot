@@ -269,6 +269,7 @@ class ResponseHeaderParser(object):
         @return: dictionary of {name: value}
         """
         param_dict = {}
+        instr = instr.encode('ascii')
         for param in self._splitString(instr, PARAMETER, "\s*;\s*"):
             try:
                 k, v = param.split("=", 1)
@@ -278,7 +279,7 @@ class ResponseHeaderParser(object):
             if k[-1] == '*':
                 if v[0] == '"' or v[-1] == '"':
                     self.setMessage(name, rs.PARAM_STAR_QUOTED, param=k)
-                    v = self.unquoteString(v)
+                    v = self._unquoteString(v)
                 try:
                     enc, lang, esc_v = v.split("'", 3)
                 except ValueError:
@@ -293,7 +294,9 @@ class ResponseHeaderParser(object):
                         enc=enc
                     )
                 # TODO: catch unquoting errors, range of chars, charset
-                param_dict[k.lower()] = urllib.unquote(esc_v).decode('utf-8')
+                unq_v = urllib.unquote(esc_v)
+                dec_v = unq_v.decode('utf-8')
+                param_dict[k.lower()] = dec_v
             else:
                 param_dict[k.lower()] = self._unquoteString(v)
         return param_dict
