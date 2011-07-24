@@ -1991,6 +1991,48 @@ class STATUS_VERSION_NOT_SUPPORTED(Message):
      'en': u""" """
     }
 
+class PARAM_STAR_QUOTED(Message):
+    category = c.GENERAL
+    level = l.BAD
+    summary = {
+     'en': u"The '%(param)s' parameter's value cannot be quoted."
+    }
+    text = {
+     'en': u"""Parameter values that end in '*' have a specific format,
+     defined in <a href="http://tools.ietf.org/html/rfc5987">RFC5987</a>,
+     to allow non-ASCII text.<p>
+     The '%(params)s parameter has double-quotes around it, which is not
+     valid."""
+    }
+
+class PARAM_STAR_ERROR(Message):
+    category = c.GENERAL
+    level = l.BAD
+    summary = {
+     'en': u"The %(params)s parameter's value is invalid."
+    }
+    text = {
+     'en': u"""Parameter values that end in '*' have a specific format,
+     defined in <a href="http://tools.ietf.org/html/rfc5987">RFC5987</a>,
+     to allow non-ASCII text.<p>. 
+     The '%(params)s parameter is not valid; it needs to have three parts,
+     separated by single quotes (')."""
+    }
+
+class PARAM_STAR_CHARSET(Message):
+    category = c.GENERAL
+    level = l.WARN
+    summary = {
+     'en': u"The %(params)s parameter's value uses an encoding other than UTF-8."
+    }
+    text = {
+     'en': u"""Parameter values that end in '*' have a specific format,
+     defined in <a href="http://tools.ietf.org/html/rfc5987">RFC5987</a>,
+     to allow non-ASCII text.<p>. 
+     The '%(params)s parameter uses the ('%(enc)s') encoding, which has
+     interoperability issues on some browsers. It should be UTF-8."""
+    }
+
 if __name__ == '__main__':
     # do a sanity check on all of the defined messages
     import types

@@ -292,8 +292,6 @@ class ResponseHeaderParser(object):
                         param=k, 
                         enc=enc
                     )
-                if lang != '':
-                    self.setMessage(name, rs.PARAM_LANG, param=k, lang=lang)
                 # TODO: catch unquoting errors, range of chars, charset
                 decoded_v = urllib.unquote(esc_v)
                 param_dict[k.lower()] = decoded_v
