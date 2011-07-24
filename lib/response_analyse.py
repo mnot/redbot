@@ -276,7 +276,7 @@ class ResponseHeaderParser(object):
                 param_dict[param.lower()] = None
                 continue
             if k[-1] == '*':
-                if v[0] == '"' or v[1] == '"':
+                if v[0] == '"' or v[-1] == '"':
                     self.setMessage(name, rs.PARAM_STAR_QUOTED, param=k)
                     v = self.unquoteString(v)
                 try:
