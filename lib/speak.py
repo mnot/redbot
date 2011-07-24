@@ -2033,6 +2033,21 @@ class PARAM_STAR_CHARSET(Message):
      interoperability issues on some browsers. It should be UTF-8."""
     }
 
+class DISPOSITION_OMITS_FILENAME(Message):
+    category = c.GENERAL
+    level = l.WARN
+    summary = {
+     'en': u"The Content-Disposition header doesn't have a 'filename' parameter."
+    }
+    text = {
+     'en': u"""The Content-Disposition header suggests a filename for
+     clients to use when saving the file locally.<p>It should always
+     contain a 'filename' parameter, even when the 'filename*' parameter
+     is used to carry an internationalised filename, so that browsers
+     can fall back to an ASCII-only filename."""
+    }
+    
+
 if __name__ == '__main__':
     # do a sanity check on all of the defined messages
     import types
