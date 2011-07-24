@@ -50,6 +50,7 @@ import calendar
 import locale
 import re
 import time
+import urllib
 from cgi import escape as e
 from email.utils import parsedate as lib_parsedate
 from urlparse import urljoin
@@ -59,8 +60,9 @@ import redbot.speak as rs
 from redbot.uri_validate import URI, URI_reference
 
 
-# base URL for RFC2616 references
+# base URLs for references
 rfc2616 = "http://www.apps.ietf.org/rfc/rfc2616.html#%s"
+rfc6266 = "http://www.apps.ietf.org/rfc/rfc6266.html"
 
 ### configuration
 max_hdr_size = 4 * 1024
@@ -258,6 +260,47 @@ class ResponseHeaderParser(object):
             r'%s(?=%s|\s*$)' % (item, split), instr
         )]
 
+    def _parse_params(self, name, instr):
+        """
+        Parse parameters into a dictionary.
+        
+        @param name: the header field name
+        @param instr: string to be parsed
+        @return: dictionary of {name: value}
+        """
+        param_dict = {}
+        for param in self._splitString(instr, PARAMETER, "\s*;\s*"):
+            try:
+                k, v = param.split("=", 1)
+            except ValueError:
+                param_dict[param.lower()] = None
+                continue
+            if k[-1] == '*':
+                if v[0] == '"' or v[1] == '"':
+                    self.setMessage(name, rs.PARAM_STAR_QUOTED, param=k)
+                    v = self.unquoteString(v)
+                try:
+                    enc, lang, esc_v = param_dict["filename*"].split("'", 3)
+                except ValueError:
+                    self.setMessage(name, rs.PARAM_STAR_ERROR, param=k)
+                    continue
+                enc = enc.lower()
+                lang = lang.lower()
+                if enc not in ['utf-8']:
+                    self.setMessage(name, 
+                        rs.PARAM_STAR_CHARSET, 
+                        param=k, 
+                        enc=enc
+                    )
+                if lang != '':
+                    self.setMessage(name, rs.PARAM_LANG, param=k, lang=lang)
+                # TODO: catch unquoting errors, range of chars, charset
+                decoded_v = urllib.unquote(esc_v)
+                param_dict[k.lower()] = decoded_v
+            else:
+                param_dict[k.lower()] = self._unquoteString(v)
+        return param_dict
+
     @GenericHeaderSyntax
     def accept_ranges(self, name, values):
         for value in values:
@@ -310,9 +353,27 @@ class ResponseHeaderParser(object):
         self.setMessage(name, rs.HEADER_DEPRECATED, ref=rfc2616 % "sec-19.6.3")
         return values[-1]
 
+    @GenericHeaderSyntax
+    @SingleFieldValue
+    @CheckFieldSyntax(
+        r'(?:%(TOKEN)s(?:\s*;\s*%(PARAMETER)s)*)' % globals(),
+        rfc6266
+    )
     def content_disposition(self, name, values):
-        # TODO: check syntax, parse
-        pass
+        try:
+            disposition, params = values[-1].split(";", 1)
+        except ValueError:
+            disposition, params = values[-1], ''
+        disposition = disposition.lower()
+        param_dict = self._parse_params(name, params)
+        if disposition not in ['inline', 'attachment']:
+            self.setMessage(name,
+                rs.DISPOSITION_UNKNOWN,
+                disposition=disposition
+            )
+        if not param_dict.has_key('filename'):
+            self.setMessage(name, rs.DISPOSITION_OMITS_FILENAME)
+        return disposition, param_dict
 
     @GenericHeaderSyntax
     @CheckFieldSyntax(TOKEN, rfc2616 % "sec-14.11")
@@ -358,13 +419,7 @@ class ResponseHeaderParser(object):
         except ValueError:
             media_type, params = values[-1], ''
         media_type = media_type.lower()
-        param_dict = {}
-        for param in self._splitString(params, PARAMETER, "\s*;\s*"):
-            try:
-                a, v = param.split("=", 1)
-                param_dict[a.lower()] = self._unquoteString(v)
-            except ValueError:
-                param_dict[param.lower()] = None
+        param_dict = self._parse_params(name, params)
         return media_type, param_dict
 
     @SingleFieldValue
