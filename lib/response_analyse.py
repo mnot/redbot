@@ -280,7 +280,7 @@ class ResponseHeaderParser(object):
                     self.setMessage(name, rs.PARAM_STAR_QUOTED, param=k)
                     v = self.unquoteString(v)
                 try:
-                    enc, lang, esc_v = param_dict["filename*"].split("'", 3)
+                    enc, lang, esc_v = v.split("'", 3)
                 except ValueError:
                     self.setMessage(name, rs.PARAM_STAR_ERROR, param=k)
                     continue
@@ -293,8 +293,7 @@ class ResponseHeaderParser(object):
                         enc=enc
                     )
                 # TODO: catch unquoting errors, range of chars, charset
-                decoded_v = urllib.unquote(esc_v)
-                param_dict[k.lower()] = decoded_v
+                param_dict[k.lower()] = urllib.unquote(esc_v).decode('utf-8')
             else:
                 param_dict[k.lower()] = self._unquoteString(v)
         return param_dict
@@ -708,8 +707,6 @@ class ResponseStatusChecker:
     def status206(self):        # Partial Content
         if not "range" in nbhttp.header_dict(self.red.req_hdrs).keys():
             self.setMessage('', rs.PARTIAL_NOT_REQUESTED)
-        if not self.red.parsed_hdrs.has_key('content-range'):
-            print self.red.parsed_hdrs.keys()
             self.setMessage('header-location', rs.PARTIAL_WITHOUT_RANGE)
     def status207(self):        # Multi-Status
         pass
