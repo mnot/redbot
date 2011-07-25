@@ -276,6 +276,9 @@ class ResponseHeaderParser(object):
             except ValueError:
                 param_dict[param.lower()] = None
                 continue
+            k_norm = k.lower()
+            if param_dict.has_key(k_norm):
+                self.setMessage(name, rs.PARAM_REPEATS, param=k_norm)
             if k[-1] == '*':
                 if v[0] == '"' or v[-1] == '"':
                     self.setMessage(name, rs.PARAM_STAR_QUOTED, param=k)
@@ -300,9 +303,9 @@ class ResponseHeaderParser(object):
                 # TODO: catch unquoting errors, range of chars, charset
                 unq_v = urllib.unquote(esc_v)
                 dec_v = unq_v.decode(enc) # ok, because we limit enc above
-                param_dict[k.lower()] = dec_v
+                param_dict[k_norm] = dec_v
             else:
-                param_dict[k.lower()] = self._unquoteString(v)
+                param_dict[k_norm] = self._unquoteString(v)
         return param_dict
 
     @GenericHeaderSyntax

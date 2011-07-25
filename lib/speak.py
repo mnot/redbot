@@ -2051,6 +2051,17 @@ class PARAM_STAR_CHARSET(Message):
      <code>UTF-8</code>."""
     }
 
+class PARAM_REPEATS(Message):
+    category = c.GENERAL
+    level = l.WARN
+    summary = {
+     'en': u"The '%(param)s' parameter repeats in the %(field_name)s header."
+    }
+    text = {
+     'en': u"""Parameters on the %(field_name)s header should not repeat; 
+     implementations may handle them differently."""
+    }
+
 class DISPOSITION_UNKNOWN(Message):
     category = c.GENERAL
     level = l.WARN
