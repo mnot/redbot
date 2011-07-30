@@ -129,6 +129,14 @@ class ResponseHeaderParserTester(unittest.TestCase):
              }),
              []
             ),
+            # 4: filename* quoted
+            (["attachment; filename=foo.txt; filename*=\"UTF-8''a%cc%88.txt\""],
+             ('attachment', {
+                'filename': 'foo.txt', 
+                'filename*': u'a\u0308.txt'
+             }),
+             [rs.PARAM_STAR_QUOTED]
+            ),
         ]:
             self.red.__init__()
             val = self.parseHeader('Content-Disposition', hdrs)

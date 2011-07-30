@@ -280,7 +280,7 @@ class ResponseHeaderParser(object):
             if param_dict.has_key(k_norm):
                 self.setMessage(name, rs.PARAM_REPEATS, param=k_norm)
             if k[-1] == '*':
-                if v[0] == '"' or v[-1] == '"':
+                if v[0] == '"' and v[-1] == '"':
                     self.setMessage(name, rs.PARAM_STAR_QUOTED, param=k)
                     v = self._unquoteString(v)
                 try:

@@ -2001,7 +2001,7 @@ class PARAM_STAR_QUOTED(Message):
      'en': u"""Parameter values that end in '*' have a specific format,
      defined in <a href="http://tools.ietf.org/html/rfc5987">RFC5987</a>,
      to allow non-ASCII text.<p>
-     The <code>%(params)s</code> parameter on the <code>%(field_name)s</code>
+     The <code>%(param)s</code> parameter on the <code>%(field_name)s</code>
      header has double-quotes around it, which is not valid."""
     }
 
