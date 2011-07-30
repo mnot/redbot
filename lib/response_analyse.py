@@ -62,7 +62,7 @@ from redbot.uri_validate import URI, URI_reference
 
 # base URLs for references
 rfc2616 = "http://www.apps.ietf.org/rfc/rfc2616.html#%s"
-rfc6266 = "http://www.apps.ietf.org/rfc/rfc6266.html"
+rfc6266 = "http://www.apps.ietf.org/rfc/rfc6266.html" # FIXME
 
 ### configuration
 max_hdr_size = 4 * 1024
@@ -70,7 +70,7 @@ max_ttl_hdr = 20 * 1024
 
 # generic syntax regexen (assume processing with re.VERBOSE)
 TOKEN = r'(?:[!#\$%&\'\*\+\-\.\^_`|~A-Za-z0-9]+?)'
-QUOTED_STRING = r'(?:"(?:[ \t\x21\x23-\x5B\x5D-\x7E]|\\[\x01-\x09\x0B-\x0C\x0E\xFF])*")'
+QUOTED_STRING = r'(?:"(?:[ \t\x21\x23-\x5B\x5D-\x7E]|\\[ \t\x21-\x7E])*")'
 PARAMETER = r'(?:%(TOKEN)s(?:=(?:%(TOKEN)s|%(QUOTED_STRING)s))?)' % locals()
 TOK_PARAM = r'(?:%(TOKEN)s(?:\s*;\s*%(PARAMETER)s)*)' % locals()
 PRODUCT = r'(?:%(TOKEN)s(?:/%(TOKEN)s)?)' % locals()
@@ -240,8 +240,8 @@ class ResponseHeaderParser(object):
         if not instr or instr == '*':
             return instr
         if instr[0] == instr[-1] == '"':
-            instr = instr[1:-1]
-            instr = re.sub(r'\\(.)', r'\1', instr)
+            ninstr = instr[1:-1]
+            instr = re.sub(r'\\(.)', r'\1', ninstr)
         return instr
 
     @staticmethod
@@ -270,7 +270,7 @@ class ResponseHeaderParser(object):
         """
         param_dict = {}
         instr = instr.encode('ascii')
-        for param in self._splitString(instr, PARAMETER, "\s*;\s*"):
+        for param in self._splitString(instr, PARAMETER, r"\s*;\s*"):
             try:
                 k, v = param.split("=", 1)
             except ValueError:

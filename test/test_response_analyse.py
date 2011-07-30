@@ -29,7 +29,75 @@ class ResponseHeaderParserTester(unittest.TestCase):
     def parseHeader(self, name, values):
         name_token = name.lower().replace('-', '_')
         return getattr(self.parser, name_token)(name, values)
+
+    def test_unquoteString(self):
+        i = 0
+        for (instr, expected_str, expected_msgs) in [
+            ('foo', 'foo', []),
+            ('"foo"', 'foo', []),
+            (r'"fo\"o"', 'fo"o', []),
+            (r'"f\"o\"o"', 'f"o"o', []),
+            (r'"fo\\o"', r'fo\o', []),
+            (r'"f\\o\\o"', r'f\o\o', []),
+            (r'"fo\o"', 'foo', []),
+        ]:
+            self.red.__init__()
+            out_str = self.parser._unquoteString(unicode(instr))
+            diff = set(
+                [n.__name__ for n in expected_msgs]).symmetric_difference(
+                set(self.red.msg_classes)
+            )
+            self.assertEqual(len(diff), 0, 
+                "[%s] Mismatched messages: %s" % (i, diff)
+            )
+            self.assertEqual(expected_str, out_str, 
+                "[%s] %s != %s" % (i, str(expected_str), str(out_str)))
+            i += 1
     
+    def test_splitString(self):
+        i = 0
+        for (instr, expected_outlist, item, split) in [
+            ('"abc", "def"', 
+             ['"abc"', '"def"'], 
+             ra.QUOTED_STRING, 
+             r"\s*,\s*"
+            ),
+            (r'"\"ab", "c\d"', 
+             [r'"\"ab"', r'"c\d"'], 
+             ra.QUOTED_STRING, 
+             r"\s*,\s*"
+            )
+        ]:
+            self.red.__init__()
+            outlist = self.parser._splitString(unicode(instr), item, split)
+            self.assertEqual(expected_outlist, outlist, 
+                "[%s] %s != %s" % (i, str(expected_outlist), str(outlist)))
+            i += 1
+    
+    def test_parse_params(self):
+        i = 0
+        for (instr, expected_pd, expected_msgs) in [
+            ('foo=bar', {'foo': 'bar'}, []),
+            ('foo="bar"', {'foo': 'bar'}, []),
+            ('foo="bar"; baz=bat', {'foo': 'bar', 'baz': 'bat'}, []),
+            ('foo="bar"; baz="b=t"; bam="boom"',
+             {'foo': 'bar', 'baz': 'b=t', 'bam': 'boom'}, []
+            ),
+            (r'foo="b\"ar"', {'foo': 'b"ar'}, []),
+        ]:
+            self.red.__init__()
+            param_dict = self.parser._parse_params('test', instr)
+            diff = set(
+                [n.__name__ for n in expected_msgs]).symmetric_difference(
+                set(self.red.msg_classes)
+            )
+            self.assertEqual(len(diff), 0, 
+                "[%s] Mismatched messages: %s" % (i, diff)
+            )
+            self.assertEqual(expected_pd, param_dict, 
+                "[%s] %s != %s" % (i, str(expected_pd), str(param_dict)))
+            i += 1
+                
     def test_content_disposition(self):
         i = 0
         for (hdrs, expected_val, expected_msgs) in [
