@@ -2062,6 +2062,22 @@ class PARAM_REPEATS(Message):
      implementations may handle them differently."""
     }
 
+class PARAM_SINGLE_QUOTED(Message):
+    category = c.GENERAL
+    level = l.WARN
+    summary = {
+     'en': u"The '%(param)s' parameter on the %(field_name)s header is single-quoted."
+    }
+    text = {
+     'en': u"""The <code>%(param)s</code>'s value on the %(field_name)s 
+     header start and ends with a single quote ('). However, single quotes
+     don't mean anything there.<p>
+     This means that the value will be interpreted as
+     <code>%(param_val)s</code>, <strong>not</strong>
+     <code>%(param_val_unquoted)s</code>. If you intend the latter, drop
+     the single quotes."""
+    }
+
 class DISPOSITION_UNKNOWN(Message):
     category = c.GENERAL
     level = l.WARN

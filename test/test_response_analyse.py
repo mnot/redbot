@@ -84,6 +84,24 @@ class ResponseHeaderParserTester(unittest.TestCase):
              {'foo': 'bar', 'baz': 'b=t', 'bam': 'boom'}, []
             ),
             (r'foo="b\"ar"', {'foo': 'b"ar'}, []),
+            (r'foo=bar; foo=baz', {'foo': 'baz'}, 
+             [rs.PARAM_REPEATS]
+            ),
+            ("foo=bar; baz='bat'", {'foo': 'bar', 'baz': "'bat'"}, 
+             [rs.PARAM_SINGLE_QUOTED]
+            ),
+            ("foo*=\"UTF-8''a%cc%88.txt\"", 
+             {'foo*': u'a\u0308.txt'},
+             [rs.PARAM_STAR_QUOTED]
+            ),
+            ("foo*=''a%cc%88.txt", 
+             {},
+             [rs.PARAM_STAR_NOCHARSET]
+            ),
+            ("foo*=utf-16''a%cc%88.txt", 
+             {},
+             [rs.PARAM_STAR_CHARSET]
+            ),
         ]:
             self.red.__init__()
             param_dict = self.parser._parse_params('test', instr)

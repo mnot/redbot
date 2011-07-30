@@ -279,6 +279,13 @@ class ResponseHeaderParser(object):
             k_norm = k.lower()
             if param_dict.has_key(k_norm):
                 self.setMessage(name, rs.PARAM_REPEATS, param=k_norm)
+            if v[0] == v[-1] == "'":
+                self.setMessage(name, 
+                    rs.PARAM_SINGLE_QUOTED,
+                    param=k,
+                    param_val=v,
+                    param_val_unquoted=v[1:-1]
+                )
             if k[-1] == '*':
                 if v[0] == '"' and v[-1] == '"':
                     self.setMessage(name, rs.PARAM_STAR_QUOTED, param=k)
