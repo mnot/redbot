@@ -492,9 +492,18 @@ class ResponseHeaderParser(object):
         return date
 
     @GenericHeaderSyntax
+    @CheckFieldSyntax(
+        r'(?:<%(URI_reference)s>(?:\s*;\s*%(PARAMETER)s)*)' % globals(),
+        rfc6266
+    )
     def link(self, name, values):
-        # TODO: check syntax, values?
-        pass
+        try:
+            link, params = values[-1].split(";", 1)
+        except ValueError:
+            link, params = values[-1], ''
+        link = link[1:-1] # trim the angle brackets
+        param_dict = self._parse_params(name, params)
+        return link, param_dict
 
     # The most common problem with Location is a non-absolute URI, 
     # so we separate that from the syntax check.

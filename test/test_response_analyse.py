@@ -165,6 +165,42 @@ class ResponseHeaderParserTester(unittest.TestCase):
             )
             i += 1
 
+    def test_link(self):
+        i = 0
+        for (hdrs, expected_val, expected_msgs) in [
+            # 0: basic
+            (['<http://www.example.com/>; rel=example'], 
+             ('http://www.example.com/', {'rel': 'example'}),
+             []
+            ),
+            # 1: quoted relation
+            (['<http://www.example.com/>; rel="example"'], 
+             ('http://www.example.com/', {'rel': 'example'}),
+             []
+            ),
+            # 2: relative URI
+            (['</foo>; rel="example"'], 
+             ('/foo', {'rel': 'example'}),
+             []
+            ),
+            # 3: repeating rel
+            (['</foo>; rel="example"; rel="another"'], 
+             ('/foo', {'rel': 'another'}),
+             [rs.PARAM_REPEATS]
+            ),
+        ]:
+            self.red.__init__()
+            val = self.parseHeader('Link', hdrs)
+            self.assertEqual(expected_val, val, 
+                "[%s] %s != %s" % (i, str(expected_val), str(val)))
+            diff = set(
+                [n.__name__ for n in expected_msgs]).symmetric_difference(
+                set(self.red.msg_classes)
+            )
+            self.assertEqual(len(diff), 0, 
+                "[%s] Mismatched messages: %s" % (i, diff)
+            )
+            i += 1
         
 if __name__ == "__main__":
     unittest.main()
