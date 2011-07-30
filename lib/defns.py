@@ -108,6 +108,15 @@ HDR_CONNECTION = {
         that it should not be reused."""
 }
 
+HDR_CONTENT_DISPOSITION = {
+    'en': u"""The <code>Content-Disposition</code> header suggests a name
+    to use when saving the file.<p>
+    When the disposition (the first value) is set to <code>attachment</code>,
+    it also prompts browsers to download the file, rather than display it.<p>
+    See <a href="http://tools.ietf.org/html/rfc6266">RFC6266</a> for
+    details."""
+}
+
 HDR_CONTENT_LENGTH = {
     'en': u"""The <code>Content-Length</code> header indicates the size
         of the body, in number of bytes. In responses to the HEAD
