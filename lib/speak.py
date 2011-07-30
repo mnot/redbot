@@ -2082,11 +2082,52 @@ class DISPOSITION_OMITS_FILENAME(Message):
      'en': u"The Content-Disposition header doesn't have a 'filename' parameter."
     }
     text = {
-     'en': u"""The Content-Disposition header suggests a filename for
-     clients to use when saving the file locally.<p>It should always
-     contain a 'filename' parameter, even when the 'filename*' parameter
-     is used to carry an internationalised filename, so that browsers
-     can fall back to an ASCII-only filename."""
+     'en': u"""The <code>Content-Disposition</code> header suggests a 
+     filename for clients to use when saving the file locally.<p>
+     It should always contain a <code>filename</code> parameter, even when 
+     the <code>filename*</code> parameter is used to carry an
+     internationalised filename, so that browsers can fall back to an
+     ASCII-only filename."""
+    }
+
+class DISPOSITION_FILENAME_PERCENT(Message):
+    category = c.GENERAL
+    level = l.WARN
+    summary = {
+     'en': u"The 'filename' parameter on the Content-Disposition header contains a '%' character."
+    }
+    text = {
+     'en': u"""The <code>Content-Disposition</code> header suggests a 
+     filename for clients to use when saving the file locally, using 
+     the <code>filename</code> parameter.<p>
+     <a href="http://tools.ietf.org/html/rfc6266">RFC6266</a>
+     specifies how to carry non-ASCII characters in this parameter. However,
+     historically some (but not all) browsers have also decoded %-encoded
+     characters in the <code>filename</code> parameter, which means that
+     they'll be treated differently depending on the browser you're using.<p>
+     As a result, it's not interoperable to use percent characters in the
+     <code>filename</code> parameter. Use the correct encoding in the 
+     <code>filename*</code> parameter instead.
+     """
+    }
+
+class DISPOSITION_FILENAME_PATH_CHAR(Message):
+    category = c.GENERAL
+    level = l.WARN
+    summary = {
+     'en': u"The filename in the Content-Disposition header contains a path character."
+    }
+    text = {
+     'en': u"""The <code>Content-Disposition</code> header suggests a 
+     filename for clients to use when saving the file locally, using 
+     the <code>filename</code> and <code>filename*</code> parameters.<p>
+     One of these parameters contains a path character ("\" or "/"), used
+     to navigate between directories on common operating systems.<p>
+     Because this can be used to attach the browser's host operating system
+     (e.g., by saving a file to a system directory), browsers will usually
+     ignore these paramters, or remove path information.<p>
+     You should remove these characters.
+     """
     }
     
 

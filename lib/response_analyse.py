@@ -380,6 +380,11 @@ class ResponseHeaderParser(object):
             )
         if not param_dict.has_key('filename'):
             self.setMessage(name, rs.DISPOSITION_OMITS_FILENAME)
+        if "%" in param_dict.get('filename', ''):
+            self.setMessage(name, rs.DISPOSITION_FILENAME_PERCENT)
+        if "/" in param_dict.get('filename', '') or \
+           r"\\" in param_dict.get('filename*', ''):
+            self.setMessage(name, rs.DISPOSITION_FILENAME_PATH_CHAR)
         return disposition, param_dict
 
     @GenericHeaderSyntax
