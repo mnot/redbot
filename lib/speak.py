@@ -2094,7 +2094,7 @@ class DISPOSITION_FILENAME_PERCENT(Message):
     category = c.GENERAL
     level = l.WARN
     summary = {
-     'en': u"The 'filename' parameter on the Content-Disposition header contains a '%' character."
+     'en': u"The 'filename' parameter on the Content-Disposition header contains a '%%' character."
     }
     text = {
      'en': u"""The <code>Content-Disposition</code> header suggests a 
@@ -2102,7 +2102,7 @@ class DISPOSITION_FILENAME_PERCENT(Message):
      the <code>filename</code> parameter.<p>
      <a href="http://tools.ietf.org/html/rfc6266">RFC6266</a>
      specifies how to carry non-ASCII characters in this parameter. However,
-     historically some (but not all) browsers have also decoded %-encoded
+     historically some (but not all) browsers have also decoded %%-encoded
      characters in the <code>filename</code> parameter, which means that
      they'll be treated differently depending on the browser you're using.<p>
      As a result, it's not interoperable to use percent characters in the
