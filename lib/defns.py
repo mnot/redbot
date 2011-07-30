@@ -328,12 +328,6 @@ HDR_MIME_VERSION = {
         protocol."""
 }
 
-HDR_CONTENT_DISPOSITION = {
-    'en': u"""The <code>Content-Disposition</code> header field allows
-        the origin server to suggest
-        a default filename if the user saves the body to a file."""
-}
-
 HDR_ETAG = {
     'en': u"""The <code>ETag</code> header provides an opaque identifier
     for the representation."""
