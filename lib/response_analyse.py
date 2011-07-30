@@ -71,7 +71,7 @@ max_ttl_hdr = 20 * 1024
 # generic syntax regexen (assume processing with re.VERBOSE)
 TOKEN = r'(?:[!#\$%&\'\*\+\-\.\^_`|~A-Za-z0-9]+?)'
 QUOTED_STRING = r'(?:"(?:[ \t\x21\x23-\x5B\x5D-\x7E]|\\[ \t\x21-\x7E])*")'
-PARAMETER = r'(?:%(TOKEN)s(?:=(?:%(TOKEN)s|%(QUOTED_STRING)s))?)' % locals()
+PARAMETER = r'(?:%(TOKEN)s(?:\s*=\s*(?:%(TOKEN)s|%(QUOTED_STRING)s))?)' % locals()
 TOK_PARAM = r'(?:%(TOKEN)s(?:\s*;\s*%(PARAMETER)s)*)' % locals()
 PRODUCT = r'(?:%(TOKEN)s(?:/%(TOKEN)s)?)' % locals()
 COMMENT = r"""(?:
