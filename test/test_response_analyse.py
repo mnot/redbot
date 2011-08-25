@@ -30,6 +30,19 @@ class ResponseHeaderParserTester(unittest.TestCase):
         name_token = name.lower().replace('-', '_')
         return getattr(self.parser, name_token)(name, values)
 
+    def check_hdr(self, name, vals, expected_val, expected_msgs):
+        self.red.__init__()
+        val = self.parseHeader(name, vals)
+        self.assertEqual(expected_val, val, 
+            "[%s] %s != %s" % (name, str(expected_val), str(val)))
+        diff = set(
+            [n.__name__ for n in expected_msgs]).symmetric_difference(
+            set(self.red.msg_classes)
+        )
+        self.assertEqual(len(diff), 0, 
+            "[%s] Mismatched messages: %s" % (name, diff)
+        )
+
     def test_unquoteString(self):
         i = 0
         for (instr, expected_str, expected_msgs) in [
@@ -116,109 +129,95 @@ class ResponseHeaderParserTester(unittest.TestCase):
                 "[%s] %s != %s" % (i, str(expected_pd), str(param_dict)))
             i += 1
                 
+
     def test_content_disposition(self):
-        i = 0
-        for (hdrs, expected_val, expected_msgs) in [
-            # 0: quoted-string
-            (['attachment; filename="foo.txt"'], 
-             ('attachment', {'filename': 'foo.txt'}),
-             []
-            ),
-            # 1: token
-            (['attachment; filename=foo.txt'], 
-             ('attachment', {'filename': 'foo.txt'}),
-             []
-            ),
-            # 2: inline
-            (['inline; filename=foo.txt'], 
-             ('inline', {'filename': 'foo.txt'}),
-             []
-            ),
-            # 3: token
-            (['attachment; filename=foo.txt, inline; filename=bar.txt'], 
-             ('inline', {'filename': 'bar.txt'}),
-             [rs.SINGLE_HEADER_REPEAT]
-            ),
-            # 4: filename*
-            (["attachment; filename=foo.txt; filename*=UTF-8''a%cc%88.txt"],
-             ('attachment', {
-                'filename': 'foo.txt', 
-                'filename*': u'a\u0308.txt'
-             }),
-             []
-            ),
-            # 5: filename* quoted
-            (["attachment; filename=foo.txt; filename*=\"UTF-8''a%cc%88.txt\""],
-             ('attachment', {
-                'filename': 'foo.txt', 
-                'filename*': u'a\u0308.txt'
-             }),
-             [rs.PARAM_STAR_QUOTED]
-            ),
-            # 6: % in filename
-            (["attachment; filename=fo%22o.txt"],
-             ('attachment', {
-                'filename': 'fo%22o.txt', 
-             }),
-             [rs.DISPOSITION_FILENAME_PERCENT]
-            ),
-            # 7: pathchar in filename
-            (['"attachment; filename="/foo.txt"'],
-             ('attachment', {
-                'filename': '/foo.txt', 
-             }),
-             [rs.DISPOSITION_FILENAME_PATH_CHAR]
-            ),
-        ]:
-            self.red.__init__()
-            val = self.parseHeader('Content-Disposition', hdrs)
-            self.assertEqual(expected_val, val, 
-                "[%s] %s != %s" % (i, str(expected_val), str(val)))
-            diff = set(
-                [n.__name__ for n in expected_msgs]).symmetric_difference(
-                set(self.red.msg_classes)
-            )
-            self.assertEqual(len(diff), 0, 
-                "[%s] Mismatched messages: %s" % (i, diff)
-            )
-            i += 1
+        cd = 'Content-Disposition'
+        # quoted-string
+        self.check_hdr(cd, ['attachment; filename="foo.txt"'], 
+         ('attachment', {'filename': 'foo.txt'}),
+         []
+        )
+
+        # token
+        self.check_hdr(cd, ['attachment; filename=foo.txt'], 
+         ('attachment', {'filename': 'foo.txt'}),
+         []
+        )
+
+        # inline
+        self.check_hdr(cd, ['inline; filename=foo.txt'], 
+         ('inline', {'filename': 'foo.txt'}),
+         []
+        )
+
+        # token
+        self.check_hdr(cd, 
+         ['attachment; filename=foo.txt, inline; filename=bar.txt'], 
+         ('inline', {'filename': 'bar.txt'}),
+         [rs.SINGLE_HEADER_REPEAT]
+        )
+
+        # filename*
+        self.check_hdr(cd, 
+         ["attachment; filename=foo.txt; filename*=UTF-8''a%cc%88.txt"],
+         ('attachment', {
+            'filename': 'foo.txt', 
+            'filename*': u'a\u0308.txt'
+         }),
+         []
+        )
+
+        # filename* quoted
+        self.check_hdr(cd, 
+         ["attachment; filename=foo.txt; filename*=\"UTF-8''a%cc%88.txt\""],
+         ('attachment', {
+            'filename': 'foo.txt', 
+            'filename*': u'a\u0308.txt'
+         }),
+         [rs.PARAM_STAR_QUOTED]
+        )
+
+        # % in filename
+        self.check_hdr(cd, ["attachment; filename=fo%22o.txt"],
+         ('attachment', {
+            'filename': 'fo%22o.txt', 
+         }),
+         [rs.DISPOSITION_FILENAME_PERCENT]
+        )
+
+        # pathchar in filename
+        self.check_hdr(cd, ['"attachment; filename="/foo.txt"'],
+         ('attachment', {
+            'filename': '/foo.txt', 
+         }),
+         [rs.DISPOSITION_FILENAME_PATH_CHAR]
+        )
 
     def test_link(self):
-        i = 0
-        for (hdrs, expected_val, expected_msgs) in [
-            # 0: basic
-            (['<http://www.example.com/>; rel=example'], 
-             ('http://www.example.com/', {'rel': 'example'}),
-             []
-            ),
-            # 1: quoted relation
-            (['<http://www.example.com/>; rel="example"'], 
-             ('http://www.example.com/', {'rel': 'example'}),
-             []
-            ),
-            # 2: relative URI
-            (['</foo>; rel="example"'], 
-             ('/foo', {'rel': 'example'}),
-             []
-            ),
-            # 3: repeating rel
-            (['</foo>; rel="example"; rel="another"'], 
-             ('/foo', {'rel': 'another'}),
-             [rs.PARAM_REPEATS]
-            ),
-        ]:
-            self.red.__init__()
-            val = self.parseHeader('Link', hdrs)
-            self.assertEqual(expected_val, val, 
-                "[%s] %s != %s" % (i, str(expected_val), str(val)))
-            diff = set(
-                [n.__name__ for n in expected_msgs]).symmetric_difference(
-                set(self.red.msg_classes)
-            )
-            self.assertEqual(len(diff), 0, 
-                "[%s] Mismatched messages: %s" % (i, diff)
-            )
-            i += 1
+        li = 'Link'
+        # basic
+        self.check_hdr(li, ['<http://www.example.com/>; rel=example'], 
+         ('http://www.example.com/', {'rel': 'example'}),
+         []
+        )
+
+        # quoted relation
+        self.check_hdr(li, ['<http://www.example.com/>; rel="example"'], 
+         ('http://www.example.com/', {'rel': 'example'}),
+         []
+        )
+
+        # relative URI
+        self.check_hdr(li, ['</foo>; rel="example"'], 
+         ('/foo', {'rel': 'example'}),
+         []
+        )
+        
+        # repeating rel
+        self.check_hdr(li, ['</foo>; rel="example"; rel="another"'], 
+         ('/foo', {'rel': 'another'}),
+         [rs.PARAM_REPEATS]
+        )
         
 if __name__ == "__main__":
     unittest.main()
