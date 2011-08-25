@@ -72,7 +72,7 @@ html.static_root = 'static'
 html.extra_dir = "extra"
 
 # show errors in the browser
-debug = False
+debug = True
 
 ### End configuration ######################################################
 
@@ -270,7 +270,7 @@ class RedWebUi(object):
         """Show the default page."""
         formatter = html.BaseHtmlFormatter(
             self.base_uri, self.test_uri, self.req_hdrs, 
-            lang, self.output
+            lang, self.output, is_blank=True
         )
         self.output_hdrs(
             "200 OK", [

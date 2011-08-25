@@ -8,12 +8,19 @@ body {
     margin: 1em 50px;
 	max-width: 1100px;
 }
+
+body.blank {
+  margin: 6em auto 3em auto;
+  width: 650px;
+}
+
 #left_column {
 	width: 650px;
     float: left;
     margin: 0em;
     padding: 0em;
 }
+
 #right_column {
 	width: 400px;
     float: right;
