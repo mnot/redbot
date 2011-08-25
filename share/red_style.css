@@ -292,6 +292,13 @@ ul li.bad {
 	max-width: 650px;
 }
 
+body.blank > .footer {
+  position: absolute;
+  margin: 0 auto;
+  bottom: 1em;
+  width: 650px;
+}
+
 /* news */
 
 .news {
