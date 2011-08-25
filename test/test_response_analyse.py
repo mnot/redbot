@@ -219,5 +219,18 @@ class ResponseHeaderParserTester(unittest.TestCase):
          [rs.PARAM_REPEATS]
         )
         
+    def test_date(self):
+        da = 'Date'
+        # basic
+        self.check_hdr(da, ['Mon, 04 Jul 2011 09:08:06 GMT'],
+         1309770486, 
+         []
+        )
+        
+        # blank
+        self.check_hdr(da, [''],
+         None,
+         [rs.BAD_DATE_SYNTAX])
+        
 if __name__ == "__main__":
     unittest.main()
