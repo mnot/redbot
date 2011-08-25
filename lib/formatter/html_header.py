@@ -17,7 +17,7 @@
     %(extra_js)s
 </head>
 
-<body>
+<body class="%(extra_body_class)s">
 
 <div id="popup"></div>
 <form method="POST" id="save_form"

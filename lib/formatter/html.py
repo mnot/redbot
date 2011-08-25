@@ -72,6 +72,10 @@ class BaseHtmlFormatter(Formatter):
             extra_title = " <span class='save'>saved results for...</span>"
         else:
             extra_title = ""
+        if self.kw.get('is_blank', None):
+            extra_body_class = "blank"
+        else:
+            extra_body_class = ""
         if self.kw.get('descend', False):
             descend = "&descend=True"
         else:
@@ -91,6 +95,7 @@ class BaseHtmlFormatter(Formatter):
             'extra_js': self.format_extra('.js'),
             'test_id': self.kw.get('test_id', ""),
             'extra_title': extra_title,
+            'extra_body_class': extra_body_class,
             'descend': descend
         })
 
