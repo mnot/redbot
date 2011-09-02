@@ -233,6 +233,18 @@ class ResponseHeaderParserTester(unittest.TestCase):
          [rs.BAD_SYNTAX]
         )
         
+        # rev
+        self.check_hdr(li, ['</foo>; rev="bar"'],
+         ('/foo', {'rev': 'bar'}),
+         [rs.LINK_REV]
+        )
+        
+        # bad anchor
+        self.check_hdr(li, ['</foo>; rel="bar"; anchor="{blah}"'],
+         ('/foo', {'rel': 'bar', 'anchor': '{blah}'}),
+         [rs.LINK_BAD_ANCHOR]
+        )
+        
     def test_date(self):
         da = 'Date'
         # basic

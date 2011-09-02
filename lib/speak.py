@@ -2162,6 +2162,38 @@ class DISPOSITION_FILENAME_PATH_CHAR(Message):
      """
     }
     
+class LINK_REV(Message):
+    category = c.GENERAL
+    level=l.WARN
+    summary = {
+     'en': u"The 'rev' parameter on the Link header is deprecated."
+    }
+    text = {
+     'en': u"""The <code>Link</code> header, defined by 
+     <a href="http://tools.ietf.org/html/rfc5988#section-5">RFC5988</a>, 
+     uses the <code>rel</code> parameter to communicate the type of a link.
+     <code>rev</code> is deprecated by that specification because it is 
+     often confusing.<p>
+     Use <code>rel</code> and an appropriate relation.
+     """
+    }
+
+class LINK_BAD_ANCHOR(Message):
+    category = c.GENERAL
+    level=l.WARN
+    summary = {
+     'en': u"The 'anchor' parameter on the %(link)s Link header isn't a URI."
+    }
+    text = {
+     'en': u"""The <code>Link</code> header, defined by 
+     <a href="http://tools.ietf.org/html/rfc5988#section-5">RFC5988</a>, 
+     uses the <code>anchor</code> parameter to define the context URI for 
+     the link.<p>
+     This parameter can be an absolute or relative URI; however, 
+     <code>%(anchor)s</code> is neither.
+     """
+    }
+
 
 if __name__ == '__main__':
     # do a sanity check on all of the defined messages

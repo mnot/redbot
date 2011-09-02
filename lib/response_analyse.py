@@ -62,7 +62,8 @@ from redbot.uri_validate import URI, URI_reference
 
 # base URLs for references
 rfc2616 = "http://www.apps.ietf.org/rfc/rfc2616.html#%s"
-rfc6266 = "http://www.apps.ietf.org/rfc/rfc6266.html" # FIXME
+rfc5988 = "http://www.apps.ietf.org/rfc/rfc5988.html#section-5"
+rfc6266 = "http://www.apps.ietf.org/rfc/rfc6266.html#section-4"
 
 ### configuration
 max_hdr_size = 4 * 1024
@@ -279,37 +280,40 @@ class ResponseHeaderParser(object):
                 continue
             k_norm = k.lower()
             if param_dict.has_key(k_norm):
-                self.setMessage(name, rs.PARAM_REPEATS, param=k_norm)
+                self.setMessage(name, rs.PARAM_REPEATS, param=e(k_norm))
             if v[0] == v[-1] == "'":
                 self.setMessage(name, 
                     rs.PARAM_SINGLE_QUOTED,
-                    param=k,
-                    param_val=v,
-                    param_val_unquoted=v[1:-1]
+                    param=e(k_norm),
+                    param_val=e(v),
+                    param_val_unquoted=e(v[1:-1])
                 )
             if k[-1] == '*':
                 if nostar and k_norm[:-1] in nostar:
-                    self.setMessage(name, rs.PARAM_STAR_BAD, param=k[:-1])
+                    self.setMessage(name, rs.PARAM_STAR_BAD,
+                                    param=e(k_norm[:-1]))
                 else:
                     if v[0] == '"' and v[-1] == '"':
-                        self.setMessage(name, rs.PARAM_STAR_QUOTED, param=k)
+                        self.setMessage(name, rs.PARAM_STAR_QUOTED,
+                                        param=e(k_norm))
                         v = self._unquoteString(v)
                     try:
                         enc, lang, esc_v = v.split("'", 3)
                     except ValueError:
-                        self.setMessage(name, rs.PARAM_STAR_ERROR, param=k)
+                        self.setMessage(name, rs.PARAM_STAR_ERROR,
+                                        param=e(k_norm))
                         continue
                     enc = enc.lower()
                     lang = lang.lower()
                     if enc == '':
                         self.setMessage(name, 
-                            rs.PARAM_STAR_NOCHARSET, param=k)
+                            rs.PARAM_STAR_NOCHARSET, param=e(k_norm))
                         continue
                     elif enc not in ['utf-8']:
                         self.setMessage(name, 
                             rs.PARAM_STAR_CHARSET, 
-                            param=k, 
-                            enc=enc
+                            param=e(k_norm), 
+                            enc=e(enc)
                         )
                         continue
                     # TODO: catch unquoting errors, range of chars, charset
@@ -388,7 +392,7 @@ class ResponseHeaderParser(object):
         if disposition not in ['inline', 'attachment']:
             self.setMessage(name,
                 rs.DISPOSITION_UNKNOWN,
-                disposition=disposition
+                disposition=e(disposition)
             )
         if not param_dict.has_key('filename'):
             self.setMessage(name, rs.DISPOSITION_OMITS_FILENAME)
@@ -506,7 +510,7 @@ class ResponseHeaderParser(object):
     @GenericHeaderSyntax
     @CheckFieldSyntax(
         r'(?:<%(URI_reference)s>(?:\s*;\s*%(PARAMETER)s)*)' % globals(),
-        rfc6266
+        rfc5988
     )
     def link(self, name, values):
         try:
@@ -516,6 +520,19 @@ class ResponseHeaderParser(object):
         link = link[1:-1] # trim the angle brackets
         param_dict = self._parse_params(name, params, 
           ['rel', 'rev', 'anchor', 'hreflang', 'type', 'media'])
+        if param_dict.has_key('rel'): # relation_types
+            pass # TODO: check relation type
+        if param_dict.has_key('rev'):
+            self.setMessage(name, rs.LINK_REV,
+                            link=e(link), rev=e(param_dict['rev']))
+        if param_dict.has_key('anchor'): # URI-Reference
+            if not re.match(r"^\s*%s\s*$" % URI_reference, 
+                            param_dict['anchor'], re.VERBOSE):
+                self.setMessage(name, rs.LINK_BAD_ANCHOR,
+                                link=e(link),
+                                anchor=e(param_dict['anchor']))
+        # TODO: check media-type in 'type'
+        # TODO: check language tag in 'hreflang'            
         return link, param_dict
 
     # The most common problem with Location is a non-absolute URI, 
