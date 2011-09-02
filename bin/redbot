@@ -28,8 +28,8 @@ THE SOFTWARE.
 """
 
 import sys
-assert sys.version_info[0] == 2 and sys.version_info[1] >= 5, \
-    "Please use Python 2.5 or greater"
+assert sys.version_info[0] == 2 and sys.version_info[1] >= 6, \
+    "Please use Python 2.6 or greater"
 
 from optparse import OptionParser
 

@@ -39,8 +39,8 @@ import time
 from urlparse import urlsplit
 import zlib
 
-assert sys.version_info[0] == 2 and sys.version_info[1] >= 5, \
-    "Please use Python 2.5 or greater"
+assert sys.version_info[0] == 2 and sys.version_info[1] >= 6, \
+    "Please use Python 2.6 or greater"
 
 import thor
 from redbot import droid

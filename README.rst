@@ -12,10 +12,8 @@ Requirements
 
 RED needs:
 
-1. Python 2.5 or greater; see <http://python.org/>
+1. Python 2.6 or greater; see <http://python.org/>
 2. The thor library; see <http://github.com/mnot/thor/>
-3. The json library (included with Python 2.6 or greater); see
-   <http://pypi.python.org/pypi/simplejson/>.
 4. To use RED on the Web, you'll need a Web server that implements the CGI 
    interface; e.g., Apache <http://httpd.apache.org/>.
 
