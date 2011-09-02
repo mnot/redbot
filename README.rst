@@ -31,7 +31,7 @@ Unpack the RED tarball. There are a number of interesting files:
 - lib/ - RED's Python library files
 - share/ - RED's CSS stylesheet and JavaScript libraries
 
-Running:: 
+To install from source (e.g., if you clone from github):: 
 
   python setup.py install
   
