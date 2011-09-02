@@ -219,6 +219,12 @@ class ResponseHeaderParserTester(unittest.TestCase):
          [rs.PARAM_REPEATS]
         )
         
+        # quotes (bad syntax)
+        self.check_hdr(li, ['"/foo", rel="example"'],
+         None,
+         [rs.BAD_SYNTAX]
+        )
+        
     def test_date(self):
         da = 'Date'
         # basic
