@@ -443,7 +443,7 @@ class ResponseHeaderParser(object):
         except ValueError:
             media_type, params = values[-1], ''
         media_type = media_type.lower()
-        param_dict = self._parse_params(name, params)
+        param_dict = self._parse_params(name, params, ['charset'])
         return media_type, param_dict
 
     @SingleFieldValue
@@ -514,7 +514,8 @@ class ResponseHeaderParser(object):
         except ValueError:
             link, params = values[-1], ''
         link = link[1:-1] # trim the angle brackets
-        param_dict = self._parse_params(name, params)
+        param_dict = self._parse_params(name, params, 
+          ['rel', 'rev', 'anchor', 'hreflang', 'type', 'media'])
         return link, param_dict
 
     # The most common problem with Location is a non-absolute URI, 
