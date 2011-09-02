@@ -11,6 +11,7 @@ setup(name='redbot',
       packages=['redbot', 'redbot.formatter'],
       package_dir={'redbot': 'lib'},
       scripts=['bin/redbot'],
+      install_requires = ['thor >= 0.1'],
       classifiers=[
         'Programming Language :: Python'
         'Development Status :: 4 - Beta',

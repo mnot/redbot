@@ -29,7 +29,7 @@ THE SOFTWARE.
 
 import operator
 
-import nbhttp.error as nberr
+import thor.http.error as httperr
 import redbot.speak as rs
 
 from redbot.formatter import Formatter
@@ -78,17 +78,22 @@ class BaseTextFormatter(Formatter):
         else:
             if self.red.res_error == None:
                 pass
-            elif self.red.res_error['desc'] == nberr.ERR_CONNECT['desc']:
-                self.output(self.error_template % "Could not connect to the server (%s)" % \
-                    self.red.res_error.get('detail', "unknown"))
-            elif self.red.res_error['desc'] == nberr.ERR_URL['desc']:
+            elif isinstance(self.red.res_error, httperr.ConnectError):
+                self.output(
+                  self.error_template % \
+                  "Could not connect to the server (%s)" % \
+                  self.red.res_error.get('detail', "unknown")
+                )
+            elif isinstance(self.red.res_error, httperr.UrlError):
                 self.output(self.error_template % self.red.res_error.get(
                     'detail', "RED can't fetch that URL."))
-            elif self.red.res_error['desc'] == nberr.ERR_READ_TIMEOUT['desc']:
+            elif isinstance(self.red.res_error, htterr.ReadTimeoutError):
                 self.output(self.error_template % self.red.res_error['desc'])
-            elif self.red.res_error['desc'] == nberr.ERR_HTTP_VERSION['desc']:
-                self.output(self.error_template % "<code>%s</code> isn't HTTP." % \
-                    self.red.res_error.get('detail', '')[:20])
+            elif isinstance(self.red.res_error, httperr.HttpVersionError):
+                self.output(
+                  self.error_template % "<code>%s</code> isn't HTTP." % \
+                  self.red.res_error.get('detail', '')[:20]
+                )
             else:
                 raise AssertionError, "Unidentified incomplete response error."
 

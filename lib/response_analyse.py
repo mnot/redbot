@@ -55,7 +55,8 @@ from cgi import escape as e
 from email.utils import parsedate as lib_parsedate
 from urlparse import urljoin
 
-import nbhttp.error
+import thor.http
+
 import redbot.speak as rs
 from redbot.uri_validate import URI, URI_reference
 
@@ -710,17 +711,17 @@ class ResponseStatusChecker:
                              )
 
     def status100(self):        # Continue
-        if not "100-continue" in nbhttp.get_hdr(self.red.req_hdrs, 'expect'):
+        if not "100-continue" in thor.http.get_headder(self.red.req_hdrs, 'expect'):
             self.setMessage('', rs.UNEXPECTED_CONTINUE)
     def status101(self):        # Switching Protocols
-        if not 'upgrade' in nbhttp.header_dict(self.red.req_hdrs).keys():
+        if not 'upgrade' in thor.http.header_dict(self.red.req_hdrs).keys():
             self.setMessage('', rs.UPGRADE_NOT_REQUESTED)
     def status102(self):        # Processing
         pass
     def status200(self):        # OK
         pass
     def status201(self):        # Created
-        if self.red.method in nbhttp.safe_methods:
+        if self.red.method in thor.http.safe_methods:
             self.setMessage('status', 
                 rs.CREATED_SAFE_METHOD, 
                 method=self.red.method
@@ -736,7 +737,7 @@ class ResponseStatusChecker:
     def status205(self):        # Reset Content
         pass
     def status206(self):        # Partial Content
-        if not "range" in nbhttp.header_dict(self.red.req_hdrs).keys():
+        if not "range" in thor.http.header_dict(self.red.req_hdrs).keys():
             self.setMessage('', rs.PARTIAL_NOT_REQUESTED)
             self.setMessage('header-location', rs.PARTIAL_WITHOUT_RANGE)
     def status207(self):        # Multi-Status

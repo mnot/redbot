@@ -33,7 +33,7 @@ assert sys.version_info[0] == 2 and sys.version_info[1] >= 5, \
 
 from optparse import OptionParser
 
-import nbhttp
+import thor
 from redbot import droid
 from redbot.formatter import find_formatter, available_formatters
 
@@ -86,9 +86,9 @@ def main():
     
     def done():
         formatter.finish_output()
-        nbhttp.stop()
+        thor.stop()
     red.run(done)
-    nbhttp.run()
+    thor.run()
 
 
 def output(out):

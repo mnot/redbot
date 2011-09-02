@@ -39,8 +39,9 @@ from cgi import escape as e
 from functools import partial
 from urlparse import urljoin
 
-import nbhttp
-import nbhttp.error as nberr
+import thor
+import thor.http.error as httperr
+
 import redbot.speak as rs
 from redbot import defns, droid, fetch
 from redbot.formatter import Formatter, html_header
@@ -62,7 +63,7 @@ class BaseHtmlFormatter(Formatter):
     def __init__(self, *args, **kw):
         Formatter.__init__(self, *args, **kw)
         self.hidden_text = []
-        self.start = nbhttp.now()
+        self.start = thor.time()
 
     def feed(self, red, chunk):
         pass
@@ -117,13 +118,13 @@ class BaseHtmlFormatter(Formatter):
 window.status="%s";
 -->
 </script>
-        """ % (nbhttp.now() - self.start, e(message)))
+        """ % (thor.time() - self.start, e(message)))
 
     def final_status(self):
 #        self.status("RED made %(reqs)s requests in %(elapse)2.3f seconds." % {
 # FIXME           'reqs': fetch.total_requests,
         self.status("RED finished in %(elapse)2.3f seconds." % {
-           'elapse': nbhttp.now() - self.start
+           'elapse': thor.time() - self.start
         })
 
     def format_extra(self, etype='.html'):
@@ -276,19 +277,19 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         else:
             if self.red.res_error == None:
                 pass # usually a global timeout...
-            elif self.red.res_error['desc'] == nberr.ERR_CONNECT['desc']:
+            elif isinstance(self.red.res_error, httperr.ConnectError):
                 self.output(self.error_template % \
                     "Could not connect to the server (%s)" % \
-                    self.red.res_error.get('detail', "unknown"))
-            elif self.red.res_error['desc'] == nberr.ERR_URL['desc']:
-                self.output(self.error_template % self.red.res_error.get(
-                    'detail', "RED can't fetch that URL."))
-            elif self.red.res_error['desc'] == nberr.ERR_READ_TIMEOUT['desc']:
-                self.output(self.error_template % self.red.res_error['desc'])
-            elif self.red.res_error['desc'] == nberr.ERR_HTTP_VERSION['desc']:
+                    self.red.res_error.detail or "unknown")
+            elif isinstance(self.red.res_error, httperr.UrlError):
+                self.output(self.error_template % \
+                  self.red.res_error.detail or "RED can't fetch that URL.")
+            elif isinstance(self.red.res_error, httperr.ReadTimeoutError):
+                self.output(self.error_template % self.red.res_error.desc)
+            elif isinstance(self.red.res_error, httperr.HttpVersionError):
                 self.output(self.error_template % \
                     "<code>%s</code> isn't HTTP." % \
-                    e(self.red.res_error.get('detail', '')[:20]))
+                    e(self.red.res_error.detail or '')[:20])
             else:
                 raise AssertionError, "Unknown incomplete response error."
         self.done()
@@ -648,7 +649,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             if red.res_error == None:
                 err = "response incomplete"
             else:
-                err = red.res_error.get('desc', 'unknown problem')
+                err = red.res_error.desc or 'unknown problem'
             out.append('<td colspan="11">%s' % err)
         out.append(u"</td>")
         out.append(u'</tr>')
