@@ -260,12 +260,13 @@ class ResponseHeaderParser(object):
             r'%s(?=%s|\s*$)' % (item, split), instr
         )]
 
-    def _parse_params(self, name, instr):
+    def _parse_params(self, name, instr, nostar=None):
         """
         Parse parameters into a dictionary.
         
         @param name: the header field name
         @param instr: string to be parsed
+        @param nostar: list of parameters that definitely don't get a star
         @return: dictionary of {name: value}
         """
         param_dict = {}
@@ -287,30 +288,34 @@ class ResponseHeaderParser(object):
                     param_val_unquoted=v[1:-1]
                 )
             if k[-1] == '*':
-                if v[0] == '"' and v[-1] == '"':
-                    self.setMessage(name, rs.PARAM_STAR_QUOTED, param=k)
-                    v = self._unquoteString(v)
-                try:
-                    enc, lang, esc_v = v.split("'", 3)
-                except ValueError:
-                    self.setMessage(name, rs.PARAM_STAR_ERROR, param=k)
-                    continue
-                enc = enc.lower()
-                lang = lang.lower()
-                if enc == '':
-                    self.setMessage(name, rs.PARAM_STAR_NOCHARSET, param=k)
-                    continue
-                elif enc not in ['utf-8']:
-                    self.setMessage(name, 
-                        rs.PARAM_STAR_CHARSET, 
-                        param=k, 
-                        enc=enc
-                    )
-                    continue
-                # TODO: catch unquoting errors, range of chars, charset
-                unq_v = urllib.unquote(esc_v)
-                dec_v = unq_v.decode(enc) # ok, because we limit enc above
-                param_dict[k_norm] = dec_v
+                if nostar and k_norm[:-1] in nostar:
+                    self.setMessage(name, rs.PARAM_STAR_BAD, param=k[:-1])
+                else:
+                    if v[0] == '"' and v[-1] == '"':
+                        self.setMessage(name, rs.PARAM_STAR_QUOTED, param=k)
+                        v = self._unquoteString(v)
+                    try:
+                        enc, lang, esc_v = v.split("'", 3)
+                    except ValueError:
+                        self.setMessage(name, rs.PARAM_STAR_ERROR, param=k)
+                        continue
+                    enc = enc.lower()
+                    lang = lang.lower()
+                    if enc == '':
+                        self.setMessage(name, 
+                            rs.PARAM_STAR_NOCHARSET, param=k)
+                        continue
+                    elif enc not in ['utf-8']:
+                        self.setMessage(name, 
+                            rs.PARAM_STAR_CHARSET, 
+                            param=k, 
+                            enc=enc
+                        )
+                        continue
+                    # TODO: catch unquoting errors, range of chars, charset
+                    unq_v = urllib.unquote(esc_v)
+                    dec_v = unq_v.decode(enc) # ok, because we limit enc above
+                    param_dict[k_norm] = dec_v
             else:
                 param_dict[k_norm] = self._unquoteString(v)
         return param_dict

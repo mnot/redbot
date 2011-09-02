@@ -2020,6 +2020,22 @@ class PARAM_STAR_ERROR(Message):
      quotes (')."""
     }
 
+class PARAM_STAR_BAD(Message):
+    category = c.GENERAL
+    level = l.BAD
+    summary = {
+     'en': u"The %(param)s* parameter isn't allowed on the %(field_name)s header."
+    }
+    text = {
+     'en': u"""Parameter values that end in '*' are reserved for 
+     non-ascii text, as explained in <a 
+     href="http://tools.ietf.org/html/rfc5987">RFC5987</a>.<p>
+     The <code>%(param)s</code> parameter on the <code>%(field_name)s</code>
+     does not allow this; you should use %(param)s without the "*" on the end (and without the associated encoding).<p>
+     RED ignores the content of this parameter. 
+     """
+    }
+
 class PARAM_STAR_NOCHARSET(Message):
     category = c.GENERAL
     level = l.WARN
