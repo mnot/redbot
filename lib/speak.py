@@ -494,17 +494,16 @@ class LOCATION_UNDEFINED(Message):
 
 class LOCATION_NOT_ABSOLUTE(Message):
     category = c.GENERAL
-    level = l.BAD
+    level = l.INFO
     summary = {
      'en': u"The Location header contains a relative URI."
     }
     text = {
-     'en': u"""<code>Location</code> is specified to contain an absolute,
-     not relative, URI.<p>
-     Most (but not all) clients will work around this, but since this field 
-     isn't defined to take a relative URI, they may behave differently (for 
-     example, if the body contains a base URI).</p>
-     The correct value for this field is (probably):<br>
+     'en': u"""<code>Location</code> was originally specified to contain 
+     an absolute, not relative, URI.<p>
+     It is in the process of being updated, and most clients will work 
+     around this.</p>
+     The correct absolute URI is (probably):<br>
      <code>%(full_uri)s</code>"""
     }
 
