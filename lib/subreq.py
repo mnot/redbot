@@ -73,7 +73,8 @@ class ConnegCheck(SubRequest):
     """
     def modify_req_hdrs(self):
         return [h for h in self.base.orig_req_hdrs 
-            if h[0].lower() != 'accept-encoding']
+                  if h[0].lower() != 'accept-encoding'] + \
+               [('accept-encoding', 'identity')]
 
     def preflight(self):
         if "gzip" in self.base.parsed_hdrs.get('content-encoding', []):
@@ -83,53 +84,80 @@ class ConnegCheck(SubRequest):
             return False
 
     def done(self):
-        if self.state.res_body_len > 0:
-            savings = int(100 * 
-                (
-                    (float(self.state.res_body_len) - \
-                    self.base.res_body_len
-                    ) / self.state.res_body_len
-                )
-            )
-        else:
-            savings = 0
-        self.base.gzip_support = True
-        self.base.gzip_savings = savings
-        if savings >= 0:
-            self.setMessage('header-content-encoding',
-                rs.CONNEG_GZIP_GOOD,
-                savings=savings,
-                orig_size=f_num(self.state.res_body_len),
-                gzip_size=f_num(self.base.res_body_len)
-            )
-        else:
-            self.setMessage('header-content-encoding',
-                rs.CONNEG_GZIP_BAD,
-                savings=abs(savings),
-                orig_size=f_num(self.state.res_body_len),
-                gzip_size=f_num(self.base.res_body_len)
-            )
-        vary_headers = self.base.parsed_hdrs.get('vary', [])
-        if (not "accept-encoding" in vary_headers) \
-        and (not "*" in vary_headers):
-            self.setMessage('header-vary header-%s', rs.CONNEG_NO_VARY)
-        # TODO: verify that the status/body/hdrs are the same; 
-        # if it's different, alert
+        # see if it was compressed when not negotiated
         no_conneg_vary_headers = self.state.parsed_hdrs.get('vary', [])
         if 'gzip' in self.state.parsed_hdrs.get('content-encoding', []) or \
            'x-gzip' in self.state.parsed_hdrs.get('content-encoding', []):
             self.setMessage('header-vary header-content-encoding',
-                                 rs.CONNEG_GZIP_WITHOUT_ASKING)
-        if no_conneg_vary_headers != vary_headers:
-            self.setMessage('header-vary', 
-                rs.VARY_INCONSISTENT,
-                conneg_vary=e(", ".join(vary_headers)),
-                no_conneg_vary=e(", ".join(no_conneg_vary_headers))
-            )
-        if self.state.parsed_hdrs.get('etag', 1) \
-           == self.base.parsed_hdrs.get('etag', 2):
-            self.setMessage('header-etag', rs.ETAG_DOESNT_CHANGE) 
-            # TODO: weakness?
+                            rs.CONNEG_GZIP_WITHOUT_ASKING)
+        else: # Apparently, content negotiation is happening.
+
+            # check status
+            if self.base.res_status != self.state.res_status:
+                self.setMessage('status', rs.VARY_STATUS_MISMATCH, 
+                  neg_status=self.base.res_status,
+                  noneg_status=self.state.res_status)
+                return  # Can't be sure what's going on...
+
+            # check headers that should be invariant
+            for hdr in ['content-type']:
+                if self.base.parsed_hdrs.get(hdr) != \
+                  self.state.parsed_hdrs.get(hdr, None):
+                    self.setMessage('header-%s' % hdr,
+                      rs.VARY_HEADER_MISMATCH, 
+                      header=hdr)
+                    # TODO: expose on-the-wire values.
+
+            # check Vary headers
+            vary_headers = self.base.parsed_hdrs.get('vary', [])
+            if (not "accept-encoding" in vary_headers) and \
+               (not "*" in vary_headers):
+                self.setMessage('header-vary', rs.CONNEG_NO_VARY)
+            if no_conneg_vary_headers != vary_headers:
+                self.setMessage('header-vary', 
+                    rs.VARY_INCONSISTENT,
+                    conneg_vary=e(", ".join(vary_headers)),
+                    no_conneg_vary=e(", ".join(no_conneg_vary_headers))
+                )
+
+            # check body
+            if self.base.res_body_post_md5 != self.state.res_body_md5:
+                self.setMessage('body', rs.VARY_BODY_MISMATCH)
+                return  # Can't be sure what's going on...
+
+            # check ETag
+            if self.state.parsed_hdrs.get('etag', 1) \
+               == self.base.parsed_hdrs.get('etag', 2):
+                self.setMessage('header-etag', rs.VARY_ETAG_DOESNT_CHANGE) 
+                # TODO: weakness?
+
+            # check compression efficiency
+            if self.state.res_body_len > 0:
+                savings = int(100 * 
+                    (
+                        (float(self.state.res_body_len) - \
+                        self.base.res_body_len
+                        ) / self.state.res_body_len
+                    )
+                )
+            else:
+                savings = 0
+            self.base.gzip_support = True
+            self.base.gzip_savings = savings
+            if savings >= 0:
+                self.setMessage('header-content-encoding',
+                    rs.CONNEG_GZIP_GOOD,
+                    savings=savings,
+                    orig_size=f_num(self.state.res_body_len),
+                    gzip_size=f_num(self.base.res_body_len)
+                )
+            else:
+                self.setMessage('header-content-encoding',
+                    rs.CONNEG_GZIP_BAD,
+                    savings=abs(savings),
+                    orig_size=f_num(self.state.res_body_len),
+                    gzip_size=f_num(self.base.res_body_len)
+                )
 
 
 class RangeRequest(SubRequest):

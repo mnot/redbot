@@ -918,15 +918,16 @@ class CONNEG_NO_VARY(Message):
 
 class CONNEG_GZIP_WITHOUT_ASKING(Message):
     category = c.CONNEG
-    level = l.BAD
+    level = l.WARN
     summary = {
     'en': u"A gzip-compressed response was sent when it wasn't asked for."
     }
     text = {
     'en': u"""HTTP supports compression of responses by negotiating for
     <code>Content-Encoding</code>. Even though RED didn't ask for a compressed
-    response, the resource provided one anyway. Doing so can break clients
-    that aren't expecting a compressed response."""
+    response, the resource provided one anyway.<p>
+    It could be that the response is always compressed, but doing so can 
+    break clients that aren't expecting a compressed response."""
     }
 
 class VARY_INCONSISTENT(Message):
@@ -951,11 +952,52 @@ class VARY_INCONSISTENT(Message):
     cannot consistently determine what the cache key for a given URI is."""
     }
 
-class ETAG_DOESNT_CHANGE(Message):
+class VARY_STATUS_MISMATCH(Message):
     category = c.CONNEG
     level = l.BAD
     summary = {
-    'en': u"The ETag doesn't change between representations."
+     'en': u"The response status is different when content negotiation happens."
+    }
+    text = {
+     'en': u"""When content negotiation is used, the response status
+     shouldn't change between negotiated and non-negotiated responses.<p>
+     When RED send asked for a negotiated response, it got a
+     <code>%(neg_status)s status code; when it didn't, it got 
+     <code>%(noneg_status)s</code>.<p>
+     RED hasn't checked other aspects of content-negotiation because of
+     this."""
+    }
+    
+class VARY_HEADER_MISMATCH(Message):
+    category = c.CONNEG
+    level = l.BAD
+    summary = {
+     'en': u"The %(header)s header is different when content negotiation happens."
+    }
+    text = {
+     'en': u"""When content negotiation is used, the %(header)s response
+     header shouldn't change between negotiated and non-negotiated
+     responses."""
+    }
+
+class VARY_BODY_MISMATCH(Message):
+    category = c.CONNEG
+    level = l.WARN
+    summary = {
+     'en': u"The response body is different when content negotiation happens."
+    }
+    text = {
+     'en': u"""When content negotiation is used, the response body
+     shouldn't change between negotiated and non-negotiated
+     responses.<p>
+     This might be because different servers handled the two requests.<p>"""
+    }
+
+class VARY_ETAG_DOESNT_CHANGE(Message):
+    category = c.CONNEG
+    level = l.BAD
+    summary = {
+    'en': u"The ETag doesn't change between negotiated representations."
     }
     text = {
     'en': u"""HTTP requires that the <code>ETag</code>s for two different
