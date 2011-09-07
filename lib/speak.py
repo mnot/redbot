@@ -494,17 +494,16 @@ class LOCATION_UNDEFINED(Message):
 
 class LOCATION_NOT_ABSOLUTE(Message):
     category = c.GENERAL
-    level = l.BAD
+    level = l.INFO
     summary = {
      'en': u"The Location header contains a relative URI."
     }
     text = {
-     'en': u"""<code>Location</code> is specified to contain an absolute,
-     not relative, URI.<p>
-     Most (but not all) clients will work around this, but since this field 
-     isn't defined to take a relative URI, they may behave differently (for 
-     example, if the body contains a base URI).</p>
-     The correct value for this field is (probably):<br>
+     'en': u"""<code>Location</code> was originally specified to contain 
+     an absolute, not relative, URI.<p>
+     It is in the process of being updated, and most clients will work 
+     around this.</p>
+     The correct absolute URI is (probably):<br>
      <code>%(full_uri)s</code>"""
     }
 
@@ -919,15 +918,16 @@ class CONNEG_NO_VARY(Message):
 
 class CONNEG_GZIP_WITHOUT_ASKING(Message):
     category = c.CONNEG
-    level = l.BAD
+    level = l.WARN
     summary = {
     'en': u"A gzip-compressed response was sent when it wasn't asked for."
     }
     text = {
     'en': u"""HTTP supports compression of responses by negotiating for
     <code>Content-Encoding</code>. Even though RED didn't ask for a compressed
-    response, the resource provided one anyway. Doing so can break clients
-    that aren't expecting a compressed response."""
+    response, the resource provided one anyway.<p>
+    It could be that the response is always compressed, but doing so can 
+    break clients that aren't expecting a compressed response."""
     }
 
 class VARY_INCONSISTENT(Message):
@@ -952,11 +952,52 @@ class VARY_INCONSISTENT(Message):
     cannot consistently determine what the cache key for a given URI is."""
     }
 
-class ETAG_DOESNT_CHANGE(Message):
+class VARY_STATUS_MISMATCH(Message):
     category = c.CONNEG
     level = l.BAD
     summary = {
-    'en': u"The ETag doesn't change between representations."
+     'en': u"The response status is different when content negotiation happens."
+    }
+    text = {
+     'en': u"""When content negotiation is used, the response status
+     shouldn't change between negotiated and non-negotiated responses.<p>
+     When RED send asked for a negotiated response, it got a
+     <code>%(neg_status)s status code; when it didn't, it got 
+     <code>%(noneg_status)s</code>.<p>
+     RED hasn't checked other aspects of content-negotiation because of
+     this."""
+    }
+    
+class VARY_HEADER_MISMATCH(Message):
+    category = c.CONNEG
+    level = l.BAD
+    summary = {
+     'en': u"The %(header)s header is different when content negotiation happens."
+    }
+    text = {
+     'en': u"""When content negotiation is used, the %(header)s response
+     header shouldn't change between negotiated and non-negotiated
+     responses."""
+    }
+
+class VARY_BODY_MISMATCH(Message):
+    category = c.CONNEG
+    level = l.WARN
+    summary = {
+     'en': u"The response body is different when content negotiation happens."
+    }
+    text = {
+     'en': u"""When content negotiation is used, the response body
+     shouldn't change between negotiated and non-negotiated
+     responses.<p>
+     This might be because different servers handled the two requests.<p>"""
+    }
+
+class VARY_ETAG_DOESNT_CHANGE(Message):
+    category = c.CONNEG
+    level = l.BAD
+    summary = {
+    'en': u"The ETag doesn't change between negotiated representations."
     }
     text = {
     'en': u"""HTTP requires that the <code>ETag</code>s for two different
@@ -2020,6 +2061,22 @@ class PARAM_STAR_ERROR(Message):
      quotes (')."""
     }
 
+class PARAM_STAR_BAD(Message):
+    category = c.GENERAL
+    level = l.BAD
+    summary = {
+     'en': u"The %(param)s* parameter isn't allowed on the %(field_name)s header."
+    }
+    text = {
+     'en': u"""Parameter values that end in '*' are reserved for 
+     non-ascii text, as explained in <a 
+     href="http://tools.ietf.org/html/rfc5987">RFC5987</a>.<p>
+     The <code>%(param)s</code> parameter on the <code>%(field_name)s</code>
+     does not allow this; you should use %(param)s without the "*" on the end (and without the associated encoding).<p>
+     RED ignores the content of this parameter. 
+     """
+    }
+
 class PARAM_STAR_NOCHARSET(Message):
     category = c.GENERAL
     level = l.WARN
@@ -2146,6 +2203,38 @@ class DISPOSITION_FILENAME_PATH_CHAR(Message):
      """
     }
     
+class LINK_REV(Message):
+    category = c.GENERAL
+    level=l.WARN
+    summary = {
+     'en': u"The 'rev' parameter on the Link header is deprecated."
+    }
+    text = {
+     'en': u"""The <code>Link</code> header, defined by 
+     <a href="http://tools.ietf.org/html/rfc5988#section-5">RFC5988</a>, 
+     uses the <code>rel</code> parameter to communicate the type of a link.
+     <code>rev</code> is deprecated by that specification because it is 
+     often confusing.<p>
+     Use <code>rel</code> and an appropriate relation.
+     """
+    }
+
+class LINK_BAD_ANCHOR(Message):
+    category = c.GENERAL
+    level=l.WARN
+    summary = {
+     'en': u"The 'anchor' parameter on the %(link)s Link header isn't a URI."
+    }
+    text = {
+     'en': u"""The <code>Link</code> header, defined by 
+     <a href="http://tools.ietf.org/html/rfc5988#section-5">RFC5988</a>, 
+     uses the <code>anchor</code> parameter to define the context URI for 
+     the link.<p>
+     This parameter can be an absolute or relative URI; however, 
+     <code>%(anchor)s</code> is neither.
+     """
+    }
+
 
 if __name__ == '__main__':
     # do a sanity check on all of the defined messages

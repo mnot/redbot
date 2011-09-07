@@ -115,9 +115,17 @@ class ResponseHeaderParserTester(unittest.TestCase):
              {},
              [rs.PARAM_STAR_CHARSET]
             ),
+            ("nostar*=utf-8''a%cc%88.txt",
+             {},
+             [rs.PARAM_STAR_BAD]
+            ),
+            ("NOstar*=utf-8''a%cc%88.txt",
+             {},
+             [rs.PARAM_STAR_BAD]
+            )
         ]:
             self.red.__init__()
-            param_dict = self.parser._parse_params('test', instr)
+            param_dict = self.parser._parse_params('test', instr, ['nostar'])
             diff = set(
                 [n.__name__ for n in expected_msgs]).symmetric_difference(
                 set(self.red.msg_classes)
@@ -217,6 +225,24 @@ class ResponseHeaderParserTester(unittest.TestCase):
         self.check_hdr(li, ['</foo>; rel="example"; rel="another"'], 
          ('/foo', {'rel': 'another'}),
          [rs.PARAM_REPEATS]
+        )
+        
+        # quotes (bad syntax)
+        self.check_hdr(li, ['"/foo", rel="example"'],
+         None,
+         [rs.BAD_SYNTAX]
+        )
+        
+        # rev
+        self.check_hdr(li, ['</foo>; rev="bar"'],
+         ('/foo', {'rev': 'bar'}),
+         [rs.LINK_REV]
+        )
+        
+        # bad anchor
+        self.check_hdr(li, ['</foo>; rel="bar"; anchor="{blah}"'],
+         ('/foo', {'rel': 'bar', 'anchor': '{blah}'}),
+         [rs.LINK_BAD_ANCHOR]
         )
         
     def test_date(self):

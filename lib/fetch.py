@@ -78,6 +78,7 @@ class RedFetcher(object):
         self.outstanding_tasks = 0
         self._md5_processor = hashlib.md5()
         self._gzip_processor = zlib.decompressobj(-zlib.MAX_WBITS)
+        self._md5_post_processor = hashlib.md5()
         self._in_gzip_body = False
         self._gzip_header_buffer = ""
         self._gzip_ok = True # turn False if we have a problem
@@ -89,6 +90,7 @@ class RedFetcher(object):
         del state['_md5_processor']
         del state['_gzip_processor']
         del state['exchange']
+        del state['_md5_post_processor']
         return state
 
     def add_task(self, task, *args):
@@ -163,10 +165,10 @@ class RedFetcher(object):
     def _response_body(self, chunk):
         "Process a chunk of the response body."
         state = self.state
-        self._md5_processor.update(chunk)
         state.res_body_sample.append((state.res_body_len, chunk))
         if len(state.res_body_sample) > 4:
             state.res_body_sample.pop(0)
+        self._md5_processor.update(chunk)
         state.res_body_len += len(chunk)
         if state.res_status == "206":
             # Store only partial responses completely, for error reporting
@@ -210,6 +212,7 @@ class RedFetcher(object):
             else:
                 # we can't handle other codecs, so punt on body processing.
                 return
+        self._md5_post_processor.update(chunk)
         state.res_body_decode_len += len(chunk)
         if self._gzip_ok:
             for processor in self.body_procs:
@@ -229,7 +232,7 @@ class RedFetcher(object):
         if self.status_cb and state.type:
             self.status_cb("fetched %s (%s)" % (state.uri, state.type))
         state.res_body_md5 = self._md5_processor.digest()
-
+        state.res_body_post_md5 = self._md5_post_processor.digest()
         checkCaching(state)
 
         if state.method not in ['HEAD'] and state.res_status not in ['304']:

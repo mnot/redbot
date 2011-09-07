@@ -71,8 +71,8 @@ html.static_root = 'static'
 # directory containing files to append to the front page; None to disable
 html.extra_dir = "extra"
 
-# show errors in the browser
-debug = True
+# show errors in the browser; boolean
+debug = False
 
 ### End configuration ######################################################
 

@@ -38,11 +38,11 @@ THE SOFTWARE.
 import re
 from urlparse import urljoin
 
+import redbot.subrequest
 import redbot.speak as rs
 from redbot import link_parse
 from redbot.fetch import RedFetcher
 from redbot.response_analyse import f_num
-from redbot.subreq import ConnegCheck, RangeRequest, ETagValidate, LmValidate
 from redbot.uri_validate import absolute_URI
 
 ### configuration
@@ -98,11 +98,8 @@ class ResourceExpertDroid(RedFetcher):
         the "main" response.
         """
         if self.state.res_complete:
-            self.add_task(ConnegCheck(self, 'Accept-Encoding').run)
-            self.add_task(RangeRequest(self, 'Range').run)
-            self.add_task(ETagValidate(self, 'ETag').run)
-            self.add_task(LmValidate(self, 'Last-Modified').run)
-
+            redbot.subrequest.spawn_all(self)
+            
 
 class InspectingResourceExpertDroid(ResourceExpertDroid):
     """
