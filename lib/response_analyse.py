@@ -681,7 +681,7 @@ class ResponseHeaderParser(object):
             if directives.has_key(attr):
                 self.setMessage(name, rs.UA_COMPATIBLE_REPEAT)
             directives[attr] = value
-        uac_list = u"\n".join([u"<li>%s - %s</li>" % (e(k), e(v)) for
+        uac_list = u"\n".join([u"<li>%s - %s</li>" % (e(k), e(v or '')) for
                             k, v in directives.items()])
         self.setMessage(name, rs.UA_COMPATIBLE, uac_list=uac_list)
         return directives
