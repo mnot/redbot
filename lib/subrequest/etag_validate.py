@@ -67,7 +67,15 @@ class ETagValidate(SubRequest):
                 self.base.inm_support = False
                 self.setMessage('header-etag', rs.INM_FULL)
             else:
-                self.setMessage('header-etag', rs.INM_UNKNOWN)
+                if self.base.parsed_hdrs['etag'] == \
+                  self.state.parsed_hdrs['etag']:
+                    if self.base.parsed_hdrs['etag'][0]: # weak
+                        self.setMessage('header-etag', rs.INM_DUP_ETAG_WEAK)
+                    else: # strong
+                        self.setMessage('header-etag', rs.INM_DUP_ETAG_STRONG,
+                                        etag=self.base.parsed_hdrs['etag'])
+                else:
+                    self.setMessage('header-etag', rs.INM_UNKNOWN)
         else:
             self.setMessage('header-etag', 
                 rs.INM_STATUS, 

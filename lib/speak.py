@@ -1613,10 +1613,49 @@ class INM_FULL(Message):
     'en': u"""HTTP allows clients to make conditional requests to see if a 
     copy that they hold is still valid. Since this response has an 
     <code>ETag</code>, clients should be able to use an 
-    <code>If-None-Match</code> request header for validation. RED has done 
-    this and found that the resource sends a full response even though it 
-    hadn't changed, indicating that it doesn't support <code>ETag</code> 
-    validation."""
+    <code>If-None-Match</code> request header for validation.<p>
+    RED has done this and found that the resource sends the same, full
+    response even though it hadn't changed, indicating that it doesn't support
+    <code>ETag</code> validation."""
+    }
+
+class INM_DUP_ETAG_WEAK(Message):
+    category = c.VALIDATION
+    level = l.INFO
+    summary = {
+    'en': u"During validation, the ETag didn't change, even though the response body did."
+    }
+    text = {
+    'en': u"""<code>ETag</code>s are supposed to uniquely identify the
+    response representation; if the content changes, so should the ETag.<p>
+    However, HTTP allows reuse of an <code>ETag</code> if it's "weak", as long
+    as the server is OK with the two different responses being considered
+    as interchangeable by clients.<p>
+    For example, if a small detail of a Web page changes, and it doesn't
+    affect the overall meaning of the page, you can use the same weak 
+    <code>ETag</code> to identify both versions.<p>
+    If the changes are important, a different <code>ETag</code> should be 
+    used.
+    """
+    }
+    
+class INM_DUP_ETAG_STRONG(Message):
+    category = c.VALIDATION
+    level = l.BAD
+    summary = {
+    'en': u"During validation, the ETag didn't change, even though the response body did."
+    }
+    text = {
+    'en': u"""<code>ETag</code>s are supposed to uniquely identify the
+    response representation; if the content changes, so should the ETag.<p>
+    Here, the same <code>ETag</code> was used for two different responses
+    during validation, which means that downstream clients and caches might
+    confuse them.<p>
+    If the changes between the two versions aren't important, and they can
+    be used interchangeably, a "weak" ETag should be used; to do that, just
+    prepend <code>W/</code>, to make it <code>W/%(etag)s</code>. Otherwise,
+    a different <code>ETag</code> needs to be used.
+    """
     }
 
 class INM_UNKNOWN(Message):
@@ -1629,10 +1668,10 @@ class INM_UNKNOWN(Message):
     'en': u"""HTTP allows clients to make conditional requests to see if a 
     copy that they hold is still valid. Since this response has an 
     <code>ETag</code>, clients should be able to use an 
-    <code>If-None-Match</code> request header for validation. RED has done 
-    this, but the response changed between the original request and the 
-    validating request, so RED can't tell whether or not <code>ETag</code> 
-    validation is supported."""
+    <code>If-None-Match</code> request header for validation.<p>
+    RED has done this, but the response changed between the original request
+    and the validating request, so RED can't tell whether or not
+    <code>ETag</code> validation is supported."""
     }
 
 class INM_STATUS(Message):
