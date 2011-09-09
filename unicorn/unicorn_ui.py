@@ -16,7 +16,7 @@ import cgi
 import logging
 from string import Template
 import thor
-from formatter.unicorn import W3CUnicornFormatter
+from redbot.formatter.unicorn import W3CUnicornFormatter
 
 __date__ = "Jun 30, 2010"
 __author__ = "Hirotaka Nakajima <hiro@w3.org>"
