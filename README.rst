@@ -12,10 +12,8 @@ Requirements
 
 RED needs:
 
-1. Python 2.5 or greater; see <http://python.org/>
-2. The nbhttp library; see <http://github.com/mnot/nbhttp/>
-3. The json library (included with Python 2.6 or greater); see
-   <http://pypi.python.org/pypi/simplejson/>.
+1. Python 2.6 or greater; see <http://python.org/>
+2. The thor library; see <http://github.com/mnot/thor/>
 4. To use RED on the Web, you'll need a Web server that implements the CGI 
    interface; e.g., Apache <http://httpd.apache.org/>.
 
@@ -33,7 +31,7 @@ Unpack the RED tarball. There are a number of interesting files:
 - lib/ - RED's Python library files
 - share/ - RED's CSS stylesheet and JavaScript libraries
 
-Running:: 
+To install from source (e.g., if you clone from github):: 
 
   python setup.py install
   

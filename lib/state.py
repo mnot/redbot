@@ -33,7 +33,7 @@ THE SOFTWARE.
 import urllib
 import urlparse
 
-import nbhttp.error
+import thor.http.error as httperr
 import redbot.speak as rs
 
 
@@ -78,14 +78,14 @@ class RedState(object):
         self.res_complete = False
         self.transfer_length = None
         self.header_length = None
-        self.res_error = None # any parse errors encountered; see nbhttp.error
+        self.res_error = None # any parse errors encountered; see httperr
         # interesting things about the response; set by a variety of things
         self.messages = [] # messages (see above)
         self.subreqs = {} # sub-requests' RedState objects
         try:
             self.uri = self.iri_to_uri(iri)
         except UnicodeError, why:
-            self.res_error = nbhttp.error.ERR_URL
+            self.res_error = httperr.UrlError()
             self.uri = None
 
     def setMessage(self, subject, msg, subreq=None, **kw):

@@ -39,14 +39,16 @@ import hashlib
 import zlib
 from cgi import escape as e
 
-import nbhttp
+import thor
+import thor.http.error as httperr
+
 from redbot.cache_check import checkCaching
 import redbot.speak as rs
 import redbot.response_analyse as ra
 from redbot.response_analyse import f_num
 from redbot.state import RedState
 
-class RedHttpClient(nbhttp.Client):
+class RedHttpClient(thor.HttpClient):
     connect_timeout = 8
     read_timeout = 8
     
@@ -65,13 +67,13 @@ class RedFetcher(object):
     tasks are done. It can add tasks by calling add_task().
 
     """
+    client = RedHttpClient()
 
     def __init__(self, iri, method="GET", req_hdrs=None, req_body=None,
                  status_cb=None, body_procs=None, req_type=None):
         self.state = RedState(iri, method, req_hdrs, req_body, req_type)
         self.status_cb = status_cb
         self.body_procs = body_procs or []
-        self.client = None
         self.done_cb = None
         self.outstanding_tasks = 0
         self._md5_processor = hashlib.md5()
@@ -87,6 +89,7 @@ class RedFetcher(object):
         del state['body_procs']
         del state['_md5_processor']
         del state['_gzip_processor']
+        del state['exchange']
         del state['_md5_post_processor']
         return state
 
@@ -132,23 +135,24 @@ class RedFetcher(object):
         if 'user-agent' not in [i[0].lower() for i in state.req_hdrs]:
             state.req_hdrs.append(
                 ("User-Agent", "RED/%s (http://redbot.org/)" % __version__))    
-        self.client = RedHttpClient(self._response_start)
+        self.exchange = self.client.exchange()
+        self.exchange.on('response_start', self._response_start)
+        self.exchange.on('response_body', self._response_body)
+        self.exchange.on('response_done', self._response_done)
+        self.exchange.on('error', self._response_error)
         if self.status_cb and state.type:
             self.status_cb("fetching %s (%s)" % (state.uri, state.type))
-        req_body, req_done = self.client.req_start(
-            state.method, state.uri, state.req_hdrs, nbhttp.dummy)
-        state.req_ts = nbhttp.now()
+        self.exchange.request_start(state.method, state.uri, state.req_hdrs)
+        state.req_ts = thor.time()
         if state.req_body != None:
-            req_body(state.req_body)
-        req_done(None)
+            self.exchange.request_body(state.req_body)
+        self.exchange.request_done([])
 
-    def _response_start(self, version, status, phrase, 
-        res_headers, res_pause
-    ):
+    def _response_start(self, status, phrase, res_headers):
         "Process the response start-line and headers."
         state = self.state
-        state.res_ts = nbhttp.now()
-        state.res_version = version
+        state.res_ts = thor.time()
+        state.res_version = self.exchange.res_version
         state.res_status = status.decode('iso-8859-1', 'replace')
         state.res_phrase = phrase.decode('iso-8859-1', 'replace')
         state.res_hdrs = res_headers
@@ -157,7 +161,6 @@ class RedFetcher(object):
         state.res_body_enc = state.parsed_hdrs.get(
             'content-type', [None, {}]
         )[1].get('charset', 'utf-8') # default isn't really UTF-8, but oh well
-        return self._response_body, self._response_done
 
     def _response_body(self, chunk):
         "Process a chunk of the response body."
@@ -218,50 +221,21 @@ class RedFetcher(object):
                 # a hard error.
                 processor(self.state, chunk)
 
-    def _response_done(self, err):
+    def _response_done(self, trailers):
         "Finish anaylsing the response, handling any parse errors."
         state = self.state
         state.res_complete = True
-        state.res_done_ts = nbhttp.now()
-        state.transfer_length = self.client.input_transfer_length
-        state.header_length = self.client.input_header_length
-        self.client = None
-        state.res_error = err
+        state.res_done_ts = thor.time()
+        state.transfer_length = self.exchange.input_transfer_length
+        state.header_length = self.exchange.input_header_length
+        # TODO: check trailers
         if self.status_cb and state.type:
             self.status_cb("fetched %s (%s)" % (state.uri, state.type))
         state.res_body_md5 = self._md5_processor.digest()
         state.res_body_post_md5 = self._md5_post_processor.digest()
-        if err == None:
-            pass
-        elif err['desc'] == nbhttp.error.ERR_BODY_FORBIDDEN['desc']:
-            state.setMessage('header-none', rs.BODY_NOT_ALLOWED)
-        elif err['desc'] == nbhttp.error.ERR_EXTRA_DATA['desc']:
-            state.res_body_len += len(err.get('detail', ''))
-        elif err['desc'] == nbhttp.error.ERR_CHUNK['desc']:
-            state.setMessage('header-transfer-encoding', rs.BAD_CHUNK,
-                chunk_sample=e(
-                    err.get('detail', '')[:20].encode('string_escape')
-                )
-            )
-        elif err['desc'] == nbhttp.error.ERR_CONNECT['desc']:
-            state.res_complete = False
-        elif err['desc'] == nbhttp.error.ERR_LEN_REQ['desc']:
-            pass # TODO: length required
-        elif err['desc'] == nbhttp.error.ERR_URL['desc']:
-            state.res_complete = False
-        elif err['desc'] == nbhttp.error.ERR_READ_TIMEOUT['desc']:
-            state.res_complete = False
-        elif err['desc'] == nbhttp.error.ERR_HTTP_VERSION['desc']:
-            state.res_complete = False
-        else:
-            raise AssertionError, "Unknown response error: %s" % err
+        checkCaching(state)
 
-        if state.res_complete:
-            checkCaching(state)
-
-        if state.res_complete \
-          and state.method not in ['HEAD'] \
-          and state.res_status not in ['304']:
+        if state.method not in ['HEAD'] and state.res_status not in ['304']:
             # check payload basics
             if state.parsed_hdrs.has_key('content-length'):
                 if state.res_body_len == state.parsed_hdrs['content-length']:
@@ -278,6 +252,23 @@ class RedFetcher(object):
                 else:
                     state.setMessage('header-content-md5', rs.CMD5_INCORRECT,
                                      calc_md5=c_md5_calc)
+        self.done()
+        self.finish_task()
+
+    def _response_error(self, error):
+        state = self.state
+        state.res_done_ts = thor.time()
+        state.res_error = error
+        if isinstance(error, httperr.BodyForbiddenError):
+            state.setMessage('header-none', rs.BODY_NOT_ALLOWED)
+#        elif isinstance(error, httperr.ExtraDataErr):
+#            state.res_body_len += len(err.get('detail', ''))
+        elif isinstance(error, httperr.ChunkError):
+            state.setMessage('header-transfer-encoding', rs.BAD_CHUNK,
+                chunk_sample=e(
+                    error.get('detail', '')[:20].encode('string_escape')
+                )
+            )
         self.done()
         self.finish_task()
 
@@ -338,4 +329,4 @@ if "__main__" == __name__:
         uri, req_hdrs=test_req_hdrs, status_cb=status_p, req_type='test'
     )
     tf.run()
-    nbhttp.run()
+    thor.run()

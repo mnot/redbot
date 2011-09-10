@@ -39,10 +39,10 @@ import time
 from urlparse import urlsplit
 import zlib
 
-assert sys.version_info[0] == 2 and sys.version_info[1] >= 5, \
-    "Please use Python 2.5 or greater"
+assert sys.version_info[0] == 2 and sys.version_info[1] >= 6, \
+    "Please use Python 2.6 or greater"
 
-import nbhttp
+import thor
 from redbot import droid
 from redbot.formatter import find_formatter, html
 
@@ -98,13 +98,14 @@ class RedWebUi(object):
     Given a URI, run RED on it and present the results to output as HTML.
     If descend is true, spider the links and present a summary.
     """
-    def __init__(self, base_uri, method, query_string, output_hdrs):
+    def __init__(self, base_uri, method, query_string, 
+      response_start, response_body, response_done):
         self.base_uri = base_uri
         self.method = method
-        self._output_hdrs = output_hdrs
+        self.response_start = response_start
+        self.response_body = response_body
+        self._response_done = response_done
         
-        self.output_body = None
-        self.body_done = None
         self.test_uri = None
         self.req_hdrs = None
         self.format = None
@@ -114,7 +115,7 @@ class RedWebUi(object):
         self.parse_qs(method, query_string)
         
         self.start = time.time()
-        self.timeout = nbhttp.schedule(max_runtime, self.timeoutError)
+        self.timeout = thor.schedule(max_runtime, self.timeoutError)
         if self.save and save_dir and self.test_id:
             self.save_test()
         elif self.test_id:
@@ -124,13 +125,16 @@ class RedWebUi(object):
         else:
             self.show_default()
 
+    def response_done(self, trailers):
+        if self.timeout:
+            self.timeout.delete()
+            self.timeout = None
+        self._response_done(trailers)
+
     def output_hdrs(self, *rgs):
-        (output_body, body_done) = self._output_hdrs(*rgs)
-        self.output_body = output_body
+        self._output_hdrs(*rgs)
         def remove_timeout():
             self.timeout.delete()
-            body_done()
-            self.body_done = None
         self.body_done = remove_timeout
 
     def save_test(self):
@@ -140,28 +144,28 @@ class RedWebUi(object):
             os.utime(
                 os.path.join(save_dir, self.test_id), 
                 (
-                    nbhttp.now(), 
-                    nbhttp.now() + (save_days * 24 * 60 * 60)
+                    thor.time(), 
+                    thor.time() + (save_days * 24 * 60 * 60)
                 )
             )
             location = "?id=%s" % self.test_id
             if self.descend:
                 location = "%s&descend=True" % location
-            self.output_hdrs(
-                "303 See Other", [
+            self.response_start(
+                "303", "See Other", [
                 ("Location", location)
             ])
-            self.output_body("Redirecting to the saved test page...")
+            self.response_body("Redirecting to the saved test page...")
         except (OSError, IOError):
-            self.output_hdrs(
-                "500 Internal Server Error", [
+            self.response_start(
+                "500", "Internal Server Error", [
                 ("Content-Type", "text/html; charset=%s" % charset), 
             ])
             # TODO: better error message (through formatter?)
-            self.output_body(
+            self.response_body(
                 error_template % "Sorry, I couldn't save that."
             )
-        self.body_done()
+        self.response_done([])
 
     def load_saved_test(self):
         """Load a saved test by test_id."""
@@ -171,31 +175,31 @@ class RedWebUi(object):
             ))
             mtime = os.fstat(fd.fileno()).st_mtime
         except (OSError, IOError, zlib.error):
-            self.output_hdrs(
-                "404 Not Found", [
+            self.response_start(
+                "404", "Not Found", [
                 ("Content-Type", "text/html; charset=%s" % charset), 
                 ("Cache-Control", "max-age=600, must-revalidate")
             ])
             # TODO: better error page (through formatter?)
-            self.output_body(error_template % 
+            self.response_body(error_template % 
                 "I'm sorry, I can't find that saved response."
             )
-            self.body_done()
+            self.response_done([])
             return
-        is_saved = mtime > nbhttp.now()
+        is_saved = mtime > thor.time()
         try:
             ired = pickle.load(fd)
         except (pickle.PickleError, EOFError):
-            self.output_hdrs(
-                "500 Internal Server Error", [
+            self.response_start(
+                "500", "Internal Server Error", [
                 ("Content-Type", "text/html; charset=%s" % charset), 
                 ("Cache-Control", "max-age=600, must-revalidate")
             ])
             # TODO: better error page (through formatter?)
-            self.output_body(error_template % 
+            self.response_body(error_template % 
                 "I'm sorry, I had a problem reading that response."
             )
-            self.body_done()
+            self.response_done([])
             return
         finally:
             fd.close()
@@ -205,8 +209,8 @@ class RedWebUi(object):
             self.output, allow_save=(not is_saved), is_saved=True,
             test_id=self.test_id
         )
-        self.output_hdrs(
-            "200 OK", [
+        self.response_start(
+            "200", "OK", [
             ("Content-Type", "%s; charset=%s" % (
                 formatter.media_type, charset)), 
             ("Cache-Control", "max-age=3600, must-revalidate")
@@ -215,7 +219,7 @@ class RedWebUi(object):
         formatter.start_output()
         formatter.set_red(ired)
         formatter.finish_output()
-        self.body_done()
+        self.response_done([])
 
     def run_test(self):
         """Test a URI."""
@@ -235,8 +239,8 @@ class RedWebUi(object):
             test_id=test_id, descend=self.descend
         )
 
-        self.output_hdrs(
-            "200 OK", [
+        self.response_start(
+            "200", "OK", [
             ("Content-Type", "%s; charset=%s" % (
                 formatter.media_type, charset)), 
             ("Cache-Control", "max-age=60, must-revalidate")
@@ -255,7 +259,7 @@ class RedWebUi(object):
 
         def done():
             formatter.finish_output()
-            self.body_done()
+            self.response_done([])
             if test_id:
                 try:
                     tmp_file = gzip.open(path, 'w')
@@ -272,8 +276,8 @@ class RedWebUi(object):
             self.base_uri, self.test_uri, self.req_hdrs, 
             lang, self.output, is_blank=True
         )
-        self.output_hdrs(
-            "200 OK", [
+        self.response_start(
+            "200", "OK", [
             ("Content-Type", "%s; charset=%s" % (
                 formatter.media_type, charset)
             ), 
@@ -281,7 +285,7 @@ class RedWebUi(object):
         ])
         formatter.start_output()
         formatter.finish_output()
-        self.body_done()
+        self.response_done([])
 
     def parse_qs(self, method, qs):
         """Given an method and a query-string dict, set attributes."""
@@ -299,12 +303,12 @@ class RedWebUi(object):
             self.save = False
 
     def output(self, chunk):
-        self.output_body(chunk.encode(charset, 'replace'))
+        self.response_body(chunk.encode(charset, 'replace'))
         
     def timeoutError(self):
         """ Max runtime reached."""
         self.output(error_template % ("RED timeout."))
-        self.body_done()
+        self.response_done([])
 
 
 # adapted from cgitb.Hook
@@ -435,18 +439,20 @@ def mod_python_handler(r):
     }    
     
     r.content_type = "text/html"
-    def output_hdrs (status, hdrs):
-        code, phrase = status.split(None, 1)
+    def response_start(code, phrase, hdrs):
         r.status = status_lookup.get(
             int(code), 
             apache.HTTP_INTERNAL_SERVER_ERROR
         )
         for hdr in hdrs:
             r.headers_out[hdr[0]] = hdr[1]
-        return r.write, nbhttp.stop
+    def response_done(trailers):
+        thor.schedule(thor.stop)
     query_string = cgi.parse_qs(r.args or "")
     try:
-        RedWebUi(r.unparsed_uri, r.method, query_string, output_hdrs)
+        RedWebUi(r.unparsed_uri, r.method, query_string, 
+                 response_start, r.write, response_done)
+        thor.run()
     except:
         except_handler_factory(r.write)()
     return apache.OK
@@ -463,15 +469,18 @@ def cgi_main():
     method = os.environ.get('REQUEST_METHOD')
     query_string = cgi.parse_qs(os.environ.get('QUERY_STRING', ""))
     
-    def output_hdrs(status, res_hdrs):
-        sys.stdout.write("Status: %s\n" % status)
+    def response_start(code, phrase, res_hdrs):
+        sys.stdout.write("Status: %s %s\n" % (code, phrase))
         for k, v in res_hdrs:
             sys.stdout.write("%s: %s\n" % (k, v))
         sys.stdout.write("\n")
-        return sys.stdout.write, nbhttp.stop
+        return sys.stdout.write, thor.stop
+    def response_done(trailers):
+        thor.schedule(0, thor.stop)
     try:
-        RedWebUi(base_uri, method, query_string, output_hdrs)
-        nbhttp.run()
+        RedWebUi(base_uri, method, query_string, 
+                 response_start, sys.stdout.write, response_done)
+        thor.run()
     except:
         except_handler_factory(sys.stdout.write)()
 
@@ -496,47 +505,47 @@ def standalone_main(port, static_dir):
     os.path.walk(static_dir, static_walker, "")
     sys.stderr.write("* Static files loaded.\n")
 
-    def red_handler (method, uri, req_hdrs, res_start, req_pause):
-        p_uri = urlsplit(uri)
-        if static_files.has_key(p_uri.path):
-            res_body, res_done = res_start("200", "OK", [], nbhttp.dummy)
-            res_body(static_files[p_uri.path])
-            res_done(None)
-        elif p_uri.path == "/":
-            query_string = cgi.parse_qs(p_uri.query)
-
-            def output_hdrs (status, hdrs):
-                code, phrase = status.split(None, 1)
-                return res_start(code, phrase, hdrs, nbhttp.dummy)
-
-            try:
-                RedWebUi('/', method, query_string, output_hdrs)
-            except:
-                sys.stderr.write("""
+    def red_handler(x):
+        @thor.events.on(x)
+        def request_start(method, uri, req_hdrs):
+            p_uri = urlsplit(uri)
+            if static_files.has_key(p_uri.path):
+                x.response_start("200", "OK", []) # TODO: headers
+                x.response_body(static_files[p_uri.path])
+                x.response_done([])
+            elif p_uri.path == "/":
+                query_string = cgi.parse_qs(p_uri.query)
+                try:
+                    RedWebUi('/', method, query_string,
+                             x.response_start, 
+                             x.response_body,
+                             x.response_done
+                            )
+                except RuntimeError:
+                    raise
+                    sys.stderr.write("""
 
 *** FATAL ERROR
 RED has encountered a fatal error which it really, really can't recover from
 in standalone server mode. Details follow.
 
 """)
-                except_handler_factory(sys.stderr.write)()
-                sys.stderr.write("\n")
-                nbhttp.stop()
-                sys.exit(1)
-        else:
-            res_body, res_done = res_start(
-                "404", "Not Found", [], nbhttp.dummy
-            )
-            res_done(None)
-        return nbhttp.dummy, nbhttp.dummy
+                    except_handler_factory(sys.stderr.write)()
+                    sys.stderr.write("\n")
+                    thor.stop()
+                    sys.exit(1)
+            else:
+                x.response_start("404", "Not Found", [])
+                x.response_done([])
 
-    nbhttp.Server("", port, red_handler)
+    server = thor.HttpServer("", port)
+    server.on('exchange', red_handler)
     
     try:
-        nbhttp.run()
+        thor.run()
     except KeyboardInterrupt:
         sys.stderr.write("Stopping...\n")
-        nbhttp.stop()
+        thor.stop()
     # TODO: logging
     # TODO: extra resources
 

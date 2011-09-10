@@ -34,7 +34,7 @@ except ImportError:
     import simplejson as json 
 
 import redbot.speak as rs
-from nbhttp import get_hdr
+from thor.http import get_header
 from redbot import droid
 from redbot.formatter import Formatter
 
@@ -116,9 +116,9 @@ class HarFormatter(Formatter):
             'content': {
                 'size': red.res_body_decode_len,
                 'compression': red.res_body_decode_len - red.res_body_len,
-                'mimeType': (get_hdr(red.res_hdrs, 'content-type') or [""])[0],
+                'mimeType': (get_header(red.res_hdrs, 'content-type') or [""])[0],
             },
-            'redirectURL': (get_hdr(red.res_hdrs, 'location') or [""])[0],
+            'redirectURL': (get_header(red.res_hdrs, 'location') or [""])[0],
             'headersSize': red.header_length,
             'bodySize': red.res_body_len,
         }
