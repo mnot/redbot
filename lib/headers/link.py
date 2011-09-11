@@ -50,7 +50,7 @@ def parse(name, values, red):
         red.set_message(name, rs.LINK_REV,
                         link=e(link), rev=e(param_dict['rev']))
     if param_dict.has_key('anchor'): # URI-Reference
-        if not re.match(r"^\s*%s\s*$" % URI_reference, 
+        if not re.match(r"^\s*%s\s*$" % syntax.URI_reference, 
                         param_dict['anchor'], re.VERBOSE):
             red.set_message(name, rs.LINK_BAD_ANCHOR,
                             link=e(link),
@@ -58,3 +58,47 @@ def parse(name, values, red):
     # TODO: check media-type in 'type'
     # TODO: check language tag in 'hreflang'            
     return link, param_dict
+    
+
+    
+class BasicLinkTest(rh.HeaderTest):
+    name = 'Link'
+    inputs = ['<http://www.example.com/>; rel=example']
+    expected_out = ('http://www.example.com/', {'rel': 'example'})
+    expected_err = []    
+
+class QuotedRelationLinkTest(rh.HeaderTest):
+    name = 'Link'
+    inputs = ['<http://www.example.com/>; rel="example"']
+    expected_out = ('http://www.example.com/', {'rel': 'example'})
+    expected_err = []    
+
+class RelativeLinkTest(rh.HeaderTest):
+    name = 'Link'
+    inputs = ['</foo>; rel="example"']
+    expected_out = ('/foo', {'rel': 'example'})
+    expected_err = []    
+    
+class RepeatingRelationLinkTest(rh.HeaderTest):
+    name = 'Link'
+    inputs = ['</foo>; rel="example"; rel="another"']
+    expected_out = ('/foo', {'rel': 'another'})
+    expected_err = [rs.PARAM_REPEATS]
+
+class BadQuoteLinkTest(rh.HeaderTest):
+    name = 'Link'
+    inputs = ['"/foo", rel="example"']
+    expected_out = None
+    expected_err = [rs.BAD_SYNTAX]
+
+class RevLinkTest(rh.HeaderTest):
+    name = 'Link'
+    inputs = ['</foo>; rev="bar"']
+    expected_out = ('/foo', {'rev': 'bar'})
+    expected_err = [rs.LINK_REV]
+
+class BadAnchorLinkTest(rh.HeaderTest):
+    name = 'Link'
+    inputs = ['</foo>; rel="bar"; anchor="{blah}"']
+    expected_out = ('/foo', {'rel': 'bar', 'anchor': '{blah}'})
+    expected_err = [rs.LINK_BAD_ANCHOR]

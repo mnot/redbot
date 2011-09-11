@@ -38,3 +38,16 @@ def parse(name, values, red):
         red.set_message(name, rs.BAD_DATE_SYNTAX)
         return None
     return date
+    
+
+class BasicDateTest(rh.HeaderTest):
+    name = 'Date'
+    inputs = ['Mon, 04 Jul 2011 09:08:06 GMT']
+    expected_out = 1309770486
+    expected_err = []
+
+class BlankDateTest(rh.HeaderTest):
+    name = 'Date'
+    inputs = ['']
+    expected_out = None
+    expected_err = [rs.BAD_DATE_SYNTAX]

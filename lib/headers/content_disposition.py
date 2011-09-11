@@ -56,3 +56,57 @@ def parse(name, values, red):
        r"\\" in param_dict.get('filename*', ''):
         red.set_message(name, rs.DISPOSITION_FILENAME_PATH_CHAR)
     return disposition, param_dict
+    
+
+class QuotedCDTest(rh.HeaderTest):
+    name = 'Content-Disposition'
+    inputs = ['attachment; filename="foo.txt"']
+    expected_out = ('attachment', {'filename': 'foo.txt'})
+    expected_err = [] 
+    
+class TokenCDTest(rh.HeaderTest):
+    name = 'Content-Disposition'
+    inputs = ['attachment; filename=foo.txt']
+    expected_out = ('attachment', {'filename': 'foo.txt'})
+    expected_err = [] 
+
+class InlineCDTest(rh.HeaderTest):
+    name = 'Content-Disposition'
+    inputs = ['inline; filename=foo.txt']
+    expected_out = ('inline', {'filename': 'foo.txt'})
+    expected_err = [] 
+
+class RepeatCDTest(rh.HeaderTest):
+    name = 'Content-Disposition'
+    inputs = ['attachment; filename=foo.txt, inline; filename=bar.txt']
+    expected_out = ('inline', {'filename': 'bar.txt'})
+    expected_err = [rs.SINGLE_HEADER_REPEAT]
+
+class FilenameStarCDTest(rh.HeaderTest):
+    name = 'Content-Disposition'
+    inputs = ["attachment; filename=foo.txt; filename*=UTF-8''a%cc%88.txt"]
+    expected_out = ('attachment', {
+            'filename': 'foo.txt', 
+            'filename*': u'a\u0308.txt'})
+    expected_err = []
+
+class FilenameStarQuotedCDTest(rh.HeaderTest):    
+    name = 'Content-Disposition'
+    inputs = ["attachment; filename=foo.txt; filename*=\"UTF-8''a%cc%88.txt\""]
+    expected_out = ('attachment', {
+            'filename': 'foo.txt', 
+            'filename*': u'a\u0308.txt'})
+    expected_err = [rs.PARAM_STAR_QUOTED]
+
+class FilenamePercentCDTest(rh.HeaderTest):
+    name = 'Content-Disposition'
+    inputs = ["attachment; filename=fo%22o.txt"]
+    expected_out = ('attachment', {'filename': 'fo%22o.txt', })
+    expected_err = [rs.DISPOSITION_FILENAME_PERCENT]
+    
+class FilenamePathCharCDTest(rh.HeaderTest):
+    name = 'Content-Disposition'
+    inputs = ['"attachment; filename="/foo.txt"']
+    expected_out = ('attachment', {'filename': '/foo.txt',})
+    expected_err = [rs.DISPOSITION_FILENAME_PATH_CHAR]
+

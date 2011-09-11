@@ -46,11 +46,13 @@ THE SOFTWARE.
 """
 
 import calendar
+from cgi import escape as e
 from email.utils import parsedate as lib_parsedate
 import locale
 import re
 import sys
 import time
+import unittest
 import urllib
 
 import redbot.http_syntax as syntax
@@ -65,7 +67,9 @@ rfc6266 = "http://www.apps.ietf.org/rfc/rfc6266.html#section-4"
 max_hdr_size = 4 * 1024
 max_ttl_hdr = 20 * 1024
 
-#FIXME: need to be function decorators now
+
+# Decorators for headers
+
 def GenericHeaderSyntax(func):
     """
     Decorator to take a list of header values, split on commas (except where
@@ -114,7 +118,8 @@ def CheckFieldSyntax(exp, ref):
             return func(name, values, red)
         return new
     return wrap
-
+        
+        
 def process_headers(red):
     """
     Parse and check the response for obvious syntactic errors,
@@ -170,22 +175,31 @@ def process_headers(red):
                    header_block_size=f_num(header_block_size))
     # Build a dictionary of header values
     for nn, (fn, values) in hdr_dict.items():
-        name_token = nn.replace('-', '_')
-        # anything starting with an underscore or with any caps won't match
-        try:
-            __import__("redbot.headers.%s" % name_token)
-            hdr_module = sys.modules["redbot.headers.%s" % name_token]
-        except ImportError: 
-            continue # we don't recognise the header.
-        try:
-            hdr_parse = hdr_module.parse
-        except AttributeError:
-            raise RuntimeError, "Can't find parser for %s header." % fn
-        parsed_value = hdr_parse(fn, values, red)
-        if parsed_value != None:
-            parsed_hdrs[nn] = parsed_value
+        hdr_parse = load_parser(nn)
+        if hdr_parse:
+            parsed_value = hdr_parse(fn, values, red)
+            if parsed_value != None:
+                parsed_hdrs[nn] = parsed_value
     red.parsed_hdrs = parsed_hdrs
     red.set_message = old_set_message
+
+
+def load_parser(name):
+    """
+    Return a header parser for the given field name.
+    """
+    name_token = name.replace('-', '_')
+    # anything starting with an underscore or with any caps won't match
+    try:
+        __import__("redbot.headers.%s" % name_token)
+        hdr_module = sys.modules["redbot.headers.%s" % name_token]
+    except ImportError: 
+        return # we don't recognise the header.
+    try:
+        return hdr_module.parse
+    except AttributeError:
+        raise RuntimeError, "Can't find parser for %s header." % fn
+
 
 
 def parse_date(values):
@@ -369,3 +383,40 @@ def relative_time(utime, now=None, show_sign=1):
         arr.append(sign)
     return " ".join(arr)
 
+
+
+# Testing machinery
+
+class _DummyRed(object):
+    def __init__(self):
+        self.res_hdrs = []
+        self.res_phrase = ""
+        self.messages = []
+        self.msg_classes = []
+        
+    def set_message(self, name, msg, **kw):
+        self.messages.append(msg(name, None, kw))
+        self.msg_classes.append(msg.__name__)
+
+
+class HeaderTest(unittest.TestCase):
+    name = None
+    inputs = None
+    expected_out = None
+    expected_err = None
+
+    def setUp(self):
+        self.red = _DummyRed()
+
+    def test_header(self):
+        if not self.name:
+            return self.skipTest('')
+        parser = load_parser(self.name.lower())
+        out = parser(self.name, self.inputs, self.red)
+        self.assertEqual(self.expected_out, out, 
+            "%s != %s" % (str(self.expected_out), str(out)))
+        diff = set(
+            [n.__name__ for n in self.expected_err]).symmetric_difference(
+            set(self.red.msg_classes)
+        )
+        self.assertEqual(len(diff), 0, "Mismatched messages: %s" % diff)
