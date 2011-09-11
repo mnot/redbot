@@ -118,14 +118,14 @@ def CheckFieldSyntax(exp, ref):
             return func(name, values, red)
         return new
     return wrap
-        
-        
+
+
 def process_headers(red):
     """
     Parse and check the response for obvious syntactic errors,
     as well as semantic errors that are self-contained (i.e.,
     it can be determined without examining other headers, etc.).
-    
+
     Populates parsed_hdrs, and replaces res_hdrs with unicode-cleaned one
     """
 
@@ -193,7 +193,7 @@ def load_parser(name):
     try:
         __import__("redbot.headers.%s" % name_token)
         hdr_module = sys.modules["redbot.headers.%s" % name_token]
-    except ImportError: 
+    except ImportError:
         return # we don't recognise the header.
     try:
         return hdr_module.parse
@@ -254,7 +254,7 @@ def split_string(instr, item, split):
 def parse_params(red, name, instr, nostar=None):
     """
     Parse parameters into a dictionary.
-    
+
     @param red: the red instance to use
     @param name: the header field name
     @param instr: string to be parsed
@@ -273,7 +273,7 @@ def parse_params(red, name, instr, nostar=None):
         if param_dict.has_key(k_norm):
             red.set_message(name, rs.PARAM_REPEATS, param=e(k_norm))
         if v[0] == v[-1] == "'":
-            red.set_message(name, 
+            red.set_message(name,
                 rs.PARAM_SINGLE_QUOTED,
                 param=e(k_norm),
                 param_val=e(v),
@@ -297,13 +297,13 @@ def parse_params(red, name, instr, nostar=None):
                 enc = enc.lower()
                 lang = lang.lower()
                 if enc == '':
-                    red.set_message(name, 
+                    red.set_message(name,
                         rs.PARAM_STAR_NOCHARSET, param=e(k_norm))
                     continue
                 elif enc not in ['utf-8']:
-                    red.set_message(name, 
-                        rs.PARAM_STAR_CHARSET, 
-                        param=e(k_norm), 
+                    red.set_message(name,
+                        rs.PARAM_STAR_CHARSET,
+                        param=e(k_norm),
                         enc=e(enc)
                     )
                     continue
@@ -393,7 +393,7 @@ class _DummyRed(object):
         self.res_phrase = ""
         self.messages = []
         self.msg_classes = []
-        
+
     def set_message(self, name, msg, **kw):
         self.messages.append(msg(name, None, kw))
         self.msg_classes.append(msg.__name__)
@@ -413,7 +413,7 @@ class HeaderTest(unittest.TestCase):
             return self.skipTest('')
         parser = load_parser(self.name.lower())
         out = parser(self.name, self.inputs, self.red)
-        self.assertEqual(self.expected_out, out, 
+        self.assertEqual(self.expected_out, out,
             "%s != %s" % (str(self.expected_out), str(out)))
         diff = set(
             [n.__name__ for n in self.expected_err]).symmetric_difference(
