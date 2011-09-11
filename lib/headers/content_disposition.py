@@ -44,15 +44,15 @@ def content_disposition(name, values, red):
     disposition = disposition.lower()
     param_dict = rh.parse_params(red, name, params)
     if disposition not in ['inline', 'attachment']:
-        red.setMessage(name,
+        red.set_message(name,
             rs.DISPOSITION_UNKNOWN,
             disposition=e(disposition)
         )
     if not param_dict.has_key('filename'):
-        red.setMessage(name, rs.DISPOSITION_OMITS_FILENAME)
+        red.set_message(name, rs.DISPOSITION_OMITS_FILENAME)
     if "%" in param_dict.get('filename', ''):
-        red.setMessage(name, rs.DISPOSITION_FILENAME_PERCENT)
+        red.set_message(name, rs.DISPOSITION_FILENAME_PERCENT)
     if "/" in param_dict.get('filename', '') or \
        r"\\" in param_dict.get('filename*', ''):
-        red.setMessage(name, rs.DISPOSITION_FILENAME_PATH_CHAR)
+        red.set_message(name, rs.DISPOSITION_FILENAME_PATH_CHAR)
     return disposition, param_dict

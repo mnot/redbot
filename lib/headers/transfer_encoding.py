@@ -36,12 +36,12 @@ import redbot.http_syntax as syntax
 def transfer_encoding(name, values, red):
     values = [v.lower() for v in values]
     if 'identity' in values:
-        red.setMessage(name, rs.TRANSFER_CODING_IDENTITY)
+        red.set_message(name, rs.TRANSFER_CODING_IDENTITY)
     for value in values:
         # check to see if there are any non-chunked encodings, because
         # that's the only one we ask for.
         if value not in ['chunked', 'identity']:
-            red.setMessage(name, rs.TRANSFER_CODING_UNWANTED,
+            red.set_message(name, rs.TRANSFER_CODING_UNWANTED,
                             encoding=e(value))
             break
     return values

@@ -35,12 +35,12 @@ def last_modified(name, values, red):
     try:
         date = rh.parse_date(values)
     except ValueError:
-        red.setMessage(name, rs.BAD_DATE_SYNTAX)
+        red.set_message(name, rs.BAD_DATE_SYNTAX)
         return None
     if date > red.res_ts:
-        red.setMessage(name, rs.LM_FUTURE)
+        red.set_message(name, rs.LM_FUTURE)
         return
     else:
-        red.setMessage(name, rs.LM_PRESENT,
+        red.set_message(name, rs.LM_PRESENT,
           last_modified_string=rh.relative_time(date, red.res_ts))
     return date

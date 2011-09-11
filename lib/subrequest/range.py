@@ -73,7 +73,7 @@ class RangeRequest(SubRequest):
             ce = 'content-encoding'
             if ('gzip' in self.base.parsed_hdrs.get(ce, [])) == \
                ('gzip' not in self.state.parsed_hdrs.get(ce, [])):
-                self.setMessage(
+                self.set_message(
                     'header-accept-ranges header-content-encoding',
                     rs.RANGE_NEG_MISMATCH
                 )
@@ -82,11 +82,11 @@ class RangeRequest(SubRequest):
               self.base.parsed_hdrs.get('etag', 2):
                 if self.state.res_body == self.range_target:
                     self.base.partial_support = True
-                    self.setMessage('header-accept-ranges', rs.RANGE_CORRECT)
+                    self.set_message('header-accept-ranges', rs.RANGE_CORRECT)
                 else:
                     # the body samples are just bags of bits
                     self.base.partial_support = False
-                    self.setMessage('header-accept-ranges',
+                    self.set_message('header-accept-ranges',
                         rs.RANGE_INCORRECT,
                         range="bytes=%s-%s" % (
                             self.range_start, self.range_end
@@ -101,14 +101,14 @@ class RangeRequest(SubRequest):
                         range_received_bytes = f_num(self.state.res_body_len)
                     )
             else:
-                self.setMessage('header-accept-ranges', rs.RANGE_CHANGED)
+                self.set_message('header-accept-ranges', rs.RANGE_CHANGED)
 
         # TODO: address 416 directly
         elif self.state.res_status == self.base.res_status:
             self.base.partial_support = False
-            self.setMessage('header-accept-ranges', rs.RANGE_FULL)
+            self.set_message('header-accept-ranges', rs.RANGE_FULL)
         else:
-            self.setMessage('header-accept-ranges', 
+            self.set_message('header-accept-ranges', 
                 rs.RANGE_STATUS,
                 range_status=self.state.res_status,
                 enc_range_status=e(self.state.res_status or '(unknown)')

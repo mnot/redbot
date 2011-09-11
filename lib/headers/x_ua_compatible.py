@@ -43,9 +43,9 @@ def x_ua_compatible(name, values, red):
             attr = directive
             value = None
         if directives.has_key(attr):
-            red.setMessage(name, rs.UA_COMPATIBLE_REPEAT)
+            red.set_message(name, rs.UA_COMPATIBLE_REPEAT)
         directives[attr] = value
     uac_list = u"\n".join([u"<li>%s - %s</li>" % (e(k), e(v)) for
                         k, v in directives.items()])
-    red.setMessage(name, rs.UA_COMPATIBLE, uac_list=uac_list)
+    red.set_message(name, rs.UA_COMPATIBLE, uac_list=uac_list)
     return directives

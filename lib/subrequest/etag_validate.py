@@ -60,24 +60,24 @@ class ETagValidate(SubRequest):
     def done(self):
         if self.state.res_status == '304':
             self.base.inm_support = True
-            self.setMessage('header-etag', rs.INM_304, self.state)
+            self.set_message('header-etag', rs.INM_304, self.state)
             # TODO : check Content- headers, esp. length.
         elif self.state.res_status == self.base.res_status:
             if self.state.res_body_md5 == self.base.res_body_md5:
                 self.base.inm_support = False
-                self.setMessage('header-etag', rs.INM_FULL)
+                self.set_message('header-etag', rs.INM_FULL)
             else:
                 if self.base.parsed_hdrs['etag'] == \
                   self.state.parsed_hdrs['etag']:
                     if self.base.parsed_hdrs['etag'][0]: # weak
-                        self.setMessage('header-etag', rs.INM_DUP_ETAG_WEAK)
+                        self.set_message('header-etag', rs.INM_DUP_ETAG_WEAK)
                     else: # strong
-                        self.setMessage('header-etag', rs.INM_DUP_ETAG_STRONG,
+                        self.set_message('header-etag', rs.INM_DUP_ETAG_STRONG,
                                         etag=self.base.parsed_hdrs['etag'])
                 else:
-                    self.setMessage('header-etag', rs.INM_UNKNOWN)
+                    self.set_message('header-etag', rs.INM_UNKNOWN)
         else:
-            self.setMessage('header-etag', 
+            self.set_message('header-etag', 
                 rs.INM_STATUS, 
                 inm_status = self.state.res_status,
                 enc_inm_status = e(self.state.res_status or '(unknown)')

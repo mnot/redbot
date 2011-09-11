@@ -31,5 +31,5 @@ import redbot.http_syntax as syntax
 
 
 def mime_version(name, values, red):
-    red.setMessage(name, rs.MIME_VERSION)
+    red.set_message(name, rs.MIME_VERSION)
     return values

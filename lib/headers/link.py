@@ -47,12 +47,12 @@ def link(name, values, red):
     if param_dict.has_key('rel'): # relation_types
         pass # TODO: check relation type
     if param_dict.has_key('rev'):
-        red.setMessage(name, rs.LINK_REV,
+        red.set_message(name, rs.LINK_REV,
                         link=e(link), rev=e(param_dict['rev']))
     if param_dict.has_key('anchor'): # URI-Reference
         if not re.match(r"^\s*%s\s*$" % URI_reference, 
                         param_dict['anchor'], re.VERBOSE):
-            red.setMessage(name, rs.LINK_BAD_ANCHOR,
+            red.set_message(name, rs.LINK_BAD_ANCHOR,
                             link=e(link),
                             anchor=e(param_dict['anchor']))
     # TODO: check media-type in 'type'

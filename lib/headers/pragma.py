@@ -34,8 +34,8 @@ import redbot.http_syntax as syntax
 def pragma(name, values, red):
     values = set([v.lower() for v in values])
     if "no-cache" in values:
-        red.setMessage(name, rs.PRAGMA_NO_CACHE)
+        red.set_message(name, rs.PRAGMA_NO_CACHE)
     others = [True for v in values if v != "no-cache"]
     if others:
-        red.setMessage(name, rs.PRAGMA_OTHER)
+        red.set_message(name, rs.PRAGMA_OTHER)
     return values

@@ -45,7 +45,7 @@ def cache_control(name, values, red):
             try:
                 value = int(value)
             except (ValueError, TypeError):
-                red.setMessage(name, rs.BAD_CC_SYNTAX, bad_cc_attr=attr)
+                red.set_message(name, rs.BAD_CC_SYNTAX, bad_cc_attr=attr)
                 continue
         directives.add((attr, value))
     return directives

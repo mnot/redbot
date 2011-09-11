@@ -37,9 +37,9 @@ def age(name, values, red):
     try:
         age = int(values[-1])
     except ValueError:
-        red.setMessage(name, rs.AGE_NOT_INT)
+        red.set_message(name, rs.AGE_NOT_INT)
         return None
     if age < 0:
-        red.setMessage(name, rs.AGE_NEGATIVE)
+        red.set_message(name, rs.AGE_NEGATIVE)
         return None
     return age

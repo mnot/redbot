@@ -93,7 +93,7 @@ def SingleFieldValue(func):
     """
     def new(name, values, red):
         if len(values) > 1:
-            red.setMessage(name, rs.SINGLE_HEADER_REPEAT)
+            red.set_message(name, rs.SINGLE_HEADER_REPEAT)
         return func(name, values, red)
     return new
 
@@ -107,7 +107,7 @@ def CheckFieldSyntax(exp, ref):
         def new(name, values, red):
             for value in values:
                 if not re.match(r"^\s*(?:%s)\s*$" % exp, value, re.VERBOSE):
-                    red.setMessage(name, rs.BAD_SYNTAX, ref_uri=ref)
+                    red.set_message(name, rs.BAD_SYNTAX, ref_uri=ref)
                     def bad_syntax(name, values, red):
                         return None
                     return bad_syntax(name, values, red)
@@ -125,11 +125,11 @@ def process_headers(red):
     """
 
     # TODO: clean up this hack
-    old_setMessage = red.setMessage
-    def setMessage(name, msg, **kw):
+    old_set_message = red.set_message
+    def set_message(name, msg, **kw):
         ident = 'header-%s' % name.lower()
-        old_setMessage(ident, msg, field_name=name, **kw)
-    red.setMessage = setMessage
+        old_set_message(ident, msg, field_name=name, **kw)
+    red.set_message = set_message
 
     hdr_dict = {}
     header_block_size = len(red.res_phrase) + 13
@@ -138,24 +138,24 @@ def process_headers(red):
     for name, value in red.res_hdrs:
         hdr_size = len(name) + len(value)
         if hdr_size > max_hdr_size:
-            setMessage(name.lower(), rs.HEADER_TOO_LARGE,
+            set_message(name.lower(), rs.HEADER_TOO_LARGE,
                        header_name=name, header_size=f_num(hdr_size))
         header_block_size += hdr_size
         try:
             name = name.decode('ascii', 'strict')
         except UnicodeError:
             name = name.decode('ascii', 'ignore')
-            setMessage('%s' % name.lower(), rs.HEADER_NAME_ENCODING,
+            set_message('%s' % name.lower(), rs.HEADER_NAME_ENCODING,
                        header_name=name)
         try:
             value = value.decode('ascii', 'strict')
         except UnicodeError:
             value = value.decode('iso-8859-1', 'replace')
-            setMessage('%s' % name.lower(), rs.HEADER_VALUE_ENCODING,
+            set_message('%s' % name.lower(), rs.HEADER_VALUE_ENCODING,
                        header_name=name)
         clean_res_hdrs.append((name, value))
         if not re.match("^\s*%s\s*$" % syntax.TOKEN, name):
-                        setMessage(name, rs.FIELD_NAME_BAD_SYNTAX)
+                        set_message(name, rs.FIELD_NAME_BAD_SYNTAX)
         norm_name = name.lower()
         value = value.strip()
         if hdr_dict.has_key(norm_name):
@@ -166,7 +166,7 @@ def process_headers(red):
     red.res_hdrs = clean_res_hdrs
     # check the total header block size
     if header_block_size > max_ttl_hdr:
-        setMessage('header', rs.HEADER_BLOCK_TOO_LARGE,
+        set_message('header', rs.HEADER_BLOCK_TOO_LARGE,
                    header_block_size=f_num(header_block_size))
     # Build a dictionary of header values
     for nn, (fn, values) in hdr_dict.items():
@@ -185,7 +185,7 @@ def process_headers(red):
         if parsed_value != None:
             parsed_hdrs[nn] = parsed_value
     red.parsed_hdrs = parsed_hdrs
-    red.setMessage = old_setMessage
+    red.set_message = old_set_message
 
 
 def parse_date(values):
@@ -257,9 +257,9 @@ def parse_params(red, name, instr, nostar=None):
             continue
         k_norm = k.lower()
         if param_dict.has_key(k_norm):
-            red.setMessage(name, rs.PARAM_REPEATS, param=e(k_norm))
+            red.set_message(name, rs.PARAM_REPEATS, param=e(k_norm))
         if v[0] == v[-1] == "'":
-            red.setMessage(name, 
+            red.set_message(name, 
                 rs.PARAM_SINGLE_QUOTED,
                 param=e(k_norm),
                 param_val=e(v),
@@ -267,27 +267,27 @@ def parse_params(red, name, instr, nostar=None):
             )
         if k[-1] == '*':
             if nostar and k_norm[:-1] in nostar:
-                red.setMessage(name, rs.PARAM_STAR_BAD,
+                red.set_message(name, rs.PARAM_STAR_BAD,
                                 param=e(k_norm[:-1]))
             else:
                 if v[0] == '"' and v[-1] == '"':
-                    red.setMessage(name, rs.PARAM_STAR_QUOTED,
+                    red.set_message(name, rs.PARAM_STAR_QUOTED,
                                     param=e(k_norm))
                     v = unquote_string(v)
                 try:
                     enc, lang, esc_v = v.split("'", 3)
                 except ValueError:
-                    red.setMessage(name, rs.PARAM_STAR_ERROR,
+                    red.set_message(name, rs.PARAM_STAR_ERROR,
                                     param=e(k_norm))
                     continue
                 enc = enc.lower()
                 lang = lang.lower()
                 if enc == '':
-                    red.setMessage(name, 
+                    red.set_message(name, 
                         rs.PARAM_STAR_NOCHARSET, param=e(k_norm))
                     continue
                 elif enc not in ['utf-8']:
-                    red.setMessage(name, 
+                    red.set_message(name, 
                         rs.PARAM_STAR_CHARSET, 
                         param=e(k_norm), 
                         enc=e(enc)

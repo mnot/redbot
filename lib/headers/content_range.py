@@ -33,5 +33,5 @@ import redbot.http_syntax as syntax
 def content_range(name, values, red):
     # TODO: check syntax, values?
     if red.res_status not in ["206", "416"]:
-        red.setMessage(name, rs.CONTENT_RANGE_MEANINGLESS)
+        red.set_message(name, rs.CONTENT_RANGE_MEANINGLESS)
     return values

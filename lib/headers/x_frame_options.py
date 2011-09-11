@@ -33,9 +33,9 @@ import redbot.http_syntax as syntax
 @rh.GenericHeaderSyntax
 def x_frame_options(name, values, red):
     if 'DENY' in values:
-        red.setMessage(name, rs.FRAME_OPTIONS_DENY)
+        red.set_message(name, rs.FRAME_OPTIONS_DENY)
     elif 'SAMEORIGIN' in values:
-        red.setMessage(name, rs.FRAME_OPTIONS_SAMEORIGIN)
+        red.set_message(name, rs.FRAME_OPTIONS_SAMEORIGIN)
     else:
-        red.setMessage(name, rs.FRAME_OPTIONS_UNKNOWN)
+        red.set_message(name, rs.FRAME_OPTIONS_UNKNOWN)
     return values

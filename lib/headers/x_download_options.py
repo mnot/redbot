@@ -33,7 +33,7 @@ import redbot.http_syntax as syntax
 @rh.GenericHeaderSyntax
 def x_download_options(name, values, red):
     if 'noopen' in values:
-        red.setMessage(name, rs.DOWNLOAD_OPTIONS)
+        red.set_message(name, rs.DOWNLOAD_OPTIONS)
     else:
-        red.setMessage(name, rs.DOWNLOAD_OPTIONS_UNKNOWN)
+        red.set_message(name, rs.DOWNLOAD_OPTIONS_UNKNOWN)
     return values

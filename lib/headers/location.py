@@ -39,8 +39,8 @@ def location(name, values, red):
     if red.res_status not in [
         "201", "300", "301", "302", "303", "305", "307"
     ]:
-        red.setMessage(name, rs.LOCATION_UNDEFINED)
+        red.set_message(name, rs.LOCATION_UNDEFINED)
     if not re.match(r"^\s*%s\s*$" % syntax.URI, values[-1], re.VERBOSE):
-        red.setMessage(name, rs.LOCATION_NOT_ABSOLUTE,
+        red.set_message(name, rs.LOCATION_NOT_ABSOLUTE,
                         full_uri=e(urljoin(red.uri, values[-1])))
     return values[-1]

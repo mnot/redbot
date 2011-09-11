@@ -85,9 +85,9 @@ class ResourceExpertDroid(RedFetcher):
 
         # check the URI
         if not re.match("^\s*%s\s*$" % absolute_URI, uri, re.VERBOSE):
-            self.state.setMessage('uri', rs.URI_BAD_SYNTAX)
+            self.state.set_message('uri', rs.URI_BAD_SYNTAX)
         if len(uri) > max_uri:
-            self.state.setMessage('uri', 
+            self.state.set_message('uri', 
                 rs.URI_TOO_LONG, 
                 uri_len=f_num(len(uri))
             )

@@ -58,16 +58,16 @@ class LmValidate(SubRequest):
     def done(self):
         if self.state.res_status == '304':
             self.base.ims_support = True
-            self.setMessage('header-last-modified', rs.IMS_304)
+            self.set_message('header-last-modified', rs.IMS_304)
             # TODO : check Content- headers, esp. length.
         elif self.state.res_status == self.base.res_status:
             if self.state.res_body_md5 == self.base.res_body_md5:
                 self.base.ims_support = False
-                self.setMessage('header-last-modified', rs.IMS_FULL)
+                self.set_message('header-last-modified', rs.IMS_FULL)
             else:
-                self.setMessage('header-last-modified', rs.IMS_UNKNOWN)
+                self.set_message('header-last-modified', rs.IMS_UNKNOWN)
         else:
-            self.setMessage('header-last-modified', 
+            self.set_message('header-last-modified', 
                 rs.IMS_STATUS, 
                 ims_status = self.state.res_status,
                 enc_ims_status = e(self.state.res_status or '(unknown)')

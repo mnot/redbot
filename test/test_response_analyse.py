@@ -16,7 +16,7 @@ class DummyRed(object):
         self.messages = []
         self.msg_classes = []
         
-    def setMessage(self, name, msg, **kw):
+    def set_message(self, name, msg, **kw):
         self.messages.append(msg(name, None, kw))
         self.msg_classes.append(msg.__name__)
 

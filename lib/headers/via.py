@@ -39,4 +39,4 @@ def via(name, values, red):
     via_list = u"<ul>" + u"\n".join(
            [u"<li><code>%s</code></li>" % e(v) for v in values]
                        ) + u"</ul>"
-    red.setMessage(name, rs.VIA_PRESENT, via_list=via_list)
+    red.set_message(name, rs.VIA_PRESENT, via_list=via_list)

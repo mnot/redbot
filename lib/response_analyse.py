@@ -63,14 +63,14 @@ class ResponseStatusChecker:
         try:
             getattr(self, "status%s" % red.res_status)()
         except AttributeError:
-            self.setMessage('status', rs.STATUS_NONSTANDARD)
+            self.set_message('status', rs.STATUS_NONSTANDARD)
 
-    def setMessage(self, name, msg, **kw):
+    def set_message(self, name, msg, **kw):
         if name:
             ident = 'status %s' % name
         else:
             ident = 'status'
-        self.red.setMessage(ident, msg,
+        self.red.set_message(ident, msg,
                              status=self.red.res_status,
                              enc_status=e(self.red.res_status),
                              **kw
@@ -78,22 +78,22 @@ class ResponseStatusChecker:
 
     def status100(self):        # Continue
         if not "100-continue" in thor.http.get_headder(self.red.req_hdrs, 'expect'):
-            self.setMessage('', rs.UNEXPECTED_CONTINUE)
+            self.set_message('', rs.UNEXPECTED_CONTINUE)
     def status101(self):        # Switching Protocols
         if not 'upgrade' in thor.http.header_dict(self.red.req_hdrs).keys():
-            self.setMessage('', rs.UPGRADE_NOT_REQUESTED)
+            self.set_message('', rs.UPGRADE_NOT_REQUESTED)
     def status102(self):        # Processing
         pass
     def status200(self):        # OK
         pass
     def status201(self):        # Created
         if self.red.method in thor.http.safe_methods:
-            self.setMessage('status', 
+            self.set_message('status', 
                 rs.CREATED_SAFE_METHOD, 
                 method=self.red.method
             )
         if not self.red.parsed_hdrs.has_key('location'):
-            self.setMessage('header-location', rs.CREATED_WITHOUT_LOCATION)
+            self.set_message('header-location', rs.CREATED_WITHOUT_LOCATION)
     def status202(self):        # Accepted
         pass
     def status203(self):        # Non-Authoritative Information
@@ -104,8 +104,8 @@ class ResponseStatusChecker:
         pass
     def status206(self):        # Partial Content
         if not "range" in thor.http.header_dict(self.red.req_hdrs).keys():
-            self.setMessage('', rs.PARTIAL_NOT_REQUESTED)
-            self.setMessage('header-location', rs.PARTIAL_WITHOUT_RANGE)
+            self.set_message('', rs.PARTIAL_NOT_REQUESTED)
+            self.set_message('header-location', rs.PARTIAL_WITHOUT_RANGE)
     def status207(self):        # Multi-Status
         pass
     def status226(self):        # IM Used
@@ -114,55 +114,55 @@ class ResponseStatusChecker:
         pass
     def status301(self):        # Moved Permanently
         if not self.red.parsed_hdrs.has_key('location'):
-            self.setMessage('header-location', rs.REDIRECT_WITHOUT_LOCATION)
+            self.set_message('header-location', rs.REDIRECT_WITHOUT_LOCATION)
     def status302(self):        # Found
         if not self.red.parsed_hdrs.has_key('location'):
-            self.setMessage('header-location', rs.REDIRECT_WITHOUT_LOCATION)
+            self.set_message('header-location', rs.REDIRECT_WITHOUT_LOCATION)
     def status303(self):        # See Other
         if not self.red.parsed_hdrs.has_key('location'):
-            self.setMessage('header-location', rs.REDIRECT_WITHOUT_LOCATION)
+            self.set_message('header-location', rs.REDIRECT_WITHOUT_LOCATION)
     def status304(self):        # Not Modified
         pass # TODO: check to make sure required headers are present, stable
     def status305(self):        # Use Proxy
-        self.setMessage('', rs.STATUS_DEPRECATED)
+        self.set_message('', rs.STATUS_DEPRECATED)
     def status306(self):        # Reserved
-        self.setMessage('', rs.STATUS_RESERVED)
+        self.set_message('', rs.STATUS_RESERVED)
     def status307(self):        # Temporary Redirect
         if not self.red.parsed_hdrs.has_key('location'):
-            self.setMessage('header-location', rs.REDIRECT_WITHOUT_LOCATION)
+            self.set_message('header-location', rs.REDIRECT_WITHOUT_LOCATION)
     def status400(self):        # Bad Request
-        self.setMessage('', rs.STATUS_BAD_REQUEST)
+        self.set_message('', rs.STATUS_BAD_REQUEST)
     def status401(self):        # Unauthorized
         pass # TODO: prompt for credentials
     def status402(self):        # Payment Required
         pass
     def status403(self):        # Forbidden
-        self.setMessage('', rs.STATUS_FORBIDDEN)
+        self.set_message('', rs.STATUS_FORBIDDEN)
     def status404(self):        # Not Found
-        self.setMessage('', rs.STATUS_NOT_FOUND)
+        self.set_message('', rs.STATUS_NOT_FOUND)
     def status405(self):        # Method Not Allowed
         pass # TODO: show allowed methods?
     def status406(self):        # Not Acceptable
-        self.setMessage('', rs.STATUS_NOT_ACCEPTABLE)
+        self.set_message('', rs.STATUS_NOT_ACCEPTABLE)
     def status407(self):        # Proxy Authentication Required
         pass
     def status408(self):        # Request Timeout
         pass
     def status409(self):        # Conflict
-        self.setMessage('', rs.STATUS_CONFLICT)
+        self.set_message('', rs.STATUS_CONFLICT)
     def status410(self):        # Gone
-        self.setMessage('', rs.STATUS_GONE)
+        self.set_message('', rs.STATUS_GONE)
     def status411(self):        # Length Required
         pass
     def status412(self):        # Precondition Failed
         pass # TODO: test to see if it's true, alert if not
     def status413(self):        # Request Entity Too Large
-        self.setMessage('', rs.STATUS_REQUEST_ENTITY_TOO_LARGE)
+        self.set_message('', rs.STATUS_REQUEST_ENTITY_TOO_LARGE)
     def status414(self):        # Request-URI Too Long
-        self.setMessage('uri', rs.STATUS_URI_TOO_LONG,
+        self.set_message('uri', rs.STATUS_URI_TOO_LONG,
                         uri_len=len(self.red.uri))
     def status415(self):        # Unsupported Media Type
-        self.setMessage('', rs.STATUS_UNSUPPORTED_MEDIA_TYPE)
+        self.set_message('', rs.STATUS_UNSUPPORTED_MEDIA_TYPE)
     def status416(self):        # Requested Range Not Satisfiable
         pass # TODO: test to see if it's true, alter if not
     def status417(self):        # Expectation Failed
@@ -176,17 +176,17 @@ class ResponseStatusChecker:
     def status426(self):        # Upgrade Required
         pass
     def status500(self):        # Internal Server Error
-        self.setMessage('', rs.STATUS_INTERNAL_SERVICE_ERROR)
+        self.set_message('', rs.STATUS_INTERNAL_SERVICE_ERROR)
     def status501(self):        # Not Implemented
-        self.setMessage('', rs.STATUS_NOT_IMPLEMENTED)
+        self.set_message('', rs.STATUS_NOT_IMPLEMENTED)
     def status502(self):        # Bad Gateway
-        self.setMessage('', rs.STATUS_BAD_GATEWAY)
+        self.set_message('', rs.STATUS_BAD_GATEWAY)
     def status503(self):        # Service Unavailable
-        self.setMessage('', rs.STATUS_SERVICE_UNAVAILABLE)
+        self.set_message('', rs.STATUS_SERVICE_UNAVAILABLE)
     def status504(self):        # Gateway Timeout
-        self.setMessage('', rs.STATUS_GATEWAY_TIMEOUT)
+        self.set_message('', rs.STATUS_GATEWAY_TIMEOUT)
     def status505(self):        # HTTP Version Not Supported
-        self.setMessage('', rs.STATUS_VERSION_NOT_SUPPORTED)
+        self.set_message('', rs.STATUS_VERSION_NOT_SUPPORTED)
     def status506(self):        # Variant Also Negotiates
         pass
     def status507(self):        # Insufficient Storage

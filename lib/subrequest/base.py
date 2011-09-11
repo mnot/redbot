@@ -56,5 +56,5 @@ class SubRequest(RedFetcher):
         """
         return list(self.base.orig_req_hdrs)
 
-    def setMessage(self, subject, msg, subreq=None, **kw):
-        self.base.setMessage(subject, msg, self.state.type, **kw)
+    def set_message(self, subject, msg, subreq=None, **kw):
+        self.base.set_message(subject, msg, self.state.type, **kw)

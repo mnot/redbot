@@ -36,6 +36,6 @@ def expires(name, values, red):
     try:
         date = rh.parse_date(values)
     except ValueError:
-        red.setMessage(name, rs.BAD_DATE_SYNTAX)
+        red.set_message(name, rs.BAD_DATE_SYNTAX)
         return None
     return date

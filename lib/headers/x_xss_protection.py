@@ -37,7 +37,7 @@ import redbot.http_syntax as syntax
 )
 def x_xss_protection(name, values, red):
     if int(values[-1].split(';', 1)[0]) == 0:
-        red.setMessage(name, rs.XSS_PROTECTION)
+        red.set_message(name, rs.XSS_PROTECTION)
     elif values[-1].split(';', 1)[1].strip() == 'mode=block': # 1
-        red.setMessage(name, rs.XSS_PROTECTION_BLOCK)
+        red.set_message(name, rs.XSS_PROTECTION_BLOCK)
     return values[-1]

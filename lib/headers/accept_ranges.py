@@ -34,7 +34,7 @@ import redbot.http_syntax as syntax
 def accept_ranges(name, values, red):
     for value in values:
         if value not in ['bytes', 'none']:
-            red.setMessage(name, rs.UNKNOWN_RANGE)
+            red.set_message(name, rs.UNKNOWN_RANGE)
             break
     return values
     

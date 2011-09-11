@@ -192,7 +192,7 @@ class RedFetcher(object):
                     except IndexError:
                         return # not a full header yet
                     except IOError, gzip_error:
-                        state.setMessage('header-content-encoding',
+                        state.set_message('header-content-encoding',
                                         rs.BAD_GZIP,
                                         gzip_error=e(str(gzip_error))
                         )
@@ -201,7 +201,7 @@ class RedFetcher(object):
                 try:
                     chunk = self._gzip_processor.decompress(chunk)
                 except zlib.error, zlib_error:
-                    state.setMessage(
+                    state.set_message(
                         'header-content-encoding', 
                         rs.BAD_ZLIB,
                         zlib_error=e(str(zlib_error)),
@@ -240,18 +240,18 @@ class RedFetcher(object):
             # check payload basics
             if state.parsed_hdrs.has_key('content-length'):
                 if state.res_body_len == state.parsed_hdrs['content-length']:
-                    state.setMessage('header-content-length', rs.CL_CORRECT)
+                    state.set_message('header-content-length', rs.CL_CORRECT)
                 else:
-                    state.setMessage('header-content-length', 
+                    state.set_message('header-content-length', 
                                     rs.CL_INCORRECT,
                                     body_length=f_num(state.res_body_len)
                     )
             if state.parsed_hdrs.has_key('content-md5'):
                 c_md5_calc = base64.encodestring(state.res_body_md5)[:-1]
                 if state.parsed_hdrs['content-md5'] == c_md5_calc:
-                    state.setMessage('header-content-md5', rs.CMD5_CORRECT)
+                    state.set_message('header-content-md5', rs.CMD5_CORRECT)
                 else:
-                    state.setMessage('header-content-md5', rs.CMD5_INCORRECT,
+                    state.set_message('header-content-md5', rs.CMD5_INCORRECT,
                                      calc_md5=c_md5_calc)
         self.done()
         self.finish_task()
@@ -261,11 +261,11 @@ class RedFetcher(object):
         state.res_done_ts = thor.time()
         state.res_error = error
         if isinstance(error, httperr.BodyForbiddenError):
-            state.setMessage('header-none', rs.BODY_NOT_ALLOWED)
+            state.set_message('header-none', rs.BODY_NOT_ALLOWED)
 #        elif isinstance(error, httperr.ExtraDataErr):
 #            state.res_body_len += len(err.get('detail', ''))
         elif isinstance(error, httperr.ChunkError):
-            state.setMessage('header-transfer-encoding', rs.BAD_CHUNK,
+            state.set_message('header-transfer-encoding', rs.BAD_CHUNK,
                 chunk_sample=e(
                     error.get('detail', '')[:20].encode('string_escape')
                 )

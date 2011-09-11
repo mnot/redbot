@@ -32,5 +32,5 @@ import redbot.http_syntax as syntax
 
 @rh.SingleFieldValue
 def content_base(name, values, red):
-    red.setMessage(name, rs.HEADER_DEPRECATED, ref=rh.rfc2616 % "sec-19.6.3")
+    red.set_message(name, rs.HEADER_DEPRECATED, ref=rh.rfc2616 % "sec-19.6.3")
     return values[-1]
