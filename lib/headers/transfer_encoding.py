@@ -33,7 +33,7 @@ import redbot.http_syntax as syntax
 @rh.GenericHeaderSyntax
 @rh.CheckFieldSyntax(syntax.TOK_PARAM, rh.rfc2616 % "sec-14.41")
 # TODO: accommodate transfer-parameters
-def transfer_encoding(name, values, red):
+def parse(name, values, red):
     values = [v.lower() for v in values]
     if 'identity' in values:
         red.set_message(name, rs.TRANSFER_CODING_IDENTITY)

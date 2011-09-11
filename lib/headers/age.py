@@ -33,7 +33,7 @@ import redbot.http_syntax as syntax
 @rh.GenericHeaderSyntax
 @rh.SingleFieldValue
 @rh.CheckFieldSyntax(syntax.DIGITS, rh.rfc2616 % "sec-14.6")
-def age(name, values, red):
+def parse(name, values, red):
     try:
         age = int(values[-1])
     except ValueError:

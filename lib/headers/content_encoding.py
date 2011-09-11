@@ -32,7 +32,7 @@ import redbot.http_syntax as syntax
 
 @rh.GenericHeaderSyntax
 @rh.CheckFieldSyntax(syntax.TOKEN, rh.rfc2616 % "sec-14.11")
-def content_encoding(name, values, red):
+def parse(name, values, red):
     values = [v.lower() for v in values]
     for value in values:
         # check to see if there are any non-gzip encodings, because

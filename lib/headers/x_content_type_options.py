@@ -31,7 +31,7 @@ import redbot.http_syntax as syntax
 
 
 @rh.GenericHeaderSyntax
-def x_content_type_options(name, values, red):
+def parse(name, values, red):
     if 'nosniff' in values:
         red.set_message(name, rs.CONTENT_TYPE_OPTIONS)
     else:

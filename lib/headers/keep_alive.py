@@ -31,7 +31,7 @@ import redbot.http_syntax as syntax
 
 
 @rh.GenericHeaderSyntax
-def keep_alive(name, values, red):
+def parse(name, values, red):
     directives = set()
     for directive in values:
         try:

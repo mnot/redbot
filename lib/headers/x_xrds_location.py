@@ -32,5 +32,5 @@ import redbot.http_syntax as syntax
 
 @rh.GenericHeaderSyntax
 @rh.SingleFieldValue
-def x_xrds_location(name, values, red):
+def parse(name, values, red):
     pass # TODO

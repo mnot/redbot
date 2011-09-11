@@ -178,9 +178,9 @@ def process_headers(red):
         except ImportError: 
             continue # we don't recognise the header.
         try:
-            hdr_parse = getattr(hdr_module, name_token)
+            hdr_parse = hdr_module.parse
         except AttributeError:
-            raise
+            raise RuntimeError, "Can't find parse for %s header." % fn
         parsed_value = hdr_parse(fn, values, red)
         if parsed_value != None:
             parsed_hdrs[nn] = parsed_value

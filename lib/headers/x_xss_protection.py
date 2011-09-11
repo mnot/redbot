@@ -35,7 +35,7 @@ import redbot.http_syntax as syntax
 @rh.CheckFieldSyntax(
     r'(?:[10](?:\s*;\s*%(PARAMETER)s)*)' % syntax.__dict__, 'http://blogs.msdn.com/b/ieinternals/archive/2011/01/31/controlling-the-internet-explorer-xss-filter-with-the-x-xss-protection-http-header.aspx'
 )
-def x_xss_protection(name, values, red):
+def parse(name, values, red):
     if int(values[-1].split(';', 1)[0]) == 0:
         red.set_message(name, rs.XSS_PROTECTION)
     elif values[-1].split(';', 1)[1].strip() == 'mode=block': # 1

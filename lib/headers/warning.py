@@ -31,6 +31,6 @@ import redbot.http_syntax as syntax
 
 
 @rh.GenericHeaderSyntax
-def warning(name, values, red):
+def parse(name, values, red):
     # TODO: check syntax, values?
     pass

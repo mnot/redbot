@@ -30,7 +30,7 @@ import redbot.headers as rh
 import redbot.http_syntax as syntax
 
 
-def content_range(name, values, red):
+def parse(name, values, red):
     # TODO: check syntax, values?
     if red.res_status not in ["206", "416"]:
         red.set_message(name, rs.CONTENT_RANGE_MEANINGLESS)

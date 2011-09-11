@@ -34,7 +34,7 @@ import redbot.http_syntax as syntax
 @rh.CheckFieldSyntax(
     syntax.PARAMETER,
     "http://msdn.microsoft.com/en-us/library/cc288325(VS.85).aspx")
-def x_ua_compatible(name, values, red):
+def parse(name, values, red):
     directives = {}
     for directive in values:
         try:

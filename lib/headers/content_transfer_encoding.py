@@ -30,6 +30,6 @@ import redbot.headers as rh
 import redbot.http_syntax as syntax
 
 
-def content_transfer_encoding(name, values, red):
+def parse(name, values, red):
     red.set_message(name, rs.CONTENT_TRANSFER_ENCODING)
     return values

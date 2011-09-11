@@ -36,7 +36,7 @@ import redbot.http_syntax as syntax
     r'(?:<%(URI_reference)s>(?:\s*;\s*%(PARAMETER)s)*)' % syntax.__dict__,
     rh.rfc5988
 )
-def link(name, values, red):
+def parse(name, values, red):
     try:
         link, params = values[-1].split(";", 1)
     except ValueError:

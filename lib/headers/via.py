@@ -35,7 +35,7 @@ import redbot.http_syntax as syntax
     r'(?:%s/)?%s\s+[^,\s]+(?:\s+%s)?' % (
       syntax.TOKEN, syntax.TOKEN, syntax.COMMENT),
     rh.rfc2616 % "sec-14.45")
-def via(name, values, red):
+def parse(name, values, red):
     via_list = u"<ul>" + u"\n".join(
            [u"<li><code>%s</code></li>" % e(v) for v in values]
                        ) + u"</ul>"

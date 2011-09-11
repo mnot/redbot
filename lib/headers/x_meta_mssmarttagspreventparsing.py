@@ -31,6 +31,6 @@ import redbot.http_syntax as syntax
 
 
 @rh.GenericHeaderSyntax
-def x_meta_mssmarttagspreventparsing(name, values, red):
+def parse(name, values, red):
     red.set_message(name, rs.SMART_TAG_NO_WORK)
     return values

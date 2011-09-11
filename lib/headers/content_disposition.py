@@ -36,7 +36,7 @@ import redbot.http_syntax as syntax
     r'(?:%(TOKEN)s(?:\s*;\s*%(PARAMETER)s)*)' % syntax.__dict__,
     rh.rfc6266
 )
-def content_disposition(name, values, red):
+def parse(name, values, red):
     try:
         disposition, params = values[-1].split(";", 1)
     except ValueError:

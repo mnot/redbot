@@ -31,7 +31,7 @@ import redbot.http_syntax as syntax
 
 
 @rh.SingleFieldValue
-def last_modified(name, values, red):
+def parse(name, values, red):
     try:
         date = rh.parse_date(values)
     except ValueError:

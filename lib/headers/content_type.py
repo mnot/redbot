@@ -36,7 +36,7 @@ import redbot.http_syntax as syntax
     rh.rfc2616 % "sec-14.17"
 )
 @rh.SingleFieldValue
-def content_type(name, values, red):
+def parse(name, values, red):
     try:
         media_type, params = values[-1].split(";", 1)
     except ValueError:

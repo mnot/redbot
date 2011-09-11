@@ -36,7 +36,7 @@ import redbot.http_syntax as syntax
 # so we separate that from the syntax check.
 @rh.CheckFieldSyntax(syntax.URI_reference, rh.rfc2616 % "sec-14.30")
 @rh.SingleFieldValue
-def location(name, values, red):
+def parse(name, values, red):
     if red.res_status not in [
         "201", "300", "301", "302", "303", "305", "307"
     ]:

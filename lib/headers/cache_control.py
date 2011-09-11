@@ -32,7 +32,7 @@ import redbot.http_syntax as syntax
 
 @rh.GenericHeaderSyntax
 @rh.CheckFieldSyntax(syntax.PARAMETER, rh.rfc2616 % "sec-14.9")
-def cache_control(name, values, red):
+def parse(name, values, red):
     directives = set()
     for directive in values:
         try:

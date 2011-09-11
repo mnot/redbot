@@ -33,5 +33,5 @@ import redbot.http_syntax as syntax
 @rh.GenericHeaderSyntax
 @rh.SingleFieldValue
 @rh.CheckFieldSyntax(syntax.DIGITS, rh.rfc2616 % "sec-14.13")
-def content_length(name, values, red):
+def parse(name, values, red):
     return int(values[-1])

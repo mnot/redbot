@@ -32,5 +32,5 @@ import redbot.http_syntax as syntax
 
 @rh.GenericHeaderSyntax
 @rh.CheckFieldSyntax(syntax.TOKEN, rh.rfc2616 % "sec-14.7")
-def allow(name, values, red):
+def parse(name, values, red):
     return values

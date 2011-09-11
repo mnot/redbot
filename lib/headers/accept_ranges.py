@@ -31,7 +31,7 @@ import redbot.http_syntax as syntax
 
 
 @rh.GenericHeaderSyntax
-def accept_ranges(name, values, red):
+def parse(name, values, red):
     for value in values:
         if value not in ['bytes', 'none']:
             red.set_message(name, rs.UNKNOWN_RANGE)

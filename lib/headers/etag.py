@@ -34,7 +34,7 @@ import redbot.http_syntax as syntax
 @rh.SingleFieldValue
 @rh.CheckFieldSyntax(
   r'\*|(?:W/)?%s' % syntax.QUOTED_STRING, rh.rfc2616 % "sec-14.19")
-def etag(name, values, red):
+def parse(name, values, red):
     instr = values[-1]
     if instr[:2] == 'W/':
         return (True, rh.unquote_string(instr[2:]))

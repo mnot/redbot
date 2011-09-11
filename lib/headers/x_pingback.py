@@ -31,6 +31,6 @@ import redbot.http_syntax as syntax
 
 
 @rh.SingleFieldValue
-def x_pingback(name, values, red):
+def parse(name, values, red):
     #TODO: message, perhaps allow a ping
     pass

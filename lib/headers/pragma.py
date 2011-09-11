@@ -31,7 +31,7 @@ import redbot.http_syntax as syntax
 
 
 @rh.GenericHeaderSyntax
-def pragma(name, values, red):
+def parse(name, values, red):
     values = set([v.lower() for v in values])
     if "no-cache" in values:
         red.set_message(name, rs.PRAGMA_NO_CACHE)

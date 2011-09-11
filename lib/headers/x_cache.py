@@ -31,6 +31,6 @@ import redbot.http_syntax as syntax
 
 
 @rh.GenericHeaderSyntax
-def x_cache(name, values, red):
+def parse(name, values, red):
     # TODO: explain
     pass

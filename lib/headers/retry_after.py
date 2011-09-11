@@ -34,5 +34,5 @@ import redbot.http_syntax as syntax
 @rh.CheckFieldSyntax(
   r"(?:%s|%s)" % (syntax.DIGITS, syntax.DATE), rh.rfc2616 % "sec-14.37")
 @rh.SingleFieldValue
-def retry_after(name, values, red):
+def parse(name, values, red):
     pass

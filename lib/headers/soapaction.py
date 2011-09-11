@@ -31,5 +31,5 @@ import redbot.http_syntax as syntax
 
 
 @rh.SingleFieldValue
-def soapaction(name, values, red):
+def parse(name, values, red):
     return values[-1]
