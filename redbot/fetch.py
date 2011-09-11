@@ -43,9 +43,9 @@ import thor
 import thor.http.error as httperr
 
 from redbot.cache_check import checkCaching
-from redbot.headers import process_headers
+import redbot.headers
 import redbot.speak as rs
-import redbot.response_analyse as ra
+import redbot.status_check
 from redbot.headers import f_num
 from redbot.state import RedState
 
@@ -157,8 +157,8 @@ class RedFetcher(object):
         state.res_status = status.decode('iso-8859-1', 'replace')
         state.res_phrase = phrase.decode('iso-8859-1', 'replace')
         state.res_hdrs = res_headers
-        process_headers(state)
-        ra.ResponseStatusChecker(state)
+        redbot.headers.process_headers(state)
+        redbot.status_check.ResponseStatusChecker(state)
         state.res_body_enc = state.parsed_hdrs.get(
             'content-type', [None, {}]
         )[1].get('charset', 'utf-8') # default isn't really UTF-8, but oh well
