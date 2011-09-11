@@ -111,5 +111,5 @@ class RangeRequest(SubRequest):
             self.setMessage('header-accept-ranges', 
                 rs.RANGE_STATUS,
                 range_status=self.state.res_status,
-                enc_range_status=e(self.state.res_status)
+                enc_range_status=e(self.state.res_status or '(unknown)')
             )

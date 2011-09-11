@@ -80,6 +80,6 @@ class ETagValidate(SubRequest):
             self.setMessage('header-etag', 
                 rs.INM_STATUS, 
                 inm_status = self.state.res_status,
-                enc_inm_status = e(self.state.res_status)
+                enc_inm_status = e(self.state.res_status or '(unknown)')
             )
         # TODO: check entity headers

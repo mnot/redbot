@@ -70,6 +70,6 @@ class LmValidate(SubRequest):
             self.setMessage('header-last-modified', 
                 rs.IMS_STATUS, 
                 ims_status = self.state.res_status,
-                enc_ims_status = e(self.state.res_status)
+                enc_ims_status = e(self.state.res_status or '(unknown)')
             )
         # TODO: check entity headers
