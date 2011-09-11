@@ -10,7 +10,7 @@ setup(name='redbot',
       url='http://redbot.org/project/',
       packages=['redbot', 
                 'redbot.formatter', 
-                'redbot.subrequest'
+                'redbot.subrequest',
                 'redbot.headers'],
       package_dir={'redbot': 'redbot'},
       scripts=['bin/redbot'],
