@@ -180,7 +180,7 @@ def process_headers(red):
         try:
             hdr_parse = hdr_module.parse
         except AttributeError:
-            raise RuntimeError, "Can't find parse for %s header." % fn
+            raise RuntimeError, "Can't find parser for %s header." % fn
         parsed_value = hdr_parse(fn, values, red)
         if parsed_value != None:
             parsed_hdrs[nn] = parsed_value
