@@ -12,7 +12,7 @@ setup(name='redbot',
                 'redbot.formatter', 
                 'redbot.subrequest'
                 'redbot.headers'],
-      package_dir={'redbot': 'lib'},
+      package_dir={'redbot': 'redbot'},
       scripts=['bin/redbot'],
       install_requires = ['thor >= 0.1'],
       classifiers=[
