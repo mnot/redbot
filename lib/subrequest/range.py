@@ -31,7 +31,7 @@ import random
 from cgi import escape as e
 
 from redbot.subrequest.base import SubRequest
-from redbot.response_analyse import f_num
+from redbot.headers import f_num
 import redbot.speak as rs
 
 class RangeRequest(SubRequest):

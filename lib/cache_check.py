@@ -27,7 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from redbot.response_analyse import relative_time, f_num
+from redbot.headers import relative_time, f_num
 import redbot.speak as rs
 
 ### configuration

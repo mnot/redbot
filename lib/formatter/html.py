@@ -45,7 +45,7 @@ import thor.http.error as httperr
 import redbot.speak as rs
 from redbot import defns, droid, fetch
 from redbot.formatter import Formatter, html_header
-from redbot.response_analyse import relative_time, f_num
+from redbot.headers import relative_time, f_num
 
 nl = u"\n"
 

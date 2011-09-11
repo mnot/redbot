@@ -42,7 +42,7 @@ import redbot.subrequest
 import redbot.speak as rs
 from redbot import link_parse
 from redbot.fetch import RedFetcher
-from redbot.response_analyse import f_num
+from redbot.headers import f_num
 from redbot.uri_validate import absolute_URI
 
 ### configuration

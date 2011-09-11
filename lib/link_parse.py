@@ -30,8 +30,8 @@ THE SOFTWARE.
 from htmlentitydefs import entitydefs
 from HTMLParser import HTMLParser
 
-from redbot import response_analyse
-from redbot.response_analyse import ResponseHeaderParser as RHP
+import redbot.headers as rh
+from redbot import http_syntax as syntax
 
 class HTMLLinkParser(HTMLParser):
     """
@@ -126,13 +126,13 @@ class HTMLLinkParser(HTMLParser):
                 except ValueError:
                     media_type, params = ct, ''
                 media_type = media_type.lower()
-                param_dict = {}
-                for param in RHP._splitString(
-                    params, response_analyse.PARAMETER, "\s*;\s*"
+                param_dict = {} # FIXME: switch to parse_params
+                for param in rh.split_string(
+                    params, syntax.PARAMETER, "\s*;\s*"
                 ):
                     try:
                         a, v = param.split("=", 1)
-                        param_dict[a.lower()] = RHP._unquoteString(v)
+                        param_dict[a.lower()] = rh.unquote_string(v)
                     except ValueError:
                         param_dict[param.lower()] = None
                 self.doc_enc = param_dict.get('charset', self.doc_enc)

@@ -43,9 +43,10 @@ import thor
 import thor.http.error as httperr
 
 from redbot.cache_check import checkCaching
+from redbot.headers import process_headers
 import redbot.speak as rs
 import redbot.response_analyse as ra
-from redbot.response_analyse import f_num
+from redbot.headers import f_num
 from redbot.state import RedState
 
 class RedHttpClient(thor.HttpClient):
@@ -156,7 +157,7 @@ class RedFetcher(object):
         state.res_status = status.decode('iso-8859-1', 'replace')
         state.res_phrase = phrase.decode('iso-8859-1', 'replace')
         state.res_hdrs = res_headers
-        ra.ResponseHeaderParser(state)
+        process_headers(state)
         ra.ResponseStatusChecker(state)
         state.res_body_enc = state.parsed_hdrs.get(
             'content-type', [None, {}]

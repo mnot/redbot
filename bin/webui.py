@@ -72,7 +72,7 @@ html.static_root = 'static'
 html.extra_dir = "extra"
 
 # show errors in the browser; boolean
-debug = False
+debug = True
 
 ### End configuration ######################################################
 
