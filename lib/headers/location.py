@@ -25,6 +25,7 @@ THE SOFTWARE.
 
 from cgi import escape as e
 import re
+from urlparse import urljoin
 
 import redbot.speak as rs
 import redbot.headers as rh
