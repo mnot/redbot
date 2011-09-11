@@ -90,7 +90,8 @@ class RedState(object):
 
     def __getstate__(self):
         state = self.__dict__.copy()
-        del state['set_message']
+        if state.has_key('set_message'):
+            del state['set_message']
         return state
         
     def set_message(self, subject, msg, subreq=None, **kw):
