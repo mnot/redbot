@@ -88,6 +88,11 @@ class RedState(object):
             self.res_error = httperr.UrlError()
             self.uri = None
 
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        del state['set_message']
+        return state
+        
     def set_message(self, subject, msg, subreq=None, **kw):
         "Set a message."
         kw['response'] = rs.response.get(
