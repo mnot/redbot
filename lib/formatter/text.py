@@ -87,7 +87,7 @@ class BaseTextFormatter(Formatter):
             elif isinstance(self.red.res_error, httperr.UrlError):
                 self.output(self.error_template % self.red.res_error.get(
                     'detail', "RED can't fetch that URL."))
-            elif isinstance(self.red.res_error, htterr.ReadTimeoutError):
+            elif isinstance(self.red.res_error, httperr.ReadTimeoutError):
                 self.output(self.error_template % self.red.res_error['desc'])
             elif isinstance(self.red.res_error, httperr.HttpVersionError):
                 self.output(
