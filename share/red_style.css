@@ -310,3 +310,13 @@ body.blank > .footer {
 .news-banner {
     color: #999;
 }
+
+/* errors */
+
+.error {
+  background-color: #E33;
+  border-radius: 1.0em;
+  padding: 0.5em;
+  font-weight: bolder;
+  font-size: 1.2em;
+}
