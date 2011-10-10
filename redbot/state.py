@@ -84,7 +84,7 @@ class RedState(object):
         self.subreqs = {} # sub-requests' RedState objects
         try:
             self.uri = self.iri_to_uri(iri)
-        except UnicodeError, why:
+        except (ValueError, UnicodeError), why:
             self.res_error = httperr.UrlError()
             self.uri = None
 
