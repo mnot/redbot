@@ -47,7 +47,7 @@ jQuery.fn.hoverPopup = function(fnText, fnOver, fnOut) {
   var fnOutPopup = function(e) {
     tid = setTimeout(function(){
       $("#popup").fadeOut("fast");
-    }, 350);
+    }, 500);
     if (fnOut) {
       fnOut.call(this, e);
     }
