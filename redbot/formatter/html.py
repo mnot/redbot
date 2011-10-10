@@ -291,7 +291,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     "<code>%s</code> isn't HTTP." % \
                     e(self.red.res_error.detail or '')[:20])
             else:
-                raise AssertionError, "Unknown incomplete response error."
+                raise AssertionError, \
+                  "Unknown incomplete response error %s" % self.red.res_error
         self.done()
 
     def format_response(self, red):
