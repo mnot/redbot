@@ -284,6 +284,13 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             elif isinstance(self.red.res_error, httperr.UrlError):
                 self.output(self.error_template % \
                   self.red.res_error.detail or "RED can't fetch that URL.")
+            elif isinstance(self.red.res_error, httperr.ContentLengthError):
+                self.output(self.error_template % \
+                    "%s (%s)" % (
+                      self.red.res_error.desc, 
+                      self.red.res_error.detail or ''
+                    )
+                )
             elif isinstance(self.red.res_error, httperr.ReadTimeoutError):
                 self.output(self.error_template % self.red.res_error.desc)
             elif isinstance(self.red.res_error, httperr.HttpVersionError):
