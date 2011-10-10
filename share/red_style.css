@@ -314,10 +314,10 @@ body.blank > .footer {
 /* errors */
 
 .error {
-  background-color: #a66;
+  background-color: #a33;
   border-radius: 0.5em;
   padding: 0.5em;
-  font-weight: bolder;
-  font-size: 1.2em;
-  max-width: 600px;
+  font-weight: bold;
+  font-size: 1.1em;
+  max-width: 650px;
 }
