@@ -41,3 +41,22 @@ def parse(name, values, red):
             red.set_message(name, rs.ENCODING_UNWANTED, encoding=e(value))
             break
     return values
+    
+class ContentEncodingTest(rh.HeaderTest):
+    name = 'Content-Encoding'
+    inputs = ['gzip']
+    expected_out = ['gzip']
+    expected_err = []
+
+class ContentEncodingCaseTest(rh.HeaderTest):
+    name = 'Content-Encoding'
+    inputs = ['GZip']
+    expected_out = ['gzip']
+    expected_err = []
+
+class UnwantedContentEncodingTest(rh.HeaderTest):
+    name = 'Content-Encoding'
+    inputs = ['gzip', 'foo']
+    expected_out = ['gzip', 'foo']
+    expected_err = [rs.ENCODING_UNWANTED]
+

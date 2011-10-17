@@ -40,3 +40,21 @@ def parse(name, values, red):
         return (True, rh.unquote_string(instr[2:]))
     else:
         return (False, rh.unquote_string(instr))
+        
+class ETagTest(rh.HeaderTest):
+    name = 'ETag'
+    inputs = ['"foo"']
+    expected_out = (False, 'foo')
+    expected_err = []
+
+class WeakETagTest(rh.HeaderTest):
+    name = 'ETag'
+    inputs = ['W/"foo"']
+    expected_out = (True, 'foo')
+    expected_err = []
+
+class UnquotedETagTest(rh.HeaderTest):
+    name = 'ETag'
+    inputs = ['foo']
+    expected_out = None
+    expected_err = [rs.BAD_SYNTAX]

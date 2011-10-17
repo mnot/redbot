@@ -46,6 +46,12 @@ class BasicDateTest(rh.HeaderTest):
     expected_out = 1309770486
     expected_err = []
 
+class BadDateTest(rh.HeaderTest):
+    name = 'Date'
+    inputs = ['0']
+    expected_out = None
+    expected_err = [rs.BAD_DATE_SYNTAX]
+
 class BlankDateTest(rh.HeaderTest):
     name = 'Date'
     inputs = ['']

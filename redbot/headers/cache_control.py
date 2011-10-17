@@ -49,3 +49,33 @@ def parse(name, values, red):
                 continue
         directives.add((attr, value))
     return directives
+    
+class CacheControlTest(rh.HeaderTest):
+    name = 'Cache-Control'
+    inputs = ['a=b, c=d', 'e=f', 'g']
+    expected_out = (set([('a', 'b'), ('c', 'd'), ('e', 'f'), ('g', None)]))
+    expected_err = []
+
+class CacheControlCaseTest(rh.HeaderTest):
+    name = 'Cache-Control'
+    inputs = ['A=b, c=D']
+    expected_out = (set([('a', 'b'), ('c', 'D')]))
+    expected_err = []
+
+class CacheControlQuotedTest(rh.HeaderTest):
+    name = 'Cache-Control'
+    inputs = ['a="b,c", c=d']
+    expected_out = (set([('a', 'b,c'), ('c', 'd')]))
+    expected_err = []
+
+class CacheControlMaxAgeTest(rh.HeaderTest):
+    name = 'Cache-Control'
+    inputs = ['max-age=5']
+    expected_out = (set([('max-age', 5)]))
+    expected_err = []
+
+class CacheControlBadMaxAgeTest(rh.HeaderTest):
+    name = 'Cache-Control'
+    inputs = ['max-age=foo']
+    expected_out = (set([]))
+    expected_err = [rs.BAD_CC_SYNTAX]

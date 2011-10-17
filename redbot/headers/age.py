@@ -43,3 +43,22 @@ def parse(name, values, red):
         red.set_message(name, rs.AGE_NEGATIVE)
         return None
     return age
+    
+    
+class AgeTest(rh.HeaderTest):
+    name = 'Age'
+    inputs = ['10']
+    expected_out = (10)
+    expected_err = []
+
+class MultipleAgeTest(rh.HeaderTest):
+    name = 'Age'
+    inputs = ['20', '10']
+    expected_out = (10)
+    expected_err = [rs.SINGLE_HEADER_REPEAT]
+
+class CharAgeTest(rh.HeaderTest):
+    name = 'Age'
+    inputs = ['foo']
+    expected_out = (None)
+    expected_err = [rs.BAD_SYNTAX]
