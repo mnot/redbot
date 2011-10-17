@@ -41,6 +41,8 @@ def parse(name, values, red):
         except ValueError:
             attr = directive
             value = None
+        attr = attr.lower()
+        # TODO: warn on upper-cased directives?
         if attr in ['max-age', 's-maxage']:
             try:
                 value = int(value)
