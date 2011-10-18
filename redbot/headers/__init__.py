@@ -258,7 +258,8 @@ def parse_params(red, name, instr, nostar=None, delim=";"):
     @param red: the red instance to use
     @param name: the header field name
     @param instr: string to be parsed
-    @param nostar: list of parameters that definitely don't get a star
+    @param nostar: list of parameters that definitely don't get a star. If
+                   True, no parameter can be starred.
     @param delim: delimter between params, default ";"
     @return: dictionary of {name: value}
     """
@@ -270,7 +271,7 @@ def parse_params(red, name, instr, nostar=None, delim=";"):
         except ValueError:
             param_dict[param.lower()] = None
             continue
-        k_norm = k.lower()
+        k_norm = k.lower() # TODO: warn on upper-case in param?
         if param_dict.has_key(k_norm):
             red.set_message(name, rs.PARAM_REPEATS, param=e(k_norm))
         if v[0] == v[-1] == "'":
@@ -281,7 +282,7 @@ def parse_params(red, name, instr, nostar=None, delim=";"):
                 param_val_unquoted=e(v[1:-1])
             )
         if k[-1] == '*':
-            if nostar and k_norm[:-1] in nostar:
+            if nostar is True or (nostar and k_norm[:-1] in nostar):
                 red.set_message(name, rs.PARAM_STAR_BAD,
                                 param=e(k_norm[:-1]))
             else:
