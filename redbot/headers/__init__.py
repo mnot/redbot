@@ -251,7 +251,7 @@ def split_string(instr, item, split):
         r'%s(?=%s|\s*$)' % (item, split), instr
     )]
 
-def parse_params(red, name, instr, nostar=None):
+def parse_params(red, name, instr, nostar=None, delim=";"):
     """
     Parse parameters into a dictionary.
 
@@ -259,11 +259,12 @@ def parse_params(red, name, instr, nostar=None):
     @param name: the header field name
     @param instr: string to be parsed
     @param nostar: list of parameters that definitely don't get a star
+    @param delim: delimter between params, default ";"
     @return: dictionary of {name: value}
     """
     param_dict = {}
     instr = instr.encode('ascii')
-    for param in split_string(instr, syntax.PARAMETER, r"\s*;\s*"):
+    for param in split_string(instr, syntax.PARAMETER, r"\s*%s\s*" % delim):
         try:
             k, v = param.split("=", 1)
         except ValueError:

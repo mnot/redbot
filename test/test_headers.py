@@ -60,43 +60,69 @@ class GeneralHeaderTesters(unittest.TestCase):
     
     def test_parse_params(self):
         i = 0
-        for (instr, expected_pd, expected_msgs) in [
-            ('foo=bar', {'foo': 'bar'}, []),
-            ('foo="bar"', {'foo': 'bar'}, []),
-            ('foo="bar"; baz=bat', {'foo': 'bar', 'baz': 'bat'}, []),
+        for (instr, expected_pd, expected_msgs, delim) in [
+            ('foo=bar', {'foo': 'bar'}, [], ';'),
+            ('foo="bar"', {'foo': 'bar'}, [], ';'),
+            ('foo="bar"; baz=bat', {'foo': 'bar', 'baz': 'bat'}, [], ';'),
             ('foo="bar"; baz="b=t"; bam="boom"',
-             {'foo': 'bar', 'baz': 'b=t', 'bam': 'boom'}, []
+             {'foo': 'bar', 'baz': 'b=t', 'bam': 'boom'}, [], ';'
             ),
-            (r'foo="b\"ar"', {'foo': 'b"ar'}, []),
-            (r'foo=bar; foo=baz', {'foo': 'baz'}, 
-             [rs.PARAM_REPEATS]
+            (r'foo="b\"ar"', {'foo': 'b"ar'}, [], ';'),
+            (r'foo=bar; foo=baz', 
+             {'foo': 'baz'}, 
+             [rs.PARAM_REPEATS], 
+             ';'
             ),
-            ("foo=bar; baz='bat'", {'foo': 'bar', 'baz': "'bat'"}, 
-             [rs.PARAM_SINGLE_QUOTED]
+            ('foo=bar; baz="b;at"', 
+             {'foo': 'bar', 'baz': "b;at"}, 
+             [],
+             ';'
+            ),
+            ('foo=bar, baz="bat"', 
+             {'foo': 'bar', 'baz': "bat"}, 
+             [],
+             ','
+            ),
+            ('foo=bar, baz="b,at"', 
+             {'foo': 'bar', 'baz': "b,at"}, 
+             [],
+             ','
+            ),
+            ("foo=bar; baz='bat'", 
+             {'foo': 'bar', 'baz': "'bat'"}, 
+             [rs.PARAM_SINGLE_QUOTED], 
+             ';'
             ),
             ("foo*=\"UTF-8''a%cc%88.txt\"", 
              {'foo*': u'a\u0308.txt'},
-             [rs.PARAM_STAR_QUOTED]
+             [rs.PARAM_STAR_QUOTED], 
+             ';'
             ),
             ("foo*=''a%cc%88.txt", 
              {},
-             [rs.PARAM_STAR_NOCHARSET]
+             [rs.PARAM_STAR_NOCHARSET], 
+             ';'
             ),
             ("foo*=utf-16''a%cc%88.txt", 
              {},
-             [rs.PARAM_STAR_CHARSET]
+             [rs.PARAM_STAR_CHARSET], 
+             ';'
             ),
             ("nostar*=utf-8''a%cc%88.txt",
              {},
-             [rs.PARAM_STAR_BAD]
+             [rs.PARAM_STAR_BAD], 
+             ';'
             ),
             ("NOstar*=utf-8''a%cc%88.txt",
              {},
-             [rs.PARAM_STAR_BAD]
+             [rs.PARAM_STAR_BAD], 
+             ';'
             )
         ]:
             self.red.__init__()
-            param_dict = rh.parse_params(self.red, 'test', instr, ['nostar'])
+            param_dict = rh.parse_params(
+              self.red, 'test', instr, ['nostar'], delim
+            )
             diff = set(
                 [n.__name__ for n in expected_msgs]).symmetric_difference(
                 set(self.red.msg_classes)
