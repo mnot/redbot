@@ -389,10 +389,12 @@ def relative_time(utime, now=None, show_sign=1):
 
 class _DummyRed(object):
     def __init__(self):
+        import time
         self.res_hdrs = []
         self.res_phrase = ""
         self.messages = []
         self.msg_classes = []
+        self.res_ts = time.time()
 
     def set_message(self, name, msg, **kw):
         self.messages.append(msg(name, None, kw))

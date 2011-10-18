@@ -39,8 +39,33 @@ def parse(name, values, red):
         return None
     if date > red.res_ts:
         red.set_message(name, rs.LM_FUTURE)
-        return
+        return date
     else:
         red.set_message(name, rs.LM_PRESENT,
           last_modified_string=rh.relative_time(date, red.res_ts))
     return date
+
+
+class BasicLMTest(rh.HeaderTest):
+    name = 'Last-Modified'
+    inputs = ['Mon, 04 Jul 2011 09:08:06 GMT']
+    expected_out = 1309770486
+    expected_err = [rs.LM_PRESENT]
+
+class FutureLMTest(rh.HeaderTest):
+    name = 'Last-Modified'
+    inputs = ['Mon, 04 Jul 2029 09:08:06 GMT']
+    expected_out = 1877850486
+    expected_err = [rs.LM_FUTURE]
+
+class BadLMTest(rh.HeaderTest):
+    name = 'Last-Modified'
+    inputs = ['0']
+    expected_out = None
+    expected_err = [rs.BAD_DATE_SYNTAX]
+
+class BlankLMTest(rh.HeaderTest):
+    name = 'Last-Modified'
+    inputs = ['']
+    expected_out = None
+    expected_err = [rs.BAD_DATE_SYNTAX]
