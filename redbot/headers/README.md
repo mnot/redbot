@@ -24,7 +24,7 @@ start, fork the source and add a new file into this directory, whose name
 corresponds to the header's name, but in all lowercase, and with special
 characters (most commonly, _-_) transposed to an underscore.
 
-For example, if your header's name is `Foo-Example`, the appropriate filename is `foo\_example.py`.
+For example, if your header's name is `Foo-Example`, the appropriate filename is `foo_example.py`.
 
 If your header name doesn't work with this convention, please raise an issue in [REDbot's tracker](https://github.com/mnot/redbot/issues).
 
@@ -49,7 +49,7 @@ The _parse_ function must return a data structure that's suitable for the
 header field; it could be a dictionary, a list, an integer, a string, etc. 
 Take a look at similar headers to see what data structures they use. 
 
-Also, take a look in `\_\_init\_\_.py`; there are some handy functions 
+Also, take a look in `__init__.py`; there are some handy functions 
 there to help with parsing.
 
 If parsing fails, it should return `None`.
@@ -57,7 +57,7 @@ If parsing fails, it should return `None`.
 
 ### Decorators for _parse_
 
-There are also some handy decorators in __init__.py that help with parsing, 
+There are also some handy decorators in _\_\_init\_\_.py_ that help with parsing, 
 including:
 
  * `GenericHeaderSyntax` - Splits comma-separated list values, so that  
