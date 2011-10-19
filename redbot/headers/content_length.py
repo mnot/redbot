@@ -35,3 +35,33 @@ import redbot.http_syntax as syntax
 @rh.CheckFieldSyntax(syntax.DIGITS, rh.rfc2616 % "sec-14.13")
 def parse(name, values, red):
     return int(values[-1])
+    
+class ContentLengthTest(rh.HeaderTest):
+    name = 'Content-Length'
+    inputs = ['1']
+    expected_out = 1
+    expected_err = []
+
+class ContentLengthTextTest(rh.HeaderTest):
+    name = 'Content-Length'
+    inputs = ['a']
+    expected_out = None
+    expected_err = [rs.BAD_SYNTAX]
+
+class ContentLengthSemiTest(rh.HeaderTest):
+    name = 'Content-Length'
+    inputs = ['1;']
+    expected_out = None
+    expected_err = [rs.BAD_SYNTAX]
+
+class ContentLengthSpaceTest(rh.HeaderTest):
+    name = 'Content-Length'
+    inputs = [' 1 ']
+    expected_out = 1
+    expected_err = []
+
+class ContentLengthBigTest(rh.HeaderTest):
+    name = 'Content-Length'
+    inputs = ['9' * 999]
+    expected_out = long('9' * 999)
+    expected_err = []
