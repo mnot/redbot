@@ -45,3 +45,39 @@ def parse(name, values, red):
                             encoding=e(value))
             break
     return values
+
+class TransferEncodingTest(rh.HeaderTest):
+    name = 'Transfer-Encoding'
+    inputs = ['chunked']
+    expected_out = (['chunked'])
+    expected_err = []
+
+class TransferEncodingCaseTest(rh.HeaderTest):
+    name = 'Transfer-Encoding'
+    inputs = ['chUNked']
+    expected_out = (['chunked'])
+    expected_err = []
+
+class TransferEncodingIdentityTest(rh.HeaderTest):
+    name = 'Transfer-Encoding'
+    inputs = ['identity']
+    expected_out = (['identity'])
+    expected_err = [rs.TRANSFER_CODING_IDENTITY]
+
+class TransferEncodingUnwantedTest(rh.HeaderTest):
+    name = 'Transfer-Encoding'
+    inputs = ['foo']
+    expected_out = (['foo'])
+    expected_err = [rs.TRANSFER_CODING_UNWANTED]
+    
+class TransferEncodingMultTest(rh.HeaderTest):
+    name = 'Transfer-Encoding'
+    inputs = ['chunked', 'identity']
+    expected_out = (['chunked', 'identity'])
+    expected_err = [rs.TRANSFER_CODING_IDENTITY]
+
+class TransferEncodingMultUnwantedTest(rh.HeaderTest):
+    name = 'Transfer-Encoding'
+    inputs = ['chunked', 'foo', 'bar']
+    expected_out = (['chunked', 'foo', 'bar'])
+    expected_err = [rs.TRANSFER_CODING_UNWANTED]
