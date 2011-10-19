@@ -65,7 +65,7 @@ rfc6266 = "http://www.apps.ietf.org/rfc/rfc6266.html#section-4"
 
 ### configuration
 max_hdr_size = 4 * 1024
-max_ttl_hdr = 20 * 1024
+max_ttl_hdr = 8 * 1000
 
 
 # Decorators for headers
