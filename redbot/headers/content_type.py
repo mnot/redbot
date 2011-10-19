@@ -43,4 +43,5 @@ def parse(name, values, red):
         media_type, params = values[-1], ''
     media_type = media_type.lower()
     param_dict = rh.parse_params(red, name, params, ['charset'])
+    # TODO: check charset to see if it's known
     return media_type, param_dict
