@@ -166,8 +166,10 @@ window.status="%s";
 <p class="version">this is RED %(version)s.</p>
 <p class="navigation">
 <a href="http://REDbot.org/about/">about</a> |
+<a href="#help" id="help"><strong>help</strong></a> |
 <a href="http://blog.REDbot.org/">blog</a> |
 <a href="http://REDbot.org/project">project</a> |
+<span class="help">Don't forget the bookmarklet - it makes checking easy!</span>
 <a href="javascript:location%%20=%%20'%(baseuri)s?uri='+encodeURIComponent(location);%%20void%%200"
 title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
 </p>
@@ -218,15 +220,20 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     # HTML template for the main response body
     template = u"""\
     <div id="left_column">
+    <span class="help">These are the response headers; hover over each one
+    for an explanation of what it does.</span>
     <pre id='response'>%(response)s</pre>
 
     <p class="options">
+        <span class='help'>Here, you can see the response body, a HAR document for the request, and when appropriate, validate the response or check its assets (such as referenced images, stylesheets and scripts).</span>
         %(options)s
     </p>
     </div>
 
     <div id="right_column">
     <div id='details'>
+    <span class='help'>These messages explain what REDbot has found about
+    your URL; hover over each one for a detailed explanation.</span>
     %(messages)s
     </div>
     </div>

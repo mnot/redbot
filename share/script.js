@@ -95,6 +95,18 @@ $(document).ready(function() {
     }
   });
 
+  /* help */
+  
+  $("#help").toggle(function () {
+    $(".help").fadeIn();
+  }, function() {
+    $(".help").fadeOut();
+  });
+
+  $(".help").click(function () {
+    $(this).fadeOut();
+  });
+
 
   /* single response display */
 

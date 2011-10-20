@@ -321,3 +321,43 @@ body.blank > .footer {
   font-size: 1.1em;
   max-width: 650px;
 }
+
+/* help bubbles */
+/* http://konigi.com/tools/css-sticky-notes */
+
+.help {
+  display: none;
+  -webkit-box-shadow: #DDD 0px 1px 2px;
+  position: absolute;
+  background-color: #F4F39E;
+  border-color: #DEE184;
+  color: #333;
+  text-align: center;
+  margin: 3.5em 0em 2.5em 0em;
+  padding: 1.25em 1em;
+  -webkit-box-shadow: 0px 1px 3px rgba(0,0,0,0.25);
+  -moz-box-shadow: 0px 1px 3px rgba(0,0,0,0.25);
+  box-shadow: 0px 1px 3px rgba(0,0,0,0.25);
+  font-family: Chalkboard, 'Comic Sans';
+  font-size: 14px;
+  width: 250px;
+}
+
+.help.right {
+  margin: 3em 0em 2.5em 290px;
+}
+
+.help:after {
+  display: block;
+  content: "";
+  position: absolute; 
+  width: 110px;
+  height: 30px;
+  top: -21px;
+  left: 30%;    
+  border: 1px solid #fff;
+  background: rgba(254, 254, 254, .6);
+  -webkit-box-shadow: 0px 0 3px rgba(0,0,0,0.1);
+  -moz-box-shadow: 0px 0 3px rgba(0,0,0,0.1);
+  box-shadow: 0px 0 3px rgba(0,0,0,0.1);  
+}
