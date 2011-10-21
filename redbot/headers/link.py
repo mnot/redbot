@@ -67,6 +67,12 @@ class BasicLinkTest(rh.HeaderTest):
     expected_out = ('http://www.example.com/', {'rel': 'example'})
     expected_err = []    
 
+class QuotedLinkTest(rh.HeaderTest):
+    name = 'Link'
+    inputs = ['"http://www.example.com/"; rel=example']
+    expected_out = None
+    expected_err = [rs.BAD_SYNTAX]
+
 class QuotedRelationLinkTest(rh.HeaderTest):
     name = 'Link'
     inputs = ['<http://www.example.com/>; rel="example"']
