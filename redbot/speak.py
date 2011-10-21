@@ -321,12 +321,12 @@ class ENCODING_UNWANTED(Message):
     category = c.CONNEG
     level = l.WARN
     summary = {
-     'en': u"The %(encoding)s content-coding wasn't asked for."
+     'en': u"%(response)s contained unwanted content-codings."
     }
     text = {
      'en': u"""%(response)s's <code>Content-Encoding</code> header indicates 
-     it has the %(encoding)s content-coding applied, but RED didn't ask for it
-     to be.<p>
+     it has content-codings applied (<code>%(unwanted_codings)s</code>) that
+     RED didn't ask for.<p>
      Normally, clients ask for the encodings they want in the
      <code>Accept-Encoding</code> request header. Using encodings that the
      client doesn't explicitly request can lead to interoperability 
@@ -360,6 +360,21 @@ class TRANSFER_CODING_UNWANTED(Message):
      <code>TE</code> request header. Using codings that the
      client doesn't explicitly request can lead to interoperability 
      problems."""
+    }
+
+class TRANSFER_CODING_PARAM(Message):
+    category = c.CONNECTION
+    level = l.WARN
+    summary = {
+     'en': u"The %(encoding)s transfer-coding has parameters."
+    }
+    text = {
+     'en': u"""%HTTP allows transfer-codings in the
+     <code>Transfer-Encoding</code> header to have optional parameters,
+     but it doesn't define what they mean.<p>
+     %(response)s has a <code>%(encoding)s</code> with such paramters;
+     although they're technically allowed, they may cause interoperability
+     problems. They should be removed."""
     }
 
 class BAD_DATE_SYNTAX(Message):

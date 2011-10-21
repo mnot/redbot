@@ -34,23 +34,47 @@ import redbot.http_syntax as syntax
 @rh.CheckFieldSyntax(syntax.TOK_PARAM, rh.rfc2616 % "sec-14.41")
 # TODO: accommodate transfer-parameters
 def parse(name, values, red):
-    values = [v.lower() for v in values]
-    if 'identity' in values:
-        red.set_message(name, rs.TRANSFER_CODING_IDENTITY)
+    codings = []
+    unwanted_codings = set()
     for value in values:
+        try:
+            coding, params = value.split(";", 1)
+        except ValueError:
+            coding, params = value, ""
+        coding = coding.lower()
+        codings.append(coding)
+        param_dict = rh.parse_params(red, name, params, True)
+        if param_dict:
+            red.set_message(name, rs.TRANSFER_CODING_PARAM,
+                encoding=e(coding))
         # check to see if there are any non-chunked encodings, because
         # that's the only one we ask for.
-        if value not in ['chunked', 'identity']:
-            red.set_message(name, rs.TRANSFER_CODING_UNWANTED,
-                            encoding=e(value))
-            break
-    return values
+        if coding not in ['chunked', 'identity']:
+            unwanted_codings.add(coding)
+    if unwanted_codings:
+        red.set_message(name, rs.TRANSFER_CODING_UNWANTED,
+                encoding=e(", ".join(unwanted_codings)))
+    if 'identity' in codings:
+        red.set_message(name, rs.TRANSFER_CODING_IDENTITY)
+    return codings
 
 class TransferEncodingTest(rh.HeaderTest):
     name = 'Transfer-Encoding'
     inputs = ['chunked']
     expected_out = (['chunked'])
     expected_err = []
+
+class TransferEncodingParamTest(rh.HeaderTest):
+    name = 'Transfer-Encoding'
+    inputs = ['chunked; foo=bar']
+    expected_out = (['chunked'])
+    expected_err = [rs.TRANSFER_CODING_PARAM]
+
+class BadTransferEncodingTest(rh.HeaderTest):
+    name = 'Transfer-Encoding'
+    inputs = ['chunked=foo']
+    expected_out = None
+    expected_err = [rs.BAD_SYNTAX]
 
 class TransferEncodingCaseTest(rh.HeaderTest):
     name = 'Transfer-Encoding'
