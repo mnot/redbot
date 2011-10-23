@@ -36,8 +36,41 @@ import redbot.http_syntax as syntax
     r'(?:[10](?:\s*;\s*%(PARAMETER)s)*)' % syntax.__dict__, 'http://blogs.msdn.com/b/ieinternals/archive/2011/01/31/controlling-the-internet-explorer-xss-filter-with-the-x-xss-protection-http-header.aspx'
 )
 def parse(name, values, red):
-    if int(values[-1].split(';', 1)[0]) == 0:
-        red.set_message(name, rs.XSS_PROTECTION)
-    elif values[-1].split(';', 1)[1].strip() == 'mode=block': # 1
-        red.set_message(name, rs.XSS_PROTECTION_BLOCK)
-    return values[-1]
+    try:
+        protect, params = values[-1].split(';', 1)
+    except ValueError:
+        protect, params = values[-1], ""
+    protect = int(protect)
+    params = rh.parse_params(red, name, params, True)
+    if protect == 0:
+        red.set_message(name, rs.XSS_PROTECTION_OFF)
+    else: # 1
+        if params.get('mode', None) == "block":
+            red.set_message(name, rs.XSS_PROTECTION_BLOCK)
+        else:
+            red.set_message(name, rs.XSS_PROTECTION_ON)
+    return protect, params
+
+class OneXXSSTest(rh.HeaderTest):
+    name = 'X-XSS-Protection'
+    inputs = ['1']
+    expected_out = (1, {})
+    expected_err = [rs.XSS_PROTECTION_ON]
+
+class ZeroXXSSTest(rh.HeaderTest):
+    name = 'X-XSS-Protection'
+    inputs = ['0']
+    expected_out = (0, {})
+    expected_err = [rs.XSS_PROTECTION_OFF]
+
+class OneBlockXXSSTest(rh.HeaderTest):
+    name = 'X-XSS-Protection'
+    inputs = ['1; mode=block']
+    expected_out = (1, {'mode': 'block'})
+    expected_err = [rs.XSS_PROTECTION_BLOCK]
+    
+class BadXXSSTest(rh.HeaderTest):
+    name = 'X-XSS-Protection'
+    inputs = ['foo']
+    expected_out = None
+    expected_err = [rs.BAD_SYNTAX]

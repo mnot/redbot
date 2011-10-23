@@ -668,7 +668,25 @@ class UA_COMPATIBLE_REPEAT(Message):
      See <a href="http://msdn.microsoft.com/en-us/library/cc288325(VS.85).aspx">this blog entry</a> for more information."""
     }
 
-class XSS_PROTECTION(Message):
+class XSS_PROTECTION_ON(Message):
+    category = c.GENERAL
+    level = l.INFO
+    summary = {
+     'en': u"%(response)s enables XSS filtering in IE8+."
+    }
+    text = {
+     'en': u"""Recent versions of Internet Explorer have built-in Cross-Site
+     Scripting (XSS) attack protection; they try to automatically filter
+     requests that fit a particular profile.<p>
+     %(response)s has explicitly enabled this protection. If IE detects a
+     Cross-site scripting attack, it will "sanitise" the page to prevent
+     the attack. In other words, the page will still render.<p>
+     This header probably won't have any effect on other clients.<p>
+     See <a href="http://blogs.msdn.com/b/ieinternals/archive/2011/01/31/controlling-the-internet-explorer-xss-filter-with-the-x-xss-protection-http-header.aspx">this blog entry</a> for more information.
+     """
+    }
+
+class XSS_PROTECTION_OFF(Message):
     category = c.GENERAL
     level = l.INFO
     summary = {
