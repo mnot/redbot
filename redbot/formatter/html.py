@@ -169,7 +169,7 @@ window.status="%s";
 <a href="#help" id="help"><strong>help</strong></a> |
 <a href="http://blog.REDbot.org/">blog</a> |
 <a href="http://REDbot.org/project">project</a> |
-<span class="help">Don't forget the bookmarklet - it makes checking easy!</span>
+<span class="help">Drag the bookmarklet to your bookmark bar - it makes checking easy!</span>
 <a href="javascript:location%%20=%%20'%(baseuri)s?uri='+encodeURIComponent(location);%%20void%%200"
 title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
 </p>
@@ -232,8 +232,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 
     <div id="right_column">
     <div id='details'>
-    <span class='help'>These messages explain what REDbot has found about
-    your URL; hover over each one for a detailed explanation.</span>
+    <span class='help right'>These messages explain what REDbot has found
+    about your URL; hover over each one for a detailed explanation.</span>
     %(messages)s
     </div>
     </div>

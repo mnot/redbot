@@ -28,9 +28,9 @@
     <h1><a href="?"><span class="hilight"><abbr title="Resource Expert Droid">RED</abbr></span>bot</a>%(extra_title)s</h1>
 
     <form method="GET" id="request_form">
-        <span class="help right">Type in a URI here to check it. You can
-        also specify request headers by clicking 'add a request
-        header.'</span>
+        <span class="help right">Type in a URI here and press 'return' to
+        check it. You can also specify request headers by clicking 'add a
+        request header.'</span>
         <input type="url" name="uri" value="%(html_uri)s" id="uri"/><br />
         <div id="req_hdrs"></div>
         <div class="add_req_hdr">
