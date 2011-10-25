@@ -88,6 +88,12 @@ class RedState(object):
             self.res_error = httperr.UrlError(why)
             self.uri = None
 
+    def __repr__(self):
+        status = [self.__class__.__module__ + "." + self.__class__.__name__]
+        status.append("%s {%s}" % (self.method, self.uri))
+        status.append("type %s" % self.type)
+        return "<%s at %#x>" % (", ".join(status), id(self))
+
     def __getstate__(self):
         state = self.__dict__.copy()
         if state.has_key('set_message'):
