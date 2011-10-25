@@ -53,7 +53,7 @@ def parse(name, values, red):
             unwanted_codings.add(coding)
     if unwanted_codings:
         red.set_message(name, rs.TRANSFER_CODING_UNWANTED,
-                encoding=e(", ".join(unwanted_codings)))
+                unwanted_codings=e(", ".join(unwanted_codings)))
     if 'identity' in codings:
         red.set_message(name, rs.TRANSFER_CODING_IDENTITY)
     return codings
