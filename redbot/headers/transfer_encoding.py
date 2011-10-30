@@ -45,8 +45,7 @@ def parse(name, values, red):
         codings.append(coding)
         param_dict = rh.parse_params(red, name, params, True)
         if param_dict:
-            red.set_message(name, rs.TRANSFER_CODING_PARAM,
-                encoding=e(coding))
+            red.set_message(name, rs.TRANSFER_CODING_PARAM)
         # check to see if there are any non-chunked encodings, because
         # that's the only one we ask for.
         if coding not in ['chunked', 'identity']:

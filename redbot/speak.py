@@ -350,12 +350,13 @@ class TRANSFER_CODING_UNWANTED(Message):
     category = c.CONNECTION
     level = l.BAD
     summary = {
-     'en': u"The %(encoding)s transfer-coding wasn't asked for."
+     'en': u"%(response)s has unsupported transfer-coding."
     }
     text = {
      'en': u"""%(response)s's <code>Transfer-Encoding</code> header indicates 
-     it has the %(encoding)s transfer-coding applied, but RED didn't ask for 
-     it to be.<p>
+     it has transfer-codings applied, but RED didn't ask for 
+     it (or them) to be.<p>
+     They are: <code>%(unwanted_codings)s</code><p>
      Normally, clients ask for the encodings they want in the
      <code>TE</code> request header. Using codings that the
      client doesn't explicitly request can lead to interoperability 
@@ -366,13 +367,13 @@ class TRANSFER_CODING_PARAM(Message):
     category = c.CONNECTION
     level = l.WARN
     summary = {
-     'en': u"The %(encoding)s transfer-coding has parameters."
+     'en': u"%(response)s had parameters on its transfer-codings."
     }
     text = {
-     'en': u"""%HTTP allows transfer-codings in the
+     'en': u"""HTTP allows transfer-codings in the
      <code>Transfer-Encoding</code> header to have optional parameters,
      but it doesn't define what they mean.<p>
-     %(response)s has a <code>%(encoding)s</code> with such paramters;
+     %(response)s has encodings with such paramters;
      although they're technically allowed, they may cause interoperability
      problems. They should be removed."""
     }

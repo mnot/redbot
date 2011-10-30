@@ -38,7 +38,10 @@ def parse(name, values, red):
         # check to see if there are any non-gzip encodings, because
         # that's the only one we ask for.
         if value != 'gzip':
-            red.set_message(name, rs.ENCODING_UNWANTED, encoding=e(value))
+            red.set_message(name, 
+                rs.ENCODING_UNWANTED, 
+                unwanted_codings=e(value)
+            )
             break
     return values
     
