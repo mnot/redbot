@@ -423,4 +423,8 @@ class HeaderTest(unittest.TestCase):
             [n.__name__ for n in self.expected_err]).symmetric_difference(
             set(self.red.msg_classes)
         )
+        for msg in self.red.messages: # check formatting
+            msg.vars.update({'field_name': self.name, 'response': 'response'})
+            msg.text['en'] % msg.vars
+            msg.summary['en'] % msg.vars
         self.assertEqual(len(diff), 0, "Mismatched messages: %s" % diff)
