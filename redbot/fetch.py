@@ -271,10 +271,9 @@ class RedFetcher(object):
 #        elif isinstance(error, httperr.ExtraDataErr):
 #            state.res_body_len += len(err.get('detail', ''))
         elif isinstance(error, httperr.ChunkError):
+            err_msg = error.detail[:20] or ""
             state.set_message('header-transfer-encoding', rs.BAD_CHUNK,
-                chunk_sample=e(
-                    error.get('detail', '')[:20].encode('string_escape')
-                )
+                chunk_sample=e(err_msg.encode('string_escape'))
             )
         self.done()
         self.finish_task()
