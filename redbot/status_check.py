@@ -105,6 +105,7 @@ class ResponseStatusChecker:
     def status206(self):        # Partial Content
         if not "range" in thor.http.header_dict(self.red.req_hdrs).keys():
             self.set_message('', rs.PARTIAL_NOT_REQUESTED)
+        if not self.red.parsed_hdrs.has_key('content-range'):
             self.set_message('header-location', rs.PARTIAL_WITHOUT_RANGE)
     def status207(self):        # Multi-Status
         pass
