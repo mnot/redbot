@@ -44,7 +44,7 @@ class BaseTextFormatter(Formatter):
     media_type = "text/plain"
 
     msg_categories = [
-        rs.c.GENERAL, rs.c.CONNECTION, rs.c.CONNEG, 
+        rs.c.GENERAL, rs.c.SECURITY, rs.c.CONNECTION, rs.c.CONNEG, 
         rs.c.CACHING, rs.c.VALIDATION, rs.c.RANGE
     ]
 

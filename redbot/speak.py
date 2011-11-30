@@ -46,6 +46,7 @@ THE SOFTWARE.
 # message classifications
 class _Classifications:
     GENERAL = u"General"
+    SECURITY = u"Security"
     CONNEG = u"Content Negotiation"
     CACHING = u"Caching"
     VALIDATION = u"Validation"
@@ -524,7 +525,7 @@ class LOCATION_NOT_ABSOLUTE(Message):
     }
 
 class CONTENT_TYPE_OPTIONS(Message):
-    category = c.GENERAL
+    category = c.SECURITY
     level = l.INFO
     summary = {
      'en': u"%(response)s instructs Internet Explorer not to 'sniff' its media type."
@@ -541,7 +542,7 @@ class CONTENT_TYPE_OPTIONS(Message):
     }
 
 class CONTENT_TYPE_OPTIONS_UNKNOWN(Message):
-    category = c.GENERAL
+    category = c.SECURITY
     level = l.WARN
     summary = {
      'en': u"%(response)s contains an X-Content-Type-Options header with an unknown value."
@@ -554,7 +555,7 @@ class CONTENT_TYPE_OPTIONS_UNKNOWN(Message):
     }
 
 class DOWNLOAD_OPTIONS(Message):
-    category = c.GENERAL
+    category = c.SECURITY
     level = l.INFO
     summary = {
      'en': u"%(response)s can't be directly opened directly by Internet Explorer when downloaded."
@@ -571,7 +572,7 @@ class DOWNLOAD_OPTIONS(Message):
     }
 
 class DOWNLOAD_OPTIONS_UNKNOWN(Message):
-    category = c.GENERAL
+    category = c.SECURITY
     level = l.WARN
     summary = {
      'en': u"%(response)s contains an X-Download-Options header with an unknown value."
@@ -584,7 +585,7 @@ class DOWNLOAD_OPTIONS_UNKNOWN(Message):
     }
 
 class FRAME_OPTIONS_DENY(Message):
-    category = c.GENERAL
+    category = c.SECURITY
     level = l.INFO
     summary = {
      'en': u"%(response)s prevents some browsers from rendering it if it will be contained within a frame."
@@ -600,7 +601,7 @@ class FRAME_OPTIONS_DENY(Message):
     }
 
 class FRAME_OPTIONS_SAMEORIGIN(Message):
-    category = c.GENERAL
+    category = c.SECURITY
     level = l.INFO
     summary = {
      'en': u"%(response)s prevents some browsers from rendering it if it will be contained within a frame on another site."
@@ -616,7 +617,7 @@ class FRAME_OPTIONS_SAMEORIGIN(Message):
     }
 
 class FRAME_OPTIONS_UNKNOWN(Message):
-    category = c.GENERAL
+    category = c.SECURITY
     level = l.WARN
     summary = {
      'en': u"%(response)s contains an X-Frame-Options header with an unknown value."
@@ -670,7 +671,7 @@ class UA_COMPATIBLE_REPEAT(Message):
     }
 
 class XSS_PROTECTION_ON(Message):
-    category = c.GENERAL
+    category = c.SECURITY
     level = l.INFO
     summary = {
      'en': u"%(response)s enables XSS filtering in IE8+."
@@ -688,7 +689,7 @@ class XSS_PROTECTION_ON(Message):
     }
 
 class XSS_PROTECTION_OFF(Message):
-    category = c.GENERAL
+    category = c.SECURITY
     level = l.INFO
     summary = {
      'en': u"%(response)s disables XSS filtering in IE8+."
@@ -706,7 +707,7 @@ class XSS_PROTECTION_OFF(Message):
     }
 
 class XSS_PROTECTION_BLOCK(Message):
-    category = c.GENERAL
+    category = c.SECURITY
     level = l.INFO
     summary = {
      'en': u"%(response)s blocks XSS attacks in IE8+."
