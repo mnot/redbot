@@ -2309,6 +2309,76 @@ class LINK_BAD_ANCHOR(Message):
      """
     }
 
+class SET_COOKIE_NO_VAL(Message):
+    category = c.GENERAL
+    level=l.BAD
+    summary = {
+     'en': u"%(response)s has a Set-Cookie header that can't be parsed."
+    }
+    text = {
+     'en': u""""""
+    }
+
+class SET_COOKIE_NO_NAME(Message):
+    category = c.GENERAL
+    level=l.BAD
+    summary = {
+     'en': u"%(response)s has a Set-Cookie header without a cookie-name."
+    }
+    text = {
+     'en': u""""""
+    }
+
+class SET_COOKIE_BAD_DATE(Message):
+    category = c.GENERAL
+    level=l.WARN
+    summary = {
+     'en': u"The %(cookie_name)s Set-Cookie header has an invalid Expires date."
+    }
+    text = {
+     'en': u""""""
+    }
+
+class SET_COOKIE_EMPTY_MAX_AGE(Message):
+    category = c.GENERAL
+    level=l.WARN
+    summary = {
+     'en': u"The %(cookie_name)s Set-Cookie header has an empty Max-Age."
+    }
+    text = {
+     'en': u""""""
+    }
+
+class SET_COOKIE_NON_DIGIT_MAX_AGE(Message):
+    category = c.GENERAL
+    level=l.WARN
+    summary = {
+     'en': u"The %(cookie_name)s Set-Cookie header has a non-numeric Max-Age."
+    }
+    text = {
+     'en': u""""""
+    }
+
+class SET_COOKIE_EMPTY_DOMAIN(Message):
+    category = c.GENERAL
+    level=l.WARN
+    summary = {
+     'en': u"The %(cookie_name)s Set-Cookie header has an empty domain."
+    }
+    text = {
+     'en': u""""""
+    }
+
+class SET_COOKIE_UNKNOWN_ATTRIBUTE(Message):
+    category = c.GENERAL
+    level=l.WARN
+    summary = {
+     'en': u"The %(cookie_name)s Set-Cookie header has an unknown attribute, '%(attribute)s'."
+    }
+    text = {
+     'en': u""""""
+    }
+
 
 if __name__ == '__main__':
     # do a sanity check on all of the defined messages
