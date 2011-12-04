@@ -98,7 +98,7 @@ def SingleFieldValue(func):
     def new(name, values, red):
         if len(values) > 1:
             red.set_message(name, rs.SINGLE_HEADER_REPEAT)
-        return func(name, values, red)
+        return func(name, [values[-1]], red)
     return new
 
 
