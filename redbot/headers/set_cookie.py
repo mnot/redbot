@@ -41,7 +41,7 @@ def parse(name, values, red):
         try:
             set_cookie = loose_parse(set_cookie_string, path, red.res_done_ts)
         except ValueError:
-            pass
+            continue
         set_cookies.append(set_cookie)
     return set_cookies
     
