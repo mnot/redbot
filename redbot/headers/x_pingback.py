@@ -30,7 +30,10 @@ import redbot.headers as rh
 import redbot.http_syntax as syntax
 
 
-@rh.SingleFieldValue
-def parse(name, values, red):
+def parse(subject, value, red):
     #TODO: message, perhaps allow a ping
-    pass
+    return value
+
+@rh.SingleFieldValue
+def join(subject, values, red):
+    return values[-1]

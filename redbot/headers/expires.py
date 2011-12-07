@@ -30,15 +30,18 @@ import redbot.headers as rh
 import redbot.http_syntax as syntax
 
 
-
-@rh.SingleFieldValue
-def parse(name, values, red):
+def parse(subject, value, red):
     try:
-        date = rh.parse_date(values)
+        date = rh.parse_date(value)
     except ValueError:
-        red.set_message(name, rs.BAD_DATE_SYNTAX)
+        red.set_message(subject, rs.BAD_DATE_SYNTAX)
         return None
     return date
+    
+@rh.SingleFieldValue
+def join(subject, values, red):
+    return values[-1]
+
     
 class BasicExpiresTest(rh.HeaderTest):
     name = 'Expires'

@@ -31,13 +31,15 @@ import redbot.http_syntax as syntax
 
 
 @rh.GenericHeaderSyntax
-def parse(name, values, red):
-    values = [v.lower() for v in values]
-    for value in values:
-        if value not in ['bytes', 'none']:
-            red.set_message(name, rs.UNKNOWN_RANGE)
-            break
+def parse(subject, value, red):
+    value = value.lower()
+    if value not in ['bytes', 'none']:
+        red.set_message(subject, rs.UNKNOWN_RANGE, range=e(value))
+    return value
+    
+def join(subject, values, red):
     return values
+
 
 class AcceptRangeTest(rh.HeaderTest):
     name = 'Accept-Ranges'

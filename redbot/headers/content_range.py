@@ -30,8 +30,12 @@ import redbot.headers as rh
 import redbot.http_syntax as syntax
 
 
-def parse(name, values, red):
+def parse(subject, value, red):
     # TODO: check syntax, values?
     if red.res_status not in ["206", "416"]:
-        red.set_message(name, rs.CONTENT_RANGE_MEANINGLESS)
+        red.set_message(subject, rs.CONTENT_RANGE_MEANINGLESS)
+    return value
+
+@rh.SingleFieldValue    
+def join(subject, values, red):
     return values

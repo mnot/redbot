@@ -32,18 +32,19 @@ import redbot.http_syntax as syntax
 
 @rh.GenericHeaderSyntax
 @rh.CheckFieldSyntax(syntax.TOKEN, rh.rfc2616 % "sec-14.11")
-def parse(name, values, red):
-    values = [v.lower() for v in values]
-    for value in values:
-        # check to see if there are any non-gzip encodings, because
-        # that's the only one we ask for.
-        if value != 'gzip':
-            red.set_message(name, 
-                rs.ENCODING_UNWANTED, 
-                unwanted_codings=e(value)
-            )
-            break
+def parse(subject, value, red):
+    # check to see if there are any non-gzip encodings, because
+    # that's the only one we ask for.
+    if value.lower() != 'gzip':
+        red.set_message(subject, 
+            rs.ENCODING_UNWANTED, 
+            unwanted_codings=e(value)
+        )
+    return value.lower()
+    
+def join(subject, values, red):
     return values
+
     
 class ContentEncodingTest(rh.HeaderTest):
     name = 'Content-Encoding'

@@ -32,52 +32,55 @@ import redbot.http_syntax as syntax
 
 @rh.GenericHeaderSyntax
 @rh.CheckFieldSyntax(syntax.PARAMETER, rh.rfc2616 % "sec-14.9")
-def parse(name, values, red):
-    directives = set()
-    for directive in values:
+def parse(subject, value, red):
+    try:
+        directive_name, directive_val = value.split("=", 1)
+        directive_val = rh.unquote_string(directive_val)
+    except ValueError:
+        directive_name = value
+        directive_val = None
+    directive_name = directive_name.lower()
+    # TODO: warn on upper-cased directives?
+    if directive_name in ['max-age', 's-maxage']:
         try:
-            attr, value = directive.split("=", 1)
-            value = rh.unquote_string(value)
-        except ValueError:
-            attr = directive
-            value = None
-        attr = attr.lower()
-        # TODO: warn on upper-cased directives?
-        if attr in ['max-age', 's-maxage']:
-            try:
-                value = int(value)
-            except (ValueError, TypeError):
-                red.set_message(name, rs.BAD_CC_SYNTAX, bad_cc_attr=attr)
-                continue
-        directives.add((attr, value))
-    return directives
+            directive_val = int(directive_val)
+        except (ValueError, TypeError):
+            red.set_message(subject, rs.BAD_CC_SYNTAX,
+                            bad_cc_attr=directive_name
+            )
+            return None
+    return (directive_name, directive_val)
+
+def join(subject, values, red):
+    return set(values)
+
     
 class CacheControlTest(rh.HeaderTest):
     name = 'Cache-Control'
     inputs = ['a=b, c=d', 'e=f', 'g']
-    expected_out = (set([('a', 'b'), ('c', 'd'), ('e', 'f'), ('g', None)]))
+    expected_out = set([('a', 'b'), ('c', 'd'), ('e', 'f'), ('g', None)])
     expected_err = []
 
 class CacheControlCaseTest(rh.HeaderTest):
     name = 'Cache-Control'
     inputs = ['A=b, c=D']
-    expected_out = (set([('a', 'b'), ('c', 'D')]))
+    expected_out = set([('a', 'b'), ('c', 'D')])
     expected_err = []
 
 class CacheControlQuotedTest(rh.HeaderTest):
     name = 'Cache-Control'
     inputs = ['a="b,c", c=d']
-    expected_out = (set([('a', 'b,c'), ('c', 'd')]))
+    expected_out = set([('a', 'b,c'), ('c', 'd')])
     expected_err = []
 
 class CacheControlMaxAgeTest(rh.HeaderTest):
     name = 'Cache-Control'
     inputs = ['max-age=5']
-    expected_out = (set([('max-age', 5)]))
+    expected_out = set([('max-age', 5)])
     expected_err = []
 
 class CacheControlBadMaxAgeTest(rh.HeaderTest):
     name = 'Cache-Control'
     inputs = ['max-age=foo']
-    expected_out = (set([]))
+    expected_out = set([])
     expected_err = [rs.BAD_CC_SYNTAX]

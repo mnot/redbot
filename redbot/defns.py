@@ -472,3 +472,13 @@ HDR_WWW_AUTHENTICATE = {
         parameters applicable."""
 }
 
+HDR_SET_COOKIE = {
+    'en': u"""The <code>Set-Cookie</code> response header sets
+    a stateful "cookie" on the client, to be included in future
+    requests to the server."""
+}
+
+HDR_SET_COOKIE2 = {
+    'en': u"""The <code>Set-Cookie2</code> header has been 
+        deprecated; use <code>Set-Cookie</code> instead."""
+}

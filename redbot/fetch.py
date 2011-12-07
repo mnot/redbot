@@ -166,8 +166,8 @@ class RedFetcher(object):
         redbot.headers.process_headers(state)
         redbot.status_check.ResponseStatusChecker(state)
         state.res_body_enc = state.parsed_hdrs.get(
-            'content-type', [None, {}]
-        )[1].get('charset', 'utf-8') # default isn't really UTF-8, but oh well
+            'content-type', (None, {})
+        )[1].get('charset', 'utf-8') # default isn't UTF-8, but oh well
 
     def _response_body(self, chunk):
         "Process a chunk of the response body."

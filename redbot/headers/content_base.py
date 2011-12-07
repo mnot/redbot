@@ -30,7 +30,13 @@ import redbot.headers as rh
 import redbot.http_syntax as syntax
 
 
+def parse(subject, value, red):
+    red.set_message(subject, 
+                    rs.HEADER_DEPRECATED, 
+                    ref=rh.rfc2616 % "sec-19.6.3"
+    )
+    return value
+    
 @rh.SingleFieldValue
-def parse(name, values, red):
-    red.set_message(name, rs.HEADER_DEPRECATED, ref=rh.rfc2616 % "sec-19.6.3")
+def join(subject, values, red):
     return values[-1]

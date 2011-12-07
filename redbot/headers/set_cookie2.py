@@ -30,13 +30,13 @@ import redbot.headers as rh
 import redbot.http_syntax as syntax
 
 
-@rh.GenericHeaderSyntax
 def parse(subject, value, red):
+    red.set_message(subject, 
+                    rs.HEADER_DEPRECATED, 
+                    ref=rh.rfc6265 % "section-9.4"
+    )
     return value
     
+@rh.SingleFieldValue
 def join(subject, values, red):
-    if 'nosniff' in values:
-        red.set_message(subject, rs.CONTENT_TYPE_OPTIONS)
-    else:
-        red.set_message(subject, rs.CONTENT_TYPE_OPTIONS_UNKNOWN)
-    return values
+    return values[-1]

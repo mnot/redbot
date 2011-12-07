@@ -61,6 +61,7 @@ import redbot.speak as rs
 # base URLs for references
 rfc2616 = "http://www.apps.ietf.org/rfc/rfc2616.html#%s"
 rfc5988 = "http://www.apps.ietf.org/rfc/rfc5988.html#section-5"
+rfc6265 = "http://www.apps.ietf.org/rfc/rfc6265.html#%s"
 rfc6266 = "http://www.apps.ietf.org/rfc/rfc6266.html#section-4"
 
 ### configuration
@@ -72,50 +73,54 @@ max_ttl_hdr = 8 * 1000
 
 def GenericHeaderSyntax(func):
     """
-    Decorator to take a list of header values, split on commas (except where
-    escaped) and return a list of header field-values. This will not work for
-    Set-Cookie (which contains an unescaped comma) and similar headers
-    containing bare dates.
+    Decorator for parse; to take a list of header values, split on commas
+    (except where escaped) and return a list of header field-values. This will
+    not work for Set-Cookie (which contains an unescaped comma) and similar
+    headers containing bare dates.
 
     E.g.,
       ["foo,bar", "baz, bat"]
     becomes
       ["foo", "bar", "baz", "bat"]
     """
-    def new(name, values, red):
-        values = sum(
-            [[f.strip() for f in re.findall(r'((?:[^",]|%s)+)(?=%s|\s*$)' %
-             (syntax.QUOTED_STRING, syntax.COMMA), v)] for v in values], []
-        ) or ['']
-        return func(name, values, red)
-    return new
+    assert func.__name__ == 'parse', func.__name__
+    def split_generic_syntax(value):
+        return [f.strip() for f in re.findall(r'((?:[^",]|%s)+)(?=%s|\s*$)' %
+             (syntax.QUOTED_STRING, syntax.COMMA), value)] or ['']
+    func.pre_parse = split_generic_syntax
+    return func
 
 
 def SingleFieldValue(func):
     """
     Decorator to make sure that there's only one value.
     """
-    def new(name, values, red):
+    assert func.__name__ == 'join', func.__name__
+    def new(subject, values, red):
+        if values == []: # weird, yes
+            values = [None]
         if len(values) > 1:
-            red.set_message(name, rs.SINGLE_HEADER_REPEAT)
-        return func(name, values, red)
+            red.set_message(subject, rs.SINGLE_HEADER_REPEAT)
+        return func(subject, values, red)
+    new.__name__ = func.__name__
     return new
 
 
 def CheckFieldSyntax(exp, ref):
     """
-    Decorator to check each header field-value to conform to the regex exp,
-    and if not to point users to url ref.
+    Decorator for parse; to check each header field-value to conform to the
+    regex exp, and if not to point users to url ref.
     """
     def wrap(func):
-        def new(name, values, red):
-            for value in values:
-                if not re.match(r"^\s*(?:%s)\s*$" % exp, value, re.VERBOSE):
-                    red.set_message(name, rs.BAD_SYNTAX, ref_uri=ref)
-                    def bad_syntax(name, values, red):
-                        return None
-                    return bad_syntax(name, values, red)
-            return func(name, values, red)
+        assert func.__name__ == 'parse', func.__name__
+        def new(subject, value, red):
+            if not re.match(r"^\s*(?:%s)\s*$" % exp, value, re.VERBOSE):
+                red.set_message(subject, rs.BAD_SYNTAX, ref_uri=ref)
+                def bad_syntax(subject, value, red):
+                    return None
+                return bad_syntax(subject, value, red)
+            return func(subject, value, red)
+        new.__name__ = func.__name__
         return new
     return wrap
 
@@ -129,66 +134,79 @@ def process_headers(red):
     Populates parsed_hdrs, and replaces res_hdrs with unicode-cleaned one
     """
 
-    # TODO: clean up this hack
-    old_set_message = red.set_message
-    def set_message(name, msg, **kw):
-        ident = 'header-%s' % name.lower()
-        old_set_message(ident, msg, field_name=name, **kw)
-    red.set_message = set_message
-
     hdr_dict = {}
     header_block_size = len(red.res_phrase) + 13
     clean_res_hdrs = []
     parsed_hdrs = {}
+    offset = 0
     for name, value in red.res_hdrs:
+        offset += 1
+        subject = "offset-%s" % offset
         hdr_size = len(name) + len(value)
         if hdr_size > max_hdr_size:
-            set_message(name.lower(), rs.HEADER_TOO_LARGE,
+            set_message(subject, rs.HEADER_TOO_LARGE,
                        header_name=name, header_size=f_num(hdr_size))
         header_block_size += hdr_size
+        
+        # decode the header to make it unicode clean
         try:
             name = name.decode('ascii', 'strict')
         except UnicodeError:
             name = name.decode('ascii', 'ignore')
-            set_message('%s' % name.lower(), rs.HEADER_NAME_ENCODING,
+            set_message(subject, rs.HEADER_NAME_ENCODING,
                        header_name=name)
         try:
             value = value.decode('ascii', 'strict')
         except UnicodeError:
             value = value.decode('iso-8859-1', 'replace')
-            set_message('%s' % name.lower(), rs.HEADER_VALUE_ENCODING,
+            set_message(subject, rs.HEADER_VALUE_ENCODING,
                        header_name=name)
         clean_res_hdrs.append((name, value))
+        
+        # check field name syntax
         if not re.match("^\s*%s\s*$" % syntax.TOKEN, name):
-                        set_message(name, rs.FIELD_NAME_BAD_SYNTAX)
+                        set_message(subject, rs.FIELD_NAME_BAD_SYNTAX)
+
+        # parse the header
         norm_name = name.lower()
         value = value.strip()
-        if hdr_dict.has_key(norm_name):
-            hdr_dict[norm_name][1].append(value)
-        else:
-            hdr_dict[norm_name] = (name, [value])
+        hdr_parse = load_header_func(norm_name, 'parse')
+        if hdr_parse:
+            if hasattr(hdr_parse, 'pre_parse'):
+                values = hdr_parse.pre_parse(value)
+            else:
+                values = [value]
+            for value in values:
+                if not hdr_dict.has_key(norm_name):
+                    hdr_dict[norm_name] = (name, [])
+                parsed_value = hdr_parse(subject, value, red)
+                if parsed_value != None:
+                    hdr_dict[norm_name][1].append(parsed_value)
+        
     # replace the original header tuple with ones that are clean unicode
     red.res_hdrs = clean_res_hdrs
+
+    # join parsed header values
+    for nn, (fn, values) in hdr_dict.items():
+        hdr_join = load_header_func(nn, 'join')
+        if hdr_join:
+            subject = "header-%s" % nn
+            joined_value = hdr_join(subject, values, red)
+            parsed_hdrs[nn] = joined_value
+    red.parsed_hdrs = parsed_hdrs
+
     # check the total header block size
     if header_block_size > max_ttl_hdr:
         set_message('header', rs.HEADER_BLOCK_TOO_LARGE,
                    header_block_size=f_num(header_block_size))
-    # Build a dictionary of header values
-    for nn, (fn, values) in hdr_dict.items():
-        hdr_parse = load_parser(nn)
-        if hdr_parse:
-            parsed_value = hdr_parse(fn, values, red)
-            if parsed_value != None:
-                parsed_hdrs[nn] = parsed_value
-    red.parsed_hdrs = parsed_hdrs
-    red.set_message = old_set_message
 
 
-def load_parser(name):
+
+def load_header_func(header_name, func):
     """
     Return a header parser for the given field name.
     """
-    name_token = name.replace('-', '_')
+    name_token = header_name.replace('-', '_')
     # anything starting with an underscore or with any caps won't match
     try:
         __import__("redbot.headers.%s" % name_token)
@@ -196,15 +214,15 @@ def load_parser(name):
     except ImportError:
         return # we don't recognise the header.
     try:
-        return hdr_module.parse
+        return getattr(hdr_module, func)
     except AttributeError:
-        raise RuntimeError, "Can't find parser for %s header." % fn
+        raise RuntimeError, "Can't find %s for %s header." % \
+            (func, header_name)
 
 
 
-def parse_date(values):
+def parse_date(value):
     """Parse a HTTP date. Raises ValueError if it's bad."""
-    value = values[-1]
     if not re.match(r"%s$" % syntax.DATE, value, re.VERBOSE):
         raise ValueError
     date_tuple = lib_parsedate(value)
@@ -251,12 +269,12 @@ def split_string(instr, item, split):
         r'%s(?=%s|\s*$)' % (item, split), instr
     )]
 
-def parse_params(red, name, instr, nostar=None, delim=";"):
+def parse_params(red, subject, instr, nostar=None, delim=";"):
     """
     Parse parameters into a dictionary.
 
     @param red: the red instance to use
-    @param name: the header field name
+    @param subject: the subject identifier
     @param instr: string to be parsed
     @param nostar: list of parameters that definitely don't get a star. If
                    True, no parameter can be starred.
@@ -273,9 +291,9 @@ def parse_params(red, name, instr, nostar=None, delim=";"):
             continue
         k_norm = k.lower() # TODO: warn on upper-case in param?
         if param_dict.has_key(k_norm):
-            red.set_message(name, rs.PARAM_REPEATS, param=e(k_norm))
+            red.set_message(subject, rs.PARAM_REPEATS, param=e(k_norm))
         if v[0] == v[-1] == "'":
-            red.set_message(name,
+            red.set_message(subject,
                 rs.PARAM_SINGLE_QUOTED,
                 param=e(k_norm),
                 param_val=e(v),
@@ -283,27 +301,27 @@ def parse_params(red, name, instr, nostar=None, delim=";"):
             )
         if k[-1] == '*':
             if nostar is True or (nostar and k_norm[:-1] in nostar):
-                red.set_message(name, rs.PARAM_STAR_BAD,
+                red.set_message(subject, rs.PARAM_STAR_BAD,
                                 param=e(k_norm[:-1]))
             else:
                 if v[0] == '"' and v[-1] == '"':
-                    red.set_message(name, rs.PARAM_STAR_QUOTED,
+                    red.set_message(subject, rs.PARAM_STAR_QUOTED,
                                     param=e(k_norm))
                     v = unquote_string(v)
                 try:
                     enc, lang, esc_v = v.split("'", 3)
                 except ValueError:
-                    red.set_message(name, rs.PARAM_STAR_ERROR,
+                    red.set_message(subject, rs.PARAM_STAR_ERROR,
                                     param=e(k_norm))
                     continue
                 enc = enc.lower()
                 lang = lang.lower()
                 if enc == '':
-                    red.set_message(name,
+                    red.set_message(subject,
                         rs.PARAM_STAR_NOCHARSET, param=e(k_norm))
                     continue
                 elif enc not in ['utf-8']:
-                    red.set_message(name,
+                    red.set_message(subject,
                         rs.PARAM_STAR_CHARSET,
                         param=e(k_norm),
                         enc=e(enc)
@@ -392,14 +410,16 @@ def relative_time(utime, now=None, show_sign=1):
 class _DummyRed(object):
     def __init__(self):
         import time
+        self.uri = "http://www.example.com/foo/bar/baz.html?bat=bam"
         self.res_hdrs = []
         self.res_phrase = ""
         self.messages = []
         self.msg_classes = []
         self.res_ts = time.time()
+        self.res_done_ts = self.res_ts
 
-    def set_message(self, name, msg, **kw):
-        self.messages.append(msg(name, None, kw))
+    def set_message(self, subject, msg, **kw):
+        self.messages.append(msg(subject, None, kw))
         self.msg_classes.append(msg.__name__)
 
 
@@ -415,8 +435,9 @@ class HeaderTest(unittest.TestCase):
     def test_header(self):
         if not self.name:
             return self.skipTest('')
-        parser = load_parser(self.name.lower())
-        out = parser(self.name, self.inputs, self.red)
+        self.red.res_hdrs = [(self.name, inp) for inp in self.inputs]
+        process_headers(self.red)
+        out = self.red.parsed_hdrs.get(self.name.lower(), None)
         self.assertEqual(self.expected_out, out,
             "%s != %s" % (str(self.expected_out), str(out)))
         diff = set(
@@ -428,3 +449,4 @@ class HeaderTest(unittest.TestCase):
             msg.text['en'] % msg.vars
             msg.summary['en'] % msg.vars
         self.assertEqual(len(diff), 0, "Mismatched messages: %s" % diff)
+

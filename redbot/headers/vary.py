@@ -32,6 +32,8 @@ import redbot.http_syntax as syntax
 
 @rh.GenericHeaderSyntax
 @rh.CheckFieldSyntax(syntax.TOKEN, rh.rfc2616 % "sec-14.44")
-def parse(name, values, red):
-    values = set([v.lower() for v in values])
-    return values
+def parse(subject, value, red):
+    return value.lower()
+    
+def join(subject, values, red):
+    return set(values)

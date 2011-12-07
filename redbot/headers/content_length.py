@@ -31,10 +31,14 @@ import redbot.http_syntax as syntax
 
 
 @rh.GenericHeaderSyntax
-@rh.SingleFieldValue
 @rh.CheckFieldSyntax(syntax.DIGITS, rh.rfc2616 % "sec-14.13")
-def parse(name, values, red):
-    return int(values[-1])
+def parse(subject, value, red):
+    return int(value)
+
+@rh.SingleFieldValue
+def join(subject, values, red):
+    return values[-1]
+
     
 class ContentLengthTest(rh.HeaderTest):
     name = 'Content-Length'

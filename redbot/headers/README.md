@@ -33,26 +33,43 @@ If your header name doesn't work with this convention, please raise an issue in 
 Each header file should define a _parse_ function. This function must take
 the following parameters:
 
- * `name` - the header field name, as seen on the wire.
- * `values` - a list of header field values; see below.
+ * `subject` - the subject ID of the test, for reference in messages.
+ * `value` - a header field value; see below.
  * `red` - the current RedState object.
 
-Values are a list of header field values; by default, each item in the list
+A value is a header field values; by default, it
 corresponds to a header line. For example:
 
     Cache-Control: foo, bar
     Cache-Control: baz
   
-would be sent in values as `["foo, bar", "baz"]`.
+would be sent in as two calls to _parse_; one as "foo, bar" and one as "baz". 
 
 The _parse_ function must return a data structure that's suitable for the
 header field; it could be a dictionary, a list, an integer, a string, etc. 
 Take a look at similar headers to see what data structures they use. 
 
-Also, take a look in `__init__.py`; there are some handy functions 
-there to help with parsing.
+_parse_ is where you set messages that are specific to a header field-value,
+rather than all field-values for that header.
 
 If parsing fails, it should return `None`.
+
+### The _join_ function
+
+Each header file also needs to define a _join_ function. This coalesces the
+output of one or more calls to _parse_ to produce a single data structure
+that represents that header's value for the HTTP message.
+
+It takes the following parameters:
+
+ * `subject` - the subject ID of the test, for reference in messages.
+ * `values` - a list of values, returned from _parse_.
+ * `red` - the current RedState object.
+ 
+Use _join_ to set messages that need to have the entire field's composite
+value, rather than just one portion. Usually, these are tests for the 
+header's semantics.
+
 
 
 ### Decorators for _parse_

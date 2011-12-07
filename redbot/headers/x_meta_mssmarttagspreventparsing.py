@@ -31,6 +31,9 @@ import redbot.http_syntax as syntax
 
 
 @rh.GenericHeaderSyntax
-def parse(name, values, red):
-    red.set_message(name, rs.SMART_TAG_NO_WORK)
+def parse(subject, value, red):
+    return value
+
+def join(subject, values, red):
+    red.set_message(subject, rs.SMART_TAG_NO_WORK)
     return values

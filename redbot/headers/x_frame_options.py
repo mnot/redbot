@@ -31,11 +31,14 @@ import redbot.http_syntax as syntax
 
 
 @rh.GenericHeaderSyntax
-def parse(name, values, red):
+def parse(subject, value, red):
+    return value
+    
+def join(subject, values, red):
     if 'DENY' in values:
-        red.set_message(name, rs.FRAME_OPTIONS_DENY)
+        red.set_message(subject, rs.FRAME_OPTIONS_DENY)
     elif 'SAMEORIGIN' in values:
-        red.set_message(name, rs.FRAME_OPTIONS_SAMEORIGIN)
+        red.set_message(subject, rs.FRAME_OPTIONS_SAMEORIGIN)
     else:
-        red.set_message(name, rs.FRAME_OPTIONS_UNKNOWN)
+        red.set_message(subject, rs.FRAME_OPTIONS_UNKNOWN)
     return values

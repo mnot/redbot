@@ -30,6 +30,9 @@ import redbot.headers as rh
 import redbot.http_syntax as syntax
 
 
-def parse(name, values, red):
+def parse(subject, value, red):
     # TODO: check syntax, flag servers?
     pass
+    
+def join(subject, values, red):
+    return values

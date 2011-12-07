@@ -311,15 +311,21 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 
     def format_response(self, red):
         "Return the HTTP response line and headers as HTML"
+        offset = 0
+        headers = []
+        for (name, value) in red.res_hdrs:
+            offset += 1
+            headers.append(self.format_header(name, value, offset))
+            
         return \
         u"    <span class='status'>HTTP/%s %s %s</span>\n" % (
             e(str(red.res_version)),
             e(str(red.res_status)),
             e(red.res_phrase)
         ) + \
-        nl.join([self.format_header(f,v) for (f,v) in red.res_hdrs])
+        nl.join(headers)
 
-    def format_header(self, name, value):
+    def format_header(self, name, value, offset):
         "Return an individual HTML header as HTML"
         token_name = "header-%s" % name.lower()
         py_name = "HDR_" + name.upper().replace("-", "_")
@@ -329,8 +335,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 'field_name': name,
             }
             self.hidden_text.append((token_name, defn))
-        return u"    <span name='%s' class='hdr'>%s:%s</span>" % (
-            e(token_name), e(name), self.header_presenter.Show(name, value))
+        return u"    <span data-offset='%s' data-name='%s' class='hdr'>%s:%s</span>" % (
+            offset, e(name.lower()), e(name), self.header_presenter.Show(name, value))
 
     def format_body_sample(self, red):
         """show the stored body sample"""
@@ -376,7 +382,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             out.append(u"<h3>%s</h3>\n<ul>\n" % category)
         for m in messages:
             out.append(
-             u"<li class='%s %s msg' name='msgid-%s'><span>%s</span></li>" % (
+             u"<li class='%s msg' data-subject='%s' data-name='msgid-%s'><span>%s</span></li>" % (
                 m.level, 
                 e(m.subject), 
                 id(m), 
@@ -392,7 +398,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             if smsgs:
                 out.append(u"<ul>")
                 for sm in smsgs:
-                    out.append(u"<li class='%s %s msg' name='msgid-%s'><span>%s</span></li>" % (
+                    out.append(u"<li class='%s msg' data-subject='%s' name='msgid-%s'><span>%s</span></li>" % (
                             sm.level, 
                             e(sm.subject), 
                             id(sm), 

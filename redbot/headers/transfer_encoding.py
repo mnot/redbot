@@ -33,29 +33,28 @@ import redbot.http_syntax as syntax
 @rh.GenericHeaderSyntax
 @rh.CheckFieldSyntax(syntax.TOK_PARAM, rh.rfc2616 % "sec-14.41")
 # TODO: accommodate transfer-parameters
-def parse(name, values, red):
-    codings = []
-    unwanted_codings = set()
-    for value in values:
-        try:
-            coding, params = value.split(";", 1)
-        except ValueError:
-            coding, params = value, ""
-        coding = coding.lower()
-        codings.append(coding)
-        param_dict = rh.parse_params(red, name, params, True)
-        if param_dict:
-            red.set_message(name, rs.TRANSFER_CODING_PARAM)
-        # check to see if there are any non-chunked encodings, because
-        # that's the only one we ask for.
-        if coding not in ['chunked', 'identity']:
-            unwanted_codings.add(coding)
-    if unwanted_codings:
-        red.set_message(name, rs.TRANSFER_CODING_UNWANTED,
-                unwanted_codings=e(", ".join(unwanted_codings)))
-    if 'identity' in codings:
-        red.set_message(name, rs.TRANSFER_CODING_IDENTITY)
-    return codings
+def parse(subject, value, red):
+    try:
+        coding, params = value.split(";", 1)
+    except ValueError:
+        coding, params = value, ""
+    coding = coding.lower()
+    param_dict = rh.parse_params(red, subject, params, True)
+    if param_dict:
+        red.set_message(subject, rs.TRANSFER_CODING_PARAM)
+    return coding
+
+def join(subject, values, red):
+    unwanted = set([c for c in values if c not in
+        ['chunked', 'identity']]
+    ) or False
+    if unwanted:
+        red.set_message(subject, rs.TRANSFER_CODING_UNWANTED,
+                unwanted_codings=e(", ".join(unwanted)))
+    if 'identity' in values:
+        red.set_message(subject, rs.TRANSFER_CODING_IDENTITY)
+    return values
+
 
 class TransferEncodingTest(rh.HeaderTest):
     name = 'Transfer-Encoding'
@@ -72,7 +71,7 @@ class TransferEncodingParamTest(rh.HeaderTest):
 class BadTransferEncodingTest(rh.HeaderTest):
     name = 'Transfer-Encoding'
     inputs = ['chunked=foo']
-    expected_out = None
+    expected_out = []
     expected_err = [rs.BAD_SYNTAX]
 
 class TransferEncodingCaseTest(rh.HeaderTest):

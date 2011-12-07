@@ -30,20 +30,23 @@ import redbot.headers as rh
 import redbot.http_syntax as syntax
 
 
-@rh.SingleFieldValue
-def parse(name, values, red):
+def parse(subject, value, red):
     try:
-        date = rh.parse_date(values)
+        date = rh.parse_date(value)
     except ValueError:
-        red.set_message(name, rs.BAD_DATE_SYNTAX)
+        red.set_message(subject, rs.BAD_DATE_SYNTAX)
         return None
     if date > red.res_ts:
-        red.set_message(name, rs.LM_FUTURE)
+        red.set_message(subject, rs.LM_FUTURE)
         return date
     else:
-        red.set_message(name, rs.LM_PRESENT,
+        red.set_message(subject, rs.LM_PRESENT,
           last_modified_string=rh.relative_time(date, red.res_ts))
     return date
+
+@rh.SingleFieldValue
+def join(subject, values, red):
+    return values[-1]
 
 
 class BasicLMTest(rh.HeaderTest):
