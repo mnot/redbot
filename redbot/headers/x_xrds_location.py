@@ -31,6 +31,9 @@ import redbot.http_syntax as syntax
 
 
 @rh.GenericHeaderSyntax
+def parse(subject, value, red):
+    return value
+    
 @rh.SingleFieldValue
-def parse(name, values, red):
-    pass # TODO
+def join(subject, values, red):
+    return values[-1]

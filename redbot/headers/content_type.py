@@ -35,13 +35,22 @@ import redbot.http_syntax as syntax
     r'(?:%(TOKEN)s/%(TOKEN)s(?:\s*;\s*%(PARAMETER)s)*)' % syntax.__dict__,
     rh.rfc2616 % "sec-14.17"
 )
-@rh.SingleFieldValue
-def parse(name, values, red):
+def parse(subject, value, red):
     try:
-        media_type, params = values[-1].split(";", 1)
+        media_type, params = value.split(";", 1)
     except ValueError:
-        media_type, params = values[-1], ''
+        media_type, params = value, ''
     media_type = media_type.lower()
-    param_dict = rh.parse_params(red, name, params, ['charset'])
+    param_dict = rh.parse_params(red, subject, params, ['charset'])
     # TODO: check charset to see if it's known
-    return media_type, param_dict
+    return (media_type, param_dict)
+    
+@rh.SingleFieldValue
+def join(subject, values, red):
+    return values[-1]
+    
+class BasicCTTest(rh.HeaderTest):
+    name = 'Content-Type'
+    inputs = ['text/plain; charset=utf-8']
+    expected_out = ("text/plain", {"charset": "utf-8"})
+    expected_err = []

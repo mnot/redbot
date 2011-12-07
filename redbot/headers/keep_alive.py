@@ -31,15 +31,14 @@ import redbot.http_syntax as syntax
 
 
 @rh.GenericHeaderSyntax
-def parse(name, values, red):
-    directives = set()
-    for directive in values:
-        try:
-            attr, value = directive.split("=", 1)
-            value = rh.unquote_string(value)
-        except ValueError:
-            attr = directive
-            value = None
-        attr = attr.lower()
-        directives.add((attr, value))
-    return values
+def parse(subject, value, red):
+    try:
+        attr, attr_val = value.split("=", 1)
+        attr_val = rh.unquote_string(attr_val)
+    except ValueError:
+        attr = value
+        attr_val = None
+    return (attr.lower(), attr_val)
+    
+def join(subject, values, red):
+    return set(values)

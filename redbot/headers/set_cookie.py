@@ -34,24 +34,24 @@ import redbot.headers as rh
 import redbot.http_syntax as syntax
 
 
-def parse(name, values, red):
-    set_cookies = []
-    for set_cookie_string in values:
-        path = urlsplit(red.uri).path
-        try:
-            set_cookie = loose_parse(set_cookie_string, path, red.res_done_ts)
-        except ValueError:
-            continue
-        set_cookies.append(set_cookie)
-    return set_cookies
-    
+def parse(subject, value, red):
+    path = urlsplit(red.uri).path
+    try:
+        set_cookie = loose_parse(value, path, red.res_done_ts, subject, red)
+    except ValueError:
+        set_cookie = None
+    return set_cookie
+
+def join(subject, values, red):
+    return values
+
     
 # TODO: properly escape messages
-def loose_parse(set_cookie_string, uri_path, current_time):
+def loose_parse(set_cookie_string, uri_path, current_time, subject, red):
     """
     Parse a Set-Cookie string, as per RFC6265, Section 5.2.
     """
-    name = "Set-Cookie"
+    name = "Set-Cookie" # FIXME: collide
     if ';' in set_cookie_string:
         name_value_pair, unparsed_attributes = set_cookie_string.split(";", 1)
     else:
@@ -59,11 +59,11 @@ def loose_parse(set_cookie_string, uri_path, current_time):
     try:
         name, value = name_value_pair.split("=", 1)
     except ValueError:
-        red.set_message(name, rs.SET_COOKIE_NO_VAL, name_value_pair.strip()) 
+        red.set_message(subject, rs.SET_COOKIE_NO_VAL, name_value_pair.strip()) 
         raise
     name, value = name.strip(), value.strip()
     if name == "":
-        red.set_message(name, rs.SET_COOKIE_NO_NAME)
+        red.set_message(subject, rs.SET_COOKIE_NO_NAME)
         raise
     cookie_name, cookie_value = name, value
     cookie_attribute_list = []
@@ -83,24 +83,24 @@ def loose_parse(set_cookie_string, uri_path, current_time):
             try:
                 expiry_time = loose_date_parse(attribute_value)
             except ValueError, why:
-                red.set_message(name, rs.SET_COOKIE_BAD_DATE, why=why,
+                red.set_message(subject, rs.SET_COOKIE_BAD_DATE, why=why,
                     cookie_name=cookie_name
                 )
                 continue
             cookie_attribute_list.append(("Expires", expiry_time))
         elif case_norm_attribute_name == "max-age":
             if attribute_value == "":
-                red.set_message(name, rs.SET_COOKIE_EMPTY_MAX_AGE,
+                red.set_message(subject, rs.SET_COOKIE_EMPTY_MAX_AGE,
                     cookie_name=cookie_name
                 )
                 continue
             if attribute_value[0] not in string.digits + "-":
-                red.set_message(name, rs.SET_COOKIE_NON_DIGIT_MAX_AGE,
+                red.set_message(subject, rs.SET_COOKIE_NON_DIGIT_MAX_AGE,
                     cookie_name=cookie_name
                 )
                 continue
             if attribute_value[1:] not in string.digits:
-                red.set_message(name, rs.SET_COOKIE_NON_DIGIT_MAX_AGE,
+                red.set_message(subject, rs.SET_COOKIE_NON_DIGIT_MAX_AGE,
                     cookie_name=cookie_name
                 )
                 continue
@@ -112,7 +112,7 @@ def loose_parse(set_cookie_string, uri_path, current_time):
             cookie_attribute_list.append(("Max-Age", expiry_time))
         elif case_norm_attribute_name == "domain":
             if attribute_value == "":
-                red.set_message(name, rs.SET_COOKIE_EMPTY_DOMAIN,
+                red.set_message(subject, rs.SET_COOKIE_EMPTY_DOMAIN,
                     cookie_name=cookie_name
                 )
                 continue
@@ -138,9 +138,9 @@ def loose_parse(set_cookie_string, uri_path, current_time):
         elif case_norm_attribute_name == "httponly":
             cookie_attribute_list.append(("HttpOnly", ""))
         else:
-            red.set_message(name, rs.SET_COOKIE_UNKNOWN_ATTRIBUTE,
+            red.set_message(subject, rs.SET_COOKIE_UNKNOWN_ATTRIBUTE,
                 cookie_name=cookie_name,
-                attribute=attribute_name
+                attribute=e(attribute_name)
             )
     return (cookie_name, cookie_value, cookie_attribute_list)
 
@@ -206,7 +206,7 @@ def loose_date_parse(cookie_date):
         if not found_day_of_month: missing.append("day")
         if not found_month: missing.append("month")
         if not found_year: missing.append("year")
-        raise ValueError, "didn't have a:", ",".join(missing)
+        raise ValueError, "didn't have a: %s" % ",".join(missing)
     if day_of_month_value < 1 or day_of_month_value > 31:
         raise ValueError, "%s is out of range for day_of_month" % \
             day_of_month_value

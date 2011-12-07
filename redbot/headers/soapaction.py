@@ -30,6 +30,9 @@ import redbot.headers as rh
 import redbot.http_syntax as syntax
 
 
+def parse(subject, value, red):
+    return value
+    
 @rh.SingleFieldValue
-def parse(name, values, red):
+def join(subject, values, red):
     return values[-1]

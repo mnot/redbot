@@ -31,11 +31,13 @@ import redbot.http_syntax as syntax
 
 
 @rh.GenericHeaderSyntax
-def parse(name, values, red):
-    values = set([v.lower() for v in values])
+def parse(subject, value, red):
+    return value.lower()
+    
+def join(subject, values, red):
     if "no-cache" in values:
-        red.set_message(name, rs.PRAGMA_NO_CACHE)
+        red.set_message(subject, rs.PRAGMA_NO_CACHE)
     others = [True for v in values if v != "no-cache"]
     if others:
-        red.set_message(name, rs.PRAGMA_OTHER)
-    return values
+        red.set_message(subject, rs.PRAGMA_OTHER)
+    return set(values)

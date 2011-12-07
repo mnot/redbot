@@ -34,18 +34,23 @@ import redbot.http_syntax as syntax
 @rh.CheckFieldSyntax(
     syntax.PARAMETER,
     "http://msdn.microsoft.com/en-us/library/cc288325(VS.85).aspx")
-def parse(name, values, red):
-    directives = {}
-    for directive in values:
-        try:
-            attr, value = directive.split("=", 1)
-        except ValueError:
-            attr = directive
-            value = None
-        if directives.has_key(attr):
-            red.set_message(name, rs.UA_COMPATIBLE_REPEAT)
-        directives[attr] = value
+def parse(subject, value, red):
+    try:
+        attr, attr_value = value.split("=", 1)
+    except ValueError:
+        attr = directive
+        attr_value = None
+    return attr, attr_value
+
+    return directives
+
+def join(subject, values, red):
+    if directives.has_key(attr):
+        red.set_message(subject, rs.UA_COMPATIBLE_REPEAT)
+    directives[attr] = value
+
     uac_list = u"\n".join([u"<li>%s - %s</li>" % (e(k), e(v)) for
                         k, v in directives.items()])
-    red.set_message(name, rs.UA_COMPATIBLE, uac_list=uac_list)
-    return directives
+    red.set_message(subject, rs.UA_COMPATIBLE, uac_list=uac_list)
+
+    return values

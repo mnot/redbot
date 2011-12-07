@@ -31,15 +31,17 @@ import redbot.http_syntax as syntax
 
 
 @rh.GenericHeaderSyntax
-@rh.SingleFieldValue
 @rh.CheckFieldSyntax(
   r'\*|(?:W/)?%s' % syntax.QUOTED_STRING, rh.rfc2616 % "sec-14.19")
-def parse(name, values, red):
-    instr = values[-1]
-    if instr[:2] == 'W/':
-        return (True, rh.unquote_string(instr[2:]))
+def parse(subject, value, red):
+    if value[:2] == 'W/':
+        return (True, rh.unquote_string(value[2:]))
     else:
-        return (False, rh.unquote_string(instr))
+        return (False, rh.unquote_string(value))
+
+@rh.SingleFieldValue
+def join(subject, values, red):
+    return values[-1]
         
 class ETagTest(rh.HeaderTest):
     name = 'ETag'

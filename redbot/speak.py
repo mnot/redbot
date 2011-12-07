@@ -2316,7 +2316,10 @@ class SET_COOKIE_NO_VAL(Message):
      'en': u"%(response)s has a Set-Cookie header that can't be parsed."
     }
     text = {
-     'en': u""""""
+     'en': u"""This <code>Set-Cookie</code> header can't be parsed into a 
+     name and a value; it must start with a <code>name=value</code>
+     structure.<p>
+     <p>Browsers will ignore this cookie."""
     }
 
 class SET_COOKIE_NO_NAME(Message):
@@ -2326,7 +2329,9 @@ class SET_COOKIE_NO_NAME(Message):
      'en': u"%(response)s has a Set-Cookie header without a cookie-name."
     }
     text = {
-     'en': u""""""
+     'en': u"""This <code>Set-Cookie</code> header has an empty name; there
+     needs to be a name before the <code>=</code>.<p>
+     <p>Browsers will ignore this cookie."""
     }
 
 class SET_COOKIE_BAD_DATE(Message):
@@ -2336,7 +2341,11 @@ class SET_COOKIE_BAD_DATE(Message):
      'en': u"The %(cookie_name)s Set-Cookie header has an invalid Expires date."
     }
     text = {
-     'en': u""""""
+     'en': u"""The <code>expires</code> date on this <code>Set-Cookie</code>
+     header isn't valid; see 
+     <a href="http://tools.ietf.org/html/rfc6265">RFC6265</a> for details 
+     of the correct format.
+     """
     }
 
 class SET_COOKIE_EMPTY_MAX_AGE(Message):
@@ -2346,7 +2355,9 @@ class SET_COOKIE_EMPTY_MAX_AGE(Message):
      'en': u"The %(cookie_name)s Set-Cookie header has an empty Max-Age."
     }
     text = {
-     'en': u""""""
+     'en': u"""The <code>max-age</code> parameter on this
+     <code>Set-Cookie</code> header doesn't have a value.<p>
+     Browsers will ignore the <code>max-age</code> value as a result."""
     }
 
 class SET_COOKIE_NON_DIGIT_MAX_AGE(Message):
@@ -2356,7 +2367,9 @@ class SET_COOKIE_NON_DIGIT_MAX_AGE(Message):
      'en': u"The %(cookie_name)s Set-Cookie header has a non-numeric Max-Age."
     }
     text = {
-     'en': u""""""
+     'en': u"""The <code>max-age</code> parameter on this
+     <code>Set-Cookie</code> header isn't numeric.<p>
+     Browsers will ignore the <code>max-age</code> value as a result."""
     }
 
 class SET_COOKIE_EMPTY_DOMAIN(Message):
@@ -2366,7 +2379,9 @@ class SET_COOKIE_EMPTY_DOMAIN(Message):
      'en': u"The %(cookie_name)s Set-Cookie header has an empty domain."
     }
     text = {
-     'en': u""""""
+     'en': u"""The <code>domain</code> parameter on this
+     <code>Set-Cookie</code> header is empty.<p>
+     Browsers will probably ignore it as a result."""
     }
 
 class SET_COOKIE_UNKNOWN_ATTRIBUTE(Message):
@@ -2376,7 +2391,10 @@ class SET_COOKIE_UNKNOWN_ATTRIBUTE(Message):
      'en': u"The %(cookie_name)s Set-Cookie header has an unknown attribute, '%(attribute)s'."
     }
     text = {
-     'en': u""""""
+     'en': u"""This <code>Set-Cookie</code> header has an extra parameter,
+     "%(attribute)s".<p>
+     Browsers will ignore it.
+     """
     }
 
 

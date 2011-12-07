@@ -30,7 +30,10 @@ import redbot.headers as rh
 import redbot.http_syntax as syntax
 
 
-@rh.SingleFieldValue
-def parse(name, values, red):
-    return values[-1]
+def parse(subject, value, red):
     # TODO: constrain value, tests
+    return value
+    
+@rh.SingleFieldValue
+def join(subject, values, red):
+    return values[-1]

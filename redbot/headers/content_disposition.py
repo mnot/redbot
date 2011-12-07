@@ -31,31 +31,34 @@ import redbot.http_syntax as syntax
 
 
 @rh.GenericHeaderSyntax
-@rh.SingleFieldValue
 @rh.CheckFieldSyntax(
     r'(?:%(TOKEN)s(?:\s*;\s*%(PARAMETER)s)*)' % syntax.__dict__,
     rh.rfc6266
 )
-def parse(name, values, red):
+def parse(subject, value, red):
     try:
-        disposition, params = values[-1].split(";", 1)
+        disposition, params = value.split(";", 1)
     except ValueError:
-        disposition, params = values[-1], ''
+        disposition, params = value, ''
     disposition = disposition.lower()
-    param_dict = rh.parse_params(red, name, params)
+    param_dict = rh.parse_params(red, subject, params)
     if disposition not in ['inline', 'attachment']:
-        red.set_message(name,
+        red.set_message(subject,
             rs.DISPOSITION_UNKNOWN,
             disposition=e(disposition)
         )
     if not param_dict.has_key('filename'):
-        red.set_message(name, rs.DISPOSITION_OMITS_FILENAME)
+        red.set_message(subject, rs.DISPOSITION_OMITS_FILENAME)
     if "%" in param_dict.get('filename', ''):
-        red.set_message(name, rs.DISPOSITION_FILENAME_PERCENT)
+        red.set_message(subject, rs.DISPOSITION_FILENAME_PERCENT)
     if "/" in param_dict.get('filename', '') or \
        r"\\" in param_dict.get('filename*', ''):
-        red.set_message(name, rs.DISPOSITION_FILENAME_PATH_CHAR)
+        red.set_message(subject, rs.DISPOSITION_FILENAME_PATH_CHAR)
     return disposition, param_dict
+
+@rh.SingleFieldValue
+def join(subject, values, red):
+    return values[-1]
     
 
 class QuotedCDTest(rh.HeaderTest):

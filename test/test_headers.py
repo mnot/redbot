@@ -136,9 +136,16 @@ class GeneralHeaderTesters(unittest.TestCase):
                 
 if __name__ == "__main__":
     # requires Python 2.7
+    import sys
     loader = unittest.TestLoader()
-    auto_suite = loader.discover("../redbot/headers", "*.py", '../redbot')
-    local_suite = loader.loadTestsFromTestCase(GeneralHeaderTesters)
-    all_tests = unittest.TestSuite([local_suite, auto_suite])
+    if len(sys.argv) == 2:
+        auto_suite = loader.discover("../redbot/headers", 
+                                    "%s.py" % sys.argv[1],  
+                                    "../redbot"
+        )
+        all_tests = unittest.TestSuite([auto_suite])
+    else:
+        auto_suite = loader.discover("../redbot/headers", "*.py", '../redbot')
+        local_suite = loader.loadTestsFromTestCase(GeneralHeaderTesters)
+        all_tests = unittest.TestSuite([local_suite, auto_suite])
     unittest.TextTestRunner().run(all_tests)
-    

@@ -30,6 +30,9 @@ import redbot.headers as rh
 import redbot.http_syntax as syntax
 
 
-def parse(name, values, red):
-    red.set_message(name, rs.MIME_VERSION)
+def parse(subject, value, red):
+    red.set_message(subject, rs.MIME_VERSION)
+    return value
+    
+def join(subject, values, red):
     return values

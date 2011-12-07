@@ -67,14 +67,16 @@ class ResponseStatusChecker:
 
     def set_message(self, name, msg, **kw):
         if name:
-            ident = 'status %s' % name
+            subject = 'status %s' % name
         else:
-            ident = 'status'
-        self.red.set_message(ident, msg,
-                             status=self.red.res_status,
-                             enc_status=e(self.red.res_status),
-                             **kw
-                             )
+            subject = 'status'
+        self.red.set_message(
+            subject, 
+            msg,
+            status=self.red.res_status,
+            enc_status=e(self.red.res_status),
+            **kw
+        )
 
     def status100(self):        # Continue
         if not "100-continue" in thor.http.get_headder(self.red.req_hdrs, 'expect'):

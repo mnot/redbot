@@ -31,25 +31,29 @@ import redbot.http_syntax as syntax
 
 
 @rh.GenericHeaderSyntax
-@rh.SingleFieldValue
 @rh.CheckFieldSyntax(
     r'(?:[10](?:\s*;\s*%(PARAMETER)s)*)' % syntax.__dict__, 'http://blogs.msdn.com/b/ieinternals/archive/2011/01/31/controlling-the-internet-explorer-xss-filter-with-the-x-xss-protection-http-header.aspx'
 )
-def parse(name, values, red):
+def parse(subject, value, red):
     try:
-        protect, params = values[-1].split(';', 1)
+        protect, params = value.split(';', 1)
     except ValueError:
-        protect, params = values[-1], ""
+        protect, params = value, ""
     protect = int(protect)
-    params = rh.parse_params(red, name, params, True)
+    params = rh.parse_params(red, subject, params, True)
     if protect == 0:
-        red.set_message(name, rs.XSS_PROTECTION_OFF)
+        red.set_message(subject, rs.XSS_PROTECTION_OFF)
     else: # 1
         if params.get('mode', None) == "block":
-            red.set_message(name, rs.XSS_PROTECTION_BLOCK)
+            red.set_message(subject, rs.XSS_PROTECTION_BLOCK)
         else:
-            red.set_message(name, rs.XSS_PROTECTION_ON)
+            red.set_message(subject, rs.XSS_PROTECTION_ON)
     return protect, params
+
+@rh.SingleFieldValue
+def join(subject, values, red):
+    return values[-1]
+
 
 class OneXXSSTest(rh.HeaderTest):
     name = 'X-XSS-Protection'
