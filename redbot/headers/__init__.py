@@ -162,6 +162,7 @@ def process_headers(red):
             set_message(subject, rs.HEADER_VALUE_ENCODING,
                        header_name=name)
         clean_res_hdrs.append((name, value))
+        red.set_context(field_name=name)
         
         # check field name syntax
         if not re.match("^\s*%s\s*$" % syntax.TOKEN, name):
@@ -188,6 +189,7 @@ def process_headers(red):
 
     # join parsed header values
     for nn, (fn, values) in hdr_dict.items():
+        red.set_context(field_name=fn)
         hdr_join = load_header_func(nn, 'join')
         if hdr_join:
             subject = "header-%s" % nn
@@ -422,6 +424,9 @@ class _DummyRed(object):
     def set_message(self, subject, msg, **kw):
         self.messages.append(msg(subject, None, kw))
         self.msg_classes.append(msg.__name__)
+
+    def set_context(self, **kw):
+        pass
 
 
 class HeaderTest(unittest.TestCase):

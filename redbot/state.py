@@ -82,6 +82,7 @@ class RedState(object):
         # interesting things about the response; set by a variety of things
         self.messages = [] # messages (see above)
         self.subreqs = {} # sub-requests' RedState objects
+        self._context = {}
         try:
             self.uri = self.iri_to_uri(iri)
         except (ValueError, UnicodeError), why:
@@ -99,9 +100,14 @@ class RedState(object):
         if state.has_key('set_message'):
             del state['set_message']
         return state
+
+    def set_context(self, **kw):
+        "Set the message context."
+        self._context = kw
         
     def set_message(self, subject, msg, subreq=None, **kw):
         "Set a message."
+        kw.update(self._context)
         kw['response'] = rs.response.get(
             self.type, rs.response['this']
         )['en']
