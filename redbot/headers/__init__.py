@@ -188,11 +188,11 @@ def process_headers(red):
 
     # join parsed header values
     for nn, (fn, values) in hdr_dict.items():
-        if values == [None]: continue
         hdr_join = load_header_func(nn, 'join')
         if hdr_join:
             subject = "header-%s" % nn
             joined_value = hdr_join(subject, values, red)
+            if joined_value == None: continue
             parsed_hdrs[nn] = joined_value
     red.parsed_hdrs = parsed_hdrs
 
