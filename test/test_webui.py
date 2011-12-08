@@ -9,7 +9,7 @@ import time
 import unittest
 
 
-class WebUiTest(unittest.TestCase):
+class BasicWebUiTest(unittest.TestCase):
     test_uri = "http://www.mnot.net/"
     
     def setUp(self):
@@ -29,10 +29,16 @@ class WebUiTest(unittest.TestCase):
         self.check_complete()
     
     def check_complete(self):
-        self.browser.find_element_by_xpath("//div[@class='footer']")
+        try:
+            self.browser.find_element_by_xpath("//div[@class='footer']")
+        except NoSuchElementException:
+            raise Exception, "Page not complete."
     
     def tearDown(self):
         self.browser.close()
+
+class CnnWebUiTest(BasicWebUiTest):
+    test_uri = 'http://www.cnn.com/'
 
 
 if __name__ == "__main__":
