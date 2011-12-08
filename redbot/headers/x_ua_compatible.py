@@ -42,15 +42,23 @@ def parse(subject, value, red):
         attr_value = None
     return attr, attr_value
 
-    return directives
 
 def join(subject, values, red):
-    if directives.has_key(attr):
-        red.set_message(subject, rs.UA_COMPATIBLE_REPEAT)
-    directives[attr] = value
+    directives = {}
+    warned = False
+    for (attr, attr_value) in values:
+        if directives.has_key(attr) and not warned:
+            red.set_message(subject, rs.UA_COMPATIBLE_REPEAT)
+            warned = True
+        directives[attr] = attr_value
 
     uac_list = u"\n".join([u"<li>%s - %s</li>" % (e(k), e(v)) for
-                        k, v in directives.items()])
+                        k, v in values])
     red.set_message(subject, rs.UA_COMPATIBLE, uac_list=uac_list)
-
-    return values
+    return directives
+    
+class BasicUACTest(rh.HeaderTest):
+    name = 'X-UA-Compatible'
+    inputs = ['foo=bar']
+    expected_out = {"foo": "bar"}
+    expected_err = [rs.UA_COMPATIBLE]
