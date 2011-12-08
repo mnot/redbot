@@ -86,8 +86,11 @@ class RedFetcher(object):
 
     def __repr__(self):
         status = [self.__class__.__module__ + "." + self.__class__.__name__]
-        status.append("%s {%s}" % (self.state.method, self.state.uri))
-        status.append("%s tasks" % self.outstanding_tasks)
+        if self.state:
+            status.append("%s {%s}" % (
+                self.state.method or "???", self.state.uri or "???"
+            ))
+            status.append("%s tasks" % self.outstanding_tasks or "?")
         return "<%s at %#x>" % (", ".join(status), id(self))
 
     def __getstate__(self):
