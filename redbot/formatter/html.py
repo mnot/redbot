@@ -290,7 +290,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     self.red.res_error.detail or "unknown")
             elif isinstance(self.red.res_error, httperr.UrlError):
                 self.output(self.error_template % \
-                  self.red.res_error.detail or "RED can't fetch that URL.")
+                  "URL error: %s" % self.red.res_error.detail \
+                  or "RED can't fetch that URL.")
             elif isinstance(self.red.res_error, httperr.DuplicateCLError):
                 self.output(self.error_template % self.red.res_error.desc) 
             elif isinstance(self.red.res_error, httperr.MalformedCLError):
