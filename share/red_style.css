@@ -314,6 +314,7 @@ body.blank > .footer {
 /* errors */
 
 .error {
+  color: #eaeaea;
   background-color: #a33;
   border-radius: 0.5em;
   padding: 0.5em;
