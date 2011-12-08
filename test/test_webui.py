@@ -38,7 +38,7 @@ class BasicWebUiTest(unittest.TestCase):
         self.browser.close()
 
 class CnnWebUiTest(BasicWebUiTest):
-    test_uri = 'http://www.cnn.com/'
+    test_uri = 'http://edition.cnn.com/'
 
 
 if __name__ == "__main__":
