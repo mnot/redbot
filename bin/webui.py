@@ -322,7 +322,7 @@ def except_handler_factory(out=None):
         """
         if not etype or not evalue or not etb:
             etype, evalue, etb = sys.exc_info()
-        import cgitb
+        import cgitb, pydoc
         pydoc.html._repr_instance.maxstring = 150
         out(cgitb.reset())
         if logdir is None:
