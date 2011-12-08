@@ -86,7 +86,7 @@ class RedFetcher(object):
 
     def __repr__(self):
         status = [self.__class__.__module__ + "." + self.__class__.__name__]
-        if self.state:
+        if hasattr(self, 'state'):
             status.append("%s {%s}" % (
                 self.state.method or "???", self.state.uri or "???"
             ))
