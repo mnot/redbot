@@ -18,15 +18,12 @@ class BasicWebUiTest(unittest.TestCase):
         self.uri = self.browser.find_element_by_id("uri")
         self.uri.send_keys(self.test_uri + Keys.RETURN)
         time.sleep(0.5)
-
-    def test_single(self):
         self.check_complete()
         
     def test_multi(self):
         check = self.browser.find_element_by_xpath("//a[@accesskey='a']")
         check.click()
         time.sleep(0.5)
-        self.check_complete()
     
     def check_complete(self):
         try:
@@ -35,6 +32,7 @@ class BasicWebUiTest(unittest.TestCase):
             raise Exception, "Page not complete."
     
     def tearDown(self):
+        self.check_complete()
         self.browser.close()
 
 class CnnWebUiTest(BasicWebUiTest):
