@@ -17,7 +17,7 @@ class BasicWebUiTest(unittest.TestCase):
         self.browser.get(redbot_uri)
         self.uri = self.browser.find_element_by_id("uri")
         self.uri.send_keys(self.test_uri + Keys.RETURN)
-        time.sleep(0.5)
+        time.sleep(1.0)
         self.check_complete()
         
     def test_multi(self):
