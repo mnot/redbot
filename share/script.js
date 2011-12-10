@@ -89,11 +89,14 @@ $(document).ready(function() {
   });
 
   /* catch enter to work around IE8 */
+  if ($.browser.msie) {
   $("input").keypress(function (e) {
     if (e.which == 13) {
       $("#request_form").submit();
+      return false;
     }
   });
+  }
 
   /* help */
   
