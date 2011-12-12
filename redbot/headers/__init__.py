@@ -144,8 +144,8 @@ def process_headers(red):
         subject = "offset-%s" % offset
         hdr_size = len(name) + len(value)
         if hdr_size > max_hdr_size:
-            set_message(subject, rs.HEADER_TOO_LARGE,
-                       header_name=name, header_size=f_num(hdr_size))
+            red.set_message(subject, rs.HEADER_TOO_LARGE,
+               header_name=name, header_size=f_num(hdr_size))
         header_block_size += hdr_size
         
         # decode the header to make it unicode clean
@@ -153,20 +153,20 @@ def process_headers(red):
             name = name.decode('ascii', 'strict')
         except UnicodeError:
             name = name.decode('ascii', 'ignore')
-            set_message(subject, rs.HEADER_NAME_ENCODING,
-                       header_name=name)
+            red.set_message(subject, rs.HEADER_NAME_ENCODING,
+                header_name=name)
         try:
             value = value.decode('ascii', 'strict')
         except UnicodeError:
             value = value.decode('iso-8859-1', 'replace')
-            set_message(subject, rs.HEADER_VALUE_ENCODING,
-                       header_name=name)
+            red.set_message(subject, rs.HEADER_VALUE_ENCODING,
+                header_name=name)
         clean_res_hdrs.append((name, value))
         red.set_context(field_name=name)
         
         # check field name syntax
         if not re.match("^\s*%s\s*$" % syntax.TOKEN, name):
-                        set_message(subject, rs.FIELD_NAME_BAD_SYNTAX)
+                        red.set_message(subject, rs.FIELD_NAME_BAD_SYNTAX)
 
         # parse the header
         norm_name = name.lower()
@@ -200,8 +200,8 @@ def process_headers(red):
 
     # check the total header block size
     if header_block_size > max_ttl_hdr:
-        set_message('header', rs.HEADER_BLOCK_TOO_LARGE,
-                   header_block_size=f_num(header_block_size))
+        red.set_message('header', rs.HEADER_BLOCK_TOO_LARGE,
+            header_block_size=f_num(header_block_size))
 
 
 
