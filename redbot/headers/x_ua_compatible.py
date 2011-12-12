@@ -38,7 +38,7 @@ def parse(subject, value, red):
     try:
         attr, attr_value = value.split("=", 1)
     except ValueError:
-        attr = directive
+        attr = value
         attr_value = None
     return attr, attr_value
 

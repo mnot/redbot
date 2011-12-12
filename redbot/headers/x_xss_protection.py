@@ -36,11 +36,11 @@ import redbot.http_syntax as syntax
 )
 def parse(subject, value, red):
     try:
-        protect, params = value.split(';', 1)
+        protect, param_str = value.split(';', 1)
     except ValueError:
-        protect, params = value, ""
+        protect, param_str = value, ""
     protect = int(protect)
-    params = rh.parse_params(red, subject, params, True)
+    params = rh.parse_params(red, subject, param_str, True)
     if protect == 0:
         red.set_message(subject, rs.XSS_PROTECTION_OFF)
     else: # 1

@@ -166,7 +166,7 @@ def process_headers(red):
         
         # check field name syntax
         if not re.match("^\s*%s\s*$" % syntax.TOKEN, name):
-                        red.set_message(subject, rs.FIELD_NAME_BAD_SYNTAX)
+            red.set_message(subject, rs.FIELD_NAME_BAD_SYNTAX)
 
         # parse the header
         norm_name = name.lower()
@@ -194,7 +194,8 @@ def process_headers(red):
         if hdr_join:
             subject = "header-%s" % nn
             joined_value = hdr_join(subject, values, red)
-            if joined_value == None: continue
+            if joined_value == None: 
+                continue
             parsed_hdrs[nn] = joined_value
     red.parsed_hdrs = parsed_hdrs
 
@@ -412,9 +413,9 @@ def relative_time(utime, now=None, show_sign=1):
 
 class _DummyRed(object):
     def __init__(self):
-        import time
         self.uri = "http://www.example.com/foo/bar/baz.html?bat=bam"
         self.res_hdrs = []
+        self.parsed_hdrs = {}
         self.res_phrase = ""
         self.messages = []
         self.msg_classes = []
