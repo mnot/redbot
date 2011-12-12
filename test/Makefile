@@ -12,4 +12,8 @@ webui: deploy
 
 .PHONY: deploy
 deploy:
-	cd deploy; make	
+	cd deploy; make
+
+.PHONY: lint
+lint:
+	PYTHONLIB=../ pylint-2.7 -i y redbot
