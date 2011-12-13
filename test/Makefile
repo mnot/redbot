@@ -1,10 +1,14 @@
 
 .PHONY: all
-all: headers webui
+all: headers speak webui
 
 .PHONY: headers
 headers:
 	python test_headers.py
+
+.PHONY: speak
+speak:
+	PYTHONPATH=../ python -m redbot.speak
 
 .PHONY: webui
 webui: deploy

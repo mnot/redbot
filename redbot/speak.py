@@ -77,10 +77,10 @@ class Message:
         self.vars = vrs or {}
 
     def __eq__(self, other):
-        if self.__class__ == other.__class__ and \
-            self.vars == other.vars and \
-            self.subject == other.subject:
-                return True
+        if self.__class__ == other.__class__ \
+           and self.vars == other.vars \
+           and self.subject == other.subject:
+            return True
         else:
             return False
 
@@ -111,9 +111,8 @@ class URI_BAD_SYNTAX(Message):
     'en': u"The URI's syntax isn't valid."
     }
     text = {
-    'en': u"""This isn't a valid URI. Look for illegal characters \
-    and other problems; see 
-    <a href='http://www.ietf.org/rfc/rfc3986.txt'>RFC3986</a>
+    'en': u"""This isn't a valid URI. Look for illegal characters and other
+    problems; see <a href='http://www.ietf.org/rfc/rfc3986.txt'>RFC3986</a>
     for more information."""
     }
 
@@ -240,7 +239,8 @@ class BAD_CC_SYNTAX(Message):
     category = c.CACHING
     level = l.BAD
     summary = {
-     'en': u"The %(bad_cc_attr)s Cache-Control directive's syntax is incorrect."
+     'en': u"The %(bad_cc_attr)s Cache-Control directive's syntax is \
+incorrect."
     }
     text = {
      'en': u"This value must be an integer."
@@ -295,7 +295,8 @@ class BAD_GZIP(Message):
     category = c.CONNEG
     level = l.BAD
     summary = {
-    'en': u"%(response)s was compressed using GZip, but the header wasn't valid."
+    'en': u"%(response)s was compressed using GZip, but the header wasn't \
+valid."
     }
     text = {
     'en': u"""GZip-compressed responses have a header that contains metadata.
@@ -452,7 +453,8 @@ class PRAGMA_NO_CACHE(Message):
     category = c.CACHING
     level = l.WARN
     summary = {
-    'en': u"Pragma: no-cache is a request directive, not a response directive."
+    'en': u"Pragma: no-cache is a request directive, not a response \
+directive."
     }
     text = {
     'en': u"""<code>Pragma</code> is a very old request header that is 
@@ -528,7 +530,8 @@ class CONTENT_TYPE_OPTIONS(Message):
     category = c.SECURITY
     level = l.INFO
     summary = {
-     'en': u"%(response)s instructs Internet Explorer not to 'sniff' its media type."
+     'en': u"%(response)s instructs Internet Explorer not to 'sniff' its \
+media type."
     }
     text = {
      'en': u"""Many Web browers "sniff" the media type of responses to figure
@@ -537,7 +540,7 @@ class CONTENT_TYPE_OPTIONS(Message):
      This header instructs Microsoft's Internet Explorer not to do this, but
      to always respect the Content-Type header. It probably won't have any
      effect in other clients.<p>
-     See <a href="http://blogs.msdn.com/ie/archive/2008/09/02/ie8-security-part-vi-beta-2-update.aspx">this blog entry</a>
+     See <a href="http://bit.ly/t1UHW2">this blog entry</a>
      for more information about this header."""
     }
 
@@ -545,20 +548,23 @@ class CONTENT_TYPE_OPTIONS_UNKNOWN(Message):
     category = c.SECURITY
     level = l.WARN
     summary = {
-     'en': u"%(response)s contains an X-Content-Type-Options header with an unknown value."
+     'en': u"%(response)s contains an X-Content-Type-Options header with an \
+unknown value."
     }
     text = {
      'en': u"""Only one value is currently defined for this header,
      <code>nosniff</code>. Using other values here won't necessarily cause
      problems, but they probably won't have any effect either.<p>
-     See <a href="http://blogs.msdn.com/ie/archive/2008/09/02/ie8-security-part-vi-beta-2-update.aspx">this blog entry</a> for more information about this header."""
+     See <a href="http://bit.ly/t1UHW2">this blog entry</a> for more
+     information about this header."""
     }
 
 class DOWNLOAD_OPTIONS(Message):
     category = c.SECURITY
     level = l.INFO
     summary = {
-     'en': u"%(response)s can't be directly opened directly by Internet Explorer when downloaded."
+     'en': u"%(response)s can't be directly opened directly by Internet \
+Explorer when downloaded."
     }
     text = {
      'en': u"""When the <code>X-Download-Options</code> header is present
@@ -568,27 +574,31 @@ class DOWNLOAD_OPTIONS(Message):
      executes in the security context of your site, helping to prevent script
      injection.<p>
      This header probably won't have any effect in other clients.<p>
-     See <a href="http://blogs.msdn.com/ie/archive/2008/07/02/ie8-security-part-v-comprehensive-protection.aspx">this blog article</a> for more details."""
+     See <a href="http://bit.ly/sfuxWE">this blog article</a> for more
+     details."""
     }
 
 class DOWNLOAD_OPTIONS_UNKNOWN(Message):
     category = c.SECURITY
     level = l.WARN
     summary = {
-     'en': u"%(response)s contains an X-Download-Options header with an unknown value."
+     'en': u"%(response)s contains an X-Download-Options header with an \
+unknown value."
     }
     text = {
      'en': u"""Only one value is currently defined for this header,
      <code>noopen</code>. Using other values here won't necessarily cause
      problems, but they probably won't have any effect either.<p>
-     See <a href="http://blogs.msdn.com/ie/archive/2008/07/02/ie8-security-part-v-comprehensive-protection.aspx">this blog article</a> for more details."""
+     See <a href="http://bit.ly/sfuxWE">this blog article</a> for more
+     details."""
     }
 
 class FRAME_OPTIONS_DENY(Message):
     category = c.SECURITY
     level = l.INFO
     summary = {
-     'en': u"%(response)s prevents some browsers from rendering it if it will be contained within a frame."
+     'en': u"%(response)s prevents some browsers from rendering it if it \
+will be contained within a frame."
     }
     text = {
      'en': u"""The <code>X-Frame-Options</code> response header controls how
@@ -596,7 +606,8 @@ class FRAME_OPTIONS_DENY(Message):
      content from being rendered within a frame, which defends against certain
      types of attacks.<p>
      Currently this is supported by IE8 and Safari 4.<p>
-     See <a href="http://blogs.msdn.com/ie/archive/2009/01/27/ie8-security-part-vii-clickjacking-defenses.aspx">this blog entry</a> for more information.
+     See <a href="http://bit.ly/v5Bh5Q">this blog entry</a> for more
+     information.
      """
     }
 
@@ -604,7 +615,8 @@ class FRAME_OPTIONS_SAMEORIGIN(Message):
     category = c.SECURITY
     level = l.INFO
     summary = {
-     'en': u"%(response)s prevents some browsers from rendering it if it will be contained within a frame on another site."
+     'en': u"%(response)s prevents some browsers from rendering it if it \
+will be contained within a frame on another site."
     }
     text = {
      'en': u"""The <code>X-Frame-Options</code> response header controls how
@@ -612,7 +624,8 @@ class FRAME_OPTIONS_SAMEORIGIN(Message):
      content from being rendered within a frame on another site, which defends
      against certain types of attacks.<p>
      Currently this is supported by IE8 and Safari 4.<p>
-     See <a href="http://blogs.msdn.com/ie/archive/2009/01/27/ie8-security-part-vii-clickjacking-defenses.aspx">this blog entry</a> for more information.
+     See <a href="http://bit.ly/v5Bh5Q">this blog entry</a> for more
+     information.
      """
     }
 
@@ -620,14 +633,16 @@ class FRAME_OPTIONS_UNKNOWN(Message):
     category = c.SECURITY
     level = l.WARN
     summary = {
-     'en': u"%(response)s contains an X-Frame-Options header with an unknown value."
+     'en': u"%(response)s contains an X-Frame-Options header with an unknown \
+value."
     }
     text = {
      'en': u"""Only two values are currently defined for this header,
      <code>DENY</code> and <code>SAMEORIGIN</code>. Using other values here
      won't necessarily cause problems, but they probably won't have any effect
      either.<p>
-     See <a href="http://blogs.msdn.com/ie/archive/2009/01/27/ie8-security-part-vii-clickjacking-defenses.aspx">this blog entry</a> for more information.
+     See <a href="http://bit.ly/v5Bh5Q">this blog entry</a> for more
+     information.
      """
     }
 
@@ -647,27 +662,33 @@ class UA_COMPATIBLE(Message):
     category = c.GENERAL
     level = l.INFO
     summary = {
-     'en': u"%(response)s explicitly sets a rendering mode for Internet Explorer 8."
+     'en': u"%(response)s explicitly sets a rendering mode for Internet \
+Explorer 8."
     }
     text = {
      'en': u"""Internet Explorer 8 allows responses to explicitly set the
      rendering mode used for a given page (known a the "compatibility
      mode").<p>
-     See <a href="http://msdn.microsoft.com/en-us/library/cc288325(VS.85).aspx">Microsoft's documentation</a> for more information."""
+     See 
+     <a href="http://msdn.microsoft.com/en-us/library/cc288325(VS.85).aspx">
+     Microsoft's documentation</a> for more information."""
     }
 
 class UA_COMPATIBLE_REPEAT(Message):
     category = c.GENERAL
     level = l.BAD
     summary = {
-     'en': u"%(response)s has multiple X-UA-Compatible directives targetted at the same UA."
+     'en': u"%(response)s has multiple X-UA-Compatible directives targeted \
+at the same UA."
     }
     text = {
      'en': u"""Internet Explorer 8 allows responses to explicitly set the
      rendering mode used for a page.<p>
      This response has more than one such directive targetted at one browser;
      this may cause unpredictable results.<p>
-     See <a href="http://msdn.microsoft.com/en-us/library/cc288325(VS.85).aspx">this blog entry</a> for more information."""
+     See 
+     <a href="http://msdn.microsoft.com/en-us/library/cc288325(VS.85).aspx">
+     this blog entry</a> for more information."""
     }
 
 class XSS_PROTECTION_ON(Message):
@@ -684,7 +705,8 @@ class XSS_PROTECTION_ON(Message):
      Cross-site scripting attack, it will "sanitise" the page to prevent
      the attack. In other words, the page will still render.<p>
      This header probably won't have any effect on other clients.<p>
-     See <a href="http://blogs.msdn.com/b/ieinternals/archive/2011/01/31/controlling-the-internet-explorer-xss-filter-with-the-x-xss-protection-http-header.aspx">this blog entry</a> for more information.
+     See <a href="http://bit.ly/tJbICH">this blog entry</a> for more 
+     information.
      """
     }
 
@@ -702,7 +724,8 @@ class XSS_PROTECTION_OFF(Message):
      this is useful to do, if the protection interferes with the
      application.<p>
      This header probably won't have any effect on other clients.<p>
-     See <a href="http://blogs.msdn.com/b/ieinternals/archive/2011/01/31/controlling-the-internet-explorer-xss-filter-with-the-x-xss-protection-http-header.aspx">this blog entry</a> for more information.
+     See <a href="http://bit.ly/tJbICH">this blog entry</a> for more 
+     information.
      """
     }
 
@@ -720,7 +743,8 @@ class XSS_PROTECTION_BLOCK(Message):
      neutralised, but the content can still be seen. %(response)s instructs IE
      to not show such pages at all, but rather to display an error.<p>
      This header probably won't have any effect on other clients.<p>
-     See <a href="http://blogs.msdn.com/b/ieinternals/archive/2011/01/31/controlling-the-internet-explorer-xss-filter-with-the-x-xss-protection-http-header.aspx">this blog entry</a> for more information.
+     See <a href="http://bit.ly/tJbICH">this blog entry</a> for more 
+     information.
      """
     }
 
@@ -823,7 +847,8 @@ class RANGE_NEG_MISMATCH(Message):
     category = c.RANGE
     level = l.BAD
     summary = {
-     'en': u"Partial responses don't have the same support for compression that full ones do."
+     'en': u"Partial responses don't have the same support for compression \
+that full ones do."
     }
     text = {
      'en': u"""This resource supports ranged requests and also supports
@@ -896,7 +921,8 @@ class CONNEG_GZIP_GOOD(Message):
     category = c.CONNEG
     level = l.GOOD
     summary = {
-    'en': u'Content negotiation for gzip compression is supported, saving %(savings)s%%.'
+    'en': u'Content negotiation for gzip compression is supported, saving \
+%(savings)s%%.'
     }
     text = {
     'en': u"""HTTP supports compression of responses by negotiating for
@@ -910,7 +936,8 @@ class CONNEG_GZIP_BAD(Message):
     category = c.CONNEG
     level = l.WARN
     summary = {
-    'en': u'Content negotiation for gzip compression makes the response %(savings)s%% larger.'
+    'en': u'Content negotiation for gzip compression makes the response \
+%(savings)s%% larger.'
     }
     text = {
     'en': u"""HTTP supports compression of responses by negotiating for
@@ -940,7 +967,8 @@ class CONNEG_NO_VARY(Message):
     category = c.CONNEG
     level = l.BAD
     summary = {
-    'en': u"%(response)s is negotiated, but doesn't have an appropriate Vary header."
+    'en': u"%(response)s is negotiated, but doesn't have an appropriate \
+Vary header."
     }
     text = {
     'en': u"""All content negotiated responses need to have a
@@ -991,7 +1019,8 @@ class VARY_STATUS_MISMATCH(Message):
     category = c.CONNEG
     level = l.BAD
     summary = {
-     'en': u"The response status is different when content negotiation happens."
+     'en': u"The response status is different when content negotiation \
+happens."
     }
     text = {
      'en': u"""When content negotiation is used, the response status
@@ -1007,7 +1036,8 @@ class VARY_HEADER_MISMATCH(Message):
     category = c.CONNEG
     level = l.BAD
     summary = {
-     'en': u"The %(header)s header is different when content negotiation happens."
+     'en': u"The %(header)s header is different when content negotiation \
+happens."
     }
     text = {
      'en': u"""When content negotiation is used, the %(header)s response
@@ -1084,7 +1114,8 @@ class AGE_PENALTY(Message):
     category = c.GENERAL
     level = l.WARN
     summary = {
-     'en': u"It appears that the Date header has been changed by an intermediary."
+     'en': u"It appears that the Date header has been changed by an \
+intermediary."
     }
     text = {
      'en': u"""It appears that this response has been cached by a reverse
@@ -1095,8 +1126,8 @@ class AGE_PENALTY(Message):
      (if they have another means of determining how fresh the response is), or
      leave the <code>Date</code> header alone (i.e., act as a normal HTTP
      cache).<p>
-     See <a href="http://www2.research.att.com/~edith/Papers/HTML/usits01/index.html">
-     this paper</a> for more information."""
+     See <a href="http://bit.ly/sd64Tc">this paper</a> for more
+     information."""
     }
 
 class DATE_CLOCKLESS(Message):
@@ -1115,7 +1146,8 @@ class DATE_CLOCKLESS_BAD_HDR(Message):
     category = c.CACHING
     level = l.BAD
     summary = {
-     'en': u"Responses without a Date aren't allowed to have Expires or Last-Modified values."
+     'en': u"Responses without a Date aren't allowed to have Expires or \
+Last-Modified values."
     }
     text = {
      'en': u"""Because both the <code>Expires</code> and
@@ -1141,7 +1173,8 @@ class CC_MISCAP(Message):
     category = c.CACHING
     level = l.WARN
     summary = {
-     'en': u"The %(cc)s Cache-Control directive appears to have incorrect capitalisation."
+     'en': u"The %(cc)s Cache-Control directive appears to have incorrect \
+capitalisation."
     }
     text = {
      'en': u"""Cache-Control directive names are case-sensitive, and will not
@@ -1386,7 +1419,8 @@ class FRESHNESS_HEURISTIC(Message):
     category = c.CACHING
     level = l.WARN
     summary = {
-     'en': u"%(response)s allows a cache to assign its own freshness lifetime."
+     'en': u"%(response)s allows a cache to assign its own freshness \
+lifetime."
     }
     text = {
      'en': u"""When responses with certain status codes don't have explicit
@@ -1405,7 +1439,8 @@ class FRESHNESS_NONE(Message):
     category = c.CACHING
     level = l.INFO
     summary = {
-     'en': u"%(response)s can only be served by a cache under exceptional circumstances."
+     'en': u"%(response)s can only be served by a cache under exceptional \
+circumstances."
     }
     text = {
      'en': u"""%(response)s doesn't have explicit freshness information (like
@@ -1483,7 +1518,8 @@ class FRESH_PROXY_REVALIDATE(Message):
     category = c.CACHING
     level = l.INFO
     summary = {
-     'en': u"%(response)s cannot be served by a shared cache once it becomes stale."
+     'en': u"%(response)s cannot be served by a shared cache once it becomes \
+stale."
     }
     text = {
     'en': u"""The presence of the <code>Cache-Control: proxy-revalidate</code>
@@ -1499,7 +1535,8 @@ class STALE_PROXY_REVALIDATE(Message):
     category = c.CACHING
     level = l.INFO
     summary = {
-     'en': u"%(response)s cannot be served by a shared cache, because it is stale."
+     'en': u"%(response)s cannot be served by a shared cache, because it is \
+stale."
     }
     text = {
     'en': u"""The presence of the <code>Cache-Control: proxy-revalidate</code>
@@ -1515,7 +1552,8 @@ class CHECK_SINGLE(Message):
     category = c.CACHING
     level = l.WARN
     summary = {
-     'en': u"Only one of the pre-check and post-check Cache-Control directives is present."
+     'en': u"Only one of the pre-check and post-check Cache-Control \
+directives is present."
     }
     text = {
      'en': u"""Microsoft Internet Explorer implements two
@@ -1524,7 +1562,8 @@ class CHECK_SINGLE(Message):
      responses.<p> %(response)s uses only one of these directives; as a
      result, Internet Explorer will ignore the directive, since it requires
      both to be present.<p>
-     See <a href="http://blogs.msdn.com/ieinternals/archive/2009/07/20/Using-post_2D00_check-and-pre_2D00_check-cache-directives.aspx">this blog entry</a> for more information.
+     See <a href="http://bit.ly/rzT0um">this blog entry</a> for more
+     information.
      """
     }
 
@@ -1532,7 +1571,8 @@ class CHECK_NOT_INTEGER(Message):
     category = c.CACHING
     level = l.WARN
     summary = {
-     'en': u"One of the pre-check/post-check Cache-Control directives has a non-integer value."
+     'en': u"One of the pre-check/post-check Cache-Control directives has \
+a non-integer value."
     }
     text = {
      'en': u"""Microsoft Internet Explorer implements two
@@ -1540,7 +1580,8 @@ class CHECK_NOT_INTEGER(Message):
      <code>post-check</code>, to give more control over how its cache stores
      responses.<p> Their values are required to be integers, but here at least
      one is not. As a result, Internet Explorer will ignore the directive.<p>
-     See <a href="http://blogs.msdn.com/ieinternals/archive/2009/07/20/Using-post_2D00_check-and-pre_2D00_check-cache-directives.aspx">this blog entry</a> for more information.
+     See <a href="http://bit.ly/rzT0um">this blog entry</a> for more
+     information.
      """
     }
 
@@ -1548,7 +1589,8 @@ class CHECK_ALL_ZERO(Message):
     category = c.CACHING
     level = l.WARN
     summary = {
-     'en': u"The pre-check and post-check Cache-Control directives are both '0'."
+     'en': u"The pre-check and post-check Cache-Control directives are both \
+'0'."
     }
     text = {
      'en': u"""Microsoft Internet Explorer implements two
@@ -1559,8 +1601,9 @@ class CHECK_ALL_ZERO(Message):
      present.<p>
      In other words, setting these to zero has <strong>no effect</strong>
      (besides wasting bandwidth), and may trigger bugs in some beta versions
-     of IE.<p> See <a  href="http://blogs.msdn.com/ieinternals/archive/2009/07/20/Using-post_2D00_check-and-pre_2D00_check-cache-directives.aspx">this
-     blog entry</a> for more information.
+     of IE.<p>
+     See <a href="http://bit.ly/rzT0um">this blog entry</a> for more
+     information.
      """
     }
 
@@ -1568,7 +1611,8 @@ class CHECK_POST_BIGGER(Message):
     category = c.CACHING
     level = l.WARN
     summary = {
-     'en': u"The post-check Cache-control directive's value is larger than pre-check's."
+     'en': u"The post-check Cache-control directive's value is larger \
+than pre-check's."
     }
     text = {
      'en': u"""Microsoft Internet Explorer implements two
@@ -1578,7 +1622,8 @@ class CHECK_POST_BIGGER(Message):
      <code>post-check</code> than to <code>pre-check</code>; this means that
      Internet Explorer will treat <code>post-check</code> as if its value is
      the same as <code>pre-check</code>'s.<p>
-     See <a href="http://blogs.msdn.com/ieinternals/archive/2009/07/20/Using-post_2D00_check-and-pre_2D00_check-cache-directives.aspx">this blog entry</a> for more information.
+     See <a href="http://bit.ly/rzT0um">this blog entry</a> for more
+     information.
      """
     }
 
@@ -1596,7 +1641,8 @@ class CHECK_POST_ZERO(Message):
      <code>post-check</code>, which means that Internet Explorer will reload
      the content as soon as it enters the browser cache, effectively
      <strong>doubling the load on the server</strong>.<p>
-     See <a href="http://blogs.msdn.com/ieinternals/archive/2009/07/20/Using-post_2D00_check-and-pre_2D00_check-cache-directives.aspx">this blog entry</a> for more information.
+     See <a href="http://bit.ly/rzT0um">this blog entry</a> for more
+     information.
      """
     }
 
@@ -1604,7 +1650,8 @@ class CHECK_POST_PRE(Message):
     category = c.CACHING
     level = l.INFO
     summary = {
-     'en': u"%(response)s may be refreshed in the background by Internet Explorer."
+     'en': u"%(response)s may be refreshed in the background by Internet \
+Explorer."
     }
     text = {
      'en': u"""Microsoft Internet Explorer implements two
@@ -1616,7 +1663,8 @@ class CHECK_POST_PRE(Message):
      for more than %(pre-check)s seconds, the browser will download a fresh
      response before showing it to the user.<p> Note that these directives do
      not have any effect on other clients or caches.<p>
-     See <a href="http://blogs.msdn.com/ieinternals/archive/2009/07/20/Using-post_2D00_check-and-pre_2D00_check-cache-directives.aspx">this blog entry</a> for more information.
+     See <a href="http://bit.ly/rzT0um">this blog entry</a> for more
+     information.
      """
     }
 
@@ -1642,7 +1690,8 @@ class INM_FULL(Message):
     category = c.VALIDATION
     level = l.WARN
     summary = {
-    'en': u"An If-None-Match conditional request returned the full content unchanged."
+    'en': u"An If-None-Match conditional request returned the full content \
+unchanged."
     }
     text = {
     'en': u"""HTTP allows clients to make conditional requests to see if a 
@@ -1658,7 +1707,8 @@ class INM_DUP_ETAG_WEAK(Message):
     category = c.VALIDATION
     level = l.INFO
     summary = {
-    'en': u"During validation, the ETag didn't change, even though the response body did."
+    'en': u"During validation, the ETag didn't change, even though the \
+response body did."
     }
     text = {
     'en': u"""<code>ETag</code>s are supposed to uniquely identify the
@@ -1678,7 +1728,8 @@ class INM_DUP_ETAG_STRONG(Message):
     category = c.VALIDATION
     level = l.BAD
     summary = {
-    'en': u"During validation, the ETag didn't change, even though the response body did."
+    'en': u"During validation, the ETag didn't change, even though the \
+response body did."
     }
     text = {
     'en': u"""<code>ETag</code>s are supposed to uniquely identify the
@@ -1697,7 +1748,8 @@ class INM_UNKNOWN(Message):
     category = c.VALIDATION
     level = l.INFO
     summary = {
-     'en': u"An If-None-Match conditional request returned the full content, but it had changed."
+     'en': u"An If-None-Match conditional request returned the full \
+content, but it had changed."
     }
     text = {
     'en': u"""HTTP allows clients to make conditional requests to see if a 
@@ -1713,7 +1765,8 @@ class INM_STATUS(Message):
     category = c.VALIDATION
     level = l.INFO
     summary = {
-    'en': u"An If-None-Match conditional request returned a %(inm_status)s status."
+    'en': u"An If-None-Match conditional request returned a %(inm_status)s \
+status."
     }
     text = {
     'en': u"""HTTP allows clients to make conditional requests to see if a 
@@ -1747,7 +1800,8 @@ class IMS_FULL(Message):
     category = c.VALIDATION
     level = l.WARN
     summary = {
-    'en': u"An If-Modified-Since conditional request returned the full content unchanged."
+    'en': u"An If-Modified-Since conditional request returned the full \
+content unchanged."
     }
     text = {
     'en': u"""HTTP allows clients to make conditional requests to see if a 
@@ -1763,7 +1817,8 @@ class IMS_UNKNOWN(Message):
     category = c.VALIDATION
     level = l.INFO
     summary = {
-     'en': u"An If-Modified-Since conditional request returned the full content, but it had changed."
+     'en': u"An If-Modified-Since conditional request returned the full \
+content, but it had changed."
     }
     text = {
     'en': u"""HTTP allows clients to make conditional requests to see if a 
@@ -1779,7 +1834,8 @@ class IMS_STATUS(Message):
     category = c.VALIDATION
     level = l.INFO
     summary = {
-    'en': u"An If-Modified-Since conditional request returned a %(ims_status)s status."
+    'en': u"An If-Modified-Since conditional request returned a \
+%(ims_status)s status."
     }
     text = {
     'en': u"""HTTP allows clients to make conditional requests to see if a 
@@ -2139,7 +2195,8 @@ class PARAM_STAR_BAD(Message):
     category = c.GENERAL
     level = l.BAD
     summary = {
-     'en': u"The %(param)s* parameter isn't allowed on the %(field_name)s header."
+     'en': u"The %(param)s* parameter isn't allowed on the %(field_name)s \
+header."
     }
     text = {
      'en': u"""Parameter values that end in '*' are reserved for 
@@ -2170,7 +2227,8 @@ class PARAM_STAR_CHARSET(Message):
     category = c.GENERAL
     level = l.WARN
     summary = {
-     'en': u"The %(param)s parameter's value uses an encoding other than UTF-8."
+     'en': u"The %(param)s parameter's value uses an encoding other than \
+UTF-8."
     }
     text = {
      'en': u"""Parameter values that end in '*' have a specific format,
@@ -2197,7 +2255,8 @@ class PARAM_SINGLE_QUOTED(Message):
     category = c.GENERAL
     level = l.WARN
     summary = {
-     'en': u"The '%(param)s' parameter on the %(field_name)s header is single-quoted."
+     'en': u"The '%(param)s' parameter on the %(field_name)s header is \
+single-quoted."
     }
     text = {
      'en': u"""The <code>%(param)s</code>'s value on the %(field_name)s 
@@ -2226,7 +2285,8 @@ class DISPOSITION_OMITS_FILENAME(Message):
     category = c.GENERAL
     level = l.WARN
     summary = {
-     'en': u"The Content-Disposition header doesn't have a 'filename' parameter."
+     'en': u"The Content-Disposition header doesn't have a 'filename' \
+parameter."
     }
     text = {
      'en': u"""The <code>Content-Disposition</code> header suggests a 
@@ -2241,7 +2301,8 @@ class DISPOSITION_FILENAME_PERCENT(Message):
     category = c.GENERAL
     level = l.WARN
     summary = {
-     'en': u"The 'filename' parameter on the Content-Disposition header contains a '%%' character."
+     'en': u"The 'filename' parameter on the Content-Disposition header \
+contains a '%%' character."
     }
     text = {
      'en': u"""The <code>Content-Disposition</code> header suggests a 
@@ -2262,7 +2323,8 @@ class DISPOSITION_FILENAME_PATH_CHAR(Message):
     category = c.GENERAL
     level = l.WARN
     summary = {
-     'en': u"The filename in the Content-Disposition header contains a path character."
+     'en': u"The filename in the Content-Disposition header contains a \
+path character."
     }
     text = {
      'en': u"""The <code>Content-Disposition</code> header suggests a 
@@ -2338,7 +2400,8 @@ class SET_COOKIE_BAD_DATE(Message):
     category = c.GENERAL
     level=l.WARN
     summary = {
-     'en': u"The %(cookie_name)s Set-Cookie header has an invalid Expires date."
+     'en': u"The %(cookie_name)s Set-Cookie header has an invalid Expires \
+date."
     }
     text = {
      'en': u"""The <code>expires</code> date on this <code>Set-Cookie</code>
@@ -2388,7 +2451,8 @@ class SET_COOKIE_UNKNOWN_ATTRIBUTE(Message):
     category = c.GENERAL
     level=l.WARN
     summary = {
-     'en': u"The %(cookie_name)s Set-Cookie header has an unknown attribute, '%(attribute)s'."
+     'en': u"The %(cookie_name)s Set-Cookie header has an unknown attribute, \
+'%(attribute)s'."
     }
     text = {
      'en': u"""This <code>Set-Cookie</code> header has an extra parameter,
@@ -2400,13 +2464,17 @@ class SET_COOKIE_UNKNOWN_ATTRIBUTE(Message):
 
 if __name__ == '__main__':
     # do a sanity check on all of the defined messages
-    import types
+    import re, types
     for n, v in locals().items():
-        if type(v) is types.ClassType and issubclass(v, Message) and n != "Message":
+        if type(v) is types.ClassType and issubclass(v, Message) \
+          and n != "Message":
             print "checking", n
             assert v.category in c.__class__.__dict__.values(), n
             assert v.level in l.__class__.__dict__.values(), n
             assert type(v.summary) is types.DictType, n
             assert v.summary != {}, n
+            assert v.summary.has_key('en'), n
+            assert not re.search("\s{2,}", v.summary['en']), n
             assert type(v.text) is types.DictType, n
             assert v.text != {}, n
+            assert v.text.has_key('en'), n

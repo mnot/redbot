@@ -48,8 +48,9 @@ HDR_KEEP_ALIVE = {
     implies that such a header exists, not because anyone actually uses it.<p>
     Some implementations (e.g., <a href="http://httpd.apache.org/">Apache</a>)
     do generate a <code>Keep-Alive</code> header to convey how many requests
-    they're willing to serve on a single connection, what the connection timeout
-    is and other information. However, this isn't usually used by clients.<p>
+    they're willing to serve on a single connection, what the connection
+    timeout is and other information. However, this isn't usually used by
+    clients.<p>
     It's safe to remove this header if you wish to save a few bytes in the
     response."""
 }
@@ -62,26 +63,27 @@ HDR_X_CNECTION = \
 HDR__ONNECTION = {
      'en': u"""
      The <code>%(field_name)s</code> field usually means that a HTTP load
-     balancer, proxy or other intermediary in front of the server has rewritten
-     the <code>Connection</code> header, to allow it to insert its own.<p>
-     Usually, this is done so that clients won't see <code>Connection: close</code>
-     so that the connection can be reused.<p>
-     It takes this form because the most efficient way of assuring that clients
-     don't see the header is to rearrange or change individual characters in its
-     name.
+     balancer, proxy or other intermediary in front of the server has
+     rewritten the <code>Connection</code> header, to allow it to insert its
+     own.<p>
+     Usually, this is done so that clients won't see <code>Connection:
+     close</code> so that the connection can be reused.<p>
+     It takes this form because the most efficient way of assuring that
+     clients don't see the header is to rearrange or change individual
+     characters in its name.
      """
 }
 
 HDR_CTEONNT_LENGTH = {
      'en': u"""
      The <code>%(field_name)s</code> field usually means that a HTTP load
-     balancer, proxy or other intermediary in front of the server has rewritten
-     the <code>Content-Length</code> header, to allow it to insert its own.<p>
-     Usually, this is done because an intermediary has dynamically compressed
-     the response.<p>
-     It takes this form because the most efficient way of assuring that clients
-     don't see the header is to rearrange or change individual characters in its
-     name.
+     balancer, proxy or other intermediary in front of the server has
+     rewritten the <code>Content-Length</code> header, to allow it to insert
+     its own.<p> Usually, this is done because an intermediary has dynamically
+     compressed the response.<p>
+     It takes this form because the most efficient way of assuring that
+     clients don't see the header is to rearrange or change individual
+     characters in its name.
      """
 }
 
@@ -95,8 +97,9 @@ HDR_X_BROWSERALIGNMENT = {
      Very old versions of the Netscape browser had a
      bug whereby a response whose headers were exactly 256 or 257 bytes long,
      the browser would consider the response (e.g., an image) invalid.<p>
-     Since the affected browsers (specifically, Netscape 2.x, 3.x and 4.0 up to
-     beta 2) are no longer widely used, it's probably safe to omit this header.
+     Since the affected browsers (specifically, Netscape 2.x, 3.x and 4.0 up 
+     to beta 2) are no longer widely used, it's probably safe to omit this 
+     header.
      """
 }
 
@@ -131,16 +134,16 @@ HDR_DATE = {
     'en': u"""The <code>Date</code> header represents the time
         when the message was generated, regardless of caching that
         happened since.<p>
-        It is used by caches as input to expiration calculations, and to detect
-        clock drift."""
+        It is used by caches as input to expiration calculations, and to
+        detect clock drift."""
 }
 
 HDR_HOST = {
     'en': u"""The <code>Host</code> header specifies the host
         and port number (if it's not the default) of the resource
         being requested.<p>
-        HTTP/1.1 requires servers to reject requests without a <code>Host</code>
-        header."""
+        HTTP/1.1 requires servers to reject requests without a 
+        <code>Host</code> header."""
 }
 
 HDR_TE = {
@@ -155,16 +158,18 @@ HDR_TE = {
 
 HDR_TRAILER = {
     'en': u"""The <code>Trailer</code> header indicates that the given set of
-        header fields will be present in the trailer of the message, after the body."""
+        header fields will be present in the trailer of the message, after the 
+        body."""
 }
 
 HDR_TRANSFER_ENCODING = {
     'en': u"""The <code>Transfer-Encoding</code> header indicates what
         (if any) type of transformation has been applied to
         the message body.<p>
-        This differs from <code>Content-Encoding</code> in that transfer-codings
-        are a property of the message, not of the representation; i.e., it will
-        be removed by the next "hop", whereas content-codings are end-to-end.<p>
+        This differs from <code>Content-Encoding</code> in that
+        transfer-codings are a property of the message, not of the
+        representation; i.e., it will be removed by the next "hop", whereas
+        content-codings are end-to-end.<p> 
         The most commonly used transfer-coding is <code>chunked</code>, which
         allows persistent connections to be used without knowing the entire
         body's length."""
@@ -194,9 +199,9 @@ HDR_ALLOW = {
 HDR_EXPECT = {
     'en': u"""The <code>Expect</code> header is used to indicate that
         particular server behaviors are required by the client.<p>
-        Currently, it has one use; the <code>100-continue</code>
-        directive, which indicates that the client wants the server to indicate
-        that the request is acceptable before the request body is sent.<p>
+        Currently, it has one use; the <code>100-continue</code> directive,
+        which indicates that the client wants the server to indicate that the
+        request is acceptable before the request body is sent.<p>
         If the expectation isn't met, the server will generate a
         <code>417 Expectation Failed</code> response."""
 }
@@ -204,8 +209,8 @@ HDR_EXPECT = {
 HDR_FROM = {
     'en': u"""The <code>From</code> header contains an
         e-mail address for the user.<p>
-        It is not commonly used, because servers don't often record or otherwise
-        use it."""
+        It is not commonly used, because servers don't often record or
+        otherwise use it."""
 }
 
 HDR_LOCATION = {
@@ -430,8 +435,9 @@ HDR_VARY = {
         of request headers that determines whether a cache is permitted to
         use the response to reply to a subsequent request
         without validation.<p>
-        In uncacheable or stale responses, the Vary field value advises
-        the user agent about the criteria that were used to select the representation."""
+        In uncacheable or stale responses, the Vary field value advises the
+        user agent about the criteria that were used to select the
+        representation."""
 }
 
 HDR_WARNING = {
