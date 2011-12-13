@@ -79,7 +79,7 @@ class ResponseStatusChecker:
         )
 
     def status100(self):        # Continue
-        if not "100-continue" in thor.http.get_headder(self.red.req_hdrs, 'expect'):
+        if not "100-continue" in thor.http.get_header(self.red.req_hdrs, 'expect'):
             self.set_message('', rs.UNEXPECTED_CONTINUE)
     def status101(self):        # Switching Protocols
         if not 'upgrade' in thor.http.header_dict(self.red.req_hdrs).keys():

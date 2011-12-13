@@ -77,9 +77,9 @@ class RedFetcher(object):
         self.body_procs = body_procs or []
         self.done_cb = None
         self.outstanding_tasks = 0
-        self._md5_processor = hashlib.md5()
+        self._md5_processor = hashlib.md5() #pylint: disable=E1101
         self._gzip_processor = zlib.decompressobj(-zlib.MAX_WBITS)
-        self._md5_post_processor = hashlib.md5()
+        self._md5_post_processor = hashlib.md5() #pylint: disable=E1101
         self._in_gzip_body = False
         self._gzip_header_buffer = ""
         self._gzip_ok = True # turn False if we have a problem

@@ -29,6 +29,9 @@ THE SOFTWARE.
 
 ### FIXME: This code is NOT yet converted to the new Formatter.
 
+import redbot.speak as rs
+
+nl = u"\n"
 
 class RstOutputFormatter(object):
     

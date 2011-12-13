@@ -16,4 +16,6 @@ deploy:
 
 .PHONY: lint
 lint:
-	PYTHONLIB=../ pylint-2.7 -i y redbot
+	PYTHONPATH=../ pylint-2.7 -i y \
+	-d  C0103,C0322,C0323,C0111,R0903,R0801,W0611,W0613 \
+	redbot
