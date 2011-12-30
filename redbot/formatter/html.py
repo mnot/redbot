@@ -266,7 +266,19 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         self.sample_complete = True
 
     def feed(self, red, chunk):
-        self.store_body_sample(chunk)
+        """store the first self.sample_size bytes of the response"""
+        if not hasattr(red, "body_sample"):
+            red.body_sample = ""
+        if self.sample_seen + len(chunk) < self.body_sample_size:
+            red.body_sample += chunk
+            self.sample_seen += len(chunk)
+        elif self.sample_seen < self.body_sample_size:
+            max_chunk = self.body_sample_size - self.sample_seen
+            red.body_sample += chunk[:max_chunk]
+            self.sample_seen += len(chunk)
+            self.sample_complete = False
+        else:
+            self.sample_complete = False
         
     def finish_output(self):
         self.final_status()
@@ -455,7 +467,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             if self.validators.has_key(media_type):
                 options.append((u"<a href='%s' accesskey='v'>validate body</a>" %
                    self.validators[media_type] % e_query_arg(red.uri), ""))
-            if red.link_count > 0:
+            if hasattr(red, "link_count") and red.link_count > 0:
                 options.append((
                      u"<a href='?descend=True&uri=%s' accesskey='a'>check assets</a>" % \
                          e_query_arg(red.uri), 
@@ -465,22 +477,6 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             [o and "<span class='option' title='%s'>%s</span>" % (o[1], o[0])
              or "<br>" for o in options]
         )
-
-    def store_body_sample(self, chunk):
-        """store the first self.sample_size bytes of the response"""
-        if not hasattr(self.red, "body_sample"):
-            self.red.body_sample = ""
-        if self.sample_seen + len(chunk) < self.body_sample_size:
-            self.red.body_sample += chunk
-            self.sample_seen += len(chunk)
-        elif self.sample_seen < self.body_sample_size:
-            max_chunk = self.body_sample_size - self.sample_seen
-            self.red.body_sample += chunk[:max_chunk]
-            self.sample_seen += len(chunk)
-            self.sample_complete = False
-        else:
-            self.sample_complete = False
-
 
 
 class HeaderPresenter(object):
