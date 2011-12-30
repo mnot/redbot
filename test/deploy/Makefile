@@ -7,6 +7,7 @@ deploy: clean
 	chmod a+x webui.py
 	cp $(source)/bin/redbot redbot.py
 	chmod a+x redbot.py
+	mkdir -p static
 	cp -Rp $(source)/share/* static/
 	cp -Rp $(source)/redbot .
 	git clone --depth 1 git://github.com/mnot/thor.git thor-src
