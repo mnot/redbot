@@ -28,6 +28,7 @@ THE SOFTWARE.
 """
 
 from redbot.headers import relative_time, f_num
+import redbot.headers as rh
 import redbot.speak as rs
 
 ### configuration
@@ -39,16 +40,29 @@ def checkCaching(state):
     "Examine HTTP caching characteristics."
     
     # TODO: check URI for query string, message about HTTP/1.0 if so
+
+    # get header values
+    lm = state.parsed_hdrs.get('last-modified', None)
+    date = state.parsed_hdrs.get('date', None)
+    cc_set = state.parsed_hdrs.get('cache-control', [])
+    cc_list = [k for (k, v) in cc_set]
+    cc_dict = dict(cc_set)
+    cc_keys = cc_dict.keys()
+    
+    # Last-Modified
+    if lm:
+      serv_date = date or state.res_ts
+      if lm > (date or serv_date):
+          state.set_message('header-last-modified', rs.LM_FUTURE)
+      else:
+          state.set_message('header-last-modified', rs.LM_PRESENT,
+            last_modified_string=rh.relative_time(lm, serv_date))
+    
     # known Cache-Control directives that don't allow duplicates
     known_cc = ["max-age", "no-store", "s-maxage", "public",
                 "private", "pre-check", "post-check",
                 "stale-while-revalidate", "stale-if-error",
     ]
-
-    cc_set = state.parsed_hdrs.get('cache-control', [])
-    cc_list = [k for (k, v) in cc_set]
-    cc_dict = dict(cc_set)
-    cc_keys = cc_dict.keys()
 
     # check for mis-capitalised directives /
     # assure there aren't any dup directives with different values
