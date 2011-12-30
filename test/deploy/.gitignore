@@ -1,0 +1,7 @@
+*.py
+redbot
+thor
+thor-src
+*.old
+static
+
