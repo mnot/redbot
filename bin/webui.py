@@ -110,6 +110,7 @@ class RedWebUi(object):
         self.req_hdrs = None
         self.format = None
         self.test_id = None
+        self.req_type = None
         self.descend = None
         self.save = None
         self.parse_qs(method, query_string)
@@ -254,10 +255,15 @@ class RedWebUi(object):
             descend=self.descend
         )
 #        sys.stdout.write(pickle.dumps(ired.state))
-        formatter.set_red(ired.state)
         formatter.start_output()
 
         def done():
+            if self.req_type:
+            # TODO: catch errors
+                state = ired.state.subreqs.get(self.req_type, None)
+            else:
+                state = ired.state
+            formatter.set_red(state)
             formatter.finish_output()
             self.response_done([])
             if test_id:
@@ -295,6 +301,7 @@ class RedWebUi(object):
                             if rh.find(":") > 0
                         ]
         self.format = qs.get('format', ['html'])[0]
+        self.req_type = qs.get('request', [None])[0]
         self.test_id = qs.get('id', [None])[0] 
         self.descend = qs.get('descend', [False])[0]
         if method == "POST":
