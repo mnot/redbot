@@ -189,7 +189,7 @@ class RedWebUi(object):
             return
         is_saved = mtime > thor.time()
         try:
-            ired = pickle.load(fd)
+            state = pickle.load(fd)
         except (pickle.PickleError, EOFError):
             self.response_start(
                 "500", "Internal Server Error", [
@@ -206,7 +206,7 @@ class RedWebUi(object):
             fd.close()
             
         formatter = find_formatter(self.format, 'html', self.descend)(
-            self.base_uri, ired.uri, ired.orig_req_hdrs, lang,
+            self.base_uri, state.uri, state.orig_req_hdrs, lang,
             self.output, allow_save=(not is_saved), is_saved=True,
             test_id=self.test_id
         )
@@ -216,9 +216,12 @@ class RedWebUi(object):
                 formatter.media_type, charset)), 
             ("Cache-Control", "max-age=3600, must-revalidate")
         ])
+        if self.req_type:
+        # TODO: catch errors
+            state = state.subreqs.get(self.req_type, None)
 
         formatter.start_output()
-        formatter.set_red(ired)
+        formatter.set_red(state)
         formatter.finish_output()
         self.response_done([])
 
