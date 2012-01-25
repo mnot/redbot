@@ -11,9 +11,10 @@ function get_config () {
 }
 var config = get_config();
 
-/* URI */
 
 $(document).ready(function() {
+  
+  /* URI */
   
   var check_phrase = "Enter a http:// URI to check";
   if (config.redbot_uri) {
@@ -30,15 +31,12 @@ $(document).ready(function() {
     }
   });
 
-  /* catch enter to work around IE8 */
-  if ($.browser.msie) {
   $("input").keypress(function (e) {
     if (e.which == 13) {
       $("#request_form").submit();
       return false;
     }
   });
-  }
 
   /* help */
   
@@ -51,7 +49,6 @@ $(document).ready(function() {
   $(".help").click(function () {
     $(this).fadeOut();
   });
-
 
   /* single response display */
 

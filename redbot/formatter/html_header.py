@@ -31,7 +31,8 @@
         <span class="help right">Type in a URI here and press 'return' to
         check it. You can also specify request headers by clicking 'add a
         request header.'</span>
-        <input type="url" name="uri" value="%(html_uri)s" id="uri"/><br />
+        <input type="url" name="uri" value="%(html_uri)s" 
+         id="uri" autocomplete="off"/><br />
         <div id="req_hdrs"></div>
         <div class="add_req_hdr">
             <a href="#" id="add_req_hdr">add a request header</a>
