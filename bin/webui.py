@@ -237,9 +237,6 @@ class RedWebUi(object):
         else:
             test_id = None
 
-        # assume HTTP scheme if not given.
-        self.test_uri = urljoin('http:', self.test_uri)
-
         formatter = find_formatter(self.format, 'html', self.descend)(
             self.base_uri, self.test_uri, self.req_hdrs, lang,
             self.output, allow_save=test_id, is_saved=False,
