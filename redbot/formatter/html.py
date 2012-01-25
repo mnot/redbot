@@ -469,7 +469,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                    self.validators[media_type] % e_query_arg(red.uri), ""))
             if hasattr(red, "link_count") and red.link_count > 0:
                 options.append((
-                     u"<a href='?descend=True&uri=%s' accesskey='a'>check assets</a>" % \
+                     u"<a href='?descend=True&uri=%s' accesskey='a'>check embedded</a>" % \
                          e_query_arg(red.uri), 
                     "run RED on images, frames and embedded links"
                 ))
