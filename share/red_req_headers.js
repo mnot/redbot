@@ -87,7 +87,7 @@ function add_req_hdr(hdr_name, hdr_val){
   }
 
   /* populate the value when the header name is changed */
-  $("select.hdr_name:last").bind("change", function(){
+  $("select.hdr_name:last").on("change", function(){
     var req_hdr = $(this).closest(".req_hdr");
     var hdr_name = $(".hdr_name > option:selected", req_hdr).val()
     var hdr_val = "";
@@ -104,7 +104,7 @@ function add_req_hdr(hdr_name, hdr_val){
         hdr_val += "<option value='other...'>other...</option>";
         hdr_val += "</select>";
         $(".hdr_val", req_hdr).replaceWith(hdr_val);
-        $("select.hdr_val", req_hdr).bind("change", function(){
+        $("select.hdr_val", req_hdr).on("change", function(){
           var hdr_val = "";
           if ($(".hdr_val > option:selected", req_hdr).val() == "other...") {
             $(".hdr_val", req_hdr)
@@ -114,6 +114,7 @@ function add_req_hdr(hdr_name, hdr_val){
             hdr_val = $(".hdr_val > option:selected", req_hdr).val();
           }
           $("input[type=hidden]", req_hdr).val(hdr_name + ":" + hdr_val);
+          $("#uri").focus();
         });
       }
     } else if (hdr_name == "other...") {
@@ -124,7 +125,7 @@ function add_req_hdr(hdr_name, hdr_val){
       bind_text_changes(req_hdr);
 
       /* alert on dangerous changes */
-      $("input.hdr_name", req_hdr).bind("change", function() {
+      $("input.hdr_name", req_hdr).on("change", function() {
         var hdr_name = $(".hdr_name:text", req_hdr).val();
         if (jQuery.inArray(hdr_name.toLowerCase(), red_req_hdrs) > -1) {
           alert("The " + hdr_name + " request header is used by RED in its \
@@ -133,18 +134,14 @@ tests. Setting it yourself can lead to unpredictable results; please remove it."
       });
     }
   });
-
-  /* handle the delete button */
-  $(".delete_req_hdr:last").bind("click", function(){
-    var req_hdr = $(this).closest(".req_hdr");
-    req_hdr.remove();
-    return false;
-  });
 }
+
+
+
 
 function bind_text_changes(req_hdr) {
   /* handle textbox changes */
-  $("input.hdr_name, input.hdr_val", req_hdr).bind("change", function() {
+  $("input.hdr_name, input.hdr_val", req_hdr).on("change", function() {
     var hdr_name = $(".hdr_name", req_hdr).val();
     var hdr_val = $(".hdr_val:text", req_hdr).val();
     $("input[type=hidden]", req_hdr).val(hdr_name + ":" + hdr_val);
@@ -153,13 +150,24 @@ function bind_text_changes(req_hdr) {
 
 
 $(document).ready(function() {
+  
+  /* add pre-populated headers */
   for (i in config.redbot_req_hdrs) {
     var hdr = config.redbot_req_hdrs[i];
     add_req_hdr(hdr[0], hdr[1]);
   }
   
+  /* handle the add header button */
   $("#add_req_hdr").click(function(){
     add_req_hdr();
     return false;
   });
+    
+  /* handle the delete header button */
+  $("#req_hdrs").on("click", ".delete_req_hdr", function(){
+    var req_hdr = $(this).closest(".req_hdr");
+    req_hdr.remove();
+    return false;
+  });    
+
 });
