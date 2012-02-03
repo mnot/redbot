@@ -30,7 +30,6 @@ import redbot.http_syntax as syntax
 
 
 def parse(subject, value, red):
-    #TODO: message, perhaps allow a ping
     return value
 
 @rh.SingleFieldValue
