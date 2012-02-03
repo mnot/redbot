@@ -30,7 +30,7 @@ import redbot.http_syntax as syntax
 
 
 def parse(subject, value, red):
-    # TODO: check syntax, values?
+    # #53: check syntax, values?
     if red.res_status not in ["206", "416"]:
         red.set_message(subject, rs.CONTENT_RANGE_MEANINGLESS)
     return value
