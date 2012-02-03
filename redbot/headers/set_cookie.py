@@ -36,7 +36,7 @@ import redbot.http_syntax as syntax
 def parse(subject, value, red):
     path = urlsplit(red.uri).path # pylint: disable=E1103
     try:
-        set_cookie = loose_parse(value, path, red.res_done_ts, subject, red)
+        set_cookie = loose_parse(value, path, red.res_ts, subject, red)
     except ValueError:
         set_cookie = None
     return set_cookie
