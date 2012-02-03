@@ -179,6 +179,20 @@ title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
        'baseuri': self.ui_uri,
        'version': droid.__version__,
        }
+
+    def req_qs(self, link):
+        """
+        Format a query string referring to the link.
+        """
+        out = []
+        out.append("uri=%s" % e_query_arg(urljoin(self.uri, link)))
+        if self.req_hdrs:
+            for k,v in self.req_hdrs:
+                out.append("req_hdr=%s%%3A%s" % (
+                    e_query_arg(k), 
+                    e_query_arg(v)
+                ))
+        return "&".join(out)
        
 
 class SingleEntryHtmlFormatter(BaseHtmlFormatter):
@@ -453,7 +467,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         if self.kw.get('test_id', None):
             har_locator = "id=%s" % self.kw['test_id']
         else:
-            har_locator = "uri=%s" % e_query_arg(red.uri)
+            har_locator = self.req_qs(red.uri)
         options.append(
             (u"<a href='?%s&format=har' accesskey='h'>view har</a>" % har_locator, 
             "View a HAR (HTTP ARchive, a JSON format) file for this response"
@@ -469,8 +483,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                    self.validators[media_type] % e_query_arg(red.uri), ""))
             if hasattr(red, "link_count") and red.link_count > 0:
                 options.append((
-                     u"<a href='?descend=True&uri=%s' accesskey='a'>check embedded</a>" % \
-                         e_query_arg(red.uri), 
+                     u"<a href='?descend=True&%s' accesskey='a'>check embedded</a>" % \
+                         self.req_qs(red.uri), 
                     "run RED on images, frames and embedded links"
                 ))
         return nl.join(
@@ -508,7 +522,7 @@ class HeaderPresenter(object):
         value = value.rstrip()
         svalue = value.lstrip()
         space = len(value) - len(svalue)
-        return u"%s<a href='?uri=%s'>%s</a>" % (
+        return u"%s<a href='?%s'>%s</a>" % (
             " " * space,
             e_query_arg(urljoin(self.URI, svalue)), 
             self.I(e(svalue), len(name))
@@ -601,7 +615,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             cl = ""
         if len(red.uri) > m:
             out.append(u"""<td class="uri"><a href="%s" title="%s"%s>%s<span class="fade1">%s</span><span class="fade2">%s</span><span class="fade3">%s</span></a></td>""" % (
-                    u"?uri=%s" % e_query_arg(red.uri), 
+                    u"?%s" % self.req_qs(red.uri), 
                     e(red.uri), 
                     cl, 
                     e(red.uri[:m-2]),
@@ -613,7 +627,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         else:
             out.append(
                 u'<td class="uri"><a href="%s" title="%s"%s>%s</a></td>' % (
-                    u"?uri=%s" % e(red.uri), 
+                    u"?%s" % self.req_qs(red.uri), 
                     e(red.uri), 
                     cl, 
                     e(red.uri)
@@ -623,8 +637,8 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             if red.res_status in ['301', '302', '303', '307'] and \
               red.parsed_hdrs.has_key('location'):
                 out.append(
-                    u'<td><a href="?descend=True&uri=%s">%s</a></td>' % (
-                        urljoin(red.uri, red.parsed_hdrs['location']),
+                    u'<td><a href="?descend=True&%s">%s</a></td>' % (
+                        self.req_qs(red.parsed_hdrs['location']),
                         red.res_status
                     )
                 )
@@ -716,7 +730,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         if self.kw.get('test_id', None):
             har_locator = "id=%s" % self.kw['test_id']
         else:
-            har_locator = "uri=%s" % e_query_arg(red.uri)            
+            har_locator = "%s" % self.req_qs(red.uri)
         options.append((
           u"<a href='?%s&descend=True&format=har'>view har</a>" % har_locator,
           u"View a HAR (HTTP ARchive) file for this response"
