@@ -36,12 +36,27 @@ import redbot.speak as rs
 class LmValidate(SubRequest):
     "If Last-Modified is present, see if it will validate."
 
+    _weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    _months = [None, 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 
+                     'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
     def modify_req_hdrs(self):
         req_hdrs = list(self.base.req_hdrs)
         if self.base.parsed_hdrs.has_key('last-modified'):
-            date_str = time.strftime(
-                '%a, %d %b %Y %H:%M:%S GMT',
-                time.gmtime(self.base.parsed_hdrs['last-modified'])
+            try:
+                lm = datetime.utcfromtimestamp(
+                    self.base.parsed_hdrs['last-modified']
+                )
+            except ValueError:
+                return req_hdrs # TODO: sensible error message.
+            date_str = "%s, %.2d %s %.4d %.2d:%.2d:%.2d GMT" % (
+                self._weekdays[lm.weekday()],
+                lm.day,
+                self._months[lm.month],
+                lm.year,
+                lm.hour,
+                lm.minute,
+                lm.second
             )
             req_hdrs += [
                 ('If-Modified-Since', date_str),
