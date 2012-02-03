@@ -67,8 +67,6 @@ class RangeRequest(SubRequest):
 
     def done(self):
         if self.state.res_status == '206':
-            # TODO: check entity headers
-            # TODO: check content-range
             ce = 'content-encoding'
             if ('gzip' in self.base.parsed_hdrs.get(ce, [])) == \
                ('gzip' not in self.state.parsed_hdrs.get(ce, [])):
