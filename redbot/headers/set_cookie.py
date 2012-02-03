@@ -186,7 +186,7 @@ def loose_date_parse(cookie_date):
                 found_day_of_month = True
                 day_of_month_value = int(re_match.group(1))
                 continue
-        # FIXME: shorter than three chars
+        # TODO: shorter than three chars
         if not found_month and date_token[:3].lower() in MONTHS.keys():
             found_month = True
             month_value = MONTHS[date_token[:3].lower()]
