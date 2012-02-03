@@ -148,4 +148,6 @@ if __name__ == "__main__":
         auto_suite = loader.discover("../redbot/headers", "*.py", '../redbot')
         local_suite = loader.loadTestsFromTestCase(GeneralHeaderTesters)
         all_tests = unittest.TestSuite([local_suite, auto_suite])
-    unittest.TextTestRunner().run(all_tests)
+    result = unittest.TextTestRunner().run(all_tests)
+    if result.errors or result.failures:
+        sys.exit(1)
