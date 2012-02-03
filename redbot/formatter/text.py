@@ -78,24 +78,10 @@ class BaseTextFormatter(Formatter):
         else:
             if self.red.res_error == None:
                 pass
-            elif isinstance(self.red.res_error, httperr.ConnectError):
-                self.output(
-                  self.error_template % \
-                  "Could not connect to the server (%s)" % \
-                  self.red.res_error.get('detail', "unknown")
-                )
-            elif isinstance(self.red.res_error, httperr.UrlError):
-                self.output(self.error_template % self.red.res_error.get(
-                    'detail', "RED can't fetch that URL."))
-            elif isinstance(self.red.res_error, httperr.ReadTimeoutError):
-                self.output(self.error_template % self.red.res_error['desc'])
-            elif isinstance(self.red.res_error, httperr.HttpVersionError):
-                self.output(
-                  self.error_template % "<code>%s</code> isn't HTTP." % \
-                  self.red.res_error.get('detail', '')[:20]
-                )
+            elif isinstance(self.red.res_error, httperr.HttpError):
+                self.output(self.error_template % self.red.res_error.desc)
             else:
-                raise AssertionError, "Unidentified incomplete response error."
+                raise AssertionError, "Unknown incomplete response error."
 
     def format_headers(self, red):
         out = [u"HTTP/%s %s %s" % (

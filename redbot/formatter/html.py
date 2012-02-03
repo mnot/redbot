@@ -312,27 +312,13 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         else:
             if self.red.res_error == None:
                 pass # usually a global timeout...
-            elif isinstance(self.red.res_error, httperr.ConnectError):
-                self.output(self.error_template % \
-                    "Could not connect to the server (%s)" % \
-                    self.red.res_error.detail or "unknown")
-            elif isinstance(self.red.res_error, httperr.UrlError):
-                self.output(self.error_template % \
-                  "URL error: %s" % self.red.res_error.detail \
-                  or "RED can't fetch that URL.")
-            elif isinstance(self.red.res_error, httperr.DuplicateCLError):
-                self.output(self.error_template % self.red.res_error.desc) 
-            elif isinstance(self.red.res_error, httperr.MalformedCLError):
-                self.output(self.error_template % \
-                "%s (<code>%s</code>)" % (
-                  self.red.res_error.desc, e_html(self.red.res_error.detail)
-                )) 
-            elif isinstance(self.red.res_error, httperr.ReadTimeoutError):
-                self.output(self.error_template % self.red.res_error.desc)
-            elif isinstance(self.red.res_error, httperr.HttpVersionError):
-                self.output(self.error_template % \
-                    "<code>%s</code> isn't HTTP." % \
-                    e_html(self.red.res_error.detail or '')[:20])
+            elif isinstance(self.red.res_error, httperr.HttpError):
+                if self.red.res_error.detail:
+                    self.output(self.error_template % "%s (%s)" % (
+                        self.red.res_error.desc, self.red.res_error.detail)
+                    )
+                else:
+                    self.output(self.error_template % self.red.res_error.desc)
             else:
                 raise AssertionError, \
                   "Unknown incomplete response error %s" % self.red.res_error
