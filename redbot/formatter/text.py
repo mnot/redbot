@@ -115,7 +115,7 @@ class BaseTextFormatter(Formatter):
             out.append(u"* %s:" % category)
         for m in messages:
             out.append(
-                u"  * %s" % (self.colorize(m.level, m.summary["en"] % m.vars))
+                u"  * %s" % (self.colorize(m.level, m.show_summary("en")))
             )
             smsgs = [msg for msg in getattr(m.subrequest, "messages", []) if msg.level in [rs.l.BAD]]
             if smsgs:
@@ -123,7 +123,7 @@ class BaseTextFormatter(Formatter):
                 for sm in smsgs:
                     out.append(
                         u"    * %s" %
-                        (self.colorize(sm.level, sm.summary["en"] % sm.vars))
+                        (self.colorize(sm.level, sm.show_summary("en")))
                     )
                 out.append(nl)
         out.append(nl)

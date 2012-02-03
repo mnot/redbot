@@ -166,7 +166,7 @@ class HarFormatter(Formatter):
                 "subject": m.subject,
                 "category": m.category,
                 "level": m.level,
-                "summary": m.summary[self.lang] % m.vars
+                "summary": m.show_summary(self.lang)
             }
             smsgs = [i for i in getattr(
                 m.subrequest, "messages", []) if i.level in [rs.l.BAD]]
@@ -175,7 +175,7 @@ class HarFormatter(Formatter):
                 "subject": sm.subject,
                 "category": sm.category,
                 "level": sm.level,
-                "summary": sm.summary[self.lang]
+                "summary": m.show_summary(self.lang)
             } for sm in smsgs]
             out.append(msg)
         return out

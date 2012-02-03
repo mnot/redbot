@@ -93,7 +93,7 @@ class Message:
         Note that if it is displayed in an environment that needs 
         encoding (e.g., HTML), that is *NOT* done.
         """
-        return e_html(self.summary[lang] % self.vars)
+        return self.summary[lang] % self.vars
         
     def show_text(self, lang):
         """

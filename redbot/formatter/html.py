@@ -425,7 +425,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 m.level, 
                 e_html(m.subject), 
                 id(m), 
-                m.show_summary(self.lang)
+                e_html(m.show_summary(self.lang))
              )
             )
             self.hidden_text.append(
@@ -444,7 +444,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                             sm.level, 
                             e_html(sm.subject), 
                             id(sm), 
-                            sm.show_summary(self.lang)
+                            e_html(sm.show_summary(self.lang))
                         )
                     )
                     self.hidden_text.append(
