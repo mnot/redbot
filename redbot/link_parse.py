@@ -126,7 +126,7 @@ class HTMLLinkParser(HTMLParser):
                 except ValueError:
                     media_type, params = ct, ''
                 media_type = media_type.lower()
-                param_dict = {} # FIXME: switch to parse_params
+                param_dict = {}
                 for param in rh.split_string(
                     params, syntax.PARAMETER, "\s*;\s*"
                 ):
