@@ -40,7 +40,7 @@ class ETagValidate(SubRequest):
             weak, etag = self.base.parsed_hdrs['etag']
             if weak:
                 weak_str = u"W/"
-                # TODO: message on weak etag
+                # #65: message on weak etag
             else:
                 weak_str = u""
             etag_str = u'%s"%s"' % (weak_str, etag)
