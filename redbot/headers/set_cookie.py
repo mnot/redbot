@@ -50,7 +50,7 @@ def loose_parse(set_cookie_string, uri_path, current_time, subject, red):
     """
     Parse a Set-Cookie string, as per RFC6265, Section 5.2.
     """
-    name = "Set-Cookie" # FIXME: collide
+    name = "Set-Cookie"
     if ';' in set_cookie_string:
         name_value_pair, unparsed_attributes = set_cookie_string.split(";", 1)
     else:
