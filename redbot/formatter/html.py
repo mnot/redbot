@@ -121,8 +121,9 @@ window.status="%s";
         """ % (thor.time() - self.start, e_html(message)))
 
     def final_status(self):
+#        See issue #51
 #        self.status("RED made %(reqs)s requests in %(elapse)2.3f seconds." % {
-# FIXME           'reqs': fetch.total_requests,
+#            'reqs': fetch.total_requests,
         self.status("RED finished in %(elapse)2.3f seconds." % {
            'elapse': thor.time() - self.start
         })
