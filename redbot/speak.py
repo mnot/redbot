@@ -22,7 +22,7 @@ it (but not the short version) need to be escaped.
 
 __author__ = "Mark Nottingham <mnot@mnot.net>"
 __copyright__ = """\
-Copyright (c) 2009-2011 Mark Nottingham
+Copyright (c) 2009-2012 Mark Nottingham
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
