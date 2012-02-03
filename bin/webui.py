@@ -107,7 +107,7 @@ class RedWebUi(object):
         self._response_done = response_done
         
         self.test_uri = None
-        self.req_hdrs = None
+        self.req_hdrs = None # tuple of unicode K,V
         self.format = None
         self.test_id = None
         self.req_type = None
@@ -299,7 +299,7 @@ class RedWebUi(object):
     def parse_qs(self, method, qs):
         """Given an method and a query-string dict, set attributes."""
         self.test_uri = qs.get('uri', [''])[0].decode(charset, 'replace')
-        self.req_hdrs = [tuple(rh.split(":", 1))
+        self.req_hdrs = [tuple(rh.decode(charset, 'replace').split(":", 1))
                             for rh in qs.get("req_hdr", [])
                             if rh.find(":") > 0
                         ]

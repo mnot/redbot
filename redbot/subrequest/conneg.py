@@ -42,7 +42,7 @@ class ConnegCheck(SubRequest):
     def modify_req_hdrs(self):
         return [h for h in self.base.orig_req_hdrs 
                   if h[0].lower() != 'accept-encoding'] + \
-               [('accept-encoding', 'identity')]
+               [(u'accept-encoding', u'identity')]
 
     def preflight(self):
         if "gzip" in self.base.parsed_hdrs.get('content-encoding', []):

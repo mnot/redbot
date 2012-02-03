@@ -48,7 +48,7 @@ class LmValidate(SubRequest):
                 )
             except ValueError:
                 return req_hdrs # TODO: sensible error message.
-            date_str = "%s, %.2d %s %.4d %.2d:%.2d:%.2d GMT" % (
+            date_str = u"%s, %.2d %s %.4d %.2d:%.2d:%.2d GMT" % (
                 self._weekdays[lm.weekday()],
                 lm.day,
                 self._months[lm.month],
@@ -58,7 +58,7 @@ class LmValidate(SubRequest):
                 lm.second
             )
             req_hdrs += [
-                ('If-Modified-Since', date_str),
+                (u'If-Modified-Since', date_str),
             ]
         return req_hdrs
 

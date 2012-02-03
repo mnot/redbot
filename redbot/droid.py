@@ -66,7 +66,7 @@ class ResourceExpertDroid(RedFetcher):
     def __init__(self, uri, method="GET", req_hdrs=None, req_body=None,
                 status_cb=None, body_procs=None):
         orig_req_hdrs = req_hdrs or []
-        rh = orig_req_hdrs + [('Accept-Encoding', 'gzip')]
+        rh = orig_req_hdrs + [(u'Accept-Encoding', u'gzip')]
         RedFetcher.__init__(self, uri, method, rh, req_body,
                             status_cb, body_procs, req_type=method)
 

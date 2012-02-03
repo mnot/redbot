@@ -136,3 +136,4 @@ class RedState(object):
           safe="/;%[]=:$&()+,!?*@'~"
         )
         return urlparse.urlunsplit((scheme, authority, path, query, frag))
+    

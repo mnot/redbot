@@ -49,7 +49,9 @@ class RangeRequest(SubRequest):
                 self.base.res_body_sample[sample_num][1][:sample_len + 1]
             # TODO: uses the compressed version (if available. Revisit.
             req_hdrs += [
-                ('Range', "bytes=%s-%s" % (self.range_start, self.range_end))
+                (u'Range', u"bytes=%s-%s" % (
+                    self.range_start, self.range_end
+                ))
             ]
         return req_hdrs
         

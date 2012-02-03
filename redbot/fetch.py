@@ -143,7 +143,7 @@ class RedFetcher(object):
             return
         if 'user-agent' not in [i[0].lower() for i in state.req_hdrs]:
             state.req_hdrs.append(
-                ("User-Agent", "RED/%s (http://redbot.org/)" % __version__))    
+                (u"User-Agent", u"RED/%s (http://redbot.org/)" % __version__))    
         self.exchange = self.client.exchange()
         self.exchange.on('response_start', self._response_start)
         self.exchange.on('response_body', self._response_body)
@@ -151,7 +151,11 @@ class RedFetcher(object):
         self.exchange.on('error', self._response_error)
         if self.status_cb and state.type:
             self.status_cb("fetching %s (%s)" % (state.uri, state.type))
-        self.exchange.request_start(state.method, state.uri, state.req_hdrs)
+        req_hdrs = [
+            (k.encode('ascii', 'replace'), v.encode('latin-1', 'replace')) \
+            for (k, v) in state.req_hdrs
+        ]
+        self.exchange.request_start(state.method, state.uri, req_hdrs)
         state.req_ts = thor.time()
         if state.req_body != None:
             self.exchange.request_body(state.req_body)
@@ -327,7 +331,7 @@ class RedFetcher(object):
 if "__main__" == __name__:
     import sys
     uri = sys.argv[1]
-    test_req_hdrs = [('Accept-Encoding', 'gzip')]
+    test_req_hdrs = [(u'Accept-Encoding', u'gzip')]
     def status_p(msg):
         print msg
     class TestFetcher(RedFetcher):

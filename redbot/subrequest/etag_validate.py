@@ -39,13 +39,13 @@ class ETagValidate(SubRequest):
         if self.base.parsed_hdrs.has_key('etag'):
             weak, etag = self.base.parsed_hdrs['etag']
             if weak:
-                weak_str = "W/"
+                weak_str = u"W/"
                 # TODO: message on weak etag
             else:
-                weak_str = ""
-            etag_str = '%s"%s"' % (weak_str, etag)
+                weak_str = u""
+            etag_str = u'%s"%s"' % (weak_str, etag)
             req_hdrs += [
-                ('If-None-Match', etag_str),
+                (u'If-None-Match', etag_str),
             ]
         return req_hdrs
             
