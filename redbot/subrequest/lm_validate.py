@@ -28,7 +28,7 @@ THE SOFTWARE.
 """
 
 from cgi import escape as e
-import time
+from datetime import datetime
 
 from redbot.subrequest.base import SubRequest
 import redbot.speak as rs
