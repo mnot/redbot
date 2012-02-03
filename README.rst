@@ -88,7 +88,9 @@ there.
 Credits
 -------
 
-Icons by Momenticon <http://momenticon.com/>.
+Icons by Momenticon <http://momenticon.com/>. REDbot also includes code
+from jQuery <http://jquery.com/> and prettify.js 
+<http://code.google.com/p/google-code-prettify/>.
 
 License
 -------
