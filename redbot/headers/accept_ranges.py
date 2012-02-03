@@ -33,7 +33,7 @@ import redbot.http_syntax as syntax
 def parse(subject, value, red):
     value = value.lower()
     if value not in ['bytes', 'none']:
-        red.set_message(subject, rs.UNKNOWN_RANGE, range=e(value))
+        red.set_message(subject, rs.UNKNOWN_RANGE, range=value)
     return value
     
 def join(subject, values, red):
