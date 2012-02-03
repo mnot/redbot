@@ -31,7 +31,7 @@ import redbot.http_syntax as syntax
 
 @rh.GenericHeaderSyntax
 def parse(subject, value, red):
-    # TODO: explain
+    # see #63
     return value
     
 def join(subject, values, red):
