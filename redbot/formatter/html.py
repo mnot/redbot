@@ -186,10 +186,10 @@ title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
         Format a query string referring to the link.
         """
         out = []
-        out.append("uri=%s" % e_query_arg(urljoin(self.uri, link)))
+        out.append(u"uri=%s" % e_query_arg(urljoin(self.uri, link)))
         if self.req_hdrs:
             for k,v in self.req_hdrs:
-                out.append("req_hdr=%s%%3A%s" % (
+                out.append(u"req_hdr=%s%%3A%s" % (
                     e_query_arg(k), 
                     e_query_arg(v)
                 ))
@@ -544,7 +544,7 @@ class HeaderPresenter(object):
         value = value.rstrip()
         svalue = value.lstrip()
         space = len(value) - len(svalue)
-        return u"%s<a href='?%s'>%s</a>" % (
+        return u"%s<a href='?uri=%s'>%s</a>" % (
             " " * space,
             e_query_arg(urljoin(self.URI, svalue)), 
             self.I(e(svalue), len(name))
