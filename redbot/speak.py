@@ -43,6 +43,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+from cgi import escape as e_html
+
 # message classifications
 class _Classifications:
     GENERAL = u"General"
@@ -83,6 +85,25 @@ class Message:
             return True
         else:
             return False
+
+    def show_summary(self, lang):
+        """
+        Output a textual summary of the message as a Unicode string.
+        
+        Note that if it is displayed in an environment that needs 
+        encoding (e.g., HTML), that is *NOT* done.
+        """
+        return e_html(self.summary[lang] % self.vars)
+        
+    def show_text(self, lang):
+        """
+        Show the HTML text for the message as a Unicode string.
+        
+        The resulting string is already HTML-encoded.
+        """
+        return self.text[lang] % dict(
+            [(k, e_html(unicode(v))) for k, v in self.vars.items()]
+        )
 
 
 response = {
@@ -1996,7 +2017,7 @@ class REDIRECT_WITHOUT_LOCATION(Message):
      'en': u"Redirects need to have a Location header."
     }
     text = {
-     'en': u"""The %(enc_status)s status code redirects users to another URI. 
+     'en': u"""The %(status)s status code redirects users to another URI. 
      The <code>Location</code> header is used to convey this URI, but a valid 
      one isn't present in this response."""
     }
@@ -2117,7 +2138,7 @@ class STATUS_URI_TOO_LONG(Message):
     'en': u"The server won't accept a URI this long (%(uri_len)s characters)."
     }
     text = {
-    'en': u"""The %(enc_status)s status code means that the server can't or 
+    'en': u"""The %(status)s status code means that the server can't or 
     won't accept a request-uri this long."""
     }
 

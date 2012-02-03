@@ -24,7 +24,6 @@ THE SOFTWARE.
 """
 
 from calendar import timegm
-from cgi import escape as e
 from re import match, split
 import string
 from urlparse import urlsplit
@@ -59,7 +58,9 @@ def loose_parse(set_cookie_string, uri_path, current_time, subject, red):
     try:
         name, value = name_value_pair.split("=", 1)
     except ValueError:
-        red.set_message(subject, rs.SET_COOKIE_NO_VAL, name_value_pair.strip()) 
+        red.set_message(subject, rs.SET_COOKIE_NO_VAL,
+            name_value_pair.strip()
+        ) 
         raise
     name, value = name.strip(), value.strip()
     if name == "":
@@ -140,7 +141,7 @@ def loose_parse(set_cookie_string, uri_path, current_time, subject, red):
         else:
             red.set_message(subject, rs.SET_COOKIE_UNKNOWN_ATTRIBUTE,
                 cookie_name=cookie_name,
-                attribute=e(attribute_name)
+                attribute=attribute_name
             )
     return (cookie_name, cookie_value, cookie_attribute_list)
 

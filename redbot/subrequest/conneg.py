@@ -27,7 +27,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from cgi import escape as e
 
 from redbot.subrequest.base import SubRequest
 from redbot.headers import f_num
@@ -85,8 +84,8 @@ class ConnegCheck(SubRequest):
             if no_conneg_vary_headers != vary_headers:
                 self.set_message('header-vary', 
                     rs.VARY_INCONSISTENT,
-                    conneg_vary=e(", ".join(vary_headers)),
-                    no_conneg_vary=e(", ".join(no_conneg_vary_headers))
+                    conneg_vary=", ".join(vary_headers),
+                    no_conneg_vary=", ".join(no_conneg_vary_headers)
                 )
 
             # check body

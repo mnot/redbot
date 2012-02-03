@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from cgi import escape as e
 
 import redbot.speak as rs
 import redbot.headers as rh
@@ -45,7 +44,7 @@ def parse(subject, value, red):
     if disposition not in ['inline', 'attachment']:
         red.set_message(subject,
             rs.DISPOSITION_UNKNOWN,
-            disposition=e(disposition)
+            disposition=disposition
         )
     if not param_dict.has_key('filename'):
         red.set_message(subject, rs.DISPOSITION_OMITS_FILENAME)

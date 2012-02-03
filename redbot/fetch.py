@@ -37,7 +37,6 @@ THE SOFTWARE.
 import base64
 import hashlib
 import zlib
-from cgi import escape as e
 
 import thor
 import thor.http.error as httperr
@@ -203,7 +202,7 @@ class RedFetcher(object):
                     except IOError, gzip_error:
                         state.set_message('header-content-encoding',
                                         rs.BAD_GZIP,
-                                        gzip_error=e(str(gzip_error))
+                                        gzip_error=str(gzip_error)
                         )
                         self._gzip_ok = False
                         return
@@ -213,9 +212,9 @@ class RedFetcher(object):
                     state.set_message(
                         'header-content-encoding', 
                         rs.BAD_ZLIB,
-                        zlib_error=e(str(zlib_error)),
+                        zlib_error=str(zlib_error),
                         ok_zlib_len=f_num(state.res_body_sample[-1][0]),
-                        chunk_sample=e(chunk[:20].encode('string_escape'))
+                        chunk_sample=chunk[:20].encode('string_escape')
                     )
                     self._gzip_ok = False
                     return
@@ -276,7 +275,7 @@ class RedFetcher(object):
         elif isinstance(error, httperr.ChunkError):
             err_msg = error.detail[:20] or ""
             state.set_message('header-transfer-encoding', rs.BAD_CHUNK,
-                chunk_sample=e(err_msg.encode('string_escape'))
+                chunk_sample=err_msg.encode('string_escape')
             )
         self.done()
         self.finish_task()

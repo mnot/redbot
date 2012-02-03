@@ -35,7 +35,7 @@ import re
 import textwrap
 import urllib
 
-from cgi import escape as e
+from cgi import escape as e_html
 from functools import partial
 from urlparse import urljoin
 
@@ -84,7 +84,7 @@ class BaseHtmlFormatter(Formatter):
         self.output(html_header.__doc__ % {
             'static': static_root,
             'version': droid.__version__,
-            'html_uri': e(self.uri),
+            'html_uri': e_html(self.uri),
             'js_uri': e_js(self.uri),
             'config': urllib.quote(json.dumps({
               'redbot_uri': self.uri,
@@ -118,7 +118,7 @@ class BaseHtmlFormatter(Formatter):
 window.status="%s";
 -->
 </script>
-        """ % (thor.time() - self.start, e(message)))
+        """ % (thor.time() - self.start, e_html(message)))
 
     def final_status(self):
 #        self.status("RED made %(reqs)s requests in %(elapse)2.3f seconds." % {
@@ -324,14 +324,14 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             elif isinstance(self.red.res_error, httperr.MalformedCLError):
                 self.output(self.error_template % \
                 "%s (<code>%s</code>)" % (
-                  self.red.res_error.desc, e(self.red.res_error.detail)
+                  self.red.res_error.desc, e_html(self.red.res_error.detail)
                 )) 
             elif isinstance(self.red.res_error, httperr.ReadTimeoutError):
                 self.output(self.error_template % self.red.res_error.desc)
             elif isinstance(self.red.res_error, httperr.HttpVersionError):
                 self.output(self.error_template % \
                     "<code>%s</code> isn't HTTP." % \
-                    e(self.red.res_error.detail or '')[:20])
+                    e_html(self.red.res_error.detail or '')[:20])
             else:
                 raise AssertionError, \
                   "Unknown incomplete response error %s" % self.red.res_error
@@ -347,9 +347,9 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             
         return \
         u"    <span class='status'>HTTP/%s %s %s</span>\n" % (
-            e(str(red.res_version)),
-            e(str(red.res_status)),
-            e(red.res_phrase)
+            e_html(str(red.res_version)),
+            e_html(str(red.res_status)),
+            e_html(red.res_phrase)
         ) + \
         nl.join(headers)
 
@@ -366,8 +366,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         return u"""\
     <span data-offset='%s' data-name='%s' class='hdr'>%s:%s</span>""" % (
             offset, 
-            e(name.lower()), 
-            e(name), 
+            e_html(name.lower()), 
+            e_html(name), 
             self.header_presenter.Show(name, value)
         )
 
@@ -379,7 +379,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             uni_sample = unicode(red.body_sample, red.res_body_enc, 'ignore')
         except LookupError:
             uni_sample = unicode(red.body_sample, 'utf-8', 'ignore')
-        safe_sample = e(uni_sample)
+        safe_sample = e_html(uni_sample)
         message = ""
         for tag, link_set in red.links.items():
             for link in link_set:
@@ -392,7 +392,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     return r"%s<a href='%s' class='nocode'>%s</a>%s" % (
                         matchobj.group(1),
                         u"?uri=%s" % e_query_arg(qlink),
-                        e(link),
+                        e_html(link),
                         matchobj.group(1)
                     )
                 safe_sample = re.sub(r"(['\"])%s\1" % \
@@ -422,13 +422,13 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     </li>"""
             % (
                 m.level, 
-                e(m.subject), 
+                e_html(m.subject), 
                 id(m), 
-                e(m.summary[self.lang] % m.vars)
+                m.show_summary(self.lang)
              )
             )
             self.hidden_text.append(
-                ("msgid-%s" % id(m), m.text[self.lang] % m.vars)
+                ("msgid-%s" % id(m), m.show_text(self.lang))
             )
             subreq = red.subreqs.get(m.subrequest, None)
             smsgs = [msg for msg in getattr(subreq, "messages", []) if \
@@ -441,13 +441,13 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         <span>%s</span>
     </li>""" % (
                             sm.level, 
-                            e(sm.subject), 
+                            e_html(sm.subject), 
                             id(sm), 
-                            e(sm.summary[self.lang] % sm.vars)
+                            sm.show_summary(self.lang)
                         )
                     )
                     self.hidden_text.append(
-                        ("msgid-%s" % id(sm), sm.text[self.lang] % sm.vars)
+                        ("msgid-%s" % id(sm), sm.show_text(self.lang))
                     )
                 out.append(u"</ul>")
         out.append(u"</ul>\n")
@@ -537,7 +537,7 @@ class HeaderPresenter(object):
         if name_token[0] != "_" and hasattr(self, name_token):
             return getattr(self, name_token)(name, value)
         else:
-            return self.I(e(value), len(name))
+            return self.I(e_html(value), len(name))
 
     def BARE_URI(self, name, value):
         "Present a bare URI header value"
@@ -547,7 +547,7 @@ class HeaderPresenter(object):
         return u"%s<a href='?uri=%s'>%s</a>" % (
             " " * space,
             e_query_arg(urljoin(self.URI, svalue)), 
-            self.I(e(svalue), len(name))
+            self.I(e_html(svalue), len(name))
         )
     content_location = \
     location = \
@@ -642,21 +642,21 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         </a>
     </td>""" % (
                     u"?%s" % self.req_qs(red.uri), 
-                    e(red.uri), 
+                    e_html(red.uri), 
                     cl, 
-                    e(red.uri[:m-2]),
-                    e(red.uri[m-2]), 
-                    e(red.uri[m-1]), 
-                    e(red.uri[m]),
+                    e_html(red.uri[:m-2]),
+                    e_html(red.uri[m-2]), 
+                    e_html(red.uri[m-1]), 
+                    e_html(red.uri[m]),
                 )
             )
         else:
             out.append(
                 u'<td class="uri"><a href="%s" title="%s"%s>%s</a></td>' % (
                     u"?%s" % self.req_qs(red.uri), 
-                    e(red.uri), 
+                    e_html(red.uri), 
                     cl, 
-                    e(red.uri)
+                    e_html(red.uri)
                 )
             )
         if red.res_complete:
@@ -701,7 +701,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             for p in pr_enum:
                 m = self.problems[p]
                 out.append("<span class='prob_num'> %s <span class='hidden'>%s</span></span>" % (
-                    p + 1, e(m.summary[self.lang] % m.vars)
+                    p + 1, e_html(m.show_summary(self.lang))
                     )
                 )
         else:
@@ -780,9 +780,9 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             out.append(u"""\
     <li class='%s %s msg' name='msgid-%s'><span>%s</span></li>""" % (
                     m.level, 
-                    e(m.subject), 
+                    e_html(m.subject), 
                     id(m), 
-                    e(m.summary[self.lang] % m.vars)
+                    e_html(m.summary[self.lang] % m.vars)
                 )
             )
             self.hidden_text.append(

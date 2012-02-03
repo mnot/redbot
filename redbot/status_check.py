@@ -46,7 +46,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from cgi import escape as e
 
 import thor.http
 
@@ -74,7 +73,6 @@ class ResponseStatusChecker:
             subject, 
             msg,
             status=self.red.res_status,
-            enc_status=e(self.red.res_status),
             **kw
         )
 

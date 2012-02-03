@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from cgi import escape as e
 
 import redbot.speak as rs
 import redbot.headers as rh
@@ -40,7 +39,7 @@ def parse(subject, value, red):
     
 def join(subject, values, red):
     via_list = u"<ul>" + u"\n".join(
-           [u"<li><code>%s</code></li>" % e(v) for v in values]
+           [u"<li><code>%s</code></li>" % v for v in values]
                        ) + u"</ul>"
     red.set_message(subject, rs.VIA_PRESENT, via_list=via_list)
     

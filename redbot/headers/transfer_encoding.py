@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from cgi import escape as e
 
 import redbot.speak as rs
 import redbot.headers as rh
@@ -50,7 +49,7 @@ def join(subject, values, red):
     ) or False
     if unwanted:
         red.set_message(subject, rs.TRANSFER_CODING_UNWANTED,
-                unwanted_codings=e(", ".join(unwanted)))
+                unwanted_codings=", ".join(unwanted))
     if 'identity' in values:
         red.set_message(subject, rs.TRANSFER_CODING_IDENTITY)
     return values

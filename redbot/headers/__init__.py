@@ -46,7 +46,6 @@ THE SOFTWARE.
 """
 
 import calendar
-from cgi import escape as e
 from email.utils import parsedate as lib_parsedate
 import locale
 import re
@@ -295,40 +294,40 @@ def parse_params(red, subject, instr, nostar=None, delim=";"):
             continue
         k_norm = k.lower() # TODO: warn on upper-case in param?
         if param_dict.has_key(k_norm):
-            red.set_message(subject, rs.PARAM_REPEATS, param=e(k_norm))
+            red.set_message(subject, rs.PARAM_REPEATS, param=k_norm)
         if v[0] == v[-1] == "'":
             red.set_message(subject,
                 rs.PARAM_SINGLE_QUOTED,
-                param=e(k_norm),
-                param_val=e(v),
-                param_val_unquoted=e(v[1:-1])
+                param=k_norm,
+                param_val=v,
+                param_val_unquoted=v[1:-1]
             )
         if k[-1] == '*':
             if nostar is True or (nostar and k_norm[:-1] in nostar):
                 red.set_message(subject, rs.PARAM_STAR_BAD,
-                                param=e(k_norm[:-1]))
+                                param=k_norm[:-1])
             else:
                 if v[0] == '"' and v[-1] == '"':
                     red.set_message(subject, rs.PARAM_STAR_QUOTED,
-                                    param=e(k_norm))
+                                    param=k_norm)
                     v = unquote_string(v)
                 try:
                     enc, lang, esc_v = v.split("'", 3)
                 except ValueError:
                     red.set_message(subject, rs.PARAM_STAR_ERROR,
-                                    param=e(k_norm))
+                                    param=k_norm)
                     continue
                 enc = enc.lower()
                 lang = lang.lower()
                 if enc == '':
                     red.set_message(subject,
-                        rs.PARAM_STAR_NOCHARSET, param=e(k_norm))
+                        rs.PARAM_STAR_NOCHARSET, param=k_norm)
                     continue
                 elif enc not in ['utf-8']:
                     red.set_message(subject,
                         rs.PARAM_STAR_CHARSET,
-                        param=e(k_norm),
-                        enc=e(enc)
+                        param=k_norm,
+                        enc=enc
                     )
                     continue
                 # TODO: catch unquoting errors, range of chars, charset

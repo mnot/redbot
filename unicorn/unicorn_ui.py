@@ -14,7 +14,6 @@ from redbot.droid import InspectingResourceExpertDroid
 from redbot.speak import _Classifications
 from xml.dom import minidom
 from xml.dom.minidom import parseString
-from cgi import escape as e
 import re
 import cgi
 import logging

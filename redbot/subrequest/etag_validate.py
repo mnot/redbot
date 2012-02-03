@@ -27,7 +27,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from cgi import escape as e
 
 from redbot.subrequest.base import SubRequest
 import redbot.speak as rs
@@ -60,7 +59,7 @@ class ETagValidate(SubRequest):
     def done(self):
         if self.state.res_status == '304':
             self.base.inm_support = True
-            self.set_message('header-etag', rs.INM_304, self.state)
+            self.set_message('header-etag', rs.INM_304)
             self.check_missing_hdrs([
                     'cache-control', 'content-location', 'etag', 
                     'expires', 'last-modified', 'vary'
@@ -85,6 +84,6 @@ class ETagValidate(SubRequest):
             self.set_message('header-etag', 
                 rs.INM_STATUS, 
                 inm_status = self.state.res_status,
-                enc_inm_status = e(self.state.res_status or '(unknown)')
+                enc_inm_status = self.state.res_status or '(unknown)'
             )
         # TODO: check entity headers

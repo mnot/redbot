@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from cgi import escape as e
 import re
 from urlparse import urljoin
 
@@ -42,7 +41,7 @@ def parse(subject, value, red):
         red.set_message(subject, rs.LOCATION_UNDEFINED)
     if not re.match(r"^\s*%s\s*$" % syntax.URI, value, re.VERBOSE):
         red.set_message(subject, rs.LOCATION_NOT_ABSOLUTE,
-                        full_uri=e(urljoin(red.uri, value)))
+                        full_uri=urljoin(red.uri, value))
     return value
 
 @rh.SingleFieldValue

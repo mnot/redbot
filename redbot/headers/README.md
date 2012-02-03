@@ -127,9 +127,8 @@ passed to _parse_.
    examples.
 
 When writing new messages, it's important to keep in mind that the `text`
-field is expected to contain valid HTML, with appropriate escaping; if you
-allow arbitrary text from the user to pass into it without escaping, it 
-can present a security risk. 
+field is expected to contain valid HTML; any variables you pass to it will
+be escaped for you before rendering.
 
 
 ### Writing Tests

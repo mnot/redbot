@@ -27,7 +27,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from cgi import escape as e
 from datetime import datetime
 
 from redbot.subrequest.base import SubRequest
@@ -89,6 +88,6 @@ class LmValidate(SubRequest):
             self.set_message('header-last-modified', 
                 rs.IMS_STATUS, 
                 ims_status = self.state.res_status,
-                enc_ims_status = e(self.state.res_status or '(unknown)')
+                enc_ims_status = self.state.res_status or '(unknown)'
             )
         # TODO: check entity headers

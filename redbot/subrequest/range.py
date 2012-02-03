@@ -28,7 +28,6 @@ THE SOFTWARE.
 """
 
 import random
-from cgi import escape as e
 
 from redbot.subrequest.base import SubRequest
 from redbot.headers import f_num
@@ -91,13 +90,11 @@ class RangeRequest(SubRequest):
                         range="bytes=%s-%s" % (
                             self.range_start, self.range_end
                         ),
-                        range_expected=e(
-                            self.range_target.encode('string_escape')
-                        ),
+                        range_expected = \
+                          self.range_target.encode('string_escape'),
                         range_expected_bytes = f_num(len(self.range_target)),
-                        range_received = e(
-                            self.state.res_body.encode('string_escape')
-                        ),
+                        range_received = \
+                            self.state.res_body.encode('string_escape'),
                         range_received_bytes = f_num(self.state.res_body_len)
                     )
             else:
@@ -111,5 +108,5 @@ class RangeRequest(SubRequest):
             self.set_message('header-accept-ranges', 
                 rs.RANGE_STATUS,
                 range_status=self.state.res_status,
-                enc_range_status=e(self.state.res_status or '(unknown)')
+                enc_range_status=self.state.res_status or '(unknown)'
             )

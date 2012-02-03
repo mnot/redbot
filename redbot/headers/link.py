@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from cgi import escape as e
 import re
 
 import redbot.speak as rs
@@ -48,13 +47,13 @@ def parse(subject, value, red):
         pass # TODO: check relation type
     if param_dict.has_key('rev'):
         red.set_message(subject, rs.LINK_REV,
-                        link=e(link), rev=e(param_dict['rev']))
+                        link=link, rev=param_dict['rev'])
     if param_dict.has_key('anchor'): # URI-Reference
         if not re.match(r"^\s*%s\s*$" % syntax.URI_reference, 
                         param_dict['anchor'], re.VERBOSE):
             red.set_message(subject, rs.LINK_BAD_ANCHOR,
-                            link=e(link),
-                            anchor=e(param_dict['anchor']))
+                            link=link,
+                            anchor=param_dict['anchor'])
     # TODO: check media-type in 'type'
     # TODO: check language tag in 'hreflang'            
     return link, param_dict

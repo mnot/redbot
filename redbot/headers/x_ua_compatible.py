@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from cgi import escape as e
 
 import redbot.speak as rs
 import redbot.headers as rh
@@ -51,10 +50,7 @@ def join(subject, values, red):
             red.set_message(subject, rs.UA_COMPATIBLE_REPEAT)
             warned = True
         directives[attr] = attr_value
-
-    uac_list = u"\n".join([u"<li>%s - %s</li>" % (e(k), e(v)) for
-                        k, v in values])
-    red.set_message(subject, rs.UA_COMPATIBLE, uac_list=uac_list)
+    red.set_message(subject, rs.UA_COMPATIBLE)
     return directives
     
 class BasicUACTest(rh.HeaderTest):
