@@ -169,7 +169,8 @@ window.status="%s";
 <a href="#help" id="help"><strong>help</strong></a> |
 <a href="http://blog.REDbot.org/">blog</a> |
 <a href="http://REDbot.org/project">project</a> |
-<span class="help">Drag the bookmarklet to your bookmark bar - it makes checking easy!</span>
+<span class="help">Drag the bookmarklet to your bookmark bar - it makes
+checking easy!</span>
 <a href="javascript:location%%20=%%20'%(baseuri)s?uri='+encodeURIComponent(location);%%20void%%200"
 title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
 </p>
@@ -362,8 +363,13 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 'field_name': name,
             }
             self.hidden_text.append((token_name, defn))
-        return u"    <span data-offset='%s' data-name='%s' class='hdr'>%s:%s</span>" % (
-            offset, e(name.lower()), e(name), self.header_presenter.Show(name, value))
+        return u"""\
+    <span data-offset='%s' data-name='%s' class='hdr'>%s:%s</span>""" % (
+            offset, 
+            e(name.lower()), 
+            e(name), 
+            self.header_presenter.Show(name, value)
+        )
 
     def format_body_sample(self, red):
         """show the stored body sample"""
@@ -392,7 +398,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 safe_sample = re.sub(r"(['\"])%s\1" % \
                     re.escape(link), link_to, safe_sample)
         if not self.sample_complete:
-            message = "<p class='note'>RED isn't showing the whole body, because it's so big!</p>"
+            message = \
+"<p class='note'>RED isn't showing the whole body, because it's so big!</p>"
         return """<pre class="prettyprint">%s</pre>\n%s""" % (
             safe_sample, message)
 
@@ -409,7 +416,11 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             out.append(u"<h3>%s</h3>\n<ul>\n" % category)
         for m in messages:
             out.append(
-             u"<li class='%s msg' data-subject='%s' data-name='msgid-%s'><span>%s</span></li>" % (
+             u"""\
+    <li class='%s msg' data-subject='%s' data-name='msgid-%s'>
+        <span>%s</span>
+    </li>"""
+            % (
                 m.level, 
                 e(m.subject), 
                 id(m), 
@@ -425,7 +436,10 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             if smsgs:
                 out.append(u"<ul>")
                 for sm in smsgs:
-                    out.append(u"<li class='%s msg' data-subject='%s' name='msgid-%s'><span>%s</span></li>" % (
+                    out.append(u"""\
+    <li class='%s msg' data-subject='%s' name='msgid-%s'>
+        <span>%s</span>
+    </li>""" % (
                             sm.level, 
                             e(sm.subject), 
                             id(sm), 
@@ -461,7 +475,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 )
             )
         options.append(None)
-        options.append((u"<a href='#' id='body_view' accesskey='b'>view body</a>", 
+        options.append((u"""\
+    <a href='#' id='body_view' accesskey='b'>view body</a>""", 
             "View this response body (with any gzip compression removed)"
         ))
         if self.kw.get('test_id', None):
@@ -469,7 +484,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         else:
             har_locator = self.req_qs(red.uri)
         options.append(
-            (u"<a href='?%s&format=har' accesskey='h'>view har</a>" % har_locator, 
+            (u"""\
+    <a href='?%s&format=har' accesskey='h'>view har</a>""" % har_locator, 
             "View a HAR (HTTP ARchive, a JSON format) file for this response"
         ))
         if not self.kw.get('is_saved', False):
@@ -479,8 +495,14 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     "Save these results for future reference"
                 ))
             if self.validators.has_key(media_type):
-                options.append((u"<a href='%s' accesskey='v'>validate body</a>" %
-                   self.validators[media_type] % e_query_arg(red.uri), ""))
+                options.append(
+                    (
+                    u"<a href='%s' accesskey='v'>validate body</a>" %
+                        self.validators[media_type] % 
+                        e_query_arg(red.uri), 
+                     ""
+                    )
+                )
             if hasattr(red, "link_count") and red.link_count > 0:
                 options.append((
                      u"<a href='?descend=True&%s' accesskey='a'>check embedded</a>" % \
@@ -614,7 +636,11 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         else:
             cl = ""
         if len(red.uri) > m:
-            out.append(u"""<td class="uri"><a href="%s" title="%s"%s>%s<span class="fade1">%s</span><span class="fade2">%s</span><span class="fade3">%s</span></a></td>""" % (
+            out.append(u"""\
+    <td class="uri">
+        <a href="%s" title="%s"%s>%s<span class="fade1">%s</span><span class="fade2">%s</span><span class="fade3">%s</span>
+        </a>
+    </td>""" % (
                     u"?%s" % self.req_qs(red.uri), 
                     e(red.uri), 
                     cl, 
@@ -661,7 +687,8 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             out.append(self.format_yes_no(red.partial_support))
             problems = [m for m in red.messages if \
                 m.level in [rs.l.WARN, rs.l.BAD]]
-    # TODO:        problems += sum([m[2].messages for m in red.messages if m[2] != None], [])
+    # TODO:        problems += sum([m[2].messages for m in red.messages if  
+    # m[2] != None], [])
             out.append(u"<td>")
             pr_enum = []
             for problem in problems:
@@ -750,7 +777,8 @@ class TableHtmlFormatter(BaseHtmlFormatter):
     def format_problems(self):
         out = ['<br /><h2>Problems</h2><ol>']
         for m in self.problems:
-            out.append(u"<li class='%s %s msg' name='msgid-%s'><span>%s</span></li>" % (
+            out.append(u"""\
+    <li class='%s %s msg' name='msgid-%s'><span>%s</span></li>""" % (
                     m.level, 
                     e(m.subject), 
                     id(m), 
