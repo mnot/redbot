@@ -135,7 +135,7 @@ class ResponseStatusChecker:
     def status400(self):        # Bad Request
         self.set_message('', rs.STATUS_BAD_REQUEST)
     def status401(self):        # Unauthorized
-        pass # TODO: prompt for credentials
+        pass
     def status402(self):        # Payment Required
         pass
     def status403(self):        # Forbidden
