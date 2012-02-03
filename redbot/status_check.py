@@ -125,7 +125,8 @@ class ResponseStatusChecker:
         if not self.red.parsed_hdrs.has_key('location'):
             self.set_message('header-location', rs.REDIRECT_WITHOUT_LOCATION)
     def status304(self):        # Not Modified
-        pass # TODO: check to make sure required headers are present, stable
+        if not self.red.parsed_hdrs.has_key('date'):
+            self.set_message('status', rs.NO_DATE_304)
     def status305(self):        # Use Proxy
         self.set_message('', rs.STATUS_DEPRECATED)
     def status306(self):        # Reserved

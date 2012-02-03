@@ -1669,6 +1669,35 @@ Explorer."
     }
 
 
+### General Validation
+
+class NO_DATE_304(Message):
+    category = c.VALIDATION
+    level = l.WARN
+    summary = {
+    'en': u"304 responses need to have a Date header."
+    }
+    text = {
+    'en': u"""HTTP requires <code>304 Not Modified</code> responses to 
+    have a <code>Date</code> header in all but the most unusual 
+    circumstances."""
+    }
+
+class MISSING_HDRS_304(Message):
+    category = c.VALIDATION
+    level = l.WARN
+    summary = {
+    'en': u"The %(subreq_type)s response is missing required headers."
+    }
+    text = {
+    'en': u"""HTTP requires <code>304 Not Modified</code> responses to 
+    have certain headers, if they are also present in a normal (e.g.,
+    <code>200 OK</code> response).<p>
+    %(response)s is missing the following headers: %(missing_hdrs)s.<p>
+    This can affect cache operation; because the headers are missing,
+    caches might remove them from their cached copies."""
+    }
+
 ### ETag Validation
 
 class INM_304(Message):

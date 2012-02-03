@@ -58,3 +58,19 @@ class SubRequest(RedFetcher):
 
     def set_message(self, subject, msg, subreq=None, **kw):
         self.base.set_message(subject, msg, self.state.type, **kw)
+        
+    def check_missing_hdrs(self, hdrs, msg, subreq_type):
+        """
+        See if the listed headers are missing in the subrequest; if so,
+        set the specified message.
+        """
+        missing_hdrs = []
+        for hdr in hdrs:            
+            if self.base.parsed_hdrs.has_key(hdr) \
+            and not self.state.parsed_hdrs.has_key(hdr):
+                missing_hdrs.append(hdr)
+        if missing_hdrs:
+            self.set_message('header-%s' % hdr, msg,
+                missing_hdrs = ", ".join(missing_hdrs),
+                subreq_type = subreq_type
+            )        

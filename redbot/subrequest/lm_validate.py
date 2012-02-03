@@ -74,7 +74,11 @@ class LmValidate(SubRequest):
         if self.state.res_status == '304':
             self.base.ims_support = True
             self.set_message('header-last-modified', rs.IMS_304)
-            # TODO : check Content- headers, esp. length.
+            self.check_missing_hdrs([
+                    'cache-control', 'content-location', 'etag', 
+                    'expires', 'last-modified', 'vary'
+                ], rs.MISSING_HDRS_304, 'If-Modified-Since'
+            )
         elif self.state.res_status == self.base.res_status:
             if self.state.res_body_md5 == self.base.res_body_md5:
                 self.base.ims_support = False

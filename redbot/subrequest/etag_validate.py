@@ -61,7 +61,11 @@ class ETagValidate(SubRequest):
         if self.state.res_status == '304':
             self.base.inm_support = True
             self.set_message('header-etag', rs.INM_304, self.state)
-            # TODO : check Content- headers, esp. length.
+            self.check_missing_hdrs([
+                    'cache-control', 'content-location', 'etag', 
+                    'expires', 'last-modified', 'vary'
+                ], rs.MISSING_HDRS_304, 'If-None-Match'
+            )
         elif self.state.res_status == self.base.res_status:
             if self.state.res_body_md5 == self.base.res_body_md5:
                 self.base.inm_support = False
