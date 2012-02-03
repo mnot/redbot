@@ -471,7 +471,8 @@ def mod_python_handler(r):
 def cgi_main():
     """Run RED as a CGI Script."""
     sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0) 
-    base_uri = "http://%s%s%s" % ( # TODO: only supports HTTP
+    base_uri = "%s://%s%s%s" % (
+      os.environ.has_key('HTTPS') and "https" or "http",
       os.environ.get('HTTP_HOST'),
       os.environ.get('SCRIPT_NAME'),
       os.environ.get('PATH_INFO', '')
