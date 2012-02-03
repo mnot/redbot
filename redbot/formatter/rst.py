@@ -27,7 +27,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-### FIXME: This code is NOT yet converted to the new Formatter.
+### WARNING: This code is NOT yet converted to the new Formatter.
+### See Issue #50.
 
 import redbot.speak as rs
 
