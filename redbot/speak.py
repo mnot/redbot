@@ -1714,7 +1714,8 @@ class MISSING_HDRS_304(Message):
     'en': u"""HTTP requires <code>304 Not Modified</code> responses to 
     have certain headers, if they are also present in a normal (e.g.,
     <code>200 OK</code> response).<p>
-    %(response)s is missing the following headers: %(missing_hdrs)s.<p>
+    %(response)s is missing the following headers:
+    <code>%(missing_hdrs)s</code>.<p>
     This can affect cache operation; because the headers are missing,
     caches might remove them from their cached copies."""
     }
