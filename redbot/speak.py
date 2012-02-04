@@ -880,6 +880,22 @@ that full ones do."
      and compression changes the bytes."""
     }
 
+class MISSING_HDRS_206(Message):
+    category = c.VALIDATION
+    level = l.WARN
+    summary = {
+    'en': u"The %(subreq_type)s response is missing required headers."
+    }
+    text = {
+    'en': u"""HTTP requires <code>206 Parital Content</code> responses to 
+    have certain headers, if they are also present in a normal (e.g.,
+    <code>200 OK</code> response).<p>
+    %(response)s is missing the following headers:
+    <code>%(missing_hdrs)s</code>.<p>
+    This can affect cache operation; because the headers are missing,
+    caches might remove them from their cached copies."""
+    }
+
 ### Body
 
 class CL_CORRECT(Message):
