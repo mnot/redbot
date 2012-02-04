@@ -49,8 +49,8 @@ from redbot.headers import f_num
 from redbot.state import RedState
 
 class RedHttpClient(thor.HttpClient):
-    connect_timeout = 8
-    read_timeout = 8
+    connect_timeout = 10
+    read_timeout = 15
     
 
 class RedFetcher(object):
