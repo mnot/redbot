@@ -1063,7 +1063,7 @@ happens."
      'en': u"""When content negotiation is used, the response status
      shouldn't change between negotiated and non-negotiated responses.<p>
      When RED send asked for a negotiated response, it got a
-     <code>%(neg_status)s status code; when it didn't, it got 
+     <code>%(neg_status)s</code> status code; when it didn't, it got 
      <code>%(noneg_status)s</code>.<p>
      RED hasn't checked other aspects of content-negotiation because of
      this."""
