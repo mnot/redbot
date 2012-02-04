@@ -52,6 +52,12 @@ class ConnegCheck(SubRequest):
             return False
 
     def done(self):
+        if not self.state.res_complete:
+            self.set_message('', rs.CONNEG_SUBREQ_PROBLEM,
+                problem=self.state.res_error.desc
+            )
+            return
+            
         # see if it was compressed when not negotiated
         no_conneg_vary_headers = self.state.parsed_hdrs.get('vary', [])
         if 'gzip' in self.state.parsed_hdrs.get('content-encoding', []) or \

@@ -772,6 +772,19 @@ class XSS_PROTECTION_BLOCK(Message):
 
 ### Ranges
 
+class RANGE_SUBREQ_PROBLEM(Message):
+    category = c.RANGE
+    level = l.BAD
+    summary = {
+    'en': u"There was a problem checking for Partial Content support."
+    }
+    text = {
+    'en': u"""When RED tried to check the resource for partial content
+    support, there was a problem:<p>
+    <code>%(problem)s</code><p>
+    Trying again might fix it."""
+    }
+
 class UNKNOWN_RANGE(Message):
     category = c.RANGE
     level = l.WARN
@@ -953,6 +966,19 @@ class CMD5_INCORRECT(Message):
     }
 
 ### Conneg
+
+class CONNEG_SUBREQ_PROBLEM(Message):
+    category = c.CONNEG
+    level = l.BAD
+    summary = {
+    'en': u"There was a problem checking for Content Negotiation support."
+    }
+    text = {
+    'en': u"""When RED tried to check the resource for content negotiation
+    support, there was a problem:<p>
+    <code>%(problem)s</code><p>
+    Trying again might fix it."""
+    }
 
 class CONNEG_GZIP_GOOD(Message):
     category = c.CONNEG
@@ -1738,6 +1764,19 @@ class MISSING_HDRS_304(Message):
 
 ### ETag Validation
 
+class ETAG_SUBREQ_PROBLEM(Message):
+    category = c.VALIDATION
+    level = l.BAD
+    summary = {
+    'en': u"There was a problem checking for ETag validation support."
+    }
+    text = {
+    'en': u"""When RED tried to check the resource for ETag validation
+    support, there was a problem:<p>
+    <code>%(problem)s</code><p>
+    Trying again might fix it."""
+    }
+    
 class INM_304(Message):
     category = c.VALIDATION
     level = l.GOOD
@@ -1847,6 +1886,18 @@ status."
 
 ### Last-Modified Validation
 
+class LM_SUBREQ_PROBLEM(Message):
+    category = c.VALIDATION
+    level = l.BAD
+    summary = {
+    'en': u"There was a problem checking for Last-Modified validation support."
+    }
+    text = {
+    'en': u"""When RED tried to check the resource for Last-Modified validation
+    support, there was a problem:<p>
+    <code>%(problem)s</code><p>
+    Trying again might fix it."""
+    }
 class IMS_304(Message):
     category = c.VALIDATION
     level = l.GOOD

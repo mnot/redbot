@@ -71,6 +71,7 @@ class SubRequest(RedFetcher):
                 missing_hdrs.append(hdr)
         if missing_hdrs:
             self.set_message('header-%s' % hdr, msg,
-                missing_hdrs = ", ".join(missing_hdrs),
-                subreq_type = subreq_type
-            )        
+                missing_hdrs=", ".join(missing_hdrs),
+                subreq_type=subreq_type
+            )
+            

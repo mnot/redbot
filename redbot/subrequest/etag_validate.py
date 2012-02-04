@@ -57,6 +57,12 @@ class ETagValidate(SubRequest):
             return False
 
     def done(self):
+        if not self.state.res_complete:
+            self.set_message('', rs.ETAG_SUBREQ_PROBLEM,
+                problem=self.state.res_error.desc
+            )
+            return
+            
         if self.state.res_status == '304':
             self.base.inm_support = True
             self.set_message('header-etag', rs.INM_304)

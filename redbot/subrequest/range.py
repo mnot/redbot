@@ -68,6 +68,12 @@ class RangeRequest(SubRequest):
             return False
 
     def done(self):
+        if not self.state.res_complete:
+            self.set_message('', rs.RANGE_SUBREQ_PROBLEM,
+                problem=self.state.res_error.desc
+            )
+            return
+            
         if self.state.res_status == '206':
             ce = 'content-encoding'
             if ('gzip' in self.base.parsed_hdrs.get(ce, [])) == \
@@ -77,11 +83,13 @@ class RangeRequest(SubRequest):
                     rs.RANGE_NEG_MISMATCH
                 )
                 return
-            self.check_missing_hdrs([
-                    'date', 'cache-control', 'content-location', 'etag', 
-                    'expires', 'last-modified', 'vary'
-                ], rs.MISSING_HDRS_206, 'Range'
-            )
+            if not [True for h in self.base.orig_req_hdrs 
+                if h[0].lower() == 'if-range']:
+                self.check_missing_hdrs([
+                        'date', 'cache-control', 'content-location', 'etag', 
+                        'expires', 'last-modified', 'vary'
+                    ], rs.MISSING_HDRS_206, 'Range'
+                )
             if self.state.parsed_hdrs.get('etag', 1) == \
               self.base.parsed_hdrs.get('etag', 2):
                 if self.state.res_body == self.range_target:
