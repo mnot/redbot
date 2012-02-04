@@ -488,3 +488,16 @@ HDR_SET_COOKIE2 = {
     'en': u"""The <code>Set-Cookie2</code> header has been 
         deprecated; use <code>Set-Cookie</code> instead."""
 }
+
+HDR_X_CACHE = {
+    'en': u"""The <code>X-Cache</code> header is used by some caches to
+    indicate whether or not the response was served from cache; if it
+    contains <code>HIT</code>, it was."""
+}
+
+HDR_X_CACHE_LOOKUP = {
+    'en': u"""The <code>X-Cache-Lookup</code> heaer is used by some caches
+    to show whether there was a response in cache for this URL; if it
+    contains <code>HIT</code>, it was in cache (but not necessarily used).    
+    """
+}
