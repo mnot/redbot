@@ -1054,7 +1054,7 @@ class VARY_INCONSISTENT(Message):
 
 class VARY_STATUS_MISMATCH(Message):
     category = c.CONNEG
-    level = l.BAD
+    level = l.WARN
     summary = {
      'en': u"The response status is different when content negotiation \
 happens."
@@ -1065,7 +1065,7 @@ happens."
      When RED send asked for a negotiated response, it got a
      <code>%(neg_status)s</code> status code; when it didn't, it got 
      <code>%(noneg_status)s</code>.<p>
-     RED hasn't checked other aspects of content-negotiation because of
+     RED hasn't checked other aspects of content negotiation because of
      this."""
     }
     
