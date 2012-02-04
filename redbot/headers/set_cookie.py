@@ -181,7 +181,7 @@ def loose_date_parse(cookie_date):
                 ]
                 continue
         if not found_day_of_month:
-            re_match = match(r'^(\d{2})(?:\D)?', date_token)
+            re_match = match(r'^(\d\d?)(?:\D)?', date_token)
             if re_match:
                 found_day_of_month = True
                 day_of_month_value = int(re_match.group(1))
@@ -258,6 +258,12 @@ class TwoSCTest(rh.HeaderTest):
 class ExpiresScTest(rh.HeaderTest):
     name = "Set-Cookie"
     inputs = ["lang=en-US; Expires=Wed, 09 Jun 2021 10:18:14 GMT"]
+    expected_out = [("lang", "en-US", [("Expires", 1623233894)])]
+    expected_err = []
+
+class ExpiresSingleScTest(rh.HeaderTest):
+    name = "Set-Cookie"
+    inputs = ["lang=en-US; Expires=Wed, 9 Jun 2021 10:18:14 GMT"]
     expected_out = [("lang", "en-US", [("Expires", 1623233894)])]
     expected_err = []
     
