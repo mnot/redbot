@@ -87,7 +87,7 @@ class RangeRequest(SubRequest):
                 if h[0].lower() == 'if-range']:
                 self.check_missing_hdrs([
                         'date', 'cache-control', 'content-location', 'etag', 
-                        'expires', 'last-modified', 'vary'
+                        'expires', 'vary'
                     ], rs.MISSING_HDRS_206, 'Range'
                 )
             if self.state.parsed_hdrs.get('etag', 1) == \

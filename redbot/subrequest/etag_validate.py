@@ -68,7 +68,7 @@ class ETagValidate(SubRequest):
             self.set_message('header-etag', rs.INM_304)
             self.check_missing_hdrs([
                     'cache-control', 'content-location', 'etag', 
-                    'expires', 'last-modified', 'vary'
+                    'expires', 'vary'
                 ], rs.MISSING_HDRS_304, 'If-None-Match'
             )
         elif self.state.res_status == self.base.res_status:
