@@ -82,6 +82,7 @@ class RedFetcher(object):
         self._in_gzip_body = False
         self._gzip_header_buffer = ""
         self._gzip_ok = True # turn False if we have a problem
+        self._st = [] # TEMPORARY
 
     def __repr__(self):
         status = [self.__class__.__module__ + "." + self.__class__.__name__]
@@ -104,11 +105,13 @@ class RedFetcher(object):
 
     def add_task(self, task, *args):
         self.outstanding_tasks += 1
+        self._st.append('add_task(%s)' % str(task))
         task(*args, done_cb=self.finish_task)
         
     def finish_task(self):
         self.outstanding_tasks -= 1
-        assert self.outstanding_tasks >= 0
+        self._st.append('finish_task()')
+        assert self.outstanding_tasks >= 0, self._st
         if self.outstanding_tasks == 0:
             if self.done_cb:
                 self.done_cb()
@@ -135,6 +138,7 @@ class RedFetcher(object):
         request is in the status callback.
         """
         self.outstanding_tasks += 1
+        self._st.append('run(%s)' % str(done_cb))
         self.done_cb = done_cb
         state = self.state
         if not self.preflight() or state.uri == None:
@@ -163,6 +167,7 @@ class RedFetcher(object):
 
     def _response_start(self, status, phrase, res_headers):
         "Process the response start-line and headers."
+        self._st.append('_response_start(%s, %s)' % (status, phrase))
         state = self.state
         state.res_ts = thor.time()
         state.res_version = self.exchange.res_version
@@ -236,6 +241,7 @@ class RedFetcher(object):
 
     def _response_done(self, trailers):
         "Finish anaylsing the response, handling any parse errors."
+        self._st.append('_response_done()')
         state = self.state
         state.res_complete = True
         state.res_done_ts = thor.time()
@@ -269,6 +275,7 @@ class RedFetcher(object):
         self.finish_task()
 
     def _response_error(self, error):
+        self._st.append('_response_error(%s)' % (str(error)))
         state = self.state
         state.res_done_ts = thor.time()
         state.res_error = error
