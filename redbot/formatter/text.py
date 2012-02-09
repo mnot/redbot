@@ -115,29 +115,26 @@ class BaseTextFormatter(Formatter):
         out.append(nl)
         return nl.join(out)
 
-    @staticmethod
-    def colorize(level, string):
-        # info
-        color_start = u"\033[0;32m"
-        color_end   = u"\033[0;39m"
-
-        if level == "good":
-            color_start = u"\033[1;32m"
+    def colorize(self, level, string):
+        if self.kw.get('tty_out', False):
+            # info
+            color_start = u"\033[0;32m"
             color_end   = u"\033[0;39m"
-
-        if level == "bad":
-            color_start = u"\033[1;31m"
-            color_end   = u"\033[0;39m"
-
-        if level == "warning":
-            color_start = u"\033[1;33m"
-            color_end   = u"\033[0;39m"
-
-        if level == "uri":
-            color_start = u"\033[1;34m"
-            color_end   = u"\033[0;39m"
-
-        return color_start + string + color_end
+            if level == "good":
+                color_start = u"\033[1;32m"
+                color_end   = u"\033[0;39m"
+            if level == "bad":
+                color_start = u"\033[1;31m"
+                color_end   = u"\033[0;39m"
+            if level == "warning":
+                color_start = u"\033[1;33m"
+                color_end   = u"\033[0;39m"
+            if level == "uri":
+                color_start = u"\033[1;34m"
+                color_end   = u"\033[0;39m"
+            return color_start + string + color_end
+        else:
+            return string
 
 
 
