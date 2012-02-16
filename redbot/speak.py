@@ -906,7 +906,7 @@ class MISSING_HDRS_206(Message):
     %(response)s is missing the following headers:
     <code>%(missing_hdrs)s</code>.<p>
     This can affect cache operation; because the headers are missing,
-    caches might remove them from their cached copies."""
+    caches might remove them from their stored copies."""
     }
 
 ### Body
