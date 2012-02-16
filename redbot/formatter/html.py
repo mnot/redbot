@@ -168,7 +168,6 @@ window.status="%s";
 <p class="navigation">
 <a href="http://REDbot.org/about/">about</a> |
 <a href="#help" id="help"><strong>help</strong></a> |
-<a href="http://blog.REDbot.org/">blog</a> |
 <a href="http://REDbot.org/project">project</a> |
 <span class="help">Drag the bookmarklet to your bookmark bar - it makes
 checking easy!</span>
