@@ -55,7 +55,7 @@ if __name__ == "__main__":
       from multiprocessing import Process
       p = Process(target=redbot_run)
       p.start()
-      unittest.main(exit=False)
+      unittest.main(exit=False, verbosity=2)
       print "done test..."
       p.terminate()
     
