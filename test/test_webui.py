@@ -49,7 +49,10 @@ if __name__ == "__main__":
       import webui
       import thor
       def cb():
-        unittest.main()
+        suite = unittest.TestLoader()
+        suite.loadTestsFromTestCase(BasicWebUiTest)
+        suite.loadTestsFromTestCase(CnnWebUiTest)
+        unittest.TextTestRunner(verbosity=2).run(suite)
         thor.loop.stop()
       webui.standalone_main(8080, "deploy/static", cb)
       redbot_uri = "http://localhost:8080/"
