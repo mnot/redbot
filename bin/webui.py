@@ -496,7 +496,7 @@ def cgi_main():
         except_handler_factory(sys.stdout.write)()
 
 
-def standalone_main(port, static_dir):
+def standalone_main(port, static_dir, start_cb=None):
     """Run RED as a standalone Web server."""
     
     # load static files
@@ -551,6 +551,8 @@ in standalone server mode. Details follow.
 
     server = thor.HttpServer("", port)
     server.on('exchange', red_handler)
+    if start_cb:
+      server.on('start', start_cb)
     
     try:
         thor.run()

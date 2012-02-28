@@ -41,8 +41,12 @@ class CnnWebUiTest(BasicWebUiTest):
 
 if __name__ == "__main__":
     redbot_uri = os.environ.get("REDBOT_URI", None)
-    if not redbot_uri:
-        import sys
-        sys.stderr.write("\n\nWARNING: testing redbot.org\n\n")
-        redbot_uri = "http://redbot.org/"
-    unittest.main()
+    if redbot_uri:
+      unittest.main()
+    else:
+      import sys
+      sys.path.insert(0, "deploy")
+      import webui
+      webui.standalone_main(8080, "deploy/static", unittest.main)
+      redbot_uri = "http://localhost:8080/"
+    
