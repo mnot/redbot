@@ -4,7 +4,6 @@ source = ../../
 all: thor redbot
 
 redbot: clean-redbot
-	cd $(source)/share; make clean; make
 	cp -p $(source)/bin/webui.py .
 	chmod a+x webui.py
 	cp $(source)/bin/redbot redbot.py
@@ -14,11 +13,14 @@ redbot: clean-redbot
 	cp -Rp $(source)/redbot .
 	sed -i .old '/DEBUG_CONTROL/s/False/True/g' webui.py
 
+share: clean-share
+	cd $(source)/share; make
+
 thor: clean-thor
 	git clone --depth 1 git://github.com/mnot/thor.git thor-src
 	ln -s thor-src/thor
 
-clean: clean-redbot clean-thor
+clean: clean-redbot clean-thor clean-share
 
 clean-redbot:
 	rm -f webui.py*
@@ -29,3 +31,6 @@ clean-redbot:
 clean-thor:
 	rm -rf thor-src
 	rm -rf thor
+
+clean-share:
+	cd $(source)/share; make clean
