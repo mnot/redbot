@@ -11,7 +11,7 @@ redbot: clean-redbot
 	mkdir -p static
 	cp -Rp $(source)/share/* static/
 	cp -Rp $(source)/redbot .
-	sed -i .old '/DEBUG_CONTROL/s/False/True/g' webui.py
+	sed -i '/DEBUG_CONTROL/s/False/True/g' webui.py
 
 share: clean-share
 	cd $(source)/share; make
