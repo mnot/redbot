@@ -47,6 +47,10 @@ if __name__ == "__main__":
       import sys
       sys.path.insert(0, "deploy")
       import webui
-      webui.standalone_main(8080, "deploy/static", unittest.main)
+      import thor
+      def cb():
+        unittest.main()
+        thor.loop.stop()
+      webui.standalone_main(8080, "deploy/static", cb)
       redbot_uri = "http://localhost:8080/"
     
