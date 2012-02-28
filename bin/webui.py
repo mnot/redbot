@@ -496,7 +496,7 @@ def cgi_main():
         except_handler_factory(sys.stdout.write)()
 
 
-def standalone_main(port, static_dir, start_cb=None):
+def standalone_main(host, port, static_dir):
     """Run RED as a standalone Web server."""
     
     # load static files
@@ -549,10 +549,8 @@ in standalone server mode. Details follow.
                 x.response_start("404", "Not Found", [])
                 x.response_done([])
 
-    server = thor.HttpServer("", port)
+    server = thor.HttpServer(host, port)
     server.on('exchange', red_handler)
-    if start_cb:
-      server.on('start', start_cb)
     
     try:
         thor.run()
@@ -562,11 +560,11 @@ in standalone server mode. Details follow.
     # TODO: logging
     # TODO: extra resources
 
-def standalone_monitor (port, static_dir):
+def standalone_monitor (host, port, static_dir):
     """Fork a process as a standalone Web server and watch it."""
     from multiprocessing import Process
     while True:
-        p = Process(target=standalone_main, args=(port, static_dir))
+        p = Process(target=standalone_main, args=(host, port, static_dir))
         sys.stderr.write("* Starting RED server...\n")
         p.start()
         p.join()
@@ -600,7 +598,7 @@ if __name__ == "__main__":
         )
 
 #       import pdb
-#       pdb.run('standalone_main(port, static_dir)')
-        standalone_main(port, static_dir)
-#       standalone_monitor(port, static_dir)
+#       pdb.run('standalone_main("", port, static_dir)')
+        standalone_main("", port, static_dir)
+#       standalone_monitor("", port, static_dir)
             

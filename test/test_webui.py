@@ -44,14 +44,18 @@ if __name__ == "__main__":
     if redbot_uri:
       unittest.main()
     else:
+      test_host = "localhost"
       test_port = 8080
-      redbot_uri = "http://localhost:%s/" % test_port
+      redbot_uri = "http://%s:%s/" % (test_host, test_port)
       import sys
       sys.path.insert(0, "deploy")
-      import webui
-      import thor
-      def cb():
-        unittest.main()
-        thor.stop()
-      webui.standalone_main(test_port, "deploy/static", cb)
+      def redbot_run():
+        import webui
+        webui.standalone_main(test_host, test_port, "deploy/static")
+      from multiprocessing import Process
+      p = Process(target=redbot_run)
+      p.start()
+      unittest.main(exit=False)
+      print "done test..."
+      p.terminate()
     
