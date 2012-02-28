@@ -44,16 +44,14 @@ if __name__ == "__main__":
     if redbot_uri:
       unittest.main()
     else:
+      test_port = 8080
+      redbot_uri = "http://localhost:%s/" % test_port
       import sys
       sys.path.insert(0, "deploy")
       import webui
       import thor
       def cb():
-        suite = unittest.TestLoader()
-        suite.loadTestsFromTestCase(BasicWebUiTest)
-        suite.loadTestsFromTestCase(CnnWebUiTest)
-        unittest.TextTestRunner(verbosity=2).run(suite)
-        thor.loop.stop()
-      webui.standalone_main(8080, "deploy/static", cb)
-      redbot_uri = "http://localhost:8080/"
+        unittest.main()
+        thor.stop()
+      webui.standalone_main(test_port, "deploy/static", cb)
     
