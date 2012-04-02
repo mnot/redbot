@@ -240,7 +240,7 @@ class RedFetcher(object):
                 processor(self.state, chunk)
 
     def _response_done(self, trailers):
-        "Finish anaylsing the response, handling any parse errors."
+        "Finish analysing the response, handling any parse errors."
         self._st.append('_response_done()')
         state = self.state
         state.res_complete = True

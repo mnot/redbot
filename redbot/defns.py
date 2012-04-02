@@ -496,7 +496,7 @@ HDR_X_CACHE = {
 }
 
 HDR_X_CACHE_LOOKUP = {
-    'en': u"""The <code>X-Cache-Lookup</code> heaer is used by some caches
+    'en': u"""The <code>X-Cache-Lookup</code> header is used by some caches
     to show whether there was a response in cache for this URL; if it
     contains <code>HIT</code>, it was in cache (but not necessarily used).    
     """
