@@ -214,7 +214,7 @@ def load_header_func(header_name, func):
     try:
         __import__("redbot.headers.%s" % name_token)
         hdr_module = sys.modules["redbot.headers.%s" % name_token]
-    except ImportError:
+    except (ImportError, KeyError):
         return # we don't recognise the header.
     try:
         return getattr(hdr_module, func)
