@@ -314,7 +314,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             elif isinstance(self.red.res_error, httperr.HttpError):
                 if self.red.res_error.detail:
                     self.output(self.error_template % "%s (%s)" % (
-                        self.red.res_error.desc, self.red.res_error.detail)
+                        self.red.res_error.desc,
+                        self.red.res_error.detail.encode('utf-8', 'replace'))
                     )
                 else:
                     self.output(self.error_template % self.red.res_error.desc)
