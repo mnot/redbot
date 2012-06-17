@@ -61,11 +61,11 @@ def loose_parse(set_cookie_string, uri_path, current_time, subject, red):
         red.set_message(subject, rs.SET_COOKIE_NO_VAL,
             name_value_pair.strip()
         ) 
-        raise
+        raise ValueError, "Cookie doesn't have a value"
     name, value = name.strip(), value.strip()
     if name == "":
         red.set_message(subject, rs.SET_COOKIE_NO_NAME)
-        raise
+        raise ValueError, "Cookie doesn't have a name"
     cookie_name, cookie_value = name, value
     cookie_attribute_list = []
     while unparsed_attributes != "":
