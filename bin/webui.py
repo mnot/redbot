@@ -175,7 +175,7 @@ class RedWebUi(object):
                 save_dir, os.path.basename(self.test_id)
             ))
             mtime = os.fstat(fd.fileno()).st_mtime
-        except (OSError, IOError, zlib.error):
+        except (OSError, IOError, TypeError, zlib.error):
             self.response_start(
                 "404", "Not Found", [
                 ("Content-Type", "text/html; charset=%s" % charset), 
