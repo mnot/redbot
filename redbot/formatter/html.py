@@ -315,8 +315,13 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 if self.red.res_error.detail:
                     self.output(self.error_template % "%s (%s)" % (
                         self.red.res_error.desc,
-                        self.red.res_error.detail.encode('utf-8', 'replace'))
+                        unicode(
+                          self.red.res_error.detail,
+                          'utf-8',
+                          'replace'
+                        )
                     )
+                )
                 else:
                     self.output(self.error_template % self.red.res_error.desc)
             else:
