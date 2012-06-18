@@ -77,13 +77,13 @@ class HarFormatter(Formatter):
 
     def finish_output(self):
         "Fill in the template with RED's results."
-        page_id = self.add_page(self.red)
         if self.red.res_complete:
+            page_id = self.add_page(self.red)
             self.add_entry(self.red, page_id)
-        for linked_red in [d[0] for d in self.red.link_droids]:
-            # filter out incomplete responses
-            if linked_red.res_complete:
-                self.add_entry(linked_red, page_id)
+            for linked_red in [d[0] for d in self.red.link_droids]:
+                # filter out incomplete responses
+                if linked_red.res_complete:
+                    self.add_entry(linked_red, page_id)
         self.output(json.dumps(self.har, indent=4))
         self.done()
         
