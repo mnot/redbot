@@ -114,7 +114,7 @@ def checkCaching(state):
 
     # pre-check / post-check
     if 'pre-check' in cc_keys or 'post-check' in cc_keys:
-        if 'pre-check' not in cc_keys or 'post_check' not in cc_keys:
+        if 'pre-check' not in cc_keys or 'post-check' not in cc_keys:
             state.set_message('header-cache-control', rs.CHECK_SINGLE)
         else:
             pre_check = post_check = None
