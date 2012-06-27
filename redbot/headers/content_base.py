@@ -32,6 +32,7 @@ import redbot.http_syntax as syntax
 def parse(subject, value, red):
     red.set_message(subject, 
                     rs.HEADER_DEPRECATED, 
+                    header_name="Content-Base",
                     ref=rh.rfc2616 % "sec-19.6.3"
     )
     return value

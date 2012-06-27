@@ -32,6 +32,7 @@ import redbot.http_syntax as syntax
 def parse(subject, value, red):
     red.set_message(subject, 
                     rs.HEADER_DEPRECATED, 
+                    header_name="Set-Cookie2",
                     ref=rh.rfc6265 % "section-9.4"
     )
     return value
