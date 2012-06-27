@@ -190,7 +190,7 @@ class HEADER_VALUE_ENCODING(Message):
     category = c.GENERAL
     level = l.WARN
     summary = {
-     'en': u"The %(header_name)s header's value contains non-ASCII characters."
+     'en': u"The %(subject)s header's value contains non-ASCII characters."
     }
     text = {
      'en': u"""HTTP headers use the ISO-8859-1 character set, but in most

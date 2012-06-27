@@ -111,6 +111,7 @@ class RedState(object):
         kw['response'] = rs.response.get(
             self.type, rs.response['this']
         )['en']
+        kw['subject'] = subject
         self.messages.append(msg(subject, subreq, kw))
         
     @staticmethod
