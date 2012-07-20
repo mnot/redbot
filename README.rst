@@ -21,9 +21,6 @@ RED needs:
 2. The Thor HTTP library; see <http://github.com/mnot/thor/>
 3. To use RED on the Web, you'll need a Web server that implements the CGI interface; e.g., Apache <http://httpd.apache.org/>.
 
-Optionally, RED will take advantage of the pyevent extension, if installed.
-See PyEvent <http://code.google.com/p/pyevent/>.
-
 
 Installing RED
 --------------
