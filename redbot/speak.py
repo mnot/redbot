@@ -1720,10 +1720,10 @@ Explorer."
      'en': u"""Microsoft Internet Explorer implements two
      <code>Cache-Control</code> extensions, <code>pre-check</code> and
      <code>post-check</code>, to give more control over how its cache stores
-     responses.<p> Once it has been cached for more than %(post-check)s
+     responses.<p> Once it has been cached for more than %(post_check)s
      seconds, a new request will result in the cached response being served
      while it is refreshed in the background. However, if it has been cached
-     for more than %(pre-check)s seconds, the browser will download a fresh
+     for more than %(pre_check)s seconds, the browser will download a fresh
      response before showing it to the user.<p> Note that these directives do
      not have any effect on other clients or caches.<p>
      See <a href="http://bit.ly/rzT0um">this blog entry</a> for more
