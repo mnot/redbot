@@ -65,7 +65,7 @@ $(document).ready(function() {
   
   /* URI */
   
-  var check_phrase = "Enter a http:// URI to check";
+  var check_phrase = "Enter a http:// or https:// URL to check";
   if (config.redbot_uri) {
     $("#uri").val(config.redbot_uri);
   } else if (! $("#uri").val()) {
