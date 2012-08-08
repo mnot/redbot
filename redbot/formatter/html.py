@@ -800,7 +800,7 @@ e_authority = partial(unicode_url_escape, safe=uri_sub_delims + r"[]:@")
 e_path = partial(unicode_url_escape, safe=uri_sub_delims + r":@/")
 e_path_seg = partial(unicode_url_escape, safe=uri_sub_delims + r":@") 
 e_query = partial(unicode_url_escape, safe=uri_sub_delims + r":@/?")
-e_query_arg = partial(unicode_url_escape, safe=r"!$'()*+,;:@/?")
+e_query_arg = partial(unicode_url_escape, safe=r"!$'()*+,:@/?")
 
 def e_js(instr):
     """
