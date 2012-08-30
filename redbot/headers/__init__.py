@@ -363,14 +363,13 @@ def relative_time(utime, now=None, show_sign=1):
         return None
     if now == None:
         now = time.time()
-    age = int(now - utime)
+    age = round(now - utime)
     if age == 0:
         return signs[show_sign][0]
 
     a = abs(age)
-    yrs = int(a / 60 / 60 / 24 / 7 / 52)
-    wks = int(a / 60 / 60 / 24 / 7) % 52
-    day = int(a / 60 / 60 / 24) % 7
+    yrs = int(a / 60 / 60 / 24 / 365)
+    day = int(a / 60 / 60 / 24) % 365
     hrs = int(a / 60 / 60) % 24
     mnt = int(a / 60) % 60
     sec = int(a % 60)
@@ -387,10 +386,6 @@ def relative_time(utime, now=None, show_sign=1):
         arr.append(str(yrs) + ' year')
     elif yrs > 1:
         arr.append(str(yrs) + ' years')
-    if wks == 1:
-        arr.append(str(wks) + ' week')
-    elif wks > 1:
-        arr.append(str(wks) + ' weeks')
     if day == 1:
         arr.append(str(day) + ' day')
     elif day > 1:
@@ -406,9 +401,34 @@ def relative_time(utime, now=None, show_sign=1):
         arr.append(sign)
     return " ".join(arr)
 
+class RelativeTimeTester(unittest.TestCase):
+    minute = 60
+    hour = minute * 60
+    day = hour * 24
+    year = day * 365
+    cases = [
+        (+year, "1 year from now"),
+        (-year, "1 year ago"),
+        (+year+1, "1 year 1 sec from now"),
+        (+year+.9, "1 year 1 sec from now"),
+        (+year+day, "1 year 1 day from now"),
+        (+year+(10*day), "1 year 10 days from now"),
+        (+year+(90*day)+(3*hour), "1 year 90 days from now"),
+        (+(13*day)-.4, "13 days from now"),
+    ]
+    
+    def setUp(self):
+        self.now = time.time()
+    
+    def test_relative_time(self):
+        for delta, result in self.cases:
+            self.assertEqual(
+                relative_time(self.now + delta, self.now), 
+                result
+            )
 
 
-# Testing machinery
+# Testing machinery for headers
 
 class _DummyRed(object):
     def __init__(self):
