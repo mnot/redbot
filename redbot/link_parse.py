@@ -40,7 +40,7 @@ class HTMLLinkParser(HTMLParser):
     feed() accepts a RedFetcher object (which it uses HTTP response headers
     from) and a chunk of the document at a time.
 
-    When links are found, process_link will be called for eac with the
+    When links are found, process_link will be called for each with the
     following arguments;
       - link (absolute URI as a unicode string)
       - tag (name of the element that contained it)
