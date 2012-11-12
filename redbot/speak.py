@@ -1412,15 +1412,11 @@ class PUBLIC(Message):
      response cacheable even when the request had an
      <code>Authorization</code> header (i.e., HTTP authentication was in
      use).<p>
-     Additionally, <a href="http://firefox.org/">Firefox</a>'s cache will
-     store SSL-protected responses on disk when <code>public</code> is
-     present; otherwise, they are only cached in memory.<p>
-     <p>Therefore, SSL-protected or HTTP-authenticated (NOT
-     cookie-authenticated) resources <em>may</em> have use for
-     <code>public</code> to improve cacheability, if used judiciously.<p>
-     However, other responses <strong>do not need to contain
-     <code>public</code> </strong>; it does not make the response "more
-     cacheable", and only makes the headers larger."""
+     <p>Therefore, HTTP-authenticated (NOT cookie-authenticated) resources
+     <em>may</em> have use for <code>public</code> to improve cacheability, if
+     used judiciously.<p> However, other responses <strong>do not need to
+     contain <code>public</code></strong>; it does not make the response
+     "more cacheable", and only makes the response headers larger."""
     }
 
 class CURRENT_AGE(Message):
