@@ -43,7 +43,7 @@ import redbot.speak as rs
 from redbot import link_parse
 from redbot.fetch import RedFetcher
 from redbot.headers import f_num
-from redbot.uri_validate import absolute_URI
+from redbot.uri_validate import absolute_URI, URI
 
 ### configuration
 max_uri = 8000
@@ -84,8 +84,11 @@ class ResourceExpertDroid(RedFetcher):
         self.state.gzip_savings = 0
 
         # check the URI
-        if not re.match("^\s*%s\s*$" % absolute_URI, uri, re.VERBOSE):
+        if not re.match("^\s*%s\s*$" % URI, uri, re.VERBOSE):
             self.state.set_message('uri', rs.URI_BAD_SYNTAX)
+        if '#' in uri:
+            # chop off the fragment
+            uri = uri[:uri.index('#')]
         if len(uri) > max_uri:
             self.state.set_message('uri', 
                 rs.URI_TOO_LONG, 
