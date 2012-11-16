@@ -383,7 +383,10 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                              # e.g., ValueError("Invalid IPv6 URL")
                     return r"%s<a href='%s' class='nocode'>%s</a>%s" % (
                         matchobj.group(1),
-                        u"?uri=%s" % e_query_arg(qlink),
+                        u"?uri=%s&req_hdr=Referer%%3A%s" % (
+                            e_query_arg(qlink),
+                            e_query_arg(red.base_uri)
+                        ),
                         e_html(link),
                         matchobj.group(1)
                     )
