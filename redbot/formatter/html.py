@@ -536,9 +536,10 @@ class HeaderPresenter(object):
         value = value.rstrip()
         svalue = value.lstrip()
         space = len(value) - len(svalue)
-        return u"%s<a href='?uri=%s'>%s</a>" % (
+        return u"%s<a href='?uri=%s&req_hdr=Referer%%3A%s'>%s</a>" % (
             " " * space,
             e_query_arg(urljoin(self.URI, svalue)), 
+            e_query_arg(self.URI),
             self.I(e_html(svalue), len(name))
         )
     content_location = \
