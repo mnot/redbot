@@ -28,6 +28,8 @@ THE SOFTWARE.
 """
 
 import operator
+import re
+import textwrap
 
 import thor.http.error as httperr
 import redbot.speak as rs
@@ -44,7 +46,7 @@ class BaseTextFormatter(Formatter):
     media_type = "text/plain"
 
     msg_categories = [
-        rs.c.GENERAL, rs.c.SECURITY, rs.c.CONNECTION, rs.c.CONNEG, 
+        rs.c.GENERAL, rs.c.SECURITY, rs.c.CONNECTION, rs.c.CONNEG,
         rs.c.CACHING, rs.c.VALIDATION, rs.c.RANGE
     ]
 
@@ -60,6 +62,7 @@ class BaseTextFormatter(Formatter):
 
     def __init__(self, *args, **kw):
         Formatter.__init__(self, *args, **kw)
+        self.verbose = False
 
     def start_output(self):
         pass
@@ -103,6 +106,10 @@ class BaseTextFormatter(Formatter):
             out.append(
                 u"  * %s" % (self.colorize(m.level, m.show_summary("en")))
             )
+            if self.verbose:
+                out.append('')
+                out.extend('    ' + line for line in self.format_text(m))
+                out.append('')
             smsgs = [msg for msg in getattr(m.subrequest, "messages", []) if msg.level in [rs.l.BAD]]
             if smsgs:
                 out.append("")
@@ -111,9 +118,16 @@ class BaseTextFormatter(Formatter):
                         u"    * %s" %
                         (self.colorize(sm.level, sm.show_summary("en")))
                     )
+                    if self.verbose:
+                        out.append('')
+                        out.extend('      ' + line for line in self.format_text(sm))
+                        out.append('')
                 out.append(nl)
         out.append(nl)
         return nl.join(out)
+
+    def format_text(self, m):
+        return textwrap.wrap(re.sub(r"(?m)^\s+", "", m.show_text("en")))
 
     def colorize(self, level, string):
         if self.kw.get('tty_out', False):
@@ -153,6 +167,14 @@ class TextFormatter(BaseTextFormatter):
         self.done()
 
 
+class VerboseTextFormatter(TextFormatter):
+    name = 'txt_verbose'
+
+    def __init__(self, *args, **kw):
+        TextFormatter.__init__(self, *args, **kw)
+        self.verbose = True
+
+
 class TextListFormatter(BaseTextFormatter):
     """
     Format multiple RED responses as a textual list.
@@ -183,3 +205,11 @@ class TextListFormatter(BaseTextFormatter):
 
     def format_uri(self, red):
         return self.colorize("uri", red.uri)
+
+
+class VerboseTextListFormatter(TextListFormatter):
+    name = "txt_verbose"
+
+    def __init__(self, *args, **kw):
+        TextListFormatter.__init__(self, *args, **kw)
+        self.verbose = True
