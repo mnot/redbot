@@ -506,7 +506,6 @@ class VIA_PRESENT(Message):
     resource.<p>
     This may indicate that a proxy is in between RED and the server, or that
     the server uses a "reverse proxy" or CDN in front of it.<p>
-    %(via_list)s
     <p>
     There field has three space-separated components; first, the HTTP version
     of the message that the intermediary received, then the identity of the
