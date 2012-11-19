@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+from HTMLParser import HTMLParser
 import operator
 import re
 import textwrap
@@ -127,7 +128,15 @@ class BaseTextFormatter(Formatter):
         return nl.join(out)
 
     def format_text(self, m):
-        return textwrap.wrap(re.sub(r"(?m)^\s+", "", m.show_text("en")))
+        return textwrap.wrap(
+            strip_tags(
+                re.sub(
+                    r"(?m)\s\s+", 
+                    " ", 
+                    m.show_text("en")
+                )
+            )
+        )
 
     def colorize(self, level, string):
         if self.kw.get('tty_out', False):
@@ -213,3 +222,18 @@ class VerboseTextListFormatter(TextListFormatter):
     def __init__(self, *args, **kw):
         TextListFormatter.__init__(self, *args, **kw)
         self.verbose = True
+
+
+class MLStripper(HTMLParser):
+    def __init__(self):
+        self.reset()
+        self.fed = []
+    def handle_data(self, d):
+        self.fed.append(d)
+    def get_data(self):
+        return ''.join(self.fed)
+
+def strip_tags(html):
+    s = MLStripper()
+    s.feed(html)
+    return s.get_data()
