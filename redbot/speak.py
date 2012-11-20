@@ -1188,7 +1188,7 @@ intermediary."
      (if they have another means of determining how fresh the response is), or
      leave the <code>Date</code> header alone (i.e., act as a normal HTTP
      cache).<p>
-     See <a href="http://bit.ly/sd64Tc">this paper</a> for more
+     See <a href="http://j.mp/S7lPL4">this paper</a> for more
      information."""
     }
 
