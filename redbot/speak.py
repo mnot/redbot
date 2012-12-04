@@ -1109,15 +1109,17 @@ happens."
 
 class VARY_BODY_MISMATCH(Message):
     category = c.CONNEG
-    level = l.WARN
+    level = l.INFO
     summary = {
      'en': u"The response body is different when content negotiation happens."
     }
     text = {
-     'en': u"""When content negotiation is used, the response body
+     'en': u"""When content negotiation is used, the response body typically
      shouldn't change between negotiated and non-negotiated
      responses.<p>
-     This might be because different servers handled the two requests.<p>"""
+     There might be legitimate reasons for this; e.g., because different
+     servers handled the two requests. However, RED's output may be skewed as
+     a result.<p>"""
     }
 
 class VARY_ETAG_DOESNT_CHANGE(Message):

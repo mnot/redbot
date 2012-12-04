@@ -97,7 +97,6 @@ class ConnegCheck(SubRequest):
             # check body
             if self.base.res_body_post_md5 != self.state.res_body_md5:
                 self.set_message('body', rs.VARY_BODY_MISMATCH)
-                return  # Can't be sure what's going on...
 
             # check ETag
             if (self.state.parsed_hdrs.get('etag', 1) == \
