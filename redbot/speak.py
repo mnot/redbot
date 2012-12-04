@@ -1130,9 +1130,9 @@ class VARY_ETAG_DOESNT_CHANGE(Message):
     'en': u"""HTTP requires that the <code>ETag</code>s for two different
     responses associated with the same URI be different as well, to help
     caches and other receivers disambiguate them.<p>
-    This resource, however, sent the same ETag for both its compressed and
-    uncompressed versions (negotiated by <code>Accept-Encoding</code>). This
-    can cause interoperability problems, especially with caches."""
+    This resource, however, sent the same strong ETag for both its compressed
+    and uncompressed versions (negotiated by <code>Accept-Encoding</code>).
+    This can cause interoperability problems, especially with caches."""
     }
 
 ### Clock

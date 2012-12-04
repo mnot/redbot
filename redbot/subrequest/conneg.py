@@ -100,10 +100,12 @@ class ConnegCheck(SubRequest):
                 return  # Can't be sure what's going on...
 
             # check ETag
-            if self.state.parsed_hdrs.get('etag', 1) \
-               == self.base.parsed_hdrs.get('etag', 2):
-                self.set_message('header-etag', rs.VARY_ETAG_DOESNT_CHANGE) 
-                # TODO: weakness?
+            if (self.state.parsed_hdrs.get('etag', 1) == \
+              self.base.parsed_hdrs.get('etag', 2)):
+                if not self.base.parsed_hdrs['etag'][0]: # strong
+                    self.set_message('header-etag',
+                        rs.VARY_ETAG_DOESNT_CHANGE
+                    ) 
 
             # check compression efficiency
             if self.state.res_body_len > 0:
