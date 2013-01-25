@@ -1,10 +1,10 @@
 
 .PHONY: all
-all: headers speak webui
+all: unit speak webui
 
-.PHONY: headers
-headers:
-	python test_headers.py
+.PHONY: unit
+unit:
+	python unit_tests.py
 
 .PHONY: speak
 speak:
@@ -20,6 +20,6 @@ deploy:
 
 .PHONY: lint
 lint:
-	PYTHONPATH=../ pylint-2.7 -i y \
+	PYTHONPATH=../ pylint -i y \
 	-d C0103,C0322,C0323,C0111,R0903,R0801,W0611,W0613 \
 	redbot

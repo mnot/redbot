@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-"""
-Cacheability checking function. Called on complete responses by RedFetcher.
-"""
-
 __author__ = "Mark Nottingham <mnot@mnot.net>"
 __copyright__ = """\
 Copyright (c) 2008-2012 Mark Nottingham
@@ -27,23 +23,49 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import redbot.message_check.cache
-import redbot.message_check.headers
-import redbot.message_check.status
 
-class MessageChecker(object):
-    """
-    Checks HTTP messages to make sure they're syntactically correct, as well
-    as commenting upon their semantics. Does not perform any requests.
+import redbot.speak as rs
+from redbot.message_check import headers as rh
+import redbot.http_syntax as syntax
 
-    If the message_type is known, it should be stated in message_type; "req"
-    or "res". If left as None, we'll guess.
 
-    If headers_only is true, it's assumed that the message will be complete, 
-    and therefore we'll be checking the entire message; otherwise, we expect
-    it to be syntactically complete.
-    """
-    def __init__(self, state):
-        headers.process_headers(state)
-        status.ResponseStatusChecker(state)
-        cache.checkCaching(state)
+@rh.GenericHeaderSyntax
+def parse(subject, value, red):
+    try:
+        age = int(value)
+    except ValueError:
+        red.set_message(subject, rs.AGE_NOT_INT)
+        return None
+    if age < 0:
+        red.set_message(subject, rs.AGE_NEGATIVE)
+        return None
+    return age
+
+@rh.SingleFieldValue
+def join(subject, values, red):
+    return values[-1]
+    
+    
+class AgeTest(rh.HeaderTest):
+    name = 'Age'
+    inputs = ['10']
+    expected_out = 10
+    expected_err = []
+
+class MultipleAgeTest(rh.HeaderTest):
+    name = 'Age'
+    inputs = ['20', '10']
+    expected_out = 10
+    expected_err = [rs.SINGLE_HEADER_REPEAT]
+
+class CharAgeTest(rh.HeaderTest):
+    name = 'Age'
+    inputs = ['foo']
+    expected_out = None
+    expected_err = [rs.AGE_NOT_INT]
+
+class NegAgeTest(rh.HeaderTest):
+    name = "Age"
+    inputs = ["-20"]
+    expected_out = None
+    expected_err = [rs.AGE_NEGATIVE]

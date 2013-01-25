@@ -43,9 +43,8 @@ import thor
 import thor.http.error as httperr
 
 import redbot.speak as rs
-from redbot import defns, droid, fetch
-from redbot.formatter import Formatter, html_header
-from redbot.headers import relative_time, f_num
+from redbot import defns, fetch, __version__
+from redbot.formatter import Formatter, html_header, relative_time, f_num
 
 nl = u"\n"
 
@@ -83,13 +82,13 @@ class BaseHtmlFormatter(Formatter):
             descend = ''
         self.output(html_header.__doc__ % {
             'static': static_root,
-            'version': droid.__version__,
+            'version': __version__,
             'html_uri': e_html(self.uri),
             'js_uri': e_js(self.uri),
             'config': urllib.quote(json.dumps({
               'redbot_uri': self.uri,
               'redbot_req_hdrs': self.req_hdrs,
-              'redbot_version': droid.__version__
+              'redbot_version': __version__
             })),
             'js_req_hdrs': ", ".join(['["%s", "%s"]' % (
                 e_js(n), e_js(v)) for n,v in self.req_hdrs]),
@@ -178,7 +177,7 @@ title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
 
 """ % {
        'baseuri': self.ui_uri,
-       'version': droid.__version__,
+       'version': __version__,
        }
 
     def req_qs(self, link):

@@ -41,14 +41,12 @@ import zlib
 import thor
 import thor.http.error as httperr
 
-from redbot.message_check.cache import checkCaching
-from redbot.message_check.status import ResponseStatusChecker
-import redbot.headers
-from redbot.headers import f_num
+from redbot.message_check import MessageChecker
+from redbot.formatter import f_num
 import redbot.speak as rs
 from redbot.state import RedState
 
-class RedHttpClient(thor.HttpClient):
+class RedHttpClient(thor.http.HttpClient):
     connect_timeout = 10
     read_timeout = 15
     
@@ -174,8 +172,7 @@ class RedFetcher(object):
         state.res_status = status.decode('iso-8859-1', 'replace')
         state.res_phrase = phrase.decode('iso-8859-1', 'replace')
         state.res_hdrs = res_headers
-        redbot.headers.process_headers(state)
-        ResponseStatusChecker(state)
+        MessageChecker(state)
         state.res_body_enc = state.parsed_hdrs.get(
             'content-type', (None, {})
         )[1].get('charset', 'utf-8') # default isn't UTF-8, but oh well
@@ -252,7 +249,6 @@ class RedFetcher(object):
             self.status_cb("fetched %s (%s)" % (state.uri, state.type))
         state.res_body_md5 = self._md5_processor.digest()
         state.res_body_post_md5 = self._md5_post_processor.digest()
-        checkCaching(state)
 
         if state.method not in ['HEAD'] and state.res_status not in ['304']:
             # check payload basics

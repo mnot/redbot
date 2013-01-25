@@ -27,8 +27,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from redbot.headers import relative_time, f_num
-import redbot.headers as rh
+from redbot.formatter import relative_time, f_num
+import headers as rh
 import redbot.speak as rs
 
 ### configuration
@@ -51,12 +51,12 @@ def checkCaching(state):
     
     # Last-Modified
     if lm:
-      serv_date = date or state.res_ts
-      if lm > (date or serv_date):
-          state.set_message('header-last-modified', rs.LM_FUTURE)
-      else:
-          state.set_message('header-last-modified', rs.LM_PRESENT,
-            last_modified_string=rh.relative_time(lm, serv_date))
+        serv_date = date or state.res_ts
+        if lm > (date or serv_date):
+            state.set_message('header-last-modified', rs.LM_FUTURE)
+        else:
+            state.set_message('header-last-modified', rs.LM_PRESENT,
+            last_modified_string=relative_time(lm, serv_date))
     
     # known Cache-Control directives that don't allow duplicates
     known_cc = ["max-age", "no-store", "s-maxage", "public",

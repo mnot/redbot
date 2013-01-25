@@ -43,7 +43,8 @@ assert sys.version_info[0] == 2 and sys.version_info[1] >= 6, \
     "Please use Python 2.6 or greater"
 
 import thor
-from redbot import droid
+from redbot import droid, __version__
+from redbot.formatter import *
 from redbot.formatter import find_formatter, html
 
 ### Configuration ##########################################################
@@ -549,7 +550,7 @@ in standalone server mode. Details follow.
                 x.response_start("404", "Not Found", [])
                 x.response_done([])
 
-    server = thor.HttpServer(host, port)
+    server = thor.http.HttpServer(host, port)
     server.on('exchange', red_handler)
     
     try:
@@ -578,7 +579,7 @@ if __name__ == "__main__":
         # standalone server
         from optparse import OptionParser
         usage = "Usage: %prog [options] port static_dir"
-        version = "RED version %s" % droid.__version__
+        version = "RED version %s" % __version__
         option_parser = OptionParser(usage=usage, version=version)
         (options, args) = option_parser.parse_args()
         if len(args) < 2:

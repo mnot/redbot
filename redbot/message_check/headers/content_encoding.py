@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-"""
-Cacheability checking function. Called on complete responses by RedFetcher.
-"""
-
 __author__ = "Mark Nottingham <mnot@mnot.net>"
 __copyright__ = """\
 Copyright (c) 2008-2012 Mark Nottingham
@@ -27,23 +23,43 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import redbot.message_check.cache
-import redbot.message_check.headers
-import redbot.message_check.status
 
-class MessageChecker(object):
-    """
-    Checks HTTP messages to make sure they're syntactically correct, as well
-    as commenting upon their semantics. Does not perform any requests.
+import redbot.speak as rs
+from redbot.message_check import headers as rh
+import redbot.http_syntax as syntax
 
-    If the message_type is known, it should be stated in message_type; "req"
-    or "res". If left as None, we'll guess.
 
-    If headers_only is true, it's assumed that the message will be complete, 
-    and therefore we'll be checking the entire message; otherwise, we expect
-    it to be syntactically complete.
-    """
-    def __init__(self, state):
-        headers.process_headers(state)
-        status.ResponseStatusChecker(state)
-        cache.checkCaching(state)
+@rh.GenericHeaderSyntax
+@rh.CheckFieldSyntax(syntax.TOKEN, rh.rfc2616 % "sec-14.11")
+def parse(subject, value, red):
+    # check to see if there are any non-gzip encodings, because
+    # that's the only one we ask for.
+    if value.lower() != 'gzip':
+        red.set_message(subject, 
+            rs.ENCODING_UNWANTED, 
+            unwanted_codings=value
+        )
+    return value.lower()
+    
+def join(subject, values, red):
+    return values
+
+    
+class ContentEncodingTest(rh.HeaderTest):
+    name = 'Content-Encoding'
+    inputs = ['gzip']
+    expected_out = ['gzip']
+    expected_err = []
+
+class ContentEncodingCaseTest(rh.HeaderTest):
+    name = 'Content-Encoding'
+    inputs = ['GZip']
+    expected_out = ['gzip']
+    expected_err = []
+
+class UnwantedContentEncodingTest(rh.HeaderTest):
+    name = 'Content-Encoding'
+    inputs = ['gzip', 'foo']
+    expected_out = ['gzip', 'foo']
+    expected_err = [rs.ENCODING_UNWANTED]
+

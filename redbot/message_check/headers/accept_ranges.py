@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-"""
-Cacheability checking function. Called on complete responses by RedFetcher.
-"""
-
 __author__ = "Mark Nottingham <mnot@mnot.net>"
 __copyright__ = """\
 Copyright (c) 2008-2012 Mark Nottingham
@@ -27,23 +23,49 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import redbot.message_check.cache
-import redbot.message_check.headers
-import redbot.message_check.status
 
-class MessageChecker(object):
-    """
-    Checks HTTP messages to make sure they're syntactically correct, as well
-    as commenting upon their semantics. Does not perform any requests.
+import redbot.speak as rs
+from redbot.message_check import headers as rh
+import redbot.http_syntax as syntax
 
-    If the message_type is known, it should be stated in message_type; "req"
-    or "res". If left as None, we'll guess.
 
-    If headers_only is true, it's assumed that the message will be complete, 
-    and therefore we'll be checking the entire message; otherwise, we expect
-    it to be syntactically complete.
-    """
-    def __init__(self, state):
-        headers.process_headers(state)
-        status.ResponseStatusChecker(state)
-        cache.checkCaching(state)
+@rh.GenericHeaderSyntax
+def parse(subject, value, red):
+    value = value.lower()
+    if value not in ['bytes', 'none']:
+        red.set_message(subject, rs.UNKNOWN_RANGE, range=value)
+    return value
+    
+def join(subject, values, red):
+    return values
+
+
+class AcceptRangeTest(rh.HeaderTest):
+    name = 'Accept-Ranges'
+    inputs = ['bytes']
+    expected_out = (['bytes'])
+    expected_err = []
+
+class NoneAcceptRangeTest(rh.HeaderTest):
+    name = 'Accept-Ranges'
+    inputs = ['none']
+    expected_out = (['none'])
+    expected_err = []
+
+class BothAcceptRangeTest(rh.HeaderTest):
+    name = 'Accept-Ranges'
+    inputs = ['bytes, none']
+    expected_out = (['bytes', 'none'])
+    expected_err = []
+    
+class BadAcceptRangeTest(rh.HeaderTest):
+    name = 'Accept-Ranges'
+    inputs = ['foo']
+    expected_out = (['foo'])
+    expected_err = [rs.UNKNOWN_RANGE] 
+    
+class CaseAcceptRangeTest(rh.HeaderTest):
+    name = 'Accept-Ranges'
+    inputs = ['Bytes, NONE']
+    expected_out = (['bytes', 'none'])
+    expected_err = []

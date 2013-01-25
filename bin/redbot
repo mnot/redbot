@@ -34,7 +34,8 @@ assert sys.version_info[0] == 2 and sys.version_info[1] >= 6, \
 from optparse import OptionParser
 
 import thor
-from redbot import droid
+from redbot import droid, __version__
+from redbot.formatter import *
 from redbot.formatter import find_formatter, available_formatters
 
 
@@ -43,7 +44,7 @@ charset = "utf-8"
 
 def main():
     usage   = """Usage: %prog [options] <url>"""
-    version = """Redbot version %s, http://redbot.org/ """ % droid.__version__
+    version = """Redbot version %s, http://redbot.org/ """ % __version__
 
     opt_parser = OptionParser(usage=usage, version=version)
     opt_parser.set_defaults(

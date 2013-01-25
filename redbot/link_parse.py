@@ -30,8 +30,8 @@ THE SOFTWARE.
 from htmlentitydefs import entitydefs
 from HTMLParser import HTMLParser
 
-import redbot.headers as rh
-from redbot import http_syntax as syntax
+from redbot.message_check import headers as rh
+import redbot.http_syntax as syntax
 
 class HTMLLinkParser(HTMLParser):
     """

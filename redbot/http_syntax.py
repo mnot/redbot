@@ -28,7 +28,7 @@ THE SOFTWARE.
 """
 
 # URI syntax
-from uri_validate import URI, URI_reference, absolute_URI
+from redbot.uri_validate import URI, URI_reference, absolute_URI
 
 # generic syntax regexen (assume processing with re.VERBOSE)
 TOKEN = r'(?:[!#\$%&\'\*\+\-\.\^_`|~A-Za-z0-9]+?)'

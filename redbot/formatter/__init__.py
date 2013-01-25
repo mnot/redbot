@@ -28,6 +28,9 @@ THE SOFTWARE.
 """
 
 from collections import defaultdict
+import locale
+import time
+import unittest
 
 __all__ = ['html', 'text', 'har']
 
@@ -45,6 +48,13 @@ class FormatterType(type):
         return cls
 
 def find_formatter(name, default="html", multiple=False):
+    """
+    Find the formatter for name, and use default if it can't be found.
+    If you need to represent more than one result, set multiple to True.
+    
+    Note that you MUST "from redbot.formatter import *" before calling. 
+    Yes, that's a hack that needs to be fixed.
+    """
     if name not in _formatters.keys():
         name = default
     # find single-preferred formatters first
@@ -58,6 +68,12 @@ def find_formatter(name, default="html", multiple=False):
     raise RuntimeError, "Can't find a format in %s" % _formatters
 
 def available_formatters():
+    """
+    Return a list of the available formatter names.
+    
+    Note that you MUST "from redbot.formatter import *" before calling. 
+    Yes, that's a hack that needs to be fixed.
+    """
     return _formatters.keys()
 
 
@@ -123,4 +139,93 @@ class Formatter(object):
         """
         raise NotImplementedError
 
-from redbot.formatter import *
+
+def f_num(instr): # TODO: does this really belong here?
+    "Format a number according to the locale."
+    return locale.format("%d", instr, grouping=True)
+
+
+def relative_time(utime, now=None, show_sign=1):
+    '''
+    Given two times, return a string that explains how far apart they are.
+    show_sign can be:
+      0 - don't show
+      1 - ago / from now  [DEFAULT]
+      2 - early / late
+     '''
+
+    signs = {
+        0:    ('0', '', ''),
+        1:    ('now', 'ago', 'from now'),
+        2:    ('none', 'behind', 'ahead'),
+    }
+
+    if  utime == None:
+        return None
+    if now == None:
+        now = time.time()
+    age = round(now - utime)
+    if age == 0:
+        return signs[show_sign][0]
+
+    a = abs(age)
+    yrs = int(a / 60 / 60 / 24 / 365)
+    day = int(a / 60 / 60 / 24) % 365
+    hrs = int(a / 60 / 60) % 24
+    mnt = int(a / 60) % 60
+    sec = int(a % 60)
+
+    if age > 0:
+        sign = signs[show_sign][1]
+    else:
+        sign = signs[show_sign][2]
+    if not sign:
+        sign = signs[show_sign][0]
+
+    arr = []
+    if yrs == 1:
+        arr.append(str(yrs) + ' year')
+    elif yrs > 1:
+        arr.append(str(yrs) + ' years')
+    if day == 1:
+        arr.append(str(day) + ' day')
+    elif day > 1:
+        arr.append(str(day) + ' days')
+    if hrs:
+        arr.append(str(hrs) + ' hr')
+    if mnt:
+        arr.append(str(mnt) + ' min')
+    if sec:
+        arr.append(str(sec) + ' sec')
+    arr = arr[:2]        # resolution
+    if show_sign:
+        arr.append(sign)
+    return " ".join(arr)
+
+class RelativeTimeTester(unittest.TestCase):
+    minute = 60
+    hour = minute * 60
+    day = hour * 24
+    year = day * 365
+    cases = [
+        (+year, "1 year from now"),
+        (-year, "1 year ago"),
+        (+year+1, "1 year 1 sec from now"),
+        (+year+.9, "1 year 1 sec from now"),
+        (+year+day, "1 year 1 day from now"),
+        (+year+(10*day), "1 year 10 days from now"),
+        (+year+(90*day)+(3*hour), "1 year 90 days from now"),
+        (+(13*day)-.4, "13 days from now"),
+    ]
+    
+    def setUp(self):
+        self.now = time.time()
+    
+    def test_relative_time(self):
+        for delta, result in self.cases:
+            self.assertEqual(
+                relative_time(self.now + delta, self.now), 
+                result
+            )
+
+

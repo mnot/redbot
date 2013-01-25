@@ -30,7 +30,7 @@ THE SOFTWARE.
 import random
 
 from redbot.subrequest.base import SubRequest
-from redbot.headers import f_num
+from redbot.formatter import f_num
 import redbot.speak as rs
 
 class RangeRequest(SubRequest):

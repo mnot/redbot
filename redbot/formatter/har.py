@@ -35,7 +35,7 @@ except ImportError:
 
 import redbot.speak as rs
 from thor.http import get_header
-from redbot import droid
+from redbot import __version__
 from redbot.formatter import Formatter
 
 
@@ -54,11 +54,11 @@ class HarFormatter(Formatter):
                 "version": "1.1",
                 "creator": {
                     "name": "REDbot",
-                    "version": droid.__version__,
+                    "version": __version__,
                 },
                 "browser": {
                     "name": "REDbot",
-                    "version": droid.__version__,
+                    "version": __version__,
                 },
                 "pages": [],
                 "entries": [],

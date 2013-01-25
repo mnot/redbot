@@ -1,3 +1,6 @@
 *.pyc
 .DS_Store
 artwork
+MANIFEST
+dist
+build
