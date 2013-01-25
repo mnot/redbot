@@ -6,6 +6,9 @@ env: "DISPLAY=:99.0"
 
 before_script: sh -e /etc/init.d/xvfb start
 
-install: pip install selenium --use-mirrors
+install: 
+  - pip install selenium --use-mirrors
+  - pip install thor --use-mirrors
+
 
 script: "cd test; make -e"
