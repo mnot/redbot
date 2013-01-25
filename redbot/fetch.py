@@ -41,8 +41,8 @@ import zlib
 import thor
 import thor.http.error as httperr
 
-from redbot.checks.cache import checkCaching
-from redbot.checks.status import ResponseStatusChecker
+from redbot.message_check.cache import checkCaching
+from redbot.message_check.status import ResponseStatusChecker
 import redbot.headers
 from redbot.headers import f_num
 import redbot.speak as rs
