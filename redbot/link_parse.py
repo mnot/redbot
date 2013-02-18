@@ -59,12 +59,12 @@ class HTMLLinkParser(HTMLParser):
         self.err = err
         self.doc_enc = None
         self.link_types = {
-            'link': 'href',
-            'a': 'href',
-            'img': 'src',
-            'script': 'src',
-            'frame': 'src',
-            'iframe': 'src',
+            'link': ['href', ['stylesheet']],
+            'a': ['href', None],
+            'img': ['src', None],
+            'script': ['src', None],
+            'frame': ['src', None],
+            'iframe': ['src', None],
         }
         self.errors = 0
         self.last_err_pos = None
@@ -110,11 +110,13 @@ class HTMLLinkParser(HTMLParser):
         attr_d = dict(attrs)
         title = attr_d.get('title', '').strip()
         if tag in self.link_types.keys():
-            target = attr_d.get(self.link_types[tag], "")
-            if target:
-                if "#" in target:
-                    target = target[:target.index('#')]
-                self.process_link(target, tag, title)
+            url_attr, rels = self.link_types[tag]
+            if not rels or attr_d.get("rel", None) in rels:
+                target = attr_d.get(url_attr, "")
+                if target:
+                    if "#" in target:
+                        target = target[:target.index('#')]
+                    self.process_link(target, tag, title)
         elif tag == 'base':
             self.base = attr_d.get('href', self.base)
         elif tag == 'meta' and \
