@@ -672,7 +672,6 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             out.append(self.format_yes_no(red.store_private))
             out.append(self.format_time(red.age))
             out.append(self.format_time(red.freshness_lifetime))
-            out.append(self.format_yes_no(red.stale_serveable))
             out.append(self.format_yes_no(red.ims_support))
             out.append(self.format_yes_no(red.inm_support))
             if red.gzip_support:
@@ -718,7 +717,6 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         <th title="Whether a private (e.g., browser) cache can store the response.">private<br>cache</th>
         <th title="How long the response had been cached before RED got it.">age</th>
         <th title="How long a cache can treat the response as fresh.">fresh</th>
-        <th title="Whether a cache can serve the response once it becomes stale (e.g., when it can't contact the origin server).">serve<br>stale</th>
         <th title="Whether If-Modified-Since validation is supported, using Last-Modified.">IMS</th>
         <th title="Whether If-None-Match validation is supported, using ETags.">INM</th>
         <th title="Whether negotiation for gzip compression is supported; if so, the percent of the original size saved.">gzip</th>
