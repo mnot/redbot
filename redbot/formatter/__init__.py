@@ -140,9 +140,19 @@ class Formatter(object):
         raise NotImplementedError
 
 
-def f_num(instr): # TODO: does this really belong here?
+def f_num(i, by1024=False):
     "Format a number according to the locale."
-    return locale.format("%d", instr, grouping=True)
+    if by1024:
+        k = int(i / 1024)
+        m = int(k / 1024)
+        g = int(m / 1024)
+        if g:
+            return locale.format("%d", g, grouping=True) + "g"
+        elif m:
+            return locale.format("%d", m, grouping=True) + "m"
+        elif k:
+            return locale.format("%d", k, grouping=True) + "k"
+    return locale.format("%d", i, grouping=True)
 
 
 def relative_time(utime, now=None, show_sign=1):

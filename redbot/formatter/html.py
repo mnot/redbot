@@ -668,6 +668,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             else:
                 out.append(u'<td>%s</td>' % red.res_status)
     # pconn
+            out.append(self.format_size(red.res_body_len))
             out.append(self.format_yes_no(red.store_shared))
             out.append(self.format_yes_no(red.store_private))
             out.append(self.format_time(red.age))
@@ -713,15 +714,16 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         <tr>
         <th title="The URI tested. Click to run a detailed analysis.">%s</th>
         <th title="The HTTP status code returned.">status</th>
-        <th title="Whether a shared (e.g., proxy) cache can store the response.">shared<br>cache</th>
-        <th title="Whether a private (e.g., browser) cache can store the response.">private<br>cache</th>
+        <th title="The size of the response body, in bytes.">size</th>
+        <th title="Whether a shared (e.g., proxy) cache can store the response.">shared</th>
+        <th title="Whether a private (e.g., browser) cache can store the response.">private</th>
         <th title="How long the response had been cached before RED got it.">age</th>
-        <th title="How long a cache can treat the response as fresh.">fresh</th>
+        <th title="How long a cache can treat the response as fresh.">freshness</th>
         <th title="Whether If-Modified-Since validation is supported, using Last-Modified.">IMS</th>
         <th title="Whether If-None-Match validation is supported, using ETags.">INM</th>
         <th title="Whether negotiation for gzip compression is supported; if so, the percent of the original size saved.">gzip</th>
-        <th title="Whether partial responses are supported.">partial<br>content</th>
-        <th title="Issues encountered.">problems</th>
+        <th title="Whether partial responses are supported.">partial</th>
+        <th title="Issues encountered.">notes</th>
         </tr>
         """ % (heading or "URI")
 
@@ -730,6 +732,12 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             return u'<td>-</td>'
         else:
             return u'<td>%s</td>' % relative_time(value, 0, 0)
+
+    def format_size(self, value):
+        if value is None:
+            return u'<td>-</td>'
+        else:
+            return u'<td>%s</td>' % f_num(value, by1024=True)
 
     def format_yes_no(self, value):
         icon_tpl = u'<td><img src="%s/icon/%%s" alt="%%s"/></td>' % \
@@ -766,9 +774,8 @@ class TableHtmlFormatter(BaseHtmlFormatter):
              or "<br>" for o in options]
         )
 
-
     def format_problems(self):
-        out = ['<br /><h2>Problems</h2><ol>']
+        out = ['<br /><h2>Notes</h2><ol>']
         for m in self.problems:
             out.append(u"""\
     <li class='%s %s msg' name='msgid-%s'><span>%s</span></li>""" % (
