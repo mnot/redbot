@@ -86,7 +86,7 @@ class RedState(object):
         try:
             self.uri = self.iri_to_uri(iri)
         except (ValueError, UnicodeError), why:
-            self.res_error = httperr.UrlError(why)
+            self.res_error = httperr.UrlError(why[0])
             self.uri = None
 
     def __repr__(self):
