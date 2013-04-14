@@ -1,25 +1,7 @@
 #!/usr/bin/env python
 
 """
-The Resource Expert Droid Response Analyser.
-
-Provides two classes: ResponseHeaderParser and ResponseStatusChecker.
-
-Both take a RedFetcher instance (post-done()) as their only argument.
-
-ResponseHeaderParser will examine the response headers and set messages
-on the RedFetcher instance as appropriate. It will also parse the
-headers and populate parsed_headers.
-
-ResponseStatusChecker will examine the response based upon its status
-code and also set messages as appropriate.
-
-ResponseHeaderParser MUST be called on the RedFetcher instance before
-running ResponseStatusChecker, because it relies on the headers being
-parsed.
-
-See red.py for the main RED engine and webui.py for the Web front-end.
-red_fetcher.py is the actual response fetching engine.
+The Resource Expert Droid Status Code Checker.
 """
 
 __version__ = "1"
@@ -47,20 +29,23 @@ THE SOFTWARE.
 """
 
 
-import thor.http
-
+from thor.http import header_dict, get_header, safe_methods
 import redbot.speak as rs
 
 
-class ResponseStatusChecker:
+class StatusChecker:
     """
-    Given a RED, check out the status
-    code and perform appropriate tests on it.
+    Given a response, check out the status code and perform 
+    appropriate tests on it.
+    
+    Additional tests will be performed if the request is available.
     """
-    def __init__(self, red):
-        self.red = red
+    def __init__(self, response, request=None):
+        assert response.is_request is False
+        self.request = request
+        self.response = response
         try:
-            status_m = getattr(self, "status%s" % red.response.status_code)
+            status_m = getattr(self, "status%s" % response.status_code)
         except AttributeError:
             self.set_message('status', rs.STATUS_NONSTANDARD)
             return
@@ -71,30 +56,32 @@ class ResponseStatusChecker:
             subject = 'status %s' % name
         else:
             subject = 'status'
-        self.red.set_message(
+        self.response.set_message(
             subject, 
             msg,
-            status=self.red.response.status_code,
+            status=self.response.status_code,
             **kw
         )
 
     def status100(self):        # Continue
-        if not "100-continue" in thor.http.get_header(self.red.request.headers, 'expect'):
+        if self.request and not "100-continue" in get_header(
+            self.request.headers, 'expect'):
             self.set_message('', rs.UNEXPECTED_CONTINUE)
     def status101(self):        # Switching Protocols
-        if not 'upgrade' in thor.http.header_dict(self.red.request.headers).keys():
+        if self.request \
+        and not 'upgrade' in header_dict(self.request.headers).keys():
             self.set_message('', rs.UPGRADE_NOT_REQUESTED)
     def status102(self):        # Processing
         pass
     def status200(self):        # OK
         pass
     def status201(self):        # Created
-        if self.red.request.method in thor.http.safe_methods:
+        if self.request and self.request.method in safe_methods:
             self.set_message('status', 
                 rs.CREATED_SAFE_METHOD, 
-                method=self.red.request.method
+                method=self.request.method
             )
-        if not self.red.response.parsed_headers.has_key('location'):
+        if not self.response.parsed_headers.has_key('location'):
             self.set_message('header-location', rs.CREATED_WITHOUT_LOCATION)
     def status202(self):        # Accepted
         pass
@@ -105,9 +92,10 @@ class ResponseStatusChecker:
     def status205(self):        # Reset Content
         pass
     def status206(self):        # Partial Content
-        if not "range" in thor.http.header_dict(self.red.request.headers).keys():
+        if self.request \
+        and not "range" in header_dict(self.request.headers).keys():
             self.set_message('', rs.PARTIAL_NOT_REQUESTED)
-        if not self.red.response.parsed_headers.has_key('content-range'):
+        if not self.response.parsed_headers.has_key('content-range'):
             self.set_message('header-location', rs.PARTIAL_WITHOUT_RANGE)
     def status207(self):        # Multi-Status
         pass
@@ -116,23 +104,23 @@ class ResponseStatusChecker:
     def status300(self):        # Multiple Choices
         pass
     def status301(self):        # Moved Permanently
-        if not self.red.response.parsed_headers.has_key('location'):
+        if not self.response.parsed_headers.has_key('location'):
             self.set_message('header-location', rs.REDIRECT_WITHOUT_LOCATION)
     def status302(self):        # Found
-        if not self.red.response.parsed_headers.has_key('location'):
+        if not self.response.parsed_headers.has_key('location'):
             self.set_message('header-location', rs.REDIRECT_WITHOUT_LOCATION)
     def status303(self):        # See Other
-        if not self.red.response.parsed_headers.has_key('location'):
+        if not self.response.parsed_headers.has_key('location'):
             self.set_message('header-location', rs.REDIRECT_WITHOUT_LOCATION)
     def status304(self):        # Not Modified
-        if not self.red.response.parsed_headers.has_key('date'):
+        if not self.response.parsed_headers.has_key('date'):
             self.set_message('status', rs.NO_DATE_304)
     def status305(self):        # Use Proxy
         self.set_message('', rs.STATUS_DEPRECATED)
     def status306(self):        # Reserved
         self.set_message('', rs.STATUS_RESERVED)
     def status307(self):        # Temporary Redirect
-        if not self.red.response.parsed_headers.has_key('location'):
+        if not self.response.parsed_headers.has_key('location'):
             self.set_message('header-location', rs.REDIRECT_WITHOUT_LOCATION)
     def status400(self):        # Bad Request
         self.set_message('', rs.STATUS_BAD_REQUEST)
@@ -163,8 +151,11 @@ class ResponseStatusChecker:
     def status413(self):        # Request Entity Too Large
         self.set_message('', rs.STATUS_REQUEST_ENTITY_TOO_LARGE)
     def status414(self):        # Request-URI Too Long
-        self.set_message('uri', rs.STATUS_URI_TOO_LONG,
-                        uri_len=len(self.red.uri))
+        if self.request:
+            uri_len = "(%s characters)" % len(self.request.url)
+        else:
+            uri_len = ""
+        self.set_message('uri', rs.STATUS_URI_TOO_LONG, uri_len=uri_len)
     def status415(self):        # Unsupported Media Type
         self.set_message('', rs.STATUS_UNSUPPORTED_MEDIA_TYPE)
     def status416(self):        # Requested Range Not Satisfiable

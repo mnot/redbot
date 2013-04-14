@@ -42,7 +42,7 @@ import thor.http.error as httperr
 from redbot.formatter import f_num
 import redbot.speak as rs
 from redbot.state import RedState
-from redbot.message.status import ResponseStatusChecker
+from redbot.message.status import StatusChecker
 from redbot.message.cache import checkCaching
 
 class RedHttpClient(thor.http.HttpClient):
@@ -166,7 +166,7 @@ class RedFetcher(object):
         res.status_code = status.decode('iso-8859-1', 'replace')
         res.status_phrase = phrase.decode('iso-8859-1', 'replace')
         res.feed_headers(res_headers)
-        ResponseStatusChecker(self.state)
+        StatusChecker(self.state.response, self.state.request)
         checkCaching(self.state)
 
     def _response_body(self, chunk):

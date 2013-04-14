@@ -2222,7 +2222,7 @@ class STATUS_URI_TOO_LONG(Message):
     category = c.GENERAL
     level = l.BAD
     summary = {
-    'en': u"The server won't accept a URI this long (%(uri_len)s characters)."
+    'en': u"The server won't accept a URI this long %(uri_len)s."
     }
     text = {
     'en': u"""The %(status)s status code means that the server can't or 
