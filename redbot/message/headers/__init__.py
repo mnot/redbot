@@ -233,7 +233,7 @@ def load_header_func(header_name, func):
     name_token = header_name.replace('-', '_')
     # anything starting with an underscore or with any caps won't match
     try:
-        module_name = "redbot.message_check.headers.%s" % name_token
+        module_name = "redbot.message.headers.%s" % name_token
         __import__(module_name)
         hdr_module = sys.modules[module_name]
     except (ImportError, KeyError):

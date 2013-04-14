@@ -134,7 +134,7 @@ be escaped for you before rendering.
 ### Writing Tests
 
 You can test your _parse_ function by subclassing
-`redbot.message_check.headers.HeaderTest`; it expects the following class
+`redbot.message.headers.HeaderTest`; it expects the following class
 properties:
 
  * `name` - the header field-name

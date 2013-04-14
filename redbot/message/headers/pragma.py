@@ -25,7 +25,7 @@ THE SOFTWARE.
 
 
 import redbot.speak as rs
-from redbot.message_check import headers as rh
+from redbot.message import headers as rh
 import redbot.http_syntax as syntax
 
 @rh.GenericHeaderSyntax

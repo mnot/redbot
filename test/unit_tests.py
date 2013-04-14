@@ -5,7 +5,7 @@ import sys
 import unittest
 sys.path.insert(0, "..")
 
-import redbot.message_check.headers as headers
+import redbot.message.headers as headers
 import redbot.http_syntax as syntax
 import redbot.speak as rs
 from redbot.message import DummyMsg
@@ -139,7 +139,7 @@ if __name__ == "__main__":
     import sys
     loader = unittest.TestLoader()
     if len(sys.argv) == 2:
-        auto_suite = loader.discover("../redbot/message_check/headers", 
+        auto_suite = loader.discover("../redbot/message/headers", 
                                     "%s.py" % sys.argv[1],  
                                     "../redbot"
         )

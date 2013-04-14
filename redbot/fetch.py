@@ -42,8 +42,8 @@ import thor.http.error as httperr
 from redbot.formatter import f_num
 import redbot.speak as rs
 from redbot.state import RedState
-from redbot.message_check.status import ResponseStatusChecker
-from redbot.message_check.cache import checkCaching
+from redbot.message.status import ResponseStatusChecker
+from redbot.message.cache import checkCaching
 
 class RedHttpClient(thor.http.HttpClient):
     "Thor HttpClient for RedFetcher"
@@ -171,8 +171,7 @@ class RedFetcher(object):
 
     def _response_body(self, chunk):
         "Process a chunk of the response body."
-        res = self.state.response
-        res.feed_body(chunk, self.body_procs)
+        self.state.response.feed_body(chunk, self.body_procs)
 
     def _response_done(self, trailers):
         "Finish analysing the response, handling any parse errors."
@@ -186,6 +185,7 @@ class RedFetcher(object):
         res.body_done(trailers)
         if self.status_cb and state.check_type:
             self.status_cb("fetched %s (%s)" % (state.uri, state.check_type))
+
         if state.request.method not in ['HEAD'] \
         and res.status_code not in ['304']:
             # check payload basics
@@ -204,6 +204,7 @@ class RedFetcher(object):
                 else:
                     state.set_message('header-content-md5', rs.CMD5_INCORRECT,
                                      calc_md5=c_md5_calc)
+
         self.done()
         self.finish_task()
 

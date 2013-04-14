@@ -27,7 +27,7 @@ import re
 from urlparse import urljoin
 
 import redbot.speak as rs
-from redbot.message_check import headers as rh
+from redbot.message import headers as rh
 import redbot.http_syntax as syntax
 
 
