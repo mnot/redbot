@@ -265,6 +265,7 @@ class HttpResponse(HttpMessage):
         self.store_shared = None
         self.store_private = None
 
+
 class DummyMsg(HttpResponse):
     """
     A dummy HTTP message, for testing.
