@@ -28,7 +28,6 @@ import redbot.speak as rs
 from redbot.message_check import headers as rh
 import redbot.http_syntax as syntax
 
-
 @rh.GenericHeaderSyntax
 def parse(subject, value, red):
     return value.lower()

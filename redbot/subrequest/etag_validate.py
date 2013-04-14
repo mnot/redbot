@@ -35,9 +35,9 @@ class ETagValidate(SubRequest):
     "If an ETag is present, see if it will validate."
 
     def modify_req_hdrs(self):
-        req_hdrs = list(self.base.req_hdrs)
-        if self.base.parsed_hdrs.has_key('etag'):
-            weak, etag = self.base.parsed_hdrs['etag']
+        req_hdrs = list(self.base.request.headers)
+        if self.base.response.parsed_headers.has_key('etag'):
+            weak, etag = self.base.response.parsed_headers['etag']
             if weak:
                 weak_str = u"W/"
                 # #65: message on weak etag
@@ -50,20 +50,20 @@ class ETagValidate(SubRequest):
         return req_hdrs
             
     def preflight(self):
-        if self.base.parsed_hdrs.has_key('etag'):
+        if self.base.response.parsed_headers.has_key('etag'):
             return True
         else:
             self.base.inm_support = False
             return False
 
     def done(self):
-        if not self.state.res_complete:
+        if not self.state.response.complete:
             self.set_message('', rs.ETAG_SUBREQ_PROBLEM,
-                problem=self.state.res_error.desc
+                problem=self.state.response.http_error.desc
             )
             return
             
-        if self.state.res_status == '304':
+        if self.state.response.status_code == '304':
             self.base.inm_support = True
             self.set_message('header-etag', rs.INM_304)
             self.check_missing_hdrs([
@@ -71,25 +71,25 @@ class ETagValidate(SubRequest):
                     'expires', 'vary'
                 ], rs.MISSING_HDRS_304, 'If-None-Match'
             )
-        elif self.state.res_status == self.base.res_status:
-            if self.state.res_body_md5 == self.base.res_body_md5:
+        elif self.state.response.status_code == self.base.response.status_code:
+            if self.state.response.payload_md5 == self.base.response.payload_md5:
                 self.base.inm_support = False
                 self.set_message('header-etag', rs.INM_FULL)
             else: # bodies are different
-                if self.base.parsed_hdrs['etag'] == \
-                  self.state.parsed_hdrs.get('etag', 1):
-                    if self.base.parsed_hdrs['etag'][0]: # weak
+                if self.base.response.parsed_headers['etag'] == \
+                  self.state.response.parsed_headers.get('etag', 1):
+                    if self.base.response.parsed_headers['etag'][0]: # weak
                         self.set_message('header-etag', rs.INM_DUP_ETAG_WEAK)
                     else: # strong
                         self.set_message('header-etag',
                                         rs.INM_DUP_ETAG_STRONG,
-                                        etag=self.base.parsed_hdrs['etag'])
+                                        etag=self.base.response.parsed_headers['etag'])
                 else:
                     self.set_message('header-etag', rs.INM_UNKNOWN)
         else:
             self.set_message('header-etag', 
                 rs.INM_STATUS, 
-                inm_status = self.state.res_status,
-                enc_inm_status = self.state.res_status or '(unknown)'
+                inm_status = self.state.response.status_code,
+                enc_inm_status = self.state.response.status_code or '(unknown)'
             )
         # TODO: check entity headers

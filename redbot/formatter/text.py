@@ -76,21 +76,24 @@ class BaseTextFormatter(Formatter):
 
     def finish_output(self):
         "Fill in the template with RED's results."
-        if self.red.res_complete:
+        if self.red.response.complete:
             self.output(self.format_headers(self.red) + nl + nl)
             self.output(self.format_recommendations(self.red) + nl)
         else:
-            if self.red.res_error == None:
+            if self.red.response.http_error == None:
                 pass
-            elif isinstance(self.red.res_error, httperr.HttpError):
-                self.output(self.error_template % self.red.res_error.desc)
+            elif isinstance(self.red.response.http_error, httperr.HttpError):
+                self.output(self.error_template % self.red.response.http_error.desc)
             else:
                 raise AssertionError, "Unknown incomplete response error."
 
     def format_headers(self, red):
         out = [u"HTTP/%s %s %s" % (
-            red.res_version, red.res_status, red.res_phrase)]
-        return nl.join(out + [u"%s:%s" % h for h in red.res_hdrs])
+                red.response.version, 
+                red.response.status_code, 
+                red.ressponse.status_phrase
+        )]
+        return nl.join(out + [u"%s:%s" % h for h in red.response.headers])
 
     def format_recommendations(self, red):
         return "".join([self.format_recommendation(red, category) \

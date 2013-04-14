@@ -35,13 +35,13 @@ import redbot.http_syntax as syntax
 # so we separate that from the syntax check.
 @rh.CheckFieldSyntax(syntax.URI_reference, rh.rfc2616 % "sec-14.30")
 def parse(subject, value, red):
-    if red.res_status not in [
+    if red.response.status_code not in [
         "201", "300", "301", "302", "303", "305", "307"
     ]:
         red.set_message(subject, rs.LOCATION_UNDEFINED)
     if not re.match(r"^\s*%s\s*$" % syntax.URI, value, re.VERBOSE):
         red.set_message(subject, rs.LOCATION_NOT_ABSOLUTE,
-                        full_uri=urljoin(red.uri, value))
+                        full_uri=urljoin(red.base_uri, value))
     return value
 
 @rh.SingleFieldValue

@@ -32,11 +32,11 @@ import redbot.speak as rs
 from redbot.message_check import headers as rh
 import redbot.http_syntax as syntax
 
-
+@rh.ResponseHeader
 def parse(subject, value, red):
-    path = urlsplit(red.uri).path # pylint: disable=E1103
+    path = urlsplit(red.base_uri).path # pylint: disable=E1103
     try:
-        set_cookie = loose_parse(value, path, red.res_ts, subject, red)
+        set_cookie = loose_parse(value, path, red.start_time, subject, red)
     except ValueError:
         set_cookie = None
     return set_cookie

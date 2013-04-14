@@ -35,64 +35,33 @@ import urlparse
 
 import thor.http.error as httperr
 import redbot.speak as rs
+from redbot.message import HttpRequest, HttpResponse
 
 
 class RedState(object):
     """
     Holder for test state.
-
-    Messages is a list of messages, each of which being a tuple that
-    follows the following form:
-      (
-       subject,     # The subject(s) of the msg, as a space-separated string.
-                    # e.g., "header-cache-control header-expires"
-       message,     # The message structure; see red_speak.py
-       subrequest,  # Optionally, the req_type of a RedState object
-                    # (stored in .subreqs) representing a
-                    # subrequest made in order to generate the message
-       **variables  # Optionally, key=value pairs intended for interpolation
-                    # into the message; e.g., time_left="5d3h"
-      )
     """
     
-    def __init__(self, iri, method, req_hdrs, req_body, req_type):
-        self.method = method
-        self.req_hdrs = req_hdrs or []
-        self.req_body = req_body
-        self.type = req_type
-        self.req_ts = None # when the request was started
-        self.res_ts = None # when the response was started
-        self.res_done_ts = None # when the response was finished
-        # response attributes; populated by RedFetcher
-        self.res_version = ""
-        self.res_status = None
-        self.res_phrase = ""
-        self.res_hdrs = []
-        self.parsed_hdrs = {}
-        self.res_body = "" # note: only partial responses; bytes, not unicode
-        self.res_body_len = 0
-        self.res_body_md5 = None
-        self.res_body_sample = [] # [(offset, chunk)]{,4} Bytes, not unicode
-        self.res_body_enc = None
-        self.res_body_decode_len = 0
-        self.res_complete = False
-        self.transfer_length = None
-        self.header_length = None
-        self.res_error = None # any parse errors encountered; see httperr
-        # interesting things about the response; set by a variety of things
+    def __init__(self, iri, method, req_hdrs, req_body, check_type):
+        self.check_type = check_type
         self.messages = [] # messages (see above)
         self.subreqs = {} # sub-requests' RedState objects
-        self._context = {}
+        self.request = HttpRequest(self.messages, check_type)
+        self.response = HttpResponse(self.messages, check_type)
+        self.request.method = method
+        self.request.headers = req_hdrs or []
+        self.request.payload = req_body
         try:
             self.uri = self.iri_to_uri(iri)
         except (ValueError, UnicodeError), why:
-            self.res_error = httperr.UrlError(why[0])
+            self.response.http_error = httperr.UrlError(why[0])
             self.uri = None
 
     def __repr__(self):
         status = [self.__class__.__module__ + "." + self.__class__.__name__]
-        status.append("%s {%s}" % (self.method, self.uri))
-        status.append("type %s" % self.type)
+        status.append("%s {%s}" % (self.request.method, self.uri))
+        status.append("type %s" % self.check_type)
         return "<%s at %#x>" % (", ".join(status), id(self))
 
     def __getstate__(self):
@@ -100,16 +69,11 @@ class RedState(object):
         if state.has_key('set_message'):
             del state['set_message']
         return state
-
-    def set_context(self, **kw):
-        "Set the message context."
-        self._context = kw
         
     def set_message(self, subject, msg, subreq=None, **kw):
         "Set a message."
-        kw.update(self._context)
         kw['response'] = rs.response.get(
-            self.type, rs.response['this']
+            self.check_type, rs.response['this']
         )['en']
         self.messages.append(msg(subject, subreq, kw))
         

@@ -35,18 +35,18 @@ THE SOFTWARE.
 """
 
 import base64
-import hashlib
-import zlib
 
 import thor
 import thor.http.error as httperr
 
-from redbot.message_check import MessageChecker
 from redbot.formatter import f_num
 import redbot.speak as rs
 from redbot.state import RedState
+from redbot.message_check.status import ResponseStatusChecker
+from redbot.message_check.cache import checkCaching
 
 class RedHttpClient(thor.http.HttpClient):
+    "Thor HttpClient for RedFetcher"
     connect_timeout = 10
     read_timeout = 15
     
@@ -70,23 +70,18 @@ class RedFetcher(object):
     def __init__(self, iri, method="GET", req_hdrs=None, req_body=None,
                  status_cb=None, body_procs=None, req_type=None):
         self.state = RedState(iri, method, req_hdrs, req_body, req_type)
+        self.exchange = None
         self.status_cb = status_cb
         self.body_procs = body_procs or []
         self.done_cb = None
         self.outstanding_tasks = 0
-        self._md5_processor = hashlib.md5() #pylint: disable=E1101
-        self._gzip_processor = zlib.decompressobj(-zlib.MAX_WBITS)
-        self._md5_post_processor = hashlib.md5() #pylint: disable=E1101
-        self._in_gzip_body = False
-        self._gzip_header_buffer = ""
-        self._gzip_ok = True # turn False if we have a problem
         self._st = [] # TEMPORARY
 
     def __repr__(self):
         status = [self.__class__.__module__ + "." + self.__class__.__name__]
         if hasattr(self, 'state'):
             status.append("%s {%s}" % (
-                self.state.method or "???", self.state.uri or "???"
+                self.state.request.method or "???", self.state.uri or "???"
             ))
             status.append("%s tasks" % self.outstanding_tasks or "?")
         return "<%s at %#x>" % (", ".join(status), id(self))
@@ -95,18 +90,17 @@ class RedFetcher(object):
         state = self.__dict__.copy()
         del state['status_cb']
         del state['body_procs']
-        del state['_md5_processor']
-        del state['_gzip_processor']
         del state['exchange']
-        del state['_md5_post_processor']
         return state
 
     def add_task(self, task, *args):
+        "Remeber that we've started a task."
         self.outstanding_tasks += 1
         self._st.append('add_task(%s)' % str(task))
         task(*args, done_cb=self.finish_task)
         
     def finish_task(self):
+        "Note that we've finished a task, and see if we're done."
         self.outstanding_tasks -= 1
         self._st.append('finish_task()')
         assert self.outstanding_tasks >= 0, self._st
@@ -143,126 +137,69 @@ class RedFetcher(object):
             # generally a good sign that we're not going much further.
             self.finish_task()
             return
-        if 'user-agent' not in [i[0].lower() for i in state.req_hdrs]:
-            state.req_hdrs.append(
+        if 'user-agent' not in [i[0].lower() for i in state.request.headers]:
+            state.request.headers.append(
                 (u"User-Agent", u"RED/%s (http://redbot.org/)" % __version__))    
         self.exchange = self.client.exchange()
         self.exchange.on('response_start', self._response_start)
         self.exchange.on('response_body', self._response_body)
         self.exchange.on('response_done', self._response_done)
         self.exchange.on('error', self._response_error)
-        if self.status_cb and state.type:
-            self.status_cb("fetching %s (%s)" % (state.uri, state.type))
+        if self.status_cb and state.check_type:
+            self.status_cb("fetching %s (%s)" % (state.uri, state.check_type))
         req_hdrs = [
             (k.encode('ascii', 'replace'), v.encode('latin-1', 'replace')) \
-            for (k, v) in state.req_hdrs
+            for (k, v) in state.request.headers
         ]
-        self.exchange.request_start(state.method, state.uri, req_hdrs)
-        state.req_ts = thor.time()
-        if state.req_body != None:
-            self.exchange.request_body(state.req_body)
+        self.exchange.request_start(state.request.method, state.uri, req_hdrs)
+        state.request.start_time = thor.time()
+        if state.request.payload != None:
+            self.exchange.request_body(state.request.payload)
         self.exchange.request_done([])
 
     def _response_start(self, status, phrase, res_headers):
         "Process the response start-line and headers."
         self._st.append('_response_start(%s, %s)' % (status, phrase))
-        state = self.state
-        state.res_ts = thor.time()
-        state.res_version = self.exchange.res_version
-        state.res_status = status.decode('iso-8859-1', 'replace')
-        state.res_phrase = phrase.decode('iso-8859-1', 'replace')
-        state.res_hdrs = res_headers
-        MessageChecker(state)
-        state.res_body_enc = state.parsed_hdrs.get(
-            'content-type', (None, {})
-        )[1].get('charset', 'utf-8') # default isn't UTF-8, but oh well
+        res = self.state.response
+        res.start_time = thor.time()
+        res.version = self.exchange.res_version
+        res.status_code = status.decode('iso-8859-1', 'replace')
+        res.status_phrase = phrase.decode('iso-8859-1', 'replace')
+        res.feed_headers(res_headers)
+        ResponseStatusChecker(self.state)
+        checkCaching(self.state)
 
     def _response_body(self, chunk):
         "Process a chunk of the response body."
-        state = self.state
-        state.res_body_sample.append((state.res_body_len, chunk))
-        if len(state.res_body_sample) > 4:
-            state.res_body_sample.pop(0)
-        self._md5_processor.update(chunk)
-        state.res_body_len += len(chunk)
-        if state.res_status == "206":
-            # Store only partial responses completely, for error reporting
-            state.res_body += chunk
-            state.res_body_decode_len += len(chunk)
-            # Don't actually try to make sense of a partial body...
-            return
-        content_codings = state.parsed_hdrs.get('content-encoding', [])
-        content_codings.reverse()
-        for coding in content_codings:
-            # TODO: deflate support
-            if coding == 'gzip' and self._gzip_ok:
-                if not self._in_gzip_body:
-                    self._gzip_header_buffer += chunk
-                    try:
-                        chunk = self._read_gzip_header(
-                            self._gzip_header_buffer
-                        )
-                        self._in_gzip_body = True
-                    except IndexError:
-                        return # not a full header yet
-                    except IOError, gzip_error:
-                        state.set_message('header-content-encoding',
-                                        rs.BAD_GZIP,
-                                        gzip_error=str(gzip_error)
-                        )
-                        self._gzip_ok = False
-                        return
-                try:
-                    chunk = self._gzip_processor.decompress(chunk)
-                except zlib.error, zlib_error:
-                    state.set_message(
-                        'header-content-encoding', 
-                        rs.BAD_ZLIB,
-                        zlib_error=str(zlib_error),
-                        ok_zlib_len=f_num(state.res_body_sample[-1][0]),
-                        chunk_sample=chunk[:20].encode('string_escape')
-                    )
-                    self._gzip_ok = False
-                    return
-            else:
-                # we can't handle other codecs, so punt on body processing.
-                return
-        self._md5_post_processor.update(chunk)
-        state.res_body_decode_len += len(chunk)
-        if self._gzip_ok:
-            for processor in self.body_procs:
-                # TODO: figure out why raising an error in a body_proc
-                # results in a "server dropped the connection" instead of
-                # a hard error.
-                processor(self.state, chunk)
+        res = self.state.response
+        res.feed_body(chunk, self.body_procs)
 
     def _response_done(self, trailers):
         "Finish analysing the response, handling any parse errors."
         self._st.append('_response_done()')
         state = self.state
-        state.res_complete = True
-        state.res_done_ts = thor.time()
-        state.transfer_length = self.exchange.input_transfer_length
-        state.header_length = self.exchange.input_header_length
-        # TODO: check trailers
-        if self.status_cb and state.type:
-            self.status_cb("fetched %s (%s)" % (state.uri, state.type))
-        state.res_body_md5 = self._md5_processor.digest()
-        state.res_body_post_md5 = self._md5_post_processor.digest()
-
-        if state.method not in ['HEAD'] and state.res_status not in ['304']:
+        res = state.response
+        res.complete = True
+        res.complete_time = thor.time()
+        res.transfer_length = self.exchange.input_transfer_length
+        res.header_length = self.exchange.input_header_length
+        res.body_done(trailers)
+        if self.status_cb and state.check_type:
+            self.status_cb("fetched %s (%s)" % (state.uri, state.check_type))
+        if state.request.method not in ['HEAD'] \
+        and res.status_code not in ['304']:
             # check payload basics
-            if state.parsed_hdrs.has_key('content-length'):
-                if state.res_body_len == state.parsed_hdrs['content-length']:
+            if res.parsed_headers.has_key('content-length'):
+                if res.payload_len == res.parsed_headers['content-length']:
                     state.set_message('header-content-length', rs.CL_CORRECT)
                 else:
                     state.set_message('header-content-length', 
                                     rs.CL_INCORRECT,
-                                    body_length=f_num(state.res_body_len)
+                                    body_length=f_num(res.payload_len)
                     )
-            if state.parsed_hdrs.has_key('content-md5'):
-                c_md5_calc = base64.encodestring(state.res_body_md5)[:-1]
-                if state.parsed_hdrs['content-md5'] == c_md5_calc:
+            if res.parsed_headers.has_key('content-md5'):
+                c_md5_calc = base64.encodestring(res.payload_md5)[:-1]
+                if res.parsed_headers['content-md5'] == c_md5_calc:
                     state.set_message('header-content-md5', rs.CMD5_CORRECT)
                 else:
                     state.set_message('header-content-md5', rs.CMD5_INCORRECT,
@@ -271,77 +208,39 @@ class RedFetcher(object):
         self.finish_task()
 
     def _response_error(self, error):
+        "Handle an error encountered while fetching the response."
         self._st.append('_response_error(%s)' % (str(error)))
-        state = self.state
-        state.res_done_ts = thor.time()
-        state.res_error = error
+        res = self.state.response
+        res.complete_time = thor.time()
+        res.http_error = error
         if isinstance(error, httperr.BodyForbiddenError):
-            state.set_message('header-none', rs.BODY_NOT_ALLOWED)
+            self.state.set_message('header-none', rs.BODY_NOT_ALLOWED)
 #        elif isinstance(error, httperr.ExtraDataErr):
-#            state.res_body_len += len(err.get('detail', ''))
+#            res.payload_len += len(err.get('detail', ''))
         elif isinstance(error, httperr.ChunkError):
             err_msg = error.detail[:20] or ""
-            state.set_message('header-transfer-encoding', rs.BAD_CHUNK,
+            self.state.set_message('header-transfer-encoding', rs.BAD_CHUNK,
                 chunk_sample=err_msg.encode('string_escape')
             )
         self.done()
         self.finish_task()
 
-    @staticmethod
-    def _read_gzip_header(content):
-        """
-        Parse a string for a GZIP header; if present, return remainder of
-        gzipped content.
-        """
-        # adapted from gzip.py
-        FTEXT, FHCRC, FEXTRA, FNAME, FCOMMENT = 1, 2, 4, 8, 16
-        if len(content) < 10:
-            raise IndexError, "Header not complete yet"
-        magic = content[:2]
-        if magic != '\037\213':
-            raise IOError, \
-                u'Not a gzip header (magic is hex %s, should be 1f8b)' % \
-                magic.encode('hex-codec')
-        method = ord( content[2:3] )
-        if method != 8:
-            raise IOError, 'Unknown compression method'
-        flag = ord( content[3:4] )
-        content_l = list(content[10:])
-        if flag & FEXTRA:
-            # Read & discard the extra field, if present
-            xlen = ord(content_l.pop())
-            xlen = xlen + 256*ord(content_l.pop())
-            content_l = content_l[xlen:]
-        if flag & FNAME:
-            # Read and discard a null-terminated string 
-            # containing the filename
-            while True:
-                s = content_l.pop()
-                if not content_l or s == '\000':
-                    break
-        if flag & FCOMMENT:
-            # Read and discard a null-terminated string containing a comment
-            while True:
-                s = content_l.pop()
-                if not content_l or s == '\000':
-                    break
-        if flag & FHCRC:
-            content_l = content_l[2:]   # Read & discard the 16-bit header CRC
-        return "".join(content_l)
-
 
 
 if "__main__" == __name__:
     import sys
-    uri = sys.argv[1]
-    test_req_hdrs = [(u'Accept-Encoding', u'gzip')]
     def status_p(msg):
+        "Print status"
         print msg
     class TestFetcher(RedFetcher):
+        "Test a fetcher."
         def done(self):
             print self.state.messages
-    tf = TestFetcher(
-        uri, req_hdrs=test_req_hdrs, status_cb=status_p, req_type='test'
+    T = TestFetcher(
+         sys.argv[1], 
+         req_hdrs=[(u'Accept-Encoding', u'gzip')], 
+         status_cb=status_p, 
+         req_type='test'
     )
-    tf.run()
+    T.run()
     thor.run()

@@ -84,14 +84,14 @@ class HTMLLinkParser(HTMLParser):
         "Feed a given chunk of HTML data to the parser"
         if not self.ok:
             return
-        if response.parsed_hdrs.get('content-type', [None])[0] in \
+        if response.parsed_headers.get('content-type', [None])[0] in \
           self.link_parseable_types:
             try:
                 if chunk.__class__.__name__ != 'unicode':
                     try:
                         chunk = unicode(
                             chunk, 
-                            self.doc_enc or response.res_body_enc, 
+                            self.doc_enc or response.character_encoding, 
                             'ignore'
                         )
                     except LookupError:

@@ -9,7 +9,7 @@ Both take a RedFetcher instance (post-done()) as their only argument.
 
 ResponseHeaderParser will examine the response headers and set messages
 on the RedFetcher instance as appropriate. It will also parse the
-headers and populate parsed_hdrs.
+headers and populate parsed_headers.
 
 ResponseStatusChecker will examine the response based upon its status
 code and also set messages as appropriate.
@@ -25,7 +25,7 @@ red_fetcher.py is the actual response fetching engine.
 __version__ = "1"
 __author__ = "Mark Nottingham <mnot@mnot.net>"
 __copyright__ = """\
-Copyright (c) 2008-2012 Mark Nottingham
+Copyright (c) 2008-2013 Mark Nottingham
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -60,9 +60,11 @@ class ResponseStatusChecker:
     def __init__(self, red):
         self.red = red
         try:
-            getattr(self, "status%s" % red.res_status)()
+            status_m = getattr(self, "status%s" % red.response.status_code)
         except AttributeError:
             self.set_message('status', rs.STATUS_NONSTANDARD)
+            return
+        status_m()
 
     def set_message(self, name, msg, **kw):
         if name:
@@ -72,27 +74,27 @@ class ResponseStatusChecker:
         self.red.set_message(
             subject, 
             msg,
-            status=self.red.res_status,
+            status=self.red.response.status_code,
             **kw
         )
 
     def status100(self):        # Continue
-        if not "100-continue" in thor.http.get_header(self.red.req_hdrs, 'expect'):
+        if not "100-continue" in thor.http.get_header(self.red.request.headers, 'expect'):
             self.set_message('', rs.UNEXPECTED_CONTINUE)
     def status101(self):        # Switching Protocols
-        if not 'upgrade' in thor.http.header_dict(self.red.req_hdrs).keys():
+        if not 'upgrade' in thor.http.header_dict(self.red.request.headers).keys():
             self.set_message('', rs.UPGRADE_NOT_REQUESTED)
     def status102(self):        # Processing
         pass
     def status200(self):        # OK
         pass
     def status201(self):        # Created
-        if self.red.method in thor.http.safe_methods:
+        if self.red.request.method in thor.http.safe_methods:
             self.set_message('status', 
                 rs.CREATED_SAFE_METHOD, 
-                method=self.red.method
+                method=self.red.request.method
             )
-        if not self.red.parsed_hdrs.has_key('location'):
+        if not self.red.response.parsed_headers.has_key('location'):
             self.set_message('header-location', rs.CREATED_WITHOUT_LOCATION)
     def status202(self):        # Accepted
         pass
@@ -103,9 +105,9 @@ class ResponseStatusChecker:
     def status205(self):        # Reset Content
         pass
     def status206(self):        # Partial Content
-        if not "range" in thor.http.header_dict(self.red.req_hdrs).keys():
+        if not "range" in thor.http.header_dict(self.red.request.headers).keys():
             self.set_message('', rs.PARTIAL_NOT_REQUESTED)
-        if not self.red.parsed_hdrs.has_key('content-range'):
+        if not self.red.response.parsed_headers.has_key('content-range'):
             self.set_message('header-location', rs.PARTIAL_WITHOUT_RANGE)
     def status207(self):        # Multi-Status
         pass
@@ -114,23 +116,23 @@ class ResponseStatusChecker:
     def status300(self):        # Multiple Choices
         pass
     def status301(self):        # Moved Permanently
-        if not self.red.parsed_hdrs.has_key('location'):
+        if not self.red.response.parsed_headers.has_key('location'):
             self.set_message('header-location', rs.REDIRECT_WITHOUT_LOCATION)
     def status302(self):        # Found
-        if not self.red.parsed_hdrs.has_key('location'):
+        if not self.red.response.parsed_headers.has_key('location'):
             self.set_message('header-location', rs.REDIRECT_WITHOUT_LOCATION)
     def status303(self):        # See Other
-        if not self.red.parsed_hdrs.has_key('location'):
+        if not self.red.response.parsed_headers.has_key('location'):
             self.set_message('header-location', rs.REDIRECT_WITHOUT_LOCATION)
     def status304(self):        # Not Modified
-        if not self.red.parsed_hdrs.has_key('date'):
+        if not self.red.response.parsed_headers.has_key('date'):
             self.set_message('status', rs.NO_DATE_304)
     def status305(self):        # Use Proxy
         self.set_message('', rs.STATUS_DEPRECATED)
     def status306(self):        # Reserved
         self.set_message('', rs.STATUS_RESERVED)
     def status307(self):        # Temporary Redirect
-        if not self.red.parsed_hdrs.has_key('location'):
+        if not self.red.response.parsed_headers.has_key('location'):
             self.set_message('header-location', rs.REDIRECT_WITHOUT_LOCATION)
     def status400(self):        # Bad Request
         self.set_message('', rs.STATUS_BAD_REQUEST)

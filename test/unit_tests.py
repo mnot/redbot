@@ -8,10 +8,11 @@ sys.path.insert(0, "..")
 import redbot.message_check.headers as headers
 import redbot.http_syntax as syntax
 import redbot.speak as rs
+from redbot.message import DummyMsg
 
 class GeneralHeaderTesters(unittest.TestCase):
     def setUp(self):
-        self.red = headers._DummyRed()
+        self.red = DummyMsg()
     
     def test_unquote_string(self):
         i = 0

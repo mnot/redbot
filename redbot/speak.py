@@ -137,6 +137,28 @@ class URI_BAD_SYNTAX(Message):
     for more information."""
     }
 
+class REQUEST_HDR_IN_RESPONSE(Message):
+    category = c.GENERAL
+    level = l.BAD
+    summary = {
+     'en': u'"%(field_name)s" is a request header.'
+    }
+    text = {
+    'en': u"""%(field_name)s is only defined to have meaning in requests;
+    in responses, it doesn't have any meaning, so RED has ignored it."""
+    }
+
+class RESPONSE_HDR_IN_REQUEST(Message):
+    category = c.GENERAL
+    level = l.BAD
+    summary = {
+     'en': u'"%(field_name)s" is a request header.'
+    }
+    text = {
+    'en': u"""%(field_name)s is only defined to have meaning in responses;
+    in requests, it doesn't have any meaning, so RED has ignored it."""
+    }
+
 class FIELD_NAME_BAD_SYNTAX(Message):
     category = c.GENERAL
     level = l.BAD

@@ -40,11 +40,11 @@ class LmValidate(SubRequest):
                      'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
     def modify_req_hdrs(self):
-        req_hdrs = list(self.base.req_hdrs)
-        if self.base.parsed_hdrs.has_key('last-modified'):
+        req_hdrs = list(self.base.request.headers)
+        if self.base.response.parsed_headers.has_key('last-modified'):
             try:
                 lm = datetime.utcfromtimestamp(
-                    self.base.parsed_hdrs['last-modified']
+                    self.base.response.parsed_headers['last-modified']
                 )
             except ValueError:
                 return req_hdrs # TODO: sensible error message.
@@ -63,20 +63,20 @@ class LmValidate(SubRequest):
         return req_hdrs
 
     def preflight(self):
-        if self.base.parsed_hdrs.has_key('last-modified'):
+        if self.base.response.parsed_headers.has_key('last-modified'):
             return True
         else:
             self.base.ims_support = False
             return False
 
     def done(self):
-        if not self.state.res_complete:
+        if not self.state.response.complete:
             self.set_message('', rs.LM_SUBREQ_PROBLEM,
-                problem=self.state.res_error.desc
+                problem=self.state.response.http_error.desc
             )
             return
             
-        if self.state.res_status == '304':
+        if self.state.response.status_code == '304':
             self.base.ims_support = True
             self.set_message('header-last-modified', rs.IMS_304)
             self.check_missing_hdrs([
@@ -84,8 +84,8 @@ class LmValidate(SubRequest):
                     'expires', 'vary'
                 ], rs.MISSING_HDRS_304, 'If-Modified-Since'
             )
-        elif self.state.res_status == self.base.res_status:
-            if self.state.res_body_md5 == self.base.res_body_md5:
+        elif self.state.response.status_code == self.base.response.status_code:
+            if self.state.response.payload_md5 == self.base.response.payload_md5:
                 self.base.ims_support = False
                 self.set_message('header-last-modified', rs.IMS_FULL)
             else:
@@ -93,7 +93,7 @@ class LmValidate(SubRequest):
         else:
             self.set_message('header-last-modified', 
                 rs.IMS_STATUS, 
-                ims_status = self.state.res_status,
-                enc_ims_status = self.state.res_status or '(unknown)'
+                ims_status = self.state.response.status_code,
+                enc_ims_status = self.state.response.status_code or '(unknown)'
             )
         # TODO: check entity headers

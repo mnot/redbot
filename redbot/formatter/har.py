@@ -77,50 +77,50 @@ class HarFormatter(Formatter):
 
     def finish_output(self):
         "Fill in the template with RED's results."
-        if self.red.res_complete:
+        if self.red.response.complete:
             page_id = self.add_page(self.red)
             self.add_entry(self.red, page_id)
             for linked_red in [d[0] for d in self.red.link_droids]:
                 # filter out incomplete responses
-                if linked_red.res_complete:
+                if linked_red.response.complete:
                     self.add_entry(linked_red, page_id)
         self.output(json.dumps(self.har, indent=4))
         self.done()
         
     def add_entry(self, red, page_ref=None):
         entry = {
-            "startedDateTime": isoformat(red.req_ts),
-            "time": int((red.res_done_ts - red.req_ts) * 1000),
+            "startedDateTime": isoformat(red.request.start_time),
+            "time": int((red.response.complete_time - red.request.start_time) * 1000),
             "_red_messages": self.format_messages(red)
         }
         if page_ref:
             entry['pageref'] = "page%s" % page_ref
         
         request = {
-            'method': red.method,
+            'method': red.request.method,
             'url': red.uri,
             'httpVersion': "HTTP/1.1",
             'cookies': [],
-            'headers': self.format_headers(red.req_hdrs),
+            'headers': self.format_headers(red.request.headers),
             'queryString': [],
             'headersSize': -1,
             'bodySize': -1,
         }
         
         response = {
-            'status': red.res_status,
-            'statusText': red.res_phrase,
-            'httpVersion': "HTTP/%s" % red.res_version, 
+            'status': red.response.status_code,
+            'statusText': red.response.status_phrase,
+            'httpVersion': "HTTP/%s" % red.response.version, 
             'cookies': [],
-            'headers': self.format_headers(red.res_hdrs),
+            'headers': self.format_headers(red.response.headers),
             'content': {
-                'size': red.res_body_decode_len,
-                'compression': red.res_body_decode_len - red.res_body_len,
-                'mimeType': (get_header(red.res_hdrs, 'content-type') or [""])[0],
+                'size': red.response.uncompressed_len,
+                'compression': red.response.uncompressed_len - red.response.payload_len,
+                'mimeType': (get_header(red.response.headers, 'content-type') or [""])[0],
             },
-            'redirectURL': (get_header(red.res_hdrs, 'location') or [""])[0],
-            'headersSize': red.header_length,
-            'bodySize': red.res_body_len,
+            'redirectURL': (get_header(red.response.headers, 'location') or [""])[0],
+            'headersSize': red.response.header_length,
+            'bodySize': red.response.payload_len,
         }
         
         cache = {}
@@ -129,8 +129,8 @@ class HarFormatter(Formatter):
             'connect': -1,
             'blocked': 0,
             'send': 0, 
-            'wait': int((red.res_ts - red.req_ts) * 1000),
-            'receive': int((red.res_done_ts - red.res_ts) * 1000),
+            'wait': int((red.response.start_time - red.request.start_time) * 1000),
+            'receive': int((red.response.complete_time - red.response.start_time) * 1000),
         }
 
         entry.update({
@@ -145,7 +145,7 @@ class HarFormatter(Formatter):
     def add_page(self, red):
         page_id = self.last_id + 1
         page = {
-            "startedDateTime": isoformat(red.req_ts),
+            "startedDateTime": isoformat(red.request.start_time),
             "id": "page%s" % page_id,
             "title": "",
             "pageTimings": {

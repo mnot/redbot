@@ -100,7 +100,7 @@ class ResourceExpertDroid(RedFetcher):
         Response is available; perform further processing that's specific to
         the "main" response.
         """
-        if self.state.res_complete:
+        if self.state.response.complete:
             redbot.subrequest.spawn_all(self)
             
 

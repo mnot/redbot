@@ -44,8 +44,8 @@ class SubRequest(RedFetcher):
     def __init__(self, red, name):
         self.base = red.state
         req_hdrs = self.modify_req_hdrs()
-        RedFetcher.__init__(self, self.base.uri, self.base.method, req_hdrs,
-                            self.base.req_body, red.status_cb, [], name)
+        RedFetcher.__init__(self, self.base.uri, self.base.request.method, req_hdrs,
+                            self.base.request.payload, red.status_cb, [], name)
         self.base.subreqs[name] = self.state
     
     def modify_req_hdrs(self):
@@ -57,7 +57,7 @@ class SubRequest(RedFetcher):
         return list(self.base.orig_req_hdrs)
 
     def set_message(self, subject, msg, subreq=None, **kw):
-        self.base.set_message(subject, msg, self.state.type, **kw)
+        self.base.set_message(subject, msg, self.state.check_type, **kw)
         
     def check_missing_hdrs(self, hdrs, msg, subreq_type):
         """
@@ -66,8 +66,8 @@ class SubRequest(RedFetcher):
         """
         missing_hdrs = []
         for hdr in hdrs:            
-            if self.base.parsed_hdrs.has_key(hdr) \
-            and not self.state.parsed_hdrs.has_key(hdr):
+            if self.base.response.parsed_headers.has_key(hdr) \
+            and not self.state.response.parsed_headers.has_key(hdr):
                 missing_hdrs.append(hdr)
         if missing_hdrs:
             self.set_message('header-%s' % hdr, msg,

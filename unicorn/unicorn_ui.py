@@ -41,18 +41,18 @@ class UnicornUi(object):
             self.groups = []
             logger = logging.getLogger()
             logger.setLevel(logging.DEBUG)
-            if self.red.res_complete:
+            if self.red.response.complete:
                 self.result = self._generate_output_xml(test_uri).toprettyxml()
             else:
                 error_string = ""
-                if self.red.res_error['desc'] == nbhttp.error.ERR_CONNECT['desc']:
-                    error_string = "Could not connect to the server (%s)" % self.red.res_error.get('detail', "unknown")
-                elif self.red.res_error['desc'] == nbhttp.error.ERR_URL['desc']:
-                    error_string = self.red.res_error.get('detail', "RED can't fetch that URL.")
-                elif self.red.res_error['desc'] == nbhttp.error.ERR_READ_TIMEOUT['desc']:
-                    error_string = self.red.res_error['desc']
-                elif self.red.res_error['desc'] == nbhttp.error.ERR_HTTP_VERSION['desc']:
-                    error_string = "<code>%s</code> isn't HTTP." % e(self.red.res_error.get('detail', '')[:20])
+                if self.red.response.http_error['desc'] == nbhttp.error.ERR_CONNECT['desc']:
+                    error_string = "Could not connect to the server (%s)" % self.red.response.http_error.get('detail', "unknown")
+                elif self.red.response.http_error['desc'] == nbhttp.error.ERR_URL['desc']:
+                    error_string = self.red.response.http_error.get('detail', "RED can't fetch that URL.")
+                elif self.red.response.http_error['desc'] == nbhttp.error.ERR_READ_TIMEOUT['desc']:
+                    error_string = self.red.response.http_error['desc']
+                elif self.red.response.http_error['desc'] == nbhttp.error.ERR_HTTP_VERSION['desc']:
+                    error_string = "<code>%s</code> isn't HTTP." % e(self.red.response.http_error.get('detail', '')[:20])
                 else:
                     raise AssertionError, "Unidentified incomplete response error."
                 self.result = self._generate_error_xml(error_string).toprettyxml()
@@ -105,7 +105,7 @@ class UnicornUi(object):
         ul = doc.createElement("ul")
         ul.setAttribute("class", "headers")
         description.appendChild(ul)
-        for i in self.red.res_hdrs:
+        for i in self.red.response.headers:
             li = doc.createElement("li")
             li.appendChild(doc.createTextNode(i[0] + ":" + i[1]))
             ul.appendChild(li)

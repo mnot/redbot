@@ -296,7 +296,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         
     def finish_output(self):
         self.final_status()
-        if self.red.res_complete:
+        if self.red.response.complete:
             self.header_presenter = HeaderPresenter(self.red.uri)
             self.output(self.template % {
                 'response': self.format_response(self.red),
@@ -308,39 +308,39 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 'hidden_list': self.format_hidden_list(),
             })
         else:
-            if self.red.res_error == None:
+            if self.red.response.http_error == None:
                 pass # usually a global timeout...
-            elif isinstance(self.red.res_error, httperr.HttpError):
-                if self.red.res_error.detail:
+            elif isinstance(self.red.response.http_error, httperr.HttpError):
+                if self.red.response.http_error.detail:
                     self.output(self.error_template % "%s (%s)" % (
-                        self.red.res_error.desc,
+                        self.red.response.http_error.desc,
                         unicode(
-                          self.red.res_error.detail,
+                          self.red.response.http_error.detail,
                           'utf-8',
                           'replace'
                         )
                     )
                 )
                 else:
-                    self.output(self.error_template % self.red.res_error.desc)
+                    self.output(self.error_template % self.red.response.http_error.desc)
             else:
                 raise AssertionError, \
-                  "Unknown incomplete response error %s" % self.red.res_error
+                  "Unknown incomplete response error %s" % self.red.response.http_error
         self.done()
 
     def format_response(self, red):
         "Return the HTTP response line and headers as HTML"
         offset = 0
         headers = []
-        for (name, value) in red.res_hdrs:
+        for (name, value) in red.response.headers:
             offset += 1
             headers.append(self.format_header(name, value, offset))
             
         return \
         u"    <span class='status'>HTTP/%s %s %s</span>\n" % (
-            e_html(str(red.res_version)),
-            e_html(str(red.res_status)),
-            e_html(red.res_phrase)
+            e_html(str(red.response.version)),
+            e_html(str(red.response.status_code)),
+            e_html(red.response.status_phrase)
         ) + \
         nl.join(headers)
 
@@ -367,7 +367,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         if not hasattr(red, "body_sample"):
             return ""
         try:
-            uni_sample = unicode(red.body_sample, red.res_body_enc, 'ignore')
+            uni_sample = unicode(red.body_sample, red.response.character_encoding, 'ignore')
         except LookupError:
             uni_sample = unicode(red.body_sample, 'utf-8', 'ignore')
         safe_sample = e_html(uni_sample)
@@ -450,17 +450,17 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     def format_options(self, red):
         "Return things that the user can do with the URI as HTML links"
         options = []
-        media_type = red.parsed_hdrs.get('content-type', [""])[0]
+        media_type = red.response.parsed_headers.get('content-type', [""])[0]
         options.append(
             (u"response headers: %s bytes" % \
-             f_num(red.header_length), 
+             f_num(red.response.header_length), 
              "how large the response headers are, including the status line"
             )
         )
-        options.append((u"body: %s bytes" % f_num(red.res_body_len),
+        options.append((u"body: %s bytes" % f_num(red.response.payload_len),
             "how large the response body is"))
-        transfer_overhead = red.transfer_length - \
-            red.res_body_len
+        transfer_overhead = red.response.transfer_length - \
+            red.response.payload_len
         if transfer_overhead > 0:
             options.append(
                 (
@@ -626,7 +626,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
     def format_droid(self, red):
         out = [u'<tr class="droid %s">']
         m = 50
-        if red.parsed_hdrs.get('content-type', [""])[0][:6] == 'image/':
+        if red.response.parsed_headers.get('content-type', [""])[0][:6] == 'image/':
             cl = " class='preview'"
         else:
             cl = ""
@@ -654,21 +654,21 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                     e_html(red.uri)
                 )
             )
-        if red.res_complete:
-            if red.res_status in ['301', '302', '303', '307'] and \
-              red.parsed_hdrs.has_key('location'):
+        if red.response.complete:
+            if red.response.status_code in ['301', '302', '303', '307'] and \
+              red.response.parsed_headers.has_key('location'):
                 out.append(
                     u'<td><a href="?descend=True&%s">%s</a></td>' % (
-                        self.req_qs(red.parsed_hdrs['location']),
-                        red.res_status
+                        self.req_qs(red.response.parsed_headers['location']),
+                        red.response.status_code
                     )
                 )
-            elif red.res_status in ['400', '404', '410']:
-                out.append(u'<td class="bad">%s</td>' % red.res_status)
+            elif red.response.status_code in ['400', '404', '410']:
+                out.append(u'<td class="bad">%s</td>' % red.response.status_code)
             else:
-                out.append(u'<td>%s</td>' % red.res_status)
+                out.append(u'<td>%s</td>' % red.response.status_code)
     # pconn
-            out.append(self.format_size(red.res_body_len))
+            out.append(self.format_size(red.response.payload_len))
             out.append(self.format_yes_no(red.store_shared))
             out.append(self.format_yes_no(red.store_private))
             out.append(self.format_time(red.age))
@@ -700,10 +700,10 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                     )
                 )
         else:
-            if red.res_error == None:
+            if red.response.http_error == None:
                 err = "response incomplete"
             else:
-                err = red.res_error.desc or 'unknown problem'
+                err = red.response.http_error.desc or 'unknown problem'
             out.append('<td colspan="11">%s' % err)
         out.append(u"</td>")
         out.append(u'</tr>')
@@ -754,7 +754,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
     def format_options(self, red):
         "Return things that the user can do with the URI as HTML links"
         options = []
-        media_type = red.parsed_hdrs.get('content-type', [""])[0]
+        media_type = red.response.parsed_headers.get('content-type', [""])[0]
         if self.kw.get('test_id', None):
             har_locator = "id=%s" % self.kw['test_id']
         else:

@@ -30,6 +30,7 @@ import redbot.http_syntax as syntax
 
 
 @rh.GenericHeaderSyntax
+@rh.ResponseHeader
 def parse(subject, value, red):
     # See #58
     return value

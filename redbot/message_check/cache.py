@@ -42,16 +42,16 @@ def checkCaching(state):
     # TODO: check URI for query string, message about HTTP/1.0 if so
 
     # get header values
-    lm = state.parsed_hdrs.get('last-modified', None)
-    date = state.parsed_hdrs.get('date', None)
-    cc_set = state.parsed_hdrs.get('cache-control', [])
+    lm = state.response.parsed_headers.get('last-modified', None)
+    date = state.response.parsed_headers.get('date', None)
+    cc_set = state.response.parsed_headers.get('cache-control', [])
     cc_list = [k for (k, v) in cc_set]
     cc_dict = dict(cc_set)
     cc_keys = cc_dict.keys()
     
     # Last-Modified
     if lm:
-        serv_date = date or state.res_ts
+        serv_date = date or state.response.start_time
         if lm > (date or serv_date):
             state.set_message('header-last-modified', rs.LM_FUTURE)
         else:
@@ -77,11 +77,11 @@ def checkCaching(state):
             )
 
     # Who can store this?
-    if state.method not in cacheable_methods:
+    if state.request.method not in cacheable_methods:
         state.store_shared = state.store_private = False
         state.set_message('method', 
-            rs.METHOD_UNCACHEABLE, 
-            method=state.method
+            rs.request.method_UNCACHEABLE, 
+            method=state.request.method
         )
         return # bail; nothing else to see here
     elif 'no-store' in cc_keys:
@@ -92,7 +92,7 @@ def checkCaching(state):
         state.store_shared = False
         state.store_private = True
         state.set_message('header-cache-control', rs.PRIVATE_CC)
-    elif 'authorization' in [k.lower() for k, v in state.req_hdrs] and \
+    elif 'authorization' in [k.lower() for k, v in state.request.headers] and \
       not 'public' in cc_keys:
         state.store_shared = False
         state.store_private = True
@@ -103,8 +103,8 @@ def checkCaching(state):
 
     # no-cache?
     if 'no-cache' in cc_keys:
-        if "last-modified" not in state.parsed_hdrs.keys() and \
-           "etag" not in state.parsed_hdrs.keys():
+        if "last-modified" not in state.response.parsed_headers.keys() and \
+           "etag" not in state.response.parsed_headers.keys():
             state.set_message('header-cache-control',
                 rs.NO_CACHE_NO_VALIDATOR
             )
@@ -147,7 +147,7 @@ def checkCaching(state):
                     )
 
     # vary?
-    vary = state.parsed_hdrs.get('vary', set())
+    vary = state.response.parsed_headers.get('vary', set())
     if "*" in vary:
         state.set_message('header-vary', rs.VARY_ASTERISK)
         return # bail; nothing else to see here
@@ -164,11 +164,11 @@ def checkCaching(state):
         # TODO: enumerate the axes in a message
 
     # calculate age
-    age_hdr = state.parsed_hdrs.get('age', 0)
-    date_hdr = state.parsed_hdrs.get('date', 0)
+    age_hdr = state.response.parsed_headers.get('age', 0)
+    date_hdr = state.response.parsed_headers.get('date', 0)
     if date_hdr > 0:
         apparent_age = max(0,
-          int(state.res_ts - date_hdr))
+          int(state.response.start_time - date_hdr))
     else:
         apparent_age = 0
     current_age = max(apparent_age, age_hdr)
@@ -182,11 +182,11 @@ def checkCaching(state):
         )
 
     # Check for clock skew and dateless origin server.
-    skew = date_hdr - state.res_ts + age_hdr
+    skew = date_hdr - state.response.start_time + age_hdr
     if not date_hdr:
         state.set_message('', rs.DATE_CLOCKLESS)
-        if state.parsed_hdrs.has_key('expires') or \
-          state.parsed_hdrs.has_key('last-modified'):
+        if state.response.parsed_headers.has_key('expires') or \
+          state.response.parsed_headers.has_key('last-modified'):
             state.set_message('header-expires header-last-modified', 
                             rs.DATE_CLOCKLESS_BAD_HDR)
     elif age_hdr > max_clock_skew and current_age - skew < max_clock_skew:
@@ -213,15 +213,15 @@ def checkCaching(state):
         freshness_hdrs.append('header-cache-control')
         has_explicit_freshness = True
         has_cc_freshness = True
-    elif state.parsed_hdrs.has_key('expires'):
+    elif state.response.parsed_headers.has_key('expires'):
         has_explicit_freshness = True
         freshness_hdrs.append('header-expires')
-        if state.parsed_hdrs.has_key('date'):
-            freshness_lifetime = state.parsed_hdrs['expires'] - \
-                state.parsed_hdrs['date']
+        if state.response.parsed_headers.has_key('date'):
+            freshness_lifetime = state.response.parsed_headers['expires'] - \
+                state.response.parsed_headers['date']
         else:
-            freshness_lifetime = state.parsed_hdrs['expires'] - \
-                state.res_ts # ?
+            freshness_lifetime = state.response.parsed_headers['expires'] - \
+                state.response.start_time # ?
 
     freshness_left = freshness_lifetime - current_age
     freshness_left_str = relative_time(abs(int(freshness_left)), 0, 0)
@@ -252,7 +252,7 @@ def checkCaching(state):
             )
 
     # can heuristic freshness be used?
-    elif state.res_status in heuristic_cacheable_status:
+    elif state.response.status_code in heuristic_cacheable_status:
         state.set_message('header-last-modified', rs.FRESHNESS_HEURISTIC)
     else:
         state.set_message('', rs.FRESHNESS_NONE)
