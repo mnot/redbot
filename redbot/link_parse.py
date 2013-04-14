@@ -37,8 +37,8 @@ class HTMLLinkParser(HTMLParser):
     """
     Parse the links out of an HTML document in a very forgiving way.
 
-    feed() accepts a RedFetcher object (which it uses HTTP response headers
-    from) and a chunk of the document at a time.
+    feed() accepts a HttpResponse object and a chunk of the document at a
+    time.
 
     When links are found, process_link will be called for each with the
     following arguments;

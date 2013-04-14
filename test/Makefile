@@ -18,6 +18,10 @@ webui: deploy
 deploy:
 	cd deploy; make
 
+.PHONY: clean
+clean:
+	cd deploy; make clean-redbot
+
 .PHONY: lint
 lint:
 	PYTHONPATH=../ pylint -i y \

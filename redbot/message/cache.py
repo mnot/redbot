@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Cacheability checking function. Called on complete responses by RedFetcher.
+Cacheability checking function.
 """
 
 __author__ = "Mark Nottingham <mnot@mnot.net>"
