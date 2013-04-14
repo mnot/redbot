@@ -275,20 +275,23 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 
     def __init__(self, *args, **kw):
         BaseHtmlFormatter.__init__(self, *args, **kw)
+        self.body_sample = ""  # uncompressed
         self.body_sample_size = 1024 * 128 # how big to allow the sample to be
         self.sample_seen = 0
         self.sample_complete = True
 
-    def feed(self, red, chunk):
-        """store the first self.sample_size bytes of the response"""
-        if not hasattr(red, "body_sample"):
-            red.body_sample = ""
+    # FIXME: compressed?
+    def feed(self, msg, chunk):
+        """
+        store the first self.sample_size bytes of the 
+        uncompressed response
+        """
         if self.sample_seen + len(chunk) < self.body_sample_size:
-            red.body_sample += chunk
+            self.body_sample += chunk
             self.sample_seen += len(chunk)
         elif self.sample_seen < self.body_sample_size:
             max_chunk = self.body_sample_size - self.sample_seen
-            red.body_sample += chunk[:max_chunk]
+            self.body_sample += chunk[:max_chunk]
             self.sample_seen += len(chunk)
             self.sample_complete = False
         else:
@@ -322,10 +325,14 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     )
                 )
                 else:
-                    self.output(self.error_template % self.red.response.http_error.desc)
+                    self.output(self.error_template % (
+                      self.red.response.http_error.desc
+                    ))
             else:
                 raise AssertionError, \
-                  "Unknown incomplete response error %s" % self.red.response.http_error
+                  "Unknown incomplete response error %s" % (
+                     self.red.response.http_error
+                )
         self.done()
 
     def format_response(self, red):
@@ -364,12 +371,13 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 
     def format_body_sample(self, red):
         """show the stored body sample"""
-        if not hasattr(red, "body_sample"):
-            return ""
         try:
-            uni_sample = unicode(red.body_sample, red.response.character_encoding, 'ignore')
+            uni_sample = unicode(self.body_sample,
+                                 red.response.character_encoding, 
+                                 'ignore'
+            )
         except LookupError:
-            uni_sample = unicode(red.body_sample, 'utf-8', 'ignore')
+            uni_sample = unicode(self.body_sample, 'utf-8', 'ignore')
         safe_sample = e_html(uni_sample)
         message = ""
         for tag, link_set in red.links.items():
@@ -664,7 +672,9 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                     )
                 )
             elif red.response.status_code in ['400', '404', '410']:
-                out.append(u'<td class="bad">%s</td>' % red.response.status_code)
+                out.append(u'<td class="bad">%s</td>' % (
+                    red.response.status_code
+                ))
             else:
                 out.append(u'<td>%s</td>' % red.response.status_code)
     # pconn

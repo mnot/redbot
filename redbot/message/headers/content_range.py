@@ -25,14 +25,14 @@ THE SOFTWARE.
 
 
 import redbot.speak as rs
-import redbot.message.headers as rh
 from redbot.message import headers as rh
 import redbot.http_syntax as syntax
 
 
+@rh.ResponseHeader
 def parse(subject, value, red):
     # #53: check syntax, values?
-    if red.response.status_code not in ["206", "416"]:
+    if red.status_code not in ["206", "416"]:
         red.set_message(subject, rs.CONTENT_RANGE_MEANINGLESS)
     return value
 

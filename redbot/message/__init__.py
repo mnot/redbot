@@ -93,7 +93,7 @@ class HttpMessage(object):
         run over the chunk.
         """
         self.payload_sample.append((self.payload_len, chunk))
-        if len(self.payload_sample) > 4:
+        if len(self.payload_sample) > 4: # TODO: bytes, not chunks
             self.payload_sample.pop(0)
         self._md5_processor.update(chunk)
         self.payload_len += len(chunk)
