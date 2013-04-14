@@ -77,6 +77,7 @@ class RedState(object):
         )['en']
         self.messages.append(msg(subject, subreq, kw))
         
+    # TODO: move to message.HttpRequest
     @staticmethod
     def iri_to_uri(iri):
         "Takes a Unicode string that can contain an IRI and emits a URI."

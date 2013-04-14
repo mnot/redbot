@@ -260,7 +260,10 @@ class HttpResponse(HttpMessage):
         self.is_request = False
         self.status_code = None
         self.status_phrase = ""
-
+        self.freshness_lifetime = None
+        self.age = None
+        self.store_shared = None
+        self.store_private = None
 
 class DummyMsg(HttpResponse):
     """

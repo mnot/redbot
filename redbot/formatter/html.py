@@ -669,10 +669,10 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                 out.append(u'<td>%s</td>' % red.response.status_code)
     # pconn
             out.append(self.format_size(red.response.payload_len))
-            out.append(self.format_yes_no(red.store_shared))
-            out.append(self.format_yes_no(red.store_private))
-            out.append(self.format_time(red.age))
-            out.append(self.format_time(red.freshness_lifetime))
+            out.append(self.format_yes_no(red.response.store_shared))
+            out.append(self.format_yes_no(red.response.store_private))
+            out.append(self.format_time(red.response.age))
+            out.append(self.format_time(red.response.freshness_lifetime))
             out.append(self.format_yes_no(red.ims_support))
             out.append(self.format_yes_no(red.inm_support))
             if red.gzip_support:

@@ -167,7 +167,7 @@ class RedFetcher(object):
         res.status_phrase = phrase.decode('iso-8859-1', 'replace')
         res.feed_headers(res_headers)
         StatusChecker(self.state.response, self.state.request)
-        checkCaching(self.state)
+        checkCaching(self.state.response, self.state.request)
 
     def _response_body(self, chunk):
         "Process a chunk of the response body."
@@ -186,6 +186,7 @@ class RedFetcher(object):
         if self.status_cb and state.check_type:
             self.status_cb("fetched %s (%s)" % (state.uri, state.check_type))
 
+        # TODO: move to message
         if state.request.method not in ['HEAD'] \
         and res.status_code not in ['304']:
             # check payload basics

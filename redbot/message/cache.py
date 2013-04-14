@@ -36,26 +36,27 @@ cacheable_methods = ['GET']
 heuristic_cacheable_status = ['200', '203', '206', '300', '301', '410']
 max_clock_skew = 5  # seconds
 
-def checkCaching(state):
+
+def checkCaching(response, request=None):
     "Examine HTTP caching characteristics."
     
     # TODO: check URI for query string, message about HTTP/1.0 if so
 
     # get header values
-    lm = state.response.parsed_headers.get('last-modified', None)
-    date = state.response.parsed_headers.get('date', None)
-    cc_set = state.response.parsed_headers.get('cache-control', [])
+    lm = response.parsed_headers.get('last-modified', None)
+    date = response.parsed_headers.get('date', None)
+    cc_set = response.parsed_headers.get('cache-control', [])
     cc_list = [k for (k, v) in cc_set]
     cc_dict = dict(cc_set)
     cc_keys = cc_dict.keys()
     
     # Last-Modified
     if lm:
-        serv_date = date or state.response.start_time
+        serv_date = date or response.start_time
         if lm > (date or serv_date):
-            state.set_message('header-last-modified', rs.LM_FUTURE)
+            response.set_message('header-last-modified', rs.LM_FUTURE)
         else:
-            state.set_message('header-last-modified', rs.LM_PRESENT,
+            response.set_message('header-last-modified', rs.LM_PRESENT,
             last_modified_string=relative_time(lm, serv_date))
     
     # known Cache-Control directives that don't allow duplicates
@@ -68,135 +69,136 @@ def checkCaching(state):
     # assure there aren't any dup directives with different values
     for cc in cc_keys:
         if cc.lower() in known_cc and cc != cc.lower():
-            state.set_message('header-cache-control', rs.CC_MISCAP,
+            response.set_message('header-cache-control', rs.CC_MISCAP,
                 cc_lower = cc.lower(), cc=cc
             )
         if cc in known_cc and cc_list.count(cc) > 1:
-            state.set_message('header-cache-control', rs.CC_DUP,
+            response.set_message('header-cache-control', rs.CC_DUP,
                 cc=cc
             )
 
     # Who can store this?
-    if state.request.method not in cacheable_methods:
-        state.store_shared = state.store_private = False
-        state.set_message('method', 
-            rs.request.method_UNCACHEABLE, 
-            method=state.request.method
+    if request and request.method not in cacheable_methods:
+        response.store_shared = response.store_private = False
+        request.set_message('method', 
+            rs.METHOD_UNCACHEABLE,
+            method=request.method
         )
         return # bail; nothing else to see here
     elif 'no-store' in cc_keys:
-        state.store_shared = state.store_private = False
-        state.set_message('header-cache-control', rs.NO_STORE)
+        response.store_shared = response.store_private = False
+        response.set_message('header-cache-control', rs.NO_STORE)
         return # bail; nothing else to see here
     elif 'private' in cc_keys:
-        state.store_shared = False
-        state.store_private = True
-        state.set_message('header-cache-control', rs.PRIVATE_CC)
-    elif 'authorization' in [k.lower() for k, v in state.request.headers] and \
-      not 'public' in cc_keys:
-        state.store_shared = False
-        state.store_private = True
-        state.set_message('header-cache-control', rs.PRIVATE_AUTH)
+        response.store_shared = False
+        response.store_private = True
+        response.set_message('header-cache-control', rs.PRIVATE_CC)
+    elif request \
+    and 'authorization' in [k.lower() for k, v in request.headers] \
+    and not 'public' in cc_keys:
+        response.store_shared = False
+        response.store_private = True
+        response.set_message('header-cache-control', rs.PRIVATE_AUTH)
     else:
-        state.store_shared = state.store_private = True
-        state.set_message('header-cache-control', rs.STOREABLE)
+        response.store_shared = response.store_private = True
+        response.set_message('header-cache-control', rs.STOREABLE)
 
     # no-cache?
     if 'no-cache' in cc_keys:
-        if "last-modified" not in state.response.parsed_headers.keys() and \
-           "etag" not in state.response.parsed_headers.keys():
-            state.set_message('header-cache-control',
+        if "last-modified" not in response.parsed_headers.keys() \
+           and "etag" not in response.parsed_headers.keys():
+            response.set_message('header-cache-control',
                 rs.NO_CACHE_NO_VALIDATOR
             )
         else:
-            state.set_message('header-cache-control', rs.NO_CACHE)
+            response.set_message('header-cache-control', rs.NO_CACHE)
         return
 
     # pre-check / post-check
     if 'pre-check' in cc_keys or 'post-check' in cc_keys:
         if 'pre-check' not in cc_keys or 'post-check' not in cc_keys:
-            state.set_message('header-cache-control', rs.CHECK_SINGLE)
+            response.set_message('header-cache-control', rs.CHECK_SINGLE)
         else:
             pre_check = post_check = None
             try:
                 pre_check = int(cc_dict['pre-check'])
                 post_check = int(cc_dict['post-check'])
             except ValueError:
-                state.set_message('header-cache-control',
+                response.set_message('header-cache-control',
                     rs.CHECK_NOT_INTEGER
                 )
             if pre_check is not None and post_check is not None:
                 if pre_check == 0 and post_check == 0:
-                    state.set_message('header-cache-control',
+                    response.set_message('header-cache-control',
                         rs.CHECK_ALL_ZERO
                     )
                 elif post_check > pre_check:
-                    state.set_message('header-cache-control',
+                    response.set_message('header-cache-control',
                         rs.CHECK_POST_BIGGER
                     )
                     post_check = pre_check
                 elif post_check == 0:
-                    state.set_message('header-cache-control',
+                    response.set_message('header-cache-control',
                         rs.CHECK_POST_ZERO
                     )
                 else:
-                    state.set_message('header-cache-control',
+                    response.set_message('header-cache-control',
                         rs.CHECK_POST_PRE,
                         pre_check=pre_check,
                         post_check=post_check
                     )
 
     # vary?
-    vary = state.response.parsed_headers.get('vary', set())
+    vary = response.parsed_headers.get('vary', set())
     if "*" in vary:
-        state.set_message('header-vary', rs.VARY_ASTERISK)
+        response.set_message('header-vary', rs.VARY_ASTERISK)
         return # bail; nothing else to see here
     elif len(vary) > 3:
-        state.set_message('header-vary', 
+        response.set_message('header-vary', 
             rs.VARY_COMPLEX, 
             vary_count=f_num(len(vary))
         )
     else:
         if "user-agent" in vary:
-            state.set_message('header-vary', rs.VARY_USER_AGENT)
+            response.set_message('header-vary', rs.VARY_USER_AGENT)
         if "host" in vary:
-            state.set_message('header-vary', rs.VARY_HOST)
+            response.set_message('header-vary', rs.VARY_HOST)
         # TODO: enumerate the axes in a message
 
     # calculate age
-    age_hdr = state.response.parsed_headers.get('age', 0)
-    date_hdr = state.response.parsed_headers.get('date', 0)
+    age_hdr = response.parsed_headers.get('age', 0)
+    date_hdr = response.parsed_headers.get('date', 0)
     if date_hdr > 0:
         apparent_age = max(0,
-          int(state.response.start_time - date_hdr))
+          int(response.start_time - date_hdr))
     else:
         apparent_age = 0
     current_age = max(apparent_age, age_hdr)
     current_age_str = relative_time(current_age, 0, 0)        
     age_str = relative_time(age_hdr, 0, 0)
-    state.age = age_hdr
+    response.age = age_hdr
     if age_hdr >= 1:
-        state.set_message('header-age header-date', 
+        response.set_message('header-age header-date', 
             rs.CURRENT_AGE,
             age=age_str
         )
 
     # Check for clock skew and dateless origin server.
-    skew = date_hdr - state.response.start_time + age_hdr
+    skew = date_hdr - response.start_time + age_hdr
     if not date_hdr:
-        state.set_message('', rs.DATE_CLOCKLESS)
-        if state.response.parsed_headers.has_key('expires') or \
-          state.response.parsed_headers.has_key('last-modified'):
-            state.set_message('header-expires header-last-modified', 
+        response.set_message('', rs.DATE_CLOCKLESS)
+        if response.parsed_headers.has_key('expires') or \
+          response.parsed_headers.has_key('last-modified'):
+            response.set_message('header-expires header-last-modified', 
                             rs.DATE_CLOCKLESS_BAD_HDR)
     elif age_hdr > max_clock_skew and current_age - skew < max_clock_skew:
-        state.set_message('header-date header-age', rs.AGE_PENALTY)
+        response.set_message('header-date header-age', rs.AGE_PENALTY)
     elif abs(skew) > max_clock_skew:
-        state.set_message('header-date', rs.DATE_INCORRECT,
+        response.set_message('header-date', rs.DATE_INCORRECT,
            clock_skew_string=relative_time(skew, 0, 2)
         )
     else:
-        state.set_message('header-date', rs.DATE_CORRECT)
+        response.set_message('header-date', rs.DATE_CORRECT)
 
     # calculate freshness
     freshness_lifetime = 0
@@ -213,38 +215,38 @@ def checkCaching(state):
         freshness_hdrs.append('header-cache-control')
         has_explicit_freshness = True
         has_cc_freshness = True
-    elif state.response.parsed_headers.has_key('expires'):
+    elif response.parsed_headers.has_key('expires'):
         has_explicit_freshness = True
         freshness_hdrs.append('header-expires')
-        if state.response.parsed_headers.has_key('date'):
-            freshness_lifetime = state.response.parsed_headers['expires'] - \
-                state.response.parsed_headers['date']
+        if response.parsed_headers.has_key('date'):
+            freshness_lifetime = response.parsed_headers['expires'] - \
+                response.parsed_headers['date']
         else:
-            freshness_lifetime = state.response.parsed_headers['expires'] - \
-                state.response.start_time # ?
+            freshness_lifetime = response.parsed_headers['expires'] - \
+                response.start_time # ?
 
     freshness_left = freshness_lifetime - current_age
     freshness_left_str = relative_time(abs(int(freshness_left)), 0, 0)
     freshness_lifetime_str = relative_time(int(freshness_lifetime), 0, 0)
 
-    state.freshness_lifetime = freshness_lifetime
+    response.freshness_lifetime = freshness_lifetime
     fresh = freshness_left > 0
     if has_explicit_freshness:
         if fresh:
-            state.set_message(" ".join(freshness_hdrs), rs.FRESHNESS_FRESH,
+            response.set_message(" ".join(freshness_hdrs), rs.FRESHNESS_FRESH,
                  freshness_lifetime=freshness_lifetime_str,
                  freshness_left=freshness_left_str,
                  current_age = current_age_str
             )
-        elif has_cc_freshness and state.age > freshness_lifetime:
-            state.set_message(" ".join(freshness_hdrs),
+        elif has_cc_freshness and response.age > freshness_lifetime:
+            response.set_message(" ".join(freshness_hdrs),
                 rs.FRESHNESS_STALE_CACHE,
                 freshness_lifetime=freshness_lifetime_str,
                 freshness_left=freshness_left_str,
                 current_age = current_age_str
             )
         else:
-            state.set_message(" ".join(freshness_hdrs),
+            response.set_message(" ".join(freshness_hdrs),
                 rs.FRESHNESS_STALE_ALREADY,
                 freshness_lifetime=freshness_lifetime_str,
                 freshness_left=freshness_left_str,
@@ -252,36 +254,36 @@ def checkCaching(state):
             )
 
     # can heuristic freshness be used?
-    elif state.response.status_code in heuristic_cacheable_status:
-        state.set_message('header-last-modified', rs.FRESHNESS_HEURISTIC)
+    elif response.status_code in heuristic_cacheable_status:
+        response.set_message('header-last-modified', rs.FRESHNESS_HEURISTIC)
     else:
-        state.set_message('', rs.FRESHNESS_NONE)
+        response.set_message('', rs.FRESHNESS_NONE)
 
     # can stale responses be served?
     if 'must-revalidate' in cc_keys:
         if fresh:
-            state.set_message('header-cache-control',
+            response.set_message('header-cache-control',
                 rs.FRESH_MUST_REVALIDATE
         )
         elif has_explicit_freshness:
-            state.set_message('header-cache-control',
+            response.set_message('header-cache-control',
                 rs.STALE_MUST_REVALIDATE
             )
     elif 'proxy-revalidate' in cc_keys or 's-maxage' in cc_keys:
         if fresh:
-            state.set_message('header-cache-control',
+            response.set_message('header-cache-control',
                 rs.FRESH_PROXY_REVALIDATE
             )
         elif has_explicit_freshness:
-            state.set_message('header-cache-control',
+            response.set_message('header-cache-control',
                 rs.STALE_PROXY_REVALIDATE
             )
     else:
         if fresh:
-            state.set_message('header-cache-control', rs.FRESH_SERVABLE)
+            response.set_message('header-cache-control', rs.FRESH_SERVABLE)
         elif has_explicit_freshness:
-            state.set_message('header-cache-control', rs.STALE_SERVABLE)
+            response.set_message('header-cache-control', rs.STALE_SERVABLE)
 
     # public?
     if 'public' in cc_keys: # TODO: check for authentication in request
-        state.set_message('header-cache-control', rs.PUBLIC)
+        response.set_message('header-cache-control', rs.PUBLIC)

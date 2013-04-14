@@ -72,11 +72,6 @@ class ResourceExpertDroid(RedFetcher):
 
         # Extra metadata that the "main" RED will be adorned with 
         self.state.orig_req_hdrs = orig_req_hdrs
-        self.state.age = None
-        self.state.store_shared = None
-        self.state.store_private = None
-        self.state.freshness_lifetime = None
-        self.state.stale_serveable = None
         self.state.partial_support = None
         self.state.inm_support = None
         self.state.ims_support = None
