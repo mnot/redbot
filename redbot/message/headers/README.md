@@ -1,10 +1,11 @@
 
-Response Header Handlers
-========================
+Header Handlers
+===============
 
-This directory contains response header handlers for REDbot. They are in
-charge of taking the values values for each header, parsing it, and setting
-any header-specific messages that are appropriate.
+This directory contains header handlers for REDbot. They are in charge of
+taking the values values for each header, parsing it, setting any
+header-specific messages that are appropriate, and then joining the values
+together in a data structure that represents the header.
 
 Note that not all tests are in these files; ones that require coordination 
 between several headers' values, for example, belong in a separate type of 
@@ -12,17 +13,17 @@ test (as cache testing is done, in _cache\_check.py_). This is because headers
 can come in any order, so you can't be sure that another header's value will
 be available when your header parser runs.
 
-Likewise, tests that require another request go in the _subrequests_ 
-directory.
+Likewise, tests that require another request to the server go in the
+_subrequests_ directory.
 
 
 Adding New Headers
 ------------------
 
-It's pretty easy to add support for new response headers into REDbot. To
-start, fork the source and add a new file into this directory, whose name
-corresponds to the header's name, but in all lowercase, and with special
-characters (most commonly, _-_) transposed to an underscore.
+It's pretty easy to add support for new headers into REDbot. To start, fork
+the source and add a new file into this directory, whose name corresponds to
+the header's name, but in all lowercase, and with special characters (most
+commonly, _-_) transposed to an underscore.
 
 For example, if your header's name is `Foo-Example`, the appropriate filename
 is `foo_example.py`.
@@ -37,19 +38,20 @@ the following parameters:
 
  * `subject` - the subject ID of the test, for reference in messages.
  * `value` - a header field value; see below.
- * `red` - the current RedState object.
+ * `msg` - the current HttpMessage object (either HttpRequest or HttpResponse).
 
-A value is a header field values; by default, it
-corresponds to a header line. For example:
+A value is a header field value; by default, it corresponds to a header line.
+For example:
 
     Cache-Control: foo, bar
     Cache-Control: baz
   
 would be sent in as two calls to _parse_; one as "foo, bar" and one as "baz". 
 
-The _parse_ function must return a data structure that's suitable for the
-header field; it could be a dictionary, a list, an integer, a string, etc. 
-Take a look at similar headers to see what data structures they use. 
+The _parse_ function must return a data structure that's a suitable
+representation of the header field; it could be a dictionary, a list, an
+integer, a string, etc. Take a look at similar headers to see what data
+structures they use.
 
 _parse_ is where you set messages that are specific to a header field-value,
 rather than all field-values for that header.
@@ -66,12 +68,11 @@ It takes the following parameters:
 
  * `subject` - the subject ID of the test, for reference in messages.
  * `values` - a list of values, returned from _parse_.
- * `red` - the current RedState object.
+ * `msg` - the current HttpMessage object.
  
 Use _join_ to set messages that need to have the entire field's composite
 value, rather than just one portion. Usually, these are tests for the 
 header's semantics.
-
 
 
 ### Decorators for _parse_
@@ -80,7 +81,7 @@ There are also some handy decorators in _\_\_init\_\_.py_ that help with
 parsing, including:
 
  * `GenericHeaderSyntax` - Splits comma-separated list values, so that  
-   `values` contains a field value per item.
+   `values` contains a value per item.
    
     For example, `Cache-Control: foo, bar` will get `["foo", "bar"]` if 
     _parse_ is decorated with `@GenericHeaderSyntax`.
@@ -90,13 +91,6 @@ parsing, including:
     on the `Set-Cookie` syntax, because it allows a bare date that includes
     a comma.
  
- * `SingleFieldValue` - For use on field values that expect only one value. 
-   If more than one is present, it will set a warning message, and only send
-   through the last value in `values`.
-   
-   If used in conjunction with `@GenericHeaderSyntax`, it should come
-   afterwards.
-   
  * `CheckFieldSyntax` - Checks the syntax of a field against a regex; if
    it does not match, a warning message will be set, and None will be
    forcibly returned; the code in _parse_ will not be run.
@@ -111,12 +105,26 @@ parsing, including:
    See _http_syntax.py_ for some handy pre-defined regexen, based upon 
    the HTTP ABNF.
 
+* `RequestHeader` assures that the header is only used in requests.
+
+* `ResponseHeader` is just like `RequestHeader`, except that it assures that
+  the header is only used in responses.
+
+
+### Decorators for _join_
+
+Likewise, the following decorators cqn be used for the _join_ function:
+
+ * `SingleFieldValue` - For use on field values that expect only one value. 
+   If more than one is present, it will set a warning message, and only send
+   through the last value in `values`.   
+
 
 ### Setting Messages
 
 _parse_ can and should set header-specific messages as appropriate. Messages
 are collected in _speak.py_; see that file for details of the appropriate 
-format. They are set by calling `set_message` on the `red` object that's
+format. They are set by calling `set_message` on the `msg` object that's
 passed to _parse_.
 
 `set_message` expects the following parameters:
