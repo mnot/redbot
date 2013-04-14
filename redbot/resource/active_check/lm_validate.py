@@ -29,7 +29,7 @@ THE SOFTWARE.
 
 from datetime import datetime
 
-from redbot.subrequest.base import SubRequest
+from redbot.resource.active_check.base import SubRequest
 import redbot.speak as rs
 
 class LmValidate(SubRequest):

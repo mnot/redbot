@@ -29,7 +29,7 @@ THE SOFTWARE.
 
 import random
 
-from redbot.subrequest.base import SubRequest
+from redbot.resource.active_check.base import SubRequest
 from redbot.formatter import f_num
 import redbot.speak as rs
 

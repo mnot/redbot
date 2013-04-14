@@ -38,11 +38,11 @@ THE SOFTWARE.
 import re
 from urlparse import urljoin
 
-import redbot.subrequest
 import redbot.speak as rs
 from redbot import link_parse
 from redbot.fetch import RedFetcher
 from redbot.formatter import f_num
+from redbot.resource import active_check
 from redbot.uri_validate import absolute_URI, URI
 
 ### configuration
@@ -96,7 +96,7 @@ class ResourceExpertDroid(RedFetcher):
         the "main" response.
         """
         if self.state.response.complete:
-            redbot.subrequest.spawn_all(self)
+            active_check.spawn_all(self)
             
 
 class InspectingResourceExpertDroid(ResourceExpertDroid):

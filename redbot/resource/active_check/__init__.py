@@ -34,7 +34,7 @@ from etag_validate import ETagValidate
 from lm_validate import LmValidate
 
 def spawn_all(droid):
-    "Run all known subrequests against droid."
+    "Run all active checks against droid."
     droid.add_task(ConnegCheck(droid, 'Accept-Encoding').run)
     droid.add_task(RangeRequest(droid, 'Range').run)
     droid.add_task(ETagValidate(droid, 'ETag').run)

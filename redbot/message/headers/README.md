@@ -13,9 +13,6 @@ test (as cache testing is done, in _cache\_check.py_). This is because headers
 can come in any order, so you can't be sure that another header's value will
 be available when your header parser runs.
 
-Likewise, tests that require another request to the server go in the
-_subrequests_ directory.
-
 
 Adding New Headers
 ------------------
