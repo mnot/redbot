@@ -186,7 +186,7 @@ class RedFetcher(object):
         if self.status_cb and state.check_type:
             self.status_cb("fetched %s (%s)" % (state.uri, state.check_type))
 
-        # TODO: move to message
+        # FIXME: move to message
         if state.request.method not in ['HEAD'] \
         and res.status_code not in ['304']:
             # check payload basics

@@ -101,7 +101,7 @@ class HttpMessage(object):
             # only store 206; don't try to understand it
             self.payload += chunk
         else:
-            self._process_content_codings(chunk)
+            chunk = self._process_content_codings(chunk)
             if self._gzip_ok and body_procs:
                 for processor in body_procs:
                     # TODO: figure out why raising an error in a body_proc
@@ -162,6 +162,7 @@ class HttpMessage(object):
                 return
         self._md5_post_processor.update(chunk)
         self.uncompressed_len += len(chunk)
+        return chunk
 
     @staticmethod
     def _read_gzip_header(content):

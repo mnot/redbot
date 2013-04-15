@@ -52,6 +52,8 @@ class RedState(object):
         self.request.method = method
         self.request.headers = req_hdrs or []
         self.request.payload = req_body
+        
+        # FIXME: put in HttpRequest
         try:
             self.uri = self.iri_to_uri(iri)
         except (ValueError, UnicodeError), why:

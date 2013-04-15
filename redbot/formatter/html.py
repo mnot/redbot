@@ -283,8 +283,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     # FIXME: compressed?
     def feed(self, msg, chunk):
         """
-        store the first self.sample_size bytes of the 
-        uncompressed response
+        Store the first self.sample_size bytes of the 
+        uncompressed response.
         """
         if self.sample_seen + len(chunk) < self.body_sample_size:
             self.body_sample += chunk
