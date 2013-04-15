@@ -84,7 +84,7 @@ def main():
         sys.argv[0], url, [], lang, output,
         tty_out = sys.stdout.isatty()
     )
-    formatter.set_red(red.state)
+    formatter.set_state(red.state)
     formatter.start_output()
     
     def done():

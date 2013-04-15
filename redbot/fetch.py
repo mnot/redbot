@@ -183,27 +183,6 @@ class RedFetcher(object):
         res.body_done(trailers)
         if self.status_cb and state.check_type:
             self.status_cb("fetched %s (%s)" % (state.uri, state.check_type))
-
-        # FIXME: move to message
-        if state.request.method not in ['HEAD'] \
-        and res.status_code not in ['304']:
-            # check payload basics
-            if res.parsed_headers.has_key('content-length'):
-                if res.payload_len == res.parsed_headers['content-length']:
-                    state.set_message('header-content-length', rs.CL_CORRECT)
-                else:
-                    state.set_message('header-content-length', 
-                                    rs.CL_INCORRECT,
-                                    body_length=f_num(res.payload_len)
-                    )
-            if res.parsed_headers.has_key('content-md5'):
-                c_md5_calc = base64.encodestring(res.payload_md5)[:-1]
-                if res.parsed_headers['content-md5'] == c_md5_calc:
-                    state.set_message('header-content-md5', rs.CMD5_CORRECT)
-                else:
-                    state.set_message('header-content-md5', rs.CMD5_INCORRECT,
-                                     calc_md5=c_md5_calc)
-
         self.done()
         self.finish_task()
 

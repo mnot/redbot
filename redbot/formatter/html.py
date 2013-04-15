@@ -280,7 +280,6 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         self.sample_seen = 0
         self.sample_complete = True
 
-    # FIXME: compressed?
     def feed(self, msg, chunk):
         """
         Store the first self.sample_size bytes of the 
@@ -622,7 +621,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         out = [self.format_table_header()]
         out.append(self.format_droid(red))
         for hdr_tag, heading in self.link_order:
-            droids = [d[0] for d in red.link_droids if d[1] == hdr_tag]
+            droids = [d[0] for d in red.linked if d[1] == hdr_tag]
             if droids:
                 droids.sort(key=operator.attrgetter('uri'))
                 out.append(

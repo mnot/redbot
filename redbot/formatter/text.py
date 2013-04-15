@@ -203,7 +203,7 @@ class TextListFormatter(BaseTextFormatter):
         BaseTextFormatter.finish_output(self)
         sep = "=" * 78
         for hdr_tag, heading in self.link_order:
-            droids = [d[0] for d in self.red.link_droids if d[1] == hdr_tag]
+            droids = [d[0] for d in self.red.linked if d[1] == hdr_tag]
             self.output("%s\n%s (%d)\n%s\n" % (
                 sep, heading, len(droids), sep
             ))

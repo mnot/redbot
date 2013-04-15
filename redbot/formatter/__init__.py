@@ -104,11 +104,11 @@ class Formatter(object):
         self.kw = kw
         self.red = None
 
-    def set_red(self, red):
+    def set_state(self, state):
         """
-        Set the RED state to format.
+        Set the RED state to be formatted.
         """
-        self.red = red
+        self.red = state
         
     def done(self):
         """Clean up. Must be called by finish_output."""

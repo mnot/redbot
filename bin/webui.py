@@ -223,7 +223,7 @@ class RedWebUi(object):
             state = state.subreqs.get(self.req_type, None)
 
         formatter.start_output()
-        formatter.set_red(state)
+        formatter.set_state(state)
         formatter.finish_output()
         self.response_done([])
 
@@ -268,7 +268,7 @@ class RedWebUi(object):
                 state = ired.state.subreqs.get(self.req_type, None)
             else:
                 state = ired.state
-            formatter.set_red(state)
+            formatter.set_state(state)
             formatter.finish_output()
             self.response_done([])
             if test_id:

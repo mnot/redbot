@@ -43,6 +43,7 @@ class HttpMessage(object):
     """
     def __init__(self, messages=None, check_type=None):
         self.is_request = None
+        self.is_head_response = False
         self.version = ""
         self.base_uri = ""
         self.start_time = None
@@ -113,10 +114,27 @@ class HttpMessage(object):
         """
         Signal that the body is done.
         """
-        self.payload_md5 = self._md5_processor.digest()
-        self.uncompressed_md5 = self._md5_post_processor.digest()
         # TODO: check trailers
         self.trailers = trailers or []
+        self.payload_md5 = self._md5_processor.digest()
+        self.uncompressed_md5 = self._md5_post_processor.digest()
+
+        if self.is_request or (not self.is_head_response and self.status_code not in ['304']):
+            # check payload basics
+            if self.parsed_headers.has_key('content-length'):
+                if self.payload_len == self.parsed_headers['content-length']:
+                    self.set_message('header-content-length', rs.CL_CORRECT)
+                else:
+                    self.set_message('header-content-length', 
+                                    rs.CL_INCORRECT,
+                                    body_length=f_num(self.payload_len)
+                    )
+            if self.parsed_headers.has_key('content-md5'):
+                c_md5_calc = base64.encodestring(self.payload_md5)[:-1]
+                if self.parsed_headers['content-md5'] == c_md5_calc:
+                    self.set_message('header-content-md5', rs.CMD5_CORRECT)
+                else:
+                    self.set_message('header-content-md5', rs.CMD5_INCORRECT, calc_md5=c_md5_calc)
 
     def _process_content_codings(self, chunk):
         """

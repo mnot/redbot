@@ -102,7 +102,7 @@ class InspectingHttpResource(HttpResource):
     """
     A RED that parses the response body to look for links. If descend
     is True, it will also spider linked resources and populate
-    self.link_droids with their REDs.
+    self.linked with their HttpResources.
     """
     def __init__(self, uri, method="GET", req_hdrs=None, req_body=None,
                 status_cb=None, body_procs=None, descend=False):
@@ -115,7 +115,7 @@ class InspectingHttpResource(HttpResource):
                 status_cb, body_procs)
         self.state.links = {}          # {type: set(link...)}
         self.state.link_count = 0
-        self.state.link_droids = []    # list of linked REDs (if descend=True)
+        self.state.linked = []    # list of linked HttpResources (if descend=True)
         self.state.base_uri = None        
 
     def process_link(self, link, tag, title):
@@ -125,13 +125,13 @@ class InspectingHttpResource(HttpResource):
         if not state.links.has_key(tag):
             state.links[tag] = set()
         if self.descend and tag not in ['a'] and link not in state.links[tag]:
-            link_droid = HttpResource(
+            linked = HttpResource(
                 urljoin(self.link_parser.base, link),
                 req_hdrs=state.orig_req_hdrs,
                 status_cb=self.status_cb,
             )
-            state.link_droids.append((link_droid.state, tag))
-            self.add_task(link_droid.run)
+            state.linked.append((linked.state, tag))
+            self.add_task(linked.run)
         state.links[tag].add(link)
         if not self.state.base_uri:
             self.state.base_uri = self.link_parser.base

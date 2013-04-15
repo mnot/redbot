@@ -80,7 +80,7 @@ class HarFormatter(Formatter):
         if self.red.response.complete:
             page_id = self.add_page(self.red)
             self.add_entry(self.red, page_id)
-            for linked_red in [d[0] for d in self.red.link_droids]:
+            for linked_red in [d[0] for d in self.red.linked]:
                 # filter out incomplete responses
                 if linked_red.response.complete:
                     self.add_entry(linked_red, page_id)

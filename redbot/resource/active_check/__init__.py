@@ -33,9 +33,9 @@ from range import RangeRequest
 from etag_validate import ETagValidate
 from lm_validate import LmValidate
 
-def spawn_all(droid):
-    "Run all active checks against droid."
-    droid.add_task(ConnegCheck(droid, 'Accept-Encoding').run)
-    droid.add_task(RangeRequest(droid, 'Range').run)
-    droid.add_task(ETagValidate(droid, 'ETag').run)
-    droid.add_task(LmValidate(droid, 'Last-Modified').run)
+def spawn_all(resource):
+    "Run all active checks against resource."
+    resource.add_task(ConnegCheck(resource, 'Accept-Encoding').run)
+    resource.add_task(RangeRequest(resource, 'Range').run)
+    resource.add_task(ETagValidate(resource, 'ETag').run)
+    resource.add_task(LmValidate(resource, 'Last-Modified').run)
