@@ -4,7 +4,6 @@
 The Resource Expert Droid Status Code Checker.
 """
 
-__version__ = "1"
 __author__ = "Mark Nottingham <mnot@mnot.net>"
 __copyright__ = """\
 Copyright (c) 2008-2013 Mark Nottingham

@@ -9,7 +9,7 @@ objects (e.g., the HTTP client machinery) are kept elsewhere.
 
 __author__ = "Mark Nottingham <mnot@mnot.net>"
 __copyright__ = """\
-Copyright (c) 2008-2012 Mark Nottingham
+Copyright (c) 2008-2013 Mark Nottingham
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

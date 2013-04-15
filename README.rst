@@ -97,7 +97,7 @@ from jQuery <http://jquery.com/> and prettify.js
 License
 -------
 
-Copyright (c) 2008-2012 Mark Nottingham
+Copyright (c) 2008-2013 Mark Nottingham
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

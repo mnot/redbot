@@ -10,10 +10,9 @@ based upon the provided headers.
 See droid.py for the main RED engine and webui.py for the Web front-end.
 """
 
-__version__ = "1"
 __author__ = "Mark Nottingham <mnot@mnot.net>"
 __copyright__ = """\
-Copyright (c) 2008-2012 Mark Nottingham
+Copyright (c) 2008-2013 Mark Nottingham
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +38,7 @@ import base64
 import thor
 import thor.http.error as httperr
 
+from redbot import __version__
 from redbot.formatter import f_num
 import redbot.speak as rs
 from redbot.state import RedState
