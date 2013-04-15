@@ -34,8 +34,9 @@ import redbot.http_syntax as syntax
 # The most common problem with Location is a non-absolute URI, 
 # so we separate that from the syntax check.
 @rh.CheckFieldSyntax(syntax.URI_reference, rh.rfc2616 % "sec-14.30")
-def parse(subject, value, red):
-    if red.response.status_code not in [
+@rh.ResponseHeader
+def parse(subject, value, msg):
+    if msg.status_code not in [
         "201", "300", "301", "302", "303", "305", "307"
     ]:
         red.set_message(subject, rs.LOCATION_UNDEFINED)
