@@ -34,7 +34,8 @@ assert sys.version_info[0] == 2 and sys.version_info[1] >= 6, \
 from optparse import OptionParser
 
 import thor
-from redbot import droid, __version__
+from redbot import __version__
+from redbot.resource import InspectingHttpResource
 from redbot.formatter import *
 from redbot.formatter import find_formatter, available_formatters
 
@@ -74,7 +75,7 @@ def main():
         opt_parser.error("Unrecognised output format.")
 
     url = args[0]
-    red = droid.InspectingResourceExpertDroid(
+    red = InspectingHttpResource(
         url,
         descend=options.descend
     )

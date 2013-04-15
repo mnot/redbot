@@ -43,7 +43,8 @@ assert sys.version_info[0] == 2 and sys.version_info[1] >= 6, \
     "Please use Python 2.6 or greater"
 
 import thor
-from redbot import droid, __version__
+from redbot import __version__
+from redbot.resource import InspectingHttpResource
 from redbot.formatter import *
 from redbot.formatter import find_formatter, html
 
@@ -251,7 +252,7 @@ class RedWebUi(object):
             ("Cache-Control", "max-age=60, must-revalidate")
         ])
         
-        ired = droid.InspectingResourceExpertDroid(
+        ired = InspectingHttpResource(
             self.test_uri,
             req_hdrs=self.req_hdrs,
             status_cb=formatter.status,

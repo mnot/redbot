@@ -6,8 +6,6 @@ The Resource Expert Droid Fetcher.
 RedFetcher fetches a single URI and analyses that response for common
 problems and other interesting characteristics. It only makes one request,
 based upon the provided headers.
-
-See droid.py for the main RED engine and webui.py for the Web front-end.
 """
 
 __author__ = "Mark Nottingham <mnot@mnot.net>"

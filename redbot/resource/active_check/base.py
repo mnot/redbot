@@ -35,7 +35,7 @@ from redbot.fetch import RedFetcher
 
 class SubRequest(RedFetcher):
     """
-    A subrequest of a "main" ResourceExpertDroid, made to perform additional
+    A subrequest of a "main" HttpResource, made to perform additional
     behavioural tests on the resource.
     
     it both adorns the given red's state, and saves its own state in the
