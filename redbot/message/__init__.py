@@ -76,7 +76,7 @@ class HttpMessage(object):
         else:
             self.messages = messages
         
-    def feed_headers(self, headers):
+    def set_headers(self, headers):
         """
         Feed a list of (key, value) header tuples in and process them.
         """

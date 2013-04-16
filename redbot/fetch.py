@@ -163,7 +163,7 @@ class RedFetcher(object):
         res.version = self.exchange.res_version
         res.status_code = status.decode('iso-8859-1', 'replace')
         res.status_phrase = phrase.decode('iso-8859-1', 'replace')
-        res.feed_headers(res_headers)
+        res.set_headers(res_headers)
         StatusChecker(self.state.response, self.state.request)
         checkCaching(self.state.response, self.state.request)
 
