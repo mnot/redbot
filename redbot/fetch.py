@@ -176,11 +176,10 @@ class RedFetcher(object):
         self._st.append('_response_done()')
         state = self.state
         res = state.response
-        res.complete = True
         res.complete_time = thor.time()
         res.transfer_length = self.exchange.input_transfer_length
         res.header_length = self.exchange.input_header_length
-        res.body_done(trailers)
+        res.body_done(True, trailers)
         if self.status_cb and state.check_type:
             self.status_cb("fetched %s (%s)" % (state.uri, state.check_type))
         self.done()

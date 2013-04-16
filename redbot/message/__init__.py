@@ -110,11 +110,12 @@ class HttpMessage(object):
                     # a hard error.
                     processor(self, chunk)
         
-    def body_done(self, trailers=None):
+    def body_done(self, complete, trailers=None):
         """
-        Signal that the body is done.
+        Signal that the body is done. Complete should be True if we know it's complete.
         """
         # TODO: check trailers
+        self.complete = complete
         self.trailers = trailers or []
         self.payload_md5 = self._md5_processor.digest()
         self.uncompressed_md5 = self._md5_post_processor.digest()
