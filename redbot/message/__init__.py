@@ -58,8 +58,8 @@ class HttpMessage(object):
         self.payload_md5 = None
         self.payload_sample = []  # [(offset, chunk)]{,4} bytes, not unicode
         self.character_encoding = None
-        self.uncompressed_len = 0
-        self.uncompressed_md5 = None
+        self.decoded_len = 0
+        self.decoded_md5 = None
         self.transfer_length = 0
         self.trailers = []
         self.http_error = None  # any parse errors encountered; see httperr
@@ -102,13 +102,13 @@ class HttpMessage(object):
             # only store 206; don't try to understand it
             self.payload += chunk
         else:
-            uncompressed_chunk = self._process_content_codings(chunk)
+            decoded_chunk = self._process_content_codings(chunk)
             if self._decode_ok and body_procs:
                 for processor in body_procs:
                     # TODO: figure out why raising an error in a body_proc
                     # results in a "server dropped the connection" instead of
                     # a hard error.
-                    processor(self, uncompressed_chunk)
+                    processor(self, decoded_chunk)
         
     def body_done(self, complete, trailers=None):
         """
@@ -118,7 +118,7 @@ class HttpMessage(object):
         self.complete = complete
         self.trailers = trailers or []
         self.payload_md5 = self._md5_processor.digest()
-        self.uncompressed_md5 = self._md5_post_processor.digest()
+        self.decoded_md5 = self._md5_post_processor.digest()
 
         if self.is_request or (not self.is_head_response and self.status_code not in ['304']):
             # check payload basics
@@ -181,7 +181,7 @@ class HttpMessage(object):
                 self._decode_ok = False
                 return
         self._md5_post_processor.update(chunk)
-        self.uncompressed_len += len(chunk)
+        self.decoded_len += len(chunk)
         return chunk
 
     @staticmethod
