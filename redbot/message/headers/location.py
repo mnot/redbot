@@ -39,12 +39,12 @@ def parse(subject, value, msg):
     if msg.status_code not in [
         "201", "300", "301", "302", "303", "305", "307"
     ]:
-        red.set_message(subject, rs.LOCATION_UNDEFINED)
+        msg.set_message(subject, rs.LOCATION_UNDEFINED)
     if not re.match(r"^\s*%s\s*$" % syntax.URI, value, re.VERBOSE):
-        red.set_message(subject, rs.LOCATION_NOT_ABSOLUTE,
-                        full_uri=urljoin(red.base_uri, value))
+        msg.set_message(subject, rs.LOCATION_NOT_ABSOLUTE,
+                        full_uri=urljoin(msg.base_uri, value))
     return value
 
 @rh.SingleFieldValue
-def join(subject, values, red):
+def join(subject, values, msg):
     return values[-1]
