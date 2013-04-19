@@ -69,7 +69,7 @@ class HttpMessage(object):
         self._gzip_processor = zlib.decompressobj(-zlib.MAX_WBITS)
         self._in_gzip_body = False
         self._gzip_header_buffer = ""
-        self._gzip_ok = True # turn False if we have a problem
+        self._decode_ok = True # turn False if we have a problem
         self.check_type = check_type
         if messages is None:
             self.messages = []
@@ -102,13 +102,13 @@ class HttpMessage(object):
             # only store 206; don't try to understand it
             self.payload += chunk
         else:
-            chunk = self._process_content_codings(chunk)
-            if self._gzip_ok and body_procs:
+            uncompressed_chunk = self._process_content_codings(chunk)
+            if self._decode_ok and body_procs:
                 for processor in body_procs:
                     # TODO: figure out why raising an error in a body_proc
                     # results in a "server dropped the connection" instead of
                     # a hard error.
-                    processor(self, chunk)
+                    processor(self, uncompressed_chunk)
         
     def body_done(self, complete, trailers=None):
         """
@@ -147,7 +147,7 @@ class HttpMessage(object):
         content_codings.reverse()
         for coding in content_codings:
             # TODO: deflate support
-            if coding in ['gzip', 'x-gzip'] and self._gzip_ok:
+            if coding in ['gzip', 'x-gzip'] and self._decode_ok:
                 if not self._in_gzip_body:
                     self._gzip_header_buffer += chunk
                     try:
@@ -156,13 +156,13 @@ class HttpMessage(object):
                         )
                         self._in_gzip_body = True
                     except IndexError:
-                        return # not a full header yet
+                        return '' # not a full header yet
                     except IOError, gzip_error:
                         self.set_message('header-content-encoding',
                                         rs.BAD_GZIP,
                                         gzip_error=str(gzip_error)
                         )
-                        self._gzip_ok = False
+                        self._decode_ok = False
                         return
                 try:
                     chunk = self._gzip_processor.decompress(chunk)
@@ -174,10 +174,11 @@ class HttpMessage(object):
                         ok_zlib_len=f_num(self.payload_sample[-1][0]),
                         chunk_sample=chunk[:20].encode('string_escape')
                     )
-                    self._gzip_ok = False
+                    self._decode_ok = False
                     return
             else:
                 # we can't handle other codecs, so punt on body processing.
+                self._decode_ok = False
                 return
         self._md5_post_processor.update(chunk)
         self.uncompressed_len += len(chunk)
