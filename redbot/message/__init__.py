@@ -50,7 +50,6 @@ class HttpMessage(object):
         self.complete = False
         self.complete_time = None
         self.headers = []
-        self.clean_headers = []
         self.parsed_headers = {}
         self.header_length = 0
         self.payload = ""  # bytes, not unicode

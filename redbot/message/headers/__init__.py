@@ -147,7 +147,7 @@ def process_headers(msg):
     it can be determined without examining other headers, etc.).
 
     Using msg.headers, it populates:
-      - .clean_headers with a Unicode version of the input
+      - .headers with a Unicode version of the input
       - .parsed_headers with a dictionary of parsed header values
     """
 
@@ -206,7 +206,7 @@ def process_headers(msg):
                     hdr_dict[norm_name][1].append(parsed_value)
         
     # replace the original header tuple with ones that are clean unicode
-    msg.clean_hdrs = clean_hdrs
+    msg.headers = clean_hdrs
 
     # join parsed header values
     for norm_name, (orig_name, values) in hdr_dict.items():
