@@ -166,7 +166,9 @@ window.status="%s";
 <p class="version">this is RED %(version)s.</p>
 <p class="navigation">
 <a href="http://REDbot.org/about/">about</a> |
-<a href="#help" id="help"><strong>help</strong></a> |
+<script type="text/javascript">
+   document.write('<a href="#help" id="help"><strong>help</strong></a> |')
+</script>
 <a href="http://REDbot.org/project">project</a> |
 <span class="help">Drag the bookmarklet to your bookmark bar - it makes
 checking easy!</span>
@@ -477,8 +479,10 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             )
         options.append(None)
         options.append((u"""\
-    <a href='#' id='body_view' accesskey='b'>view body</a>""", 
-            "View this response body (with any gzip compression removed)"
+<script type="text/javascript">
+   document.write("<a href='#' id='body_view' accesskey='b'>view body</a>")
+</script>""", 
+    "View this response body (with any gzip compression removed)"
         ))
         if self.kw.get('test_id', None):
             har_locator = "id=%s" % self.kw['test_id']
