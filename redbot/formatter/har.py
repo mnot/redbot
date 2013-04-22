@@ -114,8 +114,8 @@ class HarFormatter(Formatter):
             'cookies': [],
             'headers': self.format_headers(red.response.headers),
             'content': {
-                'size': red.response.uncompressed_len,
-                'compression': red.response.uncompressed_len - red.response.payload_len,
+                'size': red.response.decoded_len,
+                'compression': red.response.decoded_len - red.response.payload_len,
                 'mimeType': (get_header(red.response.headers, 'content-type') or [""])[0],
             },
             'redirectURL': (get_header(red.response.headers, 'location') or [""])[0],

@@ -95,7 +95,7 @@ class ConnegCheck(SubRequest):
                 )
 
             # check body
-            if self.base.response.uncompressed_md5 != self.state.response.payload_md5:
+            if self.base.response.decoded_md5 != self.state.response.payload_md5:
                 self.set_message('body', rs.VARY_BODY_MISMATCH)
 
             # check ETag
