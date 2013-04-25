@@ -71,8 +71,10 @@ class ETagValidate(SubRequest):
                     'expires', 'vary'
                 ], rs.MISSING_HDRS_304, 'If-None-Match'
             )
-        elif self.state.response.status_code == self.base.response.status_code:
-            if self.state.response.payload_md5 == self.base.response.payload_md5:
+        elif self.state.response.status_code \
+          == self.base.response.status_code:
+            if self.state.response.payload_md5 \
+              == self.base.response.payload_md5:
                 self.base.inm_support = False
                 self.set_message('header-etag', rs.INM_FULL)
             else: # bodies are different
@@ -82,14 +84,16 @@ class ETagValidate(SubRequest):
                         self.set_message('header-etag', rs.INM_DUP_ETAG_WEAK)
                     else: # strong
                         self.set_message('header-etag',
-                                        rs.INM_DUP_ETAG_STRONG,
-                                        etag=self.base.response.parsed_headers['etag'])
+                            rs.INM_DUP_ETAG_STRONG,
+                            etag=self.base.response.parsed_headers['etag']
+                        )
                 else:
                     self.set_message('header-etag', rs.INM_UNKNOWN)
         else:
             self.set_message('header-etag', 
                 rs.INM_STATUS, 
                 inm_status = self.state.response.status_code,
-                enc_inm_status = self.state.response.status_code or '(unknown)'
+                enc_inm_status = self.state.response.status_code \
+                  or '(unknown)'
             )
         # TODO: check entity headers
