@@ -45,7 +45,8 @@ class ConnegCheck(SubRequest):
                [(u'accept-encoding', u'identity')]
 
     def preflight(self):
-        if "gzip" in self.base.response.parsed_headers.get('content-encoding', []):
+        if "gzip" in \
+          self.base.response.parsed_headers.get('content-encoding', []):
             return True
         else:
             self.base.gzip_support = False
@@ -59,15 +60,19 @@ class ConnegCheck(SubRequest):
             return
             
         # see if it was compressed when not negotiated
-        no_conneg_vary_headers = self.state.response.parsed_headers.get('vary', [])
-        if 'gzip' in self.state.response.parsed_headers.get('content-encoding', []) or \
-           'x-gzip' in self.state.response.parsed_headers.get('content-encoding', []):
+        no_conneg_vary_headers = \
+          self.state.response.parsed_headers.get('vary', [])
+        if 'gzip' in \
+          self.state.response.parsed_headers.get('content-encoding', []) \
+          or 'x-gzip' in \
+          self.state.response.parsed_headers.get('content-encoding', []):
             self.set_message('header-vary header-content-encoding',
                             rs.CONNEG_GZIP_WITHOUT_ASKING)
         else: # Apparently, content negotiation is happening.
 
             # check status
-            if self.base.response.status_code != self.state.response.status_code:
+            if self.base.response.status_code != \
+               self.state.response.status_code:
                 self.set_message('status', rs.VARY_STATUS_MISMATCH, 
                   neg_status=self.base.response.status_code,
                   noneg_status=self.state.response.status_code)
@@ -95,7 +100,8 @@ class ConnegCheck(SubRequest):
                 )
 
             # check body
-            if self.base.response.decoded_md5 != self.state.response.payload_md5:
+            if self.base.response.decoded_md5 != \
+               self.state.response.payload_md5:
                 self.set_message('body', rs.VARY_BODY_MISMATCH)
 
             # check ETag
