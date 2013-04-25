@@ -43,19 +43,19 @@ class LmValidate(SubRequest):
         req_hdrs = list(self.base.request.headers)
         if self.base.response.parsed_headers.has_key('last-modified'):
             try:
-                lm = datetime.utcfromtimestamp(
+                l_m = datetime.utcfromtimestamp(
                     self.base.response.parsed_headers['last-modified']
                 )
             except ValueError:
                 return req_hdrs # TODO: sensible error message.
             date_str = u"%s, %.2d %s %.4d %.2d:%.2d:%.2d GMT" % (
-                self._weekdays[lm.weekday()],
-                lm.day,
-                self._months[lm.month],
-                lm.year,
-                lm.hour,
-                lm.minute,
-                lm.second
+                self._weekdays[l_m.weekday()],
+                l_m.day,
+                self._months[l_m.month],
+                l_m.year,
+                l_m.hour,
+                l_m.minute,
+                l_m.second
             )
             req_hdrs += [
                 (u'If-Modified-Since', date_str),
@@ -84,8 +84,10 @@ class LmValidate(SubRequest):
                     'expires', 'vary'
                 ], rs.MISSING_HDRS_304, 'If-Modified-Since'
             )
-        elif self.state.response.status_code == self.base.response.status_code:
-            if self.state.response.payload_md5 == self.base.response.payload_md5:
+        elif self.state.response.status_code \
+          == self.base.response.status_code:
+            if self.state.response.payload_md5 \
+              == self.base.response.payload_md5:
                 self.base.ims_support = False
                 self.set_message('header-last-modified', rs.IMS_FULL)
             else:
@@ -94,6 +96,7 @@ class LmValidate(SubRequest):
             self.set_message('header-last-modified', 
                 rs.IMS_STATUS, 
                 ims_status = self.state.response.status_code,
-                enc_ims_status = self.state.response.status_code or '(unknown)'
+                enc_ims_status = self.state.response.status_code \
+                  or '(unknown)'
             )
         # TODO: check entity headers
