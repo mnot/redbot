@@ -44,7 +44,7 @@ def parse(subject, value, red):
         try:
             directive_val = int(directive_val)
         except (ValueError, TypeError):
-            red.set_message(subject, rs.BAD_CC_SYNTAX,
+            red.add_note(subject, rs.BAD_CC_SYNTAX,
                             bad_cc_attr=directive_name
             )
             return None

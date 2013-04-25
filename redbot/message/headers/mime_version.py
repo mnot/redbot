@@ -30,7 +30,7 @@ import redbot.http_syntax as syntax
 
 
 def parse(subject, value, red):
-    red.set_message(subject, rs.MIME_VERSION)
+    red.add_note(subject, rs.MIME_VERSION)
     return value
     
 def join(subject, values, red):

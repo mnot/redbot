@@ -54,7 +54,7 @@ class ConnegCheck(SubRequest):
 
     def done(self):
         if not self.state.response.complete:
-            self.set_message('', rs.CONNEG_SUBREQ_PROBLEM,
+            self.add_note('', rs.CONNEG_SUBREQ_PROBLEM,
                 problem=self.state.response.http_error.desc
             )
             return
@@ -66,14 +66,14 @@ class ConnegCheck(SubRequest):
           self.state.response.parsed_headers.get('content-encoding', []) \
           or 'x-gzip' in \
           self.state.response.parsed_headers.get('content-encoding', []):
-            self.set_message('header-vary header-content-encoding',
+            self.add_note('header-vary header-content-encoding',
                             rs.CONNEG_GZIP_WITHOUT_ASKING)
         else: # Apparently, content negotiation is happening.
 
             # check status
             if self.base.response.status_code != \
                self.state.response.status_code:
-                self.set_message('status', rs.VARY_STATUS_MISMATCH, 
+                self.add_note('status', rs.VARY_STATUS_MISMATCH, 
                   neg_status=self.base.response.status_code,
                   noneg_status=self.state.response.status_code)
                 return  # Can't be sure what's going on...
@@ -82,7 +82,7 @@ class ConnegCheck(SubRequest):
             for hdr in ['content-type']:
                 if self.base.response.parsed_headers.get(hdr) != \
                   self.state.response.parsed_headers.get(hdr, None):
-                    self.set_message('header-%s' % hdr,
+                    self.add_note('header-%s' % hdr,
                       rs.VARY_HEADER_MISMATCH, 
                       header=hdr)
                     # TODO: expose on-the-wire values.
@@ -91,9 +91,9 @@ class ConnegCheck(SubRequest):
             vary_headers = self.base.response.parsed_headers.get('vary', [])
             if (not "accept-encoding" in vary_headers) and \
                (not "*" in vary_headers):
-                self.set_message('header-vary', rs.CONNEG_NO_VARY)
+                self.add_note('header-vary', rs.CONNEG_NO_VARY)
             if no_conneg_vary_headers != vary_headers:
-                self.set_message('header-vary', 
+                self.add_note('header-vary', 
                     rs.VARY_INCONSISTENT,
                     conneg_vary=", ".join(vary_headers),
                     no_conneg_vary=", ".join(no_conneg_vary_headers)
@@ -102,13 +102,13 @@ class ConnegCheck(SubRequest):
             # check body
             if self.base.response.decoded_md5 != \
                self.state.response.payload_md5:
-                self.set_message('body', rs.VARY_BODY_MISMATCH)
+                self.add_note('body', rs.VARY_BODY_MISMATCH)
 
             # check ETag
             if (self.state.response.parsed_headers.get('etag', 1) == \
               self.base.response.parsed_headers.get('etag', 2)):
                 if not self.base.response.parsed_headers['etag'][0]: # strong
-                    self.set_message('header-etag',
+                    self.add_note('header-etag',
                         rs.VARY_ETAG_DOESNT_CHANGE
                     ) 
 
@@ -126,14 +126,14 @@ class ConnegCheck(SubRequest):
             self.base.gzip_support = True
             self.base.gzip_savings = savings
             if savings >= 0:
-                self.set_message('header-content-encoding',
+                self.add_note('header-content-encoding',
                     rs.CONNEG_GZIP_GOOD,
                     savings=savings,
                     orig_size=f_num(self.state.response.payload_len),
                     gzip_size=f_num(self.base.response.payload_len)
                 )
             else:
-                self.set_message('header-content-encoding',
+                self.add_note('header-content-encoding',
                     rs.CONNEG_GZIP_BAD,
                     savings=abs(savings),
                     orig_size=f_num(self.state.response.payload_len),

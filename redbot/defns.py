@@ -1,5 +1,5 @@
 """
-Header- and Status-specific detail/definition messages
+Header- and Status-specific detail / definitions
 
 Each should be in the form:
 

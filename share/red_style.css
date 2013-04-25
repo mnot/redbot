@@ -74,7 +74,7 @@ h3 {
     color: #aaa;
     font-size: 0.8em;
 }
-.note {
+.btw {
     text-align: center;
     font-size: 0.8em;
     color: #999;
@@ -85,7 +85,7 @@ br {
 }
 
 
-/* message lists */
+/* note lists */
 
 ul {
     margin-top: 0.2em;
@@ -237,7 +237,7 @@ table#summary td a {
     padding: 9px;
 }
 
-/* message levels */
+/* note levels */
 
 .good {
     color: #060;

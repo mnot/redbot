@@ -91,7 +91,7 @@ class HarFormatter(Formatter):
         entry = {
             "startedDateTime": isoformat(red.request.start_time),
             "time": int((red.response.complete_time - red.request.start_time) * 1000),
-            "_red_messages": self.format_messages(red)
+            "_red_messages": self.format_notes(red)
         }
         if page_ref:
             entry['pageref'] = "page%s" % page_ref
@@ -159,9 +159,9 @@ class HarFormatter(Formatter):
     def format_headers(self, hdrs):
         return [ {'name': n, 'value': v} for n, v in hdrs ]
 
-    def format_messages(self, red):
+    def format_notes(self, red):
         out = []
-        for m in red.messages:
+        for m in red.notes:
             msg = {
                 "subject": m.subject,
                 "category": m.category,
@@ -169,7 +169,7 @@ class HarFormatter(Formatter):
                 "summary": m.show_summary(self.lang)
             }
             smsgs = [i for i in getattr(
-                m.subrequest, "messages", []) if i.level in [rs.l.BAD]]
+                m.subrequest, "notes", []) if i.level in [rs.l.BAD]]
             msg["subrequests"] = \
             [{
                 "subject": sm.subject,

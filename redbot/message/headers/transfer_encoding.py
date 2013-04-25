@@ -39,7 +39,7 @@ def parse(subject, value, red):
     coding = coding.lower()
     param_dict = rh.parse_params(red, subject, params, True)
     if param_dict:
-        red.set_message(subject, rs.TRANSFER_CODING_PARAM)
+        red.add_note(subject, rs.TRANSFER_CODING_PARAM)
     return coding
 
 def join(subject, values, red):
@@ -47,10 +47,10 @@ def join(subject, values, red):
         ['chunked', 'identity']]
     ) or False
     if unwanted:
-        red.set_message(subject, rs.TRANSFER_CODING_UNWANTED,
+        red.add_note(subject, rs.TRANSFER_CODING_UNWANTED,
                 unwanted_codings=", ".join(unwanted))
     if 'identity' in values:
-        red.set_message(subject, rs.TRANSFER_CODING_IDENTITY)
+        red.add_note(subject, rs.TRANSFER_CODING_IDENTITY)
     return values
 
 

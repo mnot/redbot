@@ -34,8 +34,8 @@ def parse(subject, value, red):
     
 def join(subject, values, red):
     if "no-cache" in values:
-        red.set_message(subject, rs.PRAGMA_NO_CACHE)
+        red.add_note(subject, rs.PRAGMA_NO_CACHE)
     others = [True for v in values if v != "no-cache"]
     if others:
-        red.set_message(subject, rs.PRAGMA_OTHER)
+        red.add_note(subject, rs.PRAGMA_OTHER)
     return set(values)

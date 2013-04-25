@@ -82,7 +82,7 @@ class RangeRequest(SubRequest):
 
     def done(self):
         if not self.state.response.complete:
-            self.set_message('', rs.RANGE_SUBREQ_PROBLEM,
+            self.add_note('', rs.RANGE_SUBREQ_PROBLEM,
                 problem=self.state.response.http_error.desc
             )
             return
@@ -91,7 +91,7 @@ class RangeRequest(SubRequest):
             c_e = 'content-encoding'
             if 'gzip' in self.base.response.parsed_headers.get(c_e, []) == \
                'gzip' not in self.state.response.parsed_headers.get(c_e, []):
-                self.set_message(
+                self.add_note(
                     'header-accept-ranges header-content-encoding',
                     rs.RANGE_NEG_MISMATCH
                 )
@@ -107,11 +107,11 @@ class RangeRequest(SubRequest):
               self.base.response.parsed_headers.get('etag', 2):
                 if self.state.response.payload == self.range_target:
                     self.base.partial_support = True
-                    self.set_message('header-accept-ranges', rs.RANGE_CORRECT)
+                    self.add_note('header-accept-ranges', rs.RANGE_CORRECT)
                 else:
                     # the body samples are just bags of bits
                     self.base.partial_support = False
-                    self.set_message('header-accept-ranges',
+                    self.add_note('header-accept-ranges',
                         rs.RANGE_INCORRECT,
                         range="bytes=%s-%s" % (
                             self.range_start, self.range_end
@@ -125,15 +125,15 @@ class RangeRequest(SubRequest):
                           f_num(self.state.response.payload_len)
                     )
             else:
-                self.set_message('header-accept-ranges', rs.RANGE_CHANGED)
+                self.add_note('header-accept-ranges', rs.RANGE_CHANGED)
 
         # TODO: address 416 directly
         elif self.state.response.status_code == \
           self.base.response.status_code:
             self.base.partial_support = False
-            self.set_message('header-accept-ranges', rs.RANGE_FULL)
+            self.add_note('header-accept-ranges', rs.RANGE_FULL)
         else:
-            self.set_message('header-accept-ranges', 
+            self.add_note('header-accept-ranges', 
                 rs.RANGE_STATUS,
                 range_status=self.state.response.status_code,
                 enc_range_status=self.state.response.status_code or \

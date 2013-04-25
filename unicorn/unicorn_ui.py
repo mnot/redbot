@@ -149,7 +149,7 @@ class UnicornUi(object):
         @return: Output XML Document
         """
         rootDoc, doc = self._get_response_document()
-        for i in self.red.messages:
+        for i in self.red.notes:
             m = doc.createElement("message")
             m.setAttribute("type", self._convert_level(i.level))
 

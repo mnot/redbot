@@ -33,7 +33,7 @@ def parse(subject, value, red):
     try:
         date = rh.parse_date(value)
     except ValueError:
-        red.set_message(subject, rs.BAD_DATE_SYNTAX)
+        red.add_note(subject, rs.BAD_DATE_SYNTAX)
         return None
     return date
     

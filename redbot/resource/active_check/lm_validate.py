@@ -71,14 +71,14 @@ class LmValidate(SubRequest):
 
     def done(self):
         if not self.state.response.complete:
-            self.set_message('', rs.LM_SUBREQ_PROBLEM,
+            self.add_note('', rs.LM_SUBREQ_PROBLEM,
                 problem=self.state.response.http_error.desc
             )
             return
             
         if self.state.response.status_code == '304':
             self.base.ims_support = True
-            self.set_message('header-last-modified', rs.IMS_304)
+            self.add_note('header-last-modified', rs.IMS_304)
             self.check_missing_hdrs([
                     'cache-control', 'content-location', 'etag', 
                     'expires', 'vary'
@@ -89,11 +89,11 @@ class LmValidate(SubRequest):
             if self.state.response.payload_md5 \
               == self.base.response.payload_md5:
                 self.base.ims_support = False
-                self.set_message('header-last-modified', rs.IMS_FULL)
+                self.add_note('header-last-modified', rs.IMS_FULL)
             else:
-                self.set_message('header-last-modified', rs.IMS_UNKNOWN)
+                self.add_note('header-last-modified', rs.IMS_UNKNOWN)
         else:
-            self.set_message('header-last-modified', 
+            self.add_note('header-last-modified', 
                 rs.IMS_STATUS, 
                 ims_status = self.state.response.status_code,
                 enc_ims_status = self.state.response.status_code \

@@ -81,7 +81,7 @@ def SingleFieldValue(func):
         if values == []: # weird, yes
             values = [None]
         if len(values) > 1:
-            msg.set_message(subject, rs.SINGLE_HEADER_REPEAT)
+            msg.add_note(subject, rs.SINGLE_HEADER_REPEAT)
         return func(subject, values, msg)
     new.__name__ = func.__name__
     return new
@@ -94,7 +94,7 @@ def RequestHeader(func):
     func.needs_request = True
     def new(subject, value, msg): # pylint: disable=C0111
         if msg.is_request != True:
-            msg.set_message(subject, rs.RESPONSE_HDR_IN_REQUEST)
+            msg.add_note(subject, rs.RESPONSE_HDR_IN_REQUEST)
             def bad_hdr(subject, value, msg): # pylint: disable=W0613
                 "Don't process headers that aren't used correctly."
                 return None
@@ -111,7 +111,7 @@ def ResponseHeader(func):
     func.needs_response = True
     def new(subject, value, msg): # pylint: disable=C0111
         if msg.is_request != False:
-            msg.set_message(subject, rs.REQUEST_HDR_IN_RESPONSE)
+            msg.add_note(subject, rs.REQUEST_HDR_IN_RESPONSE)
             def bad_hdr(subject, value, msg): # pylint: disable=W0613
                 "Don't process headers that aren't used correctly."
                 return None
@@ -129,7 +129,7 @@ def CheckFieldSyntax(exp, ref):
         assert func.__name__ == 'parse', func.__name__
         def new(subject, value, msg): # pylint: disable=C0111
             if not re.match(r"^\s*(?:%s)\s*$" % exp, value, re.VERBOSE):
-                msg.set_message(subject, rs.BAD_SYNTAX, ref_uri=ref)
+                msg.add_note(subject, rs.BAD_SYNTAX, ref_uri=ref)
                 def bad_syntax(subject, value, msg): # pylint: disable=W0613
                     "Don't process headers with bad syntax."
                     return None
@@ -165,7 +165,7 @@ def process_headers(msg):
         subject = "offset-%s" % offset
         hdr_size = len(name) + len(value)
         if hdr_size > MAX_HDR_SIZE:
-            msg.set_message(subject, rs.HEADER_TOO_LARGE,
+            msg.add_note(subject, rs.HEADER_TOO_LARGE,
                header_name=name, header_size=f_num(hdr_size))
         header_block_size += hdr_size
         
@@ -174,20 +174,20 @@ def process_headers(msg):
             name = name.decode('ascii', 'strict')
         except UnicodeError:
             name = name.decode('ascii', 'ignore')
-            msg.set_message(subject, rs.HEADER_NAME_ENCODING,
+            msg.add_note(subject, rs.HEADER_NAME_ENCODING,
                 header_name=name)
         try:
             value = value.decode('ascii', 'strict')
         except UnicodeError:
             value = value.decode('iso-8859-1', 'replace')
-            msg.set_message(subject, rs.HEADER_VALUE_ENCODING,
+            msg.add_note(subject, rs.HEADER_VALUE_ENCODING,
                 header_name=name)
         clean_hdrs.append((name, value))
         msg.set_context(field_name=name)
         
         # check field name syntax
         if not re.match("^\s*%s\s*$" % syntax.TOKEN, name):
-            msg.set_message(subject, rs.FIELD_NAME_BAD_SYNTAX)
+            msg.add_note(subject, rs.FIELD_NAME_BAD_SYNTAX)
 
         # parse the header
         norm_name = name.lower()
@@ -222,7 +222,7 @@ def process_headers(msg):
 
     # check the total header block size
     if header_block_size > MAX_TTL_HDR:
-        msg.set_message('header', rs.HEADER_BLOCK_TOO_LARGE,
+        msg.add_note('header', rs.HEADER_BLOCK_TOO_LARGE,
             header_block_size=f_num(header_block_size))
 
 
@@ -315,9 +315,9 @@ def parse_params(msg, subject, instr, nostar=None, delim=";"):
             continue
         k_norm = key.lower() # TODO: warn on upper-case in param?
         if param_dict.has_key(k_norm):
-            msg.set_message(subject, rs.PARAM_REPEATS, param=k_norm)
+            msg.add_note(subject, rs.PARAM_REPEATS, param=k_norm)
         if val[0] == val[-1] == "'":
-            msg.set_message(subject,
+            msg.add_note(subject,
                 rs.PARAM_SINGLE_QUOTED,
                 param=k_norm,
                 param_val=val,
@@ -325,27 +325,27 @@ def parse_params(msg, subject, instr, nostar=None, delim=";"):
             )
         if key[-1] == '*':
             if nostar is True or (nostar and k_norm[:-1] in nostar):
-                msg.set_message(subject, rs.PARAM_STAR_BAD,
+                msg.add_note(subject, rs.PARAM_STAR_BAD,
                                 param=k_norm[:-1])
             else:
                 if val[0] == '"' and val[-1] == '"':
-                    msg.set_message(subject, rs.PARAM_STAR_QUOTED,
+                    msg.add_note(subject, rs.PARAM_STAR_QUOTED,
                                     param=k_norm)
                     val = unquote_string(val)
                 try:
                     enc, lang, esc_v = val.split("'", 3)
                 except ValueError:
-                    msg.set_message(subject, rs.PARAM_STAR_ERROR,
+                    msg.add_note(subject, rs.PARAM_STAR_ERROR,
                                     param=k_norm)
                     continue
                 enc = enc.lower()
                 lang = lang.lower()
                 if enc == '':
-                    msg.set_message(subject,
+                    msg.add_note(subject,
                         rs.PARAM_STAR_NOCHARSET, param=k_norm)
                     continue
                 elif enc not in ['utf-8']:
-                    msg.set_message(subject,
+                    msg.add_note(subject,
                         rs.PARAM_STAR_CHARSET,
                         param=k_norm,
                         enc=enc
@@ -387,11 +387,11 @@ class HeaderTest(unittest.TestCase):
             "%s != %s" % (str(self.expected_out), str(out)))
         diff = set(
             [n.__name__ for n in self.expected_err]).symmetric_difference(
-            set(self.msg.msg_classes)
+            set(self.msg.note_classes)
         )
-        for msg in self.msg.messages: # check formatting
+        for msg in self.msg.notes: # check formatting
             msg.vars.update({'field_name': self.name, 'response': 'response'})
             self.assertTrue(msg.text['en'] % msg.vars)
             self.assertTrue(msg.summary['en'] % msg.vars)
-        self.assertEqual(len(diff), 0, "Mismatched messages: %s" % diff)
+        self.assertEqual(len(diff), 0, "Mismatched notes: %s" % diff)
 

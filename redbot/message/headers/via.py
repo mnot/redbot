@@ -41,5 +41,5 @@ def join(subject, values, red):
     via_list = u"<ul>" + u"\n".join(
            [u"<li><code>%s</code></li>" % v for v in values]
                        ) + u"</ul>"
-    red.set_message(subject, rs.VIA_PRESENT, via_list=via_list)
+    red.add_note(subject, rs.VIA_PRESENT, via_list=via_list)
     

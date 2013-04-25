@@ -16,7 +16,7 @@ class GeneralHeaderTesters(unittest.TestCase):
     
     def test_unquote_string(self):
         i = 0
-        for (instr, expected_str, expected_msgs) in [
+        for (instr, expected_str, expected_notes) in [
             ('foo', 'foo', []),
             ('"foo"', 'foo', []),
             (r'"fo\"o"', 'fo"o', []),
@@ -28,11 +28,11 @@ class GeneralHeaderTesters(unittest.TestCase):
             self.red.__init__()
             out_str = headers.unquote_string(unicode(instr))
             diff = set(
-                [n.__name__ for n in expected_msgs]).symmetric_difference(
-                set(self.red.msg_classes)
+                [n.__name__ for n in expected_notes]).symmetric_difference(
+                set(self.red.note_classes)
             )
             self.assertEqual(len(diff), 0, 
-                "[%s] Mismatched messages: %s" % (i, diff)
+                "[%s] Mismatched notes: %s" % (i, diff)
             )
             self.assertEqual(expected_str, out_str, 
                 "[%s] %s != %s" % (i, str(expected_str), str(out_str)))
@@ -60,7 +60,7 @@ class GeneralHeaderTesters(unittest.TestCase):
     
     def test_parse_params(self):
         i = 0
-        for (instr, expected_pd, expected_msgs, delim) in [
+        for (instr, expected_pd, expected_notes, delim) in [
             ('foo=bar', {'foo': 'bar'}, [], ';'),
             ('foo="bar"', {'foo': 'bar'}, [], ';'),
             ('foo="bar"; baz=bat', {'foo': 'bar', 'baz': 'bat'}, [], ';'),
@@ -124,11 +124,11 @@ class GeneralHeaderTesters(unittest.TestCase):
               self.red, 'test', instr, ['nostar'], delim
             )
             diff = set(
-                [n.__name__ for n in expected_msgs]).symmetric_difference(
-                set(self.red.msg_classes)
+                [n.__name__ for n in expected_notes]).symmetric_difference(
+                set(self.red.note_classes)
             )
             self.assertEqual(len(diff), 0, 
-                "[%s] Mismatched messages: %s" % (i, diff)
+                "[%s] Mismatched notes: %s" % (i, diff)
             )
             self.assertEqual(expected_pd, param_dict, 
                 "[%s] %s != %s" % (i, str(expected_pd), str(param_dict)))

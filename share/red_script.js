@@ -69,22 +69,22 @@ $(document).ready(function() {
       var offset = $(this).attr('data-offset');
       $("span.hdr[data-name='" + name + "']")
        .css({"font-weight": "bold", "color": "white"});
-      $("li.msg").each(function(index, msg) {
-        var msg_interesting = false;
-        var subjects = $(msg).attr("data-subject").split(" ");
+      $("li.note").each(function(index, note) {
+        var note_interesting = false;
+        var subjects = $(note).attr("data-subject").split(" ");
         for (var i=0; i < subjects.length; i++) {
           var subject = subjects[i];
           if (subject == "header-" + name) {
-            msg_interesting = true;
+            note_interesting = true;
             break;
           }
           if (subject == "offset-" + offset) {
-            msg_interesting = true;
+            note_interesting = true;
             break;
           }        
         }
-        if (! msg_interesting) {
-          $(msg).fadeTo(100, 0.15);
+        if (! note_interesting) {
+          $(note).fadeTo(100, 0.15);
         }
       })
     },
@@ -92,7 +92,7 @@ $(document).ready(function() {
       var name = $(this).attr('data-name');
       $("span.hdr[data-name='" + name + "']")
        .css({"font-weight": "normal", "color": "#ddd"});
-      $("li.msg").fadeTo(100, 1.0);
+      $("li.note").fadeTo(100, 1.0);
     }
   );
 
@@ -114,7 +114,7 @@ $(document).ready(function() {
     }  
   }
 
-  $("li.msg span").hoverPopup(
+  $("li.note span").hoverPopup(
     function(e){
       return $("li#" + $(this).parent().attr('data-name'), hidden_list)
              .html();
@@ -145,7 +145,7 @@ $(document).ready(function() {
     $("#details").fadeOut('fast', function() {
       $("#body").fadeIn('fast');
       prettyPrint();
-      $("#body_view").text("show messages");
+      $("#body_view").text("show notes");
     });
     return false;
   }, function() {
@@ -165,11 +165,11 @@ $(document).ready(function() {
 
   $("tr.droid").hoverIntent(function() {
     var classes = this.className.split(" ");
-    $("li.msg").fadeTo(100, 0.15);
+    $("li.note").fadeTo(100, 0.15);
     for (var i=0; i < classes.length; i++) {
       var c = classes[i];
       if (c != 'droid') {
-        $("li.msg:eq(" + c +")").fadeTo(50, 1.0);
+        $("li.note:eq(" + c +")").fadeTo(50, 1.0);
       }
     }
     if (tid !== false) {
@@ -178,7 +178,7 @@ $(document).ready(function() {
     }
   }, function(){
     tid = setTimeout(function() {
-      $("li.msg").fadeTo(50, 1.0);
+      $("li.note").fadeTo(50, 1.0);
     }, 100);
   });
 

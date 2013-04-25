@@ -35,7 +35,7 @@ def parse(subject, value, red):
     
 def join(subject, values, red):
     if 'noopen' in values:
-        red.set_message(subject, rs.DOWNLOAD_OPTIONS)
+        red.add_note(subject, rs.DOWNLOAD_OPTIONS)
     else:
-        red.set_message(subject, rs.DOWNLOAD_OPTIONS_UNKNOWN)
+        red.add_note(subject, rs.DOWNLOAD_OPTIONS_UNKNOWN)
     return values

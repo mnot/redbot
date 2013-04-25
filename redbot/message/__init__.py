@@ -41,7 +41,7 @@ class HttpMessage(object):
     """
     Base class for HTTP message state.
     """
-    def __init__(self, messages=None, check_type=None):
+    def __init__(self, notes=None, check_type=None):
         self.is_request = None
         self.is_head_response = False
         self.version = ""
@@ -70,10 +70,10 @@ class HttpMessage(object):
         self._gzip_header_buffer = ""
         self._decode_ok = True # turn False if we have a problem
         self.check_type = check_type
-        if messages is None:
-            self.messages = []
+        if notes is None:
+            self.notes = []
         else:
-            self.messages = messages
+            self.notes = notes
         
     def set_headers(self, headers):
         """
@@ -123,18 +123,18 @@ class HttpMessage(object):
             # check payload basics
             if self.parsed_headers.has_key('content-length'):
                 if self.payload_len == self.parsed_headers['content-length']:
-                    self.set_message('header-content-length', rs.CL_CORRECT)
+                    self.add_note('header-content-length', rs.CL_CORRECT)
                 else:
-                    self.set_message('header-content-length', 
+                    self.add_note('header-content-length', 
                                     rs.CL_INCORRECT,
                                     body_length=f_num(self.payload_len)
                     )
             if self.parsed_headers.has_key('content-md5'):
                 c_md5_calc = base64.encodestring(self.payload_md5)[:-1]
                 if self.parsed_headers['content-md5'] == c_md5_calc:
-                    self.set_message('header-content-md5', rs.CMD5_CORRECT)
+                    self.add_note('header-content-md5', rs.CMD5_CORRECT)
                 else:
-                    self.set_message('header-content-md5', rs.CMD5_INCORRECT, calc_md5=c_md5_calc)
+                    self.add_note('header-content-md5', rs.CMD5_INCORRECT, calc_md5=c_md5_calc)
 
     def _process_content_codings(self, chunk):
         """
@@ -157,7 +157,7 @@ class HttpMessage(object):
                     except IndexError:
                         return '' # not a full header yet
                     except IOError, gzip_error:
-                        self.set_message('header-content-encoding',
+                        self.add_note('header-content-encoding',
                                         rs.BAD_GZIP,
                                         gzip_error=str(gzip_error)
                         )
@@ -166,7 +166,7 @@ class HttpMessage(object):
                 try:
                     chunk = self._gzip_processor.decompress(chunk)
                 except zlib.error, zlib_error:
-                    self.set_message(
+                    self.add_note(
                         'header-content-encoding', 
                         rs.BAD_ZLIB,
                         zlib_error=str(zlib_error),
@@ -238,7 +238,7 @@ class HttpMessage(object):
     def __getstate__(self):
         state = self.__dict__.copy()
         for key in [
-            'set_message', 
+            'add_note', 
             '_md5_processor', 
             '_gzip_processor', 
             '_md5_post_processor'
@@ -248,24 +248,24 @@ class HttpMessage(object):
         return state
 
     def set_context(self, **kw):
-        "Set the message context."
+        "Set the note context."
         self._context = kw
         
-    def set_message(self, subject, msg, subreq=None, **kw):
-        "Set a message."
+    def add_note(self, subject, note, subreq=None, **kw):
+        "Set a note."
         kw.update(self._context)
         kw['response'] = rs.response.get(
             self.check_type, rs.response['this']
         )['en']
-        self.messages.append(msg(subject, subreq, kw))
+        self.notes.append(note(subject, subreq, kw))
         
         
 class HttpRequest(HttpMessage):
     """
     A HTTP Request message.
     """
-    def __init__(self, messages=None, check_type=None):
-        HttpMessage.__init__(self, messages, check_type)
+    def __init__(self, notes=None, check_type=None):
+        HttpMessage.__init__(self, notes, check_type)
         self.is_request = True
         self.method = None
         self.url = None
@@ -275,8 +275,8 @@ class HttpResponse(HttpMessage):
     """
     A HTTP Response message.
     """
-    def __init__(self, messages=None, check_type=None):
-        HttpMessage.__init__(self, messages, check_type)
+    def __init__(self, notes=None, check_type=None):
+        HttpMessage.__init__(self, notes, check_type)
         self.is_request = False
         self.status_code = None
         self.status_phrase = ""
@@ -290,17 +290,17 @@ class DummyMsg(HttpResponse):
     """
     A dummy HTTP message, for testing.
     """
-    def __init__(self, messages=None, check_type=None):
-        HttpResponse.__init__(self, messages, check_type)
+    def __init__(self, notes=None, check_type=None):
+        HttpResponse.__init__(self, notes, check_type)
         self.base_uri = "http://www.example.com/foo/bar/baz.html?bat=bam"
         self.start_time = time.time()
         self.status_phrase = ""
-        self.msg_classes = []
+        self.note_classes = []
 
-    def set_message(self, subject, msg, **kw):
-        "Record the classes of messages set."
-        self.messages.append(msg(subject, None, kw))
-        self.msg_classes.append(msg.__name__)
+    def add_note(self, subject, note, **kw):
+        "Record the classes of notes set."
+        self.notes.append(note(subject, None, kw))
+        self.note_classes.append(note.__name__)
 
     def set_context(self, **kw):
         "Don't need context for testing."

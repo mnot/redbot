@@ -201,8 +201,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     """
     Present a single RED response in detail.
     """
-    # the order of message categories to display
-    msg_categories = [
+    # the order of note categories to display
+    note_categories = [
         rs.c.GENERAL, rs.c.SECURITY, rs.c.CONNECTION, rs.c.CONNEG, 
         rs.c.CACHING, rs.c.VALIDATION, rs.c.RANGE
     ]
@@ -248,9 +248,9 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 
     <div id="right_column">
     <div id='details'>
-    <span class='help right'>These messages explain what REDbot has found
+    <span class='help right'>These notes explain what REDbot has found
     about your URL; hover over each one for a detailed explanation.</span>
-    %(messages)s
+    %(notes)s
     </div>
     </div>
 
@@ -305,8 +305,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             self.output(self.template % {
                 'response': self.format_response(self.red),
                 'options': self.format_options(self.red),
-                'messages': nl.join([self.format_category(cat, self.red) \
-                    for cat in self.msg_categories]),
+                'notes': nl.join([self.format_category(cat, self.red) \
+                    for cat in self.note_categories]),
                 'body': self.format_body_sample(self.red),
                 'footer': self.format_footer(),
                 'hidden_list': self.format_hidden_list(),
@@ -402,45 +402,45 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     re.escape(link), link_to, safe_sample)
         if not self.sample_complete:
             message = \
-"<p class='note'>RED isn't showing the whole body, because it's so big!</p>"
+"<p class='btw'>RED isn't showing the whole body, because it's so big!</p>"
         return """<pre class="prettyprint">%s</pre>\n%s""" % (
             safe_sample, message)
 
     def format_category(self, category, red):
         """
         For a given category, return all of the non-detail 
-        messages in it as an HTML list.
+        notes in it as an HTML list.
         """
-        messages = [msg for msg in red.messages if msg.category == category]
-        if not messages:
+        notes = [note for note in red.notes if note.category == category]
+        if not notes:
             return nl
         out = []
-        if [msg for msg in messages]:
+        if [note for note in notes]:
             out.append(u"<h3>%s</h3>\n<ul>\n" % category)
-        for m in messages:
+        for note in notes:
             out.append(
              u"""\
-    <li class='%s msg' data-subject='%s' data-name='msgid-%s'>
+    <li class='%s note' data-subject='%s' data-name='noteid-%s'>
         <span>%s</span>
     </li>"""
             % (
-                m.level, 
-                e_html(m.subject), 
-                id(m), 
-                e_html(m.show_summary(self.lang))
+                note.level, 
+                e_html(note.subject), 
+                id(note), 
+                e_html(note.show_summary(self.lang))
              )
             )
             self.hidden_text.append(
-                ("msgid-%s" % id(m), m.show_text(self.lang))
+                ("noteid-%s" % id(note), note.show_text(self.lang))
             )
-            subreq = red.subreqs.get(m.subrequest, None)
-            smsgs = [msg for msg in getattr(subreq, "messages", []) if \
-                msg.level in [rs.l.BAD]]
+            subreq = red.subreqs.get(note.subrequest, None)
+            smsgs = [note for note in getattr(subreq, "notes", []) if \
+                note.level in [rs.l.BAD]]
             if smsgs:
                 out.append(u"<ul>")
                 for sm in smsgs:
                     out.append(u"""\
-    <li class='%s msg' data-subject='%s' name='msgid-%s'>
+    <li class='%s note' data-subject='%s' name='msgid-%s'>
         <span>%s</span>
     </li>""" % (
                             sm.level, 
@@ -693,9 +693,9 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             else:
                 out.append(self.format_yes_no(red.gzip_support))
             out.append(self.format_yes_no(red.partial_support))
-            problems = [m for m in red.messages if \
+            problems = [m for m in red.notes if \
                 m.level in [rs.l.WARN, rs.l.BAD]]
-    # TODO:        problems += sum([m[2].messages for m in red.messages if  
+    # TODO:        problems += sum([m[2].notes for m in red.notes if  
     # m[2] != None], [])
             out.append(u"<td>")
             pr_enum = []
@@ -791,7 +791,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         out = ['<br /><h2>Notes</h2><ol>']
         for m in self.problems:
             out.append(u"""\
-    <li class='%s %s msg' name='msgid-%s'><span>%s</span></li>""" % (
+    <li class='%s %s note' name='msgid-%s'><span>%s</span></li>""" % (
                     m.level, 
                     e_html(m.subject), 
                     id(m), 

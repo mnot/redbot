@@ -35,10 +35,10 @@ def parse(subject, value, red):
     try:
         age = int(value)
     except ValueError:
-        red.set_message(subject, rs.AGE_NOT_INT)
+        red.add_note(subject, rs.AGE_NOT_INT)
         return None
     if age < 0:
-        red.set_message(subject, rs.AGE_NEGATIVE)
+        red.add_note(subject, rs.AGE_NEGATIVE)
         return None
     return age
 

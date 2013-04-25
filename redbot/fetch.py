@@ -57,7 +57,7 @@ class RedFetcher(object):
       - every function in the body_procs list with each chunk of the body, and
       - done_cb when all tasks are done.
     If provided, type indicates the type of the request, and is used to
-    help set messages and status_cb appropriately.
+    help set notes and status_cb appropriately.
     
     The done() method is called when the response is done, NOT when all 
     tasks are done. It can add tasks by calling add_task().
@@ -192,12 +192,12 @@ class RedFetcher(object):
         res.complete_time = thor.time()
         res.http_error = error
         if isinstance(error, httperr.BodyForbiddenError):
-            self.state.set_message('header-none', rs.BODY_NOT_ALLOWED)
+            self.state.add_note('header-none', rs.BODY_NOT_ALLOWED)
 #        elif isinstance(error, httperr.ExtraDataErr):
 #            res.payload_len += len(err.get('detail', ''))
         elif isinstance(error, httperr.ChunkError):
             err_msg = error.detail[:20] or ""
-            self.state.set_message('header-transfer-encoding', rs.BAD_CHUNK,
+            self.state.add_note('header-transfer-encoding', rs.BAD_CHUNK,
                 chunk_sample=err_msg.encode('string_escape')
             )
         self.done()
@@ -213,7 +213,7 @@ if "__main__" == __name__:
     class TestFetcher(RedFetcher):
         "Test a fetcher."
         def done(self):
-            print self.state.messages
+            print self.state.notes
     T = TestFetcher(
          sys.argv[1], 
          req_hdrs=[(u'Accept-Encoding', u'gzip')], 

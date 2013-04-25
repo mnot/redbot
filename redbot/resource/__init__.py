@@ -4,7 +4,7 @@
 The Resource Expert Droid.
 
 RED will examine a HTTP resource for problems and other interesting
-characteristics, making a list of these observation messages available
+characteristics, making a list of these observation notes available
 for presentation to the user. It does so by potentially making a number
 of requests to probe the resource's behaviour.
 
@@ -60,7 +60,7 @@ class HttpResource(RedFetcher):
     see ConnegCheck.
 
     After processing the response-specific attributes of RedFetcher will be
-    populated, as well as its messages; see that class for details.
+    populated, as well as its notes; see that class for details.
     """
     def __init__(self, uri, method="GET", req_hdrs=None, req_body=None,
                 status_cb=None, body_procs=None):
@@ -79,12 +79,12 @@ class HttpResource(RedFetcher):
 
         # check the URI
         if not re.match("^\s*%s\s*$" % URI, uri, re.VERBOSE):
-            self.state.set_message('uri', rs.URI_BAD_SYNTAX)
+            self.state.add_note('uri', rs.URI_BAD_SYNTAX)
         if '#' in uri:
             # chop off the fragment
             uri = uri[:uri.index('#')]
         if len(uri) > max_uri:
-            self.state.set_message('uri', 
+            self.state.add_note('uri', 
                 rs.URI_TOO_LONG, 
                 uri_len=f_num(len(uri))
             )
@@ -145,4 +145,4 @@ if "__main__" == __name__:
         print msg
     red = InspectingHttpResource(test_uri, status_cb=status_p)
     red.run()
-    print red.state.messages
+    print red.state.notes

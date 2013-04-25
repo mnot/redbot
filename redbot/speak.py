@@ -1,22 +1,9 @@
 """
-A collection of messages that the RED can emit.
+A collection of notes that the RED can emit.
 
-Each should be in the form:
-
-MESSAGE_ID = (classification, level,
-    {'lang': u'message'}
-    {'lang': u'long message'}
-)
-
-where 'lang' is a language tag, 'message' is a string (NO HTML) that
-contains the message in that language, and 'long message' is a longer
-explanation that may contain HTML.
-
-Both message forms may contain %(var)s style variable interpolation.
-
-PLEASE NOTE: the message field is automatically HTML escaped in webui.py, so
-it can contain arbitrary text (as long as it's unicode). However, the long
-message IS NOT ESCAPED, and therefore all variables to be interpolated into
+PLEASE NOTE: the summary field is automatically HTML escaped in webui.py, so
+it can contain arbitrary text (as long as it's unicode). However, the longer
+text IS NOT ESCAPED, and therefore all variables to be interpolated into
 it (but not the short version) need to be escaped.
 """
 
@@ -45,8 +32,8 @@ THE SOFTWARE.
 
 from cgi import escape as e_html
 
-# message classifications
 class _Classifications:
+    "Note classifications."
     GENERAL = u"General"
     SECURITY = u"Security"
     CONNEG = u"Content Negotiation"
@@ -56,17 +43,17 @@ class _Classifications:
     RANGE = u"Partial Content"
 c = _Classifications()
 
-# message levels
 class _Levels:
+    "Note levels."
     GOOD = u'good'
     WARN = u'warning'
     BAD = u'bad'
     INFO = u'info'
 l = _Levels()
 
-class Message:
+class Note:
     """
-    A message about an HTTP resource, representation, or other component
+    A note about an HTTP resource, representation, or other component
     related to the URI under test.
     """
     category = None
@@ -114,7 +101,7 @@ response = {
     'range': {'en': 'The partial response'},
 }
 
-class URI_TOO_LONG(Message):
+class URI_TOO_LONG(Note):
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -125,7 +112,7 @@ class URI_TOO_LONG(Message):
     proxies. A reasonable upper size limit is 8192 characters."""
     }
 
-class URI_BAD_SYNTAX(Message):
+class URI_BAD_SYNTAX(Note):
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -137,7 +124,7 @@ class URI_BAD_SYNTAX(Message):
     for more information."""
     }
 
-class REQUEST_HDR_IN_RESPONSE(Message):
+class REQUEST_HDR_IN_RESPONSE(Note):
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -148,7 +135,7 @@ class REQUEST_HDR_IN_RESPONSE(Message):
     in responses, it doesn't have any meaning, so RED has ignored it."""
     }
 
-class RESPONSE_HDR_IN_REQUEST(Message):
+class RESPONSE_HDR_IN_REQUEST(Note):
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -159,7 +146,7 @@ class RESPONSE_HDR_IN_REQUEST(Message):
     in requests, it doesn't have any meaning, so RED has ignored it."""
     }
 
-class FIELD_NAME_BAD_SYNTAX(Message):
+class FIELD_NAME_BAD_SYNTAX(Note):
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -173,7 +160,7 @@ class FIELD_NAME_BAD_SYNTAX(Message):
     ({}) spaces or tabs."""
     }
 
-class HEADER_BLOCK_TOO_LARGE(Message):
+class HEADER_BLOCK_TOO_LARGE(Note):
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -185,7 +172,7 @@ class HEADER_BLOCK_TOO_LARGE(Message):
     header blocks to 20k."""
     }
 
-class HEADER_TOO_LARGE(Message):
+class HEADER_TOO_LARGE(Note):
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -196,7 +183,7 @@ class HEADER_TOO_LARGE(Message):
     line."""
     }
 
-class HEADER_NAME_ENCODING(Message):
+class HEADER_NAME_ENCODING(Note):
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -208,7 +195,7 @@ class HEADER_NAME_ENCODING(Message):
      name."""
     }
 
-class HEADER_VALUE_ENCODING(Message):
+class HEADER_VALUE_ENCODING(Note):
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -222,7 +209,7 @@ class HEADER_VALUE_ENCODING(Message):
      the results may be unpredictable."""
     }
 
-class HEADER_DEPRECATED(Message):
+class HEADER_DEPRECATED(Note):
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -234,7 +221,7 @@ class HEADER_DEPRECATED(Message):
     <a href="%(ref)s">its documentation</a> for more information."""
     }
 
-class SINGLE_HEADER_REPEAT(Message):
+class SINGLE_HEADER_REPEAT(Note):
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -249,7 +236,7 @@ class SINGLE_HEADER_REPEAT(Message):
     that is present; other implementations may behave differently."""
     }
 
-class BODY_NOT_ALLOWED(Message):
+class BODY_NOT_ALLOWED(Note):
     category = c.CONNECTION
     level = l.BAD
     summary = {
@@ -264,7 +251,7 @@ class BODY_NOT_ALLOWED(Message):
      interoperability and security issues."""
     }
 
-class BAD_SYNTAX(Message):
+class BAD_SYNTAX(Note):
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -278,7 +265,7 @@ class BAD_SYNTAX(Message):
 
 # Specific headers
 
-class BAD_CC_SYNTAX(Message):
+class BAD_CC_SYNTAX(Note):
     category = c.CACHING
     level = l.BAD
     summary = {
@@ -289,7 +276,7 @@ incorrect."
      'en': u"This value must be an integer."
     }
 
-class AGE_NOT_INT(Message):
+class AGE_NOT_INT(Note):
     category = c.CACHING
     level = l.BAD
     summary = {
@@ -301,7 +288,7 @@ class AGE_NOT_INT(Message):
     was not an integer, so it is not a valid age."""
     }
 
-class AGE_NEGATIVE(Message):
+class AGE_NEGATIVE(Note):
     category = c.CACHING
     level = l.BAD
     summary = {
@@ -313,7 +300,7 @@ class AGE_NEGATIVE(Message):
     was negative, so it is not a valid age."""
     }
 
-class BAD_CHUNK(Message):
+class BAD_CHUNK(Note):
     category = c.CONNECTION
     level = l.BAD
     summary = {
@@ -334,7 +321,7 @@ class BAD_CHUNK(Message):
      actually chunking the response body."""
     }
 
-class BAD_GZIP(Message):
+class BAD_GZIP(Note):
     category = c.CONNEG
     level = l.BAD
     summary = {
@@ -347,7 +334,7 @@ valid."
     "<code>%(gzip_error)s</code>"."""
     }
 
-class BAD_ZLIB(Message):
+class BAD_ZLIB(Note):
     category = c.CONNEG
     level = l.BAD
     summary = {
@@ -362,7 +349,7 @@ class BAD_ZLIB(Message):
     erroneous chunk starts with "<code>%(chunk_sample)s</code>"."""
     }
 
-class ENCODING_UNWANTED(Message):
+class ENCODING_UNWANTED(Note):
     category = c.CONNEG
     level = l.WARN
     summary = {
@@ -378,7 +365,7 @@ class ENCODING_UNWANTED(Message):
      problems."""
     }
 
-class TRANSFER_CODING_IDENTITY(Message):
+class TRANSFER_CODING_IDENTITY(Note):
     category = c.CONNECTION
     level = l.INFO
     summary = {
@@ -391,7 +378,7 @@ class TRANSFER_CODING_IDENTITY(Message):
     You can remove this token to save a few bytes."""
     }
 
-class TRANSFER_CODING_UNWANTED(Message):
+class TRANSFER_CODING_UNWANTED(Note):
     category = c.CONNECTION
     level = l.BAD
     summary = {
@@ -408,7 +395,7 @@ class TRANSFER_CODING_UNWANTED(Message):
      problems."""
     }
 
-class TRANSFER_CODING_PARAM(Message):
+class TRANSFER_CODING_PARAM(Note):
     category = c.CONNECTION
     level = l.WARN
     summary = {
@@ -423,7 +410,7 @@ class TRANSFER_CODING_PARAM(Message):
      problems. They should be removed."""
     }
 
-class BAD_DATE_SYNTAX(Message):
+class BAD_DATE_SYNTAX(Note):
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -438,7 +425,7 @@ class BAD_DATE_SYNTAX(Message):
     HTTP specification</a> for more information."""
     }
 
-class LM_FUTURE(Message):
+class LM_FUTURE(Note):
     category = c.CACHING
     level = l.BAD
     summary = {
@@ -451,7 +438,7 @@ class LM_FUTURE(Message):
     defined meaning in HTTP."""
     }
 
-class LM_PRESENT(Message):
+class LM_PRESENT(Note):
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -464,7 +451,7 @@ class LM_PRESENT(Message):
     This resource last changed %(last_modified_string)s."""
     }
 
-class CONTENT_TRANSFER_ENCODING(Message):
+class CONTENT_TRANSFER_ENCODING(Note):
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -478,7 +465,7 @@ class CONTENT_TRANSFER_ENCODING(Message):
     """
     }
 
-class MIME_VERSION(Message):
+class MIME_VERSION(Note):
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -492,7 +479,7 @@ class MIME_VERSION(Message):
     """
     }
 
-class PRAGMA_NO_CACHE(Message):
+class PRAGMA_NO_CACHE(Note):
     category = c.CACHING
     level = l.WARN
     summary = {
@@ -505,7 +492,7 @@ directive."
     behaviour. <code>Cache-Control: no-cache</code> is more appropriate."""
     }
 
-class PRAGMA_OTHER(Message):
+class PRAGMA_OTHER(Note):
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -516,7 +503,7 @@ class PRAGMA_OTHER(Message):
     this header are deprecated."""
     }
 
-class VIA_PRESENT(Message):
+class VIA_PRESENT(Note):
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -536,7 +523,7 @@ class VIA_PRESENT(Message):
     used)."""
     }
 
-class LOCATION_UNDEFINED(Message):
+class LOCATION_UNDEFINED(Note):
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -553,7 +540,7 @@ class LOCATION_UNDEFINED(Message):
      of the message that it appears in."""
     }
 
-class LOCATION_NOT_ABSOLUTE(Message):
+class LOCATION_NOT_ABSOLUTE(Note):
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -568,7 +555,7 @@ class LOCATION_NOT_ABSOLUTE(Message):
      <code>%(full_uri)s</code>"""
     }
 
-class CONTENT_TYPE_OPTIONS(Message):
+class CONTENT_TYPE_OPTIONS(Note):
     category = c.SECURITY
     level = l.INFO
     summary = {
@@ -586,7 +573,7 @@ media type."
      for more information about this header."""
     }
 
-class CONTENT_TYPE_OPTIONS_UNKNOWN(Message):
+class CONTENT_TYPE_OPTIONS_UNKNOWN(Note):
     category = c.SECURITY
     level = l.WARN
     summary = {
@@ -601,7 +588,7 @@ unknown value."
      information about this header."""
     }
 
-class DOWNLOAD_OPTIONS(Message):
+class DOWNLOAD_OPTIONS(Note):
     category = c.SECURITY
     level = l.INFO
     summary = {
@@ -620,7 +607,7 @@ Explorer when downloaded."
      details."""
     }
 
-class DOWNLOAD_OPTIONS_UNKNOWN(Message):
+class DOWNLOAD_OPTIONS_UNKNOWN(Note):
     category = c.SECURITY
     level = l.WARN
     summary = {
@@ -635,7 +622,7 @@ unknown value."
      details."""
     }
 
-class FRAME_OPTIONS_DENY(Message):
+class FRAME_OPTIONS_DENY(Note):
     category = c.SECURITY
     level = l.INFO
     summary = {
@@ -653,7 +640,7 @@ will be contained within a frame."
      """
     }
 
-class FRAME_OPTIONS_SAMEORIGIN(Message):
+class FRAME_OPTIONS_SAMEORIGIN(Note):
     category = c.SECURITY
     level = l.INFO
     summary = {
@@ -671,7 +658,7 @@ will be contained within a frame on another site."
      """
     }
 
-class FRAME_OPTIONS_UNKNOWN(Message):
+class FRAME_OPTIONS_UNKNOWN(Note):
     category = c.SECURITY
     level = l.WARN
     summary = {
@@ -688,7 +675,7 @@ value."
      """
     }
 
-class SMART_TAG_NO_WORK(Message):
+class SMART_TAG_NO_WORK(Note):
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -700,7 +687,7 @@ class SMART_TAG_NO_WORK(Message):
      to make changes in the HTML content it"""
     }
 
-class UA_COMPATIBLE(Message):
+class UA_COMPATIBLE(Note):
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -716,7 +703,7 @@ Explorer 8."
      Microsoft's documentation</a> for more information."""
     }
 
-class UA_COMPATIBLE_REPEAT(Message):
+class UA_COMPATIBLE_REPEAT(Note):
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -733,7 +720,7 @@ at the same UA."
      this blog entry</a> for more information."""
     }
 
-class XSS_PROTECTION_ON(Message):
+class XSS_PROTECTION_ON(Note):
     category = c.SECURITY
     level = l.INFO
     summary = {
@@ -752,7 +739,7 @@ class XSS_PROTECTION_ON(Message):
      """
     }
 
-class XSS_PROTECTION_OFF(Message):
+class XSS_PROTECTION_OFF(Note):
     category = c.SECURITY
     level = l.INFO
     summary = {
@@ -771,7 +758,7 @@ class XSS_PROTECTION_OFF(Message):
      """
     }
 
-class XSS_PROTECTION_BLOCK(Message):
+class XSS_PROTECTION_BLOCK(Note):
     category = c.SECURITY
     level = l.INFO
     summary = {
@@ -793,7 +780,7 @@ class XSS_PROTECTION_BLOCK(Message):
 
 ### Ranges
 
-class RANGE_SUBREQ_PROBLEM(Message):
+class RANGE_SUBREQ_PROBLEM(Note):
     category = c.RANGE
     level = l.BAD
     summary = {
@@ -806,7 +793,7 @@ class RANGE_SUBREQ_PROBLEM(Message):
     Trying again might fix it."""
     }
 
-class UNKNOWN_RANGE(Message):
+class UNKNOWN_RANGE(Note):
     category = c.RANGE
     level = l.WARN
     summary = {
@@ -822,7 +809,7 @@ class UNKNOWN_RANGE(Message):
      able to use it."""
     }
 
-class RANGE_CORRECT(Message):
+class RANGE_CORRECT(Note):
     category = c.RANGE
     level = l.GOOD
     summary = {
@@ -835,7 +822,7 @@ class RANGE_CORRECT(Message):
     this response, which was returned correctly."""
     }
 
-class RANGE_INCORRECT(Message):
+class RANGE_INCORRECT(Note):
     category = c.RANGE
     level = l.BAD
     summary = {
@@ -857,7 +844,7 @@ class RANGE_INCORRECT(Message):
     <p><em>(showing samples of up to 100 characters)</em></p>"""
     }
 
-class RANGE_CHANGED(Message):
+class RANGE_CHANGED(Note):
     category = c.RANGE
     level = l.WARN
     summary = {
@@ -869,7 +856,7 @@ class RANGE_CHANGED(Message):
     cannot draw any conclusion at this time."""
     }
 
-class RANGE_FULL(Message):
+class RANGE_FULL(Note):
     category = c.RANGE
     level = l.WARN
     summary = {
@@ -884,7 +871,7 @@ class RANGE_FULL(Message):
     it doesn't appear to actually do so."""
     }
 
-class RANGE_STATUS(Message):
+class RANGE_STATUS(Note):
     category = c.RANGE
     level = l.INFO
     summary = {
@@ -898,7 +885,7 @@ class RANGE_STATUS(Message):
     expecting."""
     }
 
-class RANGE_NEG_MISMATCH(Message):
+class RANGE_NEG_MISMATCH(Note):
     category = c.RANGE
     level = l.BAD
     summary = {
@@ -914,7 +901,7 @@ that full ones do."
      and compression changes the bytes."""
     }
 
-class MISSING_HDRS_206(Message):
+class MISSING_HDRS_206(Note):
     category = c.VALIDATION
     level = l.WARN
     summary = {
@@ -932,7 +919,7 @@ class MISSING_HDRS_206(Message):
 
 ### Body
 
-class CL_CORRECT(Message):
+class CL_CORRECT(Note):
     category = c.GENERAL
     level = l.GOOD
     summary = {
@@ -945,7 +932,7 @@ class CL_CORRECT(Message):
     <code>Content-Length</code> to be correct."""
     }
 
-class CL_INCORRECT(Message):
+class CL_INCORRECT(Note):
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -961,7 +948,7 @@ class CL_INCORRECT(Message):
     The actual body size sent was %(body_length)s bytes."""
     }
 
-class CMD5_CORRECT(Message):
+class CMD5_CORRECT(Note):
     category = c.GENERAL
     level = l.GOOD
     summary = {
@@ -973,7 +960,7 @@ class CMD5_CORRECT(Message):
     it to be correct."""
     }
 
-class CMD5_INCORRECT(Message):
+class CMD5_INCORRECT(Note):
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -988,7 +975,7 @@ class CMD5_INCORRECT(Message):
 
 ### Conneg
 
-class CONNEG_SUBREQ_PROBLEM(Message):
+class CONNEG_SUBREQ_PROBLEM(Note):
     category = c.CONNEG
     level = l.BAD
     summary = {
@@ -1001,7 +988,7 @@ class CONNEG_SUBREQ_PROBLEM(Message):
     Trying again might fix it."""
     }
 
-class CONNEG_GZIP_GOOD(Message):
+class CONNEG_GZIP_GOOD(Note):
     category = c.CONNEG
     level = l.GOOD
     summary = {
@@ -1016,7 +1003,7 @@ class CONNEG_GZIP_GOOD(Message):
     The compressed response's headers are displayed."""
     }
 
-class CONNEG_GZIP_BAD(Message):
+class CONNEG_GZIP_BAD(Note):
     category = c.CONNEG
     level = l.WARN
     summary = {
@@ -1035,7 +1022,7 @@ class CONNEG_GZIP_BAD(Message):
     The compressed response's headers are displayed."""
     }
 
-class CONNEG_NO_GZIP(Message):
+class CONNEG_NO_GZIP(Note):
     category = c.CONNEG
     level = l.INFO
     summary = {
@@ -1047,7 +1034,7 @@ class CONNEG_NO_GZIP(Message):
     the resource did not provide one."""
     }
 
-class CONNEG_NO_VARY(Message):
+class CONNEG_NO_VARY(Note):
     category = c.CONNEG
     level = l.BAD
     summary = {
@@ -1063,7 +1050,7 @@ Vary header."
     the request header used."""
     }
 
-class CONNEG_GZIP_WITHOUT_ASKING(Message):
+class CONNEG_GZIP_WITHOUT_ASKING(Note):
     category = c.CONNEG
     level = l.WARN
     summary = {
@@ -1077,7 +1064,7 @@ class CONNEG_GZIP_WITHOUT_ASKING(Message):
     break clients that aren't expecting a compressed response."""
     }
 
-class VARY_INCONSISTENT(Message):
+class VARY_INCONSISTENT(Note):
     category = c.CONNEG
     level = l.BAD
     summary = {
@@ -1099,7 +1086,7 @@ class VARY_INCONSISTENT(Message):
     cannot consistently determine what the cache key for a given URI is."""
     }
 
-class VARY_STATUS_MISMATCH(Message):
+class VARY_STATUS_MISMATCH(Note):
     category = c.CONNEG
     level = l.WARN
     summary = {
@@ -1116,7 +1103,7 @@ happens."
      this."""
     }
     
-class VARY_HEADER_MISMATCH(Message):
+class VARY_HEADER_MISMATCH(Note):
     category = c.CONNEG
     level = l.BAD
     summary = {
@@ -1129,7 +1116,7 @@ happens."
      responses."""
     }
 
-class VARY_BODY_MISMATCH(Message):
+class VARY_BODY_MISMATCH(Note):
     category = c.CONNEG
     level = l.INFO
     summary = {
@@ -1144,7 +1131,7 @@ class VARY_BODY_MISMATCH(Message):
      a result.<p>"""
     }
 
-class VARY_ETAG_DOESNT_CHANGE(Message):
+class VARY_ETAG_DOESNT_CHANGE(Note):
     category = c.CONNEG
     level = l.BAD
     summary = {
@@ -1161,7 +1148,7 @@ class VARY_ETAG_DOESNT_CHANGE(Message):
 
 ### Clock
 
-class DATE_CORRECT(Message):
+class DATE_CORRECT(Note):
     category = c.GENERAL
     level = l.GOOD
     summary = {
@@ -1173,7 +1160,7 @@ class DATE_CORRECT(Message):
     clock appears to be well-synchronised."""
     }
 
-class DATE_INCORRECT(Message):
+class DATE_INCORRECT(Note):
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -1196,7 +1183,7 @@ class DATE_INCORRECT(Message):
     this paper</a> for more information. """
     }
 
-class AGE_PENALTY(Message):
+class AGE_PENALTY(Note):
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -1216,7 +1203,7 @@ intermediary."
      information."""
     }
 
-class DATE_CLOCKLESS(Message):
+class DATE_CLOCKLESS(Note):
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -1228,7 +1215,7 @@ class DATE_CLOCKLESS(Message):
      response's age inexact."""
     }
 
-class DATE_CLOCKLESS_BAD_HDR(Message):
+class DATE_CLOCKLESS_BAD_HDR(Note):
     category = c.CACHING
     level = l.BAD
     summary = {
@@ -1245,7 +1232,7 @@ Last-Modified values."
 
 ### Caching
 
-class METHOD_UNCACHEABLE(Message):
+class METHOD_UNCACHEABLE(Note):
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1255,7 +1242,7 @@ class METHOD_UNCACHEABLE(Message):
     'en': u""""""
     }
 
-class CC_MISCAP(Message):
+class CC_MISCAP(Note):
     category = c.CACHING
     level = l.WARN
     summary = {
@@ -1268,7 +1255,7 @@ capitalisation."
      Did you mean to use %(cc_lower)s instead of %(cc)s?"""
     }
 
-class CC_DUP(Message):
+class CC_DUP(Note):
     category = c.CACHING
     level = l.WARN
     summary = {
@@ -1281,7 +1268,7 @@ class CC_DUP(Message):
      behaviour unpredictable."""
     }
 
-class NO_STORE(Message):
+class NO_STORE(Note):
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1292,7 +1279,7 @@ class NO_STORE(Message):
     that this response can't be stored by a cache."""
     }
 
-class PRIVATE_CC(Message):
+class PRIVATE_CC(Note):
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1305,7 +1292,7 @@ class PRIVATE_CC(Message):
     proxies, cannot store it."""
     }
 
-class PRIVATE_AUTH(Message):
+class PRIVATE_AUTH(Note):
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1319,7 +1306,7 @@ class PRIVATE_AUTH(Message):
     it."""
     }
 
-class STOREABLE(Message):
+class STOREABLE(Note):
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1330,7 +1317,7 @@ class STOREABLE(Message):
      use it to satisfy a particular request."""
     }
 
-class NO_CACHE(Message):
+class NO_CACHE(Note):
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1344,7 +1331,7 @@ class NO_CACHE(Message):
      for that request.<p>"""
     }
 
-class NO_CACHE_NO_VALIDATOR(Message):
+class NO_CACHE_NO_VALIDATOR(Note):
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1360,7 +1347,7 @@ class NO_CACHE_NO_VALIDATOR(Message):
      <code>ETag</code> header, so it effectively can't be used by a cache."""
     }
 
-class VARY_ASTERISK(Message):
+class VARY_ASTERISK(Note):
     category = c.CACHING
     level = l.WARN
     summary = {
@@ -1372,7 +1359,7 @@ class VARY_ASTERISK(Message):
     makes this response effectively uncacheable."""
     }
 
-class VARY_USER_AGENT(Message):
+class VARY_USER_AGENT(Note):
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1390,7 +1377,7 @@ class VARY_USER_AGENT(Message):
     efficiency."""
     }
 
-class VARY_HOST(Message):
+class VARY_HOST(Note):
     category = c.CACHING
     level = l.WARN
     summary = {
@@ -1410,7 +1397,7 @@ class VARY_HOST(Message):
     store anything that has a <code>Vary</code> header)."""
     }
 
-class VARY_COMPLEX(Message):
+class VARY_COMPLEX(Note):
     category = c.CACHING
     level = l.WARN
     summary = {
@@ -1424,7 +1411,7 @@ class VARY_COMPLEX(Message):
      impractical."""
     }
 
-class PUBLIC(Message):
+class PUBLIC(Note):
     category = c.CACHING
     level = l.WARN
     summary = {
@@ -1442,7 +1429,7 @@ class PUBLIC(Message):
      "more cacheable", and only makes the response headers larger."""
     }
 
-class CURRENT_AGE(Message):
+class CURRENT_AGE(Note):
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1455,7 +1442,7 @@ class CURRENT_AGE(Message):
     response already is."""
     }
 
-class FRESHNESS_FRESH(Message):
+class FRESHNESS_FRESH(Note):
     category = c.CACHING
     level = l.GOOD
     summary = {
@@ -1467,7 +1454,7 @@ class FRESHNESS_FRESH(Message):
     %(freshness_lifetime)s)."""
     }
 
-class FRESHNESS_STALE_CACHE(Message):
+class FRESHNESS_STALE_CACHE(Note):
     category = c.CACHING
     level = l.WARN
     summary = {
@@ -1483,7 +1470,7 @@ class FRESHNESS_STALE_CACHE(Message):
     response's freshness directives."""
     }
 
-class FRESHNESS_STALE_ALREADY(Message):
+class FRESHNESS_STALE_ALREADY(Note):
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1497,7 +1484,7 @@ class FRESHNESS_STALE_ALREADY(Message):
     when they lose contact with the origin server."""
     }
 
-class FRESHNESS_HEURISTIC(Message):
+class FRESHNESS_HEURISTIC(Note):
     category = c.CACHING
     level = l.WARN
     summary = {
@@ -1517,7 +1504,7 @@ lifetime."
      cached for longer or shorter than you'd like."""
     }
 
-class FRESHNESS_NONE(Message):
+class FRESHNESS_NONE(Note):
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1538,7 +1525,7 @@ circumstances."
      """
     }
 
-class FRESH_SERVABLE(Message):
+class FRESH_SERVABLE(Note):
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1553,7 +1540,7 @@ class FRESH_SERVABLE(Message):
     must-revalidate</code> response directive."""
     }
 
-class STALE_SERVABLE(Message):
+class STALE_SERVABLE(Note):
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1568,7 +1555,7 @@ class STALE_SERVABLE(Message):
     must-revalidate</code> response directive."""
     }
 
-class FRESH_MUST_REVALIDATE(Message):
+class FRESH_MUST_REVALIDATE(Note):
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1582,7 +1569,7 @@ class FRESH_MUST_REVALIDATE(Message):
     rather than a stale response."""
     }
 
-class STALE_MUST_REVALIDATE(Message):
+class STALE_MUST_REVALIDATE(Note):
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1596,7 +1583,7 @@ class STALE_MUST_REVALIDATE(Message):
     rather than a stale response."""
     }
 
-class FRESH_PROXY_REVALIDATE(Message):
+class FRESH_PROXY_REVALIDATE(Note):
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1613,7 +1600,7 @@ stale."
     for example, those in browsers."""
     }
 
-class STALE_PROXY_REVALIDATE(Message):
+class STALE_PROXY_REVALIDATE(Note):
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1630,7 +1617,7 @@ stale."
     for example, those in browsers."""
     }
 
-class CHECK_SINGLE(Message):
+class CHECK_SINGLE(Note):
     category = c.CACHING
     level = l.WARN
     summary = {
@@ -1649,7 +1636,7 @@ directives is present."
      """
     }
 
-class CHECK_NOT_INTEGER(Message):
+class CHECK_NOT_INTEGER(Note):
     category = c.CACHING
     level = l.WARN
     summary = {
@@ -1667,7 +1654,7 @@ a non-integer value."
      """
     }
 
-class CHECK_ALL_ZERO(Message):
+class CHECK_ALL_ZERO(Note):
     category = c.CACHING
     level = l.WARN
     summary = {
@@ -1689,7 +1676,7 @@ class CHECK_ALL_ZERO(Message):
      """
     }
 
-class CHECK_POST_BIGGER(Message):
+class CHECK_POST_BIGGER(Note):
     category = c.CACHING
     level = l.WARN
     summary = {
@@ -1709,7 +1696,7 @@ than pre-check's."
      """
     }
 
-class CHECK_POST_ZERO(Message):
+class CHECK_POST_ZERO(Note):
     category = c.CACHING
     level = l.BAD
     summary = {
@@ -1728,7 +1715,7 @@ class CHECK_POST_ZERO(Message):
      """
     }
 
-class CHECK_POST_PRE(Message):
+class CHECK_POST_PRE(Note):
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1753,7 +1740,7 @@ Explorer."
 
 ### General Validation
 
-class NO_DATE_304(Message):
+class NO_DATE_304(Note):
     category = c.VALIDATION
     level = l.WARN
     summary = {
@@ -1765,7 +1752,7 @@ class NO_DATE_304(Message):
     circumstances."""
     }
 
-class MISSING_HDRS_304(Message):
+class MISSING_HDRS_304(Note):
     category = c.VALIDATION
     level = l.WARN
     summary = {
@@ -1783,7 +1770,7 @@ class MISSING_HDRS_304(Message):
 
 ### ETag Validation
 
-class ETAG_SUBREQ_PROBLEM(Message):
+class ETAG_SUBREQ_PROBLEM(Note):
     category = c.VALIDATION
     level = l.BAD
     summary = {
@@ -1796,7 +1783,7 @@ class ETAG_SUBREQ_PROBLEM(Message):
     Trying again might fix it."""
     }
     
-class INM_304(Message):
+class INM_304(Note):
     category = c.VALIDATION
     level = l.GOOD
     summary = {
@@ -1811,7 +1798,7 @@ class INM_304(Message):
     response, indicating that it supports <code>ETag</code> validation."""
     }
 
-class INM_FULL(Message):
+class INM_FULL(Note):
     category = c.VALIDATION
     level = l.WARN
     summary = {
@@ -1828,7 +1815,7 @@ unchanged."
     <code>ETag</code> validation."""
     }
 
-class INM_DUP_ETAG_WEAK(Message):
+class INM_DUP_ETAG_WEAK(Note):
     category = c.VALIDATION
     level = l.INFO
     summary = {
@@ -1849,7 +1836,7 @@ response body did."
     """
     }
     
-class INM_DUP_ETAG_STRONG(Message):
+class INM_DUP_ETAG_STRONG(Note):
     category = c.VALIDATION
     level = l.BAD
     summary = {
@@ -1869,7 +1856,7 @@ response body did."
     """
     }
 
-class INM_UNKNOWN(Message):
+class INM_UNKNOWN(Note):
     category = c.VALIDATION
     level = l.INFO
     summary = {
@@ -1886,7 +1873,7 @@ content, but it had changed."
     <code>ETag</code> validation is supported."""
     }
 
-class INM_STATUS(Message):
+class INM_STATUS(Note):
     category = c.VALIDATION
     level = l.INFO
     summary = {
@@ -1905,7 +1892,7 @@ status."
 
 ### Last-Modified Validation
 
-class LM_SUBREQ_PROBLEM(Message):
+class LM_SUBREQ_PROBLEM(Note):
     category = c.VALIDATION
     level = l.BAD
     summary = {
@@ -1917,7 +1904,7 @@ class LM_SUBREQ_PROBLEM(Message):
     <code>%(problem)s</code><p>
     Trying again might fix it."""
     }
-class IMS_304(Message):
+class IMS_304(Note):
     category = c.VALIDATION
     level = l.GOOD
     summary = {
@@ -1933,7 +1920,7 @@ class IMS_304(Message):
     <code>Last-Modified</code> validation."""
     }
 
-class IMS_FULL(Message):
+class IMS_FULL(Note):
     category = c.VALIDATION
     level = l.WARN
     summary = {
@@ -1950,7 +1937,7 @@ content unchanged."
     <code>Last-Modified</code> validation."""
     }
 
-class IMS_UNKNOWN(Message):
+class IMS_UNKNOWN(Note):
     category = c.VALIDATION
     level = l.INFO
     summary = {
@@ -1967,7 +1954,7 @@ content, but it had changed."
     <code>Last-Modified</code> validation is supported."""
     }
 
-class IMS_STATUS(Message):
+class IMS_STATUS(Note):
     category = c.VALIDATION
     level = l.INFO
     summary = {
@@ -1986,7 +1973,7 @@ class IMS_STATUS(Message):
 
 ### Status checks
 
-class UNEXPECTED_CONTINUE(Message):
+class UNEXPECTED_CONTINUE(Note):
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2006,7 +1993,7 @@ class UNEXPECTED_CONTINUE(Message):
      problems."""
     }
 
-class UPGRADE_NOT_REQUESTED(Message):
+class UPGRADE_NOT_REQUESTED(Note):
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2023,7 +2010,7 @@ class UPGRADE_NOT_REQUESTED(Message):
      obviously won't work."""
     }
 
-class CREATED_SAFE_METHOD(Message):
+class CREATED_SAFE_METHOD(Note):
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -2040,7 +2027,7 @@ class CREATED_SAFE_METHOD(Message):
      methods when they fail."""
     }
 
-class CREATED_WITHOUT_LOCATION(Message):
+class CREATED_WITHOUT_LOCATION(Note):
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2053,7 +2040,7 @@ class CREATED_WITHOUT_LOCATION(Message):
      <code>Location</code> header, but it isn't present in this response."""
     }
 
-class CONTENT_RANGE_MEANINGLESS(Message):
+class CONTENT_RANGE_MEANINGLESS(Note):
     category = c.RANGE
     level = l.WARN
     summary = {
@@ -2067,7 +2054,7 @@ class CONTENT_RANGE_MEANINGLESS(Message):
       confuse caches and clients."""
     }
 
-class PARTIAL_WITHOUT_RANGE(Message):
+class PARTIAL_WITHOUT_RANGE(Note):
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2082,7 +2069,7 @@ class PARTIAL_WITHOUT_RANGE(Message):
      clients won't be able to process it."""
     }
 
-class PARTIAL_NOT_REQUESTED(Message):
+class PARTIAL_NOT_REQUESTED(Note):
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2097,7 +2084,7 @@ class PARTIAL_NOT_REQUESTED(Message):
      requesting it leads to interoperability problems."""
     }
 
-class REDIRECT_WITHOUT_LOCATION(Message):
+class REDIRECT_WITHOUT_LOCATION(Note):
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2109,7 +2096,7 @@ class REDIRECT_WITHOUT_LOCATION(Message):
      one isn't present in this response."""
     }
 
-class STATUS_DEPRECATED(Message):
+class STATUS_DEPRECATED(Note):
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2121,7 +2108,7 @@ class STATUS_DEPRECATED(Message):
      interoperability."""
     }
 
-class STATUS_RESERVED(Message):
+class STATUS_RESERVED(Note):
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2132,7 +2119,7 @@ class STATUS_RESERVED(Message):
      protocol extensions; they are not for private use."""
     }
 
-class STATUS_NONSTANDARD(Message):
+class STATUS_NONSTANDARD(Note):
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2145,7 +2132,7 @@ class STATUS_NONSTANDARD(Message):
      or 500 for a server-side problem."""
     }
 
-class STATUS_BAD_REQUEST(Message):
+class STATUS_BAD_REQUEST(Note):
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -2155,7 +2142,7 @@ class STATUS_BAD_REQUEST(Message):
      'en': u""" """
     }
 
-class STATUS_FORBIDDEN(Message):
+class STATUS_FORBIDDEN(Note):
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -2165,7 +2152,7 @@ class STATUS_FORBIDDEN(Message):
      'en': u""" """
     }
 
-class STATUS_NOT_FOUND(Message):
+class STATUS_NOT_FOUND(Note):
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -2176,7 +2163,7 @@ class STATUS_NOT_FOUND(Message):
      given URI."""
     }
 
-class STATUS_NOT_ACCEPTABLE(Message):
+class STATUS_NOT_ACCEPTABLE(Note):
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -2186,7 +2173,7 @@ class STATUS_NOT_ACCEPTABLE(Message):
      'en': u""""""
     }
 
-class STATUS_CONFLICT(Message):
+class STATUS_CONFLICT(Note):
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -2196,7 +2183,7 @@ class STATUS_CONFLICT(Message):
      'en': u""" """
     }
 
-class STATUS_GONE(Message):
+class STATUS_GONE(Note):
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -2207,7 +2194,7 @@ class STATUS_GONE(Message):
      is no longer there."""
     }
 
-class STATUS_REQUEST_ENTITY_TOO_LARGE(Message):
+class STATUS_REQUEST_ENTITY_TOO_LARGE(Note):
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -2218,7 +2205,7 @@ class STATUS_REQUEST_ENTITY_TOO_LARGE(Message):
      was too large."""
     }
 
-class STATUS_URI_TOO_LONG(Message):
+class STATUS_URI_TOO_LONG(Note):
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2229,7 +2216,7 @@ class STATUS_URI_TOO_LONG(Message):
     won't accept a request-uri this long."""
     }
 
-class STATUS_UNSUPPORTED_MEDIA_TYPE(Message):
+class STATUS_UNSUPPORTED_MEDIA_TYPE(Note):
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -2239,7 +2226,7 @@ class STATUS_UNSUPPORTED_MEDIA_TYPE(Message):
      'en': u""" """
     }
 
-class STATUS_INTERNAL_SERVICE_ERROR(Message):
+class STATUS_INTERNAL_SERVICE_ERROR(Note):
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -2249,7 +2236,7 @@ class STATUS_INTERNAL_SERVICE_ERROR(Message):
      'en': u""" """
     }
 
-class STATUS_NOT_IMPLEMENTED(Message):
+class STATUS_NOT_IMPLEMENTED(Note):
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -2259,7 +2246,7 @@ class STATUS_NOT_IMPLEMENTED(Message):
      'en': u""" """
     }
 
-class STATUS_BAD_GATEWAY(Message):
+class STATUS_BAD_GATEWAY(Note):
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -2269,7 +2256,7 @@ class STATUS_BAD_GATEWAY(Message):
      'en': u""" """
     }
 
-class STATUS_SERVICE_UNAVAILABLE(Message):
+class STATUS_SERVICE_UNAVAILABLE(Note):
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -2279,7 +2266,7 @@ class STATUS_SERVICE_UNAVAILABLE(Message):
      'en': u""" """
     }
 
-class STATUS_GATEWAY_TIMEOUT(Message):
+class STATUS_GATEWAY_TIMEOUT(Note):
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -2289,7 +2276,7 @@ class STATUS_GATEWAY_TIMEOUT(Message):
      'en': u""" """
     }
 
-class STATUS_VERSION_NOT_SUPPORTED(Message):
+class STATUS_VERSION_NOT_SUPPORTED(Note):
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2299,7 +2286,7 @@ class STATUS_VERSION_NOT_SUPPORTED(Message):
      'en': u""" """
     }
 
-class PARAM_STAR_QUOTED(Message):
+class PARAM_STAR_QUOTED(Note):
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2313,7 +2300,7 @@ class PARAM_STAR_QUOTED(Message):
      header has double-quotes around it, which is not valid."""
     }
 
-class PARAM_STAR_ERROR(Message):
+class PARAM_STAR_ERROR(Note):
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2328,7 +2315,7 @@ class PARAM_STAR_ERROR(Message):
      quotes (')."""
     }
 
-class PARAM_STAR_BAD(Message):
+class PARAM_STAR_BAD(Note):
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2345,7 +2332,7 @@ header."
      """
     }
 
-class PARAM_STAR_NOCHARSET(Message):
+class PARAM_STAR_NOCHARSET(Note):
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -2360,7 +2347,7 @@ class PARAM_STAR_NOCHARSET(Message):
      recipients can't understand it. It should be <code>UTF-8</code>."""
     }
 
-class PARAM_STAR_CHARSET(Message):
+class PARAM_STAR_CHARSET(Note):
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -2377,7 +2364,7 @@ UTF-8."
      <code>UTF-8</code>."""
     }
 
-class PARAM_REPEATS(Message):
+class PARAM_REPEATS(Note):
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -2388,7 +2375,7 @@ class PARAM_REPEATS(Message):
      implementations may handle them differently."""
     }
 
-class PARAM_SINGLE_QUOTED(Message):
+class PARAM_SINGLE_QUOTED(Note):
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -2405,7 +2392,7 @@ single-quoted."
      the single quotes."""
     }
 
-class DISPOSITION_UNKNOWN(Message):
+class DISPOSITION_UNKNOWN(Note):
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -2418,7 +2405,7 @@ class DISPOSITION_UNKNOWN(Message):
      will default to handling it like <code>attachment</code>."""
     }
 
-class DISPOSITION_OMITS_FILENAME(Message):
+class DISPOSITION_OMITS_FILENAME(Note):
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -2434,7 +2421,7 @@ parameter."
      ASCII-only filename."""
     }
 
-class DISPOSITION_FILENAME_PERCENT(Message):
+class DISPOSITION_FILENAME_PERCENT(Note):
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -2456,7 +2443,7 @@ contains a '%%' character."
      """
     }
 
-class DISPOSITION_FILENAME_PATH_CHAR(Message):
+class DISPOSITION_FILENAME_PATH_CHAR(Note):
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -2476,7 +2463,7 @@ path character."
      """
     }
     
-class LINK_REV(Message):
+class LINK_REV(Note):
     category = c.GENERAL
     level=l.WARN
     summary = {
@@ -2492,7 +2479,7 @@ class LINK_REV(Message):
      """
     }
 
-class LINK_BAD_ANCHOR(Message):
+class LINK_BAD_ANCHOR(Note):
     category = c.GENERAL
     level=l.WARN
     summary = {
@@ -2508,7 +2495,7 @@ class LINK_BAD_ANCHOR(Message):
      """
     }
 
-class SET_COOKIE_NO_VAL(Message):
+class SET_COOKIE_NO_VAL(Note):
     category = c.GENERAL
     level=l.BAD
     summary = {
@@ -2521,7 +2508,7 @@ class SET_COOKIE_NO_VAL(Message):
      <p>Browsers will ignore this cookie."""
     }
 
-class SET_COOKIE_NO_NAME(Message):
+class SET_COOKIE_NO_NAME(Note):
     category = c.GENERAL
     level=l.BAD
     summary = {
@@ -2533,7 +2520,7 @@ class SET_COOKIE_NO_NAME(Message):
      <p>Browsers will ignore this cookie."""
     }
 
-class SET_COOKIE_BAD_DATE(Message):
+class SET_COOKIE_BAD_DATE(Note):
     category = c.GENERAL
     level=l.WARN
     summary = {
@@ -2548,7 +2535,7 @@ date."
      """
     }
 
-class SET_COOKIE_EMPTY_MAX_AGE(Message):
+class SET_COOKIE_EMPTY_MAX_AGE(Note):
     category = c.GENERAL
     level=l.WARN
     summary = {
@@ -2560,7 +2547,7 @@ class SET_COOKIE_EMPTY_MAX_AGE(Message):
      Browsers will ignore the <code>max-age</code> value as a result."""
     }
 
-class SET_COOKIE_NON_DIGIT_MAX_AGE(Message):
+class SET_COOKIE_NON_DIGIT_MAX_AGE(Note):
     category = c.GENERAL
     level=l.WARN
     summary = {
@@ -2572,7 +2559,7 @@ class SET_COOKIE_NON_DIGIT_MAX_AGE(Message):
      Browsers will ignore the <code>max-age</code> value as a result."""
     }
 
-class SET_COOKIE_EMPTY_DOMAIN(Message):
+class SET_COOKIE_EMPTY_DOMAIN(Note):
     category = c.GENERAL
     level=l.WARN
     summary = {
@@ -2584,7 +2571,7 @@ class SET_COOKIE_EMPTY_DOMAIN(Message):
      Browsers will probably ignore it as a result."""
     }
 
-class SET_COOKIE_UNKNOWN_ATTRIBUTE(Message):
+class SET_COOKIE_UNKNOWN_ATTRIBUTE(Note):
     category = c.GENERAL
     level=l.WARN
     summary = {
@@ -2603,8 +2590,8 @@ if __name__ == '__main__':
     # do a sanity check on all of the defined messages
     import re, types
     for n, v in locals().items():
-        if type(v) is types.ClassType and issubclass(v, Message) \
-          and n != "Message":
+        if type(v) is types.ClassType and issubclass(v, Note) \
+          and n != "Note":
             print "checking", n
             assert v.category in c.__class__.__dict__.values(), n
             assert v.level in l.__class__.__dict__.values(), n

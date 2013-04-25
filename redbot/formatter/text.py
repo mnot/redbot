@@ -46,7 +46,7 @@ class BaseTextFormatter(Formatter):
     Base class for text formatters."""
     media_type = "text/plain"
 
-    msg_categories = [
+    note_categories = [
         rs.c.GENERAL, rs.c.SECURITY, rs.c.CONNECTION, rs.c.CONNEG,
         rs.c.CACHING, rs.c.VALIDATION, rs.c.RANGE
     ]
@@ -100,13 +100,13 @@ class BaseTextFormatter(Formatter):
             for category in self.msg_categories])
 
     def format_recommendation(self, red, category):
-        messages = [msg for msg in red.messages if msg.category == category]
-        if not messages:
+        note = [note for note in red.notes if note.category == category]
+        if not note:
             return ""
         out = []
-        if [msg for msg in messages]:
+        if [note for note in note]:
             out.append(u"* %s:" % category)
-        for m in messages:
+        for m in note:
             out.append(
                 u"  * %s" % (self.colorize(m.level, m.show_summary("en")))
             )
@@ -114,7 +114,7 @@ class BaseTextFormatter(Formatter):
                 out.append('')
                 out.extend('    ' + line for line in self.format_text(m))
                 out.append('')
-            smsgs = [msg for msg in getattr(m.subrequest, "messages", []) if msg.level in [rs.l.BAD]]
+            smsgs = [note for note in getattr(m.subrequest, "notes", []) if note.level in [rs.l.BAD]]
             if smsgs:
                 out.append("")
                 for sm in smsgs:

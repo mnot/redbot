@@ -45,10 +45,10 @@ class RedState(object):
     
     def __init__(self, iri, method, req_hdrs, req_body, check_type):
         self.check_type = check_type
-        self.messages = [] # messages (see above)
+        self.notes = []
         self.subreqs = {} # sub-requests' RedState objects
-        self.request = HttpRequest(self.messages, check_type)
-        self.response = HttpResponse(self.messages, check_type)
+        self.request = HttpRequest(self.notes, check_type)
+        self.response = HttpResponse(self.notes, check_type)
         self.request.method = method
         self.request.headers = req_hdrs or []
         self.request.payload = req_body
@@ -68,16 +68,16 @@ class RedState(object):
 
     def __getstate__(self):
         state = self.__dict__.copy()
-        if state.has_key('set_message'):
-            del state['set_message']
+        if state.has_key('add_note'):
+            del state['add_note']
         return state
         
-    def set_message(self, subject, msg, subreq=None, **kw):
-        "Set a message."
+    def add_note(self, subject, note, subreq=None, **kw):
+        "Set a note."
         kw['response'] = rs.response.get(
             self.check_type, rs.response['this']
         )['en']
-        self.messages.append(msg(subject, subreq, kw))
+        self.notes.append(note(subject, subreq, kw))
         
     # TODO: move to message.HttpRequest
     @staticmethod

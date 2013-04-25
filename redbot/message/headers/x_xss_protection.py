@@ -41,12 +41,12 @@ def parse(subject, value, red):
     protect = int(protect)
     params = rh.parse_params(red, subject, param_str, True)
     if protect == 0:
-        red.set_message(subject, rs.XSS_PROTECTION_OFF)
+        red.add_note(subject, rs.XSS_PROTECTION_OFF)
     else: # 1
         if params.get('mode', None) == "block":
-            red.set_message(subject, rs.XSS_PROTECTION_BLOCK)
+            red.add_note(subject, rs.XSS_PROTECTION_BLOCK)
         else:
-            red.set_message(subject, rs.XSS_PROTECTION_ON)
+            red.add_note(subject, rs.XSS_PROTECTION_ON)
     return protect, params
 
 @rh.SingleFieldValue

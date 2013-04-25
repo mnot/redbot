@@ -40,7 +40,7 @@ class ETagValidate(SubRequest):
             weak, etag = self.base.response.parsed_headers['etag']
             if weak:
                 weak_str = u"W/"
-                # #65: message on weak etag
+                # #65: note on weak etag
             else:
                 weak_str = u""
             etag_str = u'%s"%s"' % (weak_str, etag)
@@ -58,14 +58,14 @@ class ETagValidate(SubRequest):
 
     def done(self):
         if not self.state.response.complete:
-            self.set_message('', rs.ETAG_SUBREQ_PROBLEM,
+            self.add_note('', rs.ETAG_SUBREQ_PROBLEM,
                 problem=self.state.response.http_error.desc
             )
             return
             
         if self.state.response.status_code == '304':
             self.base.inm_support = True
-            self.set_message('header-etag', rs.INM_304)
+            self.add_note('header-etag', rs.INM_304)
             self.check_missing_hdrs([
                     'cache-control', 'content-location', 'etag', 
                     'expires', 'vary'
@@ -76,21 +76,21 @@ class ETagValidate(SubRequest):
             if self.state.response.payload_md5 \
               == self.base.response.payload_md5:
                 self.base.inm_support = False
-                self.set_message('header-etag', rs.INM_FULL)
+                self.add_note('header-etag', rs.INM_FULL)
             else: # bodies are different
                 if self.base.response.parsed_headers['etag'] == \
                   self.state.response.parsed_headers.get('etag', 1):
                     if self.base.response.parsed_headers['etag'][0]: # weak
-                        self.set_message('header-etag', rs.INM_DUP_ETAG_WEAK)
+                        self.add_note('header-etag', rs.INM_DUP_ETAG_WEAK)
                     else: # strong
-                        self.set_message('header-etag',
+                        self.add_note('header-etag',
                             rs.INM_DUP_ETAG_STRONG,
                             etag=self.base.response.parsed_headers['etag']
                         )
                 else:
-                    self.set_message('header-etag', rs.INM_UNKNOWN)
+                    self.add_note('header-etag', rs.INM_UNKNOWN)
         else:
-            self.set_message('header-etag', 
+            self.add_note('header-etag', 
                 rs.INM_STATUS, 
                 inm_status = self.state.response.status_code,
                 enc_inm_status = self.state.response.status_code \

@@ -46,12 +46,12 @@ def parse(subject, value, red):
     if param_dict.has_key('rel'): # relation_types
         pass # TODO: check relation type
     if param_dict.has_key('rev'):
-        red.set_message(subject, rs.LINK_REV,
+        red.add_note(subject, rs.LINK_REV,
                         link=link, rev=param_dict['rev'])
     if param_dict.has_key('anchor'): # URI-Reference
         if not re.match(r"^\s*%s\s*$" % syntax.URI_reference, 
                         param_dict['anchor'], re.VERBOSE):
-            red.set_message(subject, rs.LINK_BAD_ANCHOR,
+            red.add_note(subject, rs.LINK_BAD_ANCHOR,
                             link=link,
                             anchor=param_dict['anchor'])
     # TODO: check media-type in 'type'
