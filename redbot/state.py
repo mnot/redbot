@@ -30,10 +30,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import urllib
-import urlparse
-
-import thor.http.error as httperr
 import redbot.speak as rs
 from redbot.message import HttpRequest, HttpResponse
 
@@ -43,7 +39,7 @@ class RedState(object):
     Holder for test state.
     """
     
-    def __init__(self, iri, method, req_hdrs, req_body, check_type):
+    def __init__(self, method, req_hdrs, req_body, check_type):
         self.check_type = check_type
         self.notes = []
         self.subreqs = {} # sub-requests' RedState objects
@@ -54,11 +50,7 @@ class RedState(object):
         self.request.payload = req_body
         
         # FIXME: put in HttpRequest
-        try:
-            self.uri = self.iri_to_uri(iri)
-        except (ValueError, UnicodeError), why:
-            self.response.http_error = httperr.UrlError(why[0])
-            self.uri = None
+
 
     def __repr__(self):
         status = [self.__class__.__module__ + "." + self.__class__.__name__]
@@ -78,29 +70,6 @@ class RedState(object):
             self.check_type, rs.response['this']
         )['en']
         self.notes.append(note(subject, subreq, kw))
-        
-    # TODO: move to message.HttpRequest
-    @staticmethod
-    def iri_to_uri(iri):
-        "Takes a Unicode string that can contain an IRI and emits a URI."
-        scheme, authority, path, query, frag = urlparse.urlsplit(iri)
-        scheme = scheme.encode('utf-8')
-        if ":" in authority:
-            host, port = authority.split(":", 1)
-            authority = host.encode('idna') + ":%s" % port
-        else:
-            authority = authority.encode('idna')
-        path = urllib.quote(
-          path.encode('utf-8'), 
-          safe="/;%[]=:$&()+,!?*@'~"
-        )
-        query = urllib.quote(
-          query.encode('utf-8'), 
-          safe="/;%[]=:$&()+,!?*@'~"
-        )
-        frag = urllib.quote(
-          frag.encode('utf-8'), 
-          safe="/;%[]=:$&()+,!?*@'~"
-        )
-        return urlparse.urlunsplit((scheme, authority, path, query, frag))
+
+
     

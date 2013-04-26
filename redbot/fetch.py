@@ -32,6 +32,8 @@ THE SOFTWARE.
 """
 
 import base64
+import urllib
+import urlparse
 
 import thor
 import thor.http.error as httperr
@@ -67,13 +69,18 @@ class RedFetcher(object):
 
     def __init__(self, iri, method="GET", req_hdrs=None, req_body=None,
                  status_cb=None, body_procs=None, req_type=None):
-        self.state = RedState(iri, method, req_hdrs, req_body, req_type)
+        self.state = RedState(method, req_hdrs, req_body, req_type)
         self.exchange = None
         self.status_cb = status_cb
         self.body_procs = body_procs or []
         self.done_cb = None
         self.outstanding_tasks = 0
         self._st = [] # TEMPORARY
+        try:
+            self.state.uri = self.iri_to_uri(iri)
+        except (ValueError, UnicodeError), why:
+            self.response.http_error = httperr.UrlError(why[0])
+            self.state.uri = None
 
     def __repr__(self):
         status = [self.__class__.__module__ + "." + self.__class__.__name__]
@@ -203,6 +210,29 @@ class RedFetcher(object):
         self.done()
         self.finish_task()
 
+    @staticmethod
+    def iri_to_uri(iri):
+        "Takes a Unicode string that can contain an IRI and emits a URI."
+        scheme, authority, path, query, frag = urlparse.urlsplit(iri)
+        scheme = scheme.encode('utf-8')
+        if ":" in authority:
+            host, port = authority.split(":", 1)
+            authority = host.encode('idna') + ":%s" % port
+        else:
+            authority = authority.encode('idna')
+        path = urllib.quote(
+          path.encode('utf-8'), 
+          safe="/;%[]=:$&()+,!?*@'~"
+        )
+        query = urllib.quote(
+          query.encode('utf-8'), 
+          safe="/;%[]=:$&()+,!?*@'~"
+        )
+        frag = urllib.quote(
+          frag.encode('utf-8'), 
+          safe="/;%[]=:$&()+,!?*@'~"
+        )
+        return urlparse.urlunsplit((scheme, authority, path, query, frag))
 
 
 if "__main__" == __name__:
