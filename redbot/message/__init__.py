@@ -32,7 +32,7 @@ import hashlib
 import time
 import zlib
 
-from redbot import link_parse
+from redbot.message import link_parse
 from redbot.message.headers import process_headers
 from redbot.formatter import f_num
 import redbot.speak as rs
