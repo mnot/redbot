@@ -81,16 +81,16 @@ class RangeRequest(SubRequest):
             return False
 
     def done(self):
-        if not self.state.response.complete:
+        if not self.response.complete:
             self.add_note('', rs.RANGE_SUBREQ_PROBLEM,
-                problem=self.state.response.http_error.desc
+                problem=self.response.http_error.desc
             )
             return
             
-        if self.state.response.status_code == '206':
+        if self.response.status_code == '206':
             c_e = 'content-encoding'
             if 'gzip' in self.base.response.parsed_headers.get(c_e, []) == \
-               'gzip' not in self.state.response.parsed_headers.get(c_e, []):
+               'gzip' not in self.response.parsed_headers.get(c_e, []):
                 self.add_note(
                     'header-accept-ranges header-content-encoding',
                     rs.RANGE_NEG_MISMATCH
@@ -103,9 +103,9 @@ class RangeRequest(SubRequest):
                         'expires', 'vary'
                     ], rs.MISSING_HDRS_206, 'Range'
                 )
-            if self.state.response.parsed_headers.get('etag', 1) == \
+            if self.response.parsed_headers.get('etag', 1) == \
               self.base.response.parsed_headers.get('etag', 2):
-                if self.state.response.payload == self.range_target:
+                if self.response.payload == self.range_target:
                     self.base.partial_support = True
                     self.add_note('header-accept-ranges', rs.RANGE_CORRECT)
                 else:
@@ -120,22 +120,22 @@ class RangeRequest(SubRequest):
                           self.range_target.encode('string_escape'),
                         range_expected_bytes = f_num(len(self.range_target)),
                         range_received = \
-                          self.state.response.payload.encode('string_escape'),
+                          self.response.payload.encode('string_escape'),
                         range_received_bytes = \
-                          f_num(self.state.response.payload_len)
+                          f_num(self.response.payload_len)
                     )
             else:
                 self.add_note('header-accept-ranges', rs.RANGE_CHANGED)
 
         # TODO: address 416 directly
-        elif self.state.response.status_code == \
+        elif self.response.status_code == \
           self.base.response.status_code:
             self.base.partial_support = False
             self.add_note('header-accept-ranges', rs.RANGE_FULL)
         else:
             self.add_note('header-accept-ranges', 
                 rs.RANGE_STATUS,
-                range_status=self.state.response.status_code,
-                enc_range_status=self.state.response.status_code or \
+                range_status=self.response.status_code,
+                enc_range_status=self.response.status_code or \
                   '(unknown)'
             )

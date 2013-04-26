@@ -70,13 +70,13 @@ class LmValidate(SubRequest):
             return False
 
     def done(self):
-        if not self.state.response.complete:
+        if not self.response.complete:
             self.add_note('', rs.LM_SUBREQ_PROBLEM,
-                problem=self.state.response.http_error.desc
+                problem=self.response.http_error.desc
             )
             return
             
-        if self.state.response.status_code == '304':
+        if self.response.status_code == '304':
             self.base.ims_support = True
             self.add_note('header-last-modified', rs.IMS_304)
             self.check_missing_hdrs([
@@ -84,9 +84,9 @@ class LmValidate(SubRequest):
                     'expires', 'vary'
                 ], rs.MISSING_HDRS_304, 'If-Modified-Since'
             )
-        elif self.state.response.status_code \
+        elif self.response.status_code \
           == self.base.response.status_code:
-            if self.state.response.payload_md5 \
+            if self.response.payload_md5 \
               == self.base.response.payload_md5:
                 self.base.ims_support = False
                 self.add_note('header-last-modified', rs.IMS_FULL)
@@ -95,8 +95,8 @@ class LmValidate(SubRequest):
         else:
             self.add_note('header-last-modified', 
                 rs.IMS_STATUS, 
-                ims_status = self.state.response.status_code,
-                enc_ims_status = self.state.response.status_code \
+                ims_status = self.response.status_code,
+                enc_ims_status = self.response.status_code \
                   or '(unknown)'
             )
         # TODO: check entity headers

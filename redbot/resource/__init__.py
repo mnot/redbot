@@ -70,21 +70,21 @@ class HttpResource(RedFetcher):
                             status_cb, body_procs, check_type=method)
 
         # Extra metadata that the "main" RED will be adorned with 
-        self.state.orig_req_hdrs = orig_req_hdrs
-        self.state.partial_support = None
-        self.state.inm_support = None
-        self.state.ims_support = None
-        self.state.gzip_support = None
-        self.state.gzip_savings = 0
+        self.orig_req_hdrs = orig_req_hdrs
+        self.partial_support = None
+        self.inm_support = None
+        self.ims_support = None
+        self.gzip_support = None
+        self.gzip_savings = 0
 
         # check the URI
         if not re.match("^\s*%s\s*$" % URI, uri, re.VERBOSE):
-            self.state.add_note('uri', rs.URI_BAD_SYNTAX)
+            self.add_note('uri', rs.URI_BAD_SYNTAX)
         if '#' in uri:
             # chop off the fragment
             uri = uri[:uri.index('#')]
         if len(uri) > max_uri:
-            self.state.add_note('uri', 
+            self.add_note('uri', 
                 rs.URI_TOO_LONG, 
                 uri_len=f_num(len(uri))
             )
@@ -94,7 +94,7 @@ class HttpResource(RedFetcher):
         Response is available; perform further processing that's specific to
         the "main" response.
         """
-        if self.state.response.complete:
+        if self.response.complete:
             active_check.spawn_all(self)
             
 
@@ -113,28 +113,27 @@ class InspectingHttpResource(HttpResource):
         self.descend = descend
         HttpResource.__init__(self, uri, method, req_hdrs, req_body,
                 status_cb, body_procs)
-        self.state.links = {}          # {type: set(link...)}
-        self.state.link_count = 0
-        self.state.linked = []    # list of linked HttpResources (if descend=True)
-        self.state.base_uri = None        
+        self.links = {}          # {type: set(link...)}
+        self.link_count = 0
+        self.linked = []    # list of linked HttpResources (if descend=True)
+        self.base_uri = None        
 
     def process_link(self, link, tag, title):
         "Handle a link from content"
-        state = self.state
-        state.link_count += 1
-        if not state.links.has_key(tag):
-            state.links[tag] = set()
-        if self.descend and tag not in ['a'] and link not in state.links[tag]:
+        self.link_count += 1
+        if not self.links.has_key(tag):
+            self.links[tag] = set()
+        if self.descend and tag not in ['a'] and link not in self.links[tag]:
             linked = HttpResource(
                 urljoin(self.link_parser.base, link),
-                req_hdrs=state.orig_req_hdrs,
+                req_hdrs=self.orig_req_hdrs,
                 status_cb=self.status_cb,
             )
-            state.linked.append((linked.state, tag))
+            self.linked.append((linked, tag))
             self.add_task(linked.run)
-        state.links[tag].add(link)
-        if not self.state.base_uri:
-            self.state.base_uri = self.link_parser.base
+        self.links[tag].add(link)
+        if not self.base_uri:
+            self.base_uri = self.link_parser.base
 
 
 
@@ -145,4 +144,4 @@ if "__main__" == __name__:
         print msg
     red = InspectingHttpResource(test_uri, status_cb=status_p)
     red.run()
-    print red.state.notes
+    print red.notes

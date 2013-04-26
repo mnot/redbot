@@ -57,13 +57,13 @@ class ETagValidate(SubRequest):
             return False
 
     def done(self):
-        if not self.state.response.complete:
+        if not self.response.complete:
             self.add_note('', rs.ETAG_SUBREQ_PROBLEM,
-                problem=self.state.response.http_error.desc
+                problem=self.response.http_error.desc
             )
             return
             
-        if self.state.response.status_code == '304':
+        if self.response.status_code == '304':
             self.base.inm_support = True
             self.add_note('header-etag', rs.INM_304)
             self.check_missing_hdrs([
@@ -71,15 +71,15 @@ class ETagValidate(SubRequest):
                     'expires', 'vary'
                 ], rs.MISSING_HDRS_304, 'If-None-Match'
             )
-        elif self.state.response.status_code \
+        elif self.response.status_code \
           == self.base.response.status_code:
-            if self.state.response.payload_md5 \
+            if self.response.payload_md5 \
               == self.base.response.payload_md5:
                 self.base.inm_support = False
                 self.add_note('header-etag', rs.INM_FULL)
             else: # bodies are different
                 if self.base.response.parsed_headers['etag'] == \
-                  self.state.response.parsed_headers.get('etag', 1):
+                  self.response.parsed_headers.get('etag', 1):
                     if self.base.response.parsed_headers['etag'][0]: # weak
                         self.add_note('header-etag', rs.INM_DUP_ETAG_WEAK)
                     else: # strong
@@ -92,8 +92,8 @@ class ETagValidate(SubRequest):
         else:
             self.add_note('header-etag', 
                 rs.INM_STATUS, 
-                inm_status = self.state.response.status_code,
-                enc_inm_status = self.state.response.status_code \
+                inm_status = self.response.status_code,
+                enc_inm_status = self.response.status_code \
                   or '(unknown)'
             )
         # TODO: check entity headers

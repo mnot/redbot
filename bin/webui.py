@@ -259,22 +259,22 @@ class RedWebUi(object):
             body_procs=[formatter.feed],
             descend=self.descend
         )
-#        sys.stdout.write(pickle.dumps(ired.state))
+#        sys.stdout.write(pickle.dumps(ired))
         formatter.start_output()
 
         def done():
             if self.check_type:
             # TODO: catch errors
-                state = ired.state.subreqs.get(self.check_type, None)
+                state = ired.subreqs.get(self.check_type, None)
             else:
-                state = ired.state
+                state = ired
             formatter.set_state(state)
             formatter.finish_output()
             self.response_done([])
             if test_id:
                 try:
                     tmp_file = gzip.open(path, 'w')
-                    pickle.dump(ired.state, tmp_file)
+                    pickle.dump(ired, tmp_file)
                     tmp_file.close()
                 except (IOError, zlib.error, pickle.PickleError):
                     pass # we don't cry if we can't store it.

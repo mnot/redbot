@@ -53,35 +53,35 @@ class ConnegCheck(SubRequest):
             return False
 
     def done(self):
-        if not self.state.response.complete:
+        if not self.response.complete:
             self.add_note('', rs.CONNEG_SUBREQ_PROBLEM,
-                problem=self.state.response.http_error.desc
+                problem=self.response.http_error.desc
             )
             return
             
         # see if it was compressed when not negotiated
         no_conneg_vary_headers = \
-          self.state.response.parsed_headers.get('vary', [])
+          self.response.parsed_headers.get('vary', [])
         if 'gzip' in \
-          self.state.response.parsed_headers.get('content-encoding', []) \
+          self.response.parsed_headers.get('content-encoding', []) \
           or 'x-gzip' in \
-          self.state.response.parsed_headers.get('content-encoding', []):
+          self.response.parsed_headers.get('content-encoding', []):
             self.add_note('header-vary header-content-encoding',
                             rs.CONNEG_GZIP_WITHOUT_ASKING)
         else: # Apparently, content negotiation is happening.
 
             # check status
             if self.base.response.status_code != \
-               self.state.response.status_code:
+               self.response.status_code:
                 self.add_note('status', rs.VARY_STATUS_MISMATCH, 
                   neg_status=self.base.response.status_code,
-                  noneg_status=self.state.response.status_code)
+                  noneg_status=self.response.status_code)
                 return  # Can't be sure what's going on...
 
             # check headers that should be invariant
             for hdr in ['content-type']:
                 if self.base.response.parsed_headers.get(hdr) != \
-                  self.state.response.parsed_headers.get(hdr, None):
+                  self.response.parsed_headers.get(hdr, None):
                     self.add_note('header-%s' % hdr,
                       rs.VARY_HEADER_MISMATCH, 
                       header=hdr)
@@ -101,11 +101,11 @@ class ConnegCheck(SubRequest):
 
             # check body
             if self.base.response.decoded_md5 != \
-               self.state.response.payload_md5:
+               self.response.payload_md5:
                 self.add_note('body', rs.VARY_BODY_MISMATCH)
 
             # check ETag
-            if (self.state.response.parsed_headers.get('etag', 1) == \
+            if (self.response.parsed_headers.get('etag', 1) == \
               self.base.response.parsed_headers.get('etag', 2)):
                 if not self.base.response.parsed_headers['etag'][0]: # strong
                     self.add_note('header-etag',
@@ -113,12 +113,12 @@ class ConnegCheck(SubRequest):
                     ) 
 
             # check compression efficiency
-            if self.state.response.payload_len > 0:
+            if self.response.payload_len > 0:
                 savings = int(100 * 
                     (
-                        (float(self.state.response.payload_len) - \
+                        (float(self.response.payload_len) - \
                         self.base.response.payload_len
-                        ) / self.state.response.payload_len
+                        ) / self.response.payload_len
                     )
                 )
             else:
@@ -129,13 +129,13 @@ class ConnegCheck(SubRequest):
                 self.add_note('header-content-encoding',
                     rs.CONNEG_GZIP_GOOD,
                     savings=savings,
-                    orig_size=f_num(self.state.response.payload_len),
+                    orig_size=f_num(self.response.payload_len),
                     gzip_size=f_num(self.base.response.payload_len)
                 )
             else:
                 self.add_note('header-content-encoding',
                     rs.CONNEG_GZIP_BAD,
                     savings=abs(savings),
-                    orig_size=f_num(self.state.response.payload_len),
+                    orig_size=f_num(self.response.payload_len),
                     gzip_size=f_num(self.base.response.payload_len)
                 )

@@ -35,9 +35,7 @@ from redbot.message import HttpRequest, HttpResponse
 
 
 class RedState(object):
-    """
-    Holder for test state.
-    """
+    "Base class for things that have test state."
     
     def __init__(self, check_type):
         self.notes = []

@@ -51,7 +51,7 @@ class RedHttpClient(thor.http.HttpClient):
     read_timeout = 15
     
 
-class RedFetcher(object):
+class RedFetcher(RedState):
     """
     Fetches the given URI (with the provided method, headers and body) and
     calls:
@@ -69,11 +69,11 @@ class RedFetcher(object):
 
     def __init__(self, iri, method="GET", req_hdrs=None, req_body=None,
                  status_cb=None, body_procs=None, check_type=None):
-        self.state = RedState(check_type)
-        self.state.check_type = check_type
-        self.state.request.method = method
-        self.state.request.headers = req_hdrs or []
-        self.state.request.payload = req_body
+        RedState.__init__(self, check_type)
+        self.check_type = check_type
+        self.request.method = method
+        self.request.headers = req_hdrs or []
+        self.request.payload = req_body
         self.exchange = None
         self.status_cb = status_cb
         self.body_procs = body_procs or []
@@ -81,16 +81,16 @@ class RedFetcher(object):
         self.outstanding_tasks = 0
         self._st = [] # TEMPORARY
         try:
-            self.state.uri = self.iri_to_uri(iri)
+            self.uri = self.iri_to_uri(iri)
         except (ValueError, UnicodeError), why:
             self.response.http_error = httperr.UrlError(why[0])
-            self.state.uri = None
+            self.uri = None
 
     def __repr__(self):
         status = [self.__class__.__module__ + "." + self.__class__.__name__]
         if hasattr(self, 'state'):
             status.append("%s {%s}" % (
-                self.state.request.method or "???", self.state.uri or "???"
+                self.request.method or "???", self.uri or "???"
             ))
             status.append("%s tasks" % self.outstanding_tasks or "?")
         return "<%s at %#x>" % (", ".join(status), id(self))
@@ -141,74 +141,72 @@ class RedFetcher(object):
         self.outstanding_tasks += 1
         self._st.append('run(%s)' % str(done_cb))
         self.done_cb = done_cb
-        state = self.state
-        if not self.preflight() or state.uri == None:
+        if not self.preflight() or self.uri == None:
             # generally a good sign that we're not going much further.
             self.finish_task()
             return
-        if 'user-agent' not in [i[0].lower() for i in state.request.headers]:
-            state.request.headers.append(
+        if 'user-agent' not in [i[0].lower() for i in self.request.headers]:
+            self.request.headers.append(
                 (u"User-Agent", u"RED/%s (http://redbot.org/)" % __version__))    
         self.exchange = self.client.exchange()
         self.exchange.on('response_start', self._response_start)
         self.exchange.on('response_body', self._response_body)
         self.exchange.on('response_done', self._response_done)
         self.exchange.on('error', self._response_error)
-        if self.status_cb and state.check_type:
-            self.status_cb("fetching %s (%s)" % (state.uri, state.check_type))
+        if self.status_cb and self.check_type:
+            self.status_cb("fetching %s (%s)" % (self.uri, self.check_type))
         req_hdrs = [
             (k.encode('ascii', 'replace'), v.encode('latin-1', 'replace')) \
-            for (k, v) in state.request.headers
+            for (k, v) in self.request.headers
         ]
-        self.exchange.request_start(state.request.method, state.uri, req_hdrs)
-        state.request.start_time = thor.time()
-        if state.request.payload != None:
-            self.exchange.request_body(state.request.payload)
+        self.exchange.request_start(self.request.method, self.uri, req_hdrs)
+        self.request.start_time = thor.time()
+        if self.request.payload != None:
+            self.exchange.request_body(self.request.payload)
         self.exchange.request_done([])
 
     def _response_start(self, status, phrase, res_headers):
         "Process the response start-line and headers."
         self._st.append('_response_start(%s, %s)' % (status, phrase))
-        res = self.state.response
+        res = self.response
         res.start_time = thor.time()
         res.version = self.exchange.res_version
         res.status_code = status.decode('iso-8859-1', 'replace')
         res.status_phrase = phrase.decode('iso-8859-1', 'replace')
         res.set_headers(res_headers)
-        StatusChecker(self.state.response, self.state.request)
-        checkCaching(self.state.response, self.state.request)
+        StatusChecker(self.response, self.request)
+        checkCaching(self.response, self.request)
 
     def _response_body(self, chunk):
         "Process a chunk of the response body."
-        self.state.response.feed_body(chunk, self.body_procs)
+        self.response.feed_body(chunk, self.body_procs)
 
     def _response_done(self, trailers):
         "Finish analysing the response, handling any parse errors."
         self._st.append('_response_done()')
-        state = self.state
-        res = state.response
+        res = self.response
         res.complete_time = thor.time()
         res.transfer_length = self.exchange.input_transfer_length
         res.header_length = self.exchange.input_header_length
         res.body_done(True, trailers)
-        if self.status_cb and state.check_type:
-            self.status_cb("fetched %s (%s)" % (state.uri, state.check_type))
+        if self.status_cb and self.check_type:
+            self.status_cb("fetched %s (%s)" % (self.uri, self.check_type))
         self.done()
         self.finish_task()
 
     def _response_error(self, error):
         "Handle an error encountered while fetching the response."
         self._st.append('_response_error(%s)' % (str(error)))
-        res = self.state.response
+        res = self.response
         res.complete_time = thor.time()
         res.http_error = error
         if isinstance(error, httperr.BodyForbiddenError):
-            self.state.add_note('header-none', rs.BODY_NOT_ALLOWED)
+            self.add_note('header-none', rs.BODY_NOT_ALLOWED)
 #        elif isinstance(error, httperr.ExtraDataErr):
 #            res.payload_len += len(err.get('detail', ''))
         elif isinstance(error, httperr.ChunkError):
             err_msg = error.detail[:20] or ""
-            self.state.add_note('header-transfer-encoding', rs.BAD_CHUNK,
+            self.add_note('header-transfer-encoding', rs.BAD_CHUNK,
                 chunk_sample=err_msg.encode('string_escape')
             )
         self.done()
@@ -247,7 +245,7 @@ if "__main__" == __name__:
     class TestFetcher(RedFetcher):
         "Test a fetcher."
         def done(self):
-            print self.state.notes
+            print self.notes
     T = TestFetcher(
          sys.argv[1], 
          req_hdrs=[(u'Accept-Encoding', u'gzip')], 
