@@ -52,7 +52,6 @@ class HttpMessage(object):
     """
     def __init__(self, notes=None, name=None):
         self.is_request = None
-        self.is_head_response = False
         self.version = ""
         self.base_uri = ""
         self.start_time = None
@@ -144,7 +143,6 @@ class HttpMessage(object):
 
         if self.is_request or \
           (not self.is_head_response and self.status_code not in ['304']):
-            # FIXME: is_head_response
             # check payload basics
             if self.parsed_headers.has_key('content-length'):
                 if self.payload_len == self.parsed_headers['content-length']:
@@ -348,6 +346,7 @@ class HttpResponse(HttpMessage):
     def __init__(self, notes=None, name=None):
         HttpMessage.__init__(self, notes, name)
         self.is_request = False
+        self.is_head_response = False
         self.status_code = None
         self.status_phrase = ""
         self.freshness_lifetime = None

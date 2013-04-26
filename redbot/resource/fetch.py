@@ -73,6 +73,7 @@ class RedFetcher(RedState):
         self.request.headers = req_hdrs or []
         self.request.payload = req_body
         self.response = HttpResponse(self.notes, self.name)
+        self.response.is_head_response = (method == "HEAD")
         self.response.base_uri = self.request.uri
         self.response.set_decoded_procs(body_procs or [])
         self.exchange = None
