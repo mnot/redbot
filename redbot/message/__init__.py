@@ -299,7 +299,7 @@ class HttpRequest(HttpMessage):
         try:
             self.uri = self.iri_to_uri(iri)
         except (ValueError, UnicodeError), why:
-            self.response.http_error = httperr.UrlError(why[0])
+            self.http_error = httperr.UrlError(why[0])
             return
         if not re.match("^\s*%s\s*$" % URI, self.uri, re.VERBOSE):
             self.add_note('uri', rs.URI_BAD_SYNTAX)

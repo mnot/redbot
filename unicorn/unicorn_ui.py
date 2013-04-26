@@ -10,7 +10,7 @@ Created on Jun 30, 2010
 """
 import sys
 import os
-from redbot.resource import InspectingHttpResource
+from redbot.resource import HttpResource
 from redbot.speak import _Classifications
 from xml.dom import minidom
 from xml.dom.minidom import parseString
@@ -35,7 +35,7 @@ class UnicornUi(object):
         """
         self.test_uri = test_uri
         try:
-            self.red = InspectingHttpResource(self.test_uri)
+            self.red = HttpResource(self.test_uri)
             self.result = ""
             self.done = False
             self.groups = []

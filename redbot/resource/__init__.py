@@ -56,13 +56,17 @@ class HttpResource(RedFetcher):
     populated, as well as its notes; see that class for details.
     """
     def __init__(self, uri, method="GET", req_hdrs=None, req_body=None,
-                status_cb=None, body_procs=None):
+                status_cb=None, body_procs=None, descend=False):
         orig_req_hdrs = req_hdrs or []
         rh = orig_req_hdrs + [(u'Accept-Encoding', u'gzip')]
         RedFetcher.__init__(self, uri, method, rh, req_body,
                             status_cb, body_procs, check_type=method)
+        self.descend = descend
+        self.response.set_link_procs([self.process_link])
         self.subreqs = {} # sub-requests' RedState objects
-        # Extra metadata that the "main" RED will be adorned with
+        self.links = {}          # {type: set(link...)}
+        self.link_count = 0
+        self.linked = []    # list of linked HttpResources (if descend=True)
         self.orig_req_hdrs = orig_req_hdrs
         self.partial_support = None
         self.inm_support = None
@@ -77,24 +81,6 @@ class HttpResource(RedFetcher):
         """
         if self.response.complete:
             active_check.spawn_all(self)
-
-
-class InspectingHttpResource(HttpResource):
-    """
-    A RED that parses the response body to look for links. If descend
-    is True, it will also spider linked resources and populate
-    self.linked with their HttpResources.
-    """
-    def __init__(self, uri, method="GET", req_hdrs=None, req_body=None,
-                status_cb=None, body_procs=None, descend=False):
-        body_procs = ( body_procs or [] )
-        self.descend = descend
-        HttpResource.__init__(self, uri, method, req_hdrs, req_body,
-                status_cb, body_procs)
-        self.response.set_link_procs([self.process_link])
-        self.links = {}          # {type: set(link...)}
-        self.link_count = 0
-        self.linked = []    # list of linked HttpResources (if descend=True)
 
     def process_link(self, base, link, tag, title):
         "Handle a link from content"
@@ -120,6 +106,6 @@ if "__main__" == __name__:
     test_uri = sys.argv[1]
     def status_p(msg):
         print msg
-    red = InspectingHttpResource(test_uri, status_cb=status_p)
+    red = HttpResource(test_uri, status_cb=status_p)
     red.run()
     print red.notes
