@@ -30,7 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from redbot.fetch import RedFetcher
+from redbot.resource.fetch import RedFetcher
 
 
 class SubRequest(RedFetcher):

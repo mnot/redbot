@@ -43,7 +43,7 @@ import thor
 import thor.http.error as httperr
 
 import redbot.speak as rs
-from redbot import defns, fetch, __version__
+from redbot import defns, __version__
 from redbot.formatter import Formatter, html_header, relative_time, f_num
 
 nl = u"\n"

@@ -166,7 +166,7 @@ class BadErrorIReallyMeanIt(Exception):
 
 if "__main__" == __name__:
     import sys
-    from redbot.fetch import RedFetcher
+    from redbot.resource.fetch import RedFetcher
     uri = sys.argv[1]
     req_hdrs = [(u'Accept-Encoding', u'gzip')]
     class TestFetcher(RedFetcher):
