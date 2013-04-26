@@ -82,21 +82,6 @@ class RedFetcher(RedState):
         self.outstanding_tasks = 0
         self._st = [] # FIXME: this is temporary, for debugging thor
 
-    def __repr__(self):
-        status = [self.__class__.__module__ + "." + self.__class__.__name__]
-        if hasattr(self, 'state'):
-            status.append("%s {%s}" % (
-                self.request.method or "???", self.request.uri or "???"
-            ))
-            status.append("%s tasks" % self.outstanding_tasks or "?")
-        return "<%s at %#x>" % (", ".join(status), id(self))
-
-    def __getstate__(self):
-        state = self.__dict__.copy()
-        del state['status_cb']
-        del state['exchange']
-        return state
-
     def add_task(self, task, *args):
         "Remeber that we've started a task."
         self.outstanding_tasks += 1
@@ -166,12 +151,11 @@ class RedFetcher(RedState):
     def _response_start(self, status, phrase, res_headers):
         "Process the response start-line and headers."
         self._st.append('_response_start(%s, %s)' % (status, phrase))
-        res = self.response
-        res.start_time = thor.time()
-        res.version = self.exchange.res_version
-        res.status_code = status.decode('iso-8859-1', 'replace')
-        res.status_phrase = phrase.decode('iso-8859-1', 'replace')
-        res.set_headers(res_headers)
+        self.response.start_time = thor.time()
+        self.response.version = self.exchange.res_version
+        self.response.status_code = status.decode('iso-8859-1', 'replace')
+        self.response.status_phrase = phrase.decode('iso-8859-1', 'replace')
+        self.response.set_headers(res_headers)
         StatusChecker(self.response, self.request)
         checkCaching(self.response, self.request)
 
@@ -182,11 +166,10 @@ class RedFetcher(RedState):
     def _response_done(self, trailers):
         "Finish analysing the response, handling any parse errors."
         self._st.append('_response_done()')
-        res = self.response
-        res.complete_time = thor.time()
-        res.transfer_length = self.exchange.input_transfer_length
-        res.header_length = self.exchange.input_header_length
-        res.body_done(True, trailers)
+        self.response.complete_time = thor.time()
+        self.response.transfer_length = self.exchange.input_transfer_length
+        self.response.header_length = self.exchange.input_header_length
+        self.response.body_done(True, trailers)
         if self.status_cb and self.name:
             self.status_cb("fetched %s (%s)" % (
                 self.request.uri, self.name
@@ -197,9 +180,8 @@ class RedFetcher(RedState):
     def _response_error(self, error):
         "Handle an error encountered while fetching the response."
         self._st.append('_response_error(%s)' % (str(error)))
-        res = self.response
-        res.complete_time = thor.time()
-        res.http_error = error
+        self.response.complete_time = thor.time()
+        self.response.http_error = error
         if isinstance(error, httperr.BodyForbiddenError):
             self.add_note('header-none', rs.BODY_NOT_ALLOWED)
 #        elif isinstance(error, httperr.ExtraDataErr):
