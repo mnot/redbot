@@ -65,16 +65,14 @@ class RedFetcher(RedState):
     client = RedHttpClient()
 
     def __init__(self, iri, method="GET", req_hdrs=None, req_body=None,
-                 status_cb=None, body_procs=None,
-                 check_type=None):
-        RedState.__init__(self, check_type)
-        self.check_type = check_type
-        self.request = HttpRequest(self.notes, check_type)
+                 status_cb=None, body_procs=None, name=None):
+        RedState.__init__(self, name)
+        self.request = HttpRequest(self.notes, self.name)
         self.request.method = method
         self.request.set_iri(iri)
         self.request.headers = req_hdrs or []
         self.request.payload = req_body
-        self.response = HttpResponse(self.notes, check_type)
+        self.response = HttpResponse(self.notes, self.name)
         self.response.base_uri = self.request.uri
         self.response.set_decoded_procs(body_procs or [])
         self.exchange = None
@@ -148,9 +146,9 @@ class RedFetcher(RedState):
         self.exchange.on('response_body', self._response_body)
         self.exchange.on('response_done', self._response_done)
         self.exchange.on('error', self._response_error)
-        if self.status_cb and self.check_type:
+        if self.status_cb and self.name:
             self.status_cb("fetching %s (%s)" % (
-                self.request.uri, self.check_type
+                self.request.uri, self.name
             ))
         req_hdrs = [
             (k.encode('ascii', 'replace'), v.encode('latin-1', 'replace')) \
@@ -188,9 +186,9 @@ class RedFetcher(RedState):
         res.transfer_length = self.exchange.input_transfer_length
         res.header_length = self.exchange.input_header_length
         res.body_done(True, trailers)
-        if self.status_cb and self.check_type:
+        if self.status_cb and self.name:
             self.status_cb("fetched %s (%s)" % (
-                self.request.uri, self.check_type
+                self.request.uri, self.name
             ))
         self.done()
         self.finish_task()
@@ -227,7 +225,7 @@ if "__main__" == __name__:
          sys.argv[1],
          req_hdrs=[(u'Accept-Encoding', u'gzip')],
          status_cb=status_p,
-         check_type='test'
+         name='test'
     )
     T.run()
     thor.run()

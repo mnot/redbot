@@ -50,7 +50,7 @@ class HttpMessage(object):
     """
     Base class for HTTP message state.
     """
-    def __init__(self, notes=None, check_type=None):
+    def __init__(self, notes=None, name=None):
         self.is_request = None
         self.is_head_response = False
         self.version = ""
@@ -80,7 +80,7 @@ class HttpMessage(object):
         self._gzip_processor = zlib.decompressobj(-zlib.MAX_WBITS)
         self._in_gzip_body = False
         self._gzip_header_buffer = ""
-        self.check_type = check_type
+        self.name = name
         if notes is None:
             self.notes = []
         else:
@@ -281,7 +281,7 @@ class HttpMessage(object):
         "Set a note."
         kw.update(self._context)
         kw['response'] = rs.response.get(
-            self.check_type, rs.response['this']
+            self.name, rs.response['this']
         )['en']
         self.notes.append(note(subject, subreq, kw))
         
@@ -290,8 +290,8 @@ class HttpRequest(HttpMessage):
     """
     A HTTP Request message.
     """
-    def __init__(self, notes=None, check_type=None):
-        HttpMessage.__init__(self, notes, check_type)
+    def __init__(self, notes=None, name=None):
+        HttpMessage.__init__(self, notes, name)
         self.is_request = True
         self.method = None
         self.uri = None
@@ -345,8 +345,8 @@ class HttpResponse(HttpMessage):
     """
     A HTTP Response message.
     """
-    def __init__(self, notes=None, check_type=None):
-        HttpMessage.__init__(self, notes, check_type)
+    def __init__(self, notes=None, name=None):
+        HttpMessage.__init__(self, notes, name)
         self.is_request = False
         self.status_code = None
         self.status_phrase = ""
@@ -360,8 +360,8 @@ class DummyMsg(HttpResponse):
     """
     A dummy HTTP message, for testing.
     """
-    def __init__(self, notes=None, check_type=None):
-        HttpResponse.__init__(self, notes, check_type)
+    def __init__(self, notes=None, name=None):
+        HttpResponse.__init__(self, notes, name)
         self.base_uri = "http://www.example.com/foo/bar/baz.html?bat=bam"
         self.start_time = time.time()
         self.status_phrase = ""

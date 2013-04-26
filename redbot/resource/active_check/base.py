@@ -61,7 +61,7 @@ class SubRequest(RedFetcher):
         return list(self.base.orig_req_hdrs)
 
     def add_note(self, subject, note, subreq=None, **kw):
-        self.base.add_note(subject, note, self.check_type, **kw)
+        self.base.add_note(subject, note, self.name, **kw)
         
     def check_missing_hdrs(self, hdrs, note, subreq_type):
         """

@@ -60,7 +60,7 @@ class HttpResource(RedFetcher):
         orig_req_hdrs = req_hdrs or []
         new_req_hdrs = orig_req_hdrs + [(u'Accept-Encoding', u'gzip')]
         RedFetcher.__init__(self, uri, method, new_req_hdrs, req_body,
-                            status_cb, body_procs, check_type=method)
+                            status_cb, body_procs, name=method)
         self.descend = descend
         self.response.set_link_procs([self.process_link])
         self.subreqs = {} # sub-requests' RedState objects
