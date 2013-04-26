@@ -44,7 +44,7 @@ from redbot.message.uri_syntax import URI
 import thor.http.error as httperr
 
 ### configuration
-max_uri = 8000
+MAX_URI = 8000
 
 class HttpMessage(object):
     """
@@ -133,7 +133,8 @@ class HttpMessage(object):
         
     def body_done(self, complete, trailers=None):
         """
-        Signal that the body is done. Complete should be True if we know it's complete.
+        Signal that the body is done. Complete should be True if we 
+        know it's complete.
         """
         # TODO: check trailers
         self.complete = complete
@@ -141,7 +142,9 @@ class HttpMessage(object):
         self.payload_md5 = self._md5_processor.digest()
         self.decoded_md5 = self._md5_post_processor.digest()
 
-        if self.is_request or (not self.is_head_response and self.status_code not in ['304']):
+        if self.is_request or \
+          (not self.is_head_response and self.status_code not in ['304']):
+            # FIXME: is_head_response
             # check payload basics
             if self.parsed_headers.has_key('content-length'):
                 if self.payload_len == self.parsed_headers['content-length']:
@@ -156,7 +159,8 @@ class HttpMessage(object):
                 if self.parsed_headers['content-md5'] == c_md5_calc:
                     self.add_note('header-content-md5', rs.CMD5_CORRECT)
                 else:
-                    self.add_note('header-content-md5', rs.CMD5_INCORRECT, calc_md5=c_md5_calc)
+                    self.add_note('header-content-md5', 
+                                  rs.CMD5_INCORRECT, calc_md5=c_md5_calc)
 
     def _process_content_codings(self, chunk):
         """
@@ -305,8 +309,8 @@ class HttpRequest(HttpMessage):
             self.add_note('uri', rs.URI_BAD_SYNTAX)
         if '#' in self.uri:
             # chop off the fragment
-            self.uri = self.uri[:uri.index('#')]
-        if len(self.uri) > max_uri:
+            self.uri = self.uri[:self.uri.index('#')]
+        if len(self.uri) > MAX_URI:
             self.add_note('uri',
                 rs.URI_TOO_LONG,
                 uri_len=f_num(len(self.uri))
