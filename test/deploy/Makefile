@@ -3,6 +3,10 @@ source = ../../
 
 all: thor redbot
 
+.PHONY: server
+server: clean all
+	python webui.py 8080 static/
+
 redbot: clean-redbot
 	cp -p $(source)/bin/webui.py .
 	chmod a+x webui.py

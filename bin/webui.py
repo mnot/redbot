@@ -516,7 +516,6 @@ def standalone_main(host, port, static_dir):
                   "* Problem loading %s\n" % path
                 )
     os.path.walk(static_dir, static_walker, "")
-    sys.stderr.write("* Static files loaded.\n")
 
     def red_handler(x):
         @thor.events.on(x)
@@ -596,7 +595,8 @@ if __name__ == "__main__":
     
         static_dir = args[1]
         sys.stderr.write(
-            "Starting standalone server on PID %s...\n" % os.getpid()
+            "Starting standalone server on PID %s...\n" % os.getpid() + \
+            "http://localhost:%s/\n" % port
         )
 
 #       import pdb
