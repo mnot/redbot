@@ -34,7 +34,7 @@ import redbot.speak as rs
 
 class RedState(object):
     "Base class for things that have test state."
-    
+
     def __init__(self, name):
         self.name = name
         self.notes = []
@@ -47,7 +47,7 @@ class RedState(object):
     def __getstate__(self):
         return dict([(k,v) for k,v in self.__dict__.items() \
                       if not isinstance(v, types.MethodType)])
-        
+
     def add_note(self, subject, note, subreq=None, **kw):
         "Set a note."
         kw['response'] = rs.response.get(

@@ -47,7 +47,7 @@ from redbot.uri_validate import absolute_URI, URI
 ### configuration
 max_uri = 8000
 
-                
+
 
 class HttpResource(RedFetcher):
     """
@@ -69,7 +69,7 @@ class HttpResource(RedFetcher):
         RedFetcher.__init__(self, uri, method, rh, req_body,
                             status_cb, body_procs, check_type=method)
 
-        # Extra metadata that the "main" RED will be adorned with 
+        # Extra metadata that the "main" RED will be adorned with
         self.orig_req_hdrs = orig_req_hdrs
         self.partial_support = None
         self.inm_support = None
@@ -84,8 +84,8 @@ class HttpResource(RedFetcher):
             # chop off the fragment
             uri = uri[:uri.index('#')]
         if len(uri) > max_uri:
-            self.add_note('uri', 
-                rs.URI_TOO_LONG, 
+            self.add_note('uri',
+                rs.URI_TOO_LONG,
                 uri_len=f_num(len(uri))
             )
 
@@ -96,7 +96,7 @@ class HttpResource(RedFetcher):
         """
         if self.response.complete:
             active_check.spawn_all(self)
-            
+
 
 class InspectingHttpResource(HttpResource):
     """
@@ -116,7 +116,7 @@ class InspectingHttpResource(HttpResource):
         self.links = {}          # {type: set(link...)}
         self.link_count = 0
         self.linked = []    # list of linked HttpResources (if descend=True)
-        self.base_uri = None        
+        self.base_uri = None
 
     def process_link(self, link, tag, title):
         "Handle a link from content"

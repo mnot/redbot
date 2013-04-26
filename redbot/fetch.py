@@ -49,7 +49,7 @@ class RedHttpClient(thor.http.HttpClient):
     "Thor HttpClient for RedFetcher"
     connect_timeout = 10
     read_timeout = 15
-    
+
 
 class RedFetcher(RedState):
     """
@@ -60,8 +60,8 @@ class RedFetcher(RedState):
       - done_cb when all tasks are done.
     If provided, type indicates the type of the request, and is used to
     help set notes and status_cb appropriately.
-    
-    The done() method is called when the response is done, NOT when all 
+
+    The done() method is called when the response is done, NOT when all
     tasks are done. It can add tasks by calling add_task().
 
     """
@@ -110,7 +110,7 @@ class RedFetcher(RedState):
         self.outstanding_tasks += 1
         self._st.append('add_task(%s)' % str(task))
         task(*args, done_cb=self.finish_task)
-        
+
     def finish_task(self):
         "Note that we've finished a task, and see if we're done."
         self.outstanding_tasks -= 1
@@ -130,8 +130,8 @@ class RedFetcher(RedState):
 
     def preflight(self):
         """
-        Callback to check to see if we should bother running. Return True 
-        if so; False if not. 
+        Callback to check to see if we should bother running. Return True
+        if so; False if not.
         """
         return True
 
@@ -150,7 +150,7 @@ class RedFetcher(RedState):
             return
         if 'user-agent' not in [i[0].lower() for i in self.request.headers]:
             self.request.headers.append(
-                (u"User-Agent", u"RED/%s (http://redbot.org/)" % __version__))    
+                (u"User-Agent", u"RED/%s (http://redbot.org/)" % __version__))
         self.exchange = self.client.exchange()
         self.exchange.on('response_start', self._response_start)
         self.exchange.on('response_body', self._response_body)
@@ -226,15 +226,15 @@ class RedFetcher(RedState):
         else:
             authority = authority.encode('idna')
         path = urllib.quote(
-          path.encode('utf-8'), 
+          path.encode('utf-8'),
           safe="/;%[]=:$&()+,!?*@'~"
         )
         query = urllib.quote(
-          query.encode('utf-8'), 
+          query.encode('utf-8'),
           safe="/;%[]=:$&()+,!?*@'~"
         )
         frag = urllib.quote(
-          frag.encode('utf-8'), 
+          frag.encode('utf-8'),
           safe="/;%[]=:$&()+,!?*@'~"
         )
         return urlparse.urlunsplit((scheme, authority, path, query, frag))
@@ -250,9 +250,9 @@ if "__main__" == __name__:
         def done(self):
             print self.notes
     T = TestFetcher(
-         sys.argv[1], 
-         req_hdrs=[(u'Accept-Encoding', u'gzip')], 
-         status_cb=status_p, 
+         sys.argv[1],
+         req_hdrs=[(u'Accept-Encoding', u'gzip')],
+         status_cb=status_p,
          check_type='test'
     )
     T.run()
