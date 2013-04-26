@@ -32,6 +32,7 @@ import hashlib
 import time
 import zlib
 
+from redbot import link_parse
 from redbot.message.headers import process_headers
 from redbot.formatter import f_num
 import redbot.speak as rs
@@ -59,6 +60,9 @@ class HttpMessage(object):
         self.character_encoding = None
         self.decoded_len = 0
         self.decoded_md5 = None
+        self._decoded_procs = []
+        self._decode_ok = True # turn False if we have a problem
+        self._link_parser = None
         self.transfer_length = 0
         self.trailers = []
         self.http_error = None  # any parse errors encountered; see httperr
@@ -68,12 +72,20 @@ class HttpMessage(object):
         self._gzip_processor = zlib.decompressobj(-zlib.MAX_WBITS)
         self._in_gzip_body = False
         self._gzip_header_buffer = ""
-        self._decode_ok = True # turn False if we have a problem
         self.check_type = check_type
         if notes is None:
             self.notes = []
         else:
             self.notes = notes
+
+    def set_decoded_procs(self, decoded_procs):
+        "Set a list of processors for the decoded body."
+        self._decoded_procs = decoded_procs
+
+    def set_link_procs(self, link_procs):
+        "Set a list of link processors that get called upon each link."
+        self._link_parser = link_parse.HTMLLinkParser(
+            self.base_uri, link_procs)
         
     def set_headers(self, headers):
         """
@@ -85,7 +97,7 @@ class HttpMessage(object):
             'content-type', (None, {})
         )[1].get('charset', 'utf-8') # default isn't UTF-8, but oh well
         
-    def feed_body(self, chunk, body_procs=None):
+    def feed_body(self, chunk):
         """
         Feed a chunk of the body in.
         
@@ -102,12 +114,14 @@ class HttpMessage(object):
             self.payload += chunk
         else:
             decoded_chunk = self._process_content_codings(chunk)
-            if self._decode_ok and body_procs:
-                for processor in body_procs:
+            if self._decode_ok:
+                for processor in self._decoded_procs:
                     # TODO: figure out why raising an error in a body_proc
                     # results in a "server dropped the connection" instead of
                     # a hard error.
                     processor(self, decoded_chunk)
+                if self._link_parser:
+                    self._link_parser.feed(self, decoded_chunk)
         
     def body_done(self, complete, trailers=None):
         """
@@ -268,7 +282,7 @@ class HttpRequest(HttpMessage):
         HttpMessage.__init__(self, notes, check_type)
         self.is_request = True
         self.method = None
-        self.url = None
+        self.uri = None
 
         
 class HttpResponse(HttpMessage):

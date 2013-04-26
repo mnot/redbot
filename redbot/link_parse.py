@@ -40,9 +40,10 @@ class HTMLLinkParser(HTMLParser):
     feed() accepts a HttpResponse object and a chunk of the document at a
     time.
 
-    When links are found, process_link will be called for each with the
+    When links are found, link_procs will be called for each with the
     following arguments;
-      - link (absolute URI as a unicode string)
+      - base (base URI for the link, in a unicode string)
+      - link (URI as it appeared in document, in a unicode string)
       - tag (name of the element that contained it)
       - title (title attribute as a unicode string, if any)
     """
@@ -53,9 +54,9 @@ class HTMLLinkParser(HTMLParser):
         'application/atom+xml'
     ]
 
-    def __init__(self, base_uri, process_link, err=None):
+    def __init__(self, base_uri, link_procs, err=None):
         self.base = base_uri
-        self.process_link = process_link
+        self.link_procs = link_procs
         self.err = err
         self.doc_enc = None
         self.link_types = {
@@ -80,18 +81,18 @@ class HTMLLinkParser(HTMLParser):
             'ok': self.ok,
         }
 
-    def feed(self, response, chunk):
+    def feed(self, msg, chunk):
         "Feed a given chunk of HTML data to the parser"
         if not self.ok:
             return
-        if response.parsed_headers.get('content-type', [None])[0] in \
+        if msg.parsed_headers.get('content-type', [None])[0] in \
           self.link_parseable_types:
             try:
                 if chunk.__class__.__name__ != 'unicode':
                     try:
                         chunk = unicode(
                             chunk, 
-                            self.doc_enc or response.character_encoding, 
+                            self.doc_enc or msg.character_encoding, 
                             'ignore'
                         )
                     except LookupError:
@@ -116,7 +117,8 @@ class HTMLLinkParser(HTMLParser):
                 if target:
                     if "#" in target:
                         target = target[:target.index('#')]
-                    self.process_link(target, tag, title)
+                    for proc in self.link_procs:
+                        proc(self.base, target, tag, title)
         elif tag == 'base':
             self.base = attr_d.get('href', self.base)
         elif tag == 'meta' and \

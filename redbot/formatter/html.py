@@ -385,7 +385,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             for link in link_set:
                 def link_to(matchobj):
                     try:
-                        qlink = urljoin(red.base_uri, link)
+                        qlink = urljoin(red.response.base_uri, link)
                     except ValueError, why:
                         pass # TODO: pass link problem upstream?
                              # e.g., ValueError("Invalid IPv6 URL")
@@ -393,7 +393,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                         matchobj.group(1),
                         u"?uri=%s&req_hdr=Referer%%3A%s" % (
                             e_query_arg(qlink),
-                            e_query_arg(red.base_uri)
+                            e_query_arg(red.response.base_uri)
                         ),
                         e_html(link),
                         matchobj.group(1)
@@ -627,7 +627,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         for hdr_tag, heading in self.link_order:
             droids = [d[0] for d in red.linked if d[1] == hdr_tag]
             if droids:
-                droids.sort(key=operator.attrgetter('uri'))
+                droids.sort(key=operator.attrgetter('response.base_uri'))
                 out.append(
                     self.format_table_header(heading + " (%s)" % len(droids))
                 )

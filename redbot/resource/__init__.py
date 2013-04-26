@@ -37,7 +37,6 @@ THE SOFTWARE.
 from urlparse import urljoin
 
 import redbot.speak as rs
-from redbot import link_parse
 from redbot.resource.fetch import RedFetcher
 from redbot.formatter import f_num
 from redbot.resource import active_check
@@ -88,34 +87,31 @@ class InspectingHttpResource(HttpResource):
     """
     def __init__(self, uri, method="GET", req_hdrs=None, req_body=None,
                 status_cb=None, body_procs=None, descend=False):
-        self.link_parser = link_parse.HTMLLinkParser(
-            uri, self.process_link, status_cb
-        )
-        body_procs = ( body_procs or [] ) + [self.link_parser.feed]
+        body_procs = ( body_procs or [] )
         self.descend = descend
         HttpResource.__init__(self, uri, method, req_hdrs, req_body,
                 status_cb, body_procs)
+        self.response.set_link_procs([self.process_link])
         self.links = {}          # {type: set(link...)}
         self.link_count = 0
         self.linked = []    # list of linked HttpResources (if descend=True)
-        self.base_uri = None
 
-    def process_link(self, link, tag, title):
+    def process_link(self, base, link, tag, title):
         "Handle a link from content"
         self.link_count += 1
         if not self.links.has_key(tag):
             self.links[tag] = set()
         if self.descend and tag not in ['a'] and link not in self.links[tag]:
             linked = HttpResource(
-                urljoin(self.link_parser.base, link),
+                urljoin(base, link),
                 req_hdrs=self.orig_req_hdrs,
                 status_cb=self.status_cb,
             )
             self.linked.append((linked, tag))
             self.add_task(linked.run)
         self.links[tag].add(link)
-        if not self.base_uri:
-            self.base_uri = self.link_parser.base
+        if not self.response.base_uri:
+            self.response.base_uri = base
 
 
 

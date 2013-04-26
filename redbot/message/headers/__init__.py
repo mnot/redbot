@@ -154,7 +154,7 @@ def process_headers(msg):
     hdr_dict = {}
     header_block_size = len(msg.version)
     if msg.is_request:
-        header_block_size += len(msg.request.method) + len(msg.url) + 2
+        header_block_size += len(msg.method) + len(msg.uri) + 2
     else:
         header_block_size += len(msg.status_phrase) + 5
     clean_hdrs = []      # unicode version of the header tuples

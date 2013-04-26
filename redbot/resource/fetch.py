@@ -76,7 +76,8 @@ class RedFetcher(RedState):
     client = RedHttpClient()
 
     def __init__(self, iri, method="GET", req_hdrs=None, req_body=None,
-                 status_cb=None, body_procs=None, check_type=None):
+                 status_cb=None, body_procs=None,
+                 check_type=None):
         RedState.__init__(self, check_type)
         self.check_type = check_type
         self.request = HttpRequest(self.notes, check_type)
@@ -85,9 +86,10 @@ class RedFetcher(RedState):
         self.request.headers = req_hdrs or []
         self.request.payload = req_body
         self.response = HttpResponse(self.notes, check_type)
+        self.response.base_uri = self.request.uri
+        self.response.set_decoded_procs(body_procs or [])
         self.exchange = None
         self.status_cb = status_cb
-        self.body_procs = body_procs or []
         self.done_cb = None
         self.outstanding_tasks = 0
         self._st = [] # FIXME: this is temporary, for debugging thor
@@ -104,7 +106,6 @@ class RedFetcher(RedState):
     def __getstate__(self):
         state = self.__dict__.copy()
         del state['status_cb']
-        del state['body_procs']
         del state['exchange']
         return state
 
@@ -125,7 +126,6 @@ class RedFetcher(RedState):
                 self.done_cb = None
             # clean up potentially cyclic references
             self.status_cb = None
-            self.body_procs = None
 
     def done(self):
         "Callback for when the response is complete and analysed."
@@ -206,7 +206,7 @@ class RedFetcher(RedState):
 
     def _response_body(self, chunk):
         "Process a chunk of the response body."
-        self.response.feed_body(chunk, self.body_procs)
+        self.response.feed_body(chunk)
 
     def _response_done(self, trailers):
         "Finish analysing the response, handling any parse errors."
