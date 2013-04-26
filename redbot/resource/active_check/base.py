@@ -35,17 +35,21 @@ from redbot.resource.fetch import RedFetcher
 
 class SubRequest(RedFetcher):
     """
-    A subrequest of a "main" HttpResource, made to perform additional
-    behavioural tests on the resource.
-    
-    it both adorns the given red's state, and saves its own state in the
-    given red's subreqs dict.
+    Base class for a subrequest of a "main" HttpResource, made to perform
+    additional behavioural tests on the resource.
     """
-    def __init__(self, red, name):
-        self.base = red
+    def __init__(self, base_resource, name):
+        self.base = base_resource
         req_hdrs = self.modify_req_hdrs()
-        RedFetcher.__init__(self, self.base.request.uri, self.base.request.method, req_hdrs,
-                            self.base.request.payload, red.status_cb, [], name)
+        RedFetcher.__init__(self, 
+                            self.base.request.uri, 
+                            self.base.request.method, 
+                            req_hdrs,
+                            self.base.request.payload, 
+                            self.base.status_cb, 
+                            [], 
+                            name
+        )
         self.base.subreqs[name] = self
     
     def modify_req_hdrs(self):
@@ -59,19 +63,18 @@ class SubRequest(RedFetcher):
     def add_note(self, subject, note, subreq=None, **kw):
         self.base.add_note(subject, note, self.check_type, **kw)
         
-    def check_missing_hdrs(self, hdrs, msg, subreq_type):
+    def check_missing_hdrs(self, hdrs, note, subreq_type):
         """
         See if the listed headers are missing in the subrequest; if so,
         set the specified note.
         """
         missing_hdrs = []
-        for hdr in hdrs:            
+        for hdr in hdrs:
             if self.base.response.parsed_headers.has_key(hdr) \
             and not self.response.parsed_headers.has_key(hdr):
                 missing_hdrs.append(hdr)
         if missing_hdrs:
-            self.add_note('header-%s' % hdr, msg,
+            self.add_note('headers', note,
                 missing_hdrs=", ".join(missing_hdrs),
                 subreq_type=subreq_type
             )
-            
