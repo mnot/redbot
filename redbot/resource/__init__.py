@@ -58,8 +58,8 @@ class HttpResource(RedFetcher):
     def __init__(self, uri, method="GET", req_hdrs=None, req_body=None,
                 status_cb=None, body_procs=None, descend=False):
         orig_req_hdrs = req_hdrs or []
-        rh = orig_req_hdrs + [(u'Accept-Encoding', u'gzip')]
-        RedFetcher.__init__(self, uri, method, rh, req_body,
+        new_req_hdrs = orig_req_hdrs + [(u'Accept-Encoding', u'gzip')]
+        RedFetcher.__init__(self, uri, method, new_req_hdrs, req_body,
                             status_cb, body_procs, check_type=method)
         self.descend = descend
         self.response.set_link_procs([self.process_link])
@@ -103,9 +103,9 @@ class HttpResource(RedFetcher):
 
 if "__main__" == __name__:
     import sys
-    test_uri = sys.argv[1]
     def status_p(msg):
+        'print the status message'
         print msg
-    red = HttpResource(test_uri, status_cb=status_p)
-    red.run()
-    print red.notes
+    RED = HttpResource(sys.argv[1], status_cb=status_p)
+    RED.run()
+    print RED.notes
