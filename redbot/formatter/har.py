@@ -98,7 +98,7 @@ class HarFormatter(Formatter):
         
         request = {
             'method': red.request.method,
-            'url': red.uri,
+            'url': red.request.uri,
             'httpVersion': "HTTP/1.1",
             'cookies': [],
             'headers': self.format_headers(red.request.headers),

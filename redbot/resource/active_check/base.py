@@ -44,7 +44,7 @@ class SubRequest(RedFetcher):
     def __init__(self, red, name):
         self.base = red
         req_hdrs = self.modify_req_hdrs()
-        RedFetcher.__init__(self, self.base.uri, self.base.request.method, req_hdrs,
+        RedFetcher.__init__(self, self.base.request.uri, self.base.request.method, req_hdrs,
                             self.base.request.payload, red.status_cb, [], name)
         self.base.subreqs[name] = self
     

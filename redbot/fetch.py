@@ -32,6 +32,7 @@ THE SOFTWARE.
 """
 
 import base64
+import re
 import urllib
 import urlparse
 
@@ -42,8 +43,15 @@ from redbot import __version__
 from redbot.formatter import f_num
 import redbot.speak as rs
 from redbot.state import RedState
+from redbot.message import HttpRequest, HttpResponse
 from redbot.message.status import StatusChecker
 from redbot.message.cache import checkCaching
+from redbot.uri_validate import URI
+
+
+### configuration
+max_uri = 8000
+
 
 class RedHttpClient(thor.http.HttpClient):
     "Thor HttpClient for RedFetcher"
@@ -70,30 +78,25 @@ class RedFetcher(RedState):
     def __init__(self, iri, method="GET", req_hdrs=None, req_body=None,
                  status_cb=None, body_procs=None, check_type=None):
         RedState.__init__(self, check_type)
+        self.check_type = check_type
         self.request = HttpRequest(self.notes, check_type)
-        self.response = HttpResponse(self.notes, check_type)
         self.request.method = method
+        self.request.uri = self.check_iri(iri)
         self.request.headers = req_hdrs or []
         self.request.payload = req_body
-        self.check_type = check_type
-        self.subreqs = {} # sub-requests' RedState objects
+        self.response = HttpResponse(self.notes, check_type)
         self.exchange = None
         self.status_cb = status_cb
         self.body_procs = body_procs or []
         self.done_cb = None
         self.outstanding_tasks = 0
-        self._st = [] # TEMPORARY
-        try:
-            self.uri = self.iri_to_uri(iri)
-        except (ValueError, UnicodeError), why:
-            self.response.http_error = httperr.UrlError(why[0])
-            self.uri = None
+        self._st = [] # FIXME: this is temporary, for debugging thor
 
     def __repr__(self):
         status = [self.__class__.__module__ + "." + self.__class__.__name__]
         if hasattr(self, 'state'):
             status.append("%s {%s}" % (
-                self.request.method or "???", self.uri or "???"
+                self.request.method or "???", self.request.uri or "???"
             ))
             status.append("%s tasks" % self.outstanding_tasks or "?")
         return "<%s at %#x>" % (", ".join(status), id(self))
@@ -135,6 +138,27 @@ class RedFetcher(RedState):
         """
         return True
 
+    def check_iri(self, iri):
+        """
+        Given an IRI or URI, convert to a URI and make sure it's sensible.
+        """
+        try:
+            uri = self.iri_to_uri(iri)
+        except (ValueError, UnicodeError), why:
+            self.response.http_error = httperr.UrlError(why[0])
+            return None
+        if not re.match("^\s*%s\s*$" % URI, uri, re.VERBOSE):
+            self.add_note('uri', rs.URI_BAD_SYNTAX)
+        if '#' in uri:
+            # chop off the fragment
+            uri = uri[:uri.index('#')]
+        if len(uri) > max_uri:
+            self.add_note('uri',
+                rs.URI_TOO_LONG,
+                uri_len=f_num(len(uri))
+            )
+        return uri
+            
     def run(self, done_cb=None):
         """
         Make an asynchronous HTTP request to uri, calling status_cb as it's
@@ -144,7 +168,7 @@ class RedFetcher(RedState):
         self.outstanding_tasks += 1
         self._st.append('run(%s)' % str(done_cb))
         self.done_cb = done_cb
-        if not self.preflight() or self.uri == None:
+        if not self.preflight() or self.request.uri == None:
             # generally a good sign that we're not going much further.
             self.finish_task()
             return
@@ -157,12 +181,12 @@ class RedFetcher(RedState):
         self.exchange.on('response_done', self._response_done)
         self.exchange.on('error', self._response_error)
         if self.status_cb and self.check_type:
-            self.status_cb("fetching %s (%s)" % (self.uri, self.check_type))
+            self.status_cb("fetching %s (%s)" % (self.request.uri, self.check_type))
         req_hdrs = [
             (k.encode('ascii', 'replace'), v.encode('latin-1', 'replace')) \
             for (k, v) in self.request.headers
         ]
-        self.exchange.request_start(self.request.method, self.uri, req_hdrs)
+        self.exchange.request_start(self.request.method, self.request.uri, req_hdrs)
         self.request.start_time = thor.time()
         if self.request.payload != None:
             self.exchange.request_body(self.request.payload)
@@ -193,7 +217,7 @@ class RedFetcher(RedState):
         res.header_length = self.exchange.input_header_length
         res.body_done(True, trailers)
         if self.status_cb and self.check_type:
-            self.status_cb("fetched %s (%s)" % (self.uri, self.check_type))
+            self.status_cb("fetched %s (%s)" % (self.request.uri, self.check_type))
         self.done()
         self.finish_task()
 

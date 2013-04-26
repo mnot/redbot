@@ -216,7 +216,7 @@ class TextListFormatter(BaseTextFormatter):
         self.done()
 
     def format_uri(self, red):
-        return self.colorize("uri", red.uri)
+        return self.colorize("uri", red.request.uri)
 
 
 class VerboseTextListFormatter(TextListFormatter):

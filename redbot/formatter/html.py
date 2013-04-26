@@ -301,7 +301,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     def finish_output(self):
         self.final_status()
         if self.red.response.complete:
-            self.header_presenter = HeaderPresenter(self.red.uri)
+            self.header_presenter = HeaderPresenter(self.red.request.uri)
             self.output(self.template % {
                 'response': self.format_response(self.red),
                 'options': self.format_options(self.red),
@@ -487,7 +487,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         if self.kw.get('test_id', None):
             har_locator = "id=%s" % self.kw['test_id']
         else:
-            har_locator = self.req_qs(red.uri)
+            har_locator = self.req_qs(red.request.uri)
         options.append(
             (u"""\
     <a href='?%s&format=har' accesskey='h'>view har</a>""" % har_locator, 
@@ -504,14 +504,14 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     (
                     u"<a href='%s' accesskey='v'>validate body</a>" %
                         self.validators[media_type] % 
-                        e_query_arg(red.uri), 
+                        e_query_arg(red.request.uri), 
                      ""
                     )
                 )
             if hasattr(red, "link_count") and red.link_count > 0:
                 options.append((
                      u"<a href='?descend=True&%s' accesskey='a'>check embedded</a>" % \
-                         self.req_qs(red.uri), 
+                         self.req_qs(red.request.uri), 
                     "run RED on images, frames and embedded links"
                 ))
         return nl.join(
@@ -641,28 +641,28 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             cl = " class='preview'"
         else:
             cl = ""
-        if len(red.uri) > m:
+        if len(red.request.uri) > m:
             out.append(u"""\
     <td class="uri">
         <a href="%s" title="%s"%s>%s<span class="fade1">%s</span><span class="fade2">%s</span><span class="fade3">%s</span>
         </a>
     </td>""" % (
-                    u"?%s" % self.req_qs(red.uri), 
-                    e_html(red.uri), 
+                    u"?%s" % self.req_qs(red.request.uri), 
+                    e_html(red.request.uri), 
                     cl, 
-                    e_html(red.uri[:m-2]),
-                    e_html(red.uri[m-2]), 
-                    e_html(red.uri[m-1]), 
-                    e_html(red.uri[m]),
+                    e_html(red.request.uri[:m-2]),
+                    e_html(red.request.uri[m-2]), 
+                    e_html(red.request.uri[m-1]), 
+                    e_html(red.request.uri[m]),
                 )
             )
         else:
             out.append(
                 u'<td class="uri"><a href="%s" title="%s"%s>%s</a></td>' % (
-                    u"?%s" % self.req_qs(red.uri), 
-                    e_html(red.uri), 
+                    u"?%s" % self.req_qs(red.request.uri), 
+                    e_html(red.request.uri), 
                     cl, 
-                    e_html(red.uri)
+                    e_html(red.request.uri)
                 )
             )
         if red.response.complete:
@@ -771,7 +771,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         if self.kw.get('test_id', None):
             har_locator = "id=%s" % self.kw['test_id']
         else:
-            har_locator = "%s" % self.req_qs(red.uri)
+            har_locator = "%s" % self.req_qs(red.request.uri)
         options.append((
           u"<a href='?%s&descend=True&format=har'>view har</a>" % har_locator,
           u"View a HAR (HTTP ARchive) file for this response"

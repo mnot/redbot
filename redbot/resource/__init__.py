@@ -34,7 +34,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import re
 from urlparse import urljoin
 
 import redbot.speak as rs
@@ -42,11 +41,6 @@ from redbot import link_parse
 from redbot.fetch import RedFetcher
 from redbot.formatter import f_num
 from redbot.resource import active_check
-from redbot.uri_validate import absolute_URI, URI
-
-### configuration
-max_uri = 8000
-
 
 
 class HttpResource(RedFetcher):
@@ -68,7 +62,7 @@ class HttpResource(RedFetcher):
         rh = orig_req_hdrs + [(u'Accept-Encoding', u'gzip')]
         RedFetcher.__init__(self, uri, method, rh, req_body,
                             status_cb, body_procs, check_type=method)
-
+        self.subreqs = {} # sub-requests' RedState objects
         # Extra metadata that the "main" RED will be adorned with
         self.orig_req_hdrs = orig_req_hdrs
         self.partial_support = None
@@ -76,18 +70,6 @@ class HttpResource(RedFetcher):
         self.ims_support = None
         self.gzip_support = None
         self.gzip_savings = 0
-
-        # check the URI
-        if not re.match("^\s*%s\s*$" % URI, uri, re.VERBOSE):
-            self.add_note('uri', rs.URI_BAD_SYNTAX)
-        if '#' in uri:
-            # chop off the fragment
-            uri = uri[:uri.index('#')]
-        if len(uri) > max_uri:
-            self.add_note('uri',
-                rs.URI_TOO_LONG,
-                uri_len=f_num(len(uri))
-            )
 
     def done(self):
         """

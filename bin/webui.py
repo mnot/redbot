@@ -208,7 +208,7 @@ class RedWebUi(object):
             fd.close()
             
         formatter = find_formatter(self.format, 'html', self.descend)(
-            self.base_uri, state.uri, state.orig_req_hdrs, lang,
+            self.base_uri, state.request.uri, state.orig_req_hdrs, lang,
             self.output, allow_save=(not is_saved), is_saved=True,
             test_id=self.test_id
         )
