@@ -20,7 +20,7 @@ thor: clean-thor
 	git clone --depth 1 git://github.com/mnot/thor.git thor-src
 	ln -s thor-src/thor
 
-clean: clean-redbot clean-thor clean-share
+clean: clean-redbot clean-thor
 
 clean-redbot:
 	rm -f webui.py*
@@ -31,6 +31,3 @@ clean-redbot:
 clean-thor:
 	rm -rf thor-src
 	rm -rf thor
-
-clean-share:
-	cd $(source)/share; make clean
