@@ -30,6 +30,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import types
+
 import redbot.speak as rs
 
 class RedState(object):
@@ -45,12 +47,12 @@ class RedState(object):
         return "<%s at %#x>" % (", ".join(status), id(self))
 
     def __getstate__(self):
-        return dict([(k,v) for k,v in self.__dict__.items() \
+        return dict([(k, v) for k, v in self.__dict__.items() \
                       if not isinstance(v, types.MethodType)])
 
     def add_note(self, subject, note, subreq=None, **kw):
         "Set a note."
         kw['response'] = rs.response.get(
-            self.check_type, rs.response['this']
+            self.name, rs.response['this']
         )['en']
         self.notes.append(note(subject, subreq, kw))
