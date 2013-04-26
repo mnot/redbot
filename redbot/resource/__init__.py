@@ -67,7 +67,7 @@ class HttpResource(RedFetcher):
         orig_req_hdrs = req_hdrs or []
         rh = orig_req_hdrs + [(u'Accept-Encoding', u'gzip')]
         RedFetcher.__init__(self, uri, method, rh, req_body,
-                            status_cb, body_procs, req_type=method)
+                            status_cb, body_procs, check_type=method)
 
         # Extra metadata that the "main" RED will be adorned with 
         self.state.orig_req_hdrs = orig_req_hdrs

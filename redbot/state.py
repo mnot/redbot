@@ -39,17 +39,11 @@ class RedState(object):
     Holder for test state.
     """
     
-    def __init__(self, method, req_hdrs, req_body, check_type):
-        self.check_type = check_type
+    def __init__(self, check_type):
         self.notes = []
         self.subreqs = {} # sub-requests' RedState objects
         self.request = HttpRequest(self.notes, check_type)
         self.response = HttpResponse(self.notes, check_type)
-        self.request.method = method
-        self.request.headers = req_hdrs or []
-        self.request.payload = req_body
-        
-        # FIXME: put in HttpRequest
 
 
     def __repr__(self):

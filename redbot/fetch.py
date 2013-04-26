@@ -68,8 +68,12 @@ class RedFetcher(object):
     client = RedHttpClient()
 
     def __init__(self, iri, method="GET", req_hdrs=None, req_body=None,
-                 status_cb=None, body_procs=None, req_type=None):
-        self.state = RedState(method, req_hdrs, req_body, req_type)
+                 status_cb=None, body_procs=None, check_type=None):
+        self.state = RedState(check_type)
+        self.state.check_type = check_type
+        self.state.request.method = method
+        self.state.request.headers = req_hdrs or []
+        self.state.request.payload = req_body
         self.exchange = None
         self.status_cb = status_cb
         self.body_procs = body_procs or []
@@ -248,7 +252,7 @@ if "__main__" == __name__:
          sys.argv[1], 
          req_hdrs=[(u'Accept-Encoding', u'gzip')], 
          status_cb=status_p, 
-         req_type='test'
+         check_type='test'
     )
     T.run()
     thor.run()

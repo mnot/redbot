@@ -112,7 +112,7 @@ class RedWebUi(object):
         self.req_hdrs = None # tuple of unicode K,V
         self.format = None
         self.test_id = None
-        self.req_type = None
+        self.check_type = None
         self.descend = None
         self.save = None
         self.parse_qs(method, query_string)
@@ -218,9 +218,9 @@ class RedWebUi(object):
                 formatter.media_type, charset)), 
             ("Cache-Control", "max-age=3600, must-revalidate")
         ])
-        if self.req_type:
+        if self.check_type:
         # TODO: catch errors
-            state = state.subreqs.get(self.req_type, None)
+            state = state.subreqs.get(self.check_type, None)
 
         formatter.start_output()
         formatter.set_state(state)
@@ -263,9 +263,9 @@ class RedWebUi(object):
         formatter.start_output()
 
         def done():
-            if self.req_type:
+            if self.check_type:
             # TODO: catch errors
-                state = ired.state.subreqs.get(self.req_type, None)
+                state = ired.state.subreqs.get(self.check_type, None)
             else:
                 state = ired.state
             formatter.set_state(state)
@@ -306,7 +306,7 @@ class RedWebUi(object):
                             if rh.find(":") > 0
                         ]
         self.format = qs.get('format', ['html'])[0]
-        self.req_type = qs.get('request', [None])[0]
+        self.check_type = qs.get('request', [None])[0]
         self.test_id = qs.get('id', [None])[0] 
         self.descend = qs.get('descend', [False])[0]
         if method == "POST":
