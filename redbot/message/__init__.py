@@ -27,16 +27,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-
+import base64
 import hashlib
+import re
 import time
+import urllib
+import urlparse
 import zlib
 
 from redbot.message import link_parse
 from redbot.message.headers import process_headers
 from redbot.formatter import f_num
 import redbot.speak as rs
+from redbot.uri_validate import URI
 
+import thor.http.error as httperr
+
+### configuration
+max_uri = 8000
 
 class HttpMessage(object):
     """
@@ -283,6 +291,50 @@ class HttpRequest(HttpMessage):
         self.is_request = True
         self.method = None
         self.uri = None
+        
+    def set_iri(self, iri):
+        """
+        Given an IRI or URI, convert to a URI and make sure it's sensible.
+        """
+        try:
+            self.uri = self.iri_to_uri(iri)
+        except (ValueError, UnicodeError), why:
+            self.response.http_error = httperr.UrlError(why[0])
+            return
+        if not re.match("^\s*%s\s*$" % URI, self.uri, re.VERBOSE):
+            self.add_note('uri', rs.URI_BAD_SYNTAX)
+        if '#' in self.uri:
+            # chop off the fragment
+            self.uri = self.uri[:uri.index('#')]
+        if len(self.uri) > max_uri:
+            self.add_note('uri',
+                rs.URI_TOO_LONG,
+                uri_len=f_num(len(self.uri))
+            )
+
+    @staticmethod
+    def iri_to_uri(iri):
+        "Takes a Unicode string that can contain an IRI and emits a URI."
+        scheme, authority, path, query, frag = urlparse.urlsplit(iri)
+        scheme = scheme.encode('utf-8')
+        if ":" in authority:
+            host, port = authority.split(":", 1)
+            authority = host.encode('idna') + ":%s" % port
+        else:
+            authority = authority.encode('idna')
+        path = urllib.quote(
+          path.encode('utf-8'),
+          safe="/;%[]=:$&()+,!?*@'~"
+        )
+        query = urllib.quote(
+          query.encode('utf-8'),
+          safe="/;%[]=:$&()+,!?*@'~"
+        )
+        frag = urllib.quote(
+          frag.encode('utf-8'),
+          safe="/;%[]=:$&()+,!?*@'~"
+        )
+        return urlparse.urlunsplit((scheme, authority, path, query, frag))
 
         
 class HttpResponse(HttpMessage):

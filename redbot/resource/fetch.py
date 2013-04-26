@@ -31,26 +31,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import base64
-import re
-import urllib
-import urlparse
-
 import thor
 import thor.http.error as httperr
 
 from redbot import __version__
-from redbot.formatter import f_num
 import redbot.speak as rs
 from redbot.state import RedState
 from redbot.message import HttpRequest, HttpResponse
 from redbot.message.status import StatusChecker
 from redbot.message.cache import checkCaching
-from redbot.uri_validate import URI
-
-
-### configuration
-max_uri = 8000
 
 
 class RedHttpClient(thor.http.HttpClient):
@@ -82,7 +71,7 @@ class RedFetcher(RedState):
         self.check_type = check_type
         self.request = HttpRequest(self.notes, check_type)
         self.request.method = method
-        self.request.uri = self.check_iri(iri)
+        self.request.set_iri(iri)
         self.request.headers = req_hdrs or []
         self.request.payload = req_body
         self.response = HttpResponse(self.notes, check_type)
@@ -137,27 +126,6 @@ class RedFetcher(RedState):
         if so; False if not.
         """
         return True
-
-    def check_iri(self, iri):
-        """
-        Given an IRI or URI, convert to a URI and make sure it's sensible.
-        """
-        try:
-            uri = self.iri_to_uri(iri)
-        except (ValueError, UnicodeError), why:
-            self.response.http_error = httperr.UrlError(why[0])
-            return None
-        if not re.match("^\s*%s\s*$" % URI, uri, re.VERBOSE):
-            self.add_note('uri', rs.URI_BAD_SYNTAX)
-        if '#' in uri:
-            # chop off the fragment
-            uri = uri[:uri.index('#')]
-        if len(uri) > max_uri:
-            self.add_note('uri',
-                rs.URI_TOO_LONG,
-                uri_len=f_num(len(uri))
-            )
-        return uri
             
     def run(self, done_cb=None):
         """
@@ -238,30 +206,6 @@ class RedFetcher(RedState):
             )
         self.done()
         self.finish_task()
-
-    @staticmethod
-    def iri_to_uri(iri):
-        "Takes a Unicode string that can contain an IRI and emits a URI."
-        scheme, authority, path, query, frag = urlparse.urlsplit(iri)
-        scheme = scheme.encode('utf-8')
-        if ":" in authority:
-            host, port = authority.split(":", 1)
-            authority = host.encode('idna') + ":%s" % port
-        else:
-            authority = authority.encode('idna')
-        path = urllib.quote(
-          path.encode('utf-8'),
-          safe="/;%[]=:$&()+,!?*@'~"
-        )
-        query = urllib.quote(
-          query.encode('utf-8'),
-          safe="/;%[]=:$&()+,!?*@'~"
-        )
-        frag = urllib.quote(
-          frag.encode('utf-8'),
-          safe="/;%[]=:$&()+,!?*@'~"
-        )
-        return urlparse.urlunsplit((scheme, authority, path, query, frag))
 
 
 if "__main__" == __name__:
