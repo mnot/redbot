@@ -39,7 +39,6 @@ class RedState(object):
     
     def __init__(self, check_type):
         self.notes = []
-        self.subreqs = {} # sub-requests' RedState objects
         self.request = HttpRequest(self.notes, check_type)
         self.response = HttpResponse(self.notes, check_type)
 

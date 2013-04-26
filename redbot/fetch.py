@@ -74,6 +74,7 @@ class RedFetcher(RedState):
         self.request.method = method
         self.request.headers = req_hdrs or []
         self.request.payload = req_body
+        self.subreqs = {} # sub-requests' RedState objects
         self.exchange = None
         self.status_cb = status_cb
         self.body_procs = body_procs or []
