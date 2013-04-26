@@ -149,12 +149,16 @@ class RedFetcher(RedState):
         self.exchange.on('response_done', self._response_done)
         self.exchange.on('error', self._response_error)
         if self.status_cb and self.check_type:
-            self.status_cb("fetching %s (%s)" % (self.request.uri, self.check_type))
+            self.status_cb("fetching %s (%s)" % (
+                self.request.uri, self.check_type
+            ))
         req_hdrs = [
             (k.encode('ascii', 'replace'), v.encode('latin-1', 'replace')) \
             for (k, v) in self.request.headers
         ]
-        self.exchange.request_start(self.request.method, self.request.uri, req_hdrs)
+        self.exchange.request_start(
+            self.request.method, self.request.uri, req_hdrs
+        )
         self.request.start_time = thor.time()
         if self.request.payload != None:
             self.exchange.request_body(self.request.payload)
@@ -185,7 +189,9 @@ class RedFetcher(RedState):
         res.header_length = self.exchange.input_header_length
         res.body_done(True, trailers)
         if self.status_cb and self.check_type:
-            self.status_cb("fetched %s (%s)" % (self.request.uri, self.check_type))
+            self.status_cb("fetched %s (%s)" % (
+                self.request.uri, self.check_type
+            ))
         self.done()
         self.finish_task()
 
