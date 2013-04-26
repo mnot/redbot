@@ -28,10 +28,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from conneg import ConnegCheck
-from range import RangeRequest
-from etag_validate import ETagValidate
-from lm_validate import LmValidate
+from redbot.resource.active_check.conneg import ConnegCheck
+from redbot.resource.active_check.range import RangeRequest
+from redbot.resource.active_check.etag_validate import ETagValidate
+from redbot.resource.active_check.lm_validate import LmValidate
 
 def spawn_all(resource):
     "Run all active checks against resource."
