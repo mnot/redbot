@@ -99,7 +99,7 @@ parsing, including:
    `regex` is evaluated with `re.VERBOSE`, and already has start and end
    anchors, as well as whitespace trimming; see the code for details.
    
-   See _http_syntax.py_ for some handy pre-defined regexen, based upon 
+   See _message.http_syntax.py_ for some handy pre-defined regexen, based upon 
    the HTTP ABNF.
 
 * `RequestHeader` assures that the header is only used in requests.

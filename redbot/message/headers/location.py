@@ -28,7 +28,7 @@ from urlparse import urljoin
 
 import redbot.speak as rs
 from redbot.message import headers as rh
-import redbot.http_syntax as syntax
+from redbot.message import http_syntax as syntax
 
 
 # The most common problem with Location is a non-absolute URI, 

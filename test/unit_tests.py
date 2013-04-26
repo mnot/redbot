@@ -6,7 +6,7 @@ import unittest
 sys.path.insert(0, "..")
 
 import redbot.message.headers as headers
-import redbot.http_syntax as syntax
+from redbot.message import http_syntax as syntax
 import redbot.speak as rs
 from redbot.message import DummyMsg
 

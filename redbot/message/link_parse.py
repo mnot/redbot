@@ -31,7 +31,7 @@ from htmlentitydefs import entitydefs
 from HTMLParser import HTMLParser
 
 from redbot.message import headers as rh
-import redbot.http_syntax as syntax
+from redbot.message import http_syntax as syntax
 
 class HTMLLinkParser(HTMLParser):
     """

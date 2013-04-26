@@ -36,7 +36,7 @@ import sys
 import unittest
 import urllib
 
-import redbot.http_syntax as syntax
+from redbot.message import http_syntax as syntax
 from redbot.formatter import f_num
 import redbot.speak as rs
 
