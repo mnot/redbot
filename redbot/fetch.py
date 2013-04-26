@@ -70,10 +70,12 @@ class RedFetcher(RedState):
     def __init__(self, iri, method="GET", req_hdrs=None, req_body=None,
                  status_cb=None, body_procs=None, check_type=None):
         RedState.__init__(self, check_type)
-        self.check_type = check_type
+        self.request = HttpRequest(self.notes, check_type)
+        self.response = HttpResponse(self.notes, check_type)
         self.request.method = method
         self.request.headers = req_hdrs or []
         self.request.payload = req_body
+        self.check_type = check_type
         self.subreqs = {} # sub-requests' RedState objects
         self.exchange = None
         self.status_cb = status_cb

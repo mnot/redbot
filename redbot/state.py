@@ -31,29 +31,22 @@ THE SOFTWARE.
 """
 
 import redbot.speak as rs
-from redbot.message import HttpRequest, HttpResponse
-
 
 class RedState(object):
     "Base class for things that have test state."
     
-    def __init__(self, check_type):
+    def __init__(self, name):
+        self.name = name
         self.notes = []
-        self.request = HttpRequest(self.notes, check_type)
-        self.response = HttpResponse(self.notes, check_type)
-
 
     def __repr__(self):
         status = [self.__class__.__module__ + "." + self.__class__.__name__]
-        status.append("%s {%s}" % (self.request.method, self.uri))
-        status.append("type %s" % self.check_type)
+        status.append("'%s'" % self.name)
         return "<%s at %#x>" % (", ".join(status), id(self))
 
     def __getstate__(self):
-        state = self.__dict__.copy()
-        if state.has_key('add_note'):
-            del state['add_note']
-        return state
+        return dict([(k,v) for k,v in self.__dict__.items() \
+                      if not isinstance(v, types.MethodType)])
         
     def add_note(self, subject, note, subreq=None, **kw):
         "Set a note."
@@ -61,6 +54,3 @@ class RedState(object):
             self.check_type, rs.response['this']
         )['en']
         self.notes.append(note(subject, subreq, kw))
-
-
-    
