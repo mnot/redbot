@@ -39,7 +39,7 @@ from redbot.message import link_parse
 from redbot.message.headers import process_headers
 from redbot.formatter import f_num
 import redbot.speak as rs
-from redbot.uri_validate import URI
+from redbot.message.uri_syntax import URI
 
 import thor.http.error as httperr
 
