@@ -95,7 +95,8 @@ class HttpMessage(object):
             '_decoded_procs',
             '_md5_processor', 
             '_md5_post_processor',
-            '_gzip_processor'
+            '_gzip_processor',
+            '_link_parser'
         ]:
             if state.has_key(key):
                 del state[key]
