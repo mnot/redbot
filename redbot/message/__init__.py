@@ -85,6 +85,22 @@ class HttpMessage(object):
         else:
             self.notes = notes
 
+    def __repr__(self):
+        status = [self.__class__.__module__ + "." + self.__class__.__name__]
+        return "<%s at %#x>" % (", ".join(status), id(self))
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        for key in [
+            '_decoded_procs',
+            '_md5_processor', 
+            '_md5_post_processor',
+            '_gzip_processor'
+        ]:
+            if state.has_key(key):
+                del state[key]
+        return state
+
     def set_decoded_procs(self, decoded_procs):
         "Set a list of processors for the decoded body."
         self._decoded_procs = decoded_procs
@@ -254,22 +270,6 @@ class HttpMessage(object):
         if flag & gz_flags['FHCRC']:
             content_l = content_l[2:]   # Read & discard the 16-bit header CRC
         return "".join(content_l)
-
-    def __repr__(self):
-        status = [self.__class__.__module__ + "." + self.__class__.__name__]
-        return "<%s at %#x>" % (", ".join(status), id(self))
-
-    def __getstate__(self):
-        state = self.__dict__.copy()
-        for key in [
-            'add_note', 
-            '_md5_processor', 
-            '_gzip_processor', 
-            '_md5_post_processor'
-        ]:
-            if state.has_key(key):
-                del state[key]
-        return state
 
     def set_context(self, **kw):
         "Set the note context."
