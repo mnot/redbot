@@ -82,6 +82,13 @@ class RedFetcher(RedState):
         self.outstanding_tasks = 0
         self._st = [] # FIXME: this is temporary, for debugging thor
 
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        del state['exchange']
+        del state['status_cb']
+        del state['done_cb']
+        return state
+
     def add_task(self, task, *args):
         "Remeber that we've started a task."
         self.outstanding_tasks += 1
