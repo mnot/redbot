@@ -47,7 +47,8 @@ class RedState(object):
         return "<%s at %#x>" % (", ".join(status), id(self))
 
     def __getstate__(self):
-        return dict([(k, v) for k, v in self.__dict__.items() \
+        state = self.__dict__.copy()
+        return dict([(k, v) for k, v in state.items() \
                       if not isinstance(v, types.MethodType)])
 
     def add_note(self, subject, note, subreq=None, **kw):
