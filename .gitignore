@@ -4,3 +4,4 @@ artwork
 MANIFEST
 dist
 build
+test/ghostdriver.log

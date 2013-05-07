@@ -1,4 +1,3 @@
-
 .PHONY: all
 all: unit speak webui
 
@@ -21,6 +20,10 @@ deploy:
 .PHONY: clean
 clean:
 	cd deploy; make clean-redbot
+
+.PHONY: server
+server:
+	cd deploy; make server
 
 .PHONY: lint
 lint:

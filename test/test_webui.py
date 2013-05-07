@@ -13,23 +13,25 @@ class BasicWebUiTest(unittest.TestCase):
     test_uri = "http://www.mnot.net/"
     
     def setUp(self):
-        self.browser = webdriver.Firefox()
+        self.browser = webdriver.PhantomJS()
         self.browser.get(redbot_uri)
         self.uri = self.browser.find_element_by_id("uri")
-        self.uri.send_keys(self.test_uri + Keys.RETURN)
+        self.uri.send_keys(self.test_uri)
+        self.uri.submit()
         time.sleep(1.0)
         self.check_complete()
         
     def test_multi(self):
-        check = self.browser.find_element_by_xpath("//a[@accesskey='a']")
+        check = self.browser.find_element_by_css_selector('a[accesskey="a"]')
         check.click()
         time.sleep(0.5)
     
     def check_complete(self):
         try:
-            self.browser.find_element_by_xpath("//div[@class='footer']")
+            self.browser.find_element_by_css_selector("div.footer")
         except NoSuchElementException:
             raise Exception, "Page not complete."
+            self.browser.save_screenshot('dump.png')
     
     def tearDown(self):
         self.check_complete()
@@ -40,22 +42,18 @@ class CnnWebUiTest(BasicWebUiTest):
 
 
 if __name__ == "__main__":
-    redbot_uri = os.environ.get("REDBOT_URI", None)
-    if redbot_uri:
-      unittest.main()
-    else:
-      test_host = "localhost"
-      test_port = 8080
-      redbot_uri = "http://%s:%s/" % (test_host, test_port)
-      import sys
-      sys.path.insert(0, "deploy")
-      def redbot_run():
+    test_host = "localhost"
+    test_port = 8080
+    redbot_uri = "http://%s:%s/" % (test_host, test_port)
+    import sys
+    sys.path.insert(0, "deploy")
+    def redbot_run():
         import webui
         webui.standalone_main(test_host, test_port, "deploy/static")
-      from multiprocessing import Process
-      p = Process(target=redbot_run)
-      p.start()
-      unittest.main(exit=False, verbosity=2)
-      print "done test..."
-      p.terminate()
+    from multiprocessing import Process
+    p = Process(target=redbot_run)
+    p.start()
+    unittest.main(exit=False, verbosity=2)
+    print "done webui test..."
+    p.terminate()
     
