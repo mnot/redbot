@@ -7,7 +7,10 @@ all: redbot
 server: clean all
 	python webui.py 8080 static/
 
-redbot: clean-redbot
+redbot-share:
+	cd $(source)/share; make
+
+redbot: redbot-share clean-redbot
 	cp -p $(source)/bin/webui.py .
 	chmod a+x webui.py
 	cp $(source)/bin/redbot redbot.py
