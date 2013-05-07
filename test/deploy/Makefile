@@ -1,7 +1,7 @@
 
 source = ../../
 
-all: thor redbot
+all: redbot
 
 .PHONY: server
 server: clean all
