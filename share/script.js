@@ -70,13 +70,13 @@ $(document).ready(function() {
     $("#uri").val(config.redbot_uri);
   } else if (! $("#uri").val()) {
     $("#uri").val(check_phrase);
-    $("#uri").css({'color': '#ccc'});
+    $("#uri").attr('class', 'inactive');
   }
 
   $("#uri").focus(function(){
     if ($(this).val() == check_phrase) {
       $(this).val("");
-      $("#uri").css({'color': '#111'});
+      $("#uri").attr('class', 'active');
     }
   });
 
@@ -111,8 +111,7 @@ $(document).ready(function() {
     function(e){
       var name = $(this).attr('data-name');
       var offset = $(this).attr('data-offset');
-      $("span.hdr[data-name='" + name + "']")
-       .css({"font-weight": "bold", "color": "white"});
+      $("span.hdr[data-name='" + name + "']").addClass('hilight');
       $("li.note").each(function(index, note) {
         var note_interesting = false;
         var subjects = $(note).attr("data-subject").split(" ");
@@ -134,8 +133,7 @@ $(document).ready(function() {
     },
     function(e){
       var name = $(this).attr('data-name');
-      $("span.hdr[data-name='" + name + "']")
-       .css({"font-weight": "normal", "color": "#ddd"});
+      $("span.hdr[data-name='" + name + "']").removeClass('hilight');
       $("li.note").fadeTo(100, 1.0);
     }
   );
@@ -167,7 +165,7 @@ $(document).ready(function() {
       find_header_targets(
         $(this).parent().attr('data-subject').split(" "),
         function(target) {
-          target.css({"font-weight": "bold", "color": "white"});        
+          target.addClass('hilight');
         }
       );
     },
@@ -175,7 +173,7 @@ $(document).ready(function() {
       find_header_targets(
         $(this).parent().attr('data-subject').split(" "),
         function(target) {
-          target.css({"font-weight": "normal", "color": "#ddd"});
+          target.removeClass('hilight');
         }
       );
     }

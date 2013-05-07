@@ -90,6 +90,10 @@ li {
 input#uri {
   width: 645px;
   font-size: 1.1em; }
+  input#uri.active {
+    color: #111111; }
+  input#uri.inactive {
+    color: #c4c4c4; }
 
 .add_req_hdr {
   -webkit-border-bottom-right-radius: 0.5em;
@@ -130,7 +134,7 @@ option[value="other..."] {
   font-size: 10pt;
   font-family: Courier, monospace;
   background-color: #111111;
-  color: #ddd;
+  color: #dddddd;
   -webkit-border-radius: 0.75em;
   -moz-border-radius: 0.75em;
   -ms-border-radius: 0.75em;
@@ -141,6 +145,10 @@ option[value="other..."] {
   overflow-x: auto; }
   #response a {
     color: #ccf; }
+
+.hdr.hilight {
+  color: white;
+  font-weight: bold; }
 
 .options {
   margin-top: 0.2em;

@@ -4,6 +4,7 @@ $content_width: 650px;
 $text_colour: #111;
 $detail_text_colour: #aaa;
 $console_colour: #111;
+$header_colour: #ddd;
 $detail_font_size: 0.8em;
 $vertical_space: 3em;
 
@@ -118,6 +119,12 @@ li {
 input#uri {
 	width: $content_width - 5px;
   font-size: 1.1em;
+  &.active {
+    color: $text_colour;
+  }
+  &.inactive {
+    color: lighten($text_colour, 70%);
+  }
 }
 
 .add_req_hdr {
@@ -169,7 +176,7 @@ option[value="other..."] {
   font-size: 10pt;
   font-family: Courier, monospace;
   background-color: $console_colour;
-  color: #ddd;
+  color: $header_colour;
   @include rounded_corners(0.75em);
   border: 1px solid black;
   padding: 1em 0;
@@ -180,6 +187,11 @@ option[value="other..."] {
   }
 }
 
+.hdr.hilight {
+  color: lighten($header_colour, 100%);
+  font-weight: bold;
+}
+
 .options {
   margin-top: 0.2em;
   margin-bottom: 2em;
@@ -187,6 +199,7 @@ option[value="other..."] {
   text-align: center;
   font-size: 0.75em;
 }
+
 .options > * {
   padding-right: 2em;
 }
