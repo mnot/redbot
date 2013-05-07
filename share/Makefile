@@ -9,11 +9,11 @@ all: script.js style.css
 clean:
 	rm script.js style.css red_style.css
 
-script.js:
+script.js: $(JSFILES)
 	cat $(JSFILES) > script.js
 
 style.css: red_style.css
 	cat $(CSSFILES) | java -jar $(YUI_COMPRESSOR_JAR) --type css -o style.css
 
-red_style.css:
+red_style.css: scss/*.scss
 	sass scss/red_style.scss:red_style.css
