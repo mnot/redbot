@@ -1,0 +1,12 @@
+@mixin rounded-corners($radius) {
+  -webkit-border-radius: $radius;
+  -moz-border-radius: $radius;
+  -ms-border-radius: $radius;
+  border-radius: $radius;
+}
+
+@mixin centered-detail {
+  text-align: center;
+  color: $detail_text_colour;
+  font-size: $detail_font_size;
+}
