@@ -10,7 +10,7 @@ server: clean all
 redbot-share:
 	cd $(source)/share; make
 
-redbot: redbot-share clean-redbot
+redbot: clean-redbot
 	cp -p $(source)/bin/webui.py .
 	chmod a+x webui.py
 	cp $(source)/bin/redbot redbot.py
