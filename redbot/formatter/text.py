@@ -97,16 +97,16 @@ class BaseTextFormatter(Formatter):
 
     def format_recommendations(self, state):
         return "".join([self.format_recommendation(state, category) \
-            for category in self.msg_categories])
+            for category in self.note_categories])
 
     def format_recommendation(self, state, category):
-        note = [note for note in state.notes if note.category == category]
-        if not note:
+        notes = [note for note in state.notes if note.category == category]
+        if not notes:
             return ""
         out = []
-        if [note for note in note]:
+        if [note for note in notes]:
             out.append(u"* %s:" % category)
-        for m in note:
+        for m in notes:
             out.append(
                 u"  * %s" % (self.colorize(m.level, m.show_summary("en")))
             )
