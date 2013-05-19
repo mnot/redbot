@@ -91,7 +91,7 @@ class BaseTextFormatter(Formatter):
         out = [u"HTTP/%s %s %s" % (
                 state.response.version, 
                 state.response.status_code, 
-                state.ressponse.status_phrase
+                state.response.status_phrase
         )]
         return nl.join(out + [u"%s:%s" % h for h in state.response.headers])
 
