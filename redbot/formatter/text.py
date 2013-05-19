@@ -83,7 +83,8 @@ class BaseTextFormatter(Formatter):
             if self.state.response.http_error == None:
                 pass
             elif isinstance(self.state.response.http_error, httperr.HttpError):
-                self.output(self.error_template % self.state.response.http_error.desc)
+                self.output(self.error_template % \
+                            self.state.response.http_error.desc)
             else:
                 raise AssertionError, "Unknown incomplete response error."
 
@@ -114,7 +115,8 @@ class BaseTextFormatter(Formatter):
                 out.append('')
                 out.extend('    ' + line for line in self.format_text(m))
                 out.append('')
-            smsgs = [note for note in getattr(m.subrequest, "notes", []) if note.level in [rs.l.BAD]]
+            smsgs = [note for note in getattr(m.subrequest, "notes", []) 
+                     if note.level in [rs.l.BAD]]
             if smsgs:
                 out.append("")
                 for sm in smsgs:
@@ -124,7 +126,7 @@ class BaseTextFormatter(Formatter):
                     )
                     if self.verbose:
                         out.append('')
-                        out.extend('      ' + line for line in self.format_text(sm))
+                        out.extend('     ' + ln for ln in self.format_text(sm))
                         out.append('')
                 out.append(nl)
         out.append(nl)

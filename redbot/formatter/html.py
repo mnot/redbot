@@ -510,8 +510,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 )
             if hasattr(state, "link_count") and state.link_count > 0:
                 options.append((
-                     u"<a href='?descend=True&%s' accesskey='a'>check embedded</a>" % \
-                         self.req_qs(state.request.uri), 
+                    u"<a href='?descend=True&%s' accesskey='a'>" \
+                    u"check embedded</a>" % self.req_qs(state.request.uri), 
                     "run RED on images, frames and embedded links"
                 ))
         return nl.join(
@@ -637,7 +637,8 @@ class TableHtmlFormatter(BaseHtmlFormatter):
     def format_droid(self, state):
         out = [u'<tr class="droid %s">']
         m = 50
-        if state.response.parsed_headers.get('content-type', [""])[0][:6] == 'image/':
+        ct = state.response.parsed_headers.get('content-type', [""])
+        if ct[0][:6] == 'image/':
             cl = " class='preview'"
         else:
             cl = ""
@@ -708,7 +709,8 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             # append the actual problem numbers to the final <td>
             for p in pr_enum:
                 m = self.problems[p]
-                out.append("<span class='prob_num'> %s <span class='hidden'>%s</span></span>" % (
+                out.append(u"<span class='prob_num'>" \
+                           u" %s <span class='hidden'>%s</span></span>" % (
                     p + 1, e_html(m.show_summary(self.lang))
                     )
                 )
@@ -728,13 +730,20 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         <th title="The URI tested. Click to run a detailed analysis.">%s</th>
         <th title="The HTTP status code returned.">status</th>
         <th title="The size of the response body, in bytes.">size</th>
-        <th title="Whether a shared (e.g., proxy) cache can store the response.">shared</th>
-        <th title="Whether a private (e.g., browser) cache can store the response.">private</th>
-        <th title="How long the response had been cached before RED got it.">age</th>
-        <th title="How long a cache can treat the response as fresh.">freshness</th>
-        <th title="Whether If-Modified-Since validation is supported, using Last-Modified.">IMS</th>
-        <th title="Whether If-None-Match validation is supported, using ETags.">INM</th>
-        <th title="Whether negotiation for gzip compression is supported; if so, the percent of the original size saved.">gzip</th>
+        <th title="Whether a shared (e.g., proxy) cache can store the
+          response.">shared</th>
+        <th title="Whether a private (e.g., browser) cache can store the
+          response.">private</th>
+        <th title="How long the response had been cached before RED got
+          it.">age</th>
+        <th title="How long a cache can treat the response as
+          fresh.">freshness</th>
+        <th title="Whether If-Modified-Since validation is supported, using
+          Last-Modified.">IMS</th>
+        <th title="Whether If-None-Match validation is supported, using
+          ETags.">INM</th>
+        <th title="Whether negotiation for gzip compression is supported; if
+          so, the percent of the original size saved.">gzip</th>
         <th title="Whether partial responses are supported.">partial</th>
         <th title="Issues encountered.">notes</th>
         </tr>

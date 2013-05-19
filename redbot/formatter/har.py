@@ -90,7 +90,8 @@ class HarFormatter(Formatter):
     def add_entry(self, state, page_ref=None):
         entry = {
             "startedDateTime": isoformat(state.request.start_time),
-            "time": int((state.response.complete_time - state.request.start_time) * 1000),
+            "time": int((state.response.complete_time - \
+                         state.request.start_time) * 1000),
             "_red_messages": self.format_notes(state)
         }
         if page_ref:
@@ -115,10 +116,15 @@ class HarFormatter(Formatter):
             'headers': self.format_headers(state.response.headers),
             'content': {
                 'size': state.response.decoded_len,
-                'compression': state.response.decoded_len - state.response.payload_len,
-                'mimeType': (get_header(state.response.headers, 'content-type') or [""])[0],
+                'compression': state.response.decoded_len - \
+                               state.response.payload_len,
+                'mimeType': (
+                    get_header(state.response.headers, 'content-type') \
+                    or [""])[0],
             },
-            'redirectURL': (get_header(state.response.headers, 'location') or [""])[0],
+            'redirectURL': (
+                    get_header(state.response.headers, 'location') \
+                    or [""])[0],
             'headersSize': state.response.header_length,
             'bodySize': state.response.payload_len,
         }
@@ -129,8 +135,10 @@ class HarFormatter(Formatter):
             'connect': -1,
             'blocked': 0,
             'send': 0, 
-            'wait': int((state.response.start_time - state.request.start_time) * 1000),
-            'receive': int((state.response.complete_time - state.response.start_time) * 1000),
+            'wait': int((state.response.start_time - \
+                         state.request.start_time) * 1000),
+            'receive': int((state.response.complete_time - \
+                            state.response.start_time) * 1000),
         }
 
         entry.update({
