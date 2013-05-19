@@ -64,7 +64,7 @@ class BaseHtmlFormatter(Formatter):
         self.hidden_text = []
         self.start = thor.time()
 
-    def feed(self, red, chunk):
+    def feed(self, state, chunk):
         pass
 
     def start_output(self):
@@ -300,26 +300,26 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         
     def finish_output(self):
         self.final_status()
-        if self.red.response.complete:
-            self.header_presenter = HeaderPresenter(self.red.request.uri)
+        if self.state.response.complete:
+            self.header_presenter = HeaderPresenter(self.state.request.uri)
             self.output(self.template % {
-                'response': self.format_response(self.red),
-                'options': self.format_options(self.red),
-                'notes': nl.join([self.format_category(cat, self.red) \
+                'response': self.format_response(self.state),
+                'options': self.format_options(self.state),
+                'notes': nl.join([self.format_category(cat, self.state) \
                     for cat in self.note_categories]),
-                'body': self.format_body_sample(self.red),
+                'body': self.format_body_sample(self.state),
                 'footer': self.format_footer(),
                 'hidden_list': self.format_hidden_list(),
             })
         else:
-            if self.red.response.http_error == None:
+            if self.state.response.http_error == None:
                 pass # usually a global timeout...
-            elif isinstance(self.red.response.http_error, httperr.HttpError):
-                if self.red.response.http_error.detail:
+            elif isinstance(self.state.response.http_error, httperr.HttpError):
+                if self.state.response.http_error.detail:
                     self.output(self.error_template % "%s (%s)" % (
-                        self.red.response.http_error.desc,
+                        self.state.response.http_error.desc,
                         unicode(
-                          self.red.response.http_error.detail,
+                          self.state.response.http_error.detail,
                           'utf-8',
                           'replace'
                         )
@@ -327,28 +327,28 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 )
                 else:
                     self.output(self.error_template % (
-                      self.red.response.http_error.desc
+                      self.state.response.http_error.desc
                     ))
             else:
                 raise AssertionError, \
                   "Unknown incomplete response error %s" % (
-                     self.red.response.http_error
+                     self.state.response.http_error
                 )
         self.done()
 
-    def format_response(self, red):
+    def format_response(self, state):
         "Return the HTTP response line and headers as HTML"
         offset = 0
         headers = []
-        for (name, value) in red.response.headers:
+        for (name, value) in state.response.headers:
             offset += 1
             headers.append(self.format_header(name, value, offset))
             
         return \
         u"    <span class='status'>HTTP/%s %s %s</span>\n" % (
-            e_html(str(red.response.version)),
-            e_html(str(red.response.status_code)),
-            e_html(red.response.status_phrase)
+            e_html(str(state.response.version)),
+            e_html(str(state.response.status_code)),
+            e_html(state.response.status_phrase)
         ) + \
         nl.join(headers)
 
@@ -370,22 +370,22 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             self.header_presenter.Show(name, value)
         )
 
-    def format_body_sample(self, red):
+    def format_body_sample(self, state):
         """show the stored body sample"""
         try:
             uni_sample = unicode(self.body_sample,
-                                 red.response.character_encoding, 
+                                 state.response.character_encoding, 
                                  'ignore'
             )
         except LookupError:
             uni_sample = unicode(self.body_sample, 'utf-8', 'ignore')
         safe_sample = e_html(uni_sample)
         message = ""
-        for tag, link_set in red.links.items():
+        for tag, link_set in state.links.items():
             for link in link_set:
                 def link_to(matchobj):
                     try:
-                        qlink = urljoin(red.response.base_uri, link)
+                        qlink = urljoin(state.response.base_uri, link)
                     except ValueError, why:
                         pass # TODO: pass link problem upstream?
                              # e.g., ValueError("Invalid IPv6 URL")
@@ -393,7 +393,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                         matchobj.group(1),
                         u"?uri=%s&req_hdr=Referer%%3A%s" % (
                             e_query_arg(qlink),
-                            e_query_arg(red.response.base_uri)
+                            e_query_arg(state.response.base_uri)
                         ),
                         e_html(link),
                         matchobj.group(1)
@@ -406,12 +406,12 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         return """<pre class="prettyprint">%s</pre>\n%s""" % (
             safe_sample, message)
 
-    def format_category(self, category, red):
+    def format_category(self, category, state):
         """
         For a given category, return all of the non-detail 
         notes in it as an HTML list.
         """
-        notes = [note for note in red.notes if note.category == category]
+        notes = [note for note in state.notes if note.category == category]
         if not notes:
             return nl
         out = []
@@ -433,7 +433,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             self.hidden_text.append(
                 ("noteid-%s" % id(note), note.show_text(self.lang))
             )
-            subreq = red.subreqs.get(note.subrequest, None)
+            subreq = state.subreqs.get(note.subrequest, None)
             smsgs = [note for note in getattr(subreq, "notes", []) if \
                 note.level in [rs.l.BAD]]
             if smsgs:
@@ -456,20 +456,20 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         out.append(u"</ul>\n")
         return nl.join(out)
 
-    def format_options(self, red):
+    def format_options(self, state):
         "Return things that the user can do with the URI as HTML links"
         options = []
-        media_type = red.response.parsed_headers.get('content-type', [""])[0]
+        media_type = state.response.parsed_headers.get('content-type', [""])[0]
         options.append(
             (u"response headers: %s bytes" % \
-             f_num(red.response.header_length), 
+             f_num(state.response.header_length), 
              "how large the response headers are, including the status line"
             )
         )
-        options.append((u"body: %s bytes" % f_num(red.response.payload_len),
+        options.append((u"body: %s bytes" % f_num(state.response.payload_len),
             "how large the response body is"))
-        transfer_overhead = red.response.transfer_length - \
-            red.response.payload_len
+        transfer_overhead = state.response.transfer_length - \
+            state.response.payload_len
         if transfer_overhead > 0:
             options.append(
                 (
@@ -487,7 +487,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         if self.kw.get('test_id', None):
             har_locator = "id=%s" % self.kw['test_id']
         else:
-            har_locator = self.req_qs(red.request.uri)
+            har_locator = self.req_qs(state.request.uri)
         options.append(
             (u"""\
     <a href='?%s&format=har' accesskey='h'>view har</a>""" % har_locator, 
@@ -504,14 +504,14 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     (
                     u"<a href='%s' accesskey='v'>validate body</a>" %
                         self.validators[media_type] % 
-                        e_query_arg(red.request.uri), 
+                        e_query_arg(state.request.uri), 
                      ""
                     )
                 )
-            if hasattr(red, "link_count") and red.link_count > 0:
+            if hasattr(state, "link_count") and state.link_count > 0:
                 options.append((
                      u"<a href='?descend=True&%s' accesskey='a'>check embedded</a>" % \
-                         self.req_qs(red.request.uri), 
+                         self.req_qs(state.request.uri), 
                     "run RED on images, frames and embedded links"
                 ))
         return nl.join(
@@ -606,9 +606,9 @@ class TableHtmlFormatter(BaseHtmlFormatter):
     def finish_output(self):
         self.final_status()
         self.output(self.template % {
-            'table': self.format_tables(self.red),
+            'table': self.format_tables(self.state),
             'problems': self.format_problems(),
-            'options': self.format_options(self.red),
+            'options': self.format_options(self.state),
             'footer': self.format_footer(),
             'hidden_list': self.format_hidden_list(),
         })
@@ -621,11 +621,11 @@ class TableHtmlFormatter(BaseHtmlFormatter):
           ('iframe', 'IFrame Links'),
           ('img', 'Image Links'),
     ]
-    def format_tables(self, red):
+    def format_tables(self, state):
         out = [self.format_table_header()]
-        out.append(self.format_droid(red))
+        out.append(self.format_droid(state))
         for hdr_tag, heading in self.link_order:
-            droids = [d[0] for d in red.linked if d[1] == hdr_tag]
+            droids = [d[0] for d in state.linked if d[1] == hdr_tag]
             if droids:
                 droids.sort(key=operator.attrgetter('response.base_uri'))
                 out.append(
@@ -634,68 +634,68 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                 out += [self.format_droid(d) for d in droids]
         return nl.join(out)
 
-    def format_droid(self, red):
+    def format_droid(self, state):
         out = [u'<tr class="droid %s">']
         m = 50
-        if red.response.parsed_headers.get('content-type', [""])[0][:6] == 'image/':
+        if state.response.parsed_headers.get('content-type', [""])[0][:6] == 'image/':
             cl = " class='preview'"
         else:
             cl = ""
-        if len(red.request.uri) > m:
+        if len(state.request.uri) > m:
             out.append(u"""\
     <td class="uri">
         <a href="%s" title="%s"%s>%s<span class="fade1">%s</span><span class="fade2">%s</span><span class="fade3">%s</span>
         </a>
     </td>""" % (
-                    u"?%s" % self.req_qs(red.request.uri), 
-                    e_html(red.request.uri), 
+                    u"?%s" % self.req_qs(state.request.uri), 
+                    e_html(state.request.uri), 
                     cl, 
-                    e_html(red.request.uri[:m-2]),
-                    e_html(red.request.uri[m-2]), 
-                    e_html(red.request.uri[m-1]), 
-                    e_html(red.request.uri[m]),
+                    e_html(state.request.uri[:m-2]),
+                    e_html(state.request.uri[m-2]), 
+                    e_html(state.request.uri[m-1]), 
+                    e_html(state.request.uri[m]),
                 )
             )
         else:
             out.append(
                 u'<td class="uri"><a href="%s" title="%s"%s>%s</a></td>' % (
-                    u"?%s" % self.req_qs(red.request.uri), 
-                    e_html(red.request.uri), 
+                    u"?%s" % self.req_qs(state.request.uri), 
+                    e_html(state.request.uri), 
                     cl, 
-                    e_html(red.request.uri)
+                    e_html(state.request.uri)
                 )
             )
-        if red.response.complete:
-            if red.response.status_code in ['301', '302', '303', '307'] and \
-              red.response.parsed_headers.has_key('location'):
+        if state.response.complete:
+            if state.response.status_code in ['301', '302', '303', '307'] and \
+              state.response.parsed_headers.has_key('location'):
                 out.append(
                     u'<td><a href="?descend=True&%s">%s</a></td>' % (
-                        self.req_qs(red.response.parsed_headers['location']),
-                        red.response.status_code
+                        self.req_qs(state.response.parsed_headers['location']),
+                        state.response.status_code
                     )
                 )
-            elif red.response.status_code in ['400', '404', '410']:
+            elif state.response.status_code in ['400', '404', '410']:
                 out.append(u'<td class="bad">%s</td>' % (
-                    red.response.status_code
+                    state.response.status_code
                 ))
             else:
-                out.append(u'<td>%s</td>' % red.response.status_code)
+                out.append(u'<td>%s</td>' % state.response.status_code)
     # pconn
-            out.append(self.format_size(red.response.payload_len))
-            out.append(self.format_yes_no(red.response.store_shared))
-            out.append(self.format_yes_no(red.response.store_private))
-            out.append(self.format_time(red.response.age))
-            out.append(self.format_time(red.response.freshness_lifetime))
-            out.append(self.format_yes_no(red.ims_support))
-            out.append(self.format_yes_no(red.inm_support))
-            if red.gzip_support:
-                out.append(u"<td>%s%%</td>" % red.gzip_savings)
+            out.append(self.format_size(state.response.payload_len))
+            out.append(self.format_yes_no(state.response.store_shared))
+            out.append(self.format_yes_no(state.response.store_private))
+            out.append(self.format_time(state.response.age))
+            out.append(self.format_time(state.response.freshness_lifetime))
+            out.append(self.format_yes_no(state.ims_support))
+            out.append(self.format_yes_no(state.inm_support))
+            if state.gzip_support:
+                out.append(u"<td>%s%%</td>" % state.gzip_savings)
             else:
-                out.append(self.format_yes_no(red.gzip_support))
-            out.append(self.format_yes_no(red.partial_support))
-            problems = [m for m in red.notes if \
+                out.append(self.format_yes_no(state.gzip_support))
+            out.append(self.format_yes_no(state.partial_support))
+            problems = [m for m in state.notes if \
                 m.level in [rs.l.WARN, rs.l.BAD]]
-    # TODO:        problems += sum([m[2].notes for m in red.notes if  
+    # TODO:        problems += sum([m[2].notes for m in state.notes if  
     # m[2] != None], [])
             out.append(u"<td>")
             pr_enum = []
@@ -713,10 +713,10 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                     )
                 )
         else:
-            if red.response.http_error == None:
+            if state.response.http_error == None:
                 err = "response incomplete"
             else:
-                err = red.response.http_error.desc or 'unknown problem'
+                err = state.response.http_error.desc or 'unknown problem'
             out.append('<td colspan="11">%s' % err)
         out.append(u"</td>")
         out.append(u'</tr>')
@@ -764,14 +764,14 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         else:
             raise AssertionError, 'unknown value'
 
-    def format_options(self, red):
+    def format_options(self, state):
         "Return things that the user can do with the URI as HTML links"
         options = []
-        media_type = red.response.parsed_headers.get('content-type', [""])[0]
+        media_type = state.response.parsed_headers.get('content-type', [""])[0]
         if self.kw.get('test_id', None):
             har_locator = "id=%s" % self.kw['test_id']
         else:
-            har_locator = "%s" % self.req_qs(red.request.uri)
+            har_locator = "%s" % self.req_qs(state.request.uri)
         options.append((
           u"<a href='?%s&descend=True&format=har'>view har</a>" % har_locator,
           u"View a HAR (HTTP ARchive) file for this response"

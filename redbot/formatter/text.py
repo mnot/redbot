@@ -68,7 +68,7 @@ class BaseTextFormatter(Formatter):
     def start_output(self):
         pass
 
-    def feed(self, red, chunk):
+    def feed(self, state, chunk):
         pass
 
     def status(self, msg):
@@ -76,31 +76,31 @@ class BaseTextFormatter(Formatter):
 
     def finish_output(self):
         "Fill in the template with RED's results."
-        if self.red.response.complete:
-            self.output(self.format_headers(self.red) + nl + nl)
-            self.output(self.format_recommendations(self.red) + nl)
+        if self.state.response.complete:
+            self.output(self.format_headers(self.state) + nl + nl)
+            self.output(self.format_recommendations(self.state) + nl)
         else:
-            if self.red.response.http_error == None:
+            if self.state.response.http_error == None:
                 pass
-            elif isinstance(self.red.response.http_error, httperr.HttpError):
-                self.output(self.error_template % self.red.response.http_error.desc)
+            elif isinstance(self.state.response.http_error, httperr.HttpError):
+                self.output(self.error_template % self.state.response.http_error.desc)
             else:
                 raise AssertionError, "Unknown incomplete response error."
 
-    def format_headers(self, red):
+    def format_headers(self, state):
         out = [u"HTTP/%s %s %s" % (
-                red.response.version, 
-                red.response.status_code, 
-                red.ressponse.status_phrase
+                state.response.version, 
+                state.response.status_code, 
+                state.ressponse.status_phrase
         )]
-        return nl.join(out + [u"%s:%s" % h for h in red.response.headers])
+        return nl.join(out + [u"%s:%s" % h for h in state.response.headers])
 
-    def format_recommendations(self, red):
-        return "".join([self.format_recommendation(red, category) \
+    def format_recommendations(self, state):
+        return "".join([self.format_recommendation(state, category) \
             for category in self.msg_categories])
 
-    def format_recommendation(self, red, category):
-        note = [note for note in red.notes if note.category == category]
+    def format_recommendation(self, state, category):
+        note = [note for note in state.notes if note.category == category]
         if not note:
             return ""
         out = []
@@ -203,7 +203,7 @@ class TextListFormatter(BaseTextFormatter):
         BaseTextFormatter.finish_output(self)
         sep = "=" * 78
         for hdr_tag, heading in self.link_order:
-            droids = [d[0] for d in self.red.linked if d[1] == hdr_tag]
+            droids = [d[0] for d in self.state.linked if d[1] == hdr_tag]
             self.output("%s\n%s (%d)\n%s\n" % (
                 sep, heading, len(droids), sep
             ))
@@ -215,8 +215,8 @@ class TextListFormatter(BaseTextFormatter):
                     self.output(self.format_recommendations(droid) + nl + nl)
         self.done()
 
-    def format_uri(self, red):
-        return self.colorize("uri", red.request.uri)
+    def format_uri(self, state):
+        return self.colorize("uri", state.request.uri)
 
 
 class VerboseTextListFormatter(TextListFormatter):

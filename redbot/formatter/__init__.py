@@ -102,20 +102,20 @@ class Formatter(object):
         self.lang = lang
         self.output = output
         self.kw = kw
-        self.red = None
+        self.state = None
 
     def set_state(self, state):
         """
-        Set the RED state to be formatted.
+        Set the RedState to be formatted.
         """
-        self.red = state
+        self.state = state
         
     def done(self):
         """Clean up. Must be called by finish_output."""
-        self.red = None
+        self.state = None
         self.output = None
     
-    def feed(self, red, sample):
+    def feed(self, state, sample):
         """
         Feed a body sample to processor(s).
         """
@@ -212,6 +212,7 @@ def relative_time(utime, now=None, show_sign=1):
         arr.append(sign)
     return " ".join(arr)
 
+
 class RelativeTimeTester(unittest.TestCase):
     minute = 60
     hour = minute * 60
@@ -237,5 +238,3 @@ class RelativeTimeTester(unittest.TestCase):
                 relative_time(self.now + delta, self.now), 
                 result
             )
-
-
