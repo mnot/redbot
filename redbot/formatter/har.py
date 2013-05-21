@@ -171,6 +171,7 @@ class HarFormatter(Formatter):
         out = []
         for m in state.notes:
             msg = {
+                "messageid": m.messageid,
                 "subject": m.subject,
                 "category": m.category,
                 "level": m.level,
@@ -180,6 +181,7 @@ class HarFormatter(Formatter):
                 m.subrequest, "notes", []) if i.level in [rs.l.BAD]]
             msg["subrequests"] = \
             [{
+                "messageid": sm.messageid,
                 "subject": sm.subject,
                 "category": sm.category,
                 "level": sm.level,
