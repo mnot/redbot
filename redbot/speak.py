@@ -103,7 +103,7 @@ response = {
 }
 
 class URI_TOO_LONG(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -115,7 +115,7 @@ class URI_TOO_LONG(Note):
     }
 
 class URI_BAD_SYNTAX(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -128,7 +128,7 @@ class URI_BAD_SYNTAX(Note):
     }
 
 class REQUEST_HDR_IN_RESPONSE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -140,7 +140,7 @@ class REQUEST_HDR_IN_RESPONSE(Note):
     }
 
 class RESPONSE_HDR_IN_REQUEST(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -152,7 +152,7 @@ class RESPONSE_HDR_IN_REQUEST(Note):
     }
 
 class FIELD_NAME_BAD_SYNTAX(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -167,7 +167,7 @@ class FIELD_NAME_BAD_SYNTAX(Note):
     }
 
 class HEADER_BLOCK_TOO_LARGE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -180,7 +180,7 @@ class HEADER_BLOCK_TOO_LARGE(Note):
     }
 
 class HEADER_TOO_LARGE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -192,7 +192,7 @@ class HEADER_TOO_LARGE(Note):
     }
 
 class HEADER_NAME_ENCODING(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -205,7 +205,7 @@ class HEADER_NAME_ENCODING(Note):
     }
 
 class HEADER_VALUE_ENCODING(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -220,7 +220,7 @@ class HEADER_VALUE_ENCODING(Note):
     }
 
 class HEADER_DEPRECATED(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -233,7 +233,7 @@ class HEADER_DEPRECATED(Note):
     }
 
 class SINGLE_HEADER_REPEAT(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -249,7 +249,7 @@ class SINGLE_HEADER_REPEAT(Note):
     }
 
 class BODY_NOT_ALLOWED(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CONNECTION
     level = l.BAD
     summary = {
@@ -265,7 +265,7 @@ class BODY_NOT_ALLOWED(Note):
     }
 
 class BAD_SYNTAX(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -280,7 +280,7 @@ class BAD_SYNTAX(Note):
 # Specific headers
 
 class BAD_CC_SYNTAX(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.BAD
     summary = {
@@ -292,7 +292,7 @@ incorrect."
     }
 
 class AGE_NOT_INT(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.BAD
     summary = {
@@ -305,7 +305,7 @@ class AGE_NOT_INT(Note):
     }
 
 class AGE_NEGATIVE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.BAD
     summary = {
@@ -318,7 +318,7 @@ class AGE_NEGATIVE(Note):
     }
 
 class BAD_CHUNK(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CONNECTION
     level = l.BAD
     summary = {
@@ -340,7 +340,7 @@ class BAD_CHUNK(Note):
     }
 
 class BAD_GZIP(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CONNEG
     level = l.BAD
     summary = {
@@ -354,7 +354,7 @@ valid."
     }
 
 class BAD_ZLIB(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CONNEG
     level = l.BAD
     summary = {
@@ -370,7 +370,7 @@ class BAD_ZLIB(Note):
     }
 
 class ENCODING_UNWANTED(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CONNEG
     level = l.WARN
     summary = {
@@ -387,7 +387,7 @@ class ENCODING_UNWANTED(Note):
     }
 
 class TRANSFER_CODING_IDENTITY(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CONNECTION
     level = l.INFO
     summary = {
@@ -401,7 +401,7 @@ class TRANSFER_CODING_IDENTITY(Note):
     }
 
 class TRANSFER_CODING_UNWANTED(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CONNECTION
     level = l.BAD
     summary = {
@@ -419,7 +419,7 @@ class TRANSFER_CODING_UNWANTED(Note):
     }
 
 class TRANSFER_CODING_PARAM(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CONNECTION
     level = l.WARN
     summary = {
@@ -435,7 +435,7 @@ class TRANSFER_CODING_PARAM(Note):
     }
 
 class BAD_DATE_SYNTAX(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -451,7 +451,7 @@ class BAD_DATE_SYNTAX(Note):
     }
 
 class LM_FUTURE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.BAD
     summary = {
@@ -465,7 +465,7 @@ class LM_FUTURE(Note):
     }
 
 class LM_PRESENT(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -479,7 +479,7 @@ class LM_PRESENT(Note):
     }
 
 class CONTENT_TRANSFER_ENCODING(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -494,7 +494,7 @@ class CONTENT_TRANSFER_ENCODING(Note):
     }
 
 class MIME_VERSION(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -509,7 +509,7 @@ class MIME_VERSION(Note):
     }
 
 class PRAGMA_NO_CACHE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.WARN
     summary = {
@@ -523,7 +523,7 @@ directive."
     }
 
 class PRAGMA_OTHER(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -535,7 +535,7 @@ class PRAGMA_OTHER(Note):
     }
 
 class VIA_PRESENT(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -556,7 +556,7 @@ class VIA_PRESENT(Note):
     }
 
 class LOCATION_UNDEFINED(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -574,7 +574,7 @@ class LOCATION_UNDEFINED(Note):
     }
 
 class LOCATION_NOT_ABSOLUTE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -590,7 +590,7 @@ class LOCATION_NOT_ABSOLUTE(Note):
     }
 
 class CONTENT_TYPE_OPTIONS(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.SECURITY
     level = l.INFO
     summary = {
@@ -609,7 +609,7 @@ media type."
     }
 
 class CONTENT_TYPE_OPTIONS_UNKNOWN(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.SECURITY
     level = l.WARN
     summary = {
@@ -625,7 +625,7 @@ unknown value."
     }
 
 class DOWNLOAD_OPTIONS(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.SECURITY
     level = l.INFO
     summary = {
@@ -645,7 +645,7 @@ Explorer when downloaded."
     }
 
 class DOWNLOAD_OPTIONS_UNKNOWN(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.SECURITY
     level = l.WARN
     summary = {
@@ -661,7 +661,7 @@ unknown value."
     }
 
 class FRAME_OPTIONS_DENY(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.SECURITY
     level = l.INFO
     summary = {
@@ -680,7 +680,7 @@ will be contained within a frame."
     }
 
 class FRAME_OPTIONS_SAMEORIGIN(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.SECURITY
     level = l.INFO
     summary = {
@@ -699,7 +699,7 @@ will be contained within a frame on another site."
     }
 
 class FRAME_OPTIONS_UNKNOWN(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.SECURITY
     level = l.WARN
     summary = {
@@ -717,7 +717,7 @@ value."
     }
 
 class SMART_TAG_NO_WORK(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -730,7 +730,7 @@ class SMART_TAG_NO_WORK(Note):
     }
 
 class UA_COMPATIBLE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -747,7 +747,7 @@ Explorer 8."
     }
 
 class UA_COMPATIBLE_REPEAT(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -765,7 +765,7 @@ at the same UA."
     }
 
 class XSS_PROTECTION_ON(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.SECURITY
     level = l.INFO
     summary = {
@@ -785,7 +785,7 @@ class XSS_PROTECTION_ON(Note):
     }
 
 class XSS_PROTECTION_OFF(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.SECURITY
     level = l.INFO
     summary = {
@@ -805,7 +805,7 @@ class XSS_PROTECTION_OFF(Note):
     }
 
 class XSS_PROTECTION_BLOCK(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.SECURITY
     level = l.INFO
     summary = {
@@ -828,7 +828,7 @@ class XSS_PROTECTION_BLOCK(Note):
 ### Ranges
 
 class RANGE_SUBREQ_PROBLEM(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.RANGE
     level = l.BAD
     summary = {
@@ -842,7 +842,7 @@ class RANGE_SUBREQ_PROBLEM(Note):
     }
 
 class UNKNOWN_RANGE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.RANGE
     level = l.WARN
     summary = {
@@ -859,7 +859,7 @@ class UNKNOWN_RANGE(Note):
     }
 
 class RANGE_CORRECT(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.RANGE
     level = l.GOOD
     summary = {
@@ -873,7 +873,7 @@ class RANGE_CORRECT(Note):
     }
 
 class RANGE_INCORRECT(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.RANGE
     level = l.BAD
     summary = {
@@ -896,7 +896,7 @@ class RANGE_INCORRECT(Note):
     }
 
 class RANGE_CHANGED(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.RANGE
     level = l.WARN
     summary = {
@@ -909,7 +909,7 @@ class RANGE_CHANGED(Note):
     }
 
 class RANGE_FULL(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.RANGE
     level = l.WARN
     summary = {
@@ -925,7 +925,7 @@ class RANGE_FULL(Note):
     }
 
 class RANGE_STATUS(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.RANGE
     level = l.INFO
     summary = {
@@ -940,7 +940,7 @@ class RANGE_STATUS(Note):
     }
 
 class RANGE_NEG_MISMATCH(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.RANGE
     level = l.BAD
     summary = {
@@ -957,7 +957,7 @@ that full ones do."
     }
 
 class MISSING_HDRS_206(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.VALIDATION
     level = l.WARN
     summary = {
@@ -976,7 +976,7 @@ class MISSING_HDRS_206(Note):
 ### Body
 
 class CL_CORRECT(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.GOOD
     summary = {
@@ -990,7 +990,7 @@ class CL_CORRECT(Note):
     }
 
 class CL_INCORRECT(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -1007,7 +1007,7 @@ class CL_INCORRECT(Note):
     }
 
 class CMD5_CORRECT(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.GOOD
     summary = {
@@ -1020,7 +1020,7 @@ class CMD5_CORRECT(Note):
     }
 
 class CMD5_INCORRECT(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -1036,7 +1036,7 @@ class CMD5_INCORRECT(Note):
 ### Conneg
 
 class CONNEG_SUBREQ_PROBLEM(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CONNEG
     level = l.BAD
     summary = {
@@ -1050,7 +1050,7 @@ class CONNEG_SUBREQ_PROBLEM(Note):
     }
 
 class CONNEG_GZIP_GOOD(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CONNEG
     level = l.GOOD
     summary = {
@@ -1066,7 +1066,7 @@ class CONNEG_GZIP_GOOD(Note):
     }
 
 class CONNEG_GZIP_BAD(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CONNEG
     level = l.WARN
     summary = {
@@ -1086,7 +1086,7 @@ class CONNEG_GZIP_BAD(Note):
     }
 
 class CONNEG_NO_GZIP(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CONNEG
     level = l.INFO
     summary = {
@@ -1099,7 +1099,7 @@ class CONNEG_NO_GZIP(Note):
     }
 
 class CONNEG_NO_VARY(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CONNEG
     level = l.BAD
     summary = {
@@ -1116,7 +1116,7 @@ Vary header."
     }
 
 class CONNEG_GZIP_WITHOUT_ASKING(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CONNEG
     level = l.WARN
     summary = {
@@ -1131,7 +1131,7 @@ class CONNEG_GZIP_WITHOUT_ASKING(Note):
     }
 
 class VARY_INCONSISTENT(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CONNEG
     level = l.BAD
     summary = {
@@ -1154,7 +1154,7 @@ class VARY_INCONSISTENT(Note):
     }
 
 class VARY_STATUS_MISMATCH(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CONNEG
     level = l.WARN
     summary = {
@@ -1172,7 +1172,7 @@ happens."
     }
     
 class VARY_HEADER_MISMATCH(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CONNEG
     level = l.BAD
     summary = {
@@ -1186,7 +1186,7 @@ happens."
     }
 
 class VARY_BODY_MISMATCH(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CONNEG
     level = l.INFO
     summary = {
@@ -1202,7 +1202,7 @@ class VARY_BODY_MISMATCH(Note):
     }
 
 class VARY_ETAG_DOESNT_CHANGE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CONNEG
     level = l.BAD
     summary = {
@@ -1220,7 +1220,7 @@ class VARY_ETAG_DOESNT_CHANGE(Note):
 ### Clock
 
 class DATE_CORRECT(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.GOOD
     summary = {
@@ -1233,7 +1233,7 @@ class DATE_CORRECT(Note):
     }
 
 class DATE_INCORRECT(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -1257,7 +1257,7 @@ class DATE_INCORRECT(Note):
     }
 
 class AGE_PENALTY(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -1278,7 +1278,7 @@ intermediary."
     }
 
 class DATE_CLOCKLESS(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -1291,7 +1291,7 @@ class DATE_CLOCKLESS(Note):
     }
 
 class DATE_CLOCKLESS_BAD_HDR(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.BAD
     summary = {
@@ -1309,7 +1309,7 @@ Last-Modified values."
 ### Caching
 
 class METHOD_UNCACHEABLE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1320,7 +1320,7 @@ class METHOD_UNCACHEABLE(Note):
     }
 
 class CC_MISCAP(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.WARN
     summary = {
@@ -1334,7 +1334,7 @@ capitalisation."
     }
 
 class CC_DUP(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.WARN
     summary = {
@@ -1348,7 +1348,7 @@ class CC_DUP(Note):
     }
 
 class NO_STORE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1360,7 +1360,7 @@ class NO_STORE(Note):
     }
 
 class PRIVATE_CC(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1374,7 +1374,7 @@ class PRIVATE_CC(Note):
     }
 
 class PRIVATE_AUTH(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1389,7 +1389,7 @@ class PRIVATE_AUTH(Note):
     }
 
 class STOREABLE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1401,7 +1401,7 @@ class STOREABLE(Note):
     }
 
 class NO_CACHE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1416,7 +1416,7 @@ class NO_CACHE(Note):
     }
 
 class NO_CACHE_NO_VALIDATOR(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1433,7 +1433,7 @@ class NO_CACHE_NO_VALIDATOR(Note):
     }
 
 class VARY_ASTERISK(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.WARN
     summary = {
@@ -1446,7 +1446,7 @@ class VARY_ASTERISK(Note):
     }
 
 class VARY_USER_AGENT(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1465,7 +1465,7 @@ class VARY_USER_AGENT(Note):
     }
 
 class VARY_HOST(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.WARN
     summary = {
@@ -1486,7 +1486,7 @@ class VARY_HOST(Note):
     }
 
 class VARY_COMPLEX(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.WARN
     summary = {
@@ -1501,7 +1501,7 @@ class VARY_COMPLEX(Note):
     }
 
 class PUBLIC(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.WARN
     summary = {
@@ -1520,7 +1520,7 @@ class PUBLIC(Note):
     }
 
 class CURRENT_AGE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1534,7 +1534,7 @@ class CURRENT_AGE(Note):
     }
 
 class FRESHNESS_FRESH(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.GOOD
     summary = {
@@ -1547,7 +1547,7 @@ class FRESHNESS_FRESH(Note):
     }
 
 class FRESHNESS_STALE_CACHE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.WARN
     summary = {
@@ -1564,7 +1564,7 @@ class FRESHNESS_STALE_CACHE(Note):
     }
 
 class FRESHNESS_STALE_ALREADY(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1579,7 +1579,7 @@ class FRESHNESS_STALE_ALREADY(Note):
     }
 
 class FRESHNESS_HEURISTIC(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.WARN
     summary = {
@@ -1600,7 +1600,7 @@ lifetime."
     }
 
 class FRESHNESS_NONE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1622,7 +1622,7 @@ circumstances."
     }
 
 class FRESH_SERVABLE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1638,7 +1638,7 @@ class FRESH_SERVABLE(Note):
     }
 
 class STALE_SERVABLE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1654,7 +1654,7 @@ class STALE_SERVABLE(Note):
     }
 
 class FRESH_MUST_REVALIDATE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1669,7 +1669,7 @@ class FRESH_MUST_REVALIDATE(Note):
     }
 
 class STALE_MUST_REVALIDATE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1684,7 +1684,7 @@ class STALE_MUST_REVALIDATE(Note):
     }
 
 class FRESH_PROXY_REVALIDATE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1702,7 +1702,7 @@ stale."
     }
 
 class STALE_PROXY_REVALIDATE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1720,7 +1720,7 @@ stale."
     }
 
 class CHECK_SINGLE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.WARN
     summary = {
@@ -1740,7 +1740,7 @@ directives is present."
     }
 
 class CHECK_NOT_INTEGER(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.WARN
     summary = {
@@ -1759,7 +1759,7 @@ a non-integer value."
     }
 
 class CHECK_ALL_ZERO(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.WARN
     summary = {
@@ -1782,7 +1782,7 @@ class CHECK_ALL_ZERO(Note):
     }
 
 class CHECK_POST_BIGGER(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.WARN
     summary = {
@@ -1803,7 +1803,7 @@ than pre-check's."
     }
 
 class CHECK_POST_ZERO(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.BAD
     summary = {
@@ -1823,7 +1823,7 @@ class CHECK_POST_ZERO(Note):
     }
 
 class CHECK_POST_PRE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.CACHING
     level = l.INFO
     summary = {
@@ -1849,7 +1849,7 @@ Explorer."
 ### General Validation
 
 class NO_DATE_304(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.VALIDATION
     level = l.WARN
     summary = {
@@ -1862,7 +1862,7 @@ class NO_DATE_304(Note):
     }
 
 class MISSING_HDRS_304(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.VALIDATION
     level = l.WARN
     summary = {
@@ -1881,7 +1881,7 @@ class MISSING_HDRS_304(Note):
 ### ETag Validation
 
 class ETAG_SUBREQ_PROBLEM(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.VALIDATION
     level = l.BAD
     summary = {
@@ -1895,7 +1895,7 @@ class ETAG_SUBREQ_PROBLEM(Note):
     }
     
 class INM_304(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.VALIDATION
     level = l.GOOD
     summary = {
@@ -1911,7 +1911,7 @@ class INM_304(Note):
     }
 
 class INM_FULL(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.VALIDATION
     level = l.WARN
     summary = {
@@ -1929,7 +1929,7 @@ unchanged."
     }
 
 class INM_DUP_ETAG_WEAK(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.VALIDATION
     level = l.INFO
     summary = {
@@ -1951,7 +1951,7 @@ response body did."
     }
     
 class INM_DUP_ETAG_STRONG(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.VALIDATION
     level = l.BAD
     summary = {
@@ -1972,7 +1972,7 @@ response body did."
     }
 
 class INM_UNKNOWN(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.VALIDATION
     level = l.INFO
     summary = {
@@ -1990,7 +1990,7 @@ content, but it had changed."
     }
 
 class INM_STATUS(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.VALIDATION
     level = l.INFO
     summary = {
@@ -2010,7 +2010,7 @@ status."
 ### Last-Modified Validation
 
 class LM_SUBREQ_PROBLEM(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.VALIDATION
     level = l.BAD
     summary = {
@@ -2023,7 +2023,7 @@ class LM_SUBREQ_PROBLEM(Note):
     Trying again might fix it."""
     }
 class IMS_304(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.VALIDATION
     level = l.GOOD
     summary = {
@@ -2040,7 +2040,7 @@ class IMS_304(Note):
     }
 
 class IMS_FULL(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.VALIDATION
     level = l.WARN
     summary = {
@@ -2058,7 +2058,7 @@ content unchanged."
     }
 
 class IMS_UNKNOWN(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.VALIDATION
     level = l.INFO
     summary = {
@@ -2076,7 +2076,7 @@ content, but it had changed."
     }
 
 class IMS_STATUS(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.VALIDATION
     level = l.INFO
     summary = {
@@ -2096,7 +2096,7 @@ class IMS_STATUS(Note):
 ### Status checks
 
 class UNEXPECTED_CONTINUE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2117,7 +2117,7 @@ class UNEXPECTED_CONTINUE(Note):
     }
 
 class UPGRADE_NOT_REQUESTED(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2135,7 +2135,7 @@ class UPGRADE_NOT_REQUESTED(Note):
     }
 
 class CREATED_SAFE_METHOD(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -2153,7 +2153,7 @@ class CREATED_SAFE_METHOD(Note):
     }
 
 class CREATED_WITHOUT_LOCATION(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2167,7 +2167,7 @@ class CREATED_WITHOUT_LOCATION(Note):
     }
 
 class CONTENT_RANGE_MEANINGLESS(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.RANGE
     level = l.WARN
     summary = {
@@ -2182,7 +2182,7 @@ class CONTENT_RANGE_MEANINGLESS(Note):
     }
 
 class PARTIAL_WITHOUT_RANGE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2198,7 +2198,7 @@ class PARTIAL_WITHOUT_RANGE(Note):
     }
 
 class PARTIAL_NOT_REQUESTED(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2214,7 +2214,7 @@ class PARTIAL_NOT_REQUESTED(Note):
     }
 
 class REDIRECT_WITHOUT_LOCATION(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2227,7 +2227,7 @@ class REDIRECT_WITHOUT_LOCATION(Note):
     }
 
 class STATUS_DEPRECATED(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2240,7 +2240,7 @@ class STATUS_DEPRECATED(Note):
     }
 
 class STATUS_RESERVED(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2252,7 +2252,7 @@ class STATUS_RESERVED(Note):
     }
 
 class STATUS_NONSTANDARD(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2266,7 +2266,7 @@ class STATUS_NONSTANDARD(Note):
     }
 
 class STATUS_BAD_REQUEST(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -2277,7 +2277,7 @@ class STATUS_BAD_REQUEST(Note):
     }
 
 class STATUS_FORBIDDEN(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -2288,7 +2288,7 @@ class STATUS_FORBIDDEN(Note):
     }
 
 class STATUS_NOT_FOUND(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -2300,7 +2300,7 @@ class STATUS_NOT_FOUND(Note):
     }
 
 class STATUS_NOT_ACCEPTABLE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -2311,7 +2311,7 @@ class STATUS_NOT_ACCEPTABLE(Note):
     }
 
 class STATUS_CONFLICT(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -2322,7 +2322,7 @@ class STATUS_CONFLICT(Note):
     }
 
 class STATUS_GONE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -2334,7 +2334,7 @@ class STATUS_GONE(Note):
     }
 
 class STATUS_REQUEST_ENTITY_TOO_LARGE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -2346,7 +2346,7 @@ class STATUS_REQUEST_ENTITY_TOO_LARGE(Note):
     }
 
 class STATUS_URI_TOO_LONG(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2358,7 +2358,7 @@ class STATUS_URI_TOO_LONG(Note):
     }
 
 class STATUS_UNSUPPORTED_MEDIA_TYPE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -2369,7 +2369,7 @@ class STATUS_UNSUPPORTED_MEDIA_TYPE(Note):
     }
 
 class STATUS_INTERNAL_SERVICE_ERROR(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -2380,7 +2380,7 @@ class STATUS_INTERNAL_SERVICE_ERROR(Note):
     }
 
 class STATUS_NOT_IMPLEMENTED(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -2391,7 +2391,7 @@ class STATUS_NOT_IMPLEMENTED(Note):
     }
 
 class STATUS_BAD_GATEWAY(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -2402,7 +2402,7 @@ class STATUS_BAD_GATEWAY(Note):
     }
 
 class STATUS_SERVICE_UNAVAILABLE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -2413,7 +2413,7 @@ class STATUS_SERVICE_UNAVAILABLE(Note):
     }
 
 class STATUS_GATEWAY_TIMEOUT(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.INFO
     summary = {
@@ -2424,7 +2424,7 @@ class STATUS_GATEWAY_TIMEOUT(Note):
     }
 
 class STATUS_VERSION_NOT_SUPPORTED(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2435,7 +2435,7 @@ class STATUS_VERSION_NOT_SUPPORTED(Note):
     }
 
 class PARAM_STAR_QUOTED(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2450,7 +2450,7 @@ class PARAM_STAR_QUOTED(Note):
     }
 
 class PARAM_STAR_ERROR(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2466,7 +2466,7 @@ class PARAM_STAR_ERROR(Note):
     }
 
 class PARAM_STAR_BAD(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.BAD
     summary = {
@@ -2484,7 +2484,7 @@ header."
     }
 
 class PARAM_STAR_NOCHARSET(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -2500,7 +2500,7 @@ class PARAM_STAR_NOCHARSET(Note):
     }
 
 class PARAM_STAR_CHARSET(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -2518,7 +2518,7 @@ UTF-8."
     }
 
 class PARAM_REPEATS(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -2530,7 +2530,7 @@ class PARAM_REPEATS(Note):
     }
 
 class PARAM_SINGLE_QUOTED(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -2548,7 +2548,7 @@ single-quoted."
     }
 
 class DISPOSITION_UNKNOWN(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -2562,7 +2562,7 @@ class DISPOSITION_UNKNOWN(Note):
     }
 
 class DISPOSITION_OMITS_FILENAME(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -2579,7 +2579,7 @@ parameter."
     }
 
 class DISPOSITION_FILENAME_PERCENT(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -2602,7 +2602,7 @@ contains a '%%' character."
     }
 
 class DISPOSITION_FILENAME_PATH_CHAR(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level = l.WARN
     summary = {
@@ -2623,7 +2623,7 @@ path character."
     }
     
 class LINK_REV(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level=l.WARN
     summary = {
@@ -2640,7 +2640,7 @@ class LINK_REV(Note):
     }
 
 class LINK_BAD_ANCHOR(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level=l.WARN
     summary = {
@@ -2657,7 +2657,7 @@ class LINK_BAD_ANCHOR(Note):
     }
 
 class SET_COOKIE_NO_VAL(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level=l.BAD
     summary = {
@@ -2671,7 +2671,7 @@ class SET_COOKIE_NO_VAL(Note):
     }
 
 class SET_COOKIE_NO_NAME(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level=l.BAD
     summary = {
@@ -2684,7 +2684,7 @@ class SET_COOKIE_NO_NAME(Note):
     }
 
 class SET_COOKIE_BAD_DATE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level=l.WARN
     summary = {
@@ -2700,7 +2700,7 @@ date."
     }
 
 class SET_COOKIE_EMPTY_MAX_AGE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level=l.WARN
     summary = {
@@ -2713,7 +2713,7 @@ class SET_COOKIE_EMPTY_MAX_AGE(Note):
     }
 
 class SET_COOKIE_NON_DIGIT_MAX_AGE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level=l.WARN
     summary = {
@@ -2726,7 +2726,7 @@ class SET_COOKIE_NON_DIGIT_MAX_AGE(Note):
     }
 
 class SET_COOKIE_EMPTY_DOMAIN(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level=l.WARN
     summary = {
@@ -2739,7 +2739,7 @@ class SET_COOKIE_EMPTY_DOMAIN(Note):
     }
 
 class SET_COOKIE_UNKNOWN_ATTRIBUTE(Note):
-    messageid = __class__.__name__
+    messageid = self.__class__.__name__
     category = c.GENERAL
     level=l.WARN
     summary = {
