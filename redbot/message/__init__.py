@@ -325,17 +325,19 @@ class HttpRequest(HttpMessage):
             authority = host.encode('idna') + ":%s" % port
         else:
             authority = authority.encode('idna')
+        sub_delims = "!$&'()*+,;="
+        pchar = sub_delims + ":@"
         path = urllib.quote(
           path.encode('utf-8'),
-          safe="/;%[]=:$&()+,!?*@'~"
+          safe = pchar + "/"
         )
         query = urllib.quote(
           query.encode('utf-8'),
-          safe="/;%[]=:$&()+,!?*@'~"
+          safe = pchar + "/?"
         )
         frag = urllib.quote(
           frag.encode('utf-8'),
-          safe="/;%[]=:$&()+,!?*@'~"
+          safe = pchar + "/?"
         )
         return urlparse.urlunsplit((scheme, authority, path, query, frag))
 
