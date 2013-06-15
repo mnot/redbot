@@ -37,10 +37,10 @@ class RangeRequest(SubRequest):
     "Check for partial content support (if advertised)"
 
     def __init__(self, red, name):
-        SubRequest.__init__(self, red, name)
         self.range_start = None
         self.range_end = None
         self.range_target = None
+        SubRequest.__init__(self, red, name)
         
     def modify_req_hdrs(self):
         req_hdrs = list(self.base.request.headers)
