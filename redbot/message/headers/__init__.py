@@ -186,12 +186,13 @@ def process_headers(msg):
         msg.set_context(field_name=name)
         
         # check field name syntax
-        if not re.match("^\s*%s\s*$" % syntax.TOKEN, name):
+        if not re.match("^\s*%s\s*$" % syntax.TOKEN, name, re.VERBOSE):
             msg.add_note(subject, rs.FIELD_NAME_BAD_SYNTAX)
+            continue
 
-        # parse the header
         norm_name = name.lower()
         value = value.strip()
+        
         hdr_parse = load_header_func(norm_name, 'parse')
         if hdr_parse:
             if hasattr(hdr_parse, 'pre_parse'):
