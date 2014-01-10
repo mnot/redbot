@@ -4,4 +4,6 @@ thor
 thor-src
 *.old
 static
+!ascii_with_complaints.py
+!sitecustomize.py
 
