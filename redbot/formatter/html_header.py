@@ -1,4 +1,4 @@
-"""\
+u"""\
 <!DOCTYPE html>
 <html>
 <head>
