@@ -231,7 +231,7 @@ def load_header_func(header_name, func):
     """
     Return a header parser for the given field name.
     """
-    name_token = header_name.replace('-', '_')
+    name_token = header_name.replace('-', '_').encode('ascii', 'ignore')
     # anything starting with an underscore or with any caps won't match
     try:
         module_name = "redbot.message.headers.%s" % name_token
@@ -264,14 +264,14 @@ def parse_date(value):
 
 def unquote_string(instr):
     """
-    Unquote a string; does NOT unquote control characters.
+    Unquote a unicode string; does NOT unquote control characters.
 
     @param instr: string to be unquoted
-    @type instr: string
+    @type instr: unicode
     @return: unquoted string
-    @rtype: string
+    @rtype: unicode
     """
-    instr = str(instr).strip()
+    instr = unicode(instr).strip()
     if not instr or instr == '*':
         return instr
     if instr[0] == instr[-1] == '"':

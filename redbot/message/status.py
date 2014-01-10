@@ -44,7 +44,7 @@ class StatusChecker:
         self.request = request
         self.response = response
         try:
-            status_m = getattr(self, "status%s" % response.status_code)
+            status_m = getattr(self, "status%s" % response.status_code.encode('ascii', 'ignore'))
         except AttributeError:
             self.add_note('status', rs.STATUS_NONSTANDARD)
             return
