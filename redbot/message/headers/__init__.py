@@ -307,7 +307,7 @@ def parse_params(msg, subject, instr, nostar=None, delim=";"):
     @return: dictionary of {name: value}
     """
     param_dict = {}
-    instr = instr.encode('ascii')
+    instr = instr.encode('ascii') # TODO: non-ascii input?
     for param in split_string(instr, syntax.PARAMETER, r"\s*%s\s*" % delim):
         try:
             key, val = param.split("=", 1)
@@ -332,7 +332,7 @@ def parse_params(msg, subject, instr, nostar=None, delim=";"):
                 if val[0] == '"' and val[-1] == '"':
                     msg.add_note(subject, rs.PARAM_STAR_QUOTED,
                                     param=k_norm)
-                    val = unquote_string(val)
+                    val = unquote_string(val).encode('ascii')
                 try:
                     enc, lang, esc_v = val.split("'", 3)
                 except ValueError:
