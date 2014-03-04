@@ -2547,6 +2547,18 @@ class SET_COOKIE_EMPTY_MAX_AGE(Note):
      Browsers will ignore the <code>max-age</code> value as a result."""
     }
 
+class SET_COOKIE_LEADING_ZERO_MAX_AGE(Note):
+    category = c.GENERAL
+    level=l.WARN
+    summary = {
+     'en': u"The %(cookie_name)s Set-Cookie header has a Max-Age with a leading zero."
+    }
+    text = {
+     'en': u"""The <code>max-age</code> parameter on this
+     <code>Set-Cookie</code> header has a leading zero.<p>
+     Browsers will ignore the <code>max-age</code> value as a result."""
+    }
+
 class SET_COOKIE_NON_DIGIT_MAX_AGE(Note):
     category = c.GENERAL
     level=l.WARN

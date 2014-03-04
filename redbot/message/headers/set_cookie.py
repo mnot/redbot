@@ -25,7 +25,6 @@ THE SOFTWARE.
 
 from calendar import timegm
 from re import match, split
-import string
 from urlparse import urlsplit
 
 import redbot.speak as rs
@@ -95,22 +94,18 @@ def loose_parse(set_cookie_string, uri_path, current_time, subject, red):
                     cookie_name=cookie_name
                 )
                 continue
-            if attribute_value[0] not in string.digits + "-":
-                red.add_note(subject, rs.SET_COOKIE_NON_DIGIT_MAX_AGE,
+            if attribute_value[0] == "0":
+                red.add_note(subject, rs.SET_COOKIE_LEADING_ZERO_MAX_AGE,
                     cookie_name=cookie_name
                 )
                 continue
-            if attribute_value[1:] not in string.digits:
+            if not attribute_value.isdigit():
                 red.add_note(subject, rs.SET_COOKIE_NON_DIGIT_MAX_AGE,
                     cookie_name=cookie_name
                 )
                 continue
             delta_seconds = int(attribute_value)
-            if delta_seconds <= 0:
-                expiry_time = 0
-            else:
-                expiry_time = current_time + delta_seconds
-            cookie_attribute_list.append(("Max-Age", expiry_time))
+            cookie_attribute_list.append(("Max-Age", delta_seconds))
         elif case_norm_attribute_name == "domain":
             if attribute_value == "":
                 red.add_note(subject, rs.SET_COOKIE_EMPTY_DOMAIN,
@@ -266,9 +261,27 @@ class ExpiresSingleScTest(rh.HeaderTest):
     inputs = ["lang=en-US; Expires=Wed, 9 Jun 2021 10:18:14 GMT"]
     expected_out = [("lang", "en-US", [("Expires", 1623233894)])]
     expected_err = []
+
+class MaxAgeScTest(rh.HeaderTest):
+    name = "Set-Cookie"
+    inputs = ["lang=en-US; Max-Age=123"]
+    expected_out = [("lang", "en-US", [("Max-Age", 123)])]
+    expected_err = []
+
+class MaxAgeLeadingZeroScTest(rh.HeaderTest):
+    name = "Set-Cookie"
+    inputs = ["lang=en-US; Max-Age=0123"]
+    expected_out = [("lang", "en-US", [])]
+    expected_err = [rs.SET_COOKIE_LEADING_ZERO_MAX_AGE]
     
 class RemoveSCTest(rh.HeaderTest):
     name = "Set-Cookie"
     inputs = ["lang=; Expires=Sun, 06 Nov 1994 08:49:37 GMT"]
     expected_out = [("lang", "", [("Expires", 784111777)])]
+    expected_err = []
+
+class WolframSCTest(rh.HeaderTest):
+    name = "Set-Cookie"
+    inputs = ["WR_SID=50.56.234.188.1393830943825054; path=/; max-age=315360000; domain=.wolframalpha.com"]
+    expected_out = [("WR_SID","50.56.234.188.1393830943825054", [('Path', '/'), ('Max-Age', 315360000), ('Domain', 'wolframalpha.com')])]
     expected_err = []
