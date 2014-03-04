@@ -43,7 +43,7 @@ def parse(subject, value, red):
 def join(subject, values, red):
     return values
 
-    
+
 # TODO: properly escape note
 def loose_parse(set_cookie_string, uri_path, current_time, subject, red):
     """
@@ -59,7 +59,7 @@ def loose_parse(set_cookie_string, uri_path, current_time, subject, red):
     except ValueError:
         red.add_note(subject, rs.SET_COOKIE_NO_VAL,
             name_value_pair.strip()
-        ) 
+        )
         raise ValueError, "Cookie doesn't have a value"
     name, value = name.strip(), value.strip()
     if name == "":
@@ -144,17 +144,17 @@ def loose_parse(set_cookie_string, uri_path, current_time, subject, red):
 DELIMITER = r'(?:[\x09\x20-\x2F\x3B-\x40\x5B-\x60\x7B-\x7E])'
 NON_DELIMTER = r'(?:[\x00-\x08\x0A-\x1F0-0\:a-zA-Z\x7F-\xFF])'
 MONTHS = {
-    'jan': 1, 
-    'feb': 2, 
-    'mar': 3, 
-    'apr': 4, 
-    'may': 5, 
-    'jun': 6, 
-    'jul': 7, 
-    'aug': 8, 
-    'sep': 9, 
-    'oct': 10, 
-    'nov': 11, 
+    'jan': 1,
+    'feb': 2,
+    'mar': 3,
+    'apr': 4,
+    'may': 5,
+    'jun': 6,
+    'jul': 7,
+    'aug': 8,
+    'sep': 9,
+    'oct': 10,
+    'nov': 11,
     'dec': 12
 }
 def loose_date_parse(cookie_date):
@@ -211,30 +211,30 @@ def loose_date_parse(cookie_date):
     if hour_value > 23:
         raise ValueError, "%s is out of range for hour" % hour_value
     if minute_value > 59:
-        raise ValueError, "%s is out of range for minute" % minute_value        
+        raise ValueError, "%s is out of range for minute" % minute_value
     if second_value > 59:
         raise ValueError, "%s is out of range for second" % second_value
     parsed_cookie_date = timegm((
-        year_value, 
-        month_value, 
-        day_of_month_value, 
-        hour_value, 
-        minute_value, 
+        year_value,
+        month_value,
+        day_of_month_value,
+        hour_value,
+        minute_value,
         second_value
     ))
     return parsed_cookie_date
-    
-    
+
+
 class BasicSCTest(rh.HeaderTest):
     name = 'Set-Cookie'
     inputs = ['SID=31d4d96e407aad42']
     expected_out = [("SID", "31d4d96e407aad42", [])]
     expected_err = []
-    
+
 class ParameterSCTest(rh.HeaderTest):
     name = 'Set-Cookie'
     inputs = ['SID=31d4d96e407aad42; Path=/; Domain=example.com']
-    expected_out = [("SID", "31d4d96e407aad42", 
+    expected_out = [("SID", "31d4d96e407aad42",
         [("Path", "/"), ("Domain", "example.com")])]
     expected_err = []
 
@@ -242,14 +242,14 @@ class TwoSCTest(rh.HeaderTest):
     name = 'Set-Cookie'
     inputs = [
         "SID=31d4d96e407aad42; Path=/; Secure; HttpOnly",
-        "lang=en-US; Path=/; Domain=example.com" 
+        "lang=en-US; Path=/; Domain=example.com"
     ]
     expected_out = [
         ("SID", "31d4d96e407aad42", [("Path", "/"), ("Secure", ""), ("HttpOnly", "")]),
         ("lang", "en-US", [("Path", "/"), ("Domain", "example.com")])
     ]
     expected_err = []
-    
+
 class ExpiresScTest(rh.HeaderTest):
     name = "Set-Cookie"
     inputs = ["lang=en-US; Expires=Wed, 09 Jun 2021 10:18:14 GMT"]
@@ -273,7 +273,7 @@ class MaxAgeLeadingZeroScTest(rh.HeaderTest):
     inputs = ["lang=en-US; Max-Age=0123"]
     expected_out = [("lang", "en-US", [])]
     expected_err = [rs.SET_COOKIE_LEADING_ZERO_MAX_AGE]
-    
+
 class RemoveSCTest(rh.HeaderTest):
     name = "Set-Cookie"
     inputs = ["lang=; Expires=Sun, 06 Nov 1994 08:49:37 GMT"]
