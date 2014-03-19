@@ -254,7 +254,7 @@ class RedWebUi(object):
         for referer in referers:
             if urlsplit(referer).hostname in referer_spam_domains:
                 self.response_start(
-                    "200", "OK", [
+                    "403", "Forbidden", [
                     ("Content-Type", "%s; charset=%s" % (
                         formatter.media_type, charset)),
                     ("Cache-Control", "max-age=360, must-revalidate")
