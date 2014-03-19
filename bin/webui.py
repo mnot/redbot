@@ -76,6 +76,9 @@ html.extra_dir = "extra"
 # show errors in the browser; boolean
 debug = False  # DEBUG_CONTROL
 
+# domains which we reject requests for when they're in the referer.
+referer_spam_domains = ['www.youtube.com']
+
 ### End configuration ######################################################
 
 
@@ -244,6 +247,22 @@ class RedWebUi(object):
             self.output, allow_save=test_id, is_saved=False,
             test_id=test_id, descend=self.descend
         )
+
+        referers = []
+        for hdr, value in self.req_hdrs:
+            if hdr.lower() == 'referer':
+                referers.append(value)
+        for referer in referers:
+            if urlsplit(referer).hostname in referer_spam_domains:
+                self.response_start(
+                    "200", "OK", [
+                    ("Content-Type", "%s; charset=%s" % (
+                        formatter.media_type, charset)),
+                    ("Cache-Control", "max-age=360, must-revalidate")
+                ])
+                self.output(error_template % ("Referer not allowed."))
+                self.response_done([])
+                return
 
         self.response_start(
             "200", "OK", [
