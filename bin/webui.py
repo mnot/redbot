@@ -102,14 +102,14 @@ class RedWebUi(object):
     Given a URI, run RED on it and present the results to output as HTML.
     If descend is true, spider the links and present a summary.
     """
-    def __init__(self, base_uri, method, query_string, 
+    def __init__(self, base_uri, method, query_string,
       response_start, response_body, response_done):
         self.base_uri = base_uri
         self.method = method
         self.response_start = response_start
         self.response_body = response_body
         self._response_done = response_done
-        
+
         self.test_uri = None
         self.req_hdrs = None # tuple of unicode K,V
         self.format = None
@@ -118,7 +118,7 @@ class RedWebUi(object):
         self.descend = None
         self.save = None
         self.parse_qs(method, query_string)
-        
+
         self.start = time.time()
         self.timeout = thor.schedule(max_runtime, self.timeoutError)
         if self.save and save_dir and self.test_id:
@@ -147,9 +147,9 @@ class RedWebUi(object):
         try:
             # touch the save file so it isn't deleted.
             os.utime(
-                os.path.join(save_dir, self.test_id), 
+                os.path.join(save_dir, self.test_id),
                 (
-                    thor.time(), 
+                    thor.time(),
                     thor.time() + (save_days * 24 * 60 * 60)
                 )
             )
@@ -164,7 +164,7 @@ class RedWebUi(object):
         except (OSError, IOError):
             self.response_start(
                 "500", "Internal Server Error", [
-                ("Content-Type", "text/html; charset=%s" % charset), 
+                ("Content-Type", "text/html; charset=%s" % charset),
             ])
             # TODO: better error message (through formatter?)
             self.response_body(
@@ -182,11 +182,11 @@ class RedWebUi(object):
         except (OSError, IOError, TypeError, zlib.error):
             self.response_start(
                 "404", "Not Found", [
-                ("Content-Type", "text/html; charset=%s" % charset), 
+                ("Content-Type", "text/html; charset=%s" % charset),
                 ("Cache-Control", "max-age=600, must-revalidate")
             ])
             # TODO: better error page (through formatter?)
-            self.response_body(error_template % 
+            self.response_body(error_template %
                 "I'm sorry, I can't find that saved response."
             )
             self.response_done([])
@@ -197,18 +197,18 @@ class RedWebUi(object):
         except (pickle.PickleError, EOFError):
             self.response_start(
                 "500", "Internal Server Error", [
-                ("Content-Type", "text/html; charset=%s" % charset), 
+                ("Content-Type", "text/html; charset=%s" % charset),
                 ("Cache-Control", "max-age=600, must-revalidate")
             ])
             # TODO: better error page (through formatter?)
-            self.response_body(error_template % 
+            self.response_body(error_template %
                 "I'm sorry, I had a problem reading that response."
             )
             self.response_done([])
             return
         finally:
             fd.close()
-            
+
         formatter = find_formatter(self.format, 'html', self.descend)(
             self.base_uri, state.request.uri, state.orig_req_hdrs, lang,
             self.output, allow_save=(not is_saved), is_saved=True,
@@ -217,7 +217,7 @@ class RedWebUi(object):
         self.response_start(
             "200", "OK", [
             ("Content-Type", "%s; charset=%s" % (
-                formatter.media_type, charset)), 
+                formatter.media_type, charset)),
             ("Cache-Control", "max-age=3600, must-revalidate")
         ])
         if self.check_type:
@@ -236,7 +236,7 @@ class RedWebUi(object):
                 fd, path = tempfile.mkstemp(prefix='', dir=save_dir)
                 test_id = os.path.split(path)[1]
             except (OSError, IOError):
-                # Don't try to store it. 
+                # Don't try to store it.
                 test_id = None
         else:
             test_id = None
@@ -266,10 +266,10 @@ class RedWebUi(object):
         self.response_start(
             "200", "OK", [
             ("Content-Type", "%s; charset=%s" % (
-                formatter.media_type, charset)), 
+                formatter.media_type, charset)),
             ("Cache-Control", "max-age=60, must-revalidate")
         ])
-        
+
         ired = HttpResource(
             self.test_uri,
             req_hdrs=self.req_hdrs,
@@ -296,20 +296,20 @@ class RedWebUi(object):
                     tmp_file.close()
                 except (IOError, zlib.error, pickle.PickleError):
                     pass # we don't cry if we can't store it.
-#            objgraph.show_growth()        
+#            objgraph.show_growth()
         ired.run(done)
-        
+
     def show_default(self):
         """Show the default page."""
         formatter = html.BaseHtmlFormatter(
-            self.base_uri, self.test_uri, self.req_hdrs, 
+            self.base_uri, self.test_uri, self.req_hdrs,
             lang, self.output, is_blank=True
         )
         self.response_start(
             "200", "OK", [
             ("Content-Type", "%s; charset=%s" % (
                 formatter.media_type, charset)
-            ), 
+            ),
             ("Cache-Control", "max-age=300")
         ])
         formatter.start_output()
@@ -325,7 +325,7 @@ class RedWebUi(object):
                         ]
         self.format = qs.get('format', ['html'])[0]
         self.check_type = qs.get('request', [None])[0]
-        self.test_id = qs.get('id', [None])[0] 
+        self.test_id = qs.get('id', [None])[0]
         self.descend = qs.get('descend', [False])[0]
         if method == "POST":
             self.save = qs.get('save', [False])[0]
@@ -334,7 +334,7 @@ class RedWebUi(object):
 
     def output(self, chunk):
         self.response_body(chunk.encode(charset, 'replace'))
-        
+
     def timeoutError(self):
         """ Max runtime reached."""
         self.output(error_template % ("RED timeout."))
@@ -345,7 +345,7 @@ class RedWebUi(object):
 def except_handler_factory(out=None):
     if not out:
         out = sys.stdout.write
-        
+
     def except_handler(etype=None, evalue=None, etb=None):
         """
         Log uncaught exceptions and display a friendly error.
@@ -404,7 +404,7 @@ and we'll look into it.""")
                 out(''.join(traceback.format_exception(etype, value, tb)))
                 out("</pre>")
         sys.exit(1) # We're in an uncertain state, so we must die horribly.
-        
+
     return except_handler
 
 
@@ -466,12 +466,12 @@ def mod_python_handler(r):
      506: apache.HTTP_VARIANT_ALSO_VARIES          ,
      507: apache.HTTP_INSUFFICIENT_STORAGE         ,
      510: apache.HTTP_NOT_EXTENDED                 ,
-    }    
-    
+    }
+
     r.content_type = "text/html"
     def response_start(code, phrase, hdrs):
         r.status = status_lookup.get(
-            int(code), 
+            int(code),
             apache.HTTP_INTERNAL_SERVER_ERROR
         )
         for hdr in hdrs:
@@ -480,17 +480,17 @@ def mod_python_handler(r):
         thor.schedule(thor.stop)
     query_string = cgi.parse_qs(r.args or "")
     try:
-        RedWebUi(r.unparsed_uri, r.method, query_string, 
+        RedWebUi(r.unparsed_uri, r.method, query_string,
                  response_start, r.write, response_done)
         thor.run()
     except:
         except_handler_factory(r.write)()
     return apache.OK
-    
+
 
 def cgi_main():
     """Run RED as a CGI Script."""
-    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0) 
+    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
     base_uri = "%s://%s%s%s" % (
       os.environ.has_key('HTTPS') and "https" or "http",
       os.environ.get('HTTP_HOST'),
@@ -499,7 +499,7 @@ def cgi_main():
     )
     method = os.environ.get('REQUEST_METHOD')
     query_string = cgi.parse_qs(os.environ.get('QUERY_STRING', ""))
-    
+
     def response_start(code, phrase, res_hdrs):
         sys.stdout.write("Status: %s %s\n" % (code, phrase))
         for k, v in res_hdrs:
@@ -509,7 +509,7 @@ def cgi_main():
     def response_done(trailers):
         thor.schedule(0, thor.stop)
     try:
-        RedWebUi(base_uri, method, query_string, 
+        RedWebUi(base_uri, method, query_string,
                  response_start, sys.stdout.write, response_done)
         thor.run()
     except:
@@ -518,7 +518,7 @@ def cgi_main():
 
 def standalone_main(host, port, static_dir):
     """Run RED as a standalone Web server."""
-    
+
     # load static files
     static_files = {}
     def static_walker(arg, dirname, names):
@@ -547,7 +547,7 @@ def standalone_main(host, port, static_dir):
                 query_string = cgi.parse_qs(p_uri.query)
                 try:
                     RedWebUi('/', method, query_string,
-                             x.response_start, 
+                             x.response_start,
                              x.response_body,
                              x.response_done
                             )
@@ -570,7 +570,7 @@ in standalone server mode. Details follow.
 
     server = thor.http.HttpServer(host, port)
     server.on('exchange', red_handler)
-    
+
     try:
         thor.run()
     except KeyboardInterrupt:
@@ -610,7 +610,7 @@ if __name__ == "__main__":
             option_parser.error(
                 "Port is not an integer."
             )
-    
+
         static_dir = args[1]
         sys.stderr.write(
             "Starting standalone server on PID %s...\n" % os.getpid() + \
@@ -621,4 +621,3 @@ if __name__ == "__main__":
 #       pdb.run('standalone_main("", port, static_dir)')
         standalone_main("", port, static_dir)
 #       standalone_monitor("", port, static_dir)
-            
