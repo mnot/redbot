@@ -32,11 +32,10 @@ import cPickle as pickle
 import gzip
 import locale
 import os
-import shutil
 import sys
 import tempfile
 import time
-from urlparse import urlsplit, urljoin
+from urlparse import urlsplit
 import zlib
 
 assert sys.version_info[0] == 2 and sys.version_info[1] >= 6, \
