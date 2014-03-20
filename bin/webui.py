@@ -251,17 +251,21 @@ class RedWebUi(object):
         for hdr, value in self.req_hdrs:
             if hdr.lower() == 'referer':
                 referers.append(value)
-        for referer in referers:
-            if urlsplit(referer).hostname in referer_spam_domains:
-                self.response_start(
-                    "403", "Forbidden", [
-                    ("Content-Type", "%s; charset=%s" % (
-                        formatter.media_type, charset)),
-                    ("Cache-Control", "max-age=360, must-revalidate")
-                ])
-                self.output(error_template % ("Referer not allowed."))
-                self.response_done([])
-                return
+        referer_error = None
+        if len(referers) > 1:
+            referer_error = "Multiple referers not allowed."
+        if referers and urlsplit(referers[0]).hostname in referer_spam_domains:
+            referer_error = "Referer now allowed."
+        if referer_error:
+            self.response_start(
+                "403", "Forbidden", [
+                ("Content-Type", "%s; charset=%s" % (
+                    formatter.media_type, charset)),
+                ("Cache-Control", "max-age=360, must-revalidate")
+            ])
+            self.output(error_template % referer_error)
+            self.response_done([])
+            return
 
         self.response_start(
             "200", "OK", [
