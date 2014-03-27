@@ -263,6 +263,7 @@ class RedWebUi(object):
                     formatter.media_type, charset)),
                 ("Cache-Control", "max-age=360, must-revalidate")
             ])
+            formatter.start_output()
             self.output(error_template % referer_error)
             self.response_done([])
             return
