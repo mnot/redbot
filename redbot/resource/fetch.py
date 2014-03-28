@@ -154,7 +154,10 @@ class RedFetcher(RedState):
                     fd = gzip.open(origin_path)
                     mtime = os.fstat(fd.fileno()).st_mtime
                 except (OSError, IOError, TypeError, zlib.error):
-                    os.remove(origin_path)
+                    try:
+                        os.remove(origin_path)
+                    except:
+                        pass
                     self.fetch_robots_txt(url, cb)
                     return
                 is_fresh = mtime > thor.time()
