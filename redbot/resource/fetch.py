@@ -31,6 +31,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import gzip
+import hashlib
+import os
+from os import path
 from robotparser import RobotFileParser
 from urlparse import urlsplit
 
@@ -71,6 +75,8 @@ class RedFetcher(RedState):
     """
     client = RedHttpClient()
     robot_files = {} # cache of robots.txt
+    robot_cache_dir = None
+    robot_lookups = {}
 
     def __init__(self, iri, method="GET", req_hdrs=None, req_body=None,
                  status_cb=None, body_procs=None, name=None):
@@ -132,28 +138,75 @@ class RedFetcher(RedState):
         Fetch the robots.txt URL and then feed the response to cb. 
         If the status code is not 200, send a blank doc back.
         """
-        exchange = self.client.exchange()
-        @thor.on(exchange)
-        def response_start(status, phrase, headers):
-            exchange.status = status
 
-        exchange.res_body = ""
-        @thor.on(exchange)
-        def response_body(chunk):
-            exchange.res_body += chunk
+        origin = url_to_origin(self.request.uri)
+        origin_hash = hashlib.sha1(origin).hexdigest()
+        origin_path = path.join(self.robot_cache_dir, origin_hash)
 
-        @thor.on(exchange)
-        def response_done(trailers):
-            if exchange.status != "200":
-                cb("")
-            else:
-                cb(exchange.res_body)
+        if self.robot_files.has_key(origin):
+            # FIXME: freshness lifetime
+            cb(self.robot_files[origin])
+            return
+        if self.robot_cache_dir:
+            if path.exists(origin_path):
+                try:
+                    fd = gzip.open(origin_path)
+                    mtime = os.fstat(fd.fileno()).st_mtime
+                except (OSError, IOError, TypeError, zlib.error):
+                    os.remove(origin_path)
+                    self.fetch_robots_txt(url, cb)
+                    return
+                is_fresh = mtime > thor.time()
+                if is_fresh:
+                    robots_txt = fd.read()
+                    fd.close()
+                    cb(robots_txt)
+                    return
+                else:
+                    fd.close()
+
+
+        if self.robot_lookups.has_key(origin):
+            self.robot_lookups[origin].append(cb)
+        else:
+            self.robot_lookups[origin] = [cb]
+            exchange = self.client.exchange()
+            @thor.on(exchange)
+            def response_start(status, phrase, headers):
+                exchange.status = status
+
+            exchange.res_body = ""
+            @thor.on(exchange)
+            def response_body(chunk):
+                exchange.res_body += chunk
+
+            @thor.on(exchange)
+            def response_done(trailers):
+                if exchange.status != "200":
+                    robots_txt = ""
+                else:
+                    robots_txt = exchange.res_body
+
+                self.robot_files[origin] = robots_txt            
+                if self.robot_cache_dir:
+                    fd = gzip.open(origin_path, 'w')
+                    fd.write(robots_txt)
+                    fd.close()
+                    os.utime(origin_path, (
+                            thor.time(),
+                            thor.time() + (10 * 60)
+                        )
+                    )
+                for _cb in self.robot_lookups[origin]:
+                    _cb(robots_txt)
+                del self.robot_lookups[origin]
         
-        p_url = urlsplit(url)
-        robots_url = "%s://%s/robots.txt" % (p_url.scheme, p_url.netloc)
-        exchange.request_start("GET", robots_url, 
-            [('User-Agent', UA_STRING)])
-        exchange.request_done([])
+            p_url = urlsplit(url)
+            robots_url = "%s://%s/robots.txt" % (p_url.scheme, p_url.netloc)
+            exchange.request_start("GET", robots_url, 
+                [('User-Agent', UA_STRING)])
+            exchange.request_done([])
+
             
     def run(self, done_cb=None):
         """
@@ -171,11 +224,7 @@ class RedFetcher(RedState):
 
         if self.follow_robots_txt:
             origin = url_to_origin(self.request.uri)
-            if self.robot_files.has_key(origin):
-                # TODO: refresh robots.txt
-                self.run_continue(self.robot_files[origin])
-            else:
-                self.fetch_robots_txt(self.request.uri, self.run_continue)
+            self.fetch_robots_txt(self.request.uri, self.run_continue)
         else:
             self.run_continue("")
 
@@ -184,8 +233,6 @@ class RedFetcher(RedState):
         Continue after getting the robots file.
         TODO: refactor callback style into events.
         """
-        origin = url_to_origin(self.request.uri)
-        self.robot_files[origin] = robots_txt
         if robots_txt == "": # empty or non-200
             pass
         else:
@@ -277,6 +324,7 @@ def url_to_origin(url):
                              p_url.hostname.lower(),
                              p_url.port or default_port.get(p_url.scheme, 0)
     )
+    return origin
 
 
 class RobotsTxtError(httperr.HttpError):
