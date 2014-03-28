@@ -31,6 +31,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+from robotparser import RobotFileParser
+from urlparse import urlsplit
+
 import thor
 import thor.http.error as httperr
 
@@ -41,6 +44,8 @@ from redbot.message import HttpRequest, HttpResponse
 from redbot.message.status import StatusChecker
 from redbot.message.cache import checkCaching
 
+
+UA_STRING = u"RED/%s (http://redbot.org/)" % __version__
 
 class RedHttpClient(thor.http.HttpClient):
     "Thor HttpClient for RedFetcher"
@@ -65,6 +70,7 @@ class RedFetcher(RedState):
 
     """
     client = RedHttpClient()
+    robot_files = {} # cache of robots.txt
 
     def __init__(self, iri, method="GET", req_hdrs=None, req_body=None,
                  status_cb=None, body_procs=None, name=None):
@@ -82,6 +88,7 @@ class RedFetcher(RedState):
         self.status_cb = status_cb
         self.done_cb = None # really should be "all tasks done"
         self.outstanding_tasks = 0
+        self.follow_robots_txt = True # Should we pay attention to robots file?
         self._st = [] # FIXME: this is temporary, for debugging thor
 
     def __getstate__(self):
@@ -120,6 +127,34 @@ class RedFetcher(RedState):
         """
         return True
             
+    def fetch_robots_txt(self, url, cb):
+        """
+        Fetch the robots.txt URL and then feed the response to cb. 
+        If the status code is not 200, send a blank doc back.
+        """
+        exchange = self.client.exchange()
+        @thor.on(exchange)
+        def response_start(status, phrase, headers):
+            exchange.status = status
+
+        exchange.res_body = ""
+        @thor.on(exchange)
+        def response_body(chunk):
+            exchange.res_body += chunk
+
+        @thor.on(exchange)
+        def response_done(trailers):
+            if exchange.status != "200":
+                cb("")
+            else:
+                cb(exchange.res_body)
+        
+        p_url = urlsplit(url)
+        robots_url = "%s://%s/robots.txt" % (p_url.scheme, p_url.netloc)
+        exchange.request_start("GET", robots_url, 
+            [('User-Agent', UA_STRING)])
+        exchange.request_done([])
+            
     def run(self, done_cb=None):
         """
         Make an asynchronous HTTP request to uri, calling status_cb as it's
@@ -133,9 +168,37 @@ class RedFetcher(RedState):
             # generally a good sign that we're not going much further.
             self.finish_task()
             return
+
+        if self.follow_robots_txt:
+            origin = url_to_origin(self.request.uri)
+            if self.robot_files.has_key(origin):
+                # TODO: refresh robots.txt
+                self.run_continue(self.robot_files[origin])
+            else:
+                self.fetch_robots_txt(self.request.uri, self.run_continue)
+        else:
+            self.run_continue("")
+
+    def run_continue(self, robots_txt):
+        """
+        Continue after getting the robots file.
+        TODO: refactor callback style into events.
+        """
+        origin = url_to_origin(self.request.uri)
+        self.robot_files[origin] = robots_txt
+        if robots_txt == "": # empty or non-200
+            pass
+        else:
+            checker = RobotFileParser()
+            checker.parse(robots_txt.splitlines())
+            if not checker.can_fetch(UA_STRING, self.request.uri):
+                self.response.http_error = RobotsTxtError()
+                self.finish_task()
+                return # TODO: show error?
+                    
         if 'user-agent' not in [i[0].lower() for i in self.request.headers]:
             self.request.headers.append(
-                (u"User-Agent", u"RED/%s (http://redbot.org/)" % __version__))
+                (u"User-Agent", UA_STRING))
         self.exchange = self.client.exchange()
         self.exchange.on('response_start', self._response_start)
         self.exchange.on('response_body', self._response_body)
@@ -202,6 +265,23 @@ class RedFetcher(RedState):
             )
         self.done()
         self.finish_task()
+
+def url_to_origin(url):
+    "Convert an URL to an RFC6454 Origin."
+    default_port = {
+    	'http': 80,
+    	'https': 443
+    }
+    p_url = urlsplit(url)
+    origin = "%s://%s:%s" % (p_url.scheme.lower(),
+                             p_url.hostname.lower(),
+                             p_url.port or default_port.get(p_url.scheme, 0)
+    )
+
+
+class RobotsTxtError(httperr.HttpError):
+    desc = "Forbidden by robots.txt"
+    server_status = ("502", "Gateway Error")
 
 
 if "__main__" == __name__:
