@@ -224,7 +224,6 @@ class RedFetcher(RedState):
             return
 
         if self.follow_robots_txt:
-            origin = url_to_origin(self.request.uri)
             self.fetch_robots_txt(self.request.uri, self.run_continue)
         else:
             self.run_continue("")
