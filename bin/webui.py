@@ -32,6 +32,7 @@ import cPickle as pickle
 import gzip
 import locale
 import os
+from robotparser import RobotFileParser
 import sys
 import tempfile
 import time
@@ -43,7 +44,7 @@ assert sys.version_info[0] == 2 and sys.version_info[1] >= 6, \
 
 import thor
 from redbot import __version__
-from redbot.resource import HttpResource, RedFetcher
+from redbot.resource import HttpResource, RedFetcher, UA_STRING
 from redbot.formatter import *
 from redbot.formatter import find_formatter, html
 
@@ -270,6 +271,18 @@ class RedWebUi(object):
             self.response_done([])
             return
 
+        if not self.robots_precheck(self.test_uri):
+            self.response_start(
+                "502", "Gateway Error", [
+                ("Content-Type", "%s; charset=%s" % (
+                    formatter.media_type, charset)),
+                ("Cache-Control", "max-age=60, must-revalidate")
+            ])
+            formatter.start_output()
+            self.output(error_template % "Forbidden by robots.txt.")
+            self.response_done([])
+            return
+
         self.response_start(
             "200", "OK", [
             ("Content-Type", "%s; charset=%s" % (
@@ -346,6 +359,23 @@ class RedWebUi(object):
         """ Max runtime reached."""
         self.output(error_template % ("RED timeout."))
         self.response_done([])
+        
+        
+    def robots_precheck(self, url):
+        """
+        If we have the robots.txt file available, check it to see if the
+        request is permissible.
+        
+        This does not fetch robots.txt.
+        """
+        
+        tmp_fetcher = RedFetcher(url)
+        robots_txt = tmp_fetcher.fetch_robots_txt(url, lambda a:a, fetch=False)
+        if robots_txt == "":
+            return True
+        checker = RobotFileParser()
+        checker.parse(robots_txt.splitlines())
+        return checker.can_fetch(UA_STRING, url)
 
 
 # adapted from cgitb.Hook

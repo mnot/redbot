@@ -134,21 +134,25 @@ class RedFetcher(RedState):
         """
         return True
 
-    def fetch_robots_txt(self, url, cb):
+    def fetch_robots_txt(self, url, cb, fetch=True):
         """
         Fetch the robots.txt URL and then feed the response to cb.
         If the status code is not 200, send a blank doc back.
+
+        If fetch is False, we won't use the network, will return the result
+        immediately if cached, and will assume it's OK if we don't have a
+        cached file.
         """
 
         origin = url_to_origin(self.request.uri)
         origin_hash = hashlib.sha1(origin).hexdigest()
-        origin_path = path.join(self.robot_cache_dir, origin_hash)
 
         if self.robot_files.has_key(origin):
             # FIXME: freshness lifetime
             cb(self.robot_files[origin])
-            return
+            return self.robot_files[origin]
         if self.robot_cache_dir:
+            origin_path = path.join(self.robot_cache_dir, origin_hash)
             if path.exists(origin_path):
                 try:
                     fd = gzip.open(origin_path)
@@ -158,17 +162,23 @@ class RedFetcher(RedState):
                         os.remove(origin_path)
                     except:
                         pass
-                    self.fetch_robots_txt(url, cb)
-                    return
+                    if fetch:
+                        self.fetch_robots_txt(url, cb)
+                    else:
+                        cb("")
+                    return ""
                 is_fresh = mtime > thor.time()
                 if is_fresh:
                     robots_txt = fd.read()
                     fd.close()
                     cb(robots_txt)
-                    return
+                    return robots_txt
                 else:
                     fd.close()
 
+        if not fetch:
+            cb("")
+            return ""
 
         if self.robot_lookups.has_key(origin):
             self.robot_lookups[origin].append(cb)
@@ -193,6 +203,7 @@ class RedFetcher(RedState):
 
                 self.robot_files[origin] = robots_txt
                 if self.robot_cache_dir:
+                    origin_path = path.join(self.robot_cache_dir, origin_hash)
                     fd = gzip.open(origin_path, 'w')
                     fd.write(robots_txt)
                     fd.close()
@@ -210,7 +221,6 @@ class RedFetcher(RedState):
             exchange.request_start("GET", robots_url,
                 [('User-Agent', UA_STRING)])
             exchange.request_done([])
-
 
     def run(self, done_cb=None):
         """

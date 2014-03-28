@@ -37,7 +37,7 @@ THE SOFTWARE.
 from urlparse import urljoin
 
 import redbot.speak as rs
-from redbot.resource.fetch import RedFetcher
+from redbot.resource.fetch import RedFetcher, UA_STRING
 from redbot.formatter import f_num
 from redbot.resource import active_check
 
