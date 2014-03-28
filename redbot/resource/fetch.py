@@ -80,7 +80,7 @@ class RedFetcher(RedState):
         self.response.set_decoded_procs(body_procs or [])
         self.exchange = None
         self.status_cb = status_cb
-        self.done_cb = None
+        self.done_cb = None # really should be "all tasks done"
         self.outstanding_tasks = 0
         self._st = [] # FIXME: this is temporary, for debugging thor
 
