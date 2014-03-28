@@ -50,6 +50,8 @@ class RedHttpClient(thor.http.HttpClient):
 
 class RedFetcher(RedState):
     """
+    Abstract class for a fetcher.
+    
     Fetches the given URI (with the provided method, headers and body) and
     calls:
       - status_cb as it progresses, and
