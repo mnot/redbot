@@ -60,7 +60,7 @@ class RedHttpClient(thor.http.HttpClient):
 class RedFetcher(RedState):
     """
     Abstract class for a fetcher.
-    
+
     Fetches the given URI (with the provided method, headers and body) and
     calls:
       - status_cb as it progresses, and
@@ -132,10 +132,10 @@ class RedFetcher(RedState):
         if so; False if not.
         """
         return True
-            
+
     def fetch_robots_txt(self, url, cb):
         """
-        Fetch the robots.txt URL and then feed the response to cb. 
+        Fetch the robots.txt URL and then feed the response to cb.
         If the status code is not 200, send a blank doc back.
         """
 
@@ -187,7 +187,7 @@ class RedFetcher(RedState):
                 else:
                     robots_txt = exchange.res_body
 
-                self.robot_files[origin] = robots_txt            
+                self.robot_files[origin] = robots_txt
                 if self.robot_cache_dir:
                     fd = gzip.open(origin_path, 'w')
                     fd.write(robots_txt)
@@ -200,14 +200,14 @@ class RedFetcher(RedState):
                 for _cb in self.robot_lookups[origin]:
                     _cb(robots_txt)
                 del self.robot_lookups[origin]
-        
+
             p_url = urlsplit(url)
             robots_url = "%s://%s/robots.txt" % (p_url.scheme, p_url.netloc)
-            exchange.request_start("GET", robots_url, 
+            exchange.request_start("GET", robots_url,
                 [('User-Agent', UA_STRING)])
             exchange.request_done([])
 
-            
+
     def run(self, done_cb=None):
         """
         Make an asynchronous HTTP request to uri, calling status_cb as it's
@@ -242,7 +242,7 @@ class RedFetcher(RedState):
                 self.response.http_error = RobotsTxtError()
                 self.finish_task()
                 return # TODO: show error?
-                    
+
         if 'user-agent' not in [i[0].lower() for i in self.request.headers]:
             self.request.headers.append(
                 (u"User-Agent", UA_STRING))
