@@ -37,6 +37,7 @@ import os
 from os import path
 from robotparser import RobotFileParser
 from urlparse import urlsplit
+import zlib
 
 import thor
 import thor.http.error as httperr
