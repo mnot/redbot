@@ -43,7 +43,7 @@ assert sys.version_info[0] == 2 and sys.version_info[1] >= 6, \
 
 import thor
 from redbot import __version__
-from redbot.resource import HttpResource
+from redbot.resource import HttpResource, RedFetcher
 from redbot.formatter import *
 from redbot.formatter import find_formatter, html
 
@@ -77,6 +77,8 @@ debug = False  # DEBUG_CONTROL
 
 # domains which we reject requests for when they're in the referer.
 referer_spam_domains = ['www.youtube.com']
+
+RedFetcher.robot_cache_dir = "/var/state/robots-txt/" if not debug else False
 
 ### End configuration ######################################################
 
