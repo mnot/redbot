@@ -31,18 +31,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import gzip
 import hashlib
 import os
 from os import path
 from robotparser import RobotFileParser
 from urlparse import urlsplit
-import zlib
 
 import thor
 import thor.http.error as httperr
 
 from redbot import __version__
+from redbot.cache_file import CacheFile
 import redbot.speak as rs
 from redbot.state import RedState
 from redbot.message import HttpRequest, HttpResponse
@@ -134,12 +133,12 @@ class RedFetcher(RedState):
         """
         return True
 
-    def fetch_robots_txt(self, url, cb, fetch=True):
+    def fetch_robots_txt(self, url, cb, network=True):
         """
         Fetch the robots.txt URL and then feed the response to cb.
         If the status code is not 200, send a blank doc back.
 
-        If fetch is False, we won't use the network, will return the result
+        If network is False, we won't use the network, will return the result
         immediately if cached, and will assume it's OK if we don't have a
         cached file.
         """
@@ -151,32 +150,15 @@ class RedFetcher(RedState):
             # FIXME: freshness lifetime
             cb(self.robot_files[origin])
             return self.robot_files[origin]
-        if self.robot_cache_dir:
-            origin_path = path.join(self.robot_cache_dir, origin_hash)
-            if path.exists(origin_path):
-                try:
-                    fd = gzip.open(origin_path)
-                    mtime = os.fstat(fd.fileno()).st_mtime
-                except (OSError, IOError, TypeError, zlib.error):
-                    try:
-                        os.remove(origin_path)
-                    except:
-                        pass
-                    if fetch:
-                        self.fetch_robots_txt(url, cb)
-                    else:
-                        cb("")
-                    return ""
-                is_fresh = mtime > thor.time()
-                if is_fresh:
-                    robots_txt = fd.read()
-                    fd.close()
-                    cb(robots_txt)
-                    return robots_txt
-                else:
-                    fd.close()
 
-        if not fetch:
+        if self.robot_cache_dir:
+            robot_fd = CacheFile(path.join(self.robot_cache_dir, origin_hash))
+            cached_robots_txt = robot_fd.read()
+            if cached_robots_txt != None:
+                cb(cached_robots_txt)
+                return cached_robots_txt
+
+        if not network:
             cb("")
             return ""
 
@@ -203,15 +185,10 @@ class RedFetcher(RedState):
 
                 self.robot_files[origin] = robots_txt
                 if self.robot_cache_dir:
-                    origin_path = path.join(self.robot_cache_dir, origin_hash)
-                    fd = gzip.open(origin_path, 'w')
-                    fd.write(robots_txt)
-                    fd.close()
-                    os.utime(origin_path, (
-                            thor.time(),
-                            thor.time() + (10 * 60)
-                        )
-                    )
+                    robot_fd = CacheFile(
+                        path.join(self.robot_cache_dir, origin_hash))
+                    robot_fd.write(robots_txt, 60*30)
+
                 for _cb in self.robot_lookups[origin]:
                     _cb(robots_txt)
                 del self.robot_lookups[origin]
