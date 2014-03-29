@@ -44,6 +44,7 @@ assert sys.version_info[0] == 2 and sys.version_info[1] >= 6, \
 
 import thor
 from redbot import __version__
+from redbot.cache_file import CacheFile
 from redbot.resource import HttpResource, RedFetcher, UA_STRING
 from redbot.formatter import *
 from redbot.formatter import find_formatter, html
@@ -197,7 +198,7 @@ class RedWebUi(object):
         is_saved = mtime > thor.time()
         try:
             state = pickle.load(fd)
-        except (pickle.PickleError, EOFError):
+        except (pickle.PickleError, IOError, EOFError):
             self.response_start(
                 "500", "Internal Server Error", [
                 ("Content-Type", "text/html; charset=%s" % charset),
@@ -369,8 +370,8 @@ class RedWebUi(object):
         This does not fetch robots.txt.
         """
         
-        tmp_fetcher = RedFetcher(url)
-        robots_txt = tmp_fetcher.fetch_robots_txt(url, lambda a:a, fetch=False)
+        fetcher = RedFetcher(url)
+        robots_txt = fetcher.fetch_robots_txt(url, lambda a:a, network=False)
         if robots_txt == "":
             return True
         checker = RobotFileParser()
