@@ -144,6 +144,9 @@ class RedFetcher(RedState):
         """
 
         origin = url_to_origin(self.request.uri)
+        if origin == None:
+            cb("")
+            return ""
         origin_hash = hashlib.sha1(origin).hexdigest()
 
         if self.robot_files.has_key(origin):
@@ -303,6 +306,7 @@ class RedFetcher(RedState):
         self.done()
         self.finish_task()
 
+
 def url_to_origin(url):
     "Convert an URL to an RFC6454 Origin."
     default_port = {
@@ -310,10 +314,13 @@ def url_to_origin(url):
     	'https': 443
     }
     p_url = urlsplit(url)
-    origin = "%s://%s:%s" % (p_url.scheme.lower(),
-                             p_url.hostname.lower(),
-                             p_url.port or default_port.get(p_url.scheme, 0)
-    )
+    try:
+        origin = "%s://%s:%s" % (p_url.scheme.lower(),
+                                 p_url.hostname.lower(),
+                                 p_url.port or default_port.get(p_url.scheme, 0)
+        )
+    except AttributeError:
+        origin = None
     return origin
 
 
