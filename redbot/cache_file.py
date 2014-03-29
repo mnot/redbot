@@ -24,6 +24,7 @@ THE SOFTWARE.
 """
 
 import gzip
+import os
 from os import path
 import zlib
 
