@@ -313,8 +313,8 @@ def url_to_origin(url):
     	'http': 80,
     	'https': 443
     }
-    p_url = urlsplit(url)
     try:
+        p_url = urlsplit(url)
         origin = "%s://%s:%s" % (p_url.scheme.lower(),
                                  p_url.hostname.lower(),
                                  p_url.port or default_port.get(p_url.scheme, 0)
