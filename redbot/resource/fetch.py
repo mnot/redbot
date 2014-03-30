@@ -181,7 +181,7 @@ class RedFetcher(RedState):
 
             @thor.on(exchange)
             def response_done(trailers):
-                if exchange.status != "200":
+                if not exchange.status.startswith("2"):
                     robots_txt = ""
                 else:
                     robots_txt = exchange.res_body
