@@ -326,7 +326,7 @@ class HttpRequest(HttpMessage):
         else:
             authority = authority.encode('idna')
         sub_delims = "!$&'()*+,;="
-        pchar = sub_delims + ":@"
+        pchar = "-.+~" + sub_delims + ":@"
         path = urllib.quote(
           path.encode('utf-8'),
           safe = pchar + "/"
