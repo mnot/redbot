@@ -667,7 +667,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                 )
             )
         if state.response.complete:
-            if state.response.status_code in ['301', '302', '303', '307'] and \
+            if state.response.status_code in ['301', '302', '303', '307', '308'] and \
               state.response.parsed_headers.has_key('location'):
                 out.append(
                     u'<td><a href="?descend=True&%s">%s</a></td>' % (

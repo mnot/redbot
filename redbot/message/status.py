@@ -121,6 +121,9 @@ class StatusChecker:
     def status307(self):        # Temporary Redirect
         if not self.response.parsed_headers.has_key('location'):
             self.add_note('header-location', rs.REDIRECT_WITHOUT_LOCATION)
+    def status308(self):        # Permanent Redirect
+        if not self.response.parsed_headers.has_key('location'):
+            self.add_note('header-location', rs.REDIRECT_WITHOUT_LOCATION)
     def status400(self):        # Bad Request
         self.add_note('', rs.STATUS_BAD_REQUEST)
     def status401(self):        # Unauthorized
