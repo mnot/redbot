@@ -473,6 +473,7 @@ def mod_python_handler(r):
      304: apache.HTTP_NOT_MODIFIED                 ,
      305: apache.HTTP_USE_PROXY                    ,
      307: apache.HTTP_TEMPORARY_REDIRECT           ,
+     308: apache.HTTP_PERMANENT_REDIRECT           ,
      400: apache.HTTP_BAD_REQUEST                  ,
      401: apache.HTTP_UNAUTHORIZED                 ,
      402: apache.HTTP_PAYMENT_REQUIRED             ,

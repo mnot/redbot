@@ -37,7 +37,7 @@ from redbot.message import http_syntax as syntax
 @rh.ResponseHeader
 def parse(subject, value, msg):
     if msg.status_code not in [
-        "201", "300", "301", "302", "303", "305", "307"
+        "201", "300", "301", "302", "303", "305", "307", "308"
     ]:
         msg.add_note(subject, rs.LOCATION_UNDEFINED)
     if not re.match(r"^\s*%s\s*$" % syntax.URI, value, re.VERBOSE):
