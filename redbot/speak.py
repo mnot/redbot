@@ -1143,7 +1143,10 @@ class VARY_ETAG_DOESNT_CHANGE(Note):
     caches and other receivers disambiguate them.<p>
     This resource, however, sent the same strong ETag for both its compressed
     and uncompressed versions (negotiated by <code>Accept-Encoding</code>).
-    This can cause interoperability problems, especially with caches."""
+    This can cause interoperability problems, especially with caches.<p>
+    Please note that some versions of the Apache HTTP Server sometimes send
+    the same ETag for both compressed and uncompressed versions of a ressource. 
+    This is a <a href="https://issues.apache.org/bugzilla/show_bug.cgi?id=39727">known bug</a>."""
     }
 
 ### Clock
