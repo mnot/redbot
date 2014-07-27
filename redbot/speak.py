@@ -634,7 +634,6 @@ will be contained within a frame."
      IE8 handles HTML frames; the <code>DENY</code> value prevents this
      content from being rendered within a frame, which defends against certain
      types of attacks.<p>
-     Currently this is supported by IE8 and Safari 4.<p>
      See <a href="http://bit.ly/v5Bh5Q">this blog entry</a> for more
      information.
      """
