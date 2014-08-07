@@ -258,6 +258,7 @@ class RedFetcher(RedState):
         self.request.start_time = thor.time()
         if self.request.payload != None:
             self.exchange.request_body(self.request.payload)
+            self.transfer_out += len(self.request.payload)
         self.exchange.request_done([])
 
     def _response_start(self, status, phrase, res_headers):
@@ -273,6 +274,7 @@ class RedFetcher(RedState):
 
     def _response_body(self, chunk):
         "Process a chunk of the response body."
+        self.transfer_in += len(chunk)
         self.response.feed_body(chunk)
 
     def _response_done(self, trailers):

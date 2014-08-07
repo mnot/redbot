@@ -56,7 +56,7 @@ lang = "en"
 charset = "utf-8"
 
 # Where to store exceptions; set to None to disable traceback logging
-logdir = 'exceptions'
+exception_dir = 'exceptions'
 
 # how many seconds to allow it to run for
 max_runtime = 60
@@ -79,6 +79,10 @@ debug = False  # DEBUG_CONTROL
 
 # domains which we reject requests for when they're in the referer.
 referer_spam_domains = ['www.youtube.com']
+
+# log when total traffic is bigger than this (in bytes), so we can catch abuse
+# None to disable; 0 to log all.
+log_traffic = 1024 * 1024
 
 RedFetcher.robot_cache_dir = "/var/state/robots-txt/" if not debug else False
 
@@ -318,6 +322,16 @@ class RedWebUi(object):
                 except (IOError, zlib.error, pickle.PickleError):
                     pass # we don't cry if we can't store it.
 #            objgraph.show_growth()
+            ti = sum([i.transfer_in for i,t in ired.linked], ired.transfer_in)
+            to = sum([i.transfer_out for i,t in ired.linked], ired.transfer_out)
+            if ti + to > log_traffic:
+                sys.stderr.write("%iK in %iK out for <%s> (descend %s)" % (
+                    ti / 1024,
+                    to / 1024,
+                    self.test_uri,
+                    str(self.descend)
+                ))
+
         ired.run(done)
 
     def show_default(self):
@@ -392,7 +406,7 @@ def except_handler_factory(out=None):
             etype, evalue, etb = sys.exc_info()
         import cgitb
         out(cgitb.reset())
-        if logdir is None:
+        if exception_dir is None:
             out(error_template % """
     A problem has occurred, but it probably isn't your fault.
     """)
@@ -411,7 +425,7 @@ def except_handler_factory(out=None):
                     etb = etb.tb_next
                 e_file = etb.tb_frame.f_code.co_filename
                 e_line = etb.tb_frame.f_lineno
-                ldir = os.path.join(logdir, os.path.split(e_file)[-1])
+                ldir = os.path.join(exception_dir, os.path.split(e_file)[-1])
                 if not os.path.exists(ldir):
                     os.umask(0000)
                     os.makedirs(ldir)

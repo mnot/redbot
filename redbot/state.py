@@ -40,6 +40,8 @@ class RedState(object):
     def __init__(self, name):
         self.name = name
         self.notes = []
+        self.transfer_in = 0
+        self.transfer_out = 0
 
     def __repr__(self):
         status = [self.__class__.__module__ + "." + self.__class__.__name__]
