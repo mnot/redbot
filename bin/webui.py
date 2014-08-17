@@ -229,8 +229,7 @@ class RedWebUi(object):
             ("Cache-Control", "max-age=3600, must-revalidate")
         ])
         if self.check_type:
-        # TODO: catch errors
-            state = state.subreqs.get(self.check_type, None)
+            state = state.subreqs.get(self.check_type, state)
 
         formatter.start_output()
         formatter.set_state(state)
@@ -307,8 +306,7 @@ class RedWebUi(object):
 
         def done():
             if self.check_type:
-            # TODO: catch errors
-                state = ired.subreqs.get(self.check_type, None)
+                state = ired.subreqs.get(self.check_type, ired)
             else:
                 state = ired
             formatter.set_state(state)
