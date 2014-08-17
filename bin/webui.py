@@ -230,7 +230,7 @@ class RedWebUi(object):
         ])
         if self.check_type:
         # TODO: catch errors
-            state = state.subreqs.get(self.check_type, None)
+            state = state.subreqs.get(self.check_type, state)
 
         formatter.start_output()
         formatter.set_state(state)
