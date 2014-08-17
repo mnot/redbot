@@ -35,7 +35,7 @@ from redbot.resource.active_check.lm_validate import LmValidate
 
 def spawn_all(resource):
     "Run all active checks against resource."
-    resource.add_task(ConnegCheck(resource, 'Accept-Encoding').run)
+    resource.add_task(ConnegCheck(resource, 'Identity').run)
     resource.add_task(RangeRequest(resource, 'Range').run)
-    resource.add_task(ETagValidate(resource, 'ETag').run)
-    resource.add_task(LmValidate(resource, 'Last-Modified').run)
+    resource.add_task(ETagValidate(resource, 'If-None-Match').run)
+    resource.add_task(LmValidate(resource, 'If-Modified-Since').run)

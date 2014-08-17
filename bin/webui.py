@@ -220,7 +220,7 @@ class RedWebUi(object):
         formatter = find_formatter(self.format, 'html', self.descend)(
             self.base_uri, state.request.uri, state.orig_req_hdrs, lang,
             self.output, allow_save=(not is_saved), is_saved=True,
-            test_id=self.test_id
+            check_type=self.check_type, test_id=self.test_id
         )
         self.response_start(
             "200", "OK", [
@@ -251,7 +251,7 @@ class RedWebUi(object):
         formatter = find_formatter(self.format, 'html', self.descend)(
             self.base_uri, self.test_uri, self.req_hdrs, lang,
             self.output, allow_save=test_id, is_saved=False,
-            test_id=test_id, descend=self.descend
+            check_type=self.check_type, test_id=test_id, descend=self.descend
         )
 
         referers = []
@@ -294,34 +294,34 @@ class RedWebUi(object):
             ("Cache-Control", "max-age=60, must-revalidate")
         ])
 
-        ired = HttpResource(
+        resource = HttpResource(
             self.test_uri,
             req_hdrs=self.req_hdrs,
             status_cb=formatter.status,
             body_procs=[formatter.feed],
             descend=self.descend
         )
-#        sys.stdout.write(pickle.dumps(ired))
+#        sys.stdout.write(pickle.dumps(resource))
         formatter.start_output()
 
         def done():
             if self.check_type:
-                state = ired.subreqs.get(self.check_type, ired)
+                state = resource.subreqs.get(self.check_type, resource)
             else:
-                state = ired
+                state = resource
             formatter.set_state(state)
             formatter.finish_output()
             self.response_done([])
             if test_id:
                 try:
                     tmp_file = gzip.open(path, 'w')
-                    pickle.dump(ired, tmp_file)
+                    pickle.dump(resource, tmp_file)
                     tmp_file.close()
                 except (IOError, zlib.error, pickle.PickleError):
                     pass # we don't cry if we can't store it.
 #            objgraph.show_growth()
-            ti = sum([i.transfer_in for i,t in ired.linked], ired.transfer_in)
-            to = sum([i.transfer_out for i,t in ired.linked], ired.transfer_out)
+            ti = sum([i.transfer_in for i,t in resource.linked], resource.transfer_in)
+            to = sum([i.transfer_out for i,t in resource.linked], resource.transfer_out)
             if ti + to > log_traffic:
                 sys.stderr.write("%iK in %iK out for <%s> (descend %s)" % (
                     ti / 1024,
@@ -330,7 +330,7 @@ class RedWebUi(object):
                     str(self.descend)
                 ))
 
-        ired.run(done)
+        resource.run(done)
 
     def show_default(self):
         """Show the default page."""

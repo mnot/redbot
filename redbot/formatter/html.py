@@ -68,10 +68,12 @@ class BaseHtmlFormatter(Formatter):
         pass
 
     def start_output(self):
+        extra_title = u" <span class='save'>"
         if self.kw.get('is_saved', None):
-            extra_title = u" <span class='save'>saved results for...</span>"
-        else:
-            extra_title = u""
+            extra_title += u" saved "
+        if self.kw.get('check_type', None):
+            extra_title += "%s response" % e_html(self.kw['check_type'])
+        extra_title += u"</span>"
         if self.kw.get('is_blank', None):
             extra_body_class = u"blank"
         else:
@@ -381,25 +383,26 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             uni_sample = unicode(self.body_sample, 'utf-8', 'ignore')
         safe_sample = e_html(uni_sample)
         message = ""
-        for tag, link_set in state.links.items():
-            for link in link_set:
-                def link_to(matchobj):
-                    try:
-                        qlink = urljoin(state.response.base_uri, link)
-                    except ValueError, why:
-                        pass # TODO: pass link problem upstream?
-                             # e.g., ValueError("Invalid IPv6 URL")
-                    return r"%s<a href='%s' class='nocode'>%s</a>%s" % (
-                        matchobj.group(1),
-                        u"?uri=%s&req_hdr=Referer%%3A%s" % (
-                            e_query_arg(qlink),
-                            e_query_arg(state.response.base_uri)
-                        ),
-                        e_html(link),
-                        matchobj.group(1)
-                    )
-                safe_sample = re.sub(r"(['\"])%s\1" % \
-                    re.escape(link), link_to, safe_sample)
+        if hasattr(state, "links"):
+            for tag, link_set in state.links.items():
+                for link in link_set:
+                    def link_to(matchobj):
+                        try:
+                            qlink = urljoin(state.response.base_uri, link)
+                        except ValueError, why:
+                            pass # TODO: pass link problem upstream?
+                                 # e.g., ValueError("Invalid IPv6 URL")
+                        return r"%s<a href='%s' class='nocode'>%s</a>%s" % (
+                            matchobj.group(1),
+                            u"?uri=%s&req_hdr=Referer%%3A%s" % (
+                                e_query_arg(qlink),
+                                e_query_arg(state.response.base_uri)
+                            ),
+                            e_html(link),
+                            matchobj.group(1)
+                        )
+                    safe_sample = re.sub(r"(['\"])%s\1" % \
+                        re.escape(link), link_to, safe_sample)
         if not self.sample_complete:
             message = \
 "<p class='btw'>RED isn't showing the whole body, because it's so big!</p>"
@@ -433,26 +436,27 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             self.hidden_text.append(
                 ("noteid-%s" % id(note), note.show_text(self.lang))
             )
-            subreq = state.subreqs.get(note.subrequest, None)
-            smsgs = [note for note in getattr(subreq, "notes", []) if \
-                note.level in [rs.l.BAD]]
-            if smsgs:
-                out.append(u"<ul>")
-                for sm in smsgs:
-                    out.append(u"""\
-    <li class='%s note' data-subject='%s' name='msgid-%s'>
-        <span>%s</span>
-    </li>""" % (
-                            sm.level, 
-                            e_html(sm.subject), 
-                            id(sm), 
-                            e_html(sm.show_summary(self.lang))
+            if hasattr(state, "subreqs"):
+                subreq = state.subreqs.get(note.subrequest, None)
+                smsgs = [note for note in getattr(subreq, "notes", []) if \
+                    note.level in [rs.l.BAD]]
+                if smsgs:
+                    out.append(u"<ul>")
+                    for sm in smsgs:
+                        out.append(u"""\
+        <li class='%s note' data-subject='%s' name='msgid-%s'>
+            <span>%s</span>
+        </li>""" % (
+                                sm.level, 
+                                e_html(sm.subject), 
+                                id(sm), 
+                                e_html(sm.show_summary(self.lang))
+                            )
                         )
-                    )
-                    self.hidden_text.append(
-                        (u"msgid-%s" % id(sm), sm.show_text(self.lang))
-                    )
-                out.append(u"</ul>")
+                        self.hidden_text.append(
+                            (u"msgid-%s" % id(sm), sm.show_text(self.lang))
+                        )
+                    out.append(u"</ul>")
         out.append(u"</ul>\n")
         return nl.join(out)
 
