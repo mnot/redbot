@@ -64,7 +64,8 @@ class CacheFile(object):
             self.delete()
             return None
         finally:
-            fd.close()
+            if 'fd' in locals():
+                fd.close()
         return content
 
 
@@ -79,7 +80,8 @@ class CacheFile(object):
         except (OSError, IOError, zlib.error):
             return
         finally:
-            fd.close()
+            if 'fd' in locals():
+                fd.close()
         os.utime(self.path, (
                 thor.time(),
                 thor.time() + lifetime
