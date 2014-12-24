@@ -92,7 +92,7 @@ Start the webserver
 
 Use the command line
 
-  docker run --entrypoint=/redbot/bin/redbot redbot <url>
+  docker run redbot redbot <url>
 
 
 
