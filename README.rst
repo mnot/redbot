@@ -32,11 +32,11 @@ Unpack the RED tarball. There are a number of interesting files:
 - redbot/ - RED's Python library files
 - share/ - RED's CSS stylesheet and JavaScript libraries
 
-To install from source (e.g., if you clone from github):: 
+To install from source (e.g., if you clone from github)::
 
   python setup.py install
-  
-installs RED's libraries as well as the command-line version as 'redbot'. 
+
+installs RED's libraries as well as the command-line version as 'redbot'.
 
 Setting up your Web Server
 --------------------------
@@ -47,8 +47,8 @@ these configuration directives (e.g., in .htaccess, if enabled)::
 
   AddHandler cgi-script .py
   DirectoryIndex webui.py
-  
-If the directory is the root directory for your server "example.com", 
+
+If the directory is the root directory for your server "example.com",
 this will configure RED to be at the URI "http://example.com/".
 
 The contents of the share directory* also need to be made available on the
@@ -63,7 +63,7 @@ configure a cron job to regularly clean it. For example::
 
   0 * * * * find /var/state/redbot/ -mmin +360 -exec rm {} \;
 
-If you don't want to allow users to store responses, set save_dir to 'None'.  
+If you don't want to allow users to store responses, set save_dir to 'None'.
 
 * Note that you really only need script.js and style.js, but it doesn't hurt to have the rest.
 
@@ -75,9 +75,25 @@ It's also possible to run RED as a mod_python handler. For example::
   AddHandler mod_python .py
   PythonHandler webui::mod_python_handler
 
-If you use mod_python, make sure your server has enough memory for the 
+If you use mod_python, make sure your server has enough memory for the
 number of Apache children you configure; each child should use anywhere from
 20M-35M of RAM.
+
+Docker deployment
+-----------------
+
+You can also build the project through docker, clone from github then :
+
+  docker build -t redbot .
+
+Start the webserver
+
+   docker run -p 8080:80 redbot
+
+Use the command line
+
+  docker run --entrypoint=/redbot/bin/redbot redbot <url>
+
 
 
 Support, Reporting Issues and Contributing
@@ -91,7 +107,7 @@ Credits
 -------
 
 Icons by Momenticon <http://momenticon.com/>. REDbot also includes code
-from jQuery <http://jquery.com/> and prettify.js 
+from jQuery <http://jquery.com/> and prettify.js
 <http://code.google.com/p/google-code-prettify/>.
 
 License
