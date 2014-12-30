@@ -8,7 +8,7 @@ FROM ubuntu:14.10
 MAINTAINER Julien Rottenberg <julien@rottenberg.info>
 
 ENV        DEBIAN_FRONTEND noninteractive
-ENV        PYTHONPATH=/redbot
+ENV        PYTHONPATH      /redbot
 
 
 # Install python requirements
