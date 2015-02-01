@@ -252,20 +252,20 @@ class HttpMessage(object):
         content_l = list(content[10:])
         if flag & gz_flags['FEXTRA']:
             # Read & discard the extra field, if present
-            xlen = ord(content_l.pop())
-            xlen = xlen + 256*ord(content_l.pop())
+            xlen = ord(content_l.pop(0))
+            xlen = xlen + 256*ord(content_l.pop(0))
             content_l = content_l[xlen:]
         if flag & gz_flags['FNAME']:
             # Read and discard a null-terminated string 
             # containing the filename
             while True:
-                st1 = content_l.pop()
+                st1 = content_l.pop(0)
                 if not content_l or st1 == '\000':
                     break
         if flag & gz_flags['FCOMMENT']:
             # Read and discard a null-terminated string containing a comment
             while True:
-                st2 = content_l.pop()
+                st2 = content_l.pop(0)
                 if not content_l or st2 == '\000':
                     break
         if flag & gz_flags['FHCRC']:
