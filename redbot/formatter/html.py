@@ -167,11 +167,11 @@ window.status="%s";
 <div class="footer">
 <p class="version">this is RED %(version)s.</p>
 <p class="navigation">
-<a href="http://REDbot.org/about/">about</a> |
+<a href="https://REDbot.org/about/">about</a> |
 <script type="text/javascript">
    document.write('<a href="#help" id="help"><strong>help</strong></a> |')
 </script>
-<a href="http://REDbot.org/project">project</a> |
+<a href="https://REDbot.org/project">project</a> |
 <span class="help">Drag the bookmarklet to your bookmark bar - it makes
 checking easy!</span>
 <a href="javascript:location%%20=%%20'%(baseuri)s?uri='+encodeURIComponent(location);%%20void%%200"

@@ -49,7 +49,7 @@ from redbot.message.status import StatusChecker
 from redbot.message.cache import checkCaching
 
 
-UA_STRING = u"RED/%s (http://redbot.org/)" % __version__
+UA_STRING = u"RED/%s (https://redbot.org/)" % __version__
 
 class RedHttpClient(thor.http.HttpClient):
     "Thor HttpClient for RedFetcher"
