@@ -166,7 +166,7 @@ class BadErrorIReallyMeanIt(Exception):
     """See http://bugs.python.org/issue8885 for why this is necessary."""
     pass
 
-if "__main__" == __name__:
+if __name__ == "__main__":
     import sys
     from redbot.resource.fetch import RedFetcher
     uri = sys.argv[1]

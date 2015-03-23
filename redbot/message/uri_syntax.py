@@ -224,7 +224,7 @@ URI_reference = r"(?: %(URI)s | %(relative_ref)s )" % locals()
 absolute_URI = r"(?: %(scheme)s : %(hier_part)s (?: \? %(query)s )? )" % locals()
 
 
-if "__main__" == __name__:
+if __name__ == "__main__":
     import re
     import sys
     try:

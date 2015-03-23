@@ -100,8 +100,7 @@ class HttpResource(RedFetcher):
             self.response.base_uri = base
 
 
-
-if "__main__" == __name__:
+if __name__ == "__main__":
     import sys
     def status_p(msg):
         'print the status message'
