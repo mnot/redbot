@@ -6,3 +6,4 @@ dist
 build
 test/ghostdriver.log
 share/.sass-cache
+.coverage
