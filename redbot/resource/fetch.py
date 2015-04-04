@@ -230,7 +230,7 @@ class RedFetcher(RedState):
             pass
         else:
             checker = RobotFileParser()
-            checker.parse(robots_txt.splitlines())
+            checker.parse(robots_txt.decode('ascii', 'replace').splitlines())
             if not checker.can_fetch(UA_STRING, self.request.uri):
                 self.response.http_error = RobotsTxtError()
                 self.finish_task()
