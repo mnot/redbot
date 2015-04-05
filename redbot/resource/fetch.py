@@ -321,7 +321,7 @@ def url_to_origin(url):
                                  p_url.hostname.lower(),
                                  p_url.port or default_port.get(p_url.scheme, 0)
         )
-    except AttributeError:
+    except (AttributeError, ValueError):
         origin = None
     return origin
 
