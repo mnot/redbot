@@ -320,11 +320,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 if self.state.response.http_error.detail:
                     self.output(self.error_template % u"%s (%s)" % (
                         self.state.response.http_error.desc,
-                        unicode(
-                          self.state.response.http_error.detail,
-                          'utf-8',
-                          'replace'
-                        )
+                        self.state.response.http_error.detail
                     )
                 )
                 else:
