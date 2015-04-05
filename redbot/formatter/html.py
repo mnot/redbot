@@ -87,7 +87,7 @@ class BaseHtmlFormatter(Formatter):
             u'version': __version__,
             u'html_uri': e_html(self.uri),
             u'js_uri': e_js(self.uri),
-            u'config': urllib.quote(json.dumps({
+            u'config': e_fragment(json.dumps({
               u'redbot_uri': self.uri,
               u'redbot_req_hdrs': self.req_hdrs,
               u'redbot_version': __version__
@@ -831,6 +831,7 @@ e_path = partial(unicode_url_escape, safe=uri_sub_delims + r":@/")
 e_path_seg = partial(unicode_url_escape, safe=uri_sub_delims + r":@") 
 e_query = partial(unicode_url_escape, safe=uri_sub_delims + r":@/?")
 e_query_arg = partial(unicode_url_escape, safe=r"!$'()*+,:@/?")
+e_fragment = partial(unicode_url_escape, safe=r"!$&'()*+,;:@=/?")
 
 def e_js(instr):
     """
