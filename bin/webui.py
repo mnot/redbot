@@ -374,7 +374,7 @@ class RedWebUi(object):
         self.response_done([])
         
         
-    def robots_precheck(self, url):
+    def robots_precheck(self, iri):
         """
         If we have the robots.txt file available, check it to see if the
         request is permissible.
@@ -382,13 +382,14 @@ class RedWebUi(object):
         This does not fetch robots.txt.
         """
         
-        fetcher = RedFetcher(url)
-        robots_txt = fetcher.fetch_robots_txt(url, lambda a:a, network=False)
+        fetcher = RedFetcher(iri)
+        uri = fetcher.request.uri
+        robots_txt = fetcher.fetch_robots_txt(uri, lambda a:a, network=False)
         if robots_txt == "":
             return True
         checker = RobotFileParser()
         checker.parse(robots_txt.splitlines())
-        return checker.can_fetch(UA_STRING, url)
+        return checker.can_fetch(UA_STRING, uri)
 
 
 # adapted from cgitb.Hook
