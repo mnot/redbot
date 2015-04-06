@@ -1,7 +1,7 @@
 /* layout, major elements */
 body {
   background-color: #f9f9f4;
-  color: #111111;
+  color: #111;
   font: 12pt/14pt "Helvetica Neue", Helvetica, Arial, sans-serif;
   margin: 1em 50px;
   max-width: 1100px; }
@@ -28,7 +28,7 @@ body {
     padding: 0;
     float: left; } }
 h1 {
-  color: #111111;
+  color: #111;
   padding: 0;
   margin: 10px 0px;
   font-size: 1.8em;
@@ -41,7 +41,7 @@ h1 {
   color: #d33; }
 
 .save {
-  color: #aaaaaa; }
+  color: #aaa; }
 
 h2 {
   font-size: 1.1em; }
@@ -56,18 +56,18 @@ h3 {
 
 .version {
   text-align: center;
-  color: #aaaaaa;
+  color: #aaa;
   font-size: 0.8em;
   padding-top: 5em; }
 
 .navigation {
   text-align: center;
-  color: #aaaaaa;
+  color: #aaa;
   font-size: 0.8em; }
 
 .btw {
   text-align: center;
-  color: #aaaaaa;
+  color: #aaa;
   font-size: 0.8em;
   font-style: italic; }
 
@@ -91,7 +91,7 @@ input#uri {
   width: 645px;
   font-size: 1.1em; }
   input#uri.active {
-    color: #111111; }
+    color: #111; }
   input#uri.inactive {
     color: #c4c4c4; }
 
@@ -126,15 +126,15 @@ input.hdr_val {
   max-width: 200px; }
 
 option[value="other..."] {
-  color: #aaaaaa;
+  color: #aaa;
   font-style: italic; }
 
 /* response detail */
 #response {
   font-size: 10pt;
   font-family: Courier, monospace;
-  background-color: #111111;
-  color: #dddddd;
+  background-color: #111;
+  color: #ddd;
   -webkit-border-radius: 0.75em;
   -moz-border-radius: 0.75em;
   -ms-border-radius: 0.75em;
@@ -165,7 +165,7 @@ table#summary {
   font-size: 0.8em;
   width: 100%;
   border-spacing: 0;
-  background-color: #111111;
+  background-color: #111;
   color: #ddd;
   -webkit-border-radius: 1em;
   -moz-border-radius: 1em;
@@ -240,8 +240,13 @@ ul li.bad {
   list-style-image: url(icon/remove-16.png); }
 
 .info {
-  color: #111111;
+  color: #111;
   list-style-image: url(icon/infomation-16.png); }
+
+.req_link {
+  font-size: 75%;
+  margin-left: 0.75em;
+  font-weight: normal; }
 
 /* popups */
 #popup {
@@ -278,7 +283,7 @@ body.blank > .footer {
   width: 650px; }
 
 .news-banner {
-  color: #aaaaaa; }
+  color: #aaa; }
 
 /* errors */
 .error {
@@ -342,3 +347,5 @@ body.blank > .footer {
 
   input#uri {
     width: 98%; } }
+
+/*# sourceMappingURL=red_style.css.map */
