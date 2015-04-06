@@ -135,10 +135,6 @@ $(document).ready(function() {
     }
   );
 
-  $("h3").click(function(){
-    $(this).next().slideToggle("normal");
-  });
-
   $("#body_view").toggle(function() {
     $("#details").fadeOut('fast', function() {
       $("#body").fadeIn('fast');
