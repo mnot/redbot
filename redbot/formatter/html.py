@@ -454,9 +454,16 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         if category in self.note_responses.keys():
             for check_type in self.note_responses[category]:
                 if not state.subreqs.has_key(check_type): continue
-                out.append(u'<span class="req_link"> (<a href="?%s">%s response</a>)</span>\n' % \
+                out.append(u'<span class="req_link"> (<a href="?%s">%s response</a>' % \
                   (self.req_qs(check_type=check_type), check_type)
                 )
+                smsgs = [note for note in getattr(state.subreqs[check_type], "notes", []) if \
+                  note.level in [rs.l.BAD]]
+                if len(smsgs) == 1:
+                    out.append(" - %i warning\n" % len(smsgs))
+                elif smsgs:
+                    out.append(" - %i warnings\n" % len(smsgs))                    
+                out.append(u')</span>\n')
         out.append(u"</h3>\n")
         out.append(u"<ul>\n")
         for note in notes:
@@ -475,27 +482,6 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             self.hidden_text.append(
                 ("noteid-%s" % id(note), note.show_text(self.lang))
             )
-            if hasattr(state, "subreqs"):
-                subreq = state.subreqs.get(note.subrequest, None)
-                smsgs = [note for note in getattr(subreq, "notes", []) if \
-                    note.level in [rs.l.BAD]]
-                if smsgs:
-                    out.append(u"<ul>")
-                    for sm in smsgs:
-                        out.append(u"""\
-        <li class='%s note' data-subject='%s' name='msgid-%s'>
-            <span>%s</span>
-        </li>""" % (
-                                sm.level, 
-                                e_html(sm.subject), 
-                                id(sm), 
-                                e_html(sm.show_summary(self.lang))
-                            )
-                        )
-                        self.hidden_text.append(
-                            (u"msgid-%s" % id(sm), sm.show_text(self.lang))
-                        )
-                    out.append(u"</ul>")
         out.append(u"</ul>\n")
         return nl.join(out)
 
