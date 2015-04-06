@@ -818,12 +818,8 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         "Return things that the user can do with the URI as HTML links"
         options = []
         media_type = state.response.parsed_headers.get('content-type', [""])[0]
-        if self.kw.get('test_id', None):
-            har_locator = u"id=%s" % self.kw['test_id']
-        else:
-            har_locator = u"%s" % self.req_qs(state.request.uri)
         options.append((
-          u"<a href='?%s&descend=True&format=har'>view har</a>" % har_locator,
+          u"<a href='?descend=True&%s'>view har</a>" % self.req_qs(res_format="har"),
           u"View a HAR (HTTP ARchive) file for this response"
         ))
         if not self.kw.get('is_saved', False):
