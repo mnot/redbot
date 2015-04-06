@@ -50,7 +50,8 @@ class SubRequest(RedFetcher):
                             [], 
                             name
         )
-        self.base.subreqs[name] = self
+        if self.preflight():
+            self.base.subreqs[name] = self
     
     def modify_req_hdrs(self):
         """
