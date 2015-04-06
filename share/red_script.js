@@ -45,10 +45,8 @@ $(document).ready(function() {
 
   /* help */
   
-  $("#help").toggle(function () {
-    $(".help").fadeIn();
-  }, function() {
-    $(".help").fadeOut();
+  $("#help").click(function () {
+    $(".help").toggle();
   });
 
   $(".help").click(function () {
@@ -135,18 +133,21 @@ $(document).ready(function() {
     }
   );
 
-  $("#body_view").toggle(function() {
-    $("#details").fadeOut('fast', function() {
-      $("#body").fadeIn('fast');
-      prettyPrint();
-      $("#body_view").text("show notes");
-    });
-    return false;
-  }, function() {
-    $("#body").fadeOut('fast', function() {
-      $("#details").fadeIn('fast');
-      $("#body_view").text("show body");
-    });
+  var body_view_clicks = 0;
+  $("#body_view").click(function() {
+    body_view_clicks += 1;
+    if (body_view_clicks % 2 == 1) {
+      $("#details").fadeOut('fast', function() {
+        $("#body").fadeIn('fast');
+        prettyPrint();
+        $("#body_view").text("show notes");
+      });      
+    } else {
+      $("#body").fadeOut('fast', function() {
+        $("#details").fadeIn('fast');
+        $("#body_view").text("show body");
+      });      
+    }
     return false;
   });
 
