@@ -71,8 +71,8 @@ class BaseHtmlFormatter(Formatter):
         extra_title = u" <span class='save'>"
         if self.kw.get('is_saved', None):
             extra_title += u" saved "
-        if self.kw.get('check_type', None):
-            extra_title += "%s response" % e_html(self.kw['check_type'])
+        if self.check_type:
+            extra_title += "%s response" % e_html(self.check_type)
         extra_title += u"</span>"
         if self.kw.get('is_blank', None):
             extra_body_class = u"blank"
@@ -184,18 +184,45 @@ title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
        'version': __version__,
        }
 
-    def req_qs(self, link):
+    def req_qs(self, link=None, check_type=None, res_format=None, use_stored=True, referer=True):
         """
-        Format a query string referring to the link.
+        Format a query string to refer to another RED resource.
+        
+        "link" is the resource to test; it is evaluated relative to the current context
+        If blank, it is the same resource.
+        
+        "check_type" is the request type to show; see active_check/__init__.py. If not specified, 
+        that of the current context will be used.
+        
+        "res_format" is the response format; see formatter/*.py. If not specified, HTML will be
+        used.
+        
+        If "use_stored" is true, we'll refer to the test_id, rather than make a new request.
+        
+        If 'referer" is true, we'll strip any existing Referer and add our own.
+        
+        Request headers are copied over from the current context.
         """
         out = []
-        out.append(u"uri=%s" % e_query_arg(urljoin(self.uri, link)))
+        if use_stored and self.kw.get('test_id', None):
+            out.append(u"id=%s" % e_query_arg(self.kw['test_id']))
+        else:
+            out.append(u"uri=%s" % e_query_arg(urljoin(self.uri, link or "")))
         if self.req_hdrs:
             for k,v in self.req_hdrs:
+                if referer and k.lower() == 'referer': next
                 out.append(u"req_hdr=%s%%3A%s" % (
                     e_query_arg(k), 
                     e_query_arg(v)
                 ))
+        if referer:
+            out.append(u"req_hdr=Referer%%3A%s" % e_query_arg(self.uri))
+        if check_type:
+            out.append(u"request=%s" % e_query_arg(check_type))
+        elif self.check_type != None:
+            out.append(u"request=%s" % e_query_arg(check_type))
+        if res_format:
+            out.append(u"format=%s" % e_query_arg(res_format))
         return "&".join(out)
        
 
@@ -205,10 +232,22 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     """
     # the order of note categories to display
     note_categories = [
-        rs.c.GENERAL, rs.c.SECURITY, rs.c.CONNECTION, rs.c.CONNEG, 
-        rs.c.CACHING, rs.c.VALIDATION, rs.c.RANGE
+        rs.c.GENERAL, 
+        rs.c.SECURITY, 
+        rs.c.CONNECTION, 
+        rs.c.CONNEG, 
+        rs.c.CACHING, 
+        rs.c.VALIDATION, 
+        rs.c.RANGE
     ]
 
+    # associating categories with subrequests
+    note_responses = {
+        rs.c.CONNEG: ["Identity"],
+        rs.c.VALIDATION: ['If-None-Match', 'If-Modified-Since'],
+        rs.c.RANGE: ['Range']
+    }
+    
     # Media types that browsers can view natively
     viewable_types = [
         'text/plain',
@@ -414,8 +453,14 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         if not notes:
             return nl
         out = []
-        if [note for note in notes]:
-            out.append(u"<h3>%s</h3>\n<ul>\n" % category)
+        out.append(u"<h3>%s\n" % category)
+        if category in self.note_responses.keys():
+            for req_type in self.note_responses[category]:
+                out.append(u'<span class="req_link"> (<a href="?%s">%s response</a>)</span>\n' % \
+                  (self.req_qs(u"", req_type), req_type)
+                )
+        out.append(u"</h3>\n")
+        out.append(u"<ul>\n")
         for note in notes:
             out.append(
              u"""\
@@ -426,7 +471,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 note.level, 
                 e_html(note.subject), 
                 id(note), 
-                e_html(note.show_summary(self.lang))
+                e_html(note.show_summary(self.lang)),
              )
             )
             self.hidden_text.append(
@@ -484,13 +529,9 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 </script>""", 
     "View this response body (with any gzip compression removed)"
         ))
-        if self.kw.get('test_id', None):
-            har_locator = u"id=%s" % self.kw['test_id']
-        else:
-            har_locator = self.req_qs(state.request.uri)
         options.append(
             (u"""\
-    <a href='?%s&format=har' accesskey='h'>view har</a>""" % har_locator, 
+    <a href='?%s' accesskey='h'>view har</a>""" % self.req_qs(res_format='har'), 
             "View a HAR (HTTP ARchive, a JSON format) file for this response"
         ))
         if not self.kw.get('is_saved', False):
