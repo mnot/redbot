@@ -220,7 +220,7 @@ title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
         if check_type:
             out.append(u"request=%s" % e_query_arg(check_type))
         elif self.check_type != None:
-            out.append(u"request=%s" % e_query_arg(check_type))
+            out.append(u"request=%s" % e_query_arg(self.check_type))
         if res_format:
             out.append(u"format=%s" % e_query_arg(res_format))
         return "&".join(out)
