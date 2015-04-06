@@ -7,10 +7,11 @@ all: script.js style.css
 
 .PHONY: clean
 clean:
-	rm script.js style.css red_style.css jquery.min.map
+	rm -f script.js style.css red_style.css script.js.map
 
 script.js:
-	closure-compiler $(JSFILES) > script.js
+	closure-compiler --create_source_map script.js.map --js_output_file script.js $(JSFILES) 
+	echo "\n//# sourceMappingURL=script.js.map" >> script.js
 
 style.css: red_style.css
 	cat $(CSSFILES) | cssmin > style.css
