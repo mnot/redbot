@@ -210,7 +210,7 @@ title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
             out.append(u"uri=%s" % e_query_arg(urljoin(self.uri, link or "")))
         if self.req_hdrs:
             for k,v in self.req_hdrs:
-                if referer and k.lower() == 'referer': next
+                if referer and k.lower() == 'referer': continue
                 out.append(u"req_hdr=%s%%3A%s" % (
                     e_query_arg(k), 
                     e_query_arg(v)
@@ -342,7 +342,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     def finish_output(self):
         self.final_status()
         if self.state.response.complete:
-            self.header_presenter = HeaderPresenter(self.state.request.uri)
+            self.header_presenter = HeaderPresenter(self)
             self.output(self.template % {
                 'response': self.format_response(self.state),
                 'options': self.format_options(self.state),
@@ -427,12 +427,9 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                         except ValueError, why:
                             pass # TODO: pass link problem upstream?
                                  # e.g., ValueError("Invalid IPv6 URL")
-                        return r"%s<a href='%s' class='nocode'>%s</a>%s" % (
+                        return r"%s<a href='?%s' class='nocode'>%s</a>%s" % (
                             matchobj.group(1),
-                            u"?uri=%s&req_hdr=Referer%%3A%s" % (
-                                e_query_arg(qlink),
-                                e_query_arg(state.response.base_uri)
-                            ),
+                            self.req_qs(link),
                             e_html(link),
                             matchobj.group(1)
                         )
@@ -455,9 +452,10 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         out = []
         out.append(u"<h3>%s\n" % category)
         if category in self.note_responses.keys():
-            for req_type in self.note_responses[category]:
+            for check_type in self.note_responses[category]:
+                if not state.subreqs.has_key(check_type): continue
                 out.append(u'<span class="req_link"> (<a href="?%s">%s response</a>)</span>\n' % \
-                  (self.req_qs(u"", req_type), req_type)
+                  (self.req_qs(check_type=check_type), check_type)
                 )
         out.append(u"</h3>\n")
         out.append(u"<ul>\n")
@@ -552,7 +550,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             if hasattr(state, "link_count") and state.link_count > 0:
                 options.append((
                     u"<a href='?descend=True&%s' accesskey='a'>" \
-                    u"check embedded</a>" % self.req_qs(state.request.uri), 
+                    u"check embedded</a>" % self.req_qs(use_stored=False), 
                     "run RED on images, frames and embedded links"
                 ))
         return nl.join(
@@ -570,8 +568,8 @@ class HeaderPresenter(object):
     field-name, that method will be run instead to represent the value.
     """
 
-    def __init__(self, uri):
-        self.URI = uri
+    def __init__(self, formatter):
+        self.formatter = formatter
 
     def Show(self, name, value):
         """
@@ -590,10 +588,9 @@ class HeaderPresenter(object):
         value = value.rstrip()
         svalue = value.lstrip()
         space = len(value) - len(svalue)
-        return u"%s<a href='?uri=%s&req_hdr=Referer%%3A%s'>%s</a>" % (
+        return u"%s<a href='?%s'>%s</a>" % (
             " " * space,
-            e_query_arg(urljoin(self.URI, svalue)), 
-            e_query_arg(self.URI),
+            self.formatter.req_qs(svalue, use_stored=False),
             self.I(e_html(svalue), len(name))
         )
     content_location = \
@@ -689,7 +686,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         <a href="%s" title="%s"%s>%s<span class="fade1">%s</span><span class="fade2">%s</span><span class="fade3">%s</span>
         </a>
     </td>""" % (
-                    u"?%s" % self.req_qs(state.request.uri), 
+                    u"?%s" % self.req_qs(state.request.uri, use_stored=False), 
                     e_html(state.request.uri), 
                     cl, 
                     e_html(state.request.uri[:m-2]),
@@ -701,7 +698,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         else:
             out.append(
                 u'<td class="uri"><a href="%s" title="%s"%s>%s</a></td>' % (
-                    u"?%s" % self.req_qs(state.request.uri), 
+                    u"?%s" % self.req_qs(state.request.uri, use_stored=False), 
                     e_html(state.request.uri), 
                     cl, 
                     e_html(state.request.uri)
@@ -712,7 +709,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
               state.response.parsed_headers.has_key('location'):
                 out.append(
                     u'<td><a href="?descend=True&%s">%s</a></td>' % (
-                        self.req_qs(state.response.parsed_headers['location']),
+                        self.req_qs(state.response.parsed_headers['location'], use_stored=False),
                         state.response.status_code
                     )
                 )
