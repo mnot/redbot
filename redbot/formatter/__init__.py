@@ -96,13 +96,13 @@ class Formatter(object):
         to the callable output(uni_str). Output is Unicode; callee
         is responsible for encoding correctly.
         """
-        self.ui_uri = ui_uri
-        self.uri = uri
-        self.req_hdrs = req_hdrs
-        self.check_type = check_type
+        self.ui_uri = ui_uri         # the URI of the HTML UI itself
+        self.uri = uri               # the URI under test
+        self.req_hdrs = req_hdrs     # list of (name, value) request headers
+        self.check_type = check_type # 'Identity', 'If-None-Match', 'If-Modified-Since', 'Range'
         self.lang = lang
-        self.output = output
-        self.kw = kw
+        self.output = output         # output file object
+        self.kw = kw                 # extra keyword arguments
         self.state = None
 
     def set_state(self, state):
