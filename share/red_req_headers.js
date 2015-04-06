@@ -141,8 +141,7 @@ $(document).ready(function() {
   $("#req_hdrs").on("change", "input.hdr_name", function(ev) {
     /* alert on dangerous changes */
     if (jQuery.inArray(hdr_name.toLowerCase(), red_req_hdrs) > -1) {
-      alert("The " + hdr_name + " request header is used by RED in its \
-tests. Setting it yourself can lead to unpredictable results.");
+      alert("The " + hdr_name + " request header is used by RED in its tests. Setting it yourself can lead to unpredictable results.");
     }
     $("input[type=hidden]", req_hdr).val(hdr_name + ":" + "");
   });
