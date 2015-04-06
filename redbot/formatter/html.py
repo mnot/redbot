@@ -318,26 +318,6 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 
     def __init__(self, *args, **kw):
         BaseHtmlFormatter.__init__(self, *args, **kw)
-        self.body_sample = ""  # uncompressed
-        self.body_sample_size = 1024 * 128 # how big to allow the sample to be
-        self.sample_seen = 0
-        self.sample_complete = True
-
-    def feed(self, msg, chunk):
-        """
-        Store the first self.sample_size bytes of the 
-        uncompressed response.
-        """
-        if self.sample_seen + len(chunk) < self.body_sample_size:
-            self.body_sample += chunk
-            self.sample_seen += len(chunk)
-        elif self.sample_seen < self.body_sample_size:
-            max_chunk = self.body_sample_size - self.sample_seen
-            self.body_sample += chunk[:max_chunk]
-            self.sample_seen += len(chunk)
-            self.sample_complete = False
-        else:
-            self.sample_complete = False
         
     def finish_output(self):
         self.final_status()
@@ -410,12 +390,12 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     def format_body_sample(self, state):
         """show the stored body sample"""
         try:
-            uni_sample = unicode(self.body_sample,
+            uni_sample = unicode(state.response.decoded_sample,
                                  state.response.character_encoding, 
                                  'ignore'
             )
         except LookupError:
-            uni_sample = unicode(self.body_sample, 'utf-8', 'ignore')
+            uni_sample = unicode(state.response.decoded_sample, 'utf-8', 'ignore')
         safe_sample = e_html(uni_sample)
         message = ""
         if hasattr(state, "links"):
@@ -435,7 +415,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                         )
                     safe_sample = re.sub(r"(['\"])%s\1" % \
                         re.escape(link), link_to, safe_sample)
-        if not self.sample_complete:
+        if not state.response.decoded_sample_complete:
             message = \
 "<p class='btw'>RED isn't showing the whole body, because it's so big!</p>"
         return """<pre class="prettyprint">%s</pre>\n%s""" % (

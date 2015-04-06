@@ -67,6 +67,10 @@ class HttpMessage(object):
         self.character_encoding = None
         self.decoded_len = 0
         self.decoded_md5 = None
+        self.decoded_sample = "" # first sample_size bytes
+        self.decoded_sample_size = 128 * 1024
+        self._decoded_sample_seen = 0
+        self.decoded_sample_complete = True
         self._decoded_procs = []
         self._decode_ok = True # turn False if we have a problem
         self._link_parser = None
@@ -127,6 +131,8 @@ class HttpMessage(object):
         
         If body_procs is a non-empty list, each processor will be 
         run over the chunk.
+        
+        decoded_sample is also populated.
         """
         self.payload_sample.append((self.payload_len, chunk))
         if len(self.payload_sample) > 4: # TODO: bytes, not chunks
@@ -139,6 +145,17 @@ class HttpMessage(object):
         else:
             decoded_chunk = self._process_content_codings(chunk)
             if self._decode_ok:
+                if self._decoded_sample_seen + len(decoded_chunk) < self.decoded_sample_size:
+                    self.decoded_sample += decoded_chunk
+                    self._decoded_sample_seen += len(decoded_chunk)
+                elif self._decoded_sample_seen < self.decoded_sample_size:
+                    max_chunk = self.decoded_sample_size - self._decoded_sample_seen
+                    self.decoded_sample += decoded_chunk[:max_chunk]
+                    self._decoded_sample_seen += len(decoded_chunk)
+                    self.decoded_sample_complete = False
+                else:
+                    self.decoded_sample_complete = False
+
                 for processor in self._decoded_procs:
                     # TODO: figure out why raising an error in a body_proc
                     # results in a "server dropped the connection" instead of
@@ -146,6 +163,8 @@ class HttpMessage(object):
                     processor(self, decoded_chunk)
                 if self._link_parser:
                     self._link_parser.feed(self, decoded_chunk)
+            else:
+                self.decoded_sample_complete = False
         
     def body_done(self, complete, trailers=None):
         """
