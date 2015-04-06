@@ -81,7 +81,7 @@ def main():
     )
 
     formatter = find_formatter(options.output_format, 'txt', options.descend)(
-        sys.argv[0], url, [], lang, output,
+        sys.argv[0], url, [], None, lang, output,
         tty_out = sys.stdout.isatty()
     )
     formatter.set_state(red)

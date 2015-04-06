@@ -218,9 +218,9 @@ class RedWebUi(object):
             fd.close()
 
         formatter = find_formatter(self.format, 'html', self.descend)(
-            self.base_uri, state.request.uri, state.orig_req_hdrs, lang,
+            self.base_uri, state.request.uri, state.orig_req_hdrs, check_type, lang,
             self.output, allow_save=(not is_saved), is_saved=True,
-            check_type=self.check_type, test_id=self.test_id
+            test_id=self.test_id
         )
         self.response_start(
             "200", "OK", [
@@ -249,9 +249,9 @@ class RedWebUi(object):
             test_id = None
 
         formatter = find_formatter(self.format, 'html', self.descend)(
-            self.base_uri, self.test_uri, self.req_hdrs, lang,
+            self.base_uri, self.test_uri, self.req_hdrs, self.check_type, lang,
             self.output, allow_save=test_id, is_saved=False,
-            check_type=self.check_type, test_id=test_id, descend=self.descend
+            test_id=test_id, descend=self.descend
         )
 
         referers = []
@@ -335,7 +335,7 @@ class RedWebUi(object):
     def show_default(self):
         """Show the default page."""
         formatter = html.BaseHtmlFormatter(
-            self.base_uri, self.test_uri, self.req_hdrs,
+            self.base_uri, self.test_uri, self.req_hdrs, self.check_type,
             lang, self.output, is_blank=True
         )
         self.response_start(

@@ -90,7 +90,7 @@ class Formatter(object):
     name = None # name of the format.
     can_multiple = False # formatter can represent multiple responses.
     
-    def __init__(self, ui_uri, uri, req_hdrs, lang, output, **kw):
+    def __init__(self, ui_uri, uri, req_hdrs, check_type, lang, output, **kw):
         """
         Formatter for the given URI, writing
         to the callable output(uni_str). Output is Unicode; callee
@@ -99,6 +99,7 @@ class Formatter(object):
         self.ui_uri = ui_uri
         self.uri = uri
         self.req_hdrs = req_hdrs
+        self.check_type = check_type
         self.lang = lang
         self.output = output
         self.kw = kw
