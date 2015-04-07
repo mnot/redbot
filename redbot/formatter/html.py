@@ -318,26 +318,6 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 
     def __init__(self, *args, **kw):
         BaseHtmlFormatter.__init__(self, *args, **kw)
-        self.body_sample = ""  # uncompressed
-        self.body_sample_size = 1024 * 128 # how big to allow the sample to be
-        self.sample_seen = 0
-        self.sample_complete = True
-
-    def feed(self, msg, chunk):
-        """
-        Store the first self.sample_size bytes of the 
-        uncompressed response.
-        """
-        if self.sample_seen + len(chunk) < self.body_sample_size:
-            self.body_sample += chunk
-            self.sample_seen += len(chunk)
-        elif self.sample_seen < self.body_sample_size:
-            max_chunk = self.body_sample_size - self.sample_seen
-            self.body_sample += chunk[:max_chunk]
-            self.sample_seen += len(chunk)
-            self.sample_complete = False
-        else:
-            self.sample_complete = False
         
     def finish_output(self):
         self.final_status()
@@ -410,12 +390,12 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     def format_body_sample(self, state):
         """show the stored body sample"""
         try:
-            uni_sample = unicode(self.body_sample,
+            uni_sample = unicode(state.response.decoded_sample,
                                  state.response.character_encoding, 
                                  'ignore'
             )
         except LookupError:
-            uni_sample = unicode(self.body_sample, 'utf-8', 'ignore')
+            uni_sample = unicode(state.response.decoded_sample, 'utf-8', 'ignore')
         safe_sample = e_html(uni_sample)
         message = ""
         if hasattr(state, "links"):
@@ -435,7 +415,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                         )
                     safe_sample = re.sub(r"(['\"])%s\1" % \
                         re.escape(link), link_to, safe_sample)
-        if not self.sample_complete:
+        if not state.response.decoded_sample_complete:
             message = \
 "<p class='btw'>RED isn't showing the whole body, because it's so big!</p>"
         return """<pre class="prettyprint">%s</pre>\n%s""" % (
@@ -454,9 +434,16 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         if category in self.note_responses.keys():
             for check_type in self.note_responses[category]:
                 if not state.subreqs.has_key(check_type): continue
-                out.append(u'<span class="req_link"> (<a href="?%s">%s response</a>)</span>\n' % \
+                out.append(u'<span class="req_link"> (<a href="?%s">%s response</a>' % \
                   (self.req_qs(check_type=check_type), check_type)
                 )
+                smsgs = [note for note in getattr(state.subreqs[check_type], "notes", []) if \
+                  note.level in [rs.l.BAD]]
+                if len(smsgs) == 1:
+                    out.append(" - %i warning\n" % len(smsgs))
+                elif smsgs:
+                    out.append(" - %i warnings\n" % len(smsgs))                    
+                out.append(u')</span>\n')
         out.append(u"</h3>\n")
         out.append(u"<ul>\n")
         for note in notes:
@@ -475,27 +462,6 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             self.hidden_text.append(
                 ("noteid-%s" % id(note), note.show_text(self.lang))
             )
-            if hasattr(state, "subreqs"):
-                subreq = state.subreqs.get(note.subrequest, None)
-                smsgs = [note for note in getattr(subreq, "notes", []) if \
-                    note.level in [rs.l.BAD]]
-                if smsgs:
-                    out.append(u"<ul>")
-                    for sm in smsgs:
-                        out.append(u"""\
-        <li class='%s note' data-subject='%s' name='msgid-%s'>
-            <span>%s</span>
-        </li>""" % (
-                                sm.level, 
-                                e_html(sm.subject), 
-                                id(sm), 
-                                e_html(sm.show_summary(self.lang))
-                            )
-                        )
-                        self.hidden_text.append(
-                            (u"msgid-%s" % id(sm), sm.show_text(self.lang))
-                        )
-                    out.append(u"</ul>")
         out.append(u"</ul>\n")
         return nl.join(out)
 
