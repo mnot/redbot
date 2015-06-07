@@ -47,7 +47,7 @@ from redbot import __version__
 from redbot.cache_file import CacheFile
 from redbot.resource import HttpResource, RedFetcher, UA_STRING
 from redbot.formatter import *
-from redbot.formatter import find_formatter, html
+from redbot.formatter import find_formatter, html, e_url
 
 ### Configuration ##########################################################
 
@@ -326,7 +326,7 @@ class RedWebUi(object):
                 sys.stderr.write("%iK in %iK out for <%s> (descend %s)" % (
                     ti / 1024,
                     to / 1024,
-                    self.test_uri,
+                    e_url(self.test_uri),
                     str(self.descend)
                 ))
 
