@@ -31,7 +31,7 @@ from redbot.message import http_syntax as syntax
 
 @rh.GenericHeaderSyntax
 @rh.ResponseHeader
-@rh.CheckFieldSyntax(syntax.TOKEN, rh.rfc2616 % "sec-14.7")
+@rh.CheckFieldSyntax(syntax.TOKEN, rh.rfc2616 % "section-14.7")
 def parse(subject, value, red):
     return value
     

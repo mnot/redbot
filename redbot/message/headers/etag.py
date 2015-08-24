@@ -31,7 +31,7 @@ from redbot.message import http_syntax as syntax
 
 @rh.GenericHeaderSyntax
 @rh.CheckFieldSyntax(
-  r'\*|(?:W/)?%s' % syntax.QUOTED_STRING, rh.rfc2616 % "sec-14.19")
+  r'\*|(?:W/)?%s' % syntax.QUOTED_STRING, rh.rfc2616 % "section-14.19")
 def parse(subject, value, red):
     if value[:2] == 'W/':
         return (True, rh.unquote_string(value[2:]))
