@@ -32,7 +32,7 @@ u"""\
         check it. You can also specify request headers by clicking 'add a
         request header.'</span>
         <input type="url" name="uri" value="%(html_uri)s" 
-         id="uri" autocomplete="off"/><br />
+         id="uri" autocomplete="off" autofocus /><br />
         <div id="req_hdrs"></div>
         <script type="text/javascript">
             document.write(
