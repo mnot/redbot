@@ -47,7 +47,8 @@ from redbot import __version__
 from redbot.cache_file import CacheFile
 from redbot.resource import HttpResource, RedFetcher, UA_STRING
 from redbot.formatter import *
-from redbot.formatter import find_formatter, html, e_url
+from redbot.formatter import find_formatter, html
+from redbot.formatter.html import e_url
 
 ### Configuration ##########################################################
 
