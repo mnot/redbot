@@ -33,7 +33,7 @@ from redbot.message import http_syntax as syntax
 
 # The most common problem with Location is a non-absolute URI, 
 # so we separate that from the syntax check.
-@rh.CheckFieldSyntax(syntax.URI_reference, rh.rfc2616 % "sec-14.30")
+@rh.CheckFieldSyntax(syntax.URI_reference, rh.rfc2616 % "section-14.30")
 @rh.ResponseHeader
 def parse(subject, value, msg):
     if msg.status_code not in [

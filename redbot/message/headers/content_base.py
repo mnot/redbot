@@ -33,7 +33,7 @@ def parse(subject, value, red):
     red.add_note(subject, 
                     rs.HEADER_DEPRECATED, 
                     header_name="Content-Base",
-                    ref=rh.rfc2616 % "sec-19.6.3"
+                    ref=rh.rfc2616 % "section-19.6.3"
     )
     return value
     

@@ -41,10 +41,10 @@ from redbot.formatter import f_num
 import redbot.speak as rs
 
 # base URLs for references
-rfc2616 = "http://www.apps.ietf.org/rfc/rfc2616.html#%s"
-rfc5988 = "http://www.apps.ietf.org/rfc/rfc5988.html#section-5"
-rfc6265 = "http://www.apps.ietf.org/rfc/rfc6265.html#%s"
-rfc6266 = "http://www.apps.ietf.org/rfc/rfc6266.html#section-4"
+rfc2616 = "http://tools.ietf.org/html/rfc2616.html#%s"
+rfc5988 = "http://tools.ietf.org/html/rfc5988.html#section-5"
+rfc6265 = "http://tools.ietf.org/html/rfc6265.html#%s"
+rfc6266 = "http://tools.ietf.org/html/rfc6266.html#section-4"
 
 ### configuration
 MAX_HDR_SIZE = 4 * 1024

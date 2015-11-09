@@ -30,7 +30,7 @@ from redbot.message import http_syntax as syntax
 
 
 @rh.GenericHeaderSyntax
-@rh.CheckFieldSyntax(syntax.TOK_PARAM, rh.rfc2616 % "sec-14.41")
+@rh.CheckFieldSyntax(syntax.TOK_PARAM, rh.rfc2616 % "section-14.41")
 def parse(subject, value, red):
     try:
         coding, params = value.split(";", 1)

@@ -30,7 +30,7 @@ from redbot.message import http_syntax as syntax
 
 
 @rh.GenericHeaderSyntax
-@rh.CheckFieldSyntax(syntax.TOKEN, rh.rfc2616 % "sec-14.11")
+@rh.CheckFieldSyntax(syntax.TOKEN, rh.rfc2616 % "section-14.11")
 def parse(subject, value, red):
     # check to see if there are any non-gzip encodings, because
     # that's the only one we ask for.

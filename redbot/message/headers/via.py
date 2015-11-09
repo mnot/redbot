@@ -33,7 +33,7 @@ from redbot.message import http_syntax as syntax
 @rh.CheckFieldSyntax(
     r'(?:%s/)?%s\s+[^,\s]+(?:\s+%s)?' % (
       syntax.TOKEN, syntax.TOKEN, syntax.COMMENT),
-    rh.rfc2616 % "sec-14.45")
+    rh.rfc2616 % "section-14.45")
 def parse(subject, value, red):
     return value
     
