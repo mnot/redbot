@@ -180,7 +180,7 @@ title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
 </div>
 
 """ % {
-       'baseuri': self.ui_uri,
+       'baseuri': e_html(self.ui_uri, True),
        'version': __version__,
        }
 
