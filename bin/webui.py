@@ -452,8 +452,7 @@ and we'll look into it.""")
                 out("</pre>")
                 out("<h3>Write Error</h3>")
                 out("<pre>")
-                etype, value, tb = sys.exc_info()
-                out(''.join(traceback.format_exception(etype, value, tb)))
+                out(''.join(traceback.format_exc()))
                 out("</pre>")
         sys.exit(1) # We're in an uncertain state, so we must die horribly.
 
@@ -468,10 +467,6 @@ def mod_python_handler(r):
      100: apache.HTTP_CONTINUE                     ,
      101: apache.HTTP_SWITCHING_PROTOCOLS          ,
      102: apache.HTTP_PROCESSING                   ,
-     200: apache.HTTP_OK                           ,
-     201: apache.HTTP_CREATED                      ,
-     202: apache.HTTP_ACCEPTED                     ,
-     200: apache.HTTP_OK                           ,
      200: apache.HTTP_OK                           ,
      201: apache.HTTP_CREATED                      ,
      202: apache.HTTP_ACCEPTED                     ,

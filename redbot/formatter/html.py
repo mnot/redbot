@@ -38,6 +38,7 @@ import urllib
 from cgi import escape as e_html
 from functools import partial
 from urlparse import urljoin
+e_html = partial(e_html, quote=True)
 
 import thor
 import thor.http.error as httperr
@@ -180,7 +181,7 @@ title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
 </div>
 
 """ % {
-       'baseuri': self.ui_uri,
+       'baseuri': e_html(self.ui_uri),
        'version': __version__,
        }
 

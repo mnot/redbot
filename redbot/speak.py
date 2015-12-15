@@ -89,7 +89,7 @@ class Note:
         The resulting string is already HTML-encoded.
         """
         return self.text[lang] % dict(
-            [(k, e_html(unicode(v))) for k, v in self.vars.items()]
+            [(k, e_html(unicode(v), True)) for k, v in self.vars.items()]
         )
 
 
