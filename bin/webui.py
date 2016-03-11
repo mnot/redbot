@@ -209,7 +209,6 @@ class RedWebUi(object):
                 ("Content-Type", "text/html; charset=%s" % charset),
                 ("Cache-Control", "max-age=600, must-revalidate")
             ])
-            # TODO: better error page (through formatter?)
             self.response_body(error_template %
                 "I'm sorry, I had a problem reading that response."
             )
