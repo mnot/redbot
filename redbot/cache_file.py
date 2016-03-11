@@ -77,14 +77,14 @@ class CacheFile(object):
         try:
             fd = gzip.open(self.path, 'w')
             fd.write(content)
+            os.utime(self.path, (
+                    thor.time(),
+                    thor.time() + lifetime
         except (OSError, IOError, zlib.error):
             return
         finally:
             if 'fd' in locals():
                 fd.close()
-        os.utime(self.path, (
-                thor.time(),
-                thor.time() + lifetime
             )
         )
 
