@@ -390,7 +390,7 @@ class RedWebUi(object):
             return True
         checker = RobotFileParser()
         checker.parse(robots_txt.splitlines())
-        return checker.can_fetch(UA_STRING, uri)
+        return checker.can_fetch(UA_STRING.encode('utf-8'), uri)
 
 
 # adapted from cgitb.Hook
