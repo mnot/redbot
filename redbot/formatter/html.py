@@ -46,6 +46,7 @@ import thor.http.error as httperr
 import redbot.speak as rs
 from redbot import defns, __version__
 from redbot.formatter import Formatter, html_header, relative_time, f_num
+from redbot.resource import HttpResource
 
 nl = u"\n"
 
@@ -494,11 +495,12 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 </script>""", 
     "View this response body (with any gzip compression removed)"
         ))
-        options.append(
-            (u"""\
-    <a href='?%s' accesskey='h'>view har</a>""" % self.req_qs(res_format='har'), 
-            "View a HAR (HTTP ARchive, a JSON format) file for this response"
-        ))
+        if isinstance(state, HttpResource):
+            options.append(
+                (u"""\
+        <a href='?%s' accesskey='h'>view har</a>""" % self.req_qs(res_format='har'), 
+                "View a HAR (HTTP ARchive, a JSON format) file for this test"
+            ))
         if not self.kw.get('is_saved', False):
             if self.kw.get('allow_save', False):
                 options.append((
