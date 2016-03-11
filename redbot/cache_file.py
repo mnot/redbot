@@ -80,13 +80,13 @@ class CacheFile(object):
             os.utime(self.path, (
                     thor.time(),
                     thor.time() + lifetime
+                )
+            )
         except (OSError, IOError, zlib.error):
             return
         finally:
             if 'fd' in locals():
                 fd.close()
-            )
-        )
 
     def delete(self):
         "Remove the file, discarding errors silently."
