@@ -90,6 +90,7 @@ class RedFetcher(RedState):
         self.response.is_head_response = (method == "HEAD")
         self.response.base_uri = self.request.uri
         self.response.set_decoded_procs(body_procs or [])
+        self.subreqs = {} # subordinate requests' RedState objects
         self.exchange = None
         self.status_cb = status_cb
         self.done_cb = None # really should be "all tasks done"

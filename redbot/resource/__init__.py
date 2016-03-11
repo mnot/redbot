@@ -63,7 +63,6 @@ class HttpResource(RedFetcher):
                             status_cb, body_procs, name=method)
         self.descend = descend
         self.response.set_link_procs([self.process_link])
-        self.subreqs = {} # sub-requests' RedState objects
         self.links = {}          # {type: set(link...)}
         self.link_count = 0
         self.linked = []    # list of linked HttpResources (if descend=True)
