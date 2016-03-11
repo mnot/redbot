@@ -83,7 +83,7 @@ referer_spam_domains = ['www.youtube.com']
 
 # log when total traffic is bigger than this (in bytes), so we can catch abuse
 # None to disable; 0 to log all.
-log_traffic = 1024 * 1024
+log_traffic = 1024 * 1024 * 8
 
 RedFetcher.robot_cache_dir = "/var/state/robots-txt/" if not debug else False
 
