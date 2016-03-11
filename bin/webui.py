@@ -210,7 +210,7 @@ class RedWebUi(object):
                 ("Cache-Control", "max-age=600, must-revalidate")
             ])
             self.response_body(error_template %
-                "I'm sorry, I had a problem reading that response."
+                "I'm sorry, I had a problem loading that response."
             )
             self.response_done([])
             return
