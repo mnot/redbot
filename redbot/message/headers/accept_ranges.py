@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
 
-
-
 import redbot.speak as rs
 from redbot.message import headers as rh
 from redbot.message import http_syntax as syntax
 
+
+description = u"""\
+The `Accept-Ranges` header allows the server to indicate that it accepts range requests for a
+resource."""
 
 @rh.GenericHeaderSyntax
 @rh.ResponseHeader

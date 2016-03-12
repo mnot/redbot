@@ -28,6 +28,18 @@ rfc6266 = "http://tools.ietf.org/html/rfc6266.html#section-4"
 MAX_HDR_SIZE = 4 * 1024
 MAX_TTL_HDR = 8 * 1000
 
+# map of header name aliases, lowercase-normalised
+header_aliases = {
+    'x-pad-for-netscrape-bug': 'x-pad',
+    'xx-pad': 'x-pad',
+    'x-browseralignment': 'x-pad',
+    'nncoection': 'connectiox',
+    'cneonction': 'connectiox',
+    'yyyyyyyyyy': 'connectiox',
+    'xxxxxxxxxx': 'connectiox',
+    'x_cnection': 'connectiox',
+    '_onnection': 'connectiox',
+}
 
 # Decorators for headers
 
@@ -209,8 +221,9 @@ def load_header_func(header_name, func):
     """
     Return a header parser for the given field name.
     """
-    name_token = header_name.replace('-', '_').encode('ascii', 'ignore')
-    # anything starting with an underscore or with any caps won't match
+    name_token = header_name.replace('-', '_').lower().encode('ascii', 'ignore')
+    # anything starting with an underscore won't match
+    # TODO: aliases
     try:
         module_name = "redbot.message.headers.%s" % name_token
         __import__(module_name)
@@ -220,8 +233,7 @@ def load_header_func(header_name, func):
     try:
         return getattr(hdr_module, func)
     except AttributeError:
-        raise RuntimeError, "Can't find %s for %s header." % \
-            (func, header_name)
+        return # we can't find the requested function.
 
 
 def parse_date(value):

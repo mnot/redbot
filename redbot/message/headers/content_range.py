@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 
 
-
-
 import redbot.speak as rs
 from redbot.message import headers as rh
 from redbot.message import http_syntax as syntax
 
+
+description = u"""\
+The `Content-Range` header is sent with a partial body to specify where in the full body the
+partial body should be applied."""
+        
 
 @rh.ResponseHeader
 def parse(subject, value, red):

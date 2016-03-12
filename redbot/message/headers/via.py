@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 
 
-
-
 import redbot.speak as rs
 from redbot.message import headers as rh
 from redbot.message import http_syntax as syntax
+
+description = u"""\
+The `Via` header is added to requests and responses by proxies and other HTTP intermediaries. It
+can be used to help avoid request loops and identify the protocol capabilities of all senders along
+the request/response chain."""
 
 
 @rh.GenericHeaderSyntax

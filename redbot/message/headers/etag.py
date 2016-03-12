@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 
 
-
-
 import redbot.speak as rs
 from redbot.message import headers as rh
 from redbot.message import http_syntax as syntax
 
 
+description = u"""\
+The `ETag` header provides an opaque identifier for the representation."""
+
+    
+    
 @rh.GenericHeaderSyntax
 @rh.CheckFieldSyntax(
   r'\*|(?:W/)?%s' % syntax.QUOTED_STRING, rh.rfc2616 % "section-14.19")

@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 
-
-
 import re
 from urlparse import urljoin
 
 import redbot.speak as rs
 from redbot.message import headers as rh
 from redbot.message import http_syntax as syntax
+
+description = u"""\
+The `Location` header is used in `3xx` responses to redirect the recipient to a different location
+to complete the request.
+        
+In `201 Created``` responses, it identifies a newly created resource."""
 
 
 # The most common problem with Location is a non-absolute URI, 

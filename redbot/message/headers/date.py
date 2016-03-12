@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 
 
-
-
 import redbot.speak as rs
 from redbot.message import headers as rh
 from redbot.message import http_syntax as syntax
+
+description = u"""\
+The `Date` header represents the time when the message was generated, regardless of caching that
+happened since.
+
+It is used by caches as input to expiration calculations, and to detect clock drift."""
 
 
 def parse(subject, value, red):

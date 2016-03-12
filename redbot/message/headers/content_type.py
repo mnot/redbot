@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 
 
-
-
 import redbot.speak as rs
 from redbot.message import headers as rh
 from redbot.message import http_syntax as syntax
+
+description = u"""\
+The `Content-Type` header indicates the media type of the body sent to the recipient or, in the
+case of responses to the HEAD method, the media type that would have been sent had the request been
+a GET."""
 
 
 @rh.GenericHeaderSyntax

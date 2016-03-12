@@ -1,11 +1,21 @@
 #!/usr/bin/env python
 
 
-
-
 import redbot.speak as rs
 from redbot.message import headers as rh
 from redbot.message import http_syntax as syntax
+
+
+description = u"""\
+The `Transfer-Encoding` header indicates what (if any) type of transformation has been applied to
+the message body.
+
+This differs from `Content-Encoding` in that transfer-codings are a property of the message, not of
+the representation; i.e., it will be removed by the next "hop", whereas content-codings are
+end-to-end.
+
+The most commonly used transfer-coding is `chunked`, which allows persistent connections to be used
+without knowing the entire body's length."""
 
 
 @rh.GenericHeaderSyntax

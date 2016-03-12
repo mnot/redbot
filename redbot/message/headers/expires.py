@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
 
-
-
 import redbot.speak as rs
 from redbot.message import headers as rh
 from redbot.message import http_syntax as syntax
+
+description = u"""\
+The `Expires` header gives a time after which the response is considered stale."""
 
 
 def parse(subject, value, red):

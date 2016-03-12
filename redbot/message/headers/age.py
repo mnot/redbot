@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
 
-
-
 import redbot.speak as rs
 from redbot.message import headers as rh
 from redbot.message import http_syntax as syntax
 
+description = u"""\
+The `Age` header conveys the sender's estimate of the amount of time since the response (or its
+validation) was generated at the origin server."""
 
 @rh.GenericHeaderSyntax
 @rh.ResponseHeader

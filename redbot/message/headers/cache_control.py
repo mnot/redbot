@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 
 
-
-
 import redbot.speak as rs
 from redbot.message import headers as rh
 from redbot.message import http_syntax as syntax
+
+description = u"""\
+The `Cache-Control` header is used to specify directives that must be obeyed by all caches along
+the request/response chain. Cache directives are unidirectional in that the presence of a directive
+in a request does not imply that the same directive is in effect in the response."""
 
 
 @rh.GenericHeaderSyntax

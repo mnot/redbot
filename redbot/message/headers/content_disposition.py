@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 
 
-
-
 import redbot.speak as rs
 from redbot.message import headers as rh
 from redbot.message import http_syntax as syntax
+
+description = u"""\
+The `Content-Disposition` header suggests a name to use when saving the file.
+
+When the disposition (the first value) is set to `attachment`, it also prompts browsers to download
+the file, rather than display it."""
 
 
 @rh.GenericHeaderSyntax

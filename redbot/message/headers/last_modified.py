@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
 
-
-
 import redbot.speak as rs
 from redbot.message import headers as rh
 from redbot.message import http_syntax as syntax
 
+
+description = u"""\
+The `Last-Modified` header indicates the time that the origin server believes the
+representation was last modified."""
 
 def parse(subject, value, red):
     try:

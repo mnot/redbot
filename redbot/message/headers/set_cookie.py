@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 
-
 from calendar import timegm
 from re import match, split
 from urlparse import urlsplit
@@ -9,6 +8,13 @@ from urlparse import urlsplit
 import redbot.speak as rs
 from redbot.message import headers as rh
 from redbot.message import http_syntax as syntax
+
+
+description = u"""\
+The `Set-Cookie` response header sets a stateful "cookie" on the client, to be included in future
+requests to the server."""
+
+
 
 @rh.ResponseHeader
 def parse(subject, value, red):

@@ -18,13 +18,16 @@ from functools import partial
 from urlparse import urljoin
 e_html = partial(e_html, quote=True)
 
+from markdown import markdown
+
 import thor
 import thor.http.error as httperr
 
 import redbot.speak as rs
-from redbot import defns, __version__
+from redbot import __version__
 from redbot.formatter import Formatter, html_header, relative_time, f_num
 from redbot.resource import HttpResource
+from redbot.message.headers import load_header_func
 
 nl = u"\n"
 
@@ -352,13 +355,10 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     def format_header(self, name, value, offset):
         "Return an individual HTML header as HTML"
         token_name = "header-%s" % name.lower()
-        py_name = "HDR_" + name.upper().replace("-", "_").encode('ascii', 'ignore')
-        if hasattr(defns, py_name) and token_name not in \
-          [i[0] for i in self.hidden_text]:
-            defn = getattr(defns, py_name)[self.lang] % {
-                'field_name': name,
-            }
-            self.hidden_text.append((token_name, defn))
+        header_desc = load_header_func(name, 'description')
+        if header_desc and token_name not in [i[0] for i in self.hidden_text]:
+            html_desc = markdown(header_desc % { 'field_name': name }, output_format="html5")
+            self.hidden_text.append((token_name, html_desc))
         return u"""\
     <span data-offset='%s' data-name='%s' class='hdr'>%s:%s</span>""" % (
             offset, 
