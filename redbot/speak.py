@@ -1,10 +1,11 @@
 """
 A collection of notes that the RED can emit.
 
-PLEASE NOTE: the summary field is automatically HTML escaped in webui.py, so
-it can contain arbitrary text (as long as it's unicode). However, the longer
-text IS NOT ESCAPED, and therefore all variables to be interpolated into
-it (but not the short version) need to be escaped.
+PLEASE NOTE: the summary field is automatically HTML escaped, so it can contain arbitrary text (as
+long as it's unicode).
+
+However, the longer text field IS NOT ESCAPED, and therefore all variables to be interpolated into
+it need to be escaped to be safe for use in HTML.
 """
 
 from cgi import escape as e_html
