@@ -1,11 +1,3 @@
-
-"""
-This is the Resource Expert Droid.
-"""
-
-__version__ = "1"
-__author__ = "Mark Nottingham <mnot@mnot.net>"
-__copyright__ = """\
 Copyright (c) 2008-2016 Mark Nottingham
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,4 +17,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-"""
