@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-HTTP Syntax
+Regular expressions for common HTTP syntax
 """
 
 # URI syntax
