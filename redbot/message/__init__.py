@@ -277,7 +277,7 @@ class HttpMessage(object):
         kw.update(self._context)
         kw['response'] = rs.response.get(
             self.name, rs.response['this']
-        )['en']
+        )
         self.notes.append(note(subject, subreq, kw))
         
         

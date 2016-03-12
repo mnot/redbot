@@ -382,7 +382,7 @@ class HeaderTest(unittest.TestCase):
         )
         for msg in self.msg.notes: # check formatting
             msg.vars.update({'field_name': self.name, 'response': 'response'})
-            self.assertTrue(msg.text['en'] % msg.vars)
-            self.assertTrue(msg.summary['en'] % msg.vars)
+            self.assertTrue(msg.text % msg.vars)
+            self.assertTrue(msg.summary % msg.vars)
         self.assertEqual(len(diff), 0, "Mismatched notes: %s" % diff)
 
