@@ -9,6 +9,7 @@ before_script: sh -e /etc/init.d/xvfb start
 install: 
   - pip install selenium --use-mirrors
   - pip install thor --use-mirrors
+  - pip install markdown --use-mirrors
 
 
 script: "cd test; make -e"
