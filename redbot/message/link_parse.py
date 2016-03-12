@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Parsing links from streams of data.
+Parse links from a stream of HTML data.
 """
 
 
