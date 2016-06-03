@@ -10,6 +10,7 @@ The `Via` header is added to requests and responses by proxies and other HTTP in
 can be used to help avoid request loops and identify the protocol capabilities of all senders along
 the request/response chain."""
 
+reference = u"%s#header.via" % rs.rfc7230
 
 @rh.GenericHeaderSyntax
 @rh.CheckFieldSyntax(

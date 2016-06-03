@@ -10,6 +10,7 @@ The `Cache-Control` header is used to specify directives that must be obeyed by 
 the request/response chain. Cache directives are unidirectional in that the presence of a directive
 in a request does not imply that the same directive is in effect in the response."""
 
+reference = u"%s#header.cache-control" % rs.rfc7234
 
 @rh.GenericHeaderSyntax
 @rh.CheckFieldSyntax(syntax.PARAMETER, rh.rfc2616 % "section-14.9")

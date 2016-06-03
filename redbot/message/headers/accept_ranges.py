@@ -10,6 +10,8 @@ description = u"""\
 The `Accept-Ranges` header allows the server to indicate that it accepts range requests for a
 resource."""
 
+reference = u"%s#header.accept-ranges" % rs.rfc7233
+
 @rh.GenericHeaderSyntax
 @rh.ResponseHeader
 def parse(subject, value, red):

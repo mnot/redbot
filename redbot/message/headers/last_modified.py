@@ -10,6 +10,8 @@ description = u"""\
 The `Last-Modified` header indicates the time that the origin server believes the
 representation was last modified."""
 
+reference = u"%s#header.last-modified" % rs.rfc7232
+
 def parse(subject, value, red):
     try:
         date = rh.parse_date(value)

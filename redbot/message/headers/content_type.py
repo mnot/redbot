@@ -10,6 +10,7 @@ The `Content-Type` header indicates the media type of the body sent to the recip
 case of responses to the HEAD method, the media type that would have been sent had the request been
 a GET."""
 
+reference = u"%s#header.content-type" % rs.rfc7231
 
 @rh.GenericHeaderSyntax
 @rh.CheckFieldSyntax(

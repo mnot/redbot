@@ -11,6 +11,8 @@ The `Pragma` header is used to include implementation-specific directives that m
 recipient along the request/response chain.<p> This header is deprecated, in favour of
 `Cache-Control`."""
 
+reference = u"%s#header.pragma" % rs.rfc7234
+
 
 @rh.GenericHeaderSyntax
 def parse(subject, value, red):

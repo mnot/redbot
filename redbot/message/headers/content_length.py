@@ -12,7 +12,8 @@ HEAD method, it indicates the size of the body that would have been sent had the
 
 If Content-Length is incorrect, persistent connections will not work, and caches may not store the
 response (since they can't be sure if they have the whole response)."""
-        
+
+reference = u"%s#header.content-length" % rs.rfc7230        
 
 @rh.GenericHeaderSyntax
 @rh.CheckFieldSyntax(syntax.DIGITS, rh.rfc2616 % "section-14.13")

@@ -13,6 +13,7 @@ to use the response to reply to a subsequent request without validation.
 In uncacheable or stale responses, the Vary field value advises the user agent about the criteria
 that were used to select the representation."""
 
+reference = u"%s#header.vary" % rs.rfc7231
 
 
 @rh.GenericHeaderSyntax

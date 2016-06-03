@@ -9,6 +9,7 @@ from redbot.message import http_syntax as syntax
 description = u"""\
 The `Allow` header advertises the set of methods that are supported by the resource."""
 
+reference = u"%s#header.allow" % rs.rfc7231
 
 @rh.GenericHeaderSyntax
 @rh.ResponseHeader

@@ -11,6 +11,8 @@ the service is expected to be unavailable to the requesting client.
 
 The value of this field can be either a date or an integer number of seconds."""
 
+reference = u"%s#header.retry-after" % rs.rfc7231
+
 
 @rh.GenericHeaderSyntax
 @rh.CheckFieldSyntax(

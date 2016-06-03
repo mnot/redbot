@@ -8,6 +8,7 @@ from redbot.message import http_syntax as syntax
 description = u"""\
 The `Set-Cookie2` header has been deprecated; use `Set-Cookie` instead."""
 
+reference = rs.rfc6265
 
 
 @rh.ResponseHeader

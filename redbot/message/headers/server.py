@@ -9,6 +9,8 @@ description = u"""\
 The `Server` header contains information about the software used by the origin server to handle the
 request."""
 
+reference = u"%s#header.server" % rs.rfc7231
+
 
 @rh.ResponseHeader
 def parse(subject, value, red):

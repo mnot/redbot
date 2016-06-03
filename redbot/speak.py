@@ -11,6 +11,18 @@ it need to be escaped to be safe for use in HTML.
 from cgi import escape as e_html
 from markdown import markdown
 
+# URLs for relevant RFCs
+rfc_base = u"http://httpwg.org/specs"
+rfc7230 = u"%s/rfc7230.html" % rfc_base
+rfc7231 = u"%s/rfc7231.html" % rfc_base
+rfc7232 = u"%s/rfc7232.html" % rfc_base
+rfc7233 = u"%s/rfc7233.html" % rfc_base
+rfc7234 = u"%s/rfc7234.html" % rfc_base
+rfc7235 = u"%s/rfc7235.html" % rfc_base
+rfc5988 = u"%s/rfc5988.html" % rfc_base
+rfc6265 = u"%s/rfc6265.html" % rfc_base
+
+
 class _Classifications:
     "Note classifications."
     GENERAL = u"General"

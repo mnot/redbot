@@ -9,6 +9,8 @@ description = u"""\
 The `Age` header conveys the sender's estimate of the amount of time since the response (or its
 validation) was generated at the origin server."""
 
+reference = u"%s#header.age" % rs.rfc7234
+
 @rh.GenericHeaderSyntax
 @rh.ResponseHeader
 def parse(subject, value, red):

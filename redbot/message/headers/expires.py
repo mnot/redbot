@@ -8,6 +8,8 @@ from redbot.message import http_syntax as syntax
 description = u"""\
 The `Expires` header gives a time after which the response is considered stale."""
 
+reference = u"%s#header.expires" % rs.rfc7234
+
 
 def parse(subject, value, red):
     try:

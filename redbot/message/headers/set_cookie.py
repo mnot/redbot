@@ -14,6 +14,7 @@ description = u"""\
 The `Set-Cookie` response header sets a stateful "cookie" on the client, to be included in future
 requests to the server."""
 
+reference = rs.rfc6265
 
 
 @rh.ResponseHeader

@@ -11,6 +11,7 @@ a message that might not be reflected in it. This information is typically used 
 possible incorrectness introduced by caching operations or transformations applied to the body of
 the message."""
 
+reference = u"%s#header.warning" % rs.rfc7234
 
 @rh.GenericHeaderSyntax
 @rh.ResponseHeader

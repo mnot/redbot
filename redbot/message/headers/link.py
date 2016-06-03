@@ -9,6 +9,8 @@ from redbot.message import headers as rh
 from redbot.message import http_syntax as syntax
 
 
+reference = rs.rfc5988
+
 @rh.GenericHeaderSyntax
 @rh.CheckFieldSyntax(
     r'(?:<%(URI_reference)s>(?:\s*;\s*%(PARAMETER)s)*)' % syntax.__dict__,

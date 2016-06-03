@@ -17,6 +17,8 @@ end-to-end.
 The most commonly used transfer-coding is `chunked`, which allows persistent connections to be used
 without knowing the entire body's length."""
 
+reference = u"%s#header.transfer-encoding" % rs.rfc7230
+
 
 @rh.GenericHeaderSyntax
 @rh.CheckFieldSyntax(syntax.TOK_PARAM, rh.rfc2616 % "section-14.41")
