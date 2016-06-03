@@ -139,17 +139,19 @@ def ResponseOrPutHeader(func):
     new.valid_msgs = ['PUT', 'response']
     return new
 
-def DeprecatedHeader(func, deprecation_ref):
+def DeprecatedHeader(deprecation_ref):
     """
     Decorator for parse; indicates header is deprecated.
     """
-    assert func.__name__ == 'parse', func.__name__
-    def new(subject, value, msg): # pylint: disable=C0111
-        msg.add_note(subject, rs.rs.HEADER_DEPRECATED, deprecation_ref=deprecation_ref)
-        return func(subject, value, msg)
-    new.__name__ = func.__name__
-    new.state = "deprecated"
-    return new
+    def wrap(func): # pylint: disable=C0111
+        assert func.__name__ == 'parse', func.__name__
+        def new(subject, value, msg): # pylint: disable=C0111
+            msg.add_note(subject, rs.rs.HEADER_DEPRECATED, deprecation_ref=deprecation_ref)
+            return func(subject, value, msg)
+        new.__name__ = func.__name__
+        new.state = "deprecated"
+        return new
+    return wrap
 
 
 def CheckFieldSyntax(exp, ref):
