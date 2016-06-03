@@ -36,6 +36,15 @@ $(document).ready(function() {
     }
   });
 
+  console.log("ok.")
+  $("#uri").keydown(function (e) {
+    console.log("***" + $(this).val());
+    if ($(this).val() == check_phrase) {
+      $(this).val("");
+      $("#uri").attr('class', 'active');
+    }
+  });
+
   $("input").keypress(function (e) {
     if (e.which == 13) {
       $("#request_form").submit();
