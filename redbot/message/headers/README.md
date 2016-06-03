@@ -102,11 +102,20 @@ parsing, including:
    See _message.http_syntax.py_ for some handy pre-defined regexen, based upon 
    the HTTP ABNF.
 
-* `RequestHeader` assures that the header is only used in requests.
+* `DeprecatedHeader` - indicates that the header should not be used. Takes one argument, a URL
+  to the notice of deprecation.
 
-* `ResponseHeader` is just like `RequestHeader`, except that it assures that
+* Every header needs to have exactly one of:
+
+  * `RequestHeader` assures that the header is only used in requests.
+
+  * `ResponseHeader` is just like `RequestHeader`, except that it assures that
   the header is only used in responses.
 
+  * `RequestOrResponseHeader` indicates that it can occur in either requests or responses.
+
+  * `ResponseOrPutHeader` indicates that it typically occurs in responses, but might also show up
+  in a PUT request.
 
 ### Decorators for _join_
 
