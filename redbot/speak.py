@@ -174,7 +174,7 @@ class HEADER_DEPRECATED(Note):
     summary = u"The %(header_name)s header is deprecated."
     text = u"""\
 This header field is no longer recommended for use, because of interoperability problems and/or
-lack of use. See [its documentation](%(ref)s) for more information."""
+lack of use. See [the deprecation notice](%(deprecation_ref)s) for more information."""
 
 class SINGLE_HEADER_REPEAT(Note):
     category = c.GENERAL

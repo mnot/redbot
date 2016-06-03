@@ -139,6 +139,18 @@ def ResponseOrPutHeader(func):
     new.valid_msgs = ['PUT', 'response']
     return new
 
+def DeprecatedHeader(func, deprecation_ref):
+    """
+    Decorator for parse; indicates header is deprecated.
+    """
+    assert func.__name__ == 'parse', func.__name__
+    def new(subject, value, msg): # pylint: disable=C0111
+        msg.add_note(subject, rs.rs.HEADER_DEPRECATED, deprecation_ref=deprecation_ref)
+        return func(subject, value, msg)
+    new.__name__ = func.__name__
+    new.state = "deprecated"
+    return new
+
 
 def CheckFieldSyntax(exp, ref):
     """
@@ -419,7 +431,9 @@ def CheckHeaderModule(hm, name):
     else:
         parse = getattr(hm, 'parse')
         if not getattr(parse, 'valid_msgs', None):
-            sys.stderr.write("* %s doesn't know if it's for requests or responses\n" % name)        
+            sys.stderr.write("* %s doesn't know if it's for requests or responses\n" % name)
+        if "deprecated" in getattr(parse, 'state', None):
+            return # deprecated header, don't need to look further.
     if 'join' not in attrs or type(hm.join != types.FunctionType):
         sys.stderr.write("* %s lacks join\n" % name)
     import unittest

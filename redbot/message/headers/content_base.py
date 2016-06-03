@@ -12,13 +12,9 @@ deprecated, because it was not implemented widely.
 
 reference = u"https://tools.ietf.org/html/rfc2616#section-19.6.3"
 
+@rh.DeprecatedHeader(rh.rfc2616 % "section-19.6.3")
 @rh.ResponseOrPutHeader
 def parse(subject, value, red):
-    red.add_note(subject, 
-                    rs.HEADER_DEPRECATED, 
-                    header_name="Content-Base",
-                    ref=rh.rfc2616 % "section-19.6.3"
-    )
     return value
     
 @rh.SingleFieldValue
