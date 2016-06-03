@@ -8,10 +8,14 @@ import redbot.speak as rs
 from redbot.message import headers as rh
 from redbot.message import http_syntax as syntax
 
+description = """\
+The `Link` header field allows structured links to be described. A link can be viewed as a statement of the form "[context IRI] has a [relation type] resource at [target IRI], which has [target attributes]."
+"""
 
 reference = rs.rfc5988
 
 @rh.GenericHeaderSyntax
+@rh.RequestOrResponseHeader
 @rh.CheckFieldSyntax(
     r'(?:<%(URI_reference)s>(?:\s*;\s*%(PARAMETER)s)*)' % syntax.__dict__,
     rh.rfc5988

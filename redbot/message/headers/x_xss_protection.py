@@ -1,13 +1,18 @@
 #!/usr/bin/env python
 
 
-
-
 import redbot.speak as rs
 from redbot.message import headers as rh
 from redbot.message import http_syntax as syntax
 
+description = u"""\
+The `X-XSS-Protection` response header field can be sent by servers to control how
+older versions of Internet Explorer configure their Cross Site Scripting protection.
+"""
 
+reference = u"https://blogs.msdn.microsoft.com/ieinternals/2011/01/31/controlling-the-xss-filter/"
+
+@rh.ResponseOrPutHeader
 @rh.GenericHeaderSyntax
 @rh.CheckFieldSyntax(
     r'(?:[10](?:\s*;\s*%(PARAMETER)s)*)' % syntax.__dict__, 'http://blogs.msdn.com/b/ieinternals/archive/2011/01/31/controlling-the-internet-explorer-xss-filter-with-the-x-xss-protection-http-header.aspx'

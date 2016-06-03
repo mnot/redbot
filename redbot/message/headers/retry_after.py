@@ -14,6 +14,7 @@ The value of this field can be either a date or an integer number of seconds."""
 reference = u"%s#header.retry-after" % rs.rfc7231
 
 
+@rh.ResponseHeader
 @rh.GenericHeaderSyntax
 @rh.CheckFieldSyntax(
   r"(?:%s|%s)" % (syntax.DIGITS, syntax.DATE), rh.rfc2616 % "section-14.37")

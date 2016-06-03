@@ -12,6 +12,7 @@ the request/response chain."""
 
 reference = u"%s#header.via" % rs.rfc7230
 
+@rh.RequestOrResponseHeader
 @rh.GenericHeaderSyntax
 @rh.CheckFieldSyntax(
     r'(?:%s/)?%s\s+[^,\s]+(?:\s+%s)?' % (

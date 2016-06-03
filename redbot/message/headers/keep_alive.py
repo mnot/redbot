@@ -16,7 +16,9 @@ timeout is and other information. However, this isn't usually used by clients.
 
 It's safe to remove this header if you wish to save a few bytes in the response."""
 
+reference = u"https://tools.ietf.org/html/rfc2068#section-19.7.1"
 
+@rh.RequestOrResponseHeader
 @rh.GenericHeaderSyntax
 def parse(subject, value, red):
     try:

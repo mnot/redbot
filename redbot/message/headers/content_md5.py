@@ -13,7 +13,10 @@ check (MIC).
 Note that while a MIC is good for detecting accidental modification of the body in transit, it is
 not proof against malicious attacks."""
 
+reference = u"https://tools.ietf.org/html/rfc2616#section-14.15"
 
+
+@rh.ResponseHeader
 def parse(subject, value, red):
     # TODO: constrain value, tests
     return value

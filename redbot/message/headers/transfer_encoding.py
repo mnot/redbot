@@ -20,6 +20,7 @@ without knowing the entire body's length."""
 reference = u"%s#header.transfer-encoding" % rs.rfc7230
 
 
+@rh.RequestOrResponseHeader
 @rh.GenericHeaderSyntax
 @rh.CheckFieldSyntax(syntax.TOK_PARAM, rh.rfc2616 % "section-14.41")
 def parse(subject, value, red):

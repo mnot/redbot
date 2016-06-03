@@ -11,6 +11,7 @@ The `Expires` header gives a time after which the response is considered stale."
 reference = u"%s#header.expires" % rs.rfc7234
 
 
+@rh.ResponseOrPutHeader
 def parse(subject, value, red):
     try:
         date = rh.parse_date(value)

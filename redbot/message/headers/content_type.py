@@ -12,6 +12,8 @@ a GET."""
 
 reference = u"%s#header.content-type" % rs.rfc7231
 
+
+@rh.RequestOrResponseHeader
 @rh.GenericHeaderSyntax
 @rh.CheckFieldSyntax(
     r'(?:%(TOKEN)s/%(TOKEN)s(?:\s*;\s*%(PARAMETER)s)*)' % syntax.__dict__,

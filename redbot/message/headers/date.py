@@ -14,6 +14,7 @@ It is used by caches as input to expiration calculations, and to detect clock dr
 reference = u"%s#header.date" % rs.rfc7231
 
 
+@rh.RequestOrResponseHeader
 def parse(subject, value, red):
     try:
         date = rh.parse_date(value)

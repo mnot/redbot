@@ -13,7 +13,7 @@ recipient along the request/response chain.<p> This header is deprecated, in fav
 
 reference = u"%s#header.pragma" % rs.rfc7234
 
-
+@rh.RequestHeader
 @rh.GenericHeaderSyntax
 def parse(subject, value, red):
     return value.lower()

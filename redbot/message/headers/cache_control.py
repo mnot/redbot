@@ -13,6 +13,7 @@ in a request does not imply that the same directive is in effect in the response
 reference = u"%s#header.cache-control" % rs.rfc7234
 
 @rh.GenericHeaderSyntax
+@rh.RequestOrResponseHeader
 @rh.CheckFieldSyntax(syntax.PARAMETER, rh.rfc2616 % "section-14.9")
 def parse(subject, value, red):
     try:

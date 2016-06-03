@@ -12,6 +12,7 @@ representation was last modified."""
 
 reference = u"%s#header.last-modified" % rs.rfc7232
 
+@rh.ResponseOrPutHeader
 def parse(subject, value, red):
     try:
         date = rh.parse_date(value)

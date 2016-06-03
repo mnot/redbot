@@ -18,6 +18,7 @@ reference = u"%s#header.location" % rs.rfc7231
 
 # The most common problem with Location is a non-absolute URI, 
 # so we separate that from the syntax check.
+@rh.ResponseHeader
 @rh.CheckFieldSyntax(syntax.URI_reference, rh.rfc2616 % "section-14.30")
 @rh.ResponseHeader
 def parse(subject, value, msg):

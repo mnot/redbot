@@ -16,6 +16,7 @@ of its underlying media type; e.g., `gzip` and `deflate`."""
 reference = u"%s#header.content-encoding" % rs.rfc7231
 
 @rh.GenericHeaderSyntax
+@rh.RequestOrResponseHeader
 @rh.CheckFieldSyntax(syntax.TOKEN, rh.rfc2616 % "section-14.11")
 def parse(subject, value, red):
     # check to see if there are any non-gzip encodings, because

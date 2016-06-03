@@ -11,7 +11,9 @@ header field to indicate what version of the MIME protocol was used to construct
 of the MIME-Version header field indicates that the message is in full compliance with the MIME
 protocol."""
 
+reference = u"https://tools.ietf.org/html/rfc2616#section-19.4.1"
 
+@rh.RequestOrResponseHeader
 def parse(subject, value, red):
     red.add_note(subject, rs.MIME_VERSION)
     return value

@@ -81,7 +81,7 @@ def RequestHeader(func):
     Decorator for parse; assures that the header is only used in requests.
     """
     assert func.__name__ == 'parse', func.__name__
-    func.needs_request = True
+    assert hasattr(func, 'valid_msgs') == False, "Make up your mind."
     def new(subject, value, msg): # pylint: disable=C0111
         if msg.is_request != True:
             msg.add_note(subject, rs.RESPONSE_HDR_IN_REQUEST)
@@ -91,6 +91,7 @@ def RequestHeader(func):
             return bad_hdr(subject, value, msg)
         return func(subject, value, msg)
     new.__name__ = func.__name__
+    new.valid_msgs = ['request']
     return new
 
 def ResponseHeader(func):
@@ -98,7 +99,7 @@ def ResponseHeader(func):
     Decorator for parse; assures that the header is only used in responses.
     """
     assert func.__name__ == 'parse', func.__name__
-    func.needs_response = True
+    assert hasattr(func, 'valid_msgs') == False, "Make up your mind."
     def new(subject, value, msg): # pylint: disable=C0111
         if msg.is_request != False:
             msg.add_note(subject, rs.REQUEST_HDR_IN_RESPONSE)
@@ -108,7 +109,36 @@ def ResponseHeader(func):
             return bad_hdr(subject, value, msg)
         return func(subject, value, msg)
     new.__name__ = func.__name__
+    new.valid_msgs = ['response']
     return new
+
+def RequestOrResponseHeader(func):
+    """
+    Decorator for parse; header can be used in both requests and responses.
+    """
+    assert func.__name__ == 'parse', func.__name__
+    assert hasattr(func, 'valid_msgs') == False, "Make up your mind."
+    func.valid_msgs = ['request', 'response']
+    return func
+
+def ResponseOrPutHeader(func):
+    """
+    Decorator for parse; header can be used in a response or a PUT request.
+    """
+    assert func.__name__ == 'parse', func.__name__
+    assert hasattr(func, 'valid_msgs') == False, "Make up your mind."
+    def new(subject, value, msg): # pylint: disable=C0111
+        if msg.is_request != False and msg.method != 'PUT':
+            msg.add_note(subject, rs.REQUEST_HDR_IN_RESPONSE)
+            def bad_hdr(subject, value, msg): # pylint: disable=W0613
+                "Don't process headers that aren't used correctly."
+                return None
+            return bad_hdr(subject, value, msg)
+        return func(subject, value, msg)
+    new.__name__ = func.__name__
+    new.valid_msgs = ['PUT', 'response']
+    return new
+
 
 def CheckFieldSyntax(exp, ref):
     """
@@ -217,9 +247,10 @@ def process_headers(msg):
             header_block_size=f_num(header_block_size))
 
 
-def load_header_func(header_name, func):
+def load_header_func(header_name, func=None):
     """
-    Return a header parser for the given field name.
+    Return a header parser for the given field name. If function isn't specified, 
+    just return the module.
     """
     name_token = header_name.replace('-', '_').lower().encode('ascii', 'ignore')
     # anything starting with an underscore won't match
@@ -230,6 +261,8 @@ def load_header_func(header_name, func):
         hdr_module = sys.modules[module_name]
     except (ImportError, KeyError, TypeError):
         return # we don't recognise the header.
+    if func == None:
+        return hdr_module
     try:
         return getattr(hdr_module, func)
     except AttributeError:
@@ -352,6 +385,66 @@ def parse_params(msg, subject, instr, nostar=None, delim=";"):
 
 
 
+
+def CheckCoverage(xml_file):
+    """
+    Given an XML file from <https://www.iana.org/assignments/message-headers/message-headers.xml>,
+    See what headers are missing and check those remaining to see what they don't define.
+    """
+    
+    registered_headers = ParseHeaderRegistry(xml_file)
+    for record in registered_headers:
+        hdr_module = load_header_func(record)
+        if not hdr_module:
+            sys.stderr.write("- %s registered but not defined\n" % record)
+        else:
+            CheckHeaderModule(hdr_module, record)
+
+
+def CheckHeaderModule(hm, name):
+    """
+    Given a module and its name, make sure it's complete. Complain on STDERR if not.
+    """
+    
+    import types
+    attrs = dir(hm)
+    if 'reference' not in attrs or type(hm.reference != types.StringType):
+        sys.stderr.write("* %s lacks reference\n" % name)
+    if 'description' not in attrs or type(hm.description != types.StringType):
+        sys.stderr.write("* %s lacks description\n" % name)
+    elif hm.description.strip() == "":
+        sys.stderr.wrtie("* %s appers to have an empty description\n" % name)
+    if 'parse' not in attrs or type(hm.parse != types.FunctionType):
+        sys.stderr.write("* %s lacks parse\n" % name)
+    else:
+        parse = getattr(hm, 'parse')
+        if not getattr(parse, 'valid_msgs', None):
+            sys.stderr.write("* %s doesn't know if it's for requests or responses\n" % name)        
+    if 'join' not in attrs or type(hm.join != types.FunctionType):
+        sys.stderr.write("* %s lacks join\n" % name)
+    import unittest
+    loader = unittest.TestLoader()
+    tests = loader.loadTestsFromModule(hm)
+    if tests.countTestCases() == 0:
+        sys.stderr.write("* %s doesn't have any tests\n" % name)
+
+
+def ParseHeaderRegistry(xml_file):
+    """
+    Given a filename containing XML, parse it and return a list of registered header names.
+    """
+        
+    import xml.etree.ElementTree as ET
+    tree = ET.parse(xml_file)
+    root = tree.getroot()
+    result = []
+    for record in root.iter('{http://www.iana.org/assignments}record'):
+        if record.find('{http://www.iana.org/assignments}protocol').text.lower().strip() != "http":
+            continue
+        result.append(record.find('{http://www.iana.org/assignments}value').text)
+    return result
+
+
 # TODO: allow testing of request headers
 class HeaderTest(unittest.TestCase):
     """
@@ -386,3 +479,7 @@ class HeaderTest(unittest.TestCase):
             self.assertTrue(msg.summary % msg.vars)
         self.assertEqual(len(diff), 0, "Mismatched notes: %s" % diff)
 
+
+if __name__ == "__main__":
+    import sys
+    CheckCoverage(sys.argv[1])

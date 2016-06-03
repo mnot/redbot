@@ -11,6 +11,7 @@ The `Content-Disposition` header suggests a name to use when saving the file.
 When the disposition (the first value) is set to `attachment`, it also prompts browsers to download
 the file, rather than display it."""
 
+reference = u"https://tools.ietf.org/html/rfc6266"
 
 @rh.GenericHeaderSyntax
 @rh.CheckFieldSyntax(

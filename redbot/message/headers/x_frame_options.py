@@ -8,6 +8,7 @@ from redbot.message import headers as rh
 from redbot.message import http_syntax as syntax
 
 
+@rh.ResponseHeader
 @rh.GenericHeaderSyntax
 def parse(subject, value, red):
     return value.lower()

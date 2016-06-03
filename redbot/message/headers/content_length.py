@@ -15,6 +15,8 @@ response (since they can't be sure if they have the whole response)."""
 
 reference = u"%s#header.content-length" % rs.rfc7230        
 
+
+@rh.RequestOrResponseHeader
 @rh.GenericHeaderSyntax
 @rh.CheckFieldSyntax(syntax.DIGITS, rh.rfc2616 % "section-14.13")
 def parse(subject, value, red):
