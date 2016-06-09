@@ -137,6 +137,8 @@ def load_header_func(header_name, func=None):
     """
     name_token = header_name.replace('-', '_').lower().encode('ascii', 'ignore')
     # anything starting with an underscore won't match
+    if name_token[0] == '_':
+        return
     # TODO: aliases
     try:
         module_name = "redbot.message.headers.%s" % name_token
