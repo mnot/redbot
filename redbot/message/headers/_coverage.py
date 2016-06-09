@@ -30,7 +30,7 @@ def CheckHeaderModule(hm, name):
     if 'description' not in attrs or type(hm.description != types.StringType):
         sys.stderr.write("* %s lacks description\n" % name)
     elif hm.description.strip() == "":
-        sys.stderr.wrtie("* %s appers to have an empty description\n" % name)
+        sys.stderr.write("* %s appers to have an empty description\n" % name)
     if 'parse' not in attrs or type(hm.parse != types.FunctionType):
         sys.stderr.write("* %s lacks parse\n" % name)
     else:
