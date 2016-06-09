@@ -3,6 +3,7 @@ import sys
 import types
 import unittest
 import xml.etree.ElementTree as ET
+from redbot.message.headers import load_header_func
 
 def CheckCoverage(xml_file):
     """
@@ -25,21 +26,23 @@ def CheckHeaderModule(hm, name):
     """
     
     attrs = dir(hm)
-    if 'reference' not in attrs or type(hm.reference != types.StringType):
+    if 'reference' not in attrs or type(hm.reference) != types.StringType:
         sys.stderr.write("* %s lacks reference\n" % name)
-    if 'description' not in attrs or type(hm.description != types.StringType):
+    if 'description' not in attrs or type(hm.description) != types.StringType:
         sys.stderr.write("* %s lacks description\n" % name)
     elif hm.description.strip() == "":
         sys.stderr.write("* %s appers to have an empty description\n" % name)
-    if 'parse' not in attrs or type(hm.parse != types.FunctionType):
+    if 'parse' not in attrs or type(hm.parse) != types.FunctionType:
         sys.stderr.write("* %s lacks parse\n" % name)
     else:
         parse = getattr(hm, 'parse')
         if not getattr(parse, 'valid_msgs', None):
             sys.stderr.write("* %s doesn't know if it's for requests or responses\n" % name)
-        if "deprecated" in getattr(parse, 'state', None):
+        if "deprecated" in getattr(parse, 'state', []):
             return # deprecated header, don't need to look further.
-    if 'join' not in attrs or type(hm.join != types.FunctionType):
+        if not hasattr(parse, 'syntaxCheck'):
+            sys.stderr.write("* %s doesn't check its syntax\n" % name)
+    if 'join' not in attrs or type(hm.join) != types.FunctionType:
         sys.stderr.write("* %s lacks join\n" % name)
     loader = unittest.TestLoader()
     tests = loader.loadTestsFromModule(hm)
@@ -63,4 +66,4 @@ def ParseHeaderRegistry(xml_file):
 
 
 if __name__ == "__main__":
-    CheckCoverage(sys.argv[1]
+    CheckCoverage(sys.argv[1])

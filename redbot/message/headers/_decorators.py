@@ -131,5 +131,6 @@ def CheckFieldSyntax(exp, ref):
                 return bad_syntax(subject, value, msg)
             return func(subject, value, msg)
         new.__name__ = func.__name__
+        new.syntaxCheck = True
         return new
     return wrap
