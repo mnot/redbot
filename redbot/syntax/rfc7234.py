@@ -13,6 +13,8 @@ from rfc5234 import DIGIT, DQUOTE, SP
 from rfc7230 import list_rule, OWS, field_name, pseudonym, quoted_string, token
 from rfc7231 import HTTP_date
 
+SPEC_URL = u"http://httpwg.org/specs/rfc7234"
+
 
 # delta-seconds = 1*DIGIT
 

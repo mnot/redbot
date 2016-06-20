@@ -13,6 +13,8 @@ from rfc7230 import list_rule, OWS, token
 from rfc7231 import HTTP_date
 from rfc7232 import entity_tag
 
+SPEC_URL = u"http://httpwg.org/specs/rfc7233"
+
 
 # bytes-unit = "bytes"
 

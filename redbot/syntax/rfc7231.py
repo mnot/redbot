@@ -14,6 +14,7 @@ from rfc5234 import DIGIT, SP, ALPHA
 from rfc5646 import Language_Tag as language_tag
 from rfc7230 import list_rule, BWS, OWS, RWS, field_name, quoted_string, partial_URI, comment, token
 
+SPEC_URL = u"http://httpwg.org/specs/rfc7231"
 
 ## Basics
 
