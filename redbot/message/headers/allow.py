@@ -1,21 +1,22 @@
 #!/usr/bin/env python
 
+from redbot.speak import Note, c as categories, l as levels
+from redbot.message.headers import HttpHeader, HeaderTest
+from redbot.syntax import rfc7231
 
-import redbot.speak as rs
-from redbot.message import headers as rh
-from redbot.message import http_syntax as syntax
-
-
-description = u"""\
+class allow(HttpHeader):
+    canonical_name = u"Allow"
+    description = u"""\
 The `Allow` header advertises the set of methods that are supported by the resource."""
+    reference = u"%s#header.allow" % rfc7231.SPEC_URL
+    syntax = rfc7231.Allow
+    list_header = True
+    deprecated = False
+    valid_in_requests = False
+    valid_in_responses = True
 
-reference = u"%s#header.allow" % rs.rfc7231
-
-@rh.GenericHeaderSyntax
-@rh.ResponseHeader
-@rh.CheckFieldSyntax(syntax.TOKEN, rh.rfc2616 % "section-14.7")
-def parse(subject, value, red):
-    return value
+    def parse(self, field_value, add_note):
+        return field_value
     
-def join(subject, values, red):
-    return values
+    def evaluate(self, add_note):
+        return

@@ -1,69 +1,77 @@
 #!/usr/bin/env python
 
+from redbot.speak import Note, c as categories, l as levels
+from redbot.message.headers import HttpHeader, HeaderTest
+from redbot.syntax import rfc7234
 
-import redbot.speak as rs
-from redbot.message import headers as rh
-from redbot.message import http_syntax as syntax
-
-description = u"""\
+class cache_control(HttpHeader):
+    canonical_name = u"Cache-Control"
+    description = u"""\
 The `Cache-Control` header is used to specify directives that must be obeyed by all caches along
 the request/response chain. Cache directives are unidirectional in that the presence of a directive
 in a request does not imply that the same directive is in effect in the response."""
+    reference = u"%s#header.cache-control" % rfc7234.SPEC_URL
+    syntax = rfc7234.Cache_Control
+    list_header = True
+    deprecated = False
+    valid_in_requests = True
+    valid_in_responses = True
 
-reference = u"%s#header.cache-control" % rs.rfc7234
-
-@rh.GenericHeaderSyntax
-@rh.RequestOrResponseHeader
-@rh.CheckFieldSyntax(syntax.PARAMETER, rh.rfc2616 % "section-14.9")
-def parse(subject, value, red):
-    try:
-        directive_name, directive_val = value.split("=", 1)
-        directive_val = rh.unquote_string(directive_val)
-    except ValueError:
-        directive_name = value
-        directive_val = None
-    directive_name = directive_name.lower()
-    # TODO: warn on upper-cased directives?
-    if directive_name in ['max-age', 's-maxage']:
+    def parse(self, field_value, add_note):
         try:
-            directive_val = int(directive_val)
-        except (ValueError, TypeError):
-            red.add_note(subject, rs.BAD_CC_SYNTAX,
-                            bad_cc_attr=directive_name
-            )
-            return None
-    return (directive_name, directive_val)
+            directive_name, directive_val = field_value.split("=", 1)
+            directive_val = rh.unquote_string(directive_val)
+        except ValueError:
+            directive_name = field_value
+            directive_val = None
+        directive_name = directive_name.lower()
+        # TODO: warn on upper-cased directives?
+        if directive_name in ['max-age', 's-maxage']:
+            try:
+                directive_val = int(directive_val)
+            except (ValueError, TypeError):
+                add_note(BAD_CC_SYNTAX, bad_cc_attr=directive_name)
+                return None
+        return (directive_name, directive_val)
 
-def join(subject, values, red):
-    return set(values)
+    def evaluate(self, add_note):
+        # TODO: warn on duplicate directives?
+        self.value = set(self.value)
 
-    
-class CacheControlTest(rh.HeaderTest):
+
+class BAD_CC_SYNTAX(Note):
+    category = categories.CACHING
+    level = levels.BAD
+    summary = u"The %(bad_cc_attr)s Cache-Control directive's syntax is incorrect."
+    text = u"This value must be an integer."
+
+
+class CacheControlTest(HeaderTest):
     name = 'Cache-Control'
     inputs = ['a=b, c=d', 'e=f', 'g']
     expected_out = set([('a', 'b'), ('c', 'd'), ('e', 'f'), ('g', None)])
     expected_err = []
 
-class CacheControlCaseTest(rh.HeaderTest):
+class CacheControlCaseTest(HeaderTest):
     name = 'Cache-Control'
     inputs = ['A=b, c=D']
     expected_out = set([('a', 'b'), ('c', 'D')])
     expected_err = []
 
-class CacheControlQuotedTest(rh.HeaderTest):
+class CacheControlQuotedTest(HeaderTest):
     name = 'Cache-Control'
     inputs = ['a="b,c", c=d']
     expected_out = set([('a', 'b,c'), ('c', 'd')])
     expected_err = []
 
-class CacheControlMaxAgeTest(rh.HeaderTest):
+class CacheControlMaxAgeTest(HeaderTest):
     name = 'Cache-Control'
     inputs = ['max-age=5']
     expected_out = set([('max-age', 5)])
     expected_err = []
 
-class CacheControlBadMaxAgeTest(rh.HeaderTest):
+class CacheControlBadMaxAgeTest(HeaderTest):
     name = 'Cache-Control'
     inputs = ['max-age=foo']
     expected_out = set([])
-    expected_err = [rs.BAD_CC_SYNTAX]
+    expected_err = [BAD_CC_SYNTAX]
