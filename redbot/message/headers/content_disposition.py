@@ -1,74 +1,126 @@
 #!/usr/bin/env python
 
+import redbot.message.headers as headers
+import redbot.syntax as syntax
+from redbot.speak import Note, c as categories, l as levels
+from redbot.message.headers import HttpHeader, HeaderTest
+from redbot.syntax import rfc7231
 
-import redbot.speak as rs
-from redbot.message import headers as rh
-from redbot.message import http_syntax as syntax
-
-description = u"""\
+class content_base(HttpHeader):
+  canonical_name = u"Content-Disposition"
+  description = u"""\
 The `Content-Disposition` header suggests a name to use when saving the file.
 
 When the disposition (the first value) is set to `attachment`, it also prompts browsers to download
 the file, rather than display it."""
-
-reference = u"https://tools.ietf.org/html/rfc6266"
-
-@rh.GenericHeaderSyntax
-@rh.CheckFieldSyntax(
-    r'(?:%(TOKEN)s(?:\s*;\s*%(PARAMETER)s)*)' % syntax.__dict__,
-    rh.rfc6266
-)
-def parse(subject, value, red):
+  reference = u"https://tools.ietf.org/html/rfc6266"
+  syntax = r'(?:%(TOKEN)s(?:\s*;\s*%(PARAMETER)s)*)' % syntax.__dict__
+  list_header = True
+  deprecated = False
+  valid_in_requests = True
+  valid_in_responses = True
+  
+  def parse(self, field_value, add_note):
     try:
-        disposition, params = value.split(";", 1)
+        disposition, params = field_value.split(";", 1)
     except ValueError:
-        disposition, params = value, ''
+        disposition, params = field_value, ''
     disposition = disposition.lower()
     param_dict = rh.parse_params(red, subject, params)
     if disposition not in ['inline', 'attachment']:
-        red.add_note(subject,
-            rs.DISPOSITION_UNKNOWN,
-            disposition=disposition
-        )
+        add_note(subject, DISPOSITION_UNKNOWN, disposition=disposition)
     if not param_dict.has_key('filename'):
-        red.add_note(subject, rs.DISPOSITION_OMITS_FILENAME)
+        add_note(subject, DISPOSITION_OMITS_FILENAME)
     if "%" in param_dict.get('filename', ''):
-        red.add_note(subject, rs.DISPOSITION_FILENAME_PERCENT)
+        add_note(subject, DISPOSITION_FILENAME_PERCENT)
     if "/" in param_dict.get('filename', '') or \
        r"\\" in param_dict.get('filename*', ''):
-        red.add_note(subject, rs.DISPOSITION_FILENAME_PATH_CHAR)
+        add_note(subject, DISPOSITION_FILENAME_PATH_CHAR)
     return disposition, param_dict
 
-@rh.SingleFieldValue
 def join(subject, values, red):
     return values[-1]
     
 
-class QuotedCDTest(rh.HeaderTest):
+class DISPOSITION_UNKNOWN(Note):
+    category = categories.GENERAL
+    level = levels.WARN
+    summary = u"The '%(disposition)s' Content-Disposition isn't known."
+    text = u"""\
+The `Content-Disposition` header has two widely-known values; `inline` and `attachment`.
+`%(disposition)s` isn't recognised, and most implementations will default to handling it like
+`attachment`."""
+
+class DISPOSITION_OMITS_FILENAME(Note):
+    category = categories.GENERAL
+    level = levels.WARN
+    summary = u"The Content-Disposition header doesn't have a 'filename' parameter."
+    text = u"""\
+The `Content-Disposition` header suggests a filename for clients to use when saving the file
+locally.
+
+It should always contain a `filename` parameter, even when the `filename*` parameter is used to
+carry an internationalised filename, so that browsers can fall back to an ASCII-only filename."""
+
+class DISPOSITION_FILENAME_PERCENT(Note):
+    category = categories.GENERAL
+    level = levels.WARN
+    summary = u"The 'filename' parameter on the Content-Disposition header contains a '%%' character."
+    text = u"""\
+The `Content-Disposition` header suggests a filename for clients to use when saving the file
+locally, using the `filename` parameter.
+
+[RFC6266](http://tools.ietf.org/html/rfc6266) specifies how to carry non-ASCII characters in this
+parameter. However, historically some (but not all) browsers have also decoded %%-encoded
+characters in the `filename` parameter, which means that they'll be treated differently depending
+on the browser you're using.
+
+As a result, it's not interoperable to use percent characters in the `filename` parameter. Use the
+correct encoding in the `filename*` parameter instead."""
+
+class DISPOSITION_FILENAME_PATH_CHAR(Note):
+    category = categories.GENERAL
+    level = levels.WARN
+    summary = u"The filename in the Content-Disposition header contains a path character."
+    text = u"""\
+The `Content-Disposition` header suggests a filename for clients to use when saving the file
+locally, using the `filename` and `filename*` parameters.
+
+One of these parameters contains a path character ("\" or "/"), used to navigate between
+directories on common operating systems.
+
+Because this can be used to attach the browser's host operating system (e.g., by saving a file to a
+system directory), browsers will usually ignore these parameters, or remove path information.
+
+You should remove these characters."""
+    
+
+
+class QuotedCDTest(HeaderTest):
     name = 'Content-Disposition'
     inputs = ['attachment; filename="foo.txt"']
     expected_out = ('attachment', {'filename': 'foo.txt'})
     expected_err = [] 
     
-class TokenCDTest(rh.HeaderTest):
+class TokenCDTest(HeaderTest):
     name = 'Content-Disposition'
     inputs = ['attachment; filename=foo.txt']
     expected_out = ('attachment', {'filename': 'foo.txt'})
     expected_err = [] 
 
-class InlineCDTest(rh.HeaderTest):
+class InlineCDTest(HeaderTest):
     name = 'Content-Disposition'
     inputs = ['inline; filename=foo.txt']
     expected_out = ('inline', {'filename': 'foo.txt'})
     expected_err = [] 
 
-class RepeatCDTest(rh.HeaderTest):
+class RepeatCDTest(HeaderTest):
     name = 'Content-Disposition'
     inputs = ['attachment; filename=foo.txt, inline; filename=bar.txt']
     expected_out = ('inline', {'filename': 'bar.txt'})
     expected_err = [rs.SINGLE_HEADER_REPEAT]
 
-class FilenameStarCDTest(rh.HeaderTest):
+class FilenameStarCDTest(HeaderTest):
     name = 'Content-Disposition'
     inputs = ["attachment; filename=foo.txt; filename*=UTF-8''a%cc%88.txt"]
     expected_out = ('attachment', {
@@ -76,23 +128,23 @@ class FilenameStarCDTest(rh.HeaderTest):
             'filename*': u'a\u0308.txt'})
     expected_err = []
 
-class FilenameStarQuotedCDTest(rh.HeaderTest):    
+class FilenameStarQuotedCDTest(HeaderTest):    
     name = 'Content-Disposition'
     inputs = ["attachment; filename=foo.txt; filename*=\"UTF-8''a%cc%88.txt\""]
     expected_out = ('attachment', {
             'filename': 'foo.txt', 
             'filename*': u'a\u0308.txt'})
-    expected_err = [rs.PARAM_STAR_QUOTED]
+    expected_err = [PARAM_STAR_QUOTED]
 
-class FilenamePercentCDTest(rh.HeaderTest):
+class FilenamePercentCDTest(HeaderTest):
     name = 'Content-Disposition'
     inputs = ["attachment; filename=fo%22o.txt"]
     expected_out = ('attachment', {'filename': 'fo%22o.txt', })
-    expected_err = [rs.DISPOSITION_FILENAME_PERCENT]
+    expected_err = [DISPOSITION_FILENAME_PERCENT]
     
-class FilenamePathCharCDTest(rh.HeaderTest):
+class FilenamePathCharCDTest(HeaderTest):
     name = 'Content-Disposition'
     inputs = ['"attachment; filename="/foo.txt"']
     expected_out = ('attachment', {'filename': '/foo.txt',})
-    expected_err = [rs.DISPOSITION_FILENAME_PATH_CHAR]
+    expected_err = [DISPOSITION_FILENAME_PATH_CHAR]
 

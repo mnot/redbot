@@ -1,23 +1,17 @@
 #!/usr/bin/env python
 
+import redbot.message.headers as headers
+from redbot.speak import Note, c as categories, l as levels
+from redbot.message.headers import HttpHeader, HeaderTest
+from redbot.syntax import rfc7234
 
-
-
-import redbot.speak as rs
-from redbot.message import headers as rh
-from redbot.message import http_syntax as syntax
-
-description = u"""\
+class content_transfer_encoding(HttpHeader):
+  canonical_name = u"Content-Transfer-Encoding"
+  description = u"""\
 The `Content-Transfer-Encoding` isn't part of HTTP, but it is used in MIME protocols in a manner analogous to `Transfer-Encoding`.
 """
-
-reference = u"https://tools.ietf.org/html/rfc2616#section-19.4.5"
-
-
-@rh.RequestOrResponseHeader
-def parse(subject, value, red):
-    red.add_note(subject, rs.CONTENT_TRANSFER_ENCODING)
-    return value
-    
-def join(subject, values, red):
-    return values
+  reference = u"https://tools.ietf.org/html/rfc2616#section-19.4.5"
+  list_header = False
+  deprecated = True
+  valid_in_requests = True
+  valid_in_responses = True

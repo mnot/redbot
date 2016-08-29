@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import redbot.message.headers as headers
 from redbot.speak import Note, c as categories, l as levels
 from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7231
@@ -15,8 +16,3 @@ The `Allow` header advertises the set of methods that are supported by the resou
     valid_in_requests = False
     valid_in_responses = True
 
-    def parse(self, field_value, add_note):
-        return field_value
-    
-    def evaluate(self, add_note):
-        return

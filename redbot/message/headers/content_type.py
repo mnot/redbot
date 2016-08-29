@@ -1,37 +1,33 @@
 #!/usr/bin/env python
 
 
-import redbot.speak as rs
-from redbot.message import headers as rh
-from redbot.message import http_syntax as syntax
+import redbot.message.headers as headers
+from redbot.speak import Note, c as categories, l as levels
+from redbot.message.headers import HttpHeader, HeaderTest
+from redbot.syntax import rfc7231
 
-description = u"""\
+class content_type(HttpHeader):
+  canonical_name = u"Content-Type"
+  description = u"""\
 The `Content-Type` header indicates the media type of the body sent to the recipient or, in the
 case of responses to the HEAD method, the media type that would have been sent had the request been
 a GET."""
+  reference = u"%s#header.content_type" % rfc7231.SPEC_URL
+  syntax = rfc7231.Content_Type
+  list_header = False
+  deprecated = False
+  valid_in_requests = True
+  valid_in_responses = True
 
-reference = u"%s#header.content-type" % rs.rfc7231
-
-
-@rh.RequestOrResponseHeader
-@rh.GenericHeaderSyntax
-@rh.CheckFieldSyntax(
-    r'(?:%(TOKEN)s/%(TOKEN)s(?:\s*;\s*%(PARAMETER)s)*)' % syntax.__dict__,
-    rh.rfc2616 % "section-14.17"
-)
-def parse(subject, value, red):
+def parse(self.field_value, add_note):
     try:
-        media_type, params = value.split(";", 1)
+        media_type, params = field_value.split(";", 1)
     except ValueError:
-        media_type, params = value, ''
+        media_type, params = field_value, ''
     media_type = media_type.lower()
-    param_dict = rh.parse_params(red, subject, params, ['charset'])
+    param_dict = headers.parse_params(red, subject, params, ['charset'])
     # TODO: check charset to see if it's known
     return (media_type, param_dict)
-    
-@rh.SingleFieldValue
-def join(subject, values, red):
-    return values[-1]
     
 class BasicCTTest(rh.HeaderTest):
     name = 'Content-Type'
