@@ -6,30 +6,28 @@ from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7234
 
 class age(HttpHeader):
-    canonical_name = u"Age"
-    description = u"""\
+  canonical_name = u"Age"
+  description = u"""\
 The `Age` header conveys the sender's estimate of the amount of time since the response (or its
 validation) was generated at the origin server."""
-    reference = u"%s#header.age" % rfc7234.SPEC_URL
-    syntax = rfc7234.Age
-    list_header = False
-    deprecated = False
-    valid_in_requests = False
-    valid_in_responses = True
+  reference = u"%s#header.age" % rfc7234.SPEC_URL
+  syntax = rfc7234.Age
+  list_header = False
+  deprecated = False
+  valid_in_requests = False
+  valid_in_responses = True
 
-    def parse(subject, field_value, add_note):
-        try:
-            age = int(field_value)
-        except ValueError:
-            add_note(AGE_NOT_INT)
-            return None
-        if age < 0:
-            add_note(AGE_NEGATIVE)
-            return None
-        return age
+  def parse(subject, field_value, add_note):
+      try:
+          age = int(field_value)
+      except ValueError:
+          add_note(AGE_NOT_INT)
+          return None
+      if age < 0:
+          add_note(AGE_NEGATIVE)
+          return None
+      return age
 
-def evaluate(self, add_note):
-    pass
 
 
 class AGE_NOT_INT(Note):

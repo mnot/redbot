@@ -2,18 +2,15 @@
 
 
 
+import redbot.message.headers as headers
+from redbot.speak import Note, c as categories, l as levels
+from redbot.message.headers import HttpHeader, HeaderTest
+from redbot.syntax import rfc7234
 
-import redbot.speak as rs
-from redbot.message import headers as rh
-from redbot.message import http_syntax as syntax
-
-reference = u"https://tools.ietf.org/html/rfc2295"
-
-@rh.ResponseHeader
-@rh.GenericHeaderSyntax
-def parse(subject, value, red):
-    # See #57
-    pass
-    
-def join(subject, values, red):
-    return values
+class tcn(HttpHeader):
+  canonical_name = u"TCN"
+  reference = u"https://tools.ietf.org/html/rfc2295"
+  list_header = False
+  deprecated = False
+  valid_in_requests = False
+  valid_in_responses = True

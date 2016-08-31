@@ -1,50 +1,68 @@
 #!/usr/bin/env python
 
 
+import redbot.message.headers as headers
+from redbot.speak import Note, c as categories, l as levels
+from redbot.message.headers import HttpHeader, HeaderTest
 
-import re
-
-import redbot.speak as rs
-from redbot.message import headers as rh
-from redbot.message import http_syntax as syntax
-
-description = """\
+class link(HttpHeader):
+  canonical_name = u"Link"
+  description = """\
 The `Link` header field allows structured links to be described. A link can be viewed as a statement of the form "[context IRI] has a [relation type] resource at [target IRI], which has [target attributes]."
 """
+  reference = u"%s#header.link" % headers.rfc5988
+  syntax = r'(?:<%(URI_reference)s>(?:\s*;\s*%(PARAMETER)s)*)' % syntax.__dict__
+  list_header = True
+  deprecated = False
+  valid_in_requests = True
+  valid_in_responses = True
 
-reference = rs.rfc5988
-
-@rh.GenericHeaderSyntax
-@rh.RequestOrResponseHeader
-@rh.CheckFieldSyntax(
-    r'(?:<%(URI_reference)s>(?:\s*;\s*%(PARAMETER)s)*)' % syntax.__dict__,
-    rh.rfc5988
-)
-def parse(subject, value, red):
+  def parse(self, field_value, add_note):
     try:
-        link, params = value.split(";", 1)
+        link, params = field_value.split(";", 1)
     except ValueError:
-        link, params = value, ''
+        link, params = field_value, ''
     link = link[1:-1] # trim the angle brackets
-    param_dict = rh.parse_params(red, subject, params, 
+    param_dict = headers.parse_params(red, subject, params, 
       ['rel', 'rev', 'anchor', 'hreflang', 'type', 'media'])
     if param_dict.has_key('rel'): # relation_types
         pass # TODO: check relation type
     if param_dict.has_key('rev'):
-        red.add_note(subject, rs.LINK_REV,
-                        link=link, rev=param_dict['rev'])
+        add_note(subject, LINK_REV,
+                 link=link, rev=param_dict['rev'])
     if param_dict.has_key('anchor'): # URI-Reference
         if not re.match(r"^\s*%s\s*$" % syntax.URI_reference, 
                         param_dict['anchor'], re.VERBOSE):
-            red.add_note(subject, rs.LINK_BAD_ANCHOR,
-                            link=link,
-                            anchor=param_dict['anchor'])
+            add_note(subject, LINK_BAD_ANCHOR,
+                     link=link,
+                     anchor=param_dict['anchor'])
     # TODO: check media-type in 'type'
     # TODO: check language tag in 'hreflang'            
     return link, param_dict
-    
-def join(subject, values, red):
-    return values
+
+
+
+class LINK_REV(Note):
+    category = categories.GENERAL
+    level=levels.WARN
+    summary = u"The 'rev' parameter on the Link header is deprecated."
+    text = u"""\
+The `Link` header, defined by [RFC5988](http://tools.ietf.org/html/rfc5988#section-5), uses the
+`rel` parameter to communicate the type of a link. `rev` is deprecated by that specification
+because it is often confusing.
+
+Use `rel` and an appropriate relation."""
+
+class LINK_BAD_ANCHOR(Note):
+    category = categories.GENERAL
+    level=levels.WARN
+    summary = u"The 'anchor' parameter on the %(link)s Link header isn't a URI."
+    text = u"""\
+The `Link` header, defined by [RFC5988](http://tools.ietf.org/html/rfc5988#section-5), uses the
+`anchor` parameter to define the context URI for the link.
+
+This parameter can be an absolute or relative URI; however, `%(anchor)s` is neither."""
+
 
     
 class BasicLinkTest(rh.HeaderTest):
@@ -81,10 +99,10 @@ class RevLinkTest(rh.HeaderTest):
     name = 'Link'
     inputs = ['</foo>; rev="bar"']
     expected_out = [('/foo', {'rev': 'bar'})]
-    expected_err = [rs.LINK_REV]
+    expected_err = [LINK_REV]
 
 class BadAnchorLinkTest(rh.HeaderTest):
     name = 'Link'
     inputs = ['</foo>; rel="bar"; anchor="{blah}"']
     expected_out = [('/foo', {'rel': 'bar', 'anchor': '{blah}'})]
-    expected_err = [rs.LINK_BAD_ANCHOR]
+    expected_err = [LINK_BAD_ANCHOR]

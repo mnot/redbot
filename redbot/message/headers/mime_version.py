@@ -1,22 +1,20 @@
 #!/usr/bin/env python
 
 
-import redbot.speak as rs
-from redbot.message import headers as rh
-from redbot.message import http_syntax as syntax
+import redbot.message.headers as headers
+from redbot.speak import Note, c as categories, l as levels
+from redbot.message.headers import HttpHeader, HeaderTest
+from redbot.syntax import rfc7234
 
-description = u"""\
+class mime_version(HttpHeader):
+  canonical_name = u"MIME-Version"
+  description = u"""\
 HTTP is not a MIME-compliant protocol. However, HTTP/1.1 messages can include a single MIME-Version
 header field to indicate what version of the MIME protocol was used to construct the message. Use
 of the MIME-Version header field indicates that the message is in full compliance with the MIME
 protocol."""
-
-reference = u"https://tools.ietf.org/html/rfc2616#section-19.4.1"
-
-@rh.RequestOrResponseHeader
-def parse(subject, value, red):
-    red.add_note(subject, rs.MIME_VERSION)
-    return value
-    
-def join(subject, values, red):
-    return values
+  reference = u"%s#section-19.4.1" % headers.rfc2616
+  list_header = False
+  deprecated = True
+  valid_in_requests = True
+  valid_in_responses = True

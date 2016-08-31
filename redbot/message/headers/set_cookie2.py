@@ -1,21 +1,16 @@
 #!/usr/bin/env python
 
 
-import redbot.speak as rs
-from redbot.message import headers as rh
-from redbot.message import http_syntax as syntax
+import redbot.message.headers as headers
+from redbot.speak import Note, c as categories, l as levels
+from redbot.message.headers import HttpHeader, HeaderTest
 
-description = u"""\
+class set_cookie2(HttpHeader):
+  canonical_name = u"Set-Cookie2"
+  description = u"""\
 The `Set-Cookie2` header has been deprecated; use `Set-Cookie` instead."""
-
-reference = rs.rfc6265
-
-
-@rh.DeprecatedHeader(rh.rfc6265 % "section-9.4")
-@rh.ResponseHeader
-def parse(subject, value, red):
-    return value
-    
-@rh.SingleFieldValue
-def join(subject, values, red):
-    return values[-1]
+  reference = headers.rfc6265
+  list_header = True
+  deprecated = True
+  valid_in_requests = False
+  valid_in_responses = True

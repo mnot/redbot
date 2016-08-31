@@ -1,29 +1,31 @@
 #!/usr/bin/env python
 
 
-import redbot.speak as rs
-from redbot.message import headers as rh
-from redbot.message import http_syntax as syntax
+import redbot.message.headers as headers
+from redbot.speak import Note, c as categories, l as levels
+from redbot.message.headers import HttpHeader, HeaderTest
+from redbot.syntax import rfc7232
 
-
-description = u"""\
+class last_modified(HttpHeader):
+  canonical_name = u"Last-Modified"
+  description = u"""\
 The `Last-Modified` header indicates the time that the origin server believes the
 representation was last modified."""
+  reference = u"%s#header.last_modified" % rfc7232.SPEC_URL
+  syntax = rfc7232.Last_Modified
+  list_header = False
+  deprecated = False
+  valid_in_requests = False
+  valid_in_responses = True
 
-reference = u"%s#header.last-modified" % rs.rfc7232
+  def parse(self, field_value, add_note):
+      try:
+          date = headers.parse_date(value)
+      except ValueError:
+          add_note(subject, rs.BAD_DATE_SYNTAX)
+          return None
+      return date
 
-@rh.ResponseOrPutHeader
-def parse(subject, value, red):
-    try:
-        date = rh.parse_date(value)
-    except ValueError:
-        red.add_note(subject, rs.BAD_DATE_SYNTAX)
-        return None
-    return date
-
-@rh.SingleFieldValue
-def join(subject, values, red):
-    return values[-1]
 
 
 class BasicLMTest(rh.HeaderTest):
