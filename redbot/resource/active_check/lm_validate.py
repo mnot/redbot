@@ -7,7 +7,6 @@ Subrequest for Last-Modified validation checks.
 from datetime import datetime
 
 from redbot.resource.active_check.base import SubRequest
-import redbot.speak as rs
 
 class LmValidate(SubRequest):
     "If Last-Modified is present, see if it will validate."
@@ -48,32 +47,92 @@ class LmValidate(SubRequest):
 
     def done(self):
         if not self.response.complete:
-            self.add_note('', rs.LM_SUBREQ_PROBLEM,
+            self.add_note('', LM_SUBREQ_PROBLEM,
                 problem=self.response.http_error.desc
             )
             return
             
         if self.response.status_code == '304':
             self.base.ims_support = True
-            self.add_note('header-last-modified', rs.IMS_304)
+            self.add_note('header-last-modified', IMS_304)
             self.check_missing_hdrs([
                     'cache-control', 'content-location', 'etag', 
                     'expires', 'vary'
-                ], rs.MISSING_HDRS_304, 'If-Modified-Since'
+                ], MISSING_HDRS_304, 'If-Modified-Since'
             )
         elif self.response.status_code \
           == self.base.response.status_code:
             if self.response.payload_md5 \
               == self.base.response.payload_md5:
                 self.base.ims_support = False
-                self.add_note('header-last-modified', rs.IMS_FULL)
+                self.add_note('header-last-modified', IMS_FULL)
             else:
-                self.add_note('header-last-modified', rs.IMS_UNKNOWN)
+                self.add_note('header-last-modified', IMS_UNKNOWN)
         else:
             self.add_note('header-last-modified', 
-                rs.IMS_STATUS, 
+                IMS_STATUS, 
                 ims_status = self.response.status_code,
                 enc_ims_status = self.response.status_code \
                   or '(unknown)'
             )
         # TODO: check entity headers
+
+
+class LM_SUBREQ_PROBLEM(Note):
+    category = categories.VALIDATION
+    level = levels.BAD
+    summary = u"There was a problem checking for Last-Modified validation support."
+    text = u"""\
+When RED tried to check the resource for Last-Modified validation support, there was a problem:
+
+`%(problem)s`
+
+Trying again might fix it."""
+
+class IMS_304(Note):
+    category = categories.VALIDATION
+    level = levels.GOOD
+    summary = u"If-Modified-Since conditional requests are supported."
+    text = u"""\
+HTTP allows clients to make conditional requests to see if a copy that they hold is still valid.
+Since this response has a `Last-Modified` header, clients should be able to use an
+`If-Modified-Since` request header for validation.
+
+RED has done this and found that the resource sends a `304 Not Modified` response, indicating that
+it supports `Last-Modified` validation."""
+
+class IMS_FULL(Note):
+    category = categories.VALIDATION
+    level = levels.WARN
+    summary = u"An If-Modified-Since conditional request returned the full content unchanged."
+    text = u"""\
+HTTP allows clients to make conditional requests to see if a copy that they hold is still valid.
+Since this response has a `Last-Modified` header, clients should be able to use an
+`If-Modified-Since` request header for validation.
+
+RED has done this and found that the resource sends a full response even though it hadn't changed,
+indicating that it doesn't support `Last-Modified` validation."""
+
+class IMS_UNKNOWN(Note):
+    category = categories.VALIDATION
+    level = levels.INFO
+    summary = u"An If-Modified-Since conditional request returned the full content, but it had changed."
+    text = u"""\
+HTTP allows clients to make conditional requests to see if a copy that they hold is still valid.
+Since this response has a `Last-Modified` header, clients should be able to use an
+`If-Modified-Since` request header for validation.
+
+RED has done this, but the response changed between the original request and the validating
+request, so RED can't tell whether or not `Last-Modified` validation is supported."""
+
+class IMS_STATUS(Note):
+    category = categories.VALIDATION
+    level = levels.INFO
+    summary = u"An If-Modified-Since conditional request returned a %(ims_status)s status."
+    text = u"""\
+HTTP allows clients to make conditional requests to see if a copy that they hold is still valid.
+Since this response has a `Last-Modified` header, clients should be able to use an
+`If-Modified-Since` request header for validation.
+
+RED has done this, but the response had a %(enc_ims_status)s status code, so RED can't tell whether
+or not `Last-Modified` validation is supported."""
