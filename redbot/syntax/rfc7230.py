@@ -39,7 +39,7 @@ obs_text = r"[\x80-\xff]"
 
 # tchar = "!" / "#" / "$" / "%" / "&" / "'" / "*" / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~" / DIGIT / ALPHA
 
-tchar = r"(?: ! | # | \$ | %% | & | ' | \* | \+ | - | . | \^ | _ | ` | \| | ~ | {DIGIT} | {ALPHA} )".format(**locals())
+tchar = r"(?: ! | \# | \$ | %% | & | ' | \* | \+ | - | . | \^ | _ | ` | \| | ~ | {DIGIT} | {ALPHA} )".format(**locals())
 
 # token = 1*tchar
 
