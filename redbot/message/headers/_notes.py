@@ -4,7 +4,7 @@
 Common header-related Notes.
 """
 
-from redbot.speak import Note, c as categories, l as levels
+from redbot.speak import Note, categories, levels
 
 
 class SINGLE_HEADER_REPEAT(Note):

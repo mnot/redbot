@@ -8,7 +8,7 @@ import random
 
 from redbot.resource.active_check.base import SubRequest
 from redbot.formatter import f_num
-from redbot.speak import Note, c as categories, l as levels
+from redbot.speak import Note, categories, levels
 
 
 class RangeRequest(SubRequest):

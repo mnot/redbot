@@ -3,7 +3,7 @@
 
 import redbot.speak as rs
 import redbot.message.headers as headers
-from redbot.speak import Note, c as categories, l as levels
+from redbot.speak import Note, categories, levels
 from redbot.message.headers import HttpHeader, HeaderTest, BAD_SYNTAX
 from redbot.syntax import rfc7230
 

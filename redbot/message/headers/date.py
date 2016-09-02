@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from redbot.speak import Note, c as categories, l as levels
+from redbot.speak import Note, categories, levels
 from redbot.message.headers import HttpHeader, HeaderTest, parse_date
 from redbot.syntax import rfc7231
 
