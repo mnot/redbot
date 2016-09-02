@@ -4,7 +4,6 @@
 import redbot.message.headers as headers
 from redbot.speak import Note, c as categories, l as levels
 from redbot.message.headers import HttpHeader, HeaderTest
-from redbot.syntax import rfc7234
 
 class mime_version(HttpHeader):
   canonical_name = u"MIME-Version"
@@ -18,3 +17,4 @@ protocol."""
   deprecated = True
   valid_in_requests = True
   valid_in_responses = True
+  no_coverage = True

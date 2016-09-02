@@ -15,4 +15,4 @@ machine-readable way. It has been deprecated, because client support was poor.
   deprecated = True
   valid_in_requests = False
   valid_in_responses = True
-
+  no_coverage = True

@@ -6,7 +6,7 @@ from redbot.speak import Note, c as categories, l as levels
 from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7231
 
-class content_base(HttpHeader):
+class content_disposition(HttpHeader):
   canonical_name = u"Content-Disposition"
   description = u"""\
 The `Content-Disposition` header suggests a name to use when saving the file.
@@ -14,7 +14,7 @@ The `Content-Disposition` header suggests a name to use when saving the file.
 When the disposition (the first value) is set to `attachment`, it also prompts browsers to download
 the file, rather than display it."""
   reference = u"https://tools.ietf.org/html/rfc6266"
-  syntax = r'(?:%(TOKEN)s(?:\s*;\s*%(PARAMETER)s)*)' % syntax.__dict__
+  syntax = r'(?:%s(?:\s*;\s*%s)*)' % (rfc7231.token, rfc7231.parameter)
   list_header = True
   deprecated = False
   valid_in_requests = True
@@ -118,7 +118,7 @@ class RepeatCDTest(HeaderTest):
     name = 'Content-Disposition'
     inputs = ['attachment; filename=foo.txt, inline; filename=bar.txt']
     expected_out = ('inline', {'filename': 'bar.txt'})
-    expected_err = [rs.SINGLE_HEADER_REPEAT]
+    expected_err = [headers.SINGLE_HEADER_REPEAT]
 
 class FilenameStarCDTest(HeaderTest):
     name = 'Content-Disposition'
@@ -134,7 +134,7 @@ class FilenameStarQuotedCDTest(HeaderTest):
     expected_out = ('attachment', {
             'filename': 'foo.txt', 
             'filename*': u'a\u0308.txt'})
-    expected_err = [PARAM_STAR_QUOTED]
+    expected_err = [headers.PARAM_STAR_QUOTED]
 
 class FilenamePercentCDTest(HeaderTest):
     name = 'Content-Disposition'

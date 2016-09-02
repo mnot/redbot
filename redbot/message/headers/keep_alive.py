@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
 
-import redbot.speak as rs
-from redbot.message import headers as rh
-from redbot.message import http_syntax as syntax
+import redbot.message.headers as headers
+from redbot.speak import Note, c as categories, l as levels
+from redbot.message.headers import HttpHeader, HeaderTest
 
-
-description = u"""\
+class keep_alive(HttpHeader):
+  canonical_name = u"Keep-Alive"
+  description = u"""\
 The `Keep-Alive` header is completely optional; it is defined primarily because the `keep-alive`
 connection token implies that such a header exists, not because anyone actually uses it.
 
@@ -15,19 +16,17 @@ to convey how many requests they're willing to serve on a single connection, wha
 timeout is and other information. However, this isn't usually used by clients.
 
 It's safe to remove this header if you wish to save a few bytes in the response."""
-
-reference = u"https://tools.ietf.org/html/rfc2068#section-19.7.1"
-
-@rh.RequestOrResponseHeader
-@rh.GenericHeaderSyntax
-def parse(subject, value, red):
-    try:
-        attr, attr_val = value.split("=", 1)
-        attr_val = rh.unquote_string(attr_val)
-    except ValueError:
-        attr = value
-        attr_val = None
-    return (attr.lower(), attr_val)
-    
-def join(subject, values, red):
-    return set(values)
+  reference = u"https://tools.ietf.org/html/rfc2068#section-19.7.1"
+  list_header = True
+  deprecated = True
+  valid_in_requests = True
+  valid_in_responses = True
+  
+  def parse(self, field_value, add_note):
+      try:
+          attr, attr_val = field._alue.split("=", 1)
+          attr_val = headers.unquote_string(attr_val)
+      except ValueError:
+          attr = value
+          attr_val = None
+      return (attr.lower(), attr_val)

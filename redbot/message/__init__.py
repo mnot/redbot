@@ -13,7 +13,7 @@ import urlparse
 import zlib
 
 from redbot.message import link_parse
-from redbot.message.headers import process_headers, HeaderProcessor
+from redbot.message.headers import HeaderProcessor
 from redbot.formatter import f_num
 import redbot.speak as rs
 from redbot.message.uri_syntax import URI
@@ -98,7 +98,6 @@ class HttpMessage(object):
         """
         self.headers = headers
         HeaderProcessor(self)
-###        process_headers(self)
         self.character_encoding = self.parsed_headers.get(
             'content-type', (None, {})
         )[1].get('charset', 'utf-8') # default isn't UTF-8, but oh well

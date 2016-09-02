@@ -15,3 +15,4 @@ The `SOAPAction` header is used by SOAP, which isn't really HTTP. Stop it.
   deprecated = False
   valid_in_requests = True
   valid_in_responses = False
+  no_coverage = True

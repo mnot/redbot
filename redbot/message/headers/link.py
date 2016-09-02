@@ -8,7 +8,7 @@ from redbot.syntax import rfc3986, rfc7231
 
 class link(HttpHeader):
   canonical_name = u"Link"
-  description = """\
+  description = u"""\
 The `Link` header field allows structured links to be described. A link can be viewed as a statement of the form "[context IRI] has a [relation type] resource at [target IRI], which has [target attributes]."
 """
   reference = u"%s#header.link" % headers.rfc5988

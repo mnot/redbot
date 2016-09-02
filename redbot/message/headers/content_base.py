@@ -11,7 +11,7 @@ class content_base(HttpHeader):
 The `Content-Base` header field established the base URI of the message. It has been
 deprecated, because it was not implemented widely.
 """
-  reference = u"%s#header.connection" % rfc7231.SPEC_URL
+  reference = u"%s#header.content_base" % rfc7231.SPEC_URL # FIXME
 #  syntax = rfc7231.Content_Base   FIXME
   list_header = False
   deprecated = True

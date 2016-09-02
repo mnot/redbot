@@ -3,7 +3,7 @@ import sys
 import types
 import unittest
 import xml.etree.ElementTree as ET
-from redbot.message.headers import load_header_func
+from redbot.message.headers import HeaderProcessor
 
 def CheckCoverage(xml_file):
     """
@@ -11,44 +11,49 @@ def CheckCoverage(xml_file):
     See what headers are missing and check those remaining to see what they don't define.
     """
     
-    registered_headers = ParseHeaderRegistry(xml_file)
-    for record in registered_headers:
-        hdr_module = load_header_func(record)
-        if not hdr_module:
-            sys.stderr.write("- %s registered but not defined\n" % record)
-        else:
-            CheckHeaderModule(hdr_module, record)
+    for record in ParseHeaderRegistry(xml_file):
+      CheckHeaderModule(record)
 
 
-def CheckHeaderModule(hm, name):
+def CheckHeaderModule(header_name):
     """
     Given a module and its name, make sure it's complete. Complain on STDERR if not.
     """
+  
+    header_mod = HeaderProcessor.find_header_module(header_name)
+    if not header_mod:
+#      sys.stderr.write("- %s registered but can't find module\n" % header_name)
+      return
+    header_obj = HeaderProcessor.find_header_handler(header_name, default=False)
+    if not header_obj:
+      sys.stderr.write("- %s found module but not object\n" % header_name)
+      return
     
-    print name
-    attrs = dir(hm)
-    if 'reference' not in attrs or type(hm.reference) != types.StringType:
-        sys.stderr.write("* %s lacks reference\n" % name)
-    if 'description' not in attrs or type(hm.description) != types.StringType:
-        sys.stderr.write("* %s lacks description\n" % name)
-    elif hm.description.strip() == "":
-        sys.stderr.write("* %s appers to have an empty description\n" % name)
-    if 'parse' not in attrs or type(hm.parse) != types.FunctionType:
-        sys.stderr.write("* %s lacks parse\n" % name)
-    else:
-        parse = getattr(hm, 'parse')
-        if not getattr(parse, 'valid_msgs', None):
-            sys.stderr.write("* %s doesn't know if it's for requests or responses\n" % name)
-        if "deprecated" in getattr(parse, 'state', []):
-            return # deprecated header, don't need to look further.
-        if not hasattr(parse, 'syntaxCheck'):
-            sys.stderr.write("* %s doesn't check its syntax\n" % name)
-    if 'evaluate' not in attrs or type(hm.evaluate) != types.FunctionType:
-        sys.stderr.write("* %s lacks evaluate\n" % name)
+    attrs = dir(header_obj)
+    checks = [
+      ('canonical_name', types.UnicodeType),
+      ('reference', types.UnicodeType),
+      ('description', types.UnicodeType),
+      ('valid_in_requests', types.BooleanType),
+      ('valid_in_responses', types.BooleanType),
+      ('syntax', types.StringType),
+      ('list_header', types.BooleanType),
+      ('deprecated', types.BooleanType),
+    ]
+    for (attr_name, attr_type) in checks:
+      attr_value = getattr(header_obj, attr_name)
+      if getattr(header_obj, "no_coverage") and attr_name in ['syntax']:
+        continue
+      if attr_value == None:    
+          sys.stderr.write("* %s lacks %s\n" % (header_name, attr_name))
+      elif type(attr_value) != attr_type:
+        sys.stderr.write("* %s %s has wrong type\n" % (header_name, attr_name))
+
     loader = unittest.TestLoader()
-    tests = loader.loadTestsFromModule(hm)
-    if tests.countTestCases() == 0:
-        sys.stderr.write("* %s doesn't have any tests\n" % name)
+    tests = loader.loadTestsFromModule(header_mod)
+    if tests.countTestCases() <= 1 and getattr(header_obj, "no_coverage") == False: 
+        # we import HeaderTest
+        sys.stderr.write("* %s doesn't have any tests\n" % header_name)
 
 
 def ParseHeaderRegistry(xml_file):

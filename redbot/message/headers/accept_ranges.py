@@ -23,9 +23,6 @@ resource."""
         if field_value not in ['bytes', 'none']:
             add_note(UNKNOWN_RANGE, range=value)
         return value
-    
-    def evaluate(self, add_note):
-        pass
 
 
 class UNKNOWN_RANGE(Note):
