@@ -3,7 +3,7 @@
 import redbot.message.headers as headers
 from redbot.speak import Note, categories, levels
 from redbot.message.headers import HttpHeader, HeaderTest
-from redbot.syntax import rfc7234
+from redbot.syntax import rfc7231
 
 class x_xss_protection(HttpHeader):
   canonical_name = u"X-XSS-Protection"
@@ -12,7 +12,7 @@ The `X-XSS-Protection` response header field can be sent by servers to control h
 older versions of Internet Explorer configure their Cross Site Scripting protection.
 """
   reference = u"https://blogs.msdn.microsoft.com/ieinternals/2011/01/31/controlling-the-xss-filter/"
-  syntax = r'(?:[10](?:\s*;\s*%(PARAMETER)s)*)' % syntax.__dict__
+  syntax = r'(?:[10](?:\s*;\s*%s)*)' % rfc7231.parameter
   list_header = False
   deprecated = False
   valid_in_requests = False
@@ -107,4 +107,4 @@ class BadXXSSTest(HeaderTest):
     name = 'X-XSS-Protection'
     inputs = ['foo']
     expected_out = None
-    expected_err = [rs.BAD_SYNTAX]
+    expected_err = [headers.BAD_SYNTAX]
