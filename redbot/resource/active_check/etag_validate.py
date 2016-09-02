@@ -6,6 +6,8 @@ Subrequest for ETag validation checks.
 
 
 from redbot.resource.active_check.base import SubRequest
+from redbot.speak import Note, c as categories, l as levels
+
 
 class ETagValidate(SubRequest):
     "If an ETag is present, see if it will validate."

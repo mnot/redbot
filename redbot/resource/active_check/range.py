@@ -8,7 +8,8 @@ import random
 
 from redbot.resource.active_check.base import SubRequest
 from redbot.formatter import f_num
-import redbot.speak as rs
+from redbot.speak import Note, c as categories, l as levels
+
 
 class RangeRequest(SubRequest):
     "Check for partial content support (if advertised)"
@@ -209,7 +210,7 @@ This can cause problems for clients when they compare the partial and full respo
 partial response is expressed as a byte range, and compression changes the bytes."""
 
 class MISSING_HDRS_206(Note):
-    category = c.VALIDATION
+    category = categories.VALIDATION
     level = levels.WARN
     summary = u"The %(subreq_type)s response is missing required headers."
     text = u"""\

@@ -7,6 +7,8 @@ Subrequest for Last-Modified validation checks.
 from datetime import datetime
 
 from redbot.resource.active_check.base import SubRequest
+from redbot.speak import Note, c as categories, l as levels
+
 
 class LmValidate(SubRequest):
     "If Last-Modified is present, see if it will validate."

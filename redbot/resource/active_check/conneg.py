@@ -7,6 +7,8 @@ Subrequest for content negotiation checks.
 
 from redbot.resource.active_check.base import SubRequest
 from redbot.formatter import f_num
+from redbot.speak import Note, c as categories, l as levels
+
 
 class ConnegCheck(SubRequest):
     """
@@ -118,7 +120,7 @@ class ConnegCheck(SubRequest):
                 
 
 class CONNEG_SUBREQ_PROBLEM(Note):
-    category = c.CONNEG
+    category = categories.CONNEG
     level = levels.BAD
     summary = u"There was a problem checking for Content Negotiation support."
     text = u"""\
@@ -129,7 +131,7 @@ When RED tried to check the resource for content negotiation support, there was 
 Trying again might fix it."""
 
 class CONNEG_GZIP_GOOD(Note):
-    category = c.CONNEG
+    category = categories.CONNEG
     level = levels.GOOD
     summary = u'Content negotiation for gzip compression is supported, saving %(savings)s%%.'
     text = u"""\
@@ -140,7 +142,7 @@ compressed response, the resource provided one, saving %(savings)s%% of its orig
 The compressed response's headers are displayed."""
 
 class CONNEG_GZIP_BAD(Note):
-    category = c.CONNEG
+    category = categories.CONNEG
     level = levels.WARN
     summary = u'Content negotiation for gzip compression makes the response %(savings)s%% larger.'
     text = u"""\
