@@ -54,7 +54,6 @@ class HttpMessage(object):
         self.transfer_length = 0
         self.trailers = []
         self.http_error = None  # any parse errors encountered; see httperr
-        self._context = {}
         self._md5_processor = hashlib.new('md5')
         self._md5_post_processor = hashlib.new('md5')
         self._gzip_processor = zlib.decompressobj(-zlib.MAX_WBITS)
@@ -267,14 +266,9 @@ class HttpMessage(object):
         if flag & gz_flags['FHCRC']:
             content_l = content_l[2:]   # Read & discard the 16-bit header CRC
         return "".join(content_l)
-
-    def set_context(self, **kw):
-        "Set the note context."
-        self._context = kw
         
     def add_note(self, subject, note, subreq=None, **kw):
         "Set a note."
-        kw.update(self._context)
         kw['response'] = rs.response.get(
             self.name, rs.response['this']
         )
@@ -370,6 +364,3 @@ class DummyMsg(HttpResponse):
         self.notes.append(note(subject, None, kw))
         self.note_classes.append(note.__name__)
 
-    def set_context(self, **kw):
-        "Don't need context for testing."
-        pass
