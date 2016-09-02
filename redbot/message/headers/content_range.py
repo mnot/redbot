@@ -11,7 +11,7 @@ class content_range(HttpHeader):
 The `Content-Range` header is sent with a partial body to specify where in the full body the
 partial body should be applied."""
   reference = u"%s#header.content_range" % rfc7233.SPEC_URL
-  syntax = rfc7230.Content_Range
+  syntax = rfc7233.Content_Range
   list_header = False
   deprecated = False
   valid_in_requests = False

@@ -19,7 +19,7 @@ a GET."""
   valid_in_requests = True
   valid_in_responses = True
 
-def parse(self.field_value, add_note):
+def parse(self, field_value, add_note):
     try:
         media_type, params = field_value.split(";", 1)
     except ValueError:
@@ -29,7 +29,7 @@ def parse(self.field_value, add_note):
     # TODO: check charset to see if it's known
     return (media_type, param_dict)
     
-class BasicCTTest(rh.HeaderTest):
+class BasicCTTest(HeaderTest):
     name = 'Content-Type'
     inputs = ['text/plain; charset=utf-8']
     expected_out = ("text/plain", {"charset": "utf-8"})

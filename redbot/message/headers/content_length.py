@@ -4,7 +4,7 @@
 import redbot.speak as rs
 import redbot.message.headers as headers
 from redbot.speak import Note, c as categories, l as levels
-from redbot.message.headers import HttpHeader, HeaderTest
+from redbot.message.headers import HttpHeader, HeaderTest, BAD_SYNTAX
 from redbot.syntax import rfc7230
 
 class content_length(HttpHeader):
@@ -36,13 +36,13 @@ class ContentLengthTextTest(HeaderTest):
     name = 'Content-Length'
     inputs = ['a']
     expected_out = None
-    expected_err = [rs.BAD_SYNTAX]
+    expected_err = [BAD_SYNTAX]
 
 class ContentLengthSemiTest(HeaderTest):
     name = 'Content-Length'
     inputs = ['1;']
     expected_out = None
-    expected_err = [rs.BAD_SYNTAX]
+    expected_err = [BAD_SYNTAX]
 
 class ContentLengthSpaceTest(HeaderTest):
     name = 'Content-Length'

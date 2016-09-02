@@ -18,6 +18,7 @@ import redbot.speak as rs
 
 from ._decorators import *
 from ._utils import parse_date, unquote_string, split_string, parse_params
+from ._utils import SINGLE_HEADER_REPEAT, BAD_SYNTAX, BAD_DATE_SYNTAX, PARAM_REPEATS
 
 # base URLs for references
 rfc2616 = "http://tools.ietf.org/html/rfc2616.html#%s"

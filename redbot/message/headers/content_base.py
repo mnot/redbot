@@ -12,7 +12,7 @@ The `Content-Base` header field established the base URI of the message. It has 
 deprecated, because it was not implemented widely.
 """
   reference = u"%s#header.connection" % rfc7231.SPEC_URL
-  syntax = rfc7231.Content_base
+#  syntax = rfc7231.Content_Base   FIXME
   list_header = False
   deprecated = True
   valid_in_requests = True

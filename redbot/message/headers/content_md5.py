@@ -14,7 +14,7 @@ check (MIC).
 Note that while a MIC is good for detecting accidental modification of the body in transit, it is
 not proof against malicious attacks."""
   reference = u"%s#header.content_md5" % rfc7231.SPEC_URL
-  syntax = rfc7231.Content_MD5
+#  syntax = rfc7231.Content_MD5   FIXME
   list_header = False
   deprecated = True
   valid_in_requests = True

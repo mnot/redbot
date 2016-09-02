@@ -4,6 +4,7 @@
 import redbot.message.headers as headers
 from redbot.speak import Note, c as categories, l as levels
 from redbot.message.headers import HttpHeader, HeaderTest
+from redbot.syntax import rfc3986, rfc7231
 
 class link(HttpHeader):
   canonical_name = u"Link"
@@ -11,7 +12,7 @@ class link(HttpHeader):
 The `Link` header field allows structured links to be described. A link can be viewed as a statement of the form "[context IRI] has a [relation type] resource at [target IRI], which has [target attributes]."
 """
   reference = u"%s#header.link" % headers.rfc5988
-  syntax = r'(?:<%(URI_reference)s>(?:\s*;\s*%(PARAMETER)s)*)' % syntax.__dict__
+  syntax = r'(?:<%s>(?:\s*;\s*%s)*)' % (rfc3986.URI_reference, rfc7231.parameter)
   list_header = True
   deprecated = False
   valid_in_requests = True
@@ -65,43 +66,43 @@ This parameter can be an absolute or relative URI; however, `%(anchor)s` is neit
 
 
     
-class BasicLinkTest(rh.HeaderTest):
+class BasicLinkTest(HeaderTest):
     name = 'Link'
     inputs = ['<http://www.example.com/>; rel=example']
     expected_out = [('http://www.example.com/', {'rel': 'example'})]
     expected_err = []
 
-class QuotedLinkTest(rh.HeaderTest):
+class QuotedLinkTest(HeaderTest):
     name = 'Link'
     inputs = ['"http://www.example.com/"; rel=example']
     expected_out = []
-    expected_err = [rs.BAD_SYNTAX]
+    expected_err = [headers.BAD_SYNTAX]
 
-class QuotedRelationLinkTest(rh.HeaderTest):
+class QuotedRelationLinkTest(HeaderTest):
     name = 'Link'
     inputs = ['<http://www.example.com/>; rel="example"']
     expected_out = [('http://www.example.com/', {'rel': 'example'})]
     expected_err = []    
 
-class RelativeLinkTest(rh.HeaderTest):
+class RelativeLinkTest(HeaderTest):
     name = 'Link'
     inputs = ['</foo>; rel="example"']
     expected_out = [('/foo', {'rel': 'example'})]
     expected_err = []    
     
-class RepeatingRelationLinkTest(rh.HeaderTest):
+class RepeatingRelationLinkTest(HeaderTest):
     name = 'Link'
     inputs = ['</foo>; rel="example"; rel="another"']
     expected_out = [('/foo', {'rel': 'another'})]
-    expected_err = [rs.PARAM_REPEATS]
+    expected_err = [headers.PARAM_REPEATS]
 
-class RevLinkTest(rh.HeaderTest):
+class RevLinkTest(HeaderTest):
     name = 'Link'
     inputs = ['</foo>; rev="bar"']
     expected_out = [('/foo', {'rev': 'bar'})]
     expected_err = [LINK_REV]
 
-class BadAnchorLinkTest(rh.HeaderTest):
+class BadAnchorLinkTest(HeaderTest):
     name = 'Link'
     inputs = ['</foo>; rel="bar"; anchor="{blah}"']
     expected_out = [('/foo', {'rel': 'bar', 'anchor': '{blah}'})]

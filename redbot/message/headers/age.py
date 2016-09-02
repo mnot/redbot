@@ -58,7 +58,7 @@ class MultipleAgeTest(HeaderTest):
     name = 'Age'
     inputs = ['20', '10']
     expected_out = 10
-    expected_err = [SINGLE_HEADER_REPEAT]
+    expected_err = [headers.SINGLE_HEADER_REPEAT]
 
 class CharAgeTest(HeaderTest):
     name = 'Age'

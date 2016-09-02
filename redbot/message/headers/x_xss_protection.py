@@ -1,62 +1,109 @@
 #!/usr/bin/env python
 
+import redbot.message.headers as headers
+from redbot.speak import Note, c as categories, l as levels
+from redbot.message.headers import HttpHeader, HeaderTest
+from redbot.syntax import rfc7234
 
-import redbot.speak as rs
-from redbot.message import headers as rh
-from redbot.message import http_syntax as syntax
-
-description = u"""\
+class x_xss_protection(HttpHeader):
+  canonical_name = u"X-XSS-Protection"
+  description = u"""\
 The `X-XSS-Protection` response header field can be sent by servers to control how
 older versions of Internet Explorer configure their Cross Site Scripting protection.
 """
-
-reference = u"https://blogs.msdn.microsoft.com/ieinternals/2011/01/31/controlling-the-xss-filter/"
-
-@rh.ResponseOrPutHeader
-@rh.GenericHeaderSyntax
-@rh.CheckFieldSyntax(
-    r'(?:[10](?:\s*;\s*%(PARAMETER)s)*)' % syntax.__dict__, 'http://blogs.msdn.com/b/ieinternals/archive/2011/01/31/controlling-the-internet-explorer-xss-filter-with-the-x-xss-protection-http-header.aspx'
-)
-def parse(subject, value, red):
-    try:
-        protect, param_str = value.split(';', 1)
-    except ValueError:
-        protect, param_str = value, ""
-    protect = int(protect)
-    params = rh.parse_params(red, subject, param_str, True)
-    if protect == 0:
-        red.add_note(subject, rs.XSS_PROTECTION_OFF)
-    else: # 1
-        if params.get('mode', None) == "block":
-            red.add_note(subject, rs.XSS_PROTECTION_BLOCK)
-        else:
-            red.add_note(subject, rs.XSS_PROTECTION_ON)
-    return protect, params
-
-@rh.SingleFieldValue
-def join(subject, values, red):
-    return values[-1]
+  reference = u"https://blogs.msdn.microsoft.com/ieinternals/2011/01/31/controlling-the-xss-filter/"
+  syntax = r'(?:[10](?:\s*;\s*%(PARAMETER)s)*)' % syntax.__dict__
+  list_header = False
+  deprecated = False
+  valid_in_requests = False
+  valid_in_responses = True
+  
+  def parse(self, field_value, add_note):
+      try:
+          protect, param_str = field_value.split(';', 1)
+      except ValueError:
+          protect, param_str = field_value, ""
+      protect = int(protect)
+      params = headers.parse_params(red, subject, param_str, True)
+      if protect == 0:
+          add_note(subject, XSS_PROTECTION_OFF)
+      else: # 1
+          if params.get('mode', None) == "block":
+              add_note(subject, XSS_PROTECTION_BLOCK)
+          else:
+              add_note(subject, XSS_PROTECTION_ON)
+      return protect, params
 
 
-class OneXXSSTest(rh.HeaderTest):
+
+class XSS_PROTECTION_ON(Note):
+    category = categories.SECURITY
+    level = levels.INFO
+    summary = u"%(response)s enables XSS filtering in IE8+."
+    text = u"""\
+Recent versions of Internet Explorer have built-in Cross-Site Scripting (XSS) attack protection;
+they try to automatically filter requests that fit a particular profile.
+
+%(response)s has explicitly enabled this protection. If IE detects a Cross-site scripting attack,
+it will "sanitise" the page to prevent the attack. In other words, the page will still render.
+
+This header probably won't have any effect on other clients.
+
+See [this blog entry](http://bit.ly/tJbICH) for more information."""
+
+
+class XSS_PROTECTION_OFF(Note):
+    category = categories.SECURITY
+    level = levels.INFO
+    summary = u"%(response)s disables XSS filtering in IE8+."
+    text = u"""\
+Recent versions of Internet Explorer have built-in Cross-Site Scripting (XSS) attack protection;
+they try to automatically filter requests that fit a particular profile.
+
+%(response)s has explicitly disabled this protection. In some scenarios, this is useful to do, if
+the protection interferes with the application.
+
+This header probably won't have any effect on other clients.
+
+See [this blog entry](http://bit.ly/tJbICH) for more information."""
+
+class XSS_PROTECTION_BLOCK(Note):
+    category = categories.SECURITY
+    level = levels.INFO
+    summary = u"%(response)s blocks XSS attacks in IE8+."
+    text = u"""\
+Recent versions of Internet Explorer have built-in Cross-Site Scripting (XSS) attack protection;
+they try to automatically filter requests that fit a particular profile.
+
+Usually, IE will rewrite the attacking HTML, so that the attack is neutralised, but the content can
+still be seen. %(response)s instructs IE to not show such pages at all, but rather to display an
+error.
+
+This header probably won't have any effect on other clients.
+
+See [this blog entry](http://bit.ly/tJbICH) for more information."""
+
+
+
+class OneXXSSTest(HeaderTest):
     name = 'X-XSS-Protection'
     inputs = ['1']
     expected_out = (1, {})
-    expected_err = [rs.XSS_PROTECTION_ON]
+    expected_err = [XSS_PROTECTION_ON]
 
-class ZeroXXSSTest(rh.HeaderTest):
+class ZeroXXSSTest(HeaderTest):
     name = 'X-XSS-Protection'
     inputs = ['0']
     expected_out = (0, {})
-    expected_err = [rs.XSS_PROTECTION_OFF]
+    expected_err = [XSS_PROTECTION_OFF]
 
-class OneBlockXXSSTest(rh.HeaderTest):
+class OneBlockXXSSTest(HeaderTest):
     name = 'X-XSS-Protection'
     inputs = ['1; mode=block']
     expected_out = (1, {'mode': 'block'})
-    expected_err = [rs.XSS_PROTECTION_BLOCK]
+    expected_err = [XSS_PROTECTION_BLOCK]
     
-class BadXXSSTest(rh.HeaderTest):
+class BadXXSSTest(HeaderTest):
     name = 'X-XSS-Protection'
     inputs = ['foo']
     expected_out = None

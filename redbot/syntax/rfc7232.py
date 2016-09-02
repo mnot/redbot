@@ -12,6 +12,8 @@ from rfc5234 import DQUOTE
 from rfc7230 import list_rule, OWS, obs_text
 from rfc7231 import HTTP_date
 
+SPEC_URL = u"http://httpwg.org/specs/rfc7232"
+
 
 # weak = %x57.2F ; W/
 

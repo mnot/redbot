@@ -176,17 +176,6 @@ class HEADER_DEPRECATED(Note):
 This header field is no longer recommended for use, because of interoperability problems and/or
 lack of use. See [the deprecation notice](%(deprecation_ref)s) for more information."""
 
-class SINGLE_HEADER_REPEAT(Note):
-    category = c.GENERAL
-    level = l.BAD
-    summary = u"Only one %(field_name)s header is allowed in a response."
-    text = u"""\
-This header is designed to only occur once in a message. When it occurs more than once, a receiver
-needs to choose the one to use, which can lead to interoperability problems, since different
-implementations may make different choices.
-
-For the purposes of its tests, RED uses the last instance of the header that is present; other
-implementations may behave differently."""
 
 class BODY_NOT_ALLOWED(Note):
     category = c.CONNECTION
@@ -199,13 +188,6 @@ HTTP defines a few special situations where a response does not allow a body. Th
 %(response)s had a body, despite it being disallowed. Clients receiving it may treat the body as
 the next response in the connection, leading to interoperability and security issues."""
 
-class BAD_SYNTAX(Note):
-    category = c.GENERAL
-    level = l.BAD
-    summary = u"The %(field_name)s header's syntax isn't valid."
-    text = u"""\
-The value for this header doesn't conform to its specified syntax; see [its
-definition](%(ref_uri)s) for more information."""
 
 # Specific headers
 
@@ -274,17 +256,6 @@ wire. However, this response could not be decompressed; the error encountered wa
 %(ok_zlib_len)s bytes were decompressed successfully before this; the erroneous chunk starts with
 "`%(chunk_sample)s`"."""
 
-class BAD_DATE_SYNTAX(Note):
-    category = c.GENERAL
-    level = l.BAD
-    summary = u"The %(field_name)s header's value isn't a valid date."
-    text = u"""\
-HTTP dates have very specific syntax, and sending an invalid date can cause a number of problems,
-especially around caching. Common problems include sending "1 May" instead of "01 May" (the month
-is a fixed-width field), and sending a date in a timezone other than GMT. See [the HTTP
-specification](http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3) for more
-information."""
-
 class LM_FUTURE(Note):
     category = c.CACHING
     level = l.BAD
@@ -327,169 +298,7 @@ You can safely remove this header.
     """
 
 
-class CONTENT_TYPE_OPTIONS(Note):
-    category = c.SECURITY
-    level = l.INFO
-    summary = u"%(response)s instructs Internet Explorer not to 'sniff' its \
-media type."
-    text = u"""\
-Many Web browers "sniff" the media type of responses to figure out whether they're HTML, RSS or
-another format, no matter what the `Content-Type` header says.
 
-This header instructs Microsoft's Internet Explorer not to do this, but to always respect the
-Content-Type header. It probably won't have any effect in other clients.
-
-See [this blog entry](http://bit.ly/t1UHW2) for more information about this header."""
-
-class CONTENT_TYPE_OPTIONS_UNKNOWN(Note):
-    category = c.SECURITY
-    level = l.WARN
-    summary = u"%(response)s contains an X-Content-Type-Options header with an unknown value."
-    text = u"""\
-Only one value is currently defined for this header, `nosniff`. Using other values here won't
-necessarily cause problems, but they probably won't have any effect either.
-
-See [this blog entry](http://bit.ly/t1UHW2) for more information about this header."""
-
-class DOWNLOAD_OPTIONS(Note):
-    category = c.SECURITY
-    level = l.INFO
-    summary = u"%(response)s can't be directly opened directly by Internet Explorer when downloaded."
-    text = u"""\
-When the `X-Download-Options` header is present with the value `noopen`, Internet Explorer users
-are prevented from directly opening a file download; instead, they must first save the file
-locally. When the locally saved file is later opened, it no longer executes in the security context
-of your site, helping to prevent script injection.
-
-This header probably won't have any effect in other clients.
-
-See [this blog article](http://bit.ly/sfuxWE) for more details."""
-
-class DOWNLOAD_OPTIONS_UNKNOWN(Note):
-    category = c.SECURITY
-    level = l.WARN
-    summary = u"%(response)s contains an X-Download-Options header with an unknown value."
-    text = u"""\
-Only one value is currently defined for this header, `noopen`. Using other values here won't
-necessarily cause problems, but they probably won't have any effect either.
-
-See [this blog article](http://bit.ly/sfuxWE) for more details."""
-
-class FRAME_OPTIONS_DENY(Note):
-    category = c.SECURITY
-    level = l.INFO
-    summary = u"%(response)s prevents some browsers from rendering it if it will be contained within a frame."
-    text = u"""\
-The `X-Frame-Options` response header controls how IE8 handles HTML frames; the `DENY` value
-prevents this content from being rendered within a frame, which defends against certain types of
-attacks.
-
-See [this blog entry](http://bit.ly/v5Bh5Q) for more information.
-     """
-
-class FRAME_OPTIONS_SAMEORIGIN(Note):
-    category = c.SECURITY
-    level = l.INFO
-    summary = u"%(response)s prevents some browsers from rendering it if it will be contained within a frame on another site."
-    text = u"""\
-The `X-Frame-Options` response header controls how IE8 handles HTML frames; the `DENY` value
-prevents this content from being rendered within a frame on another site, which defends against
-certain types of attacks.
-
-Currently this is supported by IE8 and Safari 4.
-
-See [this blog entry](http://bit.ly/v5Bh5Q) for more information.
-     """
-
-class FRAME_OPTIONS_UNKNOWN(Note):
-    category = c.SECURITY
-    level = l.WARN
-    summary = u"%(response)s contains an X-Frame-Options header with an unknown value."
-    text = u"""\
-Only two values are currently defined for this header, `DENY` and `SAMEORIGIN`. Using other values
-here won't necessarily cause problems, but they probably won't have any effect either.
-
-See [this blog entry](http://bit.ly/v5Bh5Q) for more information.
-     """
-
-class SMART_TAG_NO_WORK(Note):
-    category = c.GENERAL
-    level = l.WARN
-    summary = u"The %(field_name)s header doesn't have any effect on smart tags."
-    text = u"""\
-This header doesn't have any effect on Microsoft Smart Tags, except in certain beta versions of
-IE6. To turn them off, you'll need to make changes in the HTML content it"""
-
-class UA_COMPATIBLE(Note):
-    category = c.GENERAL
-    level = l.INFO
-    summary = u"%(response)s explicitly sets a rendering mode for Internet Explorer 8."
-    text = u"""\
-Internet Explorer 8 allows responses to explicitly set the rendering mode used for a given page
-(known a the "compatibility mode").
-
-See [Microsoft's documentation](http://msdn.microsoft.com/en-us/library/cc288325(VS.85).aspx) for
-more information."""
-
-class UA_COMPATIBLE_REPEAT(Note):
-    category = c.GENERAL
-    level = l.BAD
-    summary = u"%(response)s has multiple X-UA-Compatible directives targeted at the same UA."
-    text = u"""\
-Internet Explorer 8 allows responses to explicitly set the rendering mode used for a page.
-
-This response has more than one such directive targetted at one browser; this may cause
-unpredictable results.
-
-See [this blog entry](http://msdn.microsoft.com/en-us/library/cc288325(VS.85).aspx) for more
-information."""
-
-class XSS_PROTECTION_ON(Note):
-    category = c.SECURITY
-    level = l.INFO
-    summary = u"%(response)s enables XSS filtering in IE8+."
-    text = u"""\
-Recent versions of Internet Explorer have built-in Cross-Site Scripting (XSS) attack protection;
-they try to automatically filter requests that fit a particular profile.
-
-%(response)s has explicitly enabled this protection. If IE detects a Cross-site scripting attack,
-it will "sanitise" the page to prevent the attack. In other words, the page will still render.
-
-This header probably won't have any effect on other clients.
-
-See [this blog entry](http://bit.ly/tJbICH) for more information."""
-
-
-class XSS_PROTECTION_OFF(Note):
-    category = c.SECURITY
-    level = l.INFO
-    summary = u"%(response)s disables XSS filtering in IE8+."
-    text = u"""\
-Recent versions of Internet Explorer have built-in Cross-Site Scripting (XSS) attack protection;
-they try to automatically filter requests that fit a particular profile.
-
-%(response)s has explicitly disabled this protection. In some scenarios, this is useful to do, if
-the protection interferes with the application.
-
-This header probably won't have any effect on other clients.
-
-See [this blog entry](http://bit.ly/tJbICH) for more information."""
-
-class XSS_PROTECTION_BLOCK(Note):
-    category = c.SECURITY
-    level = l.INFO
-    summary = u"%(response)s blocks XSS attacks in IE8+."
-    text = u"""\
-Recent versions of Internet Explorer have built-in Cross-Site Scripting (XSS) attack protection;
-they try to automatically filter requests that fit a particular profile.
-
-Usually, IE will rewrite the attacking HTML, so that the attack is neutralised, but the content can
-still be seen. %(response)s instructs IE to not show such pages at all, but rather to display an
-error.
-
-This header probably won't have any effect on other clients.
-
-See [this blog entry](http://bit.ly/tJbICH) for more information."""
 
 
 ### Body
@@ -1214,83 +1023,6 @@ class STATUS_VERSION_NOT_SUPPORTED(Note):
     summary = u"The request HTTP version isn't supported."
     text = u"""\
  """
-
-class PARAM_STAR_QUOTED(Note):
-    category = c.GENERAL
-    level = l.BAD
-    summary = u"The '%(param)s' parameter's value cannot be quoted."
-    text = u"""\
-Parameter values that end in '*' have a specific format, defined in
-[RFC5987](http://tools.ietf.org/html/rfc5987), to allow non-ASCII text.
-
-The `%(param)s` parameter on the `%(field_name)s` header has double-quotes around it, which is not
-valid."""
-
-class PARAM_STAR_ERROR(Note):
-    category = c.GENERAL
-    level = l.BAD
-    summary = u"The %(param)s parameter's value is invalid."
-    text = u"""\
-Parameter values that end in '*' have a specific format, defined in
-[RFC5987](http://tools.ietf.org/html/rfc5987), to allow non-ASCII text.
- 
- The `%(param)s` parameter on the `%(field_name)s` header is not valid; it needs to have three
-parts, separated by single quotes (')."""
-
-class PARAM_STAR_BAD(Note):
-    category = c.GENERAL
-    level = l.BAD
-    summary = u"The %(param)s* parameter isn't allowed on the %(field_name)s header."
-    text = u"""\
-Parameter values that end in '*' are reserved for non-ascii text, as explained in
-[RFC5987](http://tools.ietf.org/html/rfc5987).
-
-The `%(param)s` parameter on the `%(field_name)s` does not allow this; you should use %(param)s
-without the "*" on the end (and without the associated encoding).
-
-RED ignores the content of this parameter. 
-     """
-
-class PARAM_STAR_NOCHARSET(Note):
-    category = c.GENERAL
-    level = l.WARN
-    summary = u"The %(param)s parameter's value doesn't define an encoding."
-    text = u"""\
-Parameter values that end in '*' have a specific format, defined in
-[RFC5987](http://tools.ietf.org/html/rfc5987), to allow non-ASCII text.
-
-The `%(param)s` parameter on the `%(field_name)s` header doesn't declare its character encoding,
-which means that recipients can't understand it. It should be `UTF-8`."""
-
-class PARAM_STAR_CHARSET(Note):
-    category = c.GENERAL
-    level = l.WARN
-    summary = u"The %(param)s parameter's value uses an encoding other than UTF-8."
-    text = u"""\
-Parameter values that end in '*' have a specific format, defined in
-[RFC5987](http://tools.ietf.org/html/rfc5987), to allow non-ASCII text.
- 
-The `%(param)s` parameter on the `%(field_name)s` header uses the `'%(enc)s` encoding, which has
-interoperability issues on some browsers. It should be `UTF-8`."""
-
-class PARAM_REPEATS(Note):
-    category = c.GENERAL
-    level = l.WARN
-    summary = u"The '%(param)s' parameter repeats in the %(field_name)s header."
-    text = u"""\
-Parameters on the %(field_name)s header should not repeat; implementations may handle them
-differently."""
-
-class PARAM_SINGLE_QUOTED(Note):
-    category = c.GENERAL
-    level = l.WARN
-    summary = u"The '%(param)s' parameter on the %(field_name)s header is single-quoted."
-    text = u"""\
-The `%(param)s`'s value on the %(field_name)s header start and ends with a single quote (').
-However, single quotes don't mean anything there.
-
-This means that the value will be interpreted as `%(param_val)s`, **not**
-`%(param_val_unquoted)s`. If you intend the latter, drop the single quotes."""
 
 
 

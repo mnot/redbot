@@ -3,7 +3,7 @@
 
 import redbot.message.headers as headers
 from redbot.speak import Note, c as categories, l as levels
-from redbot.message.headers import HttpHeader, HeaderTest
+from redbot.message.headers import HttpHeader, HeaderTest, BAD_SYNTAX
 from redbot.syntax import rfc7232
 
 class etag(HttpHeader):
@@ -19,9 +19,9 @@ The `ETag` header provides an opaque identifier for the representation."""
 
   def parse(subject, value, red):
       if value[:2] == 'W/':
-          return (True, rh.unquote_string(value[2:]))
+          return (True, headers.unquote_string(value[2:]))
       else:
-          return (False, rh.unquote_string(value))
+          return (False, headers.unquote_string(value))
 
 
         
@@ -41,4 +41,4 @@ class UnquotedETagTest(HeaderTest):
     name = 'ETag'
     inputs = ['foo']
     expected_out = None
-    expected_err = [rs.BAD_SYNTAX]
+    expected_err = [BAD_SYNTAX]

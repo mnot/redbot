@@ -33,7 +33,7 @@ without knowing the entire body's length."""
       coding = coding.lower()
       param_dict = headers.parse_params(red, subject, params, True)
       if param_dict:
-          add_note(subject, rs.TRANSFER_CODING_PARAM)
+          add_note(subject, TRANSFER_CODING_PARAM)
       return coding
 
   def evaluate(self, add_note):
@@ -41,10 +41,10 @@ without knowing the entire body's length."""
           ['chunked', 'identity']]
       ) or False
       if unwanted:
-          add_note(subject, rs.TRANSFER_CODING_UNWANTED,
+          add_note(subject, TRANSFER_CODING_UNWANTED,
                   unwanted_codings=", ".join(unwanted))
       if 'identity' in values:
-          add_note(subject, rs.TRANSFER_CODING_IDENTITY)
+          add_note(subject, TRANSFER_CODING_IDENTITY)
       return values
 
 
@@ -100,7 +100,7 @@ class BadTransferEncodingTest(HeaderTest):
     name = 'Transfer-Encoding'
     inputs = ['chunked=foo']
     expected_out = []
-    expected_err = [rs.BAD_SYNTAX]
+    expected_err = [headers.BAD_SYNTAX]
 
 class TransferEncodingCaseTest(HeaderTest):
     name = 'Transfer-Encoding'

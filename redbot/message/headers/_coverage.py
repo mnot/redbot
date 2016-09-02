@@ -25,6 +25,7 @@ def CheckHeaderModule(hm, name):
     Given a module and its name, make sure it's complete. Complain on STDERR if not.
     """
     
+    print name
     attrs = dir(hm)
     if 'reference' not in attrs or type(hm.reference) != types.StringType:
         sys.stderr.write("* %s lacks reference\n" % name)
@@ -42,8 +43,8 @@ def CheckHeaderModule(hm, name):
             return # deprecated header, don't need to look further.
         if not hasattr(parse, 'syntaxCheck'):
             sys.stderr.write("* %s doesn't check its syntax\n" % name)
-    if 'join' not in attrs or type(hm.join) != types.FunctionType:
-        sys.stderr.write("* %s lacks join\n" % name)
+    if 'evaluate' not in attrs or type(hm.evaluate) != types.FunctionType:
+        sys.stderr.write("* %s lacks evaluate\n" % name)
     loader = unittest.TestLoader()
     tests = loader.loadTestsFromModule(hm)
     if tests.countTestCases() == 0:

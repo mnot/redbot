@@ -17,35 +17,32 @@ The `Expires` header gives a time after which the response is considered stale."
   valid_in_requests = False
   valid_in_responses = True
 
+  def parse(self, field_value, add_note):
+      try:
+          date = headers.parse_date(field_value)
+      except ValueError:
+          add_note(subject, headers.BAD_DATE_SYNTAX)
+          return None
+      return date
 
-@rh.ResponseOrPutHeader
-def parse(subject, value, red):
-    try:
-        date = rh.parse_date(value)
-    except ValueError:
-        red.add_note(subject, rs.BAD_DATE_SYNTAX)
-        return None
-    return date
-    
-@rh.SingleFieldValue
-def join(subject, values, red):
-    return values[-1]
+  def evaluate(self, add_note):
+      return values[-1]
 
     
-class BasicExpiresTest(rh.HeaderTest):
+class BasicExpiresTest(HeaderTest):
     name = 'Expires'
     inputs = ['Mon, 04 Jul 2011 09:08:06 GMT']
     expected_out = 1309770486
     expected_err = []
 
-class BadExpiresTest(rh.HeaderTest):
+class BadExpiresTest(HeaderTest):
     name = 'Expires'
     inputs = ['0']
     expected_out = None
-    expected_err = [rs.BAD_DATE_SYNTAX]
+    expected_err = [headers.BAD_DATE_SYNTAX]
 
-class BlankExpiresTest(rh.HeaderTest):
+class BlankExpiresTest(HeaderTest):
     name = 'Expires'
     inputs = ['']
     expected_out = None
-    expected_err = [rs.BAD_DATE_SYNTAX]
+    expected_err = [headers.BAD_DATE_SYNTAX]

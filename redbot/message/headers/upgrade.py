@@ -13,7 +13,7 @@ protocols it supports and would like to use if the server finds it appropriate
 to switch protocols. Servers use it to confirm upgrade to a specific
 protocol."""
   reference = u"%s#header.upgrade" % rfc7230.SPEC_URL
-  syntax = rfc7234.Upgrade
+  syntax = rfc7230.Upgrade
   list_header = True
   deprecated = False
   valid_in_requests = True

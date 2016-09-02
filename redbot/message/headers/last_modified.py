@@ -22,26 +22,25 @@ representation was last modified."""
       try:
           date = headers.parse_date(value)
       except ValueError:
-          add_note(subject, rs.BAD_DATE_SYNTAX)
+          add_note(subject, headers.BAD_DATE_SYNTAX)
           return None
       return date
 
 
-
-class BasicLMTest(rh.HeaderTest):
+class BasicLMTest(HeaderTest):
     name = 'Last-Modified'
     inputs = ['Mon, 04 Jul 2011 09:08:06 GMT']
     expected_out = 1309770486
     expected_err = []
 
-class BadLMTest(rh.HeaderTest):
+class BadLMTest(HeaderTest):
     name = 'Last-Modified'
     inputs = ['0']
     expected_out = None
-    expected_err = [rs.BAD_DATE_SYNTAX]
+    expected_err = [headers.BAD_DATE_SYNTAX]
 
-class BlankLMTest(rh.HeaderTest):
+class BlankLMTest(HeaderTest):
     name = 'Last-Modified'
     inputs = ['']
     expected_out = None
-    expected_err = [rs.BAD_DATE_SYNTAX]
+    expected_err = [headers.BAD_DATE_SYNTAX]
