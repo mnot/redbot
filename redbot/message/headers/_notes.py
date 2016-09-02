@@ -19,6 +19,15 @@ implementations may make different choices.
 For the purposes of its tests, RED uses the last instance of the header that is present; other
 implementations may behave differently."""
 
+class FIELD_NAME_BAD_SYNTAX(Note):
+    category = categories.GENERAL
+    level = levels.BAD
+    summary = u'"%(field_name)s" is not a valid header field-name.'
+    text = u"""\
+Header names are limited to the TOKEN production in HTTP; i.e., they can't contain parenthesis,
+angle brackes (<>), ampersands (@), commas, semicolons, colons, backslashes (\\), forward
+slashes (/), quotes, square brackets ([]), question marks, equals signs (=), curly brackets ({})
+spaces or tabs."""
 
 class BAD_SYNTAX(Note):
     category = categories.GENERAL

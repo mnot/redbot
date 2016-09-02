@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-
+import re
 import redbot.message.headers as headers
 from redbot.speak import Note, categories, levels
 from redbot.message.headers import HttpHeader, HeaderTest
@@ -20,23 +20,20 @@ The `Link` header field allows structured links to be described. A link can be v
 
   def parse(self, field_value, add_note):
     try:
-        link, params = field_value.split(";", 1)
+        link, param_str = field_value.split(";", 1)
     except ValueError:
-        link, params = field_value, ''
+        link, param_str = field_value, ''
     link = link[1:-1] # trim the angle brackets
-    param_dict = headers.parse_params(red, subject, params, 
+    param_dict = headers.parse_params(param_str, add_note, 
       ['rel', 'rev', 'anchor', 'hreflang', 'type', 'media'])
     if param_dict.has_key('rel'): # relation_types
         pass # TODO: check relation type
     if param_dict.has_key('rev'):
-        add_note(subject, LINK_REV,
-                 link=link, rev=param_dict['rev'])
+        add_note(LINK_REV, link=link, rev=param_dict['rev'])
     if param_dict.has_key('anchor'): # URI-Reference
-        if not re.match(r"^\s*%s\s*$" % syntax.URI_reference, 
+        if not re.match(r"^\s*%s\s*$" % rfc3986.URI_reference, 
                         param_dict['anchor'], re.VERBOSE):
-            add_note(subject, LINK_BAD_ANCHOR,
-                     link=link,
-                     anchor=param_dict['anchor'])
+            add_note(LINK_BAD_ANCHOR, link=link, anchor=param_dict['anchor'])
     # TODO: check media-type in 'type'
     # TODO: check language tag in 'hreflang'            
     return link, param_dict

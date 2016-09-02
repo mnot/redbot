@@ -27,7 +27,7 @@ import redbot.speak as rs
 from redbot import __version__
 from redbot.formatter import Formatter, html_header, relative_time, f_num
 from redbot.resource import HttpResource
-from redbot.message.headers import load_header_func
+from redbot.message.headers import HeaderProcessor
 
 nl = u"\n"
 
@@ -215,20 +215,20 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     """
     # the order of note categories to display
     note_categories = [
-        rs.c.GENERAL, 
-        rs.c.SECURITY, 
-        rs.c.CONNECTION, 
-        rs.c.CONNEG, 
-        rs.c.CACHING, 
-        rs.c.VALIDATION, 
-        rs.c.RANGE
+        rs.categories.GENERAL, 
+        rs.categories.SECURITY, 
+        rs.categories.CONNECTION, 
+        rs.categories.CONNEG, 
+        rs.categories.CACHING, 
+        rs.categories.VALIDATION, 
+        rs.categories.RANGE
     ]
 
     # associating categories with subrequests
     note_responses = {
-        rs.c.CONNEG: ["Identity"],
-        rs.c.VALIDATION: ['If-None-Match', 'If-Modified-Since'],
-        rs.c.RANGE: ['Range']
+        rs.categories.CONNEG: ["Identity"],
+        rs.categories.VALIDATION: ['If-None-Match', 'If-Modified-Since'],
+        rs.categories.RANGE: ['Range']
     }
     
     # Media types that browsers can view natively
@@ -355,7 +355,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     def format_header(self, name, value, offset):
         "Return an individual HTML header as HTML"
         token_name = "header-%s" % name.lower()
-        header_desc = load_header_func(name, 'description')
+        header_desc = HeaderProcessor.find_header_handler(name).description
         if header_desc and token_name not in [i[0] for i in self.hidden_text]:
             html_desc = markdown(header_desc % { 'field_name': name }, output_format="html5")
             self.hidden_text.append((token_name, html_desc))

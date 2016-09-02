@@ -49,6 +49,10 @@ def CheckHeaderModule(header_name):
       elif type(attr_value) != attr_type:
         sys.stderr.write("* %s %s has wrong type\n" % (header_name, attr_name))
 
+    canonical_name = getattr(header_obj, "canonical_name")
+    if canonical_name != header_name:
+      sys.stderr.write("* %s has mismatching canonical name %s\n" % (header_name, canonical_name))
+
     loader = unittest.TestLoader()
     tests = loader.loadTestsFromModule(header_mod)
     if tests.countTestCases() <= 1 and getattr(header_obj, "no_coverage") == False: 

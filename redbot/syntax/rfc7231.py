@@ -20,7 +20,7 @@ SPEC_URL = u"http://httpwg.org/specs/rfc7231"
 
 # parameter = token "=" ( token / quoted-string )
 
-parameter = r"(?: {token} \= (?: {token} | {quoted_string} ) )".format(**locals())
+parameter = r"(?: {token} = (?: {token} | {quoted_string} ) )".format(**locals())
 
 # qvalue = ( "0" [ "." *3DIGIT ] ) / ( "1" [ "." *3"0" ] )
 

@@ -39,7 +39,7 @@ obs_text = r"[\x80-\xff]"
 
 # tchar = "!" / "#" / "$" / "%" / "&" / "'" / "*" / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~" / DIGIT / ALPHA
 
-tchar = r"(?: ! | \# | \$ | %% | & | ' | \* | \+ | - | . | \^ | _ | ` | \| | ~ | {DIGIT} | {ALPHA} )".format(**locals())
+tchar = r"(?: ! | \# | \$ | % | & | ' | \* | \+ | \- | \. | \^ | _ | ` | \| | \~ | {DIGIT} | {ALPHA} )".format(**locals())
 
 # token = 1*tchar
 
@@ -57,7 +57,7 @@ quoted_pair = r"(?: \\ (?: {HTAB} | {SP} | {VCHAR} | {obs_text} ) )".format(**lo
 
 # quoted-string = DQUOTE *( qdtext / quoted-pair ) DQUOTE
 
-quoted_string = r"\" (?: {qdtext} | {quoted_pair} )* \"".format(**locals())
+quoted_string = r"(?: \" (?: {qdtext} | {quoted_pair} )* \" )".format(**locals())
 
 
 
@@ -76,7 +76,7 @@ def list_rule(element, min=None):
         min = r""
     
     # element *( OWS "," OWS element )
-    return r"{element} (?: {OWS} , {OWS} {element} ){min}".format(element=element, OWS=OWS, min=min)
+    return r"(?: {element} (?: {OWS} , {OWS} {element} ){min} )".format(element=element, OWS=OWS, min=min)
 
 
 

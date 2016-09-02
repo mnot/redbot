@@ -3,7 +3,7 @@
 import redbot.message.headers as headers
 from redbot.speak import Note, categories, levels
 from redbot.message.headers import HttpHeader, HeaderTest
-from redbot.syntax import rfc7231
+from redbot.syntax import rfc7231, rfc3986
 
 class location(HttpHeader):
   canonical_name = u"Location"
@@ -23,10 +23,9 @@ In `201 Created``` responses, it identifies a newly created resource."""
       if msg.status_code not in [
           "201", "300", "301", "302", "303", "305", "307", "308"
       ]:
-          add_note(subject, LOCATION_UNDEFINED)
-      if not re.match(r"^\s*%s\s*$" % syntax.URI, value, re.VERBOSE):
-          add_note(subject, LOCATION_NOT_ABSOLUTE,
-                          full_uri=urljoin(msg.base_uri, value))
+          add_note(LOCATION_UNDEFINED)
+      if not re.match(r"^\s*%s\s*$" % rfc3986.URI, value, re.VERBOSE):
+          add_note(LOCATION_NOT_ABSOLUTE, full_uri=urljoin(msg.base_uri, value))
       return value
 
 

@@ -13,9 +13,7 @@ class x_meta_mssmarttagspreventparsing(HttpHeader):
   valid_in_responses = True
   
   def evaluate(self, add_note):
-      add_note(subject, SMART_TAG_NO_WORK)
-      return values
-    
+      add_note(SMART_TAG_NO_WORK)
 
 
 class SMART_TAG_NO_WORK(Note):

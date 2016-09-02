@@ -17,11 +17,11 @@ The `ETag` header provides an opaque identifier for the representation."""
   valid_in_requests = True
   valid_in_responses = True
 
-  def parse(subject, value, red):
-      if value[:2] == 'W/':
-          return (True, headers.unquote_string(value[2:]))
+  def parse(self, field_value, add_note):
+      if field_value[:2] == 'W/':
+          return (True, headers.unquote_string(field_value[2:]))
       else:
-          return (False, headers.unquote_string(value))
+          return (False, headers.unquote_string(field_value))
 
 
         

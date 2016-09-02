@@ -21,11 +21,11 @@ a GET."""
 
 def parse(self, field_value, add_note):
     try:
-        media_type, params = field_value.split(";", 1)
+        media_type, param_str = field_value.split(";", 1)
     except ValueError:
-        media_type, params = field_value, ''
+        media_type, param_str = field_value, ''
     media_type = media_type.lower()
-    param_dict = headers.parse_params(red, subject, params, ['charset'])
+    param_dict = headers.parse_params(param_str, add_note, ['charset'])
     # TODO: check charset to see if it's known
     return (media_type, param_dict)
     

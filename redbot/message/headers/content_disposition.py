@@ -22,25 +22,22 @@ the file, rather than display it."""
   
   def parse(self, field_value, add_note):
     try:
-        disposition, params = field_value.split(";", 1)
+        disposition, param_str = field_value.split(";", 1)
     except ValueError:
-        disposition, params = field_value, ''
+        disposition, param_str = field_value, ''
     disposition = disposition.lower()
-    param_dict = rh.parse_params(red, subject, params)
+    param_dict = headers.parse_params(param_str, add_note)
     if disposition not in ['inline', 'attachment']:
-        add_note(subject, DISPOSITION_UNKNOWN, disposition=disposition)
+        add_note(DISPOSITION_UNKNOWN, disposition=disposition)
     if not param_dict.has_key('filename'):
-        add_note(subject, DISPOSITION_OMITS_FILENAME)
+        add_note(DISPOSITION_OMITS_FILENAME)
     if "%" in param_dict.get('filename', ''):
-        add_note(subject, DISPOSITION_FILENAME_PERCENT)
+        add_note(DISPOSITION_FILENAME_PERCENT)
     if "/" in param_dict.get('filename', '') or \
        r"\\" in param_dict.get('filename*', ''):
-        add_note(subject, DISPOSITION_FILENAME_PATH_CHAR)
+        add_note(DISPOSITION_FILENAME_PATH_CHAR)
     return disposition, param_dict
 
-def join(subject, values, red):
-    return values[-1]
-    
 
 class DISPOSITION_UNKNOWN(Note):
     category = categories.GENERAL

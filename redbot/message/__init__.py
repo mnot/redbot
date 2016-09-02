@@ -16,7 +16,7 @@ from redbot.message import link_parse
 from redbot.message.headers import HeaderProcessor
 from redbot.formatter import f_num
 import redbot.speak as rs
-from redbot.message.uri_syntax import URI
+from redbot.syntax import rfc3986
 
 import thor.http.error as httperr
 
@@ -294,7 +294,7 @@ class HttpRequest(HttpMessage):
         except (ValueError, UnicodeError), why:
             self.http_error = httperr.UrlError(why[0])
             return
-        if not re.match("^\s*%s\s*$" % URI, self.uri, re.VERBOSE):
+        if not re.match("^\s*%s\s*$" % rfc3986.URI, self.uri, re.VERBOSE):
             self.add_note('uri', rs.URI_BAD_SYNTAX)
         if '#' in self.uri:
             # chop off the fragment

@@ -6,7 +6,7 @@ from redbot.speak import Note, categories, levels
 from redbot.message.headers import HttpHeader, HeaderTest
 
 class soapaction(HttpHeader):
-  canonical_name = u"SOAPAction"
+  canonical_name = u"SoapAction"
   description = u"""\
 The `SOAPAction` header is used by SOAP, which isn't really HTTP. Stop it.
 """

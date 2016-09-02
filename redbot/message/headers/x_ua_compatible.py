@@ -3,12 +3,12 @@
 import redbot.message.headers as headers
 from redbot.speak import Note, categories, levels
 from redbot.message.headers import HttpHeader, HeaderTest
-from redbot.syntax import rfc7234
+from redbot.syntax import rfc7231
 
 class x_ua_compatible(HttpHeader):
   canonical_name = u"X-UA-Compatible"
   reference = u"http://msdn.microsoft.com/en-us/library/cc288325(VS.85).aspx"
-  syntax = syntax.PARAMETER
+  syntax = rfc7231.parameter
   list_header = False
   deprecated = False
   valid_in_requests = False
@@ -16,22 +16,21 @@ class x_ua_compatible(HttpHeader):
   
   def parse(self, field_value, add_note):
       try:
-          attr, attr_value = value.split("=", 1)
+          attr, attr_value = field_value.split("=", 1)
       except ValueError:
-          attr = value
+          attr = field_value
           attr_value = None
-      return attr, attr_value
+      return (attr, attr_value)
 
   def evaluate(self, add_note):
       directives = {}
       warned = False
-      for (attr, attr_value) in values:
-          if directives.has_key(attr) and not warned:
-              add_note(subject, UA_COMPATIBLE_REPEAT)
-              warned = True
-          directives[attr] = attr_value
-      add_note(subject, UA_COMPATIBLE)
-      return directives
+      attr, attr_value = self.value
+      if directives.has_key(attr) and not warned:
+          add_note(UA_COMPATIBLE_REPEAT)
+          warned = True
+      directives[attr] = attr_value
+      add_note(UA_COMPATIBLE)
 
 
 

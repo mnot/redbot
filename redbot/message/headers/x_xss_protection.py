@@ -23,15 +23,18 @@ older versions of Internet Explorer configure their Cross Site Scripting protect
           protect, param_str = field_value.split(';', 1)
       except ValueError:
           protect, param_str = field_value, ""
-      protect = int(protect)
-      params = headers.parse_params(red, subject, param_str, True)
+      try:
+        protect = int(protect)
+      except:
+        protect = 0
+      params = headers.parse_params(param_str, add_note, True)
       if protect == 0:
-          add_note(subject, XSS_PROTECTION_OFF)
+          add_note(XSS_PROTECTION_OFF)
       else: # 1
           if params.get('mode', None) == "block":
-              add_note(subject, XSS_PROTECTION_BLOCK)
+              add_note(XSS_PROTECTION_BLOCK)
           else:
-              add_note(subject, XSS_PROTECTION_ON)
+              add_note(XSS_PROTECTION_ON)
       return protect, params
 
 

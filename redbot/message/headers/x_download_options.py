@@ -14,10 +14,9 @@ class x_download_options(HttpHeader):
 
   def evaluate(self, add_note):
       if 'noopen' in values:
-          add_note(subject, DOWNLOAD_OPTIONS)
+          add_note(DOWNLOAD_OPTIONS)
       else:
-          add_note(subject, DOWNLOAD_OPTIONS_UNKNOWN)
-      return values
+          add_note(DOWNLOAD_OPTIONS_UNKNOWN)
 
 
 class DOWNLOAD_OPTIONS(Note):

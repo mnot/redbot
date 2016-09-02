@@ -9,7 +9,7 @@ from htmlentitydefs import entitydefs
 from HTMLParser import HTMLParser
 
 from redbot.message import headers as rh
-from redbot.message import http_syntax as syntax
+from redbot.syntax import rfc7231
 
 class HTMLLinkParser(HTMLParser):
     """
@@ -110,7 +110,7 @@ class HTMLLinkParser(HTMLParser):
                 media_type = media_type.lower()
                 param_dict = {}
                 for param in rh.split_string(
-                    params, syntax.PARAMETER, "\s*;\s*"
+                    params, rfc7231.parameter, "\s*;\s*"
                 ):
                     try:
                         a, v = param.split("=", 1)

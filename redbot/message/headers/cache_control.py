@@ -35,10 +35,6 @@ in a request does not imply that the same directive is in effect in the response
               return None
       return (directive_name, directive_val)
 
-  def evaluate(self, add_note):
-      # TODO: warn on duplicate directives?
-      self.value = set(self.value)
-
 
 class BAD_CC_SYNTAX(Note):
     category = categories.CACHING

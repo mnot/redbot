@@ -17,7 +17,7 @@ validation) was generated at the origin server."""
   valid_in_requests = False
   valid_in_responses = True
 
-  def parse(subject, field_value, add_note):
+  def parse(self, field_value, add_note):
       try:
           age = int(field_value)
       except ValueError:

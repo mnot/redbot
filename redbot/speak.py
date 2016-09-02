@@ -113,16 +113,6 @@ class RESPONSE_HDR_IN_REQUEST(Note):
 %(field_name)s is only defined to have meaning in responses; in requests, it doesn't have any
 meaning, so RED has ignored it."""
 
-class FIELD_NAME_BAD_SYNTAX(Note):
-    category = categories.GENERAL
-    level = levels.BAD
-    summary = u'"%(field_name)s" is not a valid header field-name.'
-    text = u"""\
-Header names are limited to the TOKEN production in HTTP; i.e., they can't contain parenthesis,
-angle brackes (<>), ampersands (@), commas, semicolons, colons, backslashes (\\), forward
-slashes (/), quotes, square brackets ([]), question marks, equals signs (=), curly brackets ({})
-spaces or tabs."""
-
 class HEADER_BLOCK_TOO_LARGE(Note):
     category = categories.GENERAL
     level = levels.BAD

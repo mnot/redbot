@@ -12,13 +12,14 @@ import re
 import sys
 import unittest
 
-from redbot.message import http_syntax as syntax
+from redbot.syntax import rfc7230
+from redbot.message import http_syntax
 from redbot.formatter import f_num
 import redbot.speak as rs
 
 from ._decorators import *
 from ._utils import parse_date, unquote_string, split_string, parse_params
-from ._notes import SINGLE_HEADER_REPEAT, BAD_SYNTAX, BAD_DATE_SYNTAX, PARAM_REPEATS, PARAM_STAR_QUOTED
+from ._notes import *
 
 # base URLs for references
 rfc2616 = u"http://tools.ietf.org/html/rfc2616.html#%s"
@@ -36,8 +37,8 @@ class HttpHeader(object):
     canonical_name = None
     description = None
     reference = None
-    syntax = None
-    list_header = None
+    syntax = None # verbose regular expression to match a value.
+    list_header = None # Can be split into values on commas following common syntax.
     deprecated = None
     valid_in_requests = None
     valid_in_responses = None
@@ -48,15 +49,13 @@ class HttpHeader(object):
         self.norm_name = self.wire_name.lower()
         if self.canonical_name is None:
             self.canonical_name = self.wire_name
-        if self.list_header:
-            self.value = []
-        else:
-            self.value = None
+        self.value = []
 
     def parse(self, field_value, add_note):
         """
         Given a string value and a subject indicating an anchor that messages can
         refer to, parse and return the result."""
+        return # XXX
         raise NotImplementedError()
 
     def evaluate(self, add_note):
@@ -64,16 +63,17 @@ class HttpHeader(object):
         Called once header processing is done; typically used to evaluate an entire
         header's values.
         """
+        return # XXX
         raise NotImplementedError()
 
     def handle_input(self, field_value, add_note):
         """
-        XXX
+        Basic input processing on a new field value.
         """
 
         # check field value syntax
         if self.syntax and not re.match(r"^\s*(?:%s)\s*$" % self.syntax, field_value, re.VERBOSE):
-            add_note(rs.BAD_SYNTAX, ref_uri=self.reference)
+            add_note(BAD_SYNTAX, ref_uri=self.reference)
         # split before processing if a list header
         if self.list_header:
             values = self.split_list_header(field_value)
@@ -81,16 +81,13 @@ class HttpHeader(object):
             values = [field_value]
         for value in values:
             parsed_value = self.parse(value.strip(), add_note)
-            if self.list_header:
-                self.value.append(parsed_value)
-            else:
-                self.value = parsed_value
+            self.value.append(parsed_value)
 
     @staticmethod
     def split_list_header(field_value):
         "Split a header field value on commas. needs to conform to the #rule."
         return [f.strip() for f in re.findall(r'((?:[^",]|%s)+)(?=%s|\s*$)' %
-            (syntax.QUOTED_STRING, syntax.COMMA), field_value)] or ['']
+            (http_syntax.QUOTED_STRING, r"(?:\s*(?:,\s*)+)"), field_value)] or ['']
 
     def finish(self, message, add_note):
         """
@@ -98,12 +95,15 @@ class HttpHeader(object):
         """
 
         # check field name syntax
-        if not re.match("^%s$" % syntax.TOKEN, name, re.VERBOSE):
-            add_note(rs.FIELD_NAME_BAD_SYNTAX)
+        if not re.match("^%s$" % rfc7230.token, self.wire_name, re.VERBOSE):
+            add_note(FIELD_NAME_BAD_SYNTAX)
         if self.deprecated:
             pass ###
-        if not self.list_value and XXX:
-            add_note(rs.SINGLE_HEADER_REPEAT)
+        if not self.list_header:
+          if len(self.value) == 1:
+            self.value = self.value[-1]
+          elif len(self.value) > 1:
+            add_note(SINGLE_HEADER_REPEAT)
         if message.is_request:
             if not self.valid_in_requests:
                 pass ###
@@ -120,7 +120,7 @@ class DummyHttpHeader(HttpHeader):
     valid_in_requests = True
     valid_in_responses = True
 
-    def parse(self, value, add_note):
+    def parse(self, field_value, add_note):
         return value
 
     def evaluate(self, add_note):
@@ -143,7 +143,6 @@ class HeaderProcessor(object):
     }
 
     def __init__(self, message):
-        print "I'm processing!"
         self.message = message
         self._header_handlers = {}
         unicode_headers, parsed_headers = self.process()
@@ -160,7 +159,6 @@ class HeaderProcessor(object):
          - a dict of parsed header values
         """
         import sys
-        sys.stderr.write("BOO!\n")
         unicode_headers = []   # unicode version of the header tuples
         parsed_headers = {}    # dictionary of parsed header values
         offset = 0             # what number header we're on
@@ -174,7 +172,7 @@ class HeaderProcessor(object):
 
         for name, value in self.message.headers:
             offset += 1
-            add_note = partial(self.message.add_note, subject="offset-%s" % offset)
+            add_note = partial(self.message.add_note, "offset-%s" % offset)
 
             # track header size
             header_size = len(name) + len(value)
@@ -200,12 +198,12 @@ class HeaderProcessor(object):
             header_handler.handle_input(value, field_add_note)
 
         # check each of the complete header values and get the parsed value
-        for header_handler in self._header_handlers:
+        for header_name, header_handler in self._header_handlers.items():
             header_add_note = partial(self.message.add_note,
-                                        subject="header-%s" % header_handler.norm_name,
-                                        field_name=header_handler.canonical_name
+                                      "header-%s" % header_handler.canonical_name,
+                                      field_name=header_handler.canonical_name
             )
-            header_handler.finish(msg, header_add_note)
+            header_handler.finish(self.message, header_add_note)
             parsed_headers[header_handler.norm_name] = header_handler.value
 
         return unicode_headers, parsed_headers
@@ -231,7 +229,7 @@ class HeaderProcessor(object):
         If default is true, return a dummy if one isn't found; otherwise, None.
         """
 
-        name_token = header_name.replace('-', '_').lower().encode('ascii', 'ignore')
+        name_token = HeaderProcessor.name_token(header_name)
         hdr_module = HeaderProcessor.find_header_module(name_token)
         if hdr_module and hasattr(hdr_module, name_token):
             return getattr(hdr_module, name_token)
@@ -243,7 +241,7 @@ class HeaderProcessor(object):
         """
         Return a module for the given field name, or None if it can't be found.
         """
-        name_token = header_name.replace('-', '_').lower().encode('ascii', 'ignore')
+        name_token = HeaderProcessor.name_token(header_name)
         if name_token[0] == '_':  # these are special
             return
         if HeaderProcessor.header_aliases.has_key(name_token):
@@ -255,6 +253,12 @@ class HeaderProcessor(object):
         except (ImportError, KeyError, TypeError):
             return
 
+    @staticmethod
+    def name_token(header_name):
+      """
+      Return a tokenised, python-friendly name for a header.
+      """
+      return header_name.replace('-', '_').lower().encode('ascii', 'ignore')
 
 # TODO: allow testing of request headers
 class HeaderTest(unittest.TestCase):
@@ -269,24 +273,24 @@ class HeaderTest(unittest.TestCase):
     def setUp(self):
         "Test setup."
         from redbot.message import DummyMsg
-        self.msg = DummyMsg()
+        self.message = DummyMsg()
 
     def test_header(self):
         "Test the header."
         if not self.name:
             return self.skipTest('')
-        self.msg.headers = [(self.name, inp) for inp in self.inputs]
-        process_headers(self.msg)
-        out = self.msg.parsed_headers.get(self.name.lower(), None)
+        self.message.headers = [(self.name, inp) for inp in self.inputs]
+        HeaderProcessor(self.message)
+        out = self.message.parsed_headers.get(self.name.lower(), None)
         self.assertEqual(self.expected_out, out,
             "%s != %s" % (str(self.expected_out), str(out)))
         diff = set(
             [n.__name__ for n in self.expected_err]).symmetric_difference(
-            set(self.msg.note_classes)
+            set(self.message.note_classes)
         )
-        for msg in self.msg.notes: # check formatting
-            msg.vars.update({'field_name': self.name, 'response': 'response'})
-            self.assertTrue(msg.text % msg.vars)
-            self.assertTrue(msg.summary % msg.vars)
+        for message in self.message.notes: # check formatting
+            message.vars.update({'field_name': self.name, 'response': 'response'})
+            self.assertTrue(message.text % message.vars)
+            self.assertTrue(message.summary % message.vars)
         self.assertEqual(len(diff), 0, "Mismatched notes: %s" % diff)
 

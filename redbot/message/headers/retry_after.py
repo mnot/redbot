@@ -7,7 +7,7 @@ from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7231
 
 class retry_after(HttpHeader):
-  canonical_name = u"Retry-after"
+  canonical_name = u"Retry-After"
   description = u"""\
 The `Retry-After` header can be used with a `503 Service Unavailable` response to indicate how long
 the service is expected to be unavailable to the requesting client.

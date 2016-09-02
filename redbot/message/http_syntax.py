@@ -4,9 +4,6 @@
 Regular expressions for common HTTP syntax
 """
 
-# URI syntax
-from redbot.message.uri_syntax import URI, URI_reference, absolute_URI
-
 # generic syntax regexen (assume processing with re.VERBOSE)
 TOKEN = r'(?:[!#\$%&\'\*\+\-\.\^_`|~A-Za-z0-9]+?)'
 QUOTED_STRING = r'(?:"(?:[ \t\x21\x23-\x5B\x5D-\x7E]|\\[ \t\x21-\x7E])*")'

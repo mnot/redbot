@@ -27,25 +27,24 @@ without knowing the entire body's length."""
 
   def parse(self, field_value, add_note):
       try:
-          coding, params = field_value.split(";", 1)
+          coding, param_str = field_value.split(";", 1)
       except ValueError:
-          coding, params = field_value, ""
+          coding, param_str = field_value, ""
       coding = coding.lower()
-      param_dict = headers.parse_params(red, subject, params, True)
+      param_dict = headers.parse_params(param_str, add_note, True)
       if param_dict:
-          add_note(subject, TRANSFER_CODING_PARAM)
+          add_note(TRANSFER_CODING_PARAM)
       return coding
 
   def evaluate(self, add_note):
-      unwanted = set([c for c in values if c not in
+      unwanted = set([c for c in self.value if c not in
           ['chunked', 'identity']]
       ) or False
       if unwanted:
-          add_note(subject, TRANSFER_CODING_UNWANTED,
+          add_note(TRANSFER_CODING_UNWANTED,
                   unwanted_codings=", ".join(unwanted))
-      if 'identity' in values:
-          add_note(subject, TRANSFER_CODING_IDENTITY)
-      return values
+      if 'identity' in self.value:
+          add_note(TRANSFER_CODING_IDENTITY)
 
 
 class TRANSFER_CODING_IDENTITY(Note):

@@ -20,7 +20,7 @@ partial body should be applied."""
   def parse(self, field_value, add_note):
       # #53: check syntax, values?
       if red.status_code not in ["206", "416"]:
-          add_note(subject, CONTENT_RANGE_MEANINGLESS)
+          add_note(CONTENT_RANGE_MEANINGLESS)
       return value
 
 

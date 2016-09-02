@@ -24,11 +24,10 @@ recipient along the request/response chain.<p> This header is deprecated, in fav
     
   def evaluate(self, add_note):
       if "no-cache" in values:
-          add_note(subject, PRAGMA_NO_CACHE)
+          add_note(PRAGMA_NO_CACHE)
       others = [True for v in values if v != "no-cache"]
       if others:
-          add_note(subject, PRAGMA_OTHER)
-      return set(values)
+          add_note(PRAGMA_OTHER)
       
       
 class PRAGMA_NO_CACHE(Note):

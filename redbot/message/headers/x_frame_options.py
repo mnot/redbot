@@ -15,13 +15,12 @@ class x_frame_options(HttpHeader):
       return field_value.lower()
     
   def evaluate(self, add_note):
-      if 'deny' in values:
-          add_note(subject, FRAME_OPTIONS_DENY)
-      elif 'sameorigin' in values:
-          add_note(subject, FRAME_OPTIONS_SAMEORIGIN)
+      if 'deny' in self.value:
+          add_note(FRAME_OPTIONS_DENY)
+      elif 'sameorigin' in self.value:
+          add_note(FRAME_OPTIONS_SAMEORIGIN)
       else:
-          add_note(subject, FRAME_OPTIONS_UNKNOWN)
-      return values
+          add_note(FRAME_OPTIONS_UNKNOWN)
 
 
 class FRAME_OPTIONS_DENY(Note):

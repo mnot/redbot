@@ -26,8 +26,8 @@ of its underlying media type; e.g., `gzip` and `deflate`."""
   def parse(self, field_value, add_note):
     # check to see if there are any non-gzip encodings, because
     # that's the only one we ask for.
-    if field_valuevalue.lower() != 'gzip':
-        add_note(subject, ENCODING_UNWANTED, unwanted_codings=field_value)
+    if field_value.lower() != 'gzip':
+        add_note(ENCODING_UNWANTED, unwanted_codings=field_value)
     return field_value.lower()
 
 

@@ -21,12 +21,9 @@ The `Expires` header gives a time after which the response is considered stale."
       try:
           date = headers.parse_date(field_value)
       except ValueError:
-          add_note(subject, headers.BAD_DATE_SYNTAX)
+          add_note(headers.BAD_DATE_SYNTAX)
           return None
       return date
-
-  def evaluate(self, add_note):
-      return values[-1]
 
     
 class BasicExpiresTest(HeaderTest):

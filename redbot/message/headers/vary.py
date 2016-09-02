@@ -22,6 +22,3 @@ that were used to select the representation."""
 
   def parse(self, field_value, add_note):
       return field_value.lower()
-    
-  def evaluate(self, add_note):
-      return set(values)

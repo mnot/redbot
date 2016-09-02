@@ -20,9 +20,9 @@ representation was last modified."""
 
   def parse(self, field_value, add_note):
       try:
-          date = headers.parse_date(value)
+          date = headers.parse_date(field_value)
       except ValueError:
-          add_note(subject, headers.BAD_DATE_SYNTAX)
+          add_note(headers.BAD_DATE_SYNTAX)
           return None
       return date
 

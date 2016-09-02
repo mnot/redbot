@@ -21,16 +21,18 @@ requests to the server."""
   valid_in_responses = True
 
   def parse(self, field_value, add_note):
-      path = urlsplit(red.base_uri).path # pylint: disable=E1103
+      path = "/" # FIXME XXX
+      start_time = 0 # FIXME xxx
+#      path = urlsplit(red.base_uri).path # pylint: disable=E1103
       try:
-          set_cookie = loose_parse(field_value, path, red.start_time, subject, red)
+          set_cookie = loose_parse(field_value, path, start_time, add_note)
       except ValueError:
           set_cookie = None
       return set_cookie
 
 
 # TODO: properly escape note
-def loose_parse(set_cookie_string, uri_path, current_time, subject, red):
+def loose_parse(set_cookie_string, uri_path, current_time, add_note):
   """
   Parse a Set-Cookie string, as per RFC6265, Section 5.2.
   """
@@ -42,11 +44,11 @@ def loose_parse(set_cookie_string, uri_path, current_time, subject, red):
   try:
     name, value = name_value_pair.split("=", 1)
   except ValueError:
-    red.add_note(subject, rs.SET_COOKIE_NO_VAL, name_value_pair.strip())
+    add_note(SET_COOKIE_NO_VAL)
     raise ValueError, "Cookie doesn't have a value"
   name, value = name.strip(), value.strip()
   if name == "":
-    red.add_note(subject, rs.SET_COOKIE_NO_NAME)
+    add_note(SET_COOKIE_NO_NAME)
     raise ValueError, "Cookie doesn't have a name"
   cookie_name, cookie_value = name, value
   cookie_attribute_list = []
@@ -66,24 +68,24 @@ def loose_parse(set_cookie_string, uri_path, current_time, subject, red):
       try:
         expiry_time = loose_date_parse(attribute_value)
       except ValueError, why:
-        red.add_note(subject, rs.SET_COOKIE_BAD_DATE, why=why, cookie_name=cookie_name)
+        add_note(SET_COOKIE_BAD_DATE, why=why, cookie_name=cookie_name)
         continue
       cookie_attribute_list.append(("Expires", expiry_time))
     elif case_norm_attribute_name == "max-age":
       if attribute_value == "":
-        red.add_note(subject, rs.SET_COOKIE_EMPTY_MAX_AGE, cookie_name=cookie_name)
+        add_note(SET_COOKIE_EMPTY_MAX_AGE, cookie_name=cookie_name)
         continue
       if attribute_value[0] == "0":
-        red.add_note(subject, rs.SET_COOKIE_LEADING_ZERO_MAX_AGE, cookie_name=cookie_name)
+        add_note(SET_COOKIE_LEADING_ZERO_MAX_AGE, cookie_name=cookie_name)
         continue
       if not attribute_value.isdigit():
-        red.add_note(subject, rs.SET_COOKIE_NON_DIGIT_MAX_AGE, cookie_name=cookie_name)
+        add_note(SET_COOKIE_NON_DIGIT_MAX_AGE, cookie_name=cookie_name)
         continue
       delta_seconds = int(attribute_value)
       cookie_attribute_list.append(("Max-Age", delta_seconds))
     elif case_norm_attribute_name == "domain":
       if attribute_value == "":
-        red.add_note(subject, rs.SET_COOKIE_EMPTY_DOMAIN, cookie_name=cookie_name)
+        add_note(SET_COOKIE_EMPTY_DOMAIN, cookie_name=cookie_name)
         continue
       elif attribute_value[0] == ".":
         cookie_domain = attribute_value[1:]
@@ -107,7 +109,7 @@ def loose_parse(set_cookie_string, uri_path, current_time, subject, red):
     elif case_norm_attribute_name == "httponly":
       cookie_attribute_list.append(("HttpOnly", ""))
     else:
-      red.add_note(subject, SET_COOKIE_UNKNOWN_ATTRIBUTE,
+      add_note(SET_COOKIE_UNKNOWN_ATTRIBUTE,
         cookie_name=cookie_name,
         attribute=attribute_name
       )

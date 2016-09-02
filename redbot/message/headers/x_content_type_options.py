@@ -10,11 +10,9 @@ class x_content_type_options(HttpHeader):
 
   def evaluate(self, add_note):
       if 'nosniff' in values:
-          add_note(subject, CONTENT_TYPE_OPTIONS)
+          add_note(CONTENT_TYPE_OPTIONS)
       else:
-          add_note(subject, CONTENT_TYPE_OPTIONS_UNKNOWN)
-      return values
-
+          add_note(CONTENT_TYPE_OPTIONS_UNKNOWN)
 
 
 class CONTENT_TYPE_OPTIONS(Note):

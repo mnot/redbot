@@ -25,9 +25,6 @@ It is used by caches as input to expiration calculations, and to detect clock dr
             add_note(BAD_DATE_SYNTAX)
             return None
         return date
-    
-    def join(self, add_note):
-        pass
 
 
 class BAD_DATE_SYNTAX(Note):

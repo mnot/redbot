@@ -23,7 +23,10 @@ response (since they can't be sure if they have the whole response)."""
   valid_in_responses = True
 
   def parse(self, field_value, add_note):
+    try:
       return int(field_value)
+    except ValueError:
+      return
 
     
 class ContentLengthTest(HeaderTest):

@@ -22,8 +22,7 @@ the request/response chain."""
       via_list = u"<ul>" + u"\n".join(
              [u"<li><code>%s</code></li>" % v for v in values]
                          ) + u"</ul>"
-      add_note(subject, VIA_PRESENT, via_list=via_list)
-    
+      add_note(VIA_PRESENT, via_list=via_list)
     
 
 class VIA_PRESENT(Note):
