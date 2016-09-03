@@ -785,11 +785,11 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                     m.level, 
                     e_html(m.subject), 
                     id(m), 
-                    e_html(m.summary[self.lang] % m.vars)
+                    e_html(m.show_summary(self.lang))
                 )
             )
             self.hidden_text.append(
-                (u"msgid-%s" % id(m), m.text[self.lang] % m.vars)
+                (u"msgid-%s" % id(m), m.show_text(self.lang))
             )
         out.append(u"</ol>\n")
         return nl.join(out)
