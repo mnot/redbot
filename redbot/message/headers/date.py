@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from redbot.speak import Note, categories, levels
+from redbot.message import headers
 from redbot.message.headers import HttpHeader, HeaderTest, parse_date
 from redbot.syntax import rfc7231
 
@@ -12,7 +13,7 @@ happened since.
 
 It is used by caches as input to expiration calculations, and to detect clock drift."""
     reference = u"%s#header.date" % rfc7231.SPEC_URL
-    syntax = rfc7231.Date
+#    syntax = rfc7231.Date
     list_header = False
     deprecated = False
     valid_in_requests = True
@@ -49,10 +50,10 @@ class BadDateTest(HeaderTest):
     name = 'Date'
     inputs = ['0']
     expected_out = None
-    expected_err = [BAD_DATE_SYNTAX]
+    expected_err = [headers.BAD_DATE_SYNTAX]
 
 class BlankDateTest(HeaderTest):
     name = 'Date'
     inputs = ['']
     expected_out = None
-    expected_err = [BAD_DATE_SYNTAX]
+    expected_err = [headers.BAD_DATE_SYNTAX]

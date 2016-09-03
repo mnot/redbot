@@ -15,7 +15,7 @@ When the disposition (the first value) is set to `attachment`, it also prompts b
 the file, rather than display it."""
   reference = u"https://tools.ietf.org/html/rfc6266"
   syntax = r'(?:%s(?:\s*;\s*%s)*)' % (rfc7231.token, rfc7231.parameter)
-  list_header = True
+  list_header = False
   deprecated = False
   valid_in_requests = True
   valid_in_responses = True
@@ -96,52 +96,52 @@ You should remove these characters."""
 class QuotedCDTest(HeaderTest):
     name = 'Content-Disposition'
     inputs = ['attachment; filename="foo.txt"']
-    expected_out = ('attachment', {'filename': 'foo.txt'})
+    expected_out = (u'attachment', {u'filename': u'foo.txt'})
     expected_err = [] 
     
 class TokenCDTest(HeaderTest):
     name = 'Content-Disposition'
     inputs = ['attachment; filename=foo.txt']
-    expected_out = ('attachment', {'filename': 'foo.txt'})
+    expected_out = (u'attachment', {u'filename': u'foo.txt'})
     expected_err = [] 
 
 class InlineCDTest(HeaderTest):
     name = 'Content-Disposition'
     inputs = ['inline; filename=foo.txt']
-    expected_out = ('inline', {'filename': 'foo.txt'})
+    expected_out = (u'inline', {u'filename': u'foo.txt'})
     expected_err = [] 
 
 class RepeatCDTest(HeaderTest):
     name = 'Content-Disposition'
     inputs = ['attachment; filename=foo.txt, inline; filename=bar.txt']
-    expected_out = ('inline', {'filename': 'bar.txt'})
+    expected_out = (u'inline', {u'filename': u'bar.txt'})
     expected_err = [headers.SINGLE_HEADER_REPEAT]
 
 class FilenameStarCDTest(HeaderTest):
     name = 'Content-Disposition'
     inputs = ["attachment; filename=foo.txt; filename*=UTF-8''a%cc%88.txt"]
     expected_out = ('attachment', {
-            'filename': 'foo.txt', 
-            'filename*': u'a\u0308.txt'})
+            u'filename': u'foo.txt', 
+            u'filename*': u'a\u0308.txt'})
     expected_err = []
 
 class FilenameStarQuotedCDTest(HeaderTest):    
     name = 'Content-Disposition'
     inputs = ["attachment; filename=foo.txt; filename*=\"UTF-8''a%cc%88.txt\""]
-    expected_out = ('attachment', {
-            'filename': 'foo.txt', 
-            'filename*': u'a\u0308.txt'})
+    expected_out = (u'attachment', {
+            u'filename': u'foo.txt', 
+            u'filename*': u'a\u0308.txt'})
     expected_err = [headers.PARAM_STAR_QUOTED]
 
 class FilenamePercentCDTest(HeaderTest):
     name = 'Content-Disposition'
     inputs = ["attachment; filename=fo%22o.txt"]
-    expected_out = ('attachment', {'filename': 'fo%22o.txt', })
+    expected_out = (u'attachment', {u'filename': u'fo%22o.txt', })
     expected_err = [DISPOSITION_FILENAME_PERCENT]
     
 class FilenamePathCharCDTest(HeaderTest):
     name = 'Content-Disposition'
     inputs = ['"attachment; filename="/foo.txt"']
-    expected_out = ('attachment', {'filename': '/foo.txt',})
+    expected_out = (u'attachment', {u'filename': u'/foo.txt',})
     expected_err = [DISPOSITION_FILENAME_PATH_CHAR]
 

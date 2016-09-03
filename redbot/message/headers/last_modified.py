@@ -3,6 +3,7 @@
 
 import redbot.message.headers as headers
 from redbot.speak import Note, categories, levels
+from redbot.message import headers
 from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7232
 
@@ -12,7 +13,7 @@ class last_modified(HttpHeader):
 The `Last-Modified` header indicates the time that the origin server believes the
 representation was last modified."""
   reference = u"%s#header.last_modified" % rfc7232.SPEC_URL
-  syntax = rfc7232.Last_Modified
+#  syntax = rfc7232.Last_Modified
   list_header = False
   deprecated = False
   valid_in_requests = False
@@ -23,7 +24,7 @@ representation was last modified."""
           date = headers.parse_date(field_value)
       except ValueError:
           add_note(headers.BAD_DATE_SYNTAX)
-          return None
+          return
       return date
 
 
@@ -37,10 +38,10 @@ class BadLMTest(HeaderTest):
     name = 'Last-Modified'
     inputs = ['0']
     expected_out = None
-    expected_err = [headers.BAD_DATE_SYNTAX]
+    expected_err = [ headers.BAD_DATE_SYNTAX]
 
 class BlankLMTest(HeaderTest):
     name = 'Last-Modified'
     inputs = ['']
     expected_out = None
-    expected_err = [headers.BAD_DATE_SYNTAX]
+    expected_err = [ headers.BAD_DATE_SYNTAX]

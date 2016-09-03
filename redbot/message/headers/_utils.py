@@ -5,7 +5,6 @@ import re
 import urllib
 
 from redbot.syntax import rfc7231
-from redbot.message import http_syntax
 from ._notes import *
 
 def parse_date(value):
@@ -53,7 +52,7 @@ def split_string(instr, item, split):
     if not instr:
         return []
     return [h.strip() for h in re.findall(
-        r'%s(?=%s|\s*$)' % (item, split), instr
+        r'%s(?=%s|\s*$)' % (item, split), instr, re.VERBOSE
     )]
 
 def parse_params(instr, add_note, nostar=None, delim=";"):
@@ -70,8 +69,7 @@ def parse_params(instr, add_note, nostar=None, delim=";"):
     """
     param_dict = {}
     instr = instr.encode('ascii') # TODO: non-ascii input?
-    for param in split_string(instr, http_syntax.PARAMETER, r"\s*%s\s*" % delim):
-#    for param in split_string(instr, rfc7231.parameter, r"\s*%s\s*" % delim):
+    for param in split_string(instr, rfc7231.parameter, r"\s*%s\s*" % delim):
         try:
             key, val = param.split("=", 1)
         except ValueError:

@@ -11,7 +11,7 @@ class age(HttpHeader):
 The `Age` header conveys the sender's estimate of the amount of time since the response (or its
 validation) was generated at the origin server."""
   reference = u"%s#header.age" % rfc7234.SPEC_URL
-  syntax = rfc7234.Age
+#  syntax = rfc7234.Age
   list_header = False
   deprecated = False
   valid_in_requests = False
@@ -22,10 +22,10 @@ validation) was generated at the origin server."""
           age = int(field_value)
       except ValueError:
           add_note(AGE_NOT_INT)
-          return None
+          return
       if age < 0:
           add_note(AGE_NEGATIVE)
-          return None
+          return
       return age
 
 

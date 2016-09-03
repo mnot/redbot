@@ -12,7 +12,7 @@ import re
 import sys
 import unittest
 
-from redbot.syntax import rfc7230
+from redbot.syntax import rfc7230, rfc7231
 from redbot.message import http_syntax
 from redbot.formatter import f_num
 import redbot.speak as rs
@@ -74,6 +74,7 @@ class HttpHeader(object):
         # check field value syntax
         if self.syntax and not re.match(r"^\s*(?:%s)\s*$" % self.syntax, field_value, re.VERBOSE):
             add_note(BAD_SYNTAX, ref_uri=self.reference)
+            return
         # split before processing if a list header
         if self.list_header:
             values = self.split_list_header(field_value)
@@ -87,7 +88,7 @@ class HttpHeader(object):
     def split_list_header(field_value):
         "Split a header field value on commas. needs to conform to the #rule."
         return [f.strip() for f in re.findall(r'((?:[^",]|%s)+)(?=%s|\s*$)' %
-            (http_syntax.QUOTED_STRING, r"(?:\s*(?:,\s*)+)"), field_value)] or ['']
+            (http_syntax.QUOTED_STRING, r"(?:\s*(?:,\s*)+)"), field_value, re.VERBOSE)] or ['']
 
     def finish(self, message, add_note):
         """
@@ -100,10 +101,13 @@ class HttpHeader(object):
         if self.deprecated:
             pass ###
         if not self.list_header:
-          if len(self.value) == 1:
+          if len(self.value) == 0:
+            self.value = None
+          elif len(self.value) == 1:
             self.value = self.value[-1]
           elif len(self.value) > 1:
             add_note(SINGLE_HEADER_REPEAT)
+            self.value = self.value[-1]
         if message.is_request:
             if not self.valid_in_requests:
                 pass ###

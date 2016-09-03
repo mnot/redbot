@@ -20,7 +20,7 @@ class x_ua_compatible(HttpHeader):
       except ValueError:
           attr = field_value
           attr_value = None
-      return (attr, attr_value)
+      return attr, attr_value
 
   def evaluate(self, add_note):
       directives = {}
@@ -63,5 +63,5 @@ information."""
 class BasicUACTest(HeaderTest):
     name = 'X-UA-Compatible'
     inputs = ['foo=bar']
-    expected_out = {"foo": "bar"}
+    expected_out = (u"foo", u"bar")
     expected_err = [UA_COMPATIBLE]

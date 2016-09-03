@@ -32,7 +32,7 @@ in a request does not imply that the same directive is in effect in the response
               directive_val = int(directive_val)
           except (ValueError, TypeError):
               add_note(BAD_CC_SYNTAX, bad_cc_attr=directive_name)
-              return None
+              return
       return (directive_name, directive_val)
 
 
@@ -46,29 +46,29 @@ class BAD_CC_SYNTAX(Note):
 class CacheControlTest(HeaderTest):
     name = 'Cache-Control'
     inputs = ['a=b, c=d', 'e=f', 'g']
-    expected_out = set([('a', 'b'), ('c', 'd'), ('e', 'f'), ('g', None)])
+    expected_out = [(u'a', u'b'), (u'c', u'd'), (u'e', u'f'), (u'g', None)]
     expected_err = []
 
 class CacheControlCaseTest(HeaderTest):
     name = 'Cache-Control'
     inputs = ['A=b, c=D']
-    expected_out = set([('a', 'b'), ('c', 'D')])
+    expected_out = [(u'a', u'b'), (u'c', u'D')]
     expected_err = []
 
 class CacheControlQuotedTest(HeaderTest):
     name = 'Cache-Control'
     inputs = ['a="b,c", c=d']
-    expected_out = set([('a', 'b,c'), ('c', 'd')])
+    expected_out = [(u'a', u'b,c'), (u'c', u'd')]
     expected_err = []
 
 class CacheControlMaxAgeTest(HeaderTest):
     name = 'Cache-Control'
     inputs = ['max-age=5']
-    expected_out = set([('max-age', 5)])
+    expected_out = [(u'max-age', 5)]
     expected_err = []
 
 class CacheControlBadMaxAgeTest(HeaderTest):
     name = 'Cache-Control'
     inputs = ['max-age=foo']
-    expected_out = set([])
+    expected_out = []
     expected_err = [BAD_CC_SYNTAX]

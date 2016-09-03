@@ -26,7 +26,7 @@ older versions of Internet Explorer configure their Cross Site Scripting protect
       try:
         protect = int(protect)
       except:
-        protect = 0
+        return
       params = headers.parse_params(param_str, add_note, True)
       if protect == 0:
           add_note(XSS_PROTECTION_OFF)
