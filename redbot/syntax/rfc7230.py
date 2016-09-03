@@ -100,11 +100,11 @@ Host = r"{uri_host} (?: : {port} )?".format(**locals())
 
 # transfer-parameter = token BWS "=" BWS ( token / quoted-string )
 
-transfer_parameter = r"(?: {token} {BWS} \= {BWS} (?: {token} | {quoted_string} ) )".format(**locals())
+transfer_parameter = r"(?: {token} {BWS} = {BWS} (?: {token} | {quoted_string} ) )".format(**locals())
 
 # transfer-extension = token *( OWS ";" OWS transfer-parameter )
 
-transfer_extension = r"(?: {token} (?: {OWS} \; {OWS} (%tranfer_parameter) )* )".format(**locals())
+transfer_extension = r"(?: {token} (?: {OWS} ; {OWS} {transfer_parameter} )* )".format(**locals())
 
 # rank = ( "0" [ "." *3DIGIT ] ) / ( "1" [ "." *3"0" ] )
 
@@ -148,7 +148,7 @@ protocol_version = token
 
 # protocol = protocol-name [ "/" protocol-version ]
 
-protocol = r"(?: {protocol_name} (?: %(protocol-version) )? )".format(**locals())
+protocol = r"(?: {protocol_name} (?: {protocol_version} )? )".format(**locals())
  
 # Upgrade = 1#protocol
 
