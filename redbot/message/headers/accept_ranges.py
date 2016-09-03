@@ -19,10 +19,10 @@ resource."""
     valid_in_responses = True
 
     def parse(self, field_value, add_note):
-        value = field_value.lower()
+        field_value = field_value.lower()
         if field_value not in ['bytes', 'none']:
-            add_note(UNKNOWN_RANGE, range=value)
-        return value
+            add_note(UNKNOWN_RANGE, range=field_value)
+        return field_value
 
 
 class UNKNOWN_RANGE(Note):

@@ -32,7 +32,7 @@ in a request does not imply that the same directive is in effect in the response
               directive_val = int(directive_val)
           except (ValueError, TypeError):
               add_note(BAD_CC_SYNTAX, bad_cc_attr=directive_name)
-              return
+              raise ValueError
       return (directive_name, directive_val)
 
 

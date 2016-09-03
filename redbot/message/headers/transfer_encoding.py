@@ -98,8 +98,8 @@ class TransferEncodingParamTest(HeaderTest):
 class BadTransferEncodingTest(HeaderTest):
     name = 'Transfer-Encoding'
     inputs = ['chunked=foo']
-    expected_out = []
-    expected_err = [headers.BAD_SYNTAX]
+    expected_out = ['chunked=foo']
+    expected_err = [headers.BAD_SYNTAX, TRANSFER_CODING_UNWANTED]
 
 class TransferEncodingCaseTest(HeaderTest):
     name = 'Transfer-Encoding'

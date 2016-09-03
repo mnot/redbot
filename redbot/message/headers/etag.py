@@ -40,5 +40,5 @@ class WeakETagTest(HeaderTest):
 class UnquotedETagTest(HeaderTest):
     name = 'ETag'
     inputs = ['foo']
-    expected_out = None
+    expected_out = (False, 'foo')
     expected_err = [BAD_SYNTAX]

@@ -23,7 +23,7 @@ The `Link` header field allows structured links to be described. A link can be v
         link, param_str = field_value.split(";", 1)
     except ValueError:
         link, param_str = field_value, ''
-    link = link[1:-1] # trim the angle brackets
+    link = link.strip()[1:-1] # trim the angle brackets
     param_dict = headers.parse_params(param_str, add_note, 
       ['rel', 'rev', 'anchor', 'hreflang', 'type', 'media'])
     if param_dict.has_key('rel'): # relation_types
@@ -72,7 +72,7 @@ class BasicLinkTest(HeaderTest):
 class QuotedLinkTest(HeaderTest):
     name = 'Link'
     inputs = ['"http://www.example.com/"; rel=example']
-    expected_out = []
+    expected_out = [('http://www.example.com/', {'rel': 'example'})]
     expected_err = [headers.BAD_SYNTAX]
 
 class QuotedRelationLinkTest(HeaderTest):

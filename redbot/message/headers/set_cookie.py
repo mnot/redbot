@@ -15,7 +15,8 @@ class set_cookie(HttpHeader):
 The `Set-Cookie` response header sets a stateful "cookie" on the client, to be included in future
 requests to the server."""
   reference = headers.rfc6265
-  list_header = True
+  list_header = False
+  nonstandard_syntax = True
   deprecated = False
   valid_in_requests = False
   valid_in_responses = True
@@ -44,6 +45,7 @@ def loose_parse(set_cookie_string, uri_path, current_time, add_note):
   try:
     name, value = name_value_pair.split("=", 1)
   except ValueError:
+    print "couldn't parse", name_value_pair
     add_note(SET_COOKIE_NO_VAL)
     raise ValueError, "Cookie doesn't have a value"
   name, value = name.strip(), value.strip()
@@ -117,7 +119,7 @@ def loose_parse(set_cookie_string, uri_path, current_time, add_note):
 
 
 DELIMITER = r'(?:[\x09\x20-\x2F\x3B-\x40\x5B-\x60\x7B-\x7E])'
-NON_DELIMTER = r'(?:[\x00-\x08\x0A-\x1F0-0\:a-zA-Z\x7F-\xFF])'
+NON_DELIMITER = r'(?:[\x00-\x08\x0A-\x1F0-0\:a-zA-Z\x7F-\xFF])'
 MONTHS = {
     'jan': 1,
     'feb': 2,
@@ -141,32 +143,32 @@ def loose_date_parse(cookie_date):
   day_of_month_value = month_value = year_value = None
   date_tokens = split(DELIMITER, cookie_date)
   for date_token in date_tokens:
-      re_match = None
-      if not found_time:
-          re_match = match(r'^(\d{2}:\d{2}:\d{2})(?:\D)?', date_token)
-          if re_match:
-              found_time = True
-              hour_value, minute_value, second_value = [
-                  int(v) for v in re_match.group(1).split(":")
-              ]
-              continue
-      if not found_day_of_month:
-          re_match = match(r'^(\d\d?)(?:\D)?', date_token)
-          if re_match:
-              found_day_of_month = True
-              day_of_month_value = int(re_match.group(1))
-              continue
-      # TODO: shorter than three chars
-      if not found_month and date_token[:3].lower() in MONTHS.keys():
-          found_month = True
-          month_value = MONTHS[date_token[:3].lower()]
-          continue
-      if not found_year:
-          re_match = match(r'^(\d{2,4})(?:\D)?', date_token)
-          if re_match:
-              found_year = True
-              year_value = int(re_match.group(1))
-              continue
+    re_match = None
+    if not found_time:
+      re_match = match(r'^(\d{2}:\d{2}:\d{2})(?:\D)?', date_token)
+      if re_match:
+        found_time = True
+        hour_value, minute_value, second_value = [
+          int(v) for v in re_match.group(1).split(":")
+        ]
+        continue
+    if not found_day_of_month:
+        re_match = match(r'^(\d\d?)(?:\D)?', date_token)
+        if re_match:
+            found_day_of_month = True
+            day_of_month_value = int(re_match.group(1))
+            continue
+    # TODO: shorter than three chars
+    if not found_month and date_token[:3].lower() in MONTHS.keys():
+        found_month = True
+        month_value = MONTHS[date_token[:3].lower()]
+        continue
+    if not found_year:
+        re_match = match(r'^(\d{2,4})(?:\D)?', date_token)
+        if re_match:
+            found_year = True
+            year_value = int(re_match.group(1))
+            continue
   if 99 >= year_value >= 70:
       year_value += 1900
   if 69 >= year_value >= 0:
@@ -280,14 +282,14 @@ Browsers will ignore it."""
 class BasicSCTest(HeaderTest):
   name = 'Set-Cookie'
   inputs = ['SID=31d4d96e407aad42']
-  expected_out = [("SID", "31d4d96e407aad42", [])]
+  expected_out = [(u"SID", u"31d4d96e407aad42", [])]
   expected_err = []
 
 class ParameterSCTest(HeaderTest):
   name = 'Set-Cookie'
   inputs = ['SID=31d4d96e407aad42; Path=/; Domain=example.com']
-  expected_out = [("SID", "31d4d96e407aad42",
-      [("Path", "/"), ("Domain", "example.com")])]
+  expected_out = [(u"SID", u"31d4d96e407aad42",
+      [(u"Path", u"/"), (u"Domain", u"example.com")])]
   expected_err = []
 
 class TwoSCTest(HeaderTest):
@@ -297,43 +299,43 @@ class TwoSCTest(HeaderTest):
       "lang=en-US; Path=/; Domain=example.com"
   ]
   expected_out = [
-      ("SID", "31d4d96e407aad42", [("Path", "/"), ("Secure", ""), ("HttpOnly", "")]),
-      ("lang", "en-US", [("Path", "/"), ("Domain", "example.com")])
+      (u"SID", u"31d4d96e407aad42", [(u"Path", u"/"), (u"Secure", u""), (u"HttpOnly", u"")]),
+      (u"lang", u"en-US", [(u"Path", "/"), (u"Domain", u"example.com")])
   ]
   expected_err = []
 
 class ExpiresScTest(HeaderTest):
   name = "Set-Cookie"
   inputs = ["lang=en-US; Expires=Wed, 09 Jun 2021 10:18:14 GMT"]
-  expected_out = [("lang", "en-US", [("Expires", 1623233894)])]
+  expected_out = [(u"lang", u"en-US", [(u"Expires", 1623233894)])]
   expected_err = []
 
 class ExpiresSingleScTest(HeaderTest):
   name = "Set-Cookie"
   inputs = ["lang=en-US; Expires=Wed, 9 Jun 2021 10:18:14 GMT"]
-  expected_out = [("lang", "en-US", [("Expires", 1623233894)])]
+  expected_out = [(u"lang", u"en-US", [(u"Expires", 1623233894)])]
   expected_err = []
 
 class MaxAgeScTest(HeaderTest):
   name = "Set-Cookie"
   inputs = ["lang=en-US; Max-Age=123"]
-  expected_out = [("lang", "en-US", [("Max-Age", 123)])]
+  expected_out = [(u"lang", u"en-US", [(u"Max-Age", 123)])]
   expected_err = []
 
 class MaxAgeLeadingZeroScTest(HeaderTest):
   name = "Set-Cookie"
   inputs = ["lang=en-US; Max-Age=0123"]
-  expected_out = [("lang", "en-US", [])]
+  expected_out = [(u"lang", u"en-US", [])]
   expected_err = [SET_COOKIE_LEADING_ZERO_MAX_AGE]
 
 class RemoveSCTest(HeaderTest):
   name = "Set-Cookie"
   inputs = ["lang=; Expires=Sun, 06 Nov 1994 08:49:37 GMT"]
-  expected_out = [("lang", "", [("Expires", 784111777)])]
+  expected_out = [(u"lang", u"", [(u"Expires", 784111777)])]
   expected_err = []
 
 class WolframSCTest(HeaderTest):
   name = "Set-Cookie"
   inputs = ["WR_SID=50.56.234.188.1393830943825054; path=/; max-age=315360000; domain=.wolframalpha.com"]
-  expected_out = [("WR_SID","50.56.234.188.1393830943825054", [('Path', '/'), ('Max-Age', 315360000), ('Domain', 'wolframalpha.com')])]
+  expected_out = [(u"WR_SID", u"50.56.234.188.1393830943825054", [(u'Path', u'/'), (u'Max-Age', 315360000), (u'Domain', u'wolframalpha.com')])]
   expected_err = []

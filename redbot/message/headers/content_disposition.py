@@ -113,7 +113,7 @@ class InlineCDTest(HeaderTest):
 
 class RepeatCDTest(HeaderTest):
     name = 'Content-Disposition'
-    inputs = ['attachment; filename=foo.txt, inline; filename=bar.txt']
+    inputs = ['attachment; filename=foo.txt', 'inline; filename=bar.txt']
     expected_out = (u'inline', {u'filename': u'bar.txt'})
     expected_err = [headers.SINGLE_HEADER_REPEAT]
 
@@ -141,7 +141,7 @@ class FilenamePercentCDTest(HeaderTest):
     
 class FilenamePathCharCDTest(HeaderTest):
     name = 'Content-Disposition'
-    inputs = ['"attachment; filename="/foo.txt"']
-    expected_out = (u'attachment', {u'filename': u'/foo.txt',})
+    inputs = ['attachment; filename="/foo.txt"']
+    expected_out = (u'attachment', {'filename': u'/foo.txt',})
     expected_err = [DISPOSITION_FILENAME_PATH_CHAR]
 

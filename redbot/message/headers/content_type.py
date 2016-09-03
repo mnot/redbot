@@ -19,18 +19,18 @@ a GET."""
   valid_in_requests = True
   valid_in_responses = True
 
-def parse(self, field_value, add_note):
-    try:
-        media_type, param_str = field_value.split(";", 1)
-    except ValueError:
-        media_type, param_str = field_value, ''
-    media_type = media_type.lower()
-    param_dict = headers.parse_params(param_str, add_note, ['charset'])
-    # TODO: check charset to see if it's known
-    return (media_type, param_dict)
+  def parse(self, field_value, add_note):
+      try:
+          media_type, param_str = field_value.split(";", 1)
+      except ValueError:
+          media_type, param_str = field_value, ''
+      media_type = media_type.lower()
+      param_dict = headers.parse_params(param_str, add_note, ['charset'])
+      # TODO: check charset to see if it's known
+      return media_type, param_dict
     
 class BasicCTTest(HeaderTest):
     name = 'Content-Type'
     inputs = ['text/plain; charset=utf-8']
-    expected_out = ("text/plain", {"charset": "utf-8"})
+    expected_out = (u"text/plain", {u"charset": u"utf-8"})
     expected_err = []

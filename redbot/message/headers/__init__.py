@@ -39,6 +39,7 @@ class HttpHeader(object):
     reference = None
     syntax = None # verbose regular expression to match a value.
     list_header = None # Can be split into values on commas following common syntax.
+    nonstandard_syntax = False # Don't check for a single value at the end.
     deprecated = None
     valid_in_requests = None
     valid_in_responses = None
@@ -74,14 +75,16 @@ class HttpHeader(object):
         # check field value syntax
         if self.syntax and not re.match(r"^\s*(?:%s)\s*$" % self.syntax, field_value, re.VERBOSE):
             add_note(BAD_SYNTAX, ref_uri=self.reference)
-            return
         # split before processing if a list header
         if self.list_header:
             values = self.split_list_header(field_value)
         else:
             values = [field_value]
         for value in values:
-            parsed_value = self.parse(value.strip(), add_note)
+            try:
+              parsed_value = self.parse(value.strip(), add_note)
+            except ValueError:
+              continue # we assume that the parser made a note of the problem.
             self.value.append(parsed_value)
 
     @staticmethod
@@ -100,7 +103,7 @@ class HttpHeader(object):
             add_note(FIELD_NAME_BAD_SYNTAX)
         if self.deprecated:
             pass ###
-        if not self.list_header:
+        if not self.list_header and not self.nonstandard_syntax:
           if len(self.value) == 0:
             self.value = None
           elif len(self.value) == 1:
@@ -264,6 +267,7 @@ class HeaderProcessor(object):
       """
       return header_name.replace('-', '_').lower().encode('ascii', 'ignore')
 
+
 # TODO: allow testing of request headers
 class HeaderTest(unittest.TestCase):
     """
@@ -287,7 +291,7 @@ class HeaderTest(unittest.TestCase):
         HeaderProcessor(self.message)
         out = self.message.parsed_headers.get(self.name.lower(), None)
         self.assertEqual(self.expected_out, out,
-            "%s != %s" % (str(self.expected_out), str(out)))
+            "\n%s\n%s" % (str(self.expected_out), str(out)))
         diff = set(
             [n.__name__ for n in self.expected_err]).symmetric_difference(
             set(self.message.note_classes)
