@@ -17,7 +17,6 @@ from redbot.message import http_syntax
 from redbot.formatter import f_num
 import redbot.speak as rs
 
-from ._decorators import *
 from ._utils import parse_date, unquote_string, split_string, parse_params
 from ._notes import *
 
