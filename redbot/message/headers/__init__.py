@@ -44,8 +44,9 @@ class HttpHeader(object):
     valid_in_responses = None
     no_coverage = False  # turns off coverage checks for syntax and tests.
 
-    def __init__(self, wire_name):
+    def __init__(self, wire_name, message):
         self.wire_name = wire_name.strip()
+        self.message = message
         self.norm_name = self.wire_name.lower()
         if self.canonical_name is None:
             self.canonical_name = self.wire_name
@@ -223,7 +224,7 @@ class HeaderProcessor(object):
         if self._header_handlers.has_key(norm_name):
             return self._header_handlers[norm_name]
         else:
-            handler = self.find_header_handler(header_name)(header_name)
+            handler = self.find_header_handler(header_name)(header_name, self.message)
             self._header_handlers[norm_name] = handler
             return handler
             
@@ -281,6 +282,7 @@ class HeaderTest(unittest.TestCase):
         "Test setup."
         from redbot.message import DummyMsg
         self.message = DummyMsg()
+        self.set_context(self.message)
 
     def test_header(self):
         "Test the header."
@@ -301,3 +303,5 @@ class HeaderTest(unittest.TestCase):
             self.assertTrue(message.summary % message.vars)
         self.assertEqual(len(diff), 0, "Mismatched notes: %s" % diff)
 
+    def set_context(self, message):
+      pass
