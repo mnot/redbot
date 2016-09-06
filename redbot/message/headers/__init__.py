@@ -56,16 +56,14 @@ class HttpHeader(object):
         """
         Given a string value and a subject indicating an anchor that messages can
         refer to, parse and return the result."""
-        return # XXX
-        raise NotImplementedError()
-
+        return field_value
+        
     def evaluate(self, add_note):
         """
         Called once header processing is done; typically used to evaluate an entire
         header's values.
         """
-        return # XXX
-        raise NotImplementedError()
+        pass
 
     def handle_input(self, field_value, add_note):
         """
