@@ -116,7 +116,7 @@ variant = r"(?: {alphanum}{{3}} | (?: {DIGIT} {alphanum}{{3}} ) )".format(**loca
 #               / %x61-77             ; a - w
 #               / %x79-7A             ; y - z
 
-singleton = r"(?: {DIGIT} | [\x41-\x57\x59-\x5a\x61-\x77\x79-7a] )".format(**locals())
+singleton = r"(?: {DIGIT} | [\x41-\x57\x59-\x5a\x61-\x77\x79-\x7a] )".format(**locals())
 
 # extension     = singleton 1*("-" (2*8alphanum))
 
