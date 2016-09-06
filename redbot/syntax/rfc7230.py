@@ -176,7 +176,7 @@ ctext = r"(?: {HTAB} | {SP} | [\x21-\x27] | [\x2A-\x5b] | \x5D-\x7E | {obs_text}
 # comment = "(" *( ctext / quoted-pair / comment ) ")"
 
 comment = r"(?: (?: {ctext} | {quoted_pair} )* ) ".format(**locals())
-# FIXME: handle recursive comments - see <https://pypi.python.org/pypi/regex/>
+# TODO: handle recursive comments - see <https://pypi.python.org/pypi/regex/>
 
 # Via = 1#( received-protocol RWS received-by [ RWS comment ] )
 
