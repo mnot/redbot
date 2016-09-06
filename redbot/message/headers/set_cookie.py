@@ -22,9 +22,8 @@ requests to the server."""
   valid_in_responses = True
 
   def parse(self, field_value, add_note):
-      path = "/" # FIXME XXX
+      path = urlsplit(self.message.base_uri).path
       start_time = 0 # FIXME xxx
-#      path = urlsplit(red.base_uri).path # pylint: disable=E1103
       try:
           set_cookie = loose_parse(field_value, path, start_time, add_note)
       except ValueError:
