@@ -15,3 +15,4 @@ The `Content-Transfer-Encoding` isn't part of HTTP, but it is used in MIME proto
   deprecated = True
   valid_in_requests = True
   valid_in_responses = True
+  no_coverage = True
