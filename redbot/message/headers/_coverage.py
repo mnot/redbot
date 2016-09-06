@@ -44,6 +44,8 @@ def CheckHeaderModule(header_name):
       attr_value = getattr(header_obj, attr_name)
       if getattr(header_obj, "no_coverage") and attr_name in ['syntax']:
         continue
+      if attr_name in ['syntax'] and attr_value == False:
+        continue
       if attr_value == None:    
           sys.stderr.write("* %s lacks %s\n" % (header_name, attr_name))
       elif type(attr_value) != attr_type:

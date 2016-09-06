@@ -14,6 +14,7 @@ class set_cookie(HttpHeader):
   description = u"""\
 The `Set-Cookie` response header sets a stateful "cookie" on the client, to be included in future
 requests to the server."""
+  syntax = False
   reference = headers.rfc6265
   list_header = False
   nonstandard_syntax = True

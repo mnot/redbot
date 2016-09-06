@@ -13,7 +13,7 @@ class last_modified(HttpHeader):
 The `Last-Modified` header indicates the time that the origin server believes the
 representation was last modified."""
   reference = u"%s#header.last_modified" % rfc7232.SPEC_URL
-#  syntax = rfc7232.Last_Modified
+  syntax = False # rfc7232.Last_Modified
   list_header = False
   deprecated = False
   valid_in_requests = False

@@ -12,7 +12,7 @@ class expires(HttpHeader):
   description = u"""\
 The `Expires` header gives a time after which the response is considered stale."""
   reference = u"%s#header.expires" % rfc7234.SPEC_URL
-#  syntax = rfc7234.Expires
+  syntax = False # rfc7234.Expires
   list_header = False
   deprecated = False
   valid_in_requests = False

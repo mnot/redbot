@@ -13,7 +13,7 @@ happened since.
 
 It is used by caches as input to expiration calculations, and to detect clock drift."""
     reference = u"%s#header.date" % rfc7231.SPEC_URL
-#    syntax = rfc7231.Date
+    syntax = False # rfc7231.Date
     list_header = False
     deprecated = False
     valid_in_requests = True
