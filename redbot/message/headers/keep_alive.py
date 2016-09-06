@@ -24,9 +24,17 @@ It's safe to remove this header if you wish to save a few bytes in the response.
   
   def parse(self, field_value, add_note):
       try:
-          attr, attr_val = field._alue.split("=", 1)
+          attr, attr_val = field_value.split("=", 1)
           attr_val = headers.unquote_string(attr_val)
       except ValueError:
           attr = value
           attr_val = None
       return (attr.lower(), attr_val)
+
+
+
+class KeepAliveTest(HeaderTest):
+    name = 'Keep-Alive'
+    inputs = ['timeout=30']
+    expected_out = [("timeout", "30")]
+    expected_err = []

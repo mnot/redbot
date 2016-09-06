@@ -19,9 +19,9 @@ partial body should be applied."""
 
   def parse(self, field_value, add_note):
       # #53: check syntax, values?
-      if red.status_code not in ["206", "416"]:
+      if self.message.status_code not in ["206", "416"]:
           add_note(CONTENT_RANGE_MEANINGLESS)
-      return value
+      return field_value
 
 
 class CONTENT_RANGE_MEANINGLESS(Note):
@@ -33,3 +33,13 @@ HTTP only defines meaning for the `Content-Range` header in responses with a `20
 or `416 Requested Range Not Satisfiable` status code.
 
 Putting a `Content-Range` header in this response may confuse caches and clients."""
+
+
+
+class ContentRangeTest(HeaderTest):
+    name = 'Content-Range'
+    inputs = ['bytes 1-100/200']
+    expected_out = 'bytes 1-100/200'
+    expected_err = []
+    def set_context(self, message):
+      message.status_code = "206"

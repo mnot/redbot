@@ -17,3 +17,12 @@ this might not convey all of the languages used within the body."""
   deprecated = False
   valid_in_requests = True
   valid_in_responses = True
+
+
+
+
+class ContentLanguageTest(HeaderTest):
+    name = 'Content-Language'
+    inputs = ['en-US']
+    expected_out = 'en-US'
+    expected_err = []

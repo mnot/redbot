@@ -20,3 +20,10 @@ it should not be reused."""
   deprecated = False
   valid_in_requests = True
   valid_in_responses = True
+
+
+class ConnectionTest(HeaderTest):
+    name = 'Connection'
+    inputs = ['close']
+    expected_out = ['close']
+    expected_err = []

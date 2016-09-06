@@ -20,7 +20,7 @@ the request/response chain."""
 
   def evaluate(self, add_note):
       via_list = u"<ul>" + u"\n".join(
-             [u"<li><code>%s</code></li>" % v for v in values]
+             [u"<li><code>%s</code></li>" % v for v in self.value]
                          ) + u"</ul>"
       add_note(VIA_PRESENT, via_list=via_list)
     
@@ -40,3 +40,10 @@ There field has three space-separated components; first, the HTTP version of the
 intermediary received, then the identity of the intermediary (usually but not always its hostname),
 and then optionally a product identifier or comment (usually used to identify the software being
 used)."""
+
+
+class ViaTest(HeaderTest):
+    name = 'Via'
+    inputs = ['1.1 test']
+    expected_out = [u'1.1 test']
+    expected_err = [VIA_PRESENT]

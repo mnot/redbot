@@ -18,3 +18,11 @@ URI."""
   deprecated = False
   valid_in_requests = False
   valid_in_responses = True
+
+
+
+class ContentLocationTest(HeaderTest):
+    name = 'Content-Location'
+    inputs = ['/foo']
+    expected_out = '/foo'
+    expected_err = []

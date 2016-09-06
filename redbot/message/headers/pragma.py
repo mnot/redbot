@@ -14,7 +14,7 @@ recipient along the request/response chain.<p> This header is deprecated, in fav
 `Cache-Control`."""
   reference = u"%s#header.pragma" % rfc7234.SPEC_URL
   syntax = rfc7234.Pragma
-  list_header = False
+  list_header = True
   deprecated = True
   valid_in_requests = False
   valid_in_responses = True
@@ -23,9 +23,9 @@ recipient along the request/response chain.<p> This header is deprecated, in fav
       return field_value.lower()
     
   def evaluate(self, add_note):
-      if "no-cache" in values:
+      if "no-cache" in self.value:
           add_note(PRAGMA_NO_CACHE)
-      others = [True for v in values if v != "no-cache"]
+      others = [True for v in self.value if v != "no-cache"]
       if others:
           add_note(PRAGMA_OTHER)
       
@@ -46,3 +46,10 @@ class PRAGMA_OTHER(Note):
 The Pragma header is being used in an undefined way."""
   text = u"""\
 HTTP only defines `Pragma: no-cache`; other uses of this header are deprecated."""
+
+
+class PragmaTest(HeaderTest):
+    name = 'Pragma'
+    inputs = ['no-cache']
+    expected_out = ['no-cache']
+    expected_err = [PRAGMA_NO_CACHE]
