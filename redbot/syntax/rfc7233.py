@@ -74,7 +74,7 @@ other_content_range = r"(?: {other_range_unit} {SP} {other_range_resp} )".format
  
 # Content-Range = byte-content-range / other-content-range
 
-Content_Range = r"(?: {byte_content_range} | {other_content_range} )"
+Content_Range = r"(?: {byte_content_range} | {other_content_range} )".format(**locals())
  
 # If-Range = entity-tag / HTTP-date
 
