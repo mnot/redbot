@@ -91,7 +91,7 @@ extlang = r"(?: {ALPHA}{{3}} (?: \- {ALPHA}{{3}} ){{,2}} )".format(**locals())
 
 language = r"""(?:
   {ALPHA}{{2,3}}
-  (?: \- {extlang} )
+  (?: \- {extlang} )?
 | {ALPHA}{{4}}
 | {ALPHA}{{5,8}}
 )""".format(**locals())
