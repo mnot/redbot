@@ -180,7 +180,7 @@ comment = r"(?: (?: {ctext} | {quoted_pair} )* ) ".format(**locals())
 
 # Via = 1#( received-protocol RWS received-by [ RWS comment ] )
 
-Via = list_rule( r"(?: {received_protocol} {RWS} {received_by} (?: {RWS} {comment} ) )".format(**locals()), 1)
+Via = list_rule( r"(?: {received_protocol} {RWS} {received_by} (?: {RWS} {comment} )? )".format(**locals()), 1)
 
 
 
