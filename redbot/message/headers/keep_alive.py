@@ -4,6 +4,7 @@
 import redbot.message.headers as headers
 from redbot.speak import Note, categories, levels
 from redbot.message.headers import HttpHeader, HeaderTest
+from redbot.syntax import rfc7230, rfc7231
 
 class keep_alive(HttpHeader):
   canonical_name = u"Keep-Alive"
@@ -17,6 +18,7 @@ timeout is and other information. However, this isn't usually used by clients.
 
 It's safe to remove this header if you wish to save a few bytes in the response."""
   reference = u"https://tools.ietf.org/html/rfc2068#section-19.7.1"
+  syntax = rfc7230.list_rule(rfc7231.parameter, 0)
   list_header = True
   deprecated = True
   valid_in_requests = True
