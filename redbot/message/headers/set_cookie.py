@@ -23,7 +23,7 @@ requests to the server."""
 
   def parse(self, field_value, add_note):
       path = urlsplit(self.message.base_uri).path
-      start_time = 0 # FIXME xxx
+      start_time = 0 # FIXME
       try:
           set_cookie = loose_parse(field_value, path, start_time, add_note)
       except ValueError:
