@@ -6,6 +6,7 @@ from redbot.message.headers import HttpHeader, HeaderTest
 
 class x_frame_options(HttpHeader):
   canonical_name = u"X-Frame-Options"
+  reference = u"https://tools.ietf.org/html/rfc7034"
   list_header = True
   deprecated = False
   valid_in_requests = False
