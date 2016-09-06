@@ -164,7 +164,7 @@ received_by = r"(?: (?: {uri_host} (?: : {port} )? ) | {pseudonym} )".format(**l
 
 # received-protocol = [ protocol-name "/" ] protocol-version
 
-received_protocol = r"(?: (?: {protocol_name} )? / {protocol_version} )".format(**locals())
+received_protocol = r"(?: (?: {protocol_name} / )? {protocol_version} )".format(**locals())
 
 # ctext = HTAB / SP / %x21-27 ; '!'-'''
 #  / %x2A-5B ; '*'-'['
