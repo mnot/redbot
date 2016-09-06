@@ -3,7 +3,6 @@
 import redbot.message.headers as headers
 from redbot.speak import Note, categories, levels
 from redbot.message.headers import HttpHeader, HeaderTest
-from redbot.syntax import rfc7231
 
 class content_md5(HttpHeader):
   canonical_name = u"Content-MD5"
@@ -13,9 +12,16 @@ check (MIC).
 
 Note that while a MIC is good for detecting accidental modification of the body in transit, it is
 not proof against malicious attacks."""
-  reference = u"%s#header.content_md5" % rfc7231.SPEC_URL
-#  syntax = rfc7231.Content_MD5   FIXME
+  reference = u"https://tools.ietf.org/html/rfc1864"
+  syntax = r"(?: [A-Za-z0-9+/]{22} ={2} )"
   list_header = False
   deprecated = True
   valid_in_requests = True
   valid_in_responses = True
+
+
+class ContentMD5Test(HeaderTest):
+    name = 'Content-MD5'
+    inputs = ['Q2hlY2sgSW50ZWdyaXR5IQ==']
+    expected_out = 'Q2hlY2sgSW50ZWdyaXR5IQ=='
+    expected_err = []
