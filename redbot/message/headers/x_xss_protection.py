@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7231
 
-class x_xss_protection(HttpHeader):
+class x_xss_protection(headers.HttpHeader):
   canonical_name = u"X-XSS-Protection"
   description = u"""\
 The `X-XSS-Protection` response header field can be sent by servers to control how
@@ -88,25 +87,25 @@ See [this blog entry](http://bit.ly/tJbICH) for more information."""
 
 
 
-class OneXXSSTest(HeaderTest):
+class OneXXSSTest(headers.HeaderTest):
     name = 'X-XSS-Protection'
     inputs = ['1']
     expected_out = (1, {})
     expected_err = [XSS_PROTECTION_ON]
 
-class ZeroXXSSTest(HeaderTest):
+class ZeroXXSSTest(headers.HeaderTest):
     name = 'X-XSS-Protection'
     inputs = ['0']
     expected_out = (0, {})
     expected_err = [XSS_PROTECTION_OFF]
 
-class OneBlockXXSSTest(HeaderTest):
+class OneBlockXXSSTest(headers.HeaderTest):
     name = 'X-XSS-Protection'
     inputs = ['1; mode=block']
     expected_out = (1, {'mode': 'block'})
     expected_err = [XSS_PROTECTION_BLOCK]
     
-class BadXXSSTest(HeaderTest):
+class BadXXSSTest(headers.HeaderTest):
     name = 'X-XSS-Protection'
     inputs = ['foo']
     expected_out = None

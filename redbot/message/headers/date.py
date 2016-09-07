@@ -2,10 +2,9 @@
 
 from redbot.speak import Note, categories, levels
 from redbot.message import headers
-from redbot.message.headers import HttpHeader, HeaderTest, parse_date
 from redbot.syntax import rfc7231
 
-class date(HttpHeader):
+class date(headers.HttpHeader):
     canonical_name = u"Date"
     description = u"""\
 The `Date` header represents the time when the message was generated, regardless of caching that
@@ -21,7 +20,7 @@ It is used by caches as input to expiration calculations, and to detect clock dr
 
     def parse(self, field_value, add_note):
         try:
-            date = parse_date(field_value)
+            date = headers.parse_date(field_value)
         except ValueError:
             add_note(BAD_DATE_SYNTAX)
             return None
@@ -40,19 +39,19 @@ specification](http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3) for
 information."""
 
 
-class BasicDateTest(HeaderTest):
+class BasicDateTest(headers.HeaderTest):
     name = 'Date'
     inputs = ['Mon, 04 Jul 2011 09:08:06 GMT']
     expected_out = 1309770486
     expected_err = []
 
-class BadDateTest(HeaderTest):
+class BadDateTest(headers.HeaderTest):
     name = 'Date'
     inputs = ['0']
     expected_out = None
     expected_err = [headers.BAD_DATE_SYNTAX]
 
-class BlankDateTest(HeaderTest):
+class BlankDateTest(headers.HeaderTest):
     name = 'Date'
     inputs = ['']
     expected_out = None

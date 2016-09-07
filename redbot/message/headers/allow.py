@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7231
 
-class allow(HttpHeader):
+class allow(headers.HttpHeader):
     canonical_name = u"Allow"
     description = u"""\
 The `Allow` header advertises the set of methods that are supported by the resource."""
@@ -16,7 +15,7 @@ The `Allow` header advertises the set of methods that are supported by the resou
     valid_in_requests = False
     valid_in_responses = True
 
-class AllowTest(HeaderTest):
+class AllowTest(headers.HeaderTest):
     name = 'Allow'
     inputs = ['GET, POST']
     expected_out = ['GET', 'POST']

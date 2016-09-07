@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 
-class p3p(HttpHeader):
+
+class p3p(headers.HttpHeader):
   canonical_name = u"P3P"
   description = u"""\
 The `P3P` header field allows a server to describe its privacy policy in a

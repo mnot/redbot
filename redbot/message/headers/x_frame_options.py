@@ -1,24 +1,43 @@
 #!/usr/bin/env python
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
+from redbot.syntax import rfc3986, rfc7230
 
-class x_frame_options(HttpHeader):
+# X-Frame-Options = "DENY"
+#          / "SAMEORIGIN"
+#          / ( "ALLOW-FROM" RWS SERIALIZED-ORIGIN )
+
+serialized_origin = r"""(?: 
+{rfc3986.scheme} :// {rfc3986.host} (?: : {rfc3986.port} )? 
+)
+""".format(**locals())
+X_Frame_Options = r"""(?: 
+    DENY 
+  | SAMEORIGIN 
+  | (?: ALLOW-FROM {rfc7230.RWS} {serialized_origin} )
+)""".format(**locals())
+
+class x_frame_options(headers.HttpHeader):
   canonical_name = u"X-Frame-Options"
   reference = u"https://tools.ietf.org/html/rfc7034"
-  list_header = True
+  description = u"""
+The X-Frame-Options HTTP header field declares a policy regarding whether the browser may display
+the transmitted content in frames that are part of other web pages.
+"""
+  syntax = X_Frame_Options
+  list_header = False
   deprecated = False
   valid_in_requests = False
   valid_in_responses = True
   
   def parse(self, field_value, add_note):
-      return field_value.lower()
+      return field_value.upper()
     
   def evaluate(self, add_note):
-      if 'deny' in self.value:
+      if 'DENY' in self.value:
           add_note(FRAME_OPTIONS_DENY)
-      elif 'sameorigin' in self.value:
+      elif 'SAMEORIGIN' in self.value:
           add_note(FRAME_OPTIONS_SAMEORIGIN)
       else:
           add_note(FRAME_OPTIONS_UNKNOWN)
@@ -62,27 +81,27 @@ See [this blog entry](http://bit.ly/v5Bh5Q) for more information.
      """
 
 
-class DenyXFOTest(HeaderTest):
-    name = 'X-Frame-Options'
-    inputs = ['deny']
-    expected_out = ['deny']
-    expected_err = [FRAME_OPTIONS_DENY]
-    
-class DenyXFOCaseTest(HeaderTest):
+class DenyXFOTest(headers.HeaderTest):
     name = 'X-Frame-Options'
     inputs = ['DENY']
-    expected_out = ['deny']
+    expected_out = 'DENY'
     expected_err = [FRAME_OPTIONS_DENY]
     
-class SameOriginXFOTest(HeaderTest):
+class DenyXFOCaseTest(headers.HeaderTest):
     name = 'X-Frame-Options'
-    inputs = ['sameorigin']
-    expected_out = ['sameorigin']
+    inputs = ['deny']
+    expected_out = 'DENY'
+    expected_err = [FRAME_OPTIONS_DENY]
+    
+class SameOriginXFOTest(headers.HeaderTest):
+    name = 'X-Frame-Options'
+    inputs = ['SAMEORIGIN']
+    expected_out = 'SAMEORIGIN'
     expected_err = [FRAME_OPTIONS_SAMEORIGIN]
 
-class UnknownXFOTest(HeaderTest):
+class UnknownXFOTest(headers.HeaderTest):
     name = 'X-Frame-Options'
     inputs = ['foO']
-    expected_out = ['foo']
-    expected_err = [FRAME_OPTIONS_UNKNOWN]
+    expected_out = 'FOO'
+    expected_err = [headers.BAD_SYNTAX, FRAME_OPTIONS_UNKNOWN]
 

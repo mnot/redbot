@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7234
 
-class cache_control(HttpHeader):
+
+class cache_control(headers.HttpHeader):
   canonical_name = u"Cache-Control"
   description = u"""\
 The `Cache-Control` header is used to specify directives that must be obeyed by all caches along
@@ -43,31 +43,31 @@ class BAD_CC_SYNTAX(Note):
     text = u"This value must be an integer."
 
 
-class CacheControlTest(HeaderTest):
+class CacheControlTest(headers.HeaderTest):
     name = 'Cache-Control'
     inputs = ['a=b, c=d', 'e=f', 'g']
     expected_out = [(u'a', u'b'), (u'c', u'd'), (u'e', u'f'), (u'g', None)]
     expected_err = []
 
-class CacheControlCaseTest(HeaderTest):
+class CacheControlCaseTest(headers.HeaderTest):
     name = 'Cache-Control'
     inputs = ['A=b, c=D']
     expected_out = [(u'a', u'b'), (u'c', u'D')]
     expected_err = []
 
-class CacheControlQuotedTest(HeaderTest):
+class CacheControlQuotedTest(headers.HeaderTest):
     name = 'Cache-Control'
     inputs = ['a="b,c", c=d']
     expected_out = [(u'a', u'b,c'), (u'c', u'd')]
     expected_err = []
 
-class CacheControlMaxAgeTest(HeaderTest):
+class CacheControlMaxAgeTest(headers.HeaderTest):
     name = 'Cache-Control'
     inputs = ['max-age=5']
     expected_out = [(u'max-age', 5)]
     expected_err = []
 
-class CacheControlBadMaxAgeTest(HeaderTest):
+class CacheControlBadMaxAgeTest(headers.HeaderTest):
     name = 'Cache-Control'
     inputs = ['max-age=foo']
     expected_out = []

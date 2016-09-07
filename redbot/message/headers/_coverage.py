@@ -57,8 +57,7 @@ def CheckHeaderModule(header_name):
 
     loader = unittest.TestLoader()
     tests = loader.loadTestsFromModule(header_mod)
-    if tests.countTestCases() <= 1 and getattr(header_obj, "no_coverage") == False: 
-        # we import HeaderTest
+    if tests.countTestCases() == 0 and getattr(header_obj, "no_coverage") == False: 
         sys.stderr.write("* %s doesn't have any tests\n" % header_name)
 
 

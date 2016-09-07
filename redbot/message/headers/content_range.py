@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7233
 
-class content_range(HttpHeader):
+class content_range(headers.HttpHeader):
   canonical_name = u"Content-Range"
   description = u"""\
 The `Content-Range` header is sent with a partial body to specify where in the full body the
@@ -36,7 +35,7 @@ Putting a `Content-Range` header in this response may confuse caches and clients
 
 
 
-class ContentRangeTest(HeaderTest):
+class ContentRangeTest(headers.HeaderTest):
     name = 'Content-Range'
     inputs = ['bytes 1-100/200']
     expected_out = 'bytes 1-100/200'

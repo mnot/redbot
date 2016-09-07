@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest, BAD_SYNTAX
 from redbot.syntax import rfc7232
 
-class etag(HttpHeader):
+class etag(headers.HttpHeader):
   canonical_name = u"ETag"
   description = u"""\
 The `ETag` header provides an opaque identifier for the representation."""
@@ -25,20 +24,20 @@ The `ETag` header provides an opaque identifier for the representation."""
 
 
         
-class ETagTest(HeaderTest):
+class ETagTest(headers.HeaderTest):
     name = 'ETag'
     inputs = ['"foo"']
     expected_out = (False, 'foo')
     expected_err = []
 
-class WeakETagTest(HeaderTest):
+class WeakETagTest(headers.HeaderTest):
     name = 'ETag'
     inputs = ['W/"foo"']
     expected_out = (True, 'foo')
     expected_err = []
 
-class UnquotedETagTest(HeaderTest):
+class UnquotedETagTest(headers.HeaderTest):
     name = 'ETag'
     inputs = ['foo']
     expected_out = (False, 'foo')
-    expected_err = [BAD_SYNTAX]
+    expected_err = [headers.BAD_SYNTAX]

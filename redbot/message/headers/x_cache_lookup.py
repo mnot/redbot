@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 
-class x_cache_lookup(HttpHeader):
+
+class x_cache_lookup(headers.HttpHeader):
   canonical_name = u"X-Cache-Lookup"
   description = u"""\
 The `X-Cache-Lookup` header is used by some caches to show whether there was a response in cache

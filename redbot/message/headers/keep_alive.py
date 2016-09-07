@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7230, rfc7231
 
-class keep_alive(HttpHeader):
+class keep_alive(headers.HttpHeader):
   canonical_name = u"Keep-Alive"
   description = u"""\
 The `Keep-Alive` header is completely optional; it is defined primarily because the `keep-alive`
@@ -29,14 +28,20 @@ It's safe to remove this header if you wish to save a few bytes in the response.
           attr, attr_val = field_value.split("=", 1)
           attr_val = headers.unquote_string(attr_val)
       except ValueError:
-          attr = value
+          attr = field_value
           attr_val = None
       return (attr.lower(), attr_val)
 
 
 
-class KeepAliveTest(HeaderTest):
+class KeepAliveTest(headers.HeaderTest):
     name = 'Keep-Alive'
     inputs = ['timeout=30']
     expected_out = [("timeout", "30")]
+    expected_err = []
+    
+class EmptyKeepAliveTest(headers.HeaderTest):
+    name = 'Keep-Alive'
+    inputs = ['']
+    expected_out = []
     expected_err = []

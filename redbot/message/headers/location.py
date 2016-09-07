@@ -2,12 +2,11 @@
 
 import re
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7231, rfc3986
 
-class location(HttpHeader):
+class location(headers.HttpHeader):
   canonical_name = u"Location"
   description = u"""\
 The `Location` header is used in `3xx` responses to redirect the recipient to a different location
@@ -58,7 +57,7 @@ It is in the process of being updated, and most clients will work around this.
 The correct absolute URI is (probably): `%(full_uri)s`"""
 
 
-class LocationTest(HeaderTest):
+class LocationTest(headers.HeaderTest):
     name = 'Location'
     inputs = ['http://other.example.com/foo']
     expected_out = 'http://other.example.com/foo'

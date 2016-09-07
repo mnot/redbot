@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7231
 
-class retry_after(HttpHeader):
+class retry_after(headers.HttpHeader):
   canonical_name = u"Retry-After"
   description = u"""\
 The `Retry-After` header can be used with a `503 Service Unavailable` response to indicate how long

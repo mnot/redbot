@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7235
 
-class www_authenticate(HttpHeader):
+class www_authenticate(headers.HttpHeader):
   canonical_name = u"WWW-Authenticate"
   description = u"""\
 The `WWW-Authenticate` response header consists of at least one challenge that

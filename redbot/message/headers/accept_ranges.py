@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7233
 
 
-class accept_ranges(HttpHeader):
+class accept_ranges(headers.HttpHeader):
     canonical_name = u"Accept-Ranges"
     description = u"""\
 The `Accept-Ranges` header allows the server to indicate that it accepts range requests for a
@@ -36,31 +35,31 @@ process in future requests. HTTP only defines two: `bytes` and `none`.
 Clients who don't know about the non-standard range-unit will not be able to use it."""
 
 
-class AcceptRangeTest(HeaderTest):
+class AcceptRangeTest(headers.HeaderTest):
     name = 'Accept-Ranges'
     inputs = ['bytes']
     expected_out = (['bytes'])
     expected_err = []
 
-class NoneAcceptRangeTest(HeaderTest):
+class NoneAcceptRangeTest(headers.HeaderTest):
     name = 'Accept-Ranges'
     inputs = ['none']
     expected_out = (['none'])
     expected_err = []
 
-class BothAcceptRangeTest(HeaderTest):
+class BothAcceptRangeTest(headers.HeaderTest):
     name = 'Accept-Ranges'
     inputs = ['bytes, none']
     expected_out = (['bytes', 'none'])
     expected_err = []
     
-class BadAcceptRangeTest(HeaderTest):
+class BadAcceptRangeTest(headers.HeaderTest):
     name = 'Accept-Ranges'
     inputs = ['foo']
     expected_out = (['foo'])
     expected_err = [UNKNOWN_RANGE]
     
-class CaseAcceptRangeTest(HeaderTest):
+class CaseAcceptRangeTest(headers.HeaderTest):
     name = 'Accept-Ranges'
     inputs = ['Bytes, NONE']
     expected_out = (['bytes', 'none'])

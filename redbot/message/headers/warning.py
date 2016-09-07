@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7234
 
-class warning(HttpHeader):
+class warning(headers.HttpHeader):
   canonical_name = u"Warning"
   description = u"""\
 The `Warning` header is used to carry additional information about the status or transformation of

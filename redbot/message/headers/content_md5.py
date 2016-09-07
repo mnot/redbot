@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 
-class content_md5(HttpHeader):
+
+class content_md5(headers.HttpHeader):
   canonical_name = u"Content-MD5"
   description = u"""\
 The `Content-MD5` header is an MD5 digest of the body, and provides an end-to-end message integrity
@@ -20,7 +20,7 @@ not proof against malicious attacks."""
   valid_in_responses = True
 
 
-class ContentMD5Test(HeaderTest):
+class ContentMD5Test(headers.HeaderTest):
     name = 'Content-MD5'
     inputs = ['Q2hlY2sgSW50ZWdyaXR5IQ==']
     expected_out = 'Q2hlY2sgSW50ZWdyaXR5IQ=='

@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7231
 
-class content_language(HttpHeader):
+class content_language(headers.HttpHeader):
   canonical_name = u"Content-Language"
   description = u"""\
 The `Content-Language` header describes the natural language(s) of the intended audience. Note that
@@ -21,7 +20,7 @@ this might not convey all of the languages used within the body."""
 
 
 
-class ContentLanguageTest(HeaderTest):
+class ContentLanguageTest(headers.HeaderTest):
     name = 'Content-Language'
     inputs = ['en-US']
     expected_out = 'en-US'

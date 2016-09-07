@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7234
 
-class x_content_type_options(HttpHeader):
+class x_content_type_options(headers.HttpHeader):
   canonical_name = u"X-Content-Type-Options"
 
   def evaluate(self, add_note):

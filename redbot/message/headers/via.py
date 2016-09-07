@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7230
 
-class via(HttpHeader):
+class via(headers.HttpHeader):
   canonical_name = u"Via"
   description = u"""\
 The `Via` header is added to requests and responses by proxies and other HTTP intermediaries. It
@@ -42,7 +41,7 @@ and then optionally a product identifier or comment (usually used to identify th
 used)."""
 
 
-class ViaTest(HeaderTest):
+class ViaTest(headers.HeaderTest):
     name = 'Via'
     inputs = ['1.1 test']
     expected_out = [u'1.1 test']

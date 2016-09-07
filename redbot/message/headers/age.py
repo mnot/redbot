@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7234
 
-class age(HttpHeader):
+class age(headers.HttpHeader):
   canonical_name = u"Age"
   description = u"""\
 The `Age` header conveys the sender's estimate of the amount of time since the response (or its
@@ -48,25 +47,25 @@ since it was generated. The value given was negative, so it is not a valid age."
 
     
     
-class AgeTest(HeaderTest):
+class AgeTest(headers.HeaderTest):
     name = 'Age'
     inputs = ['10']
     expected_out = 10
     expected_err = []
 
-class MultipleAgeTest(HeaderTest):
+class MultipleAgeTest(headers.HeaderTest):
     name = 'Age'
     inputs = ['20', '10']
     expected_out = 10
     expected_err = [headers.SINGLE_HEADER_REPEAT]
 
-class CharAgeTest(HeaderTest):
+class CharAgeTest(headers.HeaderTest):
     name = 'Age'
     inputs = ['foo']
     expected_out = None
     expected_err = [AGE_NOT_INT]
 
-class NegAgeTest(HeaderTest):
+class NegAgeTest(headers.HeaderTest):
     name = "Age"
     inputs = ["-20"]
     expected_out = None

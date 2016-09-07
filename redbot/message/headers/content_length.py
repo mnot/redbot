@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
 
-import redbot.speak as rs
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest, BAD_SYNTAX
 from redbot.syntax import rfc7230
 
-class content_length(HttpHeader):
+
+class content_length(headers.HttpHeader):
   canonical_name = u"Content-Length"
   description = u"""\
 The `Content-Length` header indicates the size of the body, in number of bytes. In responses to the
@@ -29,31 +28,31 @@ response (since they can't be sure if they have the whole response)."""
       return
 
     
-class ContentLengthTest(HeaderTest):
+class ContentLengthTest(headers.HeaderTest):
     name = 'Content-Length'
     inputs = ['1']
     expected_out = 1
     expected_err = []
 
-class ContentLengthTextTest(HeaderTest):
+class ContentLengthTextTest(headers.HeaderTest):
     name = 'Content-Length'
     inputs = ['a']
     expected_out = None
-    expected_err = [BAD_SYNTAX]
+    expected_err = [headers.BAD_SYNTAX]
 
-class ContentLengthSemiTest(HeaderTest):
+class ContentLengthSemiTest(headers.HeaderTest):
     name = 'Content-Length'
     inputs = ['1;']
     expected_out = None
-    expected_err = [BAD_SYNTAX]
+    expected_err = [headers.BAD_SYNTAX]
 
-class ContentLengthSpaceTest(HeaderTest):
+class ContentLengthSpaceTest(headers.HeaderTest):
     name = 'Content-Length'
     inputs = [' 1 ']
     expected_out = 1
     expected_err = []
 
-class ContentLengthBigTest(HeaderTest):
+class ContentLengthBigTest(headers.HeaderTest):
     name = 'Content-Length'
     inputs = ['9' * 999]
     expected_out = long('9' * 999)

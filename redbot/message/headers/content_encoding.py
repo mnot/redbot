@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
 
-import redbot.speak as rs
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7231
 
-class content_encoding(HttpHeader):
+
+class content_encoding(headers.HttpHeader):
   canonical_name = u"Content-Encoding"
   description = u"""\
 The `Content-Encoding` header's value indicates what additional content codings have
@@ -43,19 +42,19 @@ Normally, clients ask for the encodings they want in the `Accept-Encoding` reque
 encodings that the client doesn't explicitly request can lead to interoperability problems."""
 
 
-class ContentEncodingTest(HeaderTest):
+class ContentEncodingTest(headers.HeaderTest):
     name = 'Content-Encoding'
     inputs = ['gzip']
     expected_out = ['gzip']
     expected_err = []
 
-class ContentEncodingCaseTest(HeaderTest):
+class ContentEncodingCaseTest(headers.HeaderTest):
     name = 'Content-Encoding'
     inputs = ['GZip']
     expected_out = ['gzip']
     expected_err = []
 
-class UnwantedContentEncodingTest(HeaderTest):
+class UnwantedContentEncodingTest(headers.HeaderTest):
     name = 'Content-Encoding'
     inputs = ['gzip', 'foo']
     expected_out = ['gzip', 'foo']

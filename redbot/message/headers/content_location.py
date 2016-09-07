@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7231
 
-class content_location(HttpHeader):
+class content_location(headers.HttpHeader):
   canonical_name = u"Content-Location"
   description = u"""\
 The `Content-Location` header can used to supply an address for the
@@ -21,7 +20,7 @@ URI."""
 
 
 
-class ContentLocationTest(HeaderTest):
+class ContentLocationTest(headers.HeaderTest):
     name = 'Content-Location'
     inputs = ['/foo']
     expected_out = '/foo'

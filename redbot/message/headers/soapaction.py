@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 
-class soapaction(HttpHeader):
+
+class soapaction(headers.HttpHeader):
   canonical_name = u"SoapAction"
   description = u"""\
 The `SOAPAction` header is used by SOAP, which isn't really HTTP. Stop it.

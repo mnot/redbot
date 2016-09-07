@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7234
 
-class content_transfer_encoding(HttpHeader):
+class content_transfer_encoding(headers.HttpHeader):
   canonical_name = u"Content-Transfer-Encoding"
   description = u"""\
 The `Content-Transfer-Encoding` isn't part of HTTP, but it is used in MIME protocols in a manner analogous to `Transfer-Encoding`.

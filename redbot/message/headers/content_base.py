@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 
-class content_base(HttpHeader):
+
+class content_base(headers.HttpHeader):
   canonical_name = u"Content-Base"
   description = u"""\
 The `Content-Base` header field established the base URI of the message. It has been

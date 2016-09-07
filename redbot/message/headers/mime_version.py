@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 
-class mime_version(HttpHeader):
+
+class mime_version(headers.HttpHeader):
   canonical_name = u"MIME-Version"
   description = u"""\
 HTTP is not a MIME-compliant protocol. However, HTTP/1.1 messages can include a single MIME-Version

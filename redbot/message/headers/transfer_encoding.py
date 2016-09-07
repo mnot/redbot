@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7230
 
-class transfer_encoding(HttpHeader):
+class transfer_encoding(headers.HttpHeader):
   canonical_name = u"Transfer-Encoding"
   description = u"""\
 The `Transfer-Encoding` header indicates what (if any) type of transformation has been applied to
@@ -83,49 +82,49 @@ cause interoperability problems. They should be removed."""
 
 
 
-class TransferEncodingTest(HeaderTest):
+class TransferEncodingTest(headers.HeaderTest):
     name = 'Transfer-Encoding'
     inputs = ['chunked']
     expected_out = (['chunked'])
     expected_err = []
 
-class TransferEncodingParamTest(HeaderTest):
+class TransferEncodingParamTest(headers.HeaderTest):
     name = 'Transfer-Encoding'
     inputs = ['chunked; foo=bar']
     expected_out = (['chunked'])
     expected_err = [TRANSFER_CODING_PARAM]
 
-class BadTransferEncodingTest(HeaderTest):
+class BadTransferEncodingTest(headers.HeaderTest):
     name = 'Transfer-Encoding'
     inputs = ['chunked=foo']
     expected_out = ['chunked=foo']
     expected_err = [headers.BAD_SYNTAX, TRANSFER_CODING_UNWANTED]
 
-class TransferEncodingCaseTest(HeaderTest):
+class TransferEncodingCaseTest(headers.HeaderTest):
     name = 'Transfer-Encoding'
     inputs = ['chUNked']
     expected_out = (['chunked'])
     expected_err = []
 
-class TransferEncodingIdentityTest(HeaderTest):
+class TransferEncodingIdentityTest(headers.HeaderTest):
     name = 'Transfer-Encoding'
     inputs = ['identity']
     expected_out = (['identity'])
     expected_err = [TRANSFER_CODING_IDENTITY]
 
-class TransferEncodingUnwantedTest(HeaderTest):
+class TransferEncodingUnwantedTest(headers.HeaderTest):
     name = 'Transfer-Encoding'
     inputs = ['foo']
     expected_out = (['foo'])
     expected_err = [TRANSFER_CODING_UNWANTED]
     
-class TransferEncodingMultTest(HeaderTest):
+class TransferEncodingMultTest(headers.HeaderTest):
     name = 'Transfer-Encoding'
     inputs = ['chunked', 'identity']
     expected_out = (['chunked', 'identity'])
     expected_err = [TRANSFER_CODING_IDENTITY]
 
-class TransferEncodingMultUnwantedTest(HeaderTest):
+class TransferEncodingMultUnwantedTest(headers.HeaderTest):
     name = 'Transfer-Encoding'
     inputs = ['chunked', 'foo', 'bar']
     expected_out = (['chunked', 'foo', 'bar'])

@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7234
 
-class pragma(HttpHeader):
+class pragma(headers.HttpHeader):
   canonical_name = u"Pragma"
   description = u"""\
 The `Pragma` header is used to include implementation-specific directives that might apply to any
@@ -48,7 +47,7 @@ The Pragma header is being used in an undefined way."""
 HTTP only defines `Pragma: no-cache`; other uses of this header are deprecated."""
 
 
-class PragmaTest(HeaderTest):
+class PragmaTest(headers.HeaderTest):
     name = 'Pragma'
     inputs = ['no-cache']
     expected_out = ['no-cache']

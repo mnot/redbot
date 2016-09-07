@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7230
 
-class upgrade(HttpHeader):
+class upgrade(headers.HttpHeader):
   canonical_name = u"Upgrade"
   description = u"""\
 The `Upgrade` header allows the client to specify what additional communication

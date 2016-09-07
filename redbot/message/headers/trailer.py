@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7230
 
-class trailer(HttpHeader):
+class trailer(headers.HttpHeader):
   canonical_name = u"Trailer"
   description = u"""\
 The `Trailer` header indicates that the given set of header fields will be

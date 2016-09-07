@@ -5,11 +5,11 @@ from calendar import timegm
 from re import match, split
 from urlparse import urlsplit
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 
-class set_cookie(HttpHeader):
+
+class set_cookie(headers.HttpHeader):
   canonical_name = u"Set-Cookie"
   description = u"""\
 The `Set-Cookie` response header sets a stateful "cookie" on the client, to be included in future
@@ -279,20 +279,20 @@ Browsers will ignore it."""
 
 
 
-class BasicSCTest(HeaderTest):
+class BasicSCTest(headers.HeaderTest):
   name = 'Set-Cookie'
   inputs = ['SID=31d4d96e407aad42']
   expected_out = [(u"SID", u"31d4d96e407aad42", [])]
   expected_err = []
 
-class ParameterSCTest(HeaderTest):
+class ParameterSCTest(headers.HeaderTest):
   name = 'Set-Cookie'
   inputs = ['SID=31d4d96e407aad42; Path=/; Domain=example.com']
   expected_out = [(u"SID", u"31d4d96e407aad42",
       [(u"Path", u"/"), (u"Domain", u"example.com")])]
   expected_err = []
 
-class TwoSCTest(HeaderTest):
+class TwoSCTest(headers.HeaderTest):
   name = 'Set-Cookie'
   inputs = [
       "SID=31d4d96e407aad42; Path=/; Secure; HttpOnly",
@@ -304,37 +304,37 @@ class TwoSCTest(HeaderTest):
   ]
   expected_err = []
 
-class ExpiresScTest(HeaderTest):
+class ExpiresScTest(headers.HeaderTest):
   name = "Set-Cookie"
   inputs = ["lang=en-US; Expires=Wed, 09 Jun 2021 10:18:14 GMT"]
   expected_out = [(u"lang", u"en-US", [(u"Expires", 1623233894)])]
   expected_err = []
 
-class ExpiresSingleScTest(HeaderTest):
+class ExpiresSingleScTest(headers.HeaderTest):
   name = "Set-Cookie"
   inputs = ["lang=en-US; Expires=Wed, 9 Jun 2021 10:18:14 GMT"]
   expected_out = [(u"lang", u"en-US", [(u"Expires", 1623233894)])]
   expected_err = []
 
-class MaxAgeScTest(HeaderTest):
+class MaxAgeScTest(headers.HeaderTest):
   name = "Set-Cookie"
   inputs = ["lang=en-US; Max-Age=123"]
   expected_out = [(u"lang", u"en-US", [(u"Max-Age", 123)])]
   expected_err = []
 
-class MaxAgeLeadingZeroScTest(HeaderTest):
+class MaxAgeLeadingZeroScTest(headers.HeaderTest):
   name = "Set-Cookie"
   inputs = ["lang=en-US; Max-Age=0123"]
   expected_out = [(u"lang", u"en-US", [])]
   expected_err = [SET_COOKIE_LEADING_ZERO_MAX_AGE]
 
-class RemoveSCTest(HeaderTest):
+class RemoveSCTest(headers.HeaderTest):
   name = "Set-Cookie"
   inputs = ["lang=; Expires=Sun, 06 Nov 1994 08:49:37 GMT"]
   expected_out = [(u"lang", u"", [(u"Expires", 784111777)])]
   expected_err = []
 
-class WolframSCTest(HeaderTest):
+class WolframSCTest(headers.HeaderTest):
   name = "Set-Cookie"
   inputs = ["WR_SID=50.56.234.188.1393830943825054; path=/; max-age=315360000; domain=.wolframalpha.com"]
   expected_out = [(u"WR_SID", u"50.56.234.188.1393830943825054", [(u'Path', u'/'), (u'Max-Age', 315360000), (u'Domain', u'wolframalpha.com')])]

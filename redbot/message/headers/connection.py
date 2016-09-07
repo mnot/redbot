@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7230
 
-class connection(HttpHeader):
+
+class connection(headers.HttpHeader):
   canonical_name = u"Connection"
   description = u"""\
 The `Connection` header allows senders to specify which headers are hop-by-hop; that is, those that
@@ -22,7 +22,7 @@ it should not be reused."""
   valid_in_responses = True
 
 
-class ConnectionTest(HeaderTest):
+class ConnectionTest(headers.HeaderTest):
     name = 'Connection'
     inputs = ['close']
     expected_out = ['close']

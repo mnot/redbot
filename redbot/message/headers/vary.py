@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7231
 
-class vary(HttpHeader):
+class vary(headers.HttpHeader):
   canonical_name = u"Vary"
   description = u"""\
 The `Vary` header indicates the set of request headers that determines whether a cache is permitted

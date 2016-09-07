@@ -30,6 +30,7 @@ rfc6266 = u"http://tools.ietf.org/html/rfc6266.html#section-4"
 MAX_HDR_SIZE = 4 * 1024
 MAX_TTL_HDR = 8 * 1000
 
+RE_FLAGS = re.VERBOSE | re.IGNORECASE
 
 class HttpHeader(object):
     """A HTTP Header handler."""
@@ -71,7 +72,7 @@ class HttpHeader(object):
         """
 
         # check field value syntax
-        if self.syntax and not re.match(r"^\s*(?:%s)\s*$" % self.syntax, field_value, re.VERBOSE):
+        if self.syntax and not re.match(r"^\s*(?:%s)\s*$" % self.syntax, field_value, RE_FLAGS):
             add_note(BAD_SYNTAX, ref_uri=self.reference)
         # split before processing if a list header
         if self.list_header:
@@ -88,8 +89,14 @@ class HttpHeader(object):
     @staticmethod
     def split_list_header(field_value):
         "Split a header field value on commas. needs to conform to the #rule."
-        return [f.strip() for f in re.findall(r'((?:[^",]|%s)+)(?=%s|\s*$)' %
-            (http_syntax.QUOTED_STRING, r"(?:\s*(?:,\s*)+)"), field_value, re.VERBOSE)] or ['']
+        return [
+                  f.strip() for f in 
+                  re.findall(r'((?:[^",]|%s)+)(?=%s|\s*$)' % (
+                    http_syntax.QUOTED_STRING, 
+                    r"(?:\s*(?:,\s*)+)"
+                  ), field_value, RE_FLAGS)
+                  if f
+                ] or []
 
     def finish(self, message, add_note):
         """
@@ -97,7 +104,7 @@ class HttpHeader(object):
         """
 
         # check field name syntax
-        if not re.match("^%s$" % rfc7230.token, self.wire_name, re.VERBOSE):
+        if not re.match("^%s$" % rfc7230.token, self.wire_name, RE_FLAGS):
             add_note(FIELD_NAME_BAD_SYNTAX)
         if self.deprecated:
             pass ###

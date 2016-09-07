@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7231
 
-class content_type(HttpHeader):
+class content_type(headers.HttpHeader):
   canonical_name = u"Content-Type"
   description = u"""\
 The `Content-Type` header indicates the media type of the body sent to the recipient or, in the
@@ -29,7 +28,7 @@ a GET."""
       # TODO: check charset to see if it's known
       return media_type, param_dict
     
-class BasicCTTest(HeaderTest):
+class BasicCTTest(headers.HeaderTest):
     name = 'Content-Type'
     inputs = ['text/plain; charset=utf-8']
     expected_out = (u"text/plain", {u"charset": u"utf-8"})

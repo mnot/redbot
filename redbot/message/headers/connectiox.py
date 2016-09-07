@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7230
 
-class connectiox(HttpHeader):
+
+class connectiox(headers.HttpHeader):
   description = u"""\
 The `%(field_name)s` field usually means that a HTTP load balancer, proxy or other intermediary in
 front of the server has rewritten the `Connection` header, to allow it to insert its own.

@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc7231
 
-class x_ua_compatible(HttpHeader):
+class x_ua_compatible(headers.HttpHeader):
   canonical_name = u"X-UA-Compatible"
   reference = u"http://msdn.microsoft.com/en-us/library/cc288325(VS.85).aspx"
   syntax = rfc7231.parameter
@@ -60,7 +59,7 @@ information."""
 
 
     
-class BasicUACTest(HeaderTest):
+class BasicUACTest(headers.HeaderTest):
     name = 'X-UA-Compatible'
     inputs = ['foo=bar']
     expected_out = (u"foo", u"bar")

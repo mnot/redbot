@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
 import re
-import redbot.message.headers as headers
+
+from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.message.headers import HttpHeader, HeaderTest
 from redbot.syntax import rfc3986, rfc7231
 
-class link(HttpHeader):
+class link(headers.HttpHeader):
   canonical_name = u"Link"
   description = u"""\
 The `Link` header field allows structured links to be described. A link can be viewed as a statement of the form "[context IRI] has a [relation type] resource at [target IRI], which has [target attributes]."
@@ -63,43 +63,43 @@ This parameter can be an absolute or relative URI; however, `%(anchor)s` is neit
 
 
     
-class BasicLinkTest(HeaderTest):
+class BasicLinkTest(headers.HeaderTest):
     name = 'Link'
     inputs = ['<http://www.example.com/>; rel=example']
     expected_out = [('http://www.example.com/', {'rel': 'example'})]
     expected_err = []
 
-class QuotedLinkTest(HeaderTest):
+class QuotedLinkTest(headers.HeaderTest):
     name = 'Link'
     inputs = ['"http://www.example.com/"; rel=example']
     expected_out = [('http://www.example.com/', {'rel': 'example'})]
     expected_err = [headers.BAD_SYNTAX]
 
-class QuotedRelationLinkTest(HeaderTest):
+class QuotedRelationLinkTest(headers.HeaderTest):
     name = 'Link'
     inputs = ['<http://www.example.com/>; rel="example"']
     expected_out = [('http://www.example.com/', {'rel': 'example'})]
     expected_err = []    
 
-class RelativeLinkTest(HeaderTest):
+class RelativeLinkTest(headers.HeaderTest):
     name = 'Link'
     inputs = ['</foo>; rel="example"']
     expected_out = [('/foo', {'rel': 'example'})]
     expected_err = []    
     
-class RepeatingRelationLinkTest(HeaderTest):
+class RepeatingRelationLinkTest(headers.HeaderTest):
     name = 'Link'
     inputs = ['</foo>; rel="example"; rel="another"']
     expected_out = [('/foo', {'rel': 'another'})]
     expected_err = [headers.PARAM_REPEATS]
 
-class RevLinkTest(HeaderTest):
+class RevLinkTest(headers.HeaderTest):
     name = 'Link'
     inputs = ['</foo>; rev="bar"']
     expected_out = [('/foo', {'rev': 'bar'})]
     expected_err = [LINK_REV]
 
-class BadAnchorLinkTest(HeaderTest):
+class BadAnchorLinkTest(headers.HeaderTest):
     name = 'Link'
     inputs = ['</foo>; rel="bar"; anchor="{blah}"']
     expected_out = [('/foo', {'rel': 'bar', 'anchor': '{blah}'})]

@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 
 
-import redbot.message.headers as headers
-from redbot.speak import Note, categories, levels
 from redbot.message import headers
-from redbot.message.headers import HttpHeader, HeaderTest
+from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7234
 
-class expires(HttpHeader):
+class expires(headers.HttpHeader):
   canonical_name = u"Expires"
   description = u"""\
 The `Expires` header gives a time after which the response is considered stale."""
@@ -27,19 +25,19 @@ The `Expires` header gives a time after which the response is considered stale."
       return date
 
     
-class BasicExpiresTest(HeaderTest):
+class BasicExpiresTest(headers.HeaderTest):
     name = 'Expires'
     inputs = ['Mon, 04 Jul 2011 09:08:06 GMT']
     expected_out = 1309770486
     expected_err = []
 
-class BadExpiresTest(HeaderTest):
+class BadExpiresTest(headers.HeaderTest):
     name = 'Expires'
     inputs = ['0']
     expected_out = None
     expected_err = [headers.BAD_DATE_SYNTAX]
 
-class BlankExpiresTest(HeaderTest):
+class BlankExpiresTest(headers.HeaderTest):
     name = 'Expires'
     inputs = ['']
     expected_out = None

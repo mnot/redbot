@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 
 
-import redbot.message.headers as headers
-from redbot.speak import Note, categories, levels
 from redbot.message import headers
-from redbot.message.headers import HttpHeader, HeaderTest
+from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7232
 
-class last_modified(HttpHeader):
+class last_modified(headers.HttpHeader):
   canonical_name = u"Last-Modified"
   description = u"""\
 The `Last-Modified` header indicates the time that the origin server believes the
@@ -28,19 +26,19 @@ representation was last modified."""
       return date
 
 
-class BasicLMTest(HeaderTest):
+class BasicLMTest(headers.HeaderTest):
     name = 'Last-Modified'
     inputs = ['Mon, 04 Jul 2011 09:08:06 GMT']
     expected_out = 1309770486
     expected_err = []
 
-class BadLMTest(HeaderTest):
+class BadLMTest(headers.HeaderTest):
     name = 'Last-Modified'
     inputs = ['0']
     expected_out = None
     expected_err = [ headers.BAD_DATE_SYNTAX]
 
-class BlankLMTest(HeaderTest):
+class BlankLMTest(headers.HeaderTest):
     name = 'Last-Modified'
     inputs = ['']
     expected_out = None
