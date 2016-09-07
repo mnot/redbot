@@ -67,16 +67,26 @@ def list_rule(element, min=None):
     Given a piece of ABNF, wrap it in the "list rule" 
     as per RFC7230, Section 7.
     
+    <http://httpwg.org/specs/rfc7230.html#abnf.extension>
+    
     Uses the sender syntax, not the more lenient recipient syntax.
     """
     
-    if min:
-        min = r"?"
-    else:
-        min = r""
+    one_plus_element = r"(?: {element} (?: {OWS} , {OWS} {element} ){repeat_qual} )"
+    repeat_qual = "*"
     
-    # element *( OWS "," OWS element )
-    return r"(?: {element} (?: {OWS} , {OWS} {element} ){min} )".format(element=element, OWS=OWS, min=min)
+    if min == 1:
+        # 1#element => element *( OWS "," OWS element )
+        return r"(?: {element} (?: {OWS} , {OWS} {element} )* )".format(element=element, OWS=OWS)
+    elif min > 1:
+        # <n>#<m>element => element <n-1>*<m-1>( OWS "," OWS element )
+        adj_min = min - 1
+        return r"(?: {element} (?: {OWS} , {OWS} {element} ){{{adj_min},}} )".format(
+                  element=element, OWS=OWS, adj_min=adj_min)
+    else:
+        # element => [ 1#element ]
+        return r"(?: {element} (?: {OWS} , {OWS} {element} )* )?".format(element=element, OWS=OWS)
+
 
 
 
