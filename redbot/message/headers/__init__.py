@@ -13,7 +13,6 @@ import sys
 import unittest
 
 from redbot.syntax import rfc7230, rfc7231
-from redbot.message import http_syntax
 from redbot.formatter import f_num
 import redbot.speak as rs
 

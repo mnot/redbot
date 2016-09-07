@@ -12,7 +12,7 @@ class x_download_options(headers.HttpHeader):
     valid_in_responses = True
 
     def evaluate(self, add_note):
-        if 'noopen' in values:
+        if 'noopen' in self.value:
             add_note(DOWNLOAD_OPTIONS)
         else:
             add_note(DOWNLOAD_OPTIONS_UNKNOWN)
