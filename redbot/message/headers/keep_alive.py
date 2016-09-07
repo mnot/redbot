@@ -17,7 +17,7 @@ timeout is and other information. However, this isn't usually used by clients.
 
 It's safe to remove this header if you wish to save a few bytes in the response."""
     reference = u"https://tools.ietf.org/html/rfc2068#section-19.7.1"
-    syntax = rfc7230.list_rule(rfc7231.parameter, 0)
+    syntax = rfc7230.list_rule(rfc7231.parameter)
     list_header = True
     deprecated = True
     valid_in_requests = True
