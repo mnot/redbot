@@ -5,36 +5,35 @@ from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7231
 
 class x_xss_protection(headers.HttpHeader):
-  canonical_name = u"X-XSS-Protection"
-  description = u"""\
+    canonical_name = u"X-XSS-Protection"
+    description = u"""\
 The `X-XSS-Protection` response header field can be sent by servers to control how
-older versions of Internet Explorer configure their Cross Site Scripting protection.
-"""
-  reference = u"https://blogs.msdn.microsoft.com/ieinternals/2011/01/31/controlling-the-xss-filter/"
-  syntax = r'(?:[10](?:\s*;\s*%s)*)' % rfc7231.parameter
-  list_header = False
-  deprecated = False
-  valid_in_requests = False
-  valid_in_responses = True
-  
-  def parse(self, field_value, add_note):
-      try:
-          protect, param_str = field_value.split(';', 1)
-      except ValueError:
-          protect, param_str = field_value, ""
-      try:
-        protect = int(protect)
-      except:
-        return
-      params = headers.parse_params(param_str, add_note, True)
-      if protect == 0:
-          add_note(XSS_PROTECTION_OFF)
-      else: # 1
-          if params.get('mode', None) == "block":
-              add_note(XSS_PROTECTION_BLOCK)
-          else:
-              add_note(XSS_PROTECTION_ON)
-      return protect, params
+older versions of Internet Explorer configure their Cross Site Scripting protection."""
+    reference = u"https://blogs.msdn.microsoft.com/ieinternals/2011/01/31/controlling-the-xss-filter/"
+    syntax = r'(?:[10](?:\s*;\s*%s)*)' % rfc7231.parameter
+    list_header = False
+    deprecated = False
+    valid_in_requests = False
+    valid_in_responses = True
+
+    def parse(self, field_value, add_note):
+        try:
+            protect, param_str = field_value.split(';', 1)
+        except ValueError:
+            protect, param_str = field_value, ""
+        try:
+            protect = int(protect)
+        except:
+            return
+        params = headers.parse_params(param_str, add_note, True)
+        if protect == 0:
+            add_note(XSS_PROTECTION_OFF)
+        else: # 1
+            if params.get('mode', None) == "block":
+                add_note(XSS_PROTECTION_BLOCK)
+            else:
+                add_note(XSS_PROTECTION_ON)
+        return protect, params
 
 
 
@@ -104,7 +103,7 @@ class OneBlockXXSSTest(headers.HeaderTest):
     inputs = ['1; mode=block']
     expected_out = (1, {'mode': 'block'})
     expected_err = [XSS_PROTECTION_BLOCK]
-    
+
 class BadXXSSTest(headers.HeaderTest):
     name = 'X-XSS-Protection'
     inputs = ['foo']

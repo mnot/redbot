@@ -6,36 +6,36 @@ from redbot.syntax import rfc7231
 
 
 class content_disposition(headers.HttpHeader):
-  canonical_name = u"Content-Disposition"
-  description = u"""\
+    canonical_name = u"Content-Disposition"
+    description = u"""\
 The `Content-Disposition` header suggests a name to use when saving the file.
 
 When the disposition (the first value) is set to `attachment`, it also prompts browsers to download
 the file, rather than display it."""
-  reference = u"https://tools.ietf.org/html/rfc6266"
-  syntax = r'(?:%s(?:\s*;\s*%s)*)' % (rfc7231.token, rfc7231.parameter)
-  list_header = False
-  deprecated = False
-  valid_in_requests = True
-  valid_in_responses = True
-  
-  def parse(self, field_value, add_note):
-    try:
-        disposition, param_str = field_value.split(";", 1)
-    except ValueError:
-        disposition, param_str = field_value, ''
-    disposition = disposition.lower()
-    param_dict = headers.parse_params(param_str, add_note)
-    if disposition not in ['inline', 'attachment']:
-        add_note(DISPOSITION_UNKNOWN, disposition=disposition)
-    if not param_dict.has_key('filename'):
-        add_note(DISPOSITION_OMITS_FILENAME)
-    if "%" in param_dict.get('filename', ''):
-        add_note(DISPOSITION_FILENAME_PERCENT)
-    if "/" in param_dict.get('filename', '') or \
-       r"\\" in param_dict.get('filename*', ''):
-        add_note(DISPOSITION_FILENAME_PATH_CHAR)
-    return disposition, param_dict
+    reference = u"https://tools.ietf.org/html/rfc6266"
+    syntax = r'(?:%s(?:\s*;\s*%s)*)' % (rfc7231.token, rfc7231.parameter)
+    list_header = False
+    deprecated = False
+    valid_in_requests = True
+    valid_in_responses = True
+
+    def parse(self, field_value, add_note):
+        try:
+            disposition, param_str = field_value.split(";", 1)
+        except ValueError:
+            disposition, param_str = field_value, ''
+        disposition = disposition.lower()
+        param_dict = headers.parse_params(param_str, add_note)
+        if disposition not in ['inline', 'attachment']:
+            add_note(DISPOSITION_UNKNOWN, disposition=disposition)
+        if not param_dict.has_key('filename'):
+            add_note(DISPOSITION_OMITS_FILENAME)
+        if "%" in param_dict.get('filename', ''):
+            add_note(DISPOSITION_FILENAME_PERCENT)
+        if "/" in param_dict.get('filename', '') or \
+           r"\\" in param_dict.get('filename*', ''):
+            add_note(DISPOSITION_FILENAME_PATH_CHAR)
+        return disposition, param_dict
 
 
 class DISPOSITION_UNKNOWN(Note):
@@ -89,26 +89,26 @@ Because this can be used to attach the browser's host operating system (e.g., by
 system directory), browsers will usually ignore these parameters, or remove path information.
 
 You should remove these characters."""
-    
+
 
 
 class QuotedCDTest(headers.HeaderTest):
     name = 'Content-Disposition'
     inputs = ['attachment; filename="foo.txt"']
     expected_out = (u'attachment', {u'filename': u'foo.txt'})
-    expected_err = [] 
-    
+    expected_err = []
+
 class TokenCDTest(headers.HeaderTest):
     name = 'Content-Disposition'
     inputs = ['attachment; filename=foo.txt']
     expected_out = (u'attachment', {u'filename': u'foo.txt'})
-    expected_err = [] 
+    expected_err = []
 
 class InlineCDTest(headers.HeaderTest):
     name = 'Content-Disposition'
     inputs = ['inline; filename=foo.txt']
     expected_out = (u'inline', {u'filename': u'foo.txt'})
-    expected_err = [] 
+    expected_err = []
 
 class RepeatCDTest(headers.HeaderTest):
     name = 'Content-Disposition'
@@ -120,15 +120,15 @@ class FilenameStarCDTest(headers.HeaderTest):
     name = 'Content-Disposition'
     inputs = ["attachment; filename=foo.txt; filename*=UTF-8''a%cc%88.txt"]
     expected_out = ('attachment', {
-            u'filename': u'foo.txt', 
+            u'filename': u'foo.txt',
             u'filename*': u'a\u0308.txt'})
     expected_err = []
 
-class FilenameStarQuotedCDTest(headers.HeaderTest):    
+class FilenameStarQuotedCDTest(headers.HeaderTest):
     name = 'Content-Disposition'
     inputs = ["attachment; filename=foo.txt; filename*=\"UTF-8''a%cc%88.txt\""]
     expected_out = (u'attachment', {
-            u'filename': u'foo.txt', 
+            u'filename': u'foo.txt',
             u'filename*': u'a\u0308.txt'})
     expected_err = [headers.PARAM_STAR_QUOTED]
 
@@ -137,10 +137,9 @@ class FilenamePercentCDTest(headers.HeaderTest):
     inputs = ["attachment; filename=fo%22o.txt"]
     expected_out = (u'attachment', {u'filename': u'fo%22o.txt', })
     expected_err = [DISPOSITION_FILENAME_PERCENT]
-    
+
 class FilenamePathCharCDTest(headers.HeaderTest):
     name = 'Content-Disposition'
     inputs = ['attachment; filename="/foo.txt"']
     expected_out = (u'attachment', {'filename': u'/foo.txt',})
     expected_err = [DISPOSITION_FILENAME_PATH_CHAR]
-

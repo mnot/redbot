@@ -58,7 +58,7 @@ class HttpHeader(object):
         Given a string value and a subject indicating an anchor that messages can
         refer to, parse and return the result."""
         return field_value
-        
+
     def evaluate(self, add_note):
         """
         Called once header processing is done; typically used to evaluate an entire
@@ -81,18 +81,18 @@ class HttpHeader(object):
             values = [field_value]
         for value in values:
             try:
-              parsed_value = self.parse(value.strip(), add_note)
+                parsed_value = self.parse(value.strip(), add_note)
             except ValueError:
-              continue # we assume that the parser made a note of the problem.
+                continue # we assume that the parser made a note of the problem.
             self.value.append(parsed_value)
 
     @staticmethod
     def split_list_header(field_value):
         "Split a header field value on commas. needs to conform to the #rule."
         return [
-                  f.strip() for f in 
+                  f.strip() for f in
                   re.findall(r'((?:[^",]|%s)+)(?=%s|\s*$)' % (
-                    http_syntax.QUOTED_STRING, 
+                    http_syntax.QUOTED_STRING,
                     r"(?:\s*(?:,\s*)+)"
                   ), field_value, RE_FLAGS)
                   if f
@@ -109,13 +109,13 @@ class HttpHeader(object):
         if self.deprecated:
             pass ###
         if not self.list_header and not self.nonstandard_syntax:
-          if len(self.value) == 0:
-            self.value = None
-          elif len(self.value) == 1:
-            self.value = self.value[-1]
-          elif len(self.value) > 1:
-            add_note(SINGLE_HEADER_REPEAT)
-            self.value = self.value[-1]
+            if len(self.value) == 0:
+                self.value = None
+            elif len(self.value) == 1:
+                self.value = self.value[-1]
+            elif len(self.value) > 1:
+                add_note(SINGLE_HEADER_REPEAT)
+                self.value = self.value[-1]
         if message.is_request:
             if not self.valid_in_requests:
                 pass ###
@@ -225,14 +225,14 @@ class HeaderProcessor(object):
         If a header handler has already been instantiated for header_name, return it;
         otherwise, instantiate and return a new one.
         """
-        norm_name = header_name.lower()        
+        norm_name = header_name.lower()
         if self._header_handlers.has_key(norm_name):
             return self._header_handlers[norm_name]
         else:
             handler = self.find_header_handler(header_name)(header_name, self.message)
             self._header_handlers[norm_name] = handler
             return handler
-            
+
     @staticmethod
     def find_header_handler(header_name, default=True):
         """
@@ -267,10 +267,10 @@ class HeaderProcessor(object):
 
     @staticmethod
     def name_token(header_name):
-      """
-      Return a tokenised, python-friendly name for a header.
-      """
-      return header_name.replace('-', '_').lower().encode('ascii', 'ignore')
+        """
+        Return a tokenised, python-friendly name for a header.
+        """
+        return header_name.replace('-', '_').lower().encode('ascii', 'ignore')
 
 
 # TODO: allow testing of request headers
@@ -309,4 +309,4 @@ class HeaderTest(unittest.TestCase):
         self.assertEqual(len(diff), 0, "Mismatched notes: %s" % diff)
 
     def set_context(self, message):
-      pass
+        pass

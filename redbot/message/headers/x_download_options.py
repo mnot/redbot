@@ -5,17 +5,17 @@ from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7234
 
 class x_download_options(headers.HttpHeader):
-  canonical_name = u"X-Download-Options"
-  list_header = True
-  deprecated = False
-  valid_in_requests = False
-  valid_in_responses = True
+    canonical_name = u"X-Download-Options"
+    list_header = True
+    deprecated = False
+    valid_in_requests = False
+    valid_in_responses = True
 
-  def evaluate(self, add_note):
-      if 'noopen' in values:
-          add_note(DOWNLOAD_OPTIONS)
-      else:
-          add_note(DOWNLOAD_OPTIONS_UNKNOWN)
+    def evaluate(self, add_note):
+        if 'noopen' in values:
+            add_note(DOWNLOAD_OPTIONS)
+        else:
+            add_note(DOWNLOAD_OPTIONS_UNKNOWN)
 
 
 class DOWNLOAD_OPTIONS(Note):
@@ -41,4 +41,3 @@ Only one value is currently defined for this header, `noopen`. Using other value
 necessarily cause problems, but they probably won't have any effect either.
 
 See [this blog article](http://bit.ly/sfuxWE) for more details."""
-

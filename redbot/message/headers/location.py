@@ -7,27 +7,27 @@ from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7231, rfc3986
 
 class location(headers.HttpHeader):
-  canonical_name = u"Location"
-  description = u"""\
+    canonical_name = u"Location"
+    description = u"""\
 The `Location` header is used in `3xx` responses to redirect the recipient to a different location
 to complete the request.
-        
-In `201 Created``` responses, it identifies a newly created resource."""
-  reference = u"%s#header.location" % rfc7231.SPEC_URL
-  syntax = rfc7231.Location
-  list_header = False
-  deprecated = False
-  valid_in_requests = False
-  valid_in_responses = True
 
-  def parse(self, field_value, add_note):
-      if self.message.status_code not in [
-          "201", "300", "301", "302", "303", "305", "307", "308"
-      ]:
-          add_note(LOCATION_UNDEFINED)
-      if not re.match(r"^\s*%s\s*$" % rfc3986.URI, field_value, re.VERBOSE):
-          add_note(LOCATION_NOT_ABSOLUTE, full_uri=urljoin(msg.base_uri, field_value))
-      return field_value
+In `201 Created``` responses, it identifies a newly created resource."""
+    reference = u"%s#header.location" % rfc7231.SPEC_URL
+    syntax = rfc7231.Location
+    list_header = False
+    deprecated = False
+    valid_in_requests = False
+    valid_in_responses = True
+
+    def parse(self, field_value, add_note):
+        if self.message.status_code not in [
+            "201", "300", "301", "302", "303", "305", "307", "308"
+        ]:
+            add_note(LOCATION_UNDEFINED)
+        if not re.match(r"^\s*%s\s*$" % rfc3986.URI, field_value, re.VERBOSE):
+            add_note(LOCATION_NOT_ABSOLUTE, full_uri=urljoin(msg.base_uri, field_value))
+        return field_value
 
 
 
@@ -63,4 +63,4 @@ class LocationTest(headers.HeaderTest):
     expected_out = 'http://other.example.com/foo'
     expected_err = []
     def set_context(self, message):
-      message.status_code = "300"
+        message.status_code = "300"

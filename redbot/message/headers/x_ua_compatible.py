@@ -5,31 +5,31 @@ from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7231
 
 class x_ua_compatible(headers.HttpHeader):
-  canonical_name = u"X-UA-Compatible"
-  reference = u"http://msdn.microsoft.com/en-us/library/cc288325(VS.85).aspx"
-  syntax = rfc7231.parameter
-  list_header = False
-  deprecated = False
-  valid_in_requests = False
-  valid_in_responses = True
-  
-  def parse(self, field_value, add_note):
-      try:
-          attr, attr_value = field_value.split("=", 1)
-      except ValueError:
-          attr = field_value
-          attr_value = None
-      return attr, attr_value
+    canonical_name = u"X-UA-Compatible"
+    reference = u"http://msdn.microsoft.com/en-us/library/cc288325(VS.85).aspx"
+    syntax = rfc7231.parameter
+    list_header = False
+    deprecated = False
+    valid_in_requests = False
+    valid_in_responses = True
 
-  def evaluate(self, add_note):
-      directives = {}
-      warned = False
-      attr, attr_value = self.value
-      if directives.has_key(attr) and not warned:
-          add_note(UA_COMPATIBLE_REPEAT)
-          warned = True
-      directives[attr] = attr_value
-      add_note(UA_COMPATIBLE)
+    def parse(self, field_value, add_note):
+        try:
+            attr, attr_value = field_value.split("=", 1)
+        except ValueError:
+            attr = field_value
+            attr_value = None
+        return attr, attr_value
+
+    def evaluate(self, add_note):
+        directives = {}
+        warned = False
+        attr, attr_value = self.value
+        if directives.has_key(attr) and not warned:
+            add_note(UA_COMPATIBLE_REPEAT)
+            warned = True
+        directives[attr] = attr_value
+        add_note(UA_COMPATIBLE)
 
 
 
@@ -58,7 +58,7 @@ See [this blog entry](http://msdn.microsoft.com/en-us/library/cc288325(VS.85).as
 information."""
 
 
-    
+
 class BasicUACTest(headers.HeaderTest):
     name = 'X-UA-Compatible'
     inputs = ['foo=bar']

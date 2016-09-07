@@ -111,5 +111,3 @@ def parse_params(instr, add_note, nostar=None, delim=";"):
         else:
             param_dict[k_norm] = unquote_string(val)
     return param_dict
-
-

@@ -7,27 +7,27 @@ from redbot.syntax import rfc7231
 
 
 class content_encoding(headers.HttpHeader):
-  canonical_name = u"Content-Encoding"
-  description = u"""\
+    canonical_name = u"Content-Encoding"
+    description = u"""\
 The `Content-Encoding` header's value indicates what additional content codings have
 been applied to the body, and thus what decoding mechanisms must be applied in order to obtain the
 media-type referenced by the Content-Type header field.
 
 Content-Encoding is primarily used to allow a document to be compressed without losing the identity
 of its underlying media type; e.g., `gzip` and `deflate`."""
-  reference = u"%s#header.content_encoding" % rfc7231.SPEC_URL
-  syntax = rfc7231.Content_Encoding
-  list_header = True
-  deprecated = False
-  valid_in_requests = True
-  valid_in_responses = True
+    reference = u"%s#header.content_encoding" % rfc7231.SPEC_URL
+    syntax = rfc7231.Content_Encoding
+    list_header = True
+    deprecated = False
+    valid_in_requests = True
+    valid_in_responses = True
 
-  def parse(self, field_value, add_note):
-    # check to see if there are any non-gzip encodings, because
-    # that's the only one we ask for.
-    if field_value.lower() != 'gzip':
-        add_note(ENCODING_UNWANTED, unwanted_codings=field_value)
-    return field_value.lower()
+    def parse(self, field_value, add_note):
+        # check to see if there are any non-gzip encodings, because
+        # that's the only one we ask for.
+        if field_value.lower() != 'gzip':
+            add_note(ENCODING_UNWANTED, unwanted_codings=field_value)
+        return field_value.lower()
 
 
 class ENCODING_UNWANTED(Note):
@@ -59,4 +59,3 @@ class UnwantedContentEncodingTest(headers.HeaderTest):
     inputs = ['gzip', 'foo']
     expected_out = ['gzip', 'foo']
     expected_err = [ENCODING_UNWANTED]
-

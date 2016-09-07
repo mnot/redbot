@@ -52,13 +52,13 @@ class BothAcceptRangeTest(headers.HeaderTest):
     inputs = ['bytes, none']
     expected_out = (['bytes', 'none'])
     expected_err = []
-    
+
 class BadAcceptRangeTest(headers.HeaderTest):
     name = 'Accept-Ranges'
     inputs = ['foo']
     expected_out = (['foo'])
     expected_err = [UNKNOWN_RANGE]
-    
+
 class CaseAcceptRangeTest(headers.HeaderTest):
     name = 'Accept-Ranges'
     inputs = ['Bytes, NONE']

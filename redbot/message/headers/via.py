@@ -5,24 +5,24 @@ from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7230
 
 class via(headers.HttpHeader):
-  canonical_name = u"Via"
-  description = u"""\
+    canonical_name = u"Via"
+    description = u"""\
 The `Via` header is added to requests and responses by proxies and other HTTP intermediaries. It
 can be used to help avoid request loops and identify the protocol capabilities of all senders along
 the request/response chain."""
-  reference = u"%s#header.Via" % rfc7230.SPEC_URL
-  syntax = rfc7230.Via
-  list_header = True
-  deprecated = False
-  valid_in_requests = True
-  valid_in_responses = True
+    reference = u"%s#header.Via" % rfc7230.SPEC_URL
+    syntax = rfc7230.Via
+    list_header = True
+    deprecated = False
+    valid_in_requests = True
+    valid_in_responses = True
 
-  def evaluate(self, add_note):
-      via_list = u"<ul>" + u"\n".join(
-             [u"<li><code>%s</code></li>" % v for v in self.value]
-                         ) + u"</ul>"
-      add_note(VIA_PRESENT, via_list=via_list)
-    
+    def evaluate(self, add_note):
+        via_list = u"<ul>" + u"\n".join(
+               [u"<li><code>%s</code></li>" % v for v in self.value]
+                           ) + u"</ul>"
+        add_note(VIA_PRESENT, via_list=via_list)
+
 
 class VIA_PRESENT(Note):
     category = categories.GENERAL

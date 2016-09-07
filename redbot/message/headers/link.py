@@ -7,36 +7,37 @@ from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc3986, rfc7231
 
 class link(headers.HttpHeader):
-  canonical_name = u"Link"
-  description = u"""\
-The `Link` header field allows structured links to be described. A link can be viewed as a statement of the form "[context IRI] has a [relation type] resource at [target IRI], which has [target attributes]."
-"""
-  reference = u"%s#header.link" % headers.rfc5988
-  syntax = r'(?:<%s>(?:\s*;\s*%s)*)' % (rfc3986.URI_reference, rfc7231.parameter)
-  list_header = True
-  deprecated = False
-  valid_in_requests = True
-  valid_in_responses = True
+    canonical_name = u"Link"
+    description = u"""\
+The `Link` header field allows structured links to be described. A link can be viewed as a
+statement of the form "[context IRI] has a [relation type] resource at [target IRI], which has
+[target attributes]."""
+    reference = u"%s#header.link" % headers.rfc5988
+    syntax = r'(?:<%s>(?:\s*;\s*%s)*)' % (rfc3986.URI_reference, rfc7231.parameter)
+    list_header = True
+    deprecated = False
+    valid_in_requests = True
+    valid_in_responses = True
 
-  def parse(self, field_value, add_note):
-    try:
-        link, param_str = field_value.split(";", 1)
-    except ValueError:
-        link, param_str = field_value, ''
-    link = link.strip()[1:-1] # trim the angle brackets
-    param_dict = headers.parse_params(param_str, add_note, 
-      ['rel', 'rev', 'anchor', 'hreflang', 'type', 'media'])
-    if param_dict.has_key('rel'): # relation_types
-        pass # TODO: check relation type
-    if param_dict.has_key('rev'):
-        add_note(LINK_REV, link=link, rev=param_dict['rev'])
-    if param_dict.has_key('anchor'): # URI-Reference
-        if not re.match(r"^\s*%s\s*$" % rfc3986.URI_reference, 
-                        param_dict['anchor'], re.VERBOSE):
-            add_note(LINK_BAD_ANCHOR, link=link, anchor=param_dict['anchor'])
-    # TODO: check media-type in 'type'
-    # TODO: check language tag in 'hreflang'            
-    return link, param_dict
+    def parse(self, field_value, add_note):
+        try:
+            link, param_str = field_value.split(";", 1)
+        except ValueError:
+            link, param_str = field_value, ''
+        link = link.strip()[1:-1] # trim the angle brackets
+        param_dict = headers.parse_params(param_str, add_note,
+          ['rel', 'rev', 'anchor', 'hreflang', 'type', 'media'])
+        if param_dict.has_key('rel'): # relation_types
+            pass # TODO: check relation type
+        if param_dict.has_key('rev'):
+            add_note(LINK_REV, link=link, rev=param_dict['rev'])
+        if param_dict.has_key('anchor'): # URI-Reference
+            if not re.match(r"^\s*%s\s*$" % rfc3986.URI_reference,
+                            param_dict['anchor'], re.VERBOSE):
+                add_note(LINK_BAD_ANCHOR, link=link, anchor=param_dict['anchor'])
+        # TODO: check media-type in 'type'
+        # TODO: check language tag in 'hreflang'
+        return link, param_dict
 
 
 
@@ -62,7 +63,7 @@ The `Link` header, defined by [RFC5988](http://tools.ietf.org/html/rfc5988#secti
 This parameter can be an absolute or relative URI; however, `%(anchor)s` is neither."""
 
 
-    
+
 class BasicLinkTest(headers.HeaderTest):
     name = 'Link'
     inputs = ['<http://www.example.com/>; rel=example']
@@ -79,14 +80,14 @@ class QuotedRelationLinkTest(headers.HeaderTest):
     name = 'Link'
     inputs = ['<http://www.example.com/>; rel="example"']
     expected_out = [('http://www.example.com/', {'rel': 'example'})]
-    expected_err = []    
+    expected_err = []
 
 class RelativeLinkTest(headers.HeaderTest):
     name = 'Link'
     inputs = ['</foo>; rel="example"']
     expected_out = [('/foo', {'rel': 'example'})]
-    expected_err = []    
-    
+    expected_err = []
+
 class RepeatingRelationLinkTest(headers.HeaderTest):
     name = 'Link'
     inputs = ['</foo>; rel="example"; rel="another"']

@@ -55,7 +55,7 @@ class PARAM_STAR_ERROR(Note):
     text = u"""\
 Parameter values that end in '*' have a specific format, defined in
 [RFC5987](http://tools.ietf.org/html/rfc5987), to allow non-ASCII text.
- 
+
  The `%(param)s` parameter on the `%(field_name)s` header is not valid; it needs to have three
 parts, separated by single quotes (')."""
 
@@ -70,7 +70,7 @@ Parameter values that end in '*' are reserved for non-ascii text, as explained i
 The `%(param)s` parameter on the `%(field_name)s` does not allow this; you should use %(param)s
 without the "*" on the end (and without the associated encoding).
 
-RED ignores the content of this parameter. 
+RED ignores the content of this parameter.
      """
 
 class PARAM_STAR_NOCHARSET(Note):
@@ -91,7 +91,7 @@ class PARAM_STAR_CHARSET(Note):
     text = u"""\
 Parameter values that end in '*' have a specific format, defined in
 [RFC5987](http://tools.ietf.org/html/rfc5987), to allow non-ASCII text.
- 
+
 The `%(param)s` parameter on the `%(field_name)s` header uses the `'%(enc)s` encoding, which has
 interoperability issues on some browsers. It should be `UTF-8`."""
 

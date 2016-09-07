@@ -7,9 +7,9 @@ from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7234
 
 class tcn(headers.HttpHeader):
-  canonical_name = u"TCN"
-  reference = u"https://tools.ietf.org/html/rfc2295"
-  list_header = False
-  deprecated = False
-  valid_in_requests = False
-  valid_in_responses = True
+    canonical_name = u"TCN"
+    reference = u"https://tools.ietf.org/html/rfc2295"
+    list_header = False
+    deprecated = False
+    valid_in_requests = False
+    valid_in_responses = True
