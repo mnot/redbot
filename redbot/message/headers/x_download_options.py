@@ -21,7 +21,8 @@ class x_download_options(headers.HttpHeader):
 class DOWNLOAD_OPTIONS(Note):
     category = categories.SECURITY
     level = levels.INFO
-    summary = u"%(response)s can't be directly opened directly by Internet Explorer when downloaded."
+    summary = \
+        u"%(response)s can't be directly opened directly by Internet Explorer when downloaded."
     text = u"""\
 When the `X-Download-Options` header is present with the value `noopen`, Internet Explorer users
 are prevented from directly opening a file download; instead, they must first save the file

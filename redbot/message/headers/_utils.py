@@ -79,11 +79,7 @@ def parse_params(instr, add_note, nostar=None, delim=";"):
         if param_dict.has_key(k_norm):
             add_note(PARAM_REPEATS, param=k_norm)
         if val[0] == val[-1] == "'":
-            add_note(PARAM_SINGLE_QUOTED,
-                param=k_norm,
-                param_val=val,
-                param_val_unquoted=val[1:-1]
-            )
+            add_note(PARAM_SINGLE_QUOTED, param=k_norm, param_val=val, param_val_unquoted=val[1:-1])
         if key[-1] == '*':
             if nostar is True or (nostar and k_norm[:-1] in nostar):
                 add_note(PARAM_STAR_BAD, param=k_norm[:-1])

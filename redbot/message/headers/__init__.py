@@ -89,14 +89,12 @@ class HttpHeader(object):
     @staticmethod
     def split_list_header(field_value):
         "Split a header field value on commas. needs to conform to the #rule."
-        return [
-                  f.strip() for f in
-                  re.findall(r'((?:[^",]|%s)+)(?=%s|\s*$)' % (
+        return [f.strip() for f in
+                re.findall(r'((?:[^",]|%s)+)(?=%s|\s*$)' % (
                     http_syntax.QUOTED_STRING,
                     r"(?:\s*(?:,\s*)+)"
-                  ), field_value, RE_FLAGS)
-                  if f
-                ] or []
+                ), field_value, RE_FLAGS)
+                if f] or []
 
     def finish(self, message, add_note):
         """
@@ -170,7 +168,6 @@ class HeaderProcessor(object):
          - a list of unicode header tuples
          - a dict of parsed header values
         """
-        import sys
         unicode_headers = []   # unicode version of the header tuples
         parsed_headers = {}    # dictionary of parsed header values
         offset = 0             # what number header we're on
@@ -213,8 +210,7 @@ class HeaderProcessor(object):
         for header_name, header_handler in self._header_handlers.items():
             header_add_note = partial(self.message.add_note,
                                       "header-%s" % header_handler.canonical_name,
-                                      field_name=header_handler.canonical_name
-            )
+                                      field_name=header_handler.canonical_name)
             header_handler.finish(self.message, header_add_note)
             parsed_headers[header_handler.norm_name] = header_handler.value
 
@@ -296,12 +292,10 @@ class HeaderTest(unittest.TestCase):
         self.message.headers = [(self.name, inp) for inp in self.inputs]
         HeaderProcessor(self.message)
         out = self.message.parsed_headers.get(self.name.lower(), None)
-        self.assertEqual(self.expected_out, out,
-            "\n%s\n%s" % (str(self.expected_out), str(out)))
+        self.assertEqual(self.expected_out, out, "\n%s\n%s" % (str(self.expected_out), str(out)))
         diff = set(
             [n.__name__ for n in self.expected_err]).symmetric_difference(
-            set(self.message.note_classes)
-        )
+                set(self.message.note_classes))
         for message in self.message.notes: # check formatting
             message.vars.update({'field_name': self.name, 'response': 'response'})
             self.assertTrue(message.text % message.vars)

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import re
+from urlparse import urljoin
 
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
@@ -21,12 +22,10 @@ In `201 Created``` responses, it identifies a newly created resource."""
     valid_in_responses = True
 
     def parse(self, field_value, add_note):
-        if self.message.status_code not in [
-            "201", "300", "301", "302", "303", "305", "307", "308"
-        ]:
+        if self.message.status_code not in ["201", "300", "301", "302", "303", "305", "307", "308"]:
             add_note(LOCATION_UNDEFINED)
         if not re.match(r"^\s*%s\s*$" % rfc3986.URI, field_value, re.VERBOSE):
-            add_note(LOCATION_NOT_ABSOLUTE, full_uri=urljoin(msg.base_uri, field_value))
+            add_note(LOCATION_NOT_ABSOLUTE, full_uri=urljoin(self.message.base_uri, field_value))
         return field_value
 
 

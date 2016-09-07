@@ -31,14 +31,14 @@ def CheckHeaderModule(header_name):
 
     attrs = dir(header_obj)
     checks = [
-      ('canonical_name', types.UnicodeType),
-      ('reference', types.UnicodeType),
-      ('description', types.UnicodeType),
-      ('valid_in_requests', types.BooleanType),
-      ('valid_in_responses', types.BooleanType),
-      ('syntax', types.StringType),
-      ('list_header', types.BooleanType),
-      ('deprecated', types.BooleanType),
+        ('canonical_name', types.UnicodeType),
+        ('reference', types.UnicodeType),
+        ('description', types.UnicodeType),
+        ('valid_in_requests', types.BooleanType),
+        ('valid_in_responses', types.BooleanType),
+        ('syntax', types.StringType),
+        ('list_header', types.BooleanType),
+        ('deprecated', types.BooleanType),
     ]
     for (attr_name, attr_type) in checks:
         attr_value = getattr(header_obj, attr_name)
@@ -48,7 +48,7 @@ def CheckHeaderModule(header_name):
             continue
         if attr_value == None:
             sys.stderr.write("* %s lacks %s\n" % (header_name, attr_name))
-        elif type(attr_value) != attr_type:
+        elif not attr_value.isinstance(attr_type):
             sys.stderr.write("* %s %s has wrong type\n" % (header_name, attr_name))
 
     canonical_name = getattr(header_obj, "canonical_name")

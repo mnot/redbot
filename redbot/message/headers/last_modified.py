@@ -36,10 +36,10 @@ class BadLMTest(headers.HeaderTest):
     name = 'Last-Modified'
     inputs = ['0']
     expected_out = None
-    expected_err = [ headers.BAD_DATE_SYNTAX]
+    expected_err = [headers.BAD_DATE_SYNTAX]
 
 class BlankLMTest(headers.HeaderTest):
     name = 'Last-Modified'
     inputs = ['']
     expected_out = None
-    expected_err = [ headers.BAD_DATE_SYNTAX]
+    expected_err = [headers.BAD_DATE_SYNTAX]

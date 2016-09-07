@@ -112,9 +112,8 @@ def loose_parse(set_cookie_string, uri_path, current_time, add_note):
             cookie_attribute_list.append(("HttpOnly", ""))
         else:
             add_note(SET_COOKIE_UNKNOWN_ATTRIBUTE,
-              cookie_name=cookie_name,
-              attribute=attribute_name
-            )
+                     cookie_name=cookie_name,
+                     attribute=attribute_name)
     return (cookie_name, cookie_value, cookie_attribute_list)
 
 
@@ -149,7 +148,7 @@ def loose_date_parse(cookie_date):
             if re_match:
                 found_time = True
                 hour_value, minute_value, second_value = [
-                  int(v) for v in re_match.group(1).split(":")
+                    int(v) for v in re_match.group(1).split(":")
                 ]
                 continue
         if not found_day_of_month:
@@ -175,10 +174,14 @@ def loose_date_parse(cookie_date):
         year_value += 2000
     if False in [found_time, found_day_of_month, found_month, found_year]:
         missing = []
-        if not found_time: missing.append("time")
-        if not found_day_of_month: missing.append("day")
-        if not found_month: missing.append("month")
-        if not found_year: missing.append("year")
+        if not found_time:
+            missing.append("time")
+        if not found_day_of_month:
+            missing.append("day")
+        if not found_month:
+            missing.append("month")
+        if not found_year:
+            missing.append("year")
         raise ValueError, "didn't have a: %s" % ",".join(missing)
     if day_of_month_value < 1 or day_of_month_value > 31:
         raise ValueError, "%s is out of range for day_of_month" % \
@@ -206,7 +209,7 @@ def loose_date_parse(cookie_date):
 
 class SET_COOKIE_NO_VAL(Note):
     category = categories.GENERAL
-    level=levels.BAD
+    level = levels.BAD
     summary = u"%(response)s has a Set-Cookie header that can't be parsed."
     text = u"""\
   This `Set-Cookie` header can't be parsed into a name and a value; it must start with a `name=value`
@@ -216,7 +219,7 @@ class SET_COOKIE_NO_VAL(Note):
 
 class SET_COOKIE_NO_NAME(Note):
     category = categories.GENERAL
-    level=levels.BAD
+    level = levels.BAD
     summary = u"%(response)s has a Set-Cookie header without a cookie-name."
     text = u"""\
   This `Set-Cookie` header has an empty name; there needs to be a name before the `=`.
@@ -225,7 +228,7 @@ class SET_COOKIE_NO_NAME(Note):
 
 class SET_COOKIE_BAD_DATE(Note):
     category = categories.GENERAL
-    level=levels.WARN
+    level = levels.WARN
     summary = u"The %(cookie_name)s Set-Cookie header has an invalid Expires date."
     text = u"""\
   The `expires` date on this `Set-Cookie` header isn't valid; see
@@ -233,7 +236,7 @@ class SET_COOKIE_BAD_DATE(Note):
 
 class SET_COOKIE_EMPTY_MAX_AGE(Note):
     category = categories.GENERAL
-    level=levels.WARN
+    level = levels.WARN
     summary = u"The %(cookie_name)s Set-Cookie header has an empty Max-Age."
     text = u"""\
   The `max-age` parameter on this `Set-Cookie` header doesn't have a value.
@@ -242,7 +245,7 @@ class SET_COOKIE_EMPTY_MAX_AGE(Note):
 
 class SET_COOKIE_LEADING_ZERO_MAX_AGE(Note):
     category = categories.GENERAL
-    level=levels.WARN
+    level = levels.WARN
     summary = u"The %(cookie_name)s Set-Cookie header has a Max-Age with a leading zero."
     text = u"""\
   The `max-age` parameter on this `Set-Cookie` header has a leading zero.
@@ -251,7 +254,7 @@ class SET_COOKIE_LEADING_ZERO_MAX_AGE(Note):
 
 class SET_COOKIE_NON_DIGIT_MAX_AGE(Note):
     category = categories.GENERAL
-    level=levels.WARN
+    level = levels.WARN
     summary = u"The %(cookie_name)s Set-Cookie header has a non-numeric Max-Age."
     text = u"""\
   The `max-age` parameter on this `Set-Cookie` header isn't numeric.
@@ -261,7 +264,7 @@ class SET_COOKIE_NON_DIGIT_MAX_AGE(Note):
 
 class SET_COOKIE_EMPTY_DOMAIN(Note):
     category = categories.GENERAL
-    level=levels.WARN
+    level = levels.WARN
     summary = u"The %(cookie_name)s Set-Cookie header has an empty domain."
     text = u"""\
   The `domain` parameter on this `Set-Cookie` header is empty.
@@ -270,7 +273,7 @@ class SET_COOKIE_EMPTY_DOMAIN(Note):
 
 class SET_COOKIE_UNKNOWN_ATTRIBUTE(Note):
     category = categories.GENERAL
-    level=levels.WARN
+    level = levels.WARN
     summary = u"The %(cookie_name)s Set-Cookie header has an unknown attribute, '%(attribute)s'."
     text = u"""\
   This `Set-Cookie` header has an extra parameter, "%(attribute)s".
@@ -289,19 +292,17 @@ class ParameterSCTest(headers.HeaderTest):
     name = 'Set-Cookie'
     inputs = ['SID=31d4d96e407aad42; Path=/; Domain=example.com']
     expected_out = [(u"SID", u"31d4d96e407aad42",
-        [(u"Path", u"/"), (u"Domain", u"example.com")])]
+                     [(u"Path", u"/"), (u"Domain", u"example.com")])]
     expected_err = []
 
 class TwoSCTest(headers.HeaderTest):
     name = 'Set-Cookie'
     inputs = [
         "SID=31d4d96e407aad42; Path=/; Secure; HttpOnly",
-        "lang=en-US; Path=/; Domain=example.com"
-    ]
+        "lang=en-US; Path=/; Domain=example.com"]
     expected_out = [
         (u"SID", u"31d4d96e407aad42", [(u"Path", u"/"), (u"Secure", u""), (u"HttpOnly", u"")]),
-        (u"lang", u"en-US", [(u"Path", "/"), (u"Domain", u"example.com")])
-    ]
+        (u"lang", u"en-US", [(u"Path", "/"), (u"Domain", u"example.com")])]
     expected_err = []
 
 class ExpiresScTest(headers.HeaderTest):
@@ -336,6 +337,8 @@ class RemoveSCTest(headers.HeaderTest):
 
 class WolframSCTest(headers.HeaderTest):
     name = "Set-Cookie"
-    inputs = ["WR_SID=50.56.234.188.1393830943825054; path=/; max-age=315360000; domain=.wolframalpha.com"]
-    expected_out = [(u"WR_SID", u"50.56.234.188.1393830943825054", [(u'Path', u'/'), (u'Max-Age', 315360000), (u'Domain', u'wolframalpha.com')])]
+    inputs = [
+       "WR_SID=50.56.234.188.1393830943825054; path=/; max-age=315360000; domain=.wolframalpha.com"]
+    expected_out = [(u"WR_SID", u"50.56.234.188.1393830943825054",
+                     [(u'Path', u'/'), (u'Max-Age', 315360000), (u'Domain', u'wolframalpha.com')])]
     expected_err = []

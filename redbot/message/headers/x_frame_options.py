@@ -46,7 +46,7 @@ the transmitted content in frames that are part of other web pages.
 class FRAME_OPTIONS_DENY(Note):
     category = categories.SECURITY
     level = levels.INFO
-    summary = u"%(response)s prevents some browsers from rendering it if it will be contained within a frame."
+    summary = u"%(response)s prevents some browsers from rendering it within a frame."
     text = u"""\
 The `X-Frame-Options` response header controls how IE8 handles HTML frames; the `DENY` value
 prevents this content from being rendered within a frame, which defends against certain types of
@@ -58,7 +58,8 @@ See [this blog entry](http://bit.ly/v5Bh5Q) for more information.
 class FRAME_OPTIONS_SAMEORIGIN(Note):
     category = categories.SECURITY
     level = levels.INFO
-    summary = u"%(response)s prevents some browsers from rendering it if it will be contained within a frame on another site."
+    summary = \
+        u"%(response)s prevents some browsers from rendering it within a frame on another site."
     text = u"""\
 The `X-Frame-Options` response header controls how IE8 handles HTML frames; the `DENY` value
 prevents this content from being rendered within a frame on another site, which defends against

@@ -32,8 +32,7 @@ the file, rather than display it."""
             add_note(DISPOSITION_OMITS_FILENAME)
         if "%" in param_dict.get('filename', ''):
             add_note(DISPOSITION_FILENAME_PERCENT)
-        if "/" in param_dict.get('filename', '') or \
-           r"\\" in param_dict.get('filename*', ''):
+        if "/" in param_dict.get('filename', '') or r"\\" in param_dict.get('filename*', ''):
             add_note(DISPOSITION_FILENAME_PATH_CHAR)
         return disposition, param_dict
 
@@ -61,7 +60,8 @@ carry an internationalised filename, so that browsers can fall back to an ASCII-
 class DISPOSITION_FILENAME_PERCENT(Note):
     category = categories.GENERAL
     level = levels.WARN
-    summary = u"The 'filename' parameter on the Content-Disposition header contains a '%%' character."
+    summary = \
+        u"The 'filename' parameter on the Content-Disposition header contains a '%%' character."
     text = u"""\
 The `Content-Disposition` header suggests a filename for clients to use when saving the file
 locally, using the `filename` parameter.
@@ -120,16 +120,16 @@ class FilenameStarCDTest(headers.HeaderTest):
     name = 'Content-Disposition'
     inputs = ["attachment; filename=foo.txt; filename*=UTF-8''a%cc%88.txt"]
     expected_out = ('attachment', {
-            u'filename': u'foo.txt',
-            u'filename*': u'a\u0308.txt'})
+        u'filename': u'foo.txt',
+        u'filename*': u'a\u0308.txt'})
     expected_err = []
 
 class FilenameStarQuotedCDTest(headers.HeaderTest):
     name = 'Content-Disposition'
     inputs = ["attachment; filename=foo.txt; filename*=\"UTF-8''a%cc%88.txt\""]
     expected_out = (u'attachment', {
-            u'filename': u'foo.txt',
-            u'filename*': u'a\u0308.txt'})
+        u'filename': u'foo.txt',
+        u'filename*': u'a\u0308.txt'})
     expected_err = [headers.PARAM_STAR_QUOTED]
 
 class FilenamePercentCDTest(headers.HeaderTest):

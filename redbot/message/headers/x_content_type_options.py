@@ -2,13 +2,13 @@
 
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.syntax import rfc7234
+
 
 class x_content_type_options(headers.HttpHeader):
     canonical_name = u"X-Content-Type-Options"
 
     def evaluate(self, add_note):
-        if 'nosniff' in values:
+        if 'nosniff' in self.value:
             add_note(CONTENT_TYPE_OPTIONS)
         else:
             add_note(CONTENT_TYPE_OPTIONS_UNKNOWN)

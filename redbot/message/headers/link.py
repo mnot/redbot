@@ -26,7 +26,7 @@ statement of the form "[context IRI] has a [relation type] resource at [target I
             link, param_str = field_value, ''
         link = link.strip()[1:-1] # trim the angle brackets
         param_dict = headers.parse_params(param_str, add_note,
-          ['rel', 'rev', 'anchor', 'hreflang', 'type', 'media'])
+                                          ['rel', 'rev', 'anchor', 'hreflang', 'type', 'media'])
         if param_dict.has_key('rel'): # relation_types
             pass # TODO: check relation type
         if param_dict.has_key('rev'):
@@ -43,7 +43,7 @@ statement of the form "[context IRI] has a [relation type] resource at [target I
 
 class LINK_REV(Note):
     category = categories.GENERAL
-    level=levels.WARN
+    level = levels.WARN
     summary = u"The 'rev' parameter on the Link header is deprecated."
     text = u"""\
 The `Link` header, defined by [RFC5988](http://tools.ietf.org/html/rfc5988#section-5), uses the
@@ -54,7 +54,7 @@ Use `rel` and an appropriate relation."""
 
 class LINK_BAD_ANCHOR(Note):
     category = categories.GENERAL
-    level=levels.WARN
+    level = levels.WARN
     summary = u"The 'anchor' parameter on the %(link)s Link header isn't a URI."
     text = u"""\
 The `Link` header, defined by [RFC5988](http://tools.ietf.org/html/rfc5988#section-5), uses the

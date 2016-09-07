@@ -19,8 +19,8 @@ the request/response chain."""
 
     def evaluate(self, add_note):
         via_list = u"<ul>" + u"\n".join(
-               [u"<li><code>%s</code></li>" % v for v in self.value]
-                           ) + u"</ul>"
+            [u"<li><code>%s</code></li>" % v for v in self.value]
+        ) + u"</ul>"
         add_note(VIA_PRESENT, via_list=via_list)
 
 
