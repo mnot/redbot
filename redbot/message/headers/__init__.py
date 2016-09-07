@@ -91,7 +91,7 @@ class HttpHeader(object):
         "Split a header field value on commas. needs to conform to the #rule."
         return [f.strip() for f in
                 re.findall(r'((?:[^",]|%s)+)(?=%s|\s*$)' % (
-                    http_syntax.QUOTED_STRING,
+                    rfc7230.quoted_string,
                     r"(?:\s*(?:,\s*)+)"
                 ), field_value, RE_FLAGS)
                 if f] or []
