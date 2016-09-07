@@ -337,8 +337,7 @@ class RemoveSCTest(headers.HeaderTest):
 
 class WolframSCTest(headers.HeaderTest):
     name = "Set-Cookie"
-    inputs = [
-       "WR_SID=50.56.234.188.1393830943825054; path=/; max-age=315360000; domain=.wolframalpha.com"]
-    expected_out = [(u"WR_SID", u"50.56.234.188.1393830943825054",
+    inputs = ["WR_SID=50.56.234.188.1398; path=/; max-age=315360000; domain=.wolframalpha.com"]
+    expected_out = [(u"WR_SID", u"50.56.234.188.1398",
                      [(u'Path', u'/'), (u'Max-Age', 315360000), (u'Domain', u'wolframalpha.com')])]
     expected_err = []
