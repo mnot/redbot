@@ -131,7 +131,7 @@ class DummyHttpHeader(HttpHeader):
     valid_in_responses = True
 
     def parse(self, field_value, add_note):
-        return value
+        return field_value
 
     def evaluate(self, add_note):
         return
