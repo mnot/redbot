@@ -15,7 +15,7 @@ import zlib
 from redbot.message import link_parse
 from redbot.message.headers import HeaderProcessor
 from redbot.formatter import f_num
-import redbot.speak as rs
+from redbot.speak import Note, levels, categories
 from redbot.syntax import rfc3986
 
 import thor.http.error as httperr
@@ -158,19 +158,19 @@ class HttpMessage(object):
             # check payload basics
             if self.parsed_headers.has_key('content-length'):
                 if self.payload_len == self.parsed_headers['content-length']:
-                    self.add_note('header-content-length', rs.CL_CORRECT)
+                    self.add_note('header-content-length', CL_CORRECT)
                 else:
                     self.add_note('header-content-length', 
-                                    rs.CL_INCORRECT,
+                                    CL_INCORRECT,
                                     body_length=f_num(self.payload_len)
                     )
             if self.parsed_headers.has_key('content-md5'):
                 c_md5_calc = base64.encodestring(self.payload_md5)[:-1]
                 if self.parsed_headers['content-md5'] == c_md5_calc:
-                    self.add_note('header-content-md5', rs.CMD5_CORRECT)
+                    self.add_note('header-content-md5', CMD5_CORRECT)
                 else:
                     self.add_note('header-content-md5', 
-                                  rs.CMD5_INCORRECT, calc_md5=c_md5_calc)
+                                  CMD5_INCORRECT, calc_md5=c_md5_calc)
 
     def _process_content_codings(self, chunk):
         """
@@ -295,13 +295,13 @@ class HttpRequest(HttpMessage):
             self.http_error = httperr.UrlError(why[0])
             return
         if not re.match("^\s*%s\s*$" % rfc3986.URI, self.uri, re.VERBOSE):
-            self.add_note('uri', rs.URI_BAD_SYNTAX)
+            self.add_note('uri', URI_BAD_SYNTAX)
         if '#' in self.uri:
             # chop off the fragment
             self.uri = self.uri[:self.uri.index('#')]
         if len(self.uri) > MAX_URI:
             self.add_note('uri',
-                rs.URI_TOO_LONG,
+                URI_TOO_LONG,
                 uri_len=f_num(len(self.uri))
             )
 
@@ -364,3 +364,67 @@ class DummyMsg(HttpResponse):
         self.notes.append(note(subject, None, kw))
         self.note_classes.append(note.__name__)
 
+
+
+class URI_TOO_LONG(Note):
+    category = categories.GENERAL
+    level = levels.WARN
+    summary = u"The URI is very long (%(uri_len)s characters)."
+    text = u"""\
+Long URIs aren't supported by some implementations, including proxies. A reasonable upper size
+limit is 8192 characters."""
+
+class URI_BAD_SYNTAX(Note):
+    category = categories.GENERAL
+    level = levels.BAD
+    summary = u"The URI's syntax isn't valid."
+    text = u"""\
+This isn't a valid URI. Look for illegal characters and other problems; see
+[RFC3986](http://www.ietf.org/rfc/rfc3986.txt) for more information."""
+
+class CL_CORRECT(Note):
+    category = categories.GENERAL
+    level = levels.GOOD
+    summary = u'The Content-Length header is correct.'
+    text = u"""\
+`Content-Length` is used by HTTP to delimit messages; that is, to mark the end of one message and
+the beginning of the next. RED has checked the length of the body and found the `Content-Length` to
+be correct."""
+
+class CL_INCORRECT(Note):
+    category = categories.GENERAL
+    level = levels.BAD
+    summary = u"%(response)s's Content-Length header is incorrect."
+    text = u"""\
+`Content-Length` is used by HTTP to delimit messages; that is, to mark the end of one message and
+the beginning of the next. RED has checked the length of the body and found the `Content-Length` is
+not correct. This can cause problems not only with connection handling, but also caching, since an
+incomplete response is considered uncacheable.
+
+The actual body size sent was %(body_length)s bytes."""
+
+class CMD5_CORRECT(Note):
+    category = categories.GENERAL
+    level = levels.GOOD
+    summary = u'The Content-MD5 header is correct.'
+    text = u"""\
+`Content-MD5` is a hash of the body, and can be used to ensure integrity of the response. RED has
+checked its value and found it to be correct."""
+
+class CMD5_INCORRECT(Note):
+    category = categories.GENERAL
+    level = levels.BAD
+    summary = u'The Content-MD5 header is incorrect.'
+    text = u"""\
+`Content-MD5` is a hash of the body, and can be used to ensure integrity of the response. RED has
+checked its value and found it to be incorrect; i.e., the given `Content-MD5` does not match what
+RED thinks it should be (%(calc_md5)s)."""
+
+class BAD_GZIP(Note):
+    category = categories.CONNEG
+    level = levels.BAD
+    summary = u"%(response)s was compressed using GZip, but the header wasn't \
+valid."
+    text = u"""\
+GZip-compressed responses have a header that contains metadata. %(response)s's header wasn't valid;
+the error encountered was "`%(gzip_error)s`"."""

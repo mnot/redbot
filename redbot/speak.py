@@ -81,21 +81,6 @@ response = {
     'range': 'The partial response',
 }
 
-class URI_TOO_LONG(Note):
-    category = categories.GENERAL
-    level = levels.WARN
-    summary = u"The URI is very long (%(uri_len)s characters)."
-    text = u"""\
-Long URIs aren't supported by some implementations, including proxies. A reasonable upper size
-limit is 8192 characters."""
-
-class URI_BAD_SYNTAX(Note):
-    category = categories.GENERAL
-    level = levels.BAD
-    summary = u"The URI's syntax isn't valid."
-    text = u"""\
-This isn't a valid URI. Look for illegal characters and other problems; see
-[RFC3986](http://www.ietf.org/rfc/rfc3986.txt) for more information."""
 
 class REQUEST_HDR_IN_RESPONSE(Note):
     category = categories.GENERAL
@@ -214,14 +199,6 @@ incorrect chunking can lead to interoperability and security problems.
 This issue is often caused by sending an integer chunk size instead of one in hex, or by sending
 `Transfer-Encoding: chunked` without actually chunking the response body."""
 
-class BAD_GZIP(Note):
-    category = categories.CONNEG
-    level = levels.BAD
-    summary = u"%(response)s was compressed using GZip, but the header wasn't \
-valid."
-    text = u"""\
-GZip-compressed responses have a header that contains metadata. %(response)s's header wasn't valid;
-the error encountered was "`%(gzip_error)s`"."""
 
 class BAD_ZLIB(Note):
     category = categories.CONNEG
@@ -276,49 +253,6 @@ over MIME-based protocols (e.g., SMTP), which is uncommon.
 You can safely remove this header.
     """
 
-
-
-
-
-### Body
-
-class CL_CORRECT(Note):
-    category = categories.GENERAL
-    level = levels.GOOD
-    summary = u'The Content-Length header is correct.'
-    text = u"""\
-`Content-Length` is used by HTTP to delimit messages; that is, to mark the end of one message and
-the beginning of the next. RED has checked the length of the body and found the `Content-Length` to
-be correct."""
-
-class CL_INCORRECT(Note):
-    category = categories.GENERAL
-    level = levels.BAD
-    summary = u"%(response)s's Content-Length header is incorrect."
-    text = u"""\
-`Content-Length` is used by HTTP to delimit messages; that is, to mark the end of one message and
-the beginning of the next. RED has checked the length of the body and found the `Content-Length` is
-not correct. This can cause problems not only with connection handling, but also caching, since an
-incomplete response is considered uncacheable.
-
-The actual body size sent was %(body_length)s bytes."""
-
-class CMD5_CORRECT(Note):
-    category = categories.GENERAL
-    level = levels.GOOD
-    summary = u'The Content-MD5 header is correct.'
-    text = u"""\
-`Content-MD5` is a hash of the body, and can be used to ensure integrity of the response. RED has
-checked its value and found it to be correct."""
-
-class CMD5_INCORRECT(Note):
-    category = categories.GENERAL
-    level = levels.BAD
-    summary = u'The Content-MD5 header is incorrect.'
-    text = u"""\
-`Content-MD5` is a hash of the body, and can be used to ensure integrity of the response. RED has
-checked its value and found it to be incorrect; i.e., the given `Content-MD5` does not match what
-RED thinks it should be (%(calc_md5)s)."""
 
 ### Clock
 
