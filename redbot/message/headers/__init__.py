@@ -14,7 +14,6 @@ import unittest
 
 from redbot.syntax import rfc7230, rfc7231
 from redbot.formatter import f_num
-import redbot.speak as rs
 
 from ._utils import parse_date, unquote_string, split_string, parse_params
 from ._notes import *
@@ -104,7 +103,8 @@ class HttpHeader(object):
         if not re.match("^%s$" % rfc7230.token, self.wire_name, RE_FLAGS):
             add_note(FIELD_NAME_BAD_SYNTAX)
         if self.deprecated:
-            pass ###
+            deprecation_ref = getattr(self, 'deprecation_ref', self.reference)
+            add_note(HEADER_DEPRECATED, deprecation_ref=deprecation_ref)
         if not self.list_header and not self.nonstandard_syntax:
             if len(self.value) == 0:
                 self.value = None
@@ -115,10 +115,10 @@ class HttpHeader(object):
                 self.value = self.value[-1]
         if message.is_request:
             if not self.valid_in_requests:
-                pass ###
+                add_note(RESPONSE_HDR_IN_REQUEST)
         else:
             if not self.valid_in_responses:
-                pass ###
+                add_note(REQUEST_HDR_IN_RESPONSE)
         self.evaluate(add_note)
 
 

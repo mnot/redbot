@@ -150,3 +150,25 @@ encoding).
 
 This header has non-ASCII characters, which RED has interpreted as being encoded in
 ISO-8859-1. If another encoding is used (e.g., UTF-8), the results may be unpredictable."""
+
+class REQUEST_HDR_IN_RESPONSE(Note):
+    category = categories.GENERAL
+    level = levels.BAD
+    summary = u'"%(field_name)s" is a request header.'
+    text = u"""\
+%(field_name)s isn't defined to have any meaning in responses, so RED has ignored it."""
+
+class RESPONSE_HDR_IN_REQUEST(Note):
+    category = categories.GENERAL
+    level = levels.BAD
+    summary = u'"%(field_name)s" is a request header.'
+    text = u"""\
+%(field_name)s isn't defined to have any meaning in reqeusts, so RED has ignored it."""
+
+class HEADER_DEPRECATED(Note):
+    category = categories.GENERAL
+    level = levels.WARN
+    summary = u"The %(header_name)s header is deprecated."
+    text = u"""\
+This header field is no longer recommended for use, because of interoperability problems and/or
+lack of use. See [the deprecation notice](%(deprecation_ref)s) for more information."""
