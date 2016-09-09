@@ -32,7 +32,7 @@ class ConnegCheck(SubRequest):
 
     def done(self):
         if not self.response.complete:
-            self.add_note('', rs.CONNEG_SUBREQ_PROBLEM,
+            self.add_note('', CONNEG_SUBREQ_PROBLEM,
                 problem=self.response.http_error.desc
             )
             return
@@ -51,7 +51,7 @@ class ConnegCheck(SubRequest):
             # check status
             if self.base.response.status_code != \
                self.response.status_code:
-                self.add_note('status', rs.VARY_STATUS_MISMATCH, 
+                self.add_note('status', VARY_STATUS_MISMATCH, 
                   neg_status=self.base.response.status_code,
                   noneg_status=self.response.status_code)
                 return  # Can't be sure what's going on...
@@ -69,7 +69,7 @@ class ConnegCheck(SubRequest):
             vary_headers = self.base.response.parsed_headers.get('vary', [])
             if (not "accept-encoding" in vary_headers) and \
                (not "*" in vary_headers):
-                self.add_note('header-vary', rs.CONNEG_NO_VARY)
+                self.add_note('header-vary', CONNEG_NO_VARY)
             if no_conneg_vary_headers != vary_headers:
                 self.add_note('header-vary', 
                     VARY_INCONSISTENT,
@@ -80,7 +80,7 @@ class ConnegCheck(SubRequest):
             # check body
             if self.base.response.decoded_md5 != \
                self.response.payload_md5:
-                self.add_note('body', rs.VARY_BODY_MISMATCH)
+                self.add_note('body', VARY_BODY_MISMATCH)
 
             # check ETag
             if (self.response.parsed_headers.get('etag', 1) == \
