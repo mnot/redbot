@@ -69,8 +69,8 @@ class HTMLLinkParser(HTMLParser):
                 if chunk.__class__.__name__ != 'unicode':
                     try:
                         chunk = unicode(
-                            chunk, 
-                            self.doc_enc or msg.character_encoding, 
+                            chunk,
+                            self.doc_enc or msg.character_encoding,
                             'ignore'
                         )
                     except LookupError:
@@ -109,9 +109,7 @@ class HTMLLinkParser(HTMLParser):
                     media_type, params = ct, ''
                 media_type = media_type.lower()
                 param_dict = {}
-                for param in rh.split_string(
-                    params, rfc7231.parameter, "\s*;\s*"
-                ):
+                for param in rh.split_string(params, rfc7231.parameter, r"\s*;\s*"):
                     try:
                         a, v = param.split("=", 1)
                         param_dict[a.lower()] = rh.unquote_string(v)
@@ -155,7 +153,7 @@ if __name__ == "__main__":
             pass
         @staticmethod
         def err(mesg):
-            sys.stderr.write("ERROR: %s\n" % mesg)        
+            sys.stderr.write("ERROR: %s\n" % mesg)
         @staticmethod
         def show_link(link, tag, title):
             TestFetcher.count += 1
