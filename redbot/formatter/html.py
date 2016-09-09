@@ -23,11 +23,11 @@ from markdown import markdown
 import thor
 import thor.http.error as httperr
 
-import redbot.speak as rs
 from redbot import __version__
 from redbot.formatter import Formatter, html_header, relative_time, f_num
 from redbot.resource import HttpResource
 from redbot.message.headers import HeaderProcessor
+from redbot.speak import levels, categories
 
 nl = u"\n"
 
@@ -215,20 +215,20 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     """
     # the order of note categories to display
     note_categories = [
-        rs.categories.GENERAL, 
-        rs.categories.SECURITY, 
-        rs.categories.CONNECTION, 
-        rs.categories.CONNEG, 
-        rs.categories.CACHING, 
-        rs.categories.VALIDATION, 
-        rs.categories.RANGE
+        categories.GENERAL, 
+        categories.SECURITY, 
+        categories.CONNECTION, 
+        categories.CONNEG, 
+        categories.CACHING, 
+        categories.VALIDATION, 
+        categories.RANGE
     ]
 
     # associating categories with subrequests
     note_responses = {
-        rs.categories.CONNEG: ["Identity"],
-        rs.categories.VALIDATION: ['If-None-Match', 'If-Modified-Since'],
-        rs.categories.RANGE: ['Range']
+        categories.CONNEG: ["Identity"],
+        categories.VALIDATION: ['If-None-Match', 'If-Modified-Since'],
+        categories.RANGE: ['Range']
     }
     
     # Media types that browsers can view natively
@@ -418,7 +418,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                   (self.req_qs(check_type=check_type), check_type)
                 )
                 smsgs = [note for note in getattr(state.subreqs[check_type], "notes", []) if \
-                  note.level in [rs.levels.BAD]]
+                  note.level in [levels.BAD]]
                 if len(smsgs) == 1:
                     out.append(" - %i warning\n" % len(smsgs))
                 elif smsgs:
@@ -680,7 +680,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                 out.append(self.format_yes_no(state.gzip_support))
             out.append(self.format_yes_no(state.partial_support))
             problems = [m for m in state.notes if \
-                m.level in [rs.levels.WARN, rs.levels.BAD]]
+                m.level in [levels.WARN, levels.BAD]]
     # TODO:        problems += sum([m[2].notes for m in state.notes if  
     # m[2] != None], [])
             out.append(u"<td>")

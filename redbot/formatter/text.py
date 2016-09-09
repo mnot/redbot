@@ -11,9 +11,9 @@ import re
 import textwrap
 
 import thor.http.error as httperr
-import redbot.speak as rs
 
 from redbot.formatter import Formatter
+from redbot.speak import levels, categories
 
 nl = u"\n"
 
@@ -25,13 +25,13 @@ class BaseTextFormatter(Formatter):
     media_type = "text/plain"
 
     note_categories = [
-        rs.categories.GENERAL, 
-        rs.categories.SECURITY, 
-        rs.categories.CONNECTION, 
-        rs.categories.CONNEG,
-        rs.categories.CACHING, 
-        rs.categories.VALIDATION, 
-        rs.categories.RANGE
+        categories.GENERAL, 
+        categories.SECURITY, 
+        categories.CONNECTION, 
+        categories.CONNEG,
+        categories.CACHING, 
+        categories.VALIDATION, 
+        categories.RANGE
     ]
 
     link_order = [
@@ -99,7 +99,7 @@ class BaseTextFormatter(Formatter):
                 out.extend('    ' + line for line in self.format_text(m))
                 out.append('')
             smsgs = [note for note in getattr(m.subrequest, "notes", []) 
-                     if note.level in [rs.l.BAD]]
+                     if note.level in [l.BAD]]
             if smsgs:
                 out.append("")
                 for sm in smsgs:

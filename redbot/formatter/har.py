@@ -11,10 +11,10 @@ try:
 except ImportError:
     import simplejson as json 
 
-import redbot.speak as rs
 from thor.http import get_header
 from redbot import __version__
 from redbot.formatter import Formatter
+from redbot.speak import levels
 
 
 class HarFormatter(Formatter):
@@ -155,7 +155,7 @@ class HarFormatter(Formatter):
                 "summary": m.show_summary(self.lang)
             }
             smsgs = [i for i in getattr(
-                m.subrequest, "notes", []) if i.level in [rs.l.BAD]]
+                m.subrequest, "notes", []) if i.level in [levels.BAD]]
             msg["subrequests"] = \
             [{
                 "subject": sm.subject,
