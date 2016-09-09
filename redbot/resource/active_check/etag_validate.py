@@ -22,11 +22,9 @@ class ETagValidate(SubRequest):
             else:
                 weak_str = u""
             etag_str = u'%s"%s"' % (weak_str, etag)
-            req_hdrs += [
-                (u'If-None-Match', etag_str),
-            ]
+            req_hdrs += [(u'If-None-Match', etag_str),]
         return req_hdrs
-            
+
     def preflight(self):
         if self.base.response.parsed_headers.has_key('etag'):
             return True
@@ -36,23 +34,17 @@ class ETagValidate(SubRequest):
 
     def done(self):
         if not self.response.complete:
-            self.add_note('', ETAG_SUBREQ_PROBLEM,
-                problem=self.response.http_error.desc
-            )
+            self.add_note('', ETAG_SUBREQ_PROBLEM, problem=self.response.http_error.desc)
             return
-            
+
         if self.response.status_code == '304':
             self.base.inm_support = True
             self.add_note('header-etag', INM_304)
             self.check_missing_hdrs([
-                    'cache-control', 'content-location', 'etag', 
-                    'expires', 'vary'
-                ], MISSING_HDRS_304, 'If-None-Match'
-            )
-        elif self.response.status_code \
-          == self.base.response.status_code:
-            if self.response.payload_md5 \
-              == self.base.response.payload_md5:
+                'cache-control', 'content-location', 'etag', 'expires', 'vary'
+                ], MISSING_HDRS_304, 'If-None-Match')
+        elif self.response.status_code == self.base.response.status_code:
+            if self.response.payload_md5 == self.base.response.payload_md5:
                 self.base.inm_support = False
                 self.add_note('header-etag', INM_FULL)
             else: # bodies are different
@@ -61,19 +53,14 @@ class ETagValidate(SubRequest):
                     if self.base.response.parsed_headers['etag'][0]: # weak
                         self.add_note('header-etag', INM_DUP_ETAG_WEAK)
                     else: # strong
-                        self.add_note('header-etag',
-                            INM_DUP_ETAG_STRONG,
-                            etag=self.base.response.parsed_headers['etag']
-                        )
+                        self.add_note('header-etag', INM_DUP_ETAG_STRONG,
+                                      etag=self.base.response.parsed_headers['etag'])
                 else:
                     self.add_note('header-etag', INM_UNKNOWN)
         else:
-            self.add_note('header-etag', 
-                INM_STATUS, 
-                inm_status = self.response.status_code,
-                enc_inm_status = self.response.status_code \
-                  or '(unknown)'
-            )
+            self.add_note('header-etag', INM_STATUS,
+                          inm_status=self.response.status_code,
+                          enc_inm_status=self.response.status_code or '(unknown)')
         # TODO: check entity headers
 
 
@@ -87,7 +74,7 @@ When RED tried to check the resource for ETag validation support, there was a pr
 `%(problem)s`
 
 Trying again might fix it."""
-    
+
 class INM_304(Note):
     category = categories.VALIDATION
     level = levels.GOOD
@@ -126,7 +113,7 @@ For example, if a small detail of a Web page changes, and it doesn't affect the 
 the page, you can use the same weak `ETag` to identify both versions.
 
 If the changes are important, a different `ETag` should be used."""
-    
+
 class INM_DUP_ETAG_STRONG(Note):
     category = categories.VALIDATION
     level = levels.BAD
