@@ -32,7 +32,7 @@ class HttpResource(RedFetcher):
     populated, as well as its notes; see that class for details.
     """
     def __init__(self, uri, method="GET", req_hdrs=None, req_body=None,
-                status_cb=None, body_procs=None, descend=False):
+                 status_cb=None, body_procs=None, descend=False):
         orig_req_hdrs = req_hdrs or []
         new_req_hdrs = orig_req_hdrs + [(u'Accept-Encoding', u'gzip')]
         RedFetcher.__init__(self, uri, method, new_req_hdrs, req_body,
