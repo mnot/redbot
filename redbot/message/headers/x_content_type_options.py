@@ -6,6 +6,10 @@ from redbot.speak import Note, categories, levels
 
 class x_content_type_options(headers.HttpHeader):
     canonical_name = u"X-Content-Type-Options"
+    list_header = True
+    deprecated = False
+    valid_in_requests = False
+    valid_in_responses = True
 
     def evaluate(self, add_note):
         if 'nosniff' in self.value:
