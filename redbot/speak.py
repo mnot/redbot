@@ -200,19 +200,6 @@ This issue is often caused by sending an integer chunk size instead of one in he
 `Transfer-Encoding: chunked` without actually chunking the response body."""
 
 
-class BAD_ZLIB(Note):
-    category = categories.CONNEG
-    level = levels.BAD
-    summary = u"%(response)s was compressed using GZip, but the data was corrupt."
-    text = u"""\
-GZip-compressed responses use zlib compression to reduce the number of bytes transferred on the
-wire. However, this response could not be decompressed; the error encountered was
-"`%(zlib_error)s`".
-
-%(ok_zlib_len)s bytes were decompressed successfully before this; the erroneous chunk starts with
-"`%(chunk_sample)s`"."""
-
-
 class MISSING_HDRS_304(Note):
     category = categories.VALIDATION
     level = levels.WARN

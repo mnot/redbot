@@ -16,6 +16,7 @@ from redbot.message import link_parse
 from redbot.message.headers import HeaderProcessor
 from redbot.formatter import f_num
 from redbot.speak import Note, levels, categories
+
 from redbot.syntax import rfc3986
 
 import thor.http.error as httperr
@@ -194,7 +195,7 @@ class HttpMessage(object):
                         return '' # not a full header yet
                     except IOError, gzip_error:
                         self.add_note('header-content-encoding',
-                                        rs.BAD_GZIP,
+                                        BAD_GZIP,
                                         gzip_error=str(gzip_error)
                         )
                         self._decode_ok = False
@@ -204,7 +205,7 @@ class HttpMessage(object):
                 except zlib.error, zlib_error:
                     self.add_note(
                         'header-content-encoding', 
-                        rs.BAD_ZLIB,
+                        BAD_ZLIB,
                         zlib_error=str(zlib_error),
                         ok_zlib_len=f_num(self.payload_sample[-1][0]),
                         chunk_sample=chunk[:20].encode('string_escape')
@@ -428,3 +429,15 @@ valid."
     text = u"""\
 GZip-compressed responses have a header that contains metadata. %(response)s's header wasn't valid;
 the error encountered was "`%(gzip_error)s`"."""
+
+class BAD_ZLIB(Note):
+    category = categories.CONNEG
+    level = levels.BAD
+    summary = u"%(response)s was compressed using GZip, but the data was corrupt."
+    text = u"""\
+GZip-compressed responses use zlib compression to reduce the number of bytes transferred on the
+wire. However, this response could not be decompressed; the error encountered was
+"`%(zlib_error)s`".
+
+%(ok_zlib_len)s bytes were decompressed successfully before this; the erroneous chunk starts with
+"`%(chunk_sample)s`"."""
