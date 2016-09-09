@@ -18,13 +18,12 @@ class ConnegCheck(SubRequest):
     Accept-Encoding: gzip
     """
     def modify_req_hdrs(self):
-        return [h for h in self.base.orig_req_hdrs 
-                  if h[0].lower() != 'accept-encoding'] + \
-               [(u'accept-encoding', u'identity')]
+        return [h for h in self.base.orig_req_hdrs
+                if h[0].lower() != 'accept-encoding'] + \
+                [(u'accept-encoding', u'identity')]
 
     def preflight(self):
-        if "gzip" in \
-          self.base.response.parsed_headers.get('content-encoding', []):
+        if "gzip" in self.base.response.parsed_headers.get('content-encoding', []):
             return True
         else:
             self.base.gzip_support = False
@@ -32,92 +31,68 @@ class ConnegCheck(SubRequest):
 
     def done(self):
         if not self.response.complete:
-            self.add_note('', CONNEG_SUBREQ_PROBLEM,
-                problem=self.response.http_error.desc
-            )
+            self.add_note('', CONNEG_SUBREQ_PROBLEM, problem=self.response.http_error.desc)
             return
-            
-        # see if it was compressed when not negotiated
-        no_conneg_vary_headers = \
-          self.response.parsed_headers.get('vary', [])
-        if 'gzip' in \
-          self.response.parsed_headers.get('content-encoding', []) \
-          or 'x-gzip' in \
-          self.response.parsed_headers.get('content-encoding', []):
-            self.add_note('header-vary header-content-encoding',
-                            CONNEG_GZIP_WITHOUT_ASKING)
-        else: # Apparently, content negotiation is happening.
 
+        # see if it was compressed when not negotiated
+        no_conneg_vary_headers = self.response.parsed_headers.get('vary', [])
+        if 'gzip' in self.response.parsed_headers.get('content-encoding', []) \
+          or 'x-gzip' in self.response.parsed_headers.get('content-encoding', []):
+            self.add_note('header-vary header-content-encoding', CONNEG_GZIP_WITHOUT_ASKING)
+        else: # Apparently, content negotiation is happening.
             # check status
-            if self.base.response.status_code != \
-               self.response.status_code:
-                self.add_note('status', VARY_STATUS_MISMATCH, 
-                  neg_status=self.base.response.status_code,
-                  noneg_status=self.response.status_code)
+            if self.base.response.status_code != self.response.status_code:
+                self.add_note('status', VARY_STATUS_MISMATCH,
+                              neg_status=self.base.response.status_code,
+                              noneg_status=self.response.status_code)
                 return  # Can't be sure what's going on...
 
             # check headers that should be invariant
             for hdr in ['content-type']:
                 if self.base.response.parsed_headers.get(hdr) != \
-                  self.response.parsed_headers.get(hdr, None):
-                    self.add_note('header-%s' % hdr,
-                      VARY_HEADER_MISMATCH, 
-                      header=hdr)
+                    self.response.parsed_headers.get(hdr, None):
+                    self.add_note('header-%s' % hdr, VARY_HEADER_MISMATCH, header=hdr)
                     # TODO: expose on-the-wire values.
 
             # check Vary headers
             vary_headers = self.base.response.parsed_headers.get('vary', [])
-            if (not "accept-encoding" in vary_headers) and \
-               (not "*" in vary_headers):
+            if (not "accept-encoding" in vary_headers) and (not "*" in vary_headers):
                 self.add_note('header-vary', CONNEG_NO_VARY)
             if no_conneg_vary_headers != vary_headers:
-                self.add_note('header-vary', 
-                    VARY_INCONSISTENT,
-                    conneg_vary=", ".join(vary_headers),
-                    no_conneg_vary=", ".join(no_conneg_vary_headers)
-                )
+                self.add_note('header-vary', VARY_INCONSISTENT,
+                              conneg_vary=", ".join(vary_headers),
+                              no_conneg_vary=", ".join(no_conneg_vary_headers))
 
             # check body
-            if self.base.response.decoded_md5 != \
-               self.response.payload_md5:
+            if self.base.response.decoded_md5 != self.response.payload_md5:
                 self.add_note('body', VARY_BODY_MISMATCH)
 
             # check ETag
-            if (self.response.parsed_headers.get('etag', 1) == \
-              self.base.response.parsed_headers.get('etag', 2)):
+            if self.response.parsed_headers.get('etag', 1) == \
+              self.base.response.parsed_headers.get('etag', 2):
                 if not self.base.response.parsed_headers['etag'][0]: # strong
-                    self.add_note('header-etag',
-                        VARY_ETAG_DOESNT_CHANGE
-                    ) 
+                    self.add_note('header-etag', VARY_ETAG_DOESNT_CHANGE)
 
             # check compression efficiency
             if self.response.payload_len > 0:
-                savings = int(100 * 
-                    (
-                        (float(self.response.payload_len) - \
-                        self.base.response.payload_len
-                        ) / self.response.payload_len
-                    )
-                )
+                savings = int(100 * (
+                    (float(self.response.payload_len) - self.base.response.payload_len) \
+                    / self.response.payload_len))
             else:
                 savings = 0
             self.base.gzip_support = True
             self.base.gzip_savings = savings
             if savings >= 0:
-                self.add_note('header-content-encoding',
-                    CONNEG_GZIP_GOOD,
-                    savings=savings,
-                    orig_size=f_num(self.response.payload_len),
-                    gzip_size=f_num(self.base.response.payload_len)
-                )
+                self.add_note('header-content-encoding', CONNEG_GZIP_GOOD,
+                              savings=savings,
+                              orig_size=f_num(self.response.payload_len),
+                              gzip_size=f_num(self.base.response.payload_len))
             else:
-                self.add_note('header-content-encoding',
-                    CONNEG_GZIP_BAD,
-                    savings=abs(savings),
-                    orig_size=f_num(self.response.payload_len),
-                    gzip_size=f_num(self.base.response.payload_len)
-                )
-                
+                self.add_note('header-content-encoding', CONNEG_GZIP_BAD,
+                              savings=abs(savings),
+                              orig_size=f_num(self.response.payload_len),
+                              gzip_size=f_num(self.base.response.payload_len))
+
 
 class CONNEG_SUBREQ_PROBLEM(Note):
     category = categories.CONNEG
@@ -215,7 +190,7 @@ When RED send asked for a negotiated response, it got a `%(neg_status)s` status 
 didn't, it got `%(noneg_status)s`.
 
 RED hasn't checked other aspects of content negotiation because of this."""
-    
+
 class VARY_HEADER_MISMATCH(Note):
     category = categories.CONNEG
     level = levels.BAD
