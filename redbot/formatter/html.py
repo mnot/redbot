@@ -418,7 +418,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                   (self.req_qs(check_type=check_type), check_type)
                 )
                 smsgs = [note for note in getattr(state.subreqs[check_type], "notes", []) if \
-                  note.level in [rs.l.BAD]]
+                  note.level in [rs.levels.BAD]]
                 if len(smsgs) == 1:
                     out.append(" - %i warning\n" % len(smsgs))
                 elif smsgs:
@@ -680,7 +680,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                 out.append(self.format_yes_no(state.gzip_support))
             out.append(self.format_yes_no(state.partial_support))
             problems = [m for m in state.notes if \
-                m.level in [rs.l.WARN, rs.l.BAD]]
+                m.level in [rs.levels.WARN, rs.levels.BAD]]
     # TODO:        problems += sum([m[2].notes for m in state.notes if  
     # m[2] != None], [])
             out.append(u"<td>")
