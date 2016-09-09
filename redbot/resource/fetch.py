@@ -9,7 +9,6 @@ based upon the provided headers.
 """
 
 import hashlib
-import os
 from os import path
 from robotparser import RobotFileParser
 from urlparse import urlsplit
@@ -166,8 +165,7 @@ class RedFetcher(RedState):
 
                 self.robot_files[origin] = robots_txt
                 if self.robot_cache_dir:
-                    robot_fd = CacheFile(
-                        path.join(self.robot_cache_dir, origin_hash))
+                    robot_fd = CacheFile(path.join(self.robot_cache_dir, origin_hash))
                     robot_fd.write(robots_txt, 60*30)
 
                 for _cb in self.robot_lookups[origin]:
@@ -176,8 +174,7 @@ class RedFetcher(RedState):
 
             p_url = urlsplit(url)
             robots_url = "%s://%s/robots.txt" % (p_url.scheme, p_url.netloc)
-            exchange.request_start("GET", robots_url,
-                [('User-Agent', UA_STRING)])
+            exchange.request_start("GET", robots_url, [('User-Agent', UA_STRING)])
             exchange.request_done([])
 
     def run(self, done_cb=None):
@@ -208,7 +205,8 @@ class RedFetcher(RedState):
             pass
         else:
             checker = RobotFileParser()
-            checker.parse(robots_txt.decode('ascii', 'replace').encode('ascii', 'replace').splitlines())
+            checker.parse(
+                robots_txt.decode('ascii', 'replace').encode('ascii', 'replace').splitlines())
             if not checker.can_fetch(UA_STRING, self.request.uri):
                 self.response.http_error = RobotsTxtError()
                 self.finish_task()
@@ -281,8 +279,7 @@ class RedFetcher(RedState):
         elif isinstance(error, httperr.ChunkError):
             err_msg = error.detail[:20] or ""
             self.add_note('header-transfer-encoding', BAD_CHUNK,
-                chunk_sample=err_msg.encode('string_escape')
-            )
+                          chunk_sample=err_msg.encode('string_escape'))
         self.done()
         self.finish_task()
 
@@ -290,15 +287,13 @@ class RedFetcher(RedState):
 def url_to_origin(url):
     "Convert an URL to an RFC6454 Origin."
     default_port = {
-    	'http': 80,
-    	'https': 443
-    }
+        'http': 80,
+        'https': 443}
     try:
         p_url = urlsplit(url)
         origin = "%s://%s:%s" % (p_url.scheme.lower(),
                                  p_url.hostname.lower(),
-                                 p_url.port or default_port.get(p_url.scheme, 0)
-        )
+                                 p_url.port or default_port.get(p_url.scheme, 0))
     except (AttributeError, ValueError):
         origin = None
     return origin
@@ -355,10 +350,10 @@ if __name__ == "__main__":
         def done(self):
             print self.notes
     T = TestFetcher(
-         sys.argv[1],
-         req_hdrs=[(u'Accept-Encoding', u'gzip')],
-         status_cb=status_p,
-         name='test'
+        sys.argv[1],
+        req_hdrs=[(u'Accept-Encoding', u'gzip')],
+        status_cb=status_p,
+        name='test'
     )
     T.run()
     thor.run()
