@@ -9,11 +9,11 @@ from thor.http import header_dict, get_header, safe_methods
 from redbot.speak import Note, levels, categories
 
 
-class StatusChecker:
+class StatusChecker(object):
     """
-    Given a response, check out the status code and perform 
+    Given a response, check out the status code and perform
     appropriate tests on it.
-    
+
     Additional tests will be performed if the request is available.
     """
     def __init__(self, response, request=None):
@@ -33,15 +33,14 @@ class StatusChecker:
         else:
             subject = 'status'
         self.response.add_note(
-            subject, 
+            subject,
             note,
             status=self.response.status_code,
             **kw
         )
 
     def status100(self):        # Continue
-        if self.request and not "100-continue" in get_header(
-            self.request.headers, 'expect'):
+        if self.request and not "100-continue" in get_header(self.request.headers, 'expect'):
             self.add_note('', UNEXPECTED_CONTINUE)
     def status101(self):        # Switching Protocols
         if self.request \
@@ -53,10 +52,7 @@ class StatusChecker:
         pass
     def status201(self):        # Created
         if self.request and self.request.method in safe_methods:
-            self.add_note('status', 
-                CREATED_SAFE_METHOD, 
-                method=self.request.method
-            )
+            self.add_note('status', CREATED_SAFE_METHOD, method=self.request.method)
         if not self.response.parsed_headers.has_key('location'):
             self.add_note('header-location', CREATED_WITHOUT_LOCATION)
     def status202(self):        # Accepted
