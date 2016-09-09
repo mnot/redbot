@@ -69,15 +69,18 @@ class HttpHeader(object):
         Basic input processing on a new field value.
         """
 
-        # check field value syntax
-        if self.syntax and not re.match(r"^\s*(?:%s)\s*$" % self.syntax, field_value, RE_FLAGS):
-            add_note(BAD_SYNTAX, ref_uri=self.reference)
         # split before processing if a list header
         if self.list_header:
             values = self.split_list_header(field_value)
         else:
             values = [field_value]
         for value in values:
+          # check field value syntax
+            if self.syntax:
+                element_syntax = isinstance(self.syntax, rfc7230.list_rule) \
+                  and self.syntax.element or self.syntax
+                if not re.match(r"^\s*(?:%s)\s*$" % element_syntax, value, RE_FLAGS):
+                  add_note(BAD_SYNTAX, ref_uri=self.reference)
             try:
                 parsed_value = self.parse(value.strip(), add_note)
             except ValueError:
