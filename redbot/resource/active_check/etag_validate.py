@@ -6,7 +6,7 @@ Subrequest for ETag validation checks.
 
 
 from redbot.resource.active_check.base import SubRequest
-from redbot.speak import Note, categories, levels
+from redbot.speak import Note, categories, levels, MISSING_HDRS_304
 
 
 class ETagValidate(SubRequest):
