@@ -48,7 +48,7 @@ def CheckHeaderModule(header_name):
             continue
         if attr_value == None:
             sys.stderr.write("* %s lacks %s\n" % (header_name, attr_name))
-        elif not attr_value.isinstance(attr_type):
+        elif not isinstance(attr_value, attr_type):
             sys.stderr.write("* %s %s has wrong type\n" % (header_name, attr_name))
 
     canonical_name = getattr(header_obj, "canonical_name")
