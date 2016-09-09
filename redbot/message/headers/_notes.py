@@ -124,3 +124,29 @@ especially around caching. Common problems include sending "1 May" instead of "0
 is a fixed-width field), and sending a date in a timezone other than GMT. See [the HTTP
 specification](http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3) for more
 information."""
+
+class HEADER_TOO_LARGE(Note):
+    category = categories.GENERAL
+    level = levels.WARN
+    summary = u"The %(header_name)s header is very large (%(header_size)s)."
+    text = u"""\
+Some implementations limit the size of any single header line."""
+
+class HEADER_NAME_ENCODING(Note):
+    category = categories.GENERAL
+    level = levels.BAD
+    summary = u"The %(header_name)s header's name contains non-ASCII characters."
+    text = u"""\
+HTTP header field-names can only contain ASCII characters. RED has detected (and possibly removed)
+non-ASCII characters in this header name."""
+
+class HEADER_VALUE_ENCODING(Note):
+    category = categories.GENERAL
+    level = levels.WARN
+    summary = u"The %(header_name)s header's value contains non-ASCII characters."
+    text = u"""\
+HTTP headers use the ISO-8859-1 character set, but in most cases are pure ASCII (a subset of this
+encoding).
+
+This header has non-ASCII characters, which RED has interpreted as being encoded in
+ISO-8859-1. If another encoding is used (e.g., UTF-8), the results may be unpredictable."""

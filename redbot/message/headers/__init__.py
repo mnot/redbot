@@ -185,7 +185,7 @@ class HeaderProcessor(object):
             # track header size
             header_size = len(name) + len(value)
             if header_size > MAX_HDR_SIZE:
-                add_note(rs.HEADER_TOO_LARGE, field_name=name, header_size=f_num(header_size))
+                add_note(HEADER_TOO_LARGE, field_name=name, header_size=f_num(header_size))
             header_block_size += header_size
 
             # decode the header to make it unicode clean
@@ -193,12 +193,12 @@ class HeaderProcessor(object):
                 name = name.decode('ascii', 'strict')
             except UnicodeError:
                 name = name.decode('ascii', 'ignore')
-                add_note(rs.HEADER_NAME_ENCODING, field_name=name)
+                add_note(HEADER_NAME_ENCODING, field_name=name)
             try:
                 value = value.decode('ascii', 'strict')
             except UnicodeError:
                 value = value.decode('iso-8859-1', 'replace')
-                add_note(rs.HEADER_VALUE_ENCODING, field_name=name)
+                add_note(HEADER_VALUE_ENCODING, field_name=name)
             unicode_headers.append((name, value))
 
             header_handler = self.get_header_handler(name)
