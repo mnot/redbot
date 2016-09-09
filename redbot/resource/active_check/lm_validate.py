@@ -14,16 +14,14 @@ class LmValidate(SubRequest):
     "If Last-Modified is present, see if it will validate."
 
     _weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-    _months = [None, 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 
-                     'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    _months = [None, 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul',
+               'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
     def modify_req_hdrs(self):
         req_hdrs = list(self.base.request.headers)
         if self.base.response.parsed_headers.has_key('last-modified'):
             try:
-                l_m = datetime.utcfromtimestamp(
-                    self.base.response.parsed_headers['last-modified']
-                )
+                l_m = datetime.utcfromtimestamp(self.base.response.parsed_headers['last-modified'])
             except ValueError:
                 return req_hdrs # TODO: sensible error message.
             date_str = u"%s, %.2d %s %.4d %.2d:%.2d:%.2d GMT" % (
@@ -33,11 +31,8 @@ class LmValidate(SubRequest):
                 l_m.year,
                 l_m.hour,
                 l_m.minute,
-                l_m.second
-            )
-            req_hdrs += [
-                (u'If-Modified-Since', date_str),
-            ]
+                l_m.second)
+            req_hdrs += [(u'If-Modified-Since', date_str),]
         return req_hdrs
 
     def preflight(self):
@@ -49,34 +44,25 @@ class LmValidate(SubRequest):
 
     def done(self):
         if not self.response.complete:
-            self.add_note('', LM_SUBREQ_PROBLEM,
-                problem=self.response.http_error.desc
-            )
+            self.add_note('', LM_SUBREQ_PROBLEM, problem=self.response.http_error.desc)
             return
-            
+
         if self.response.status_code == '304':
             self.base.ims_support = True
             self.add_note('header-last-modified', IMS_304)
             self.check_missing_hdrs([
-                    'cache-control', 'content-location', 'etag', 
-                    'expires', 'vary'
-                ], MISSING_HDRS_304, 'If-Modified-Since'
-            )
-        elif self.response.status_code \
-          == self.base.response.status_code:
-            if self.response.payload_md5 \
-              == self.base.response.payload_md5:
+                'cache-control', 'content-location', 'etag',
+                'expires', 'vary'], MISSING_HDRS_304, 'If-Modified-Since')
+        elif self.response.status_code == self.base.response.status_code:
+            if self.response.payload_md5 == self.base.response.payload_md5:
                 self.base.ims_support = False
                 self.add_note('header-last-modified', IMS_FULL)
             else:
                 self.add_note('header-last-modified', IMS_UNKNOWN)
         else:
-            self.add_note('header-last-modified', 
-                IMS_STATUS, 
-                ims_status = self.response.status_code,
-                enc_ims_status = self.response.status_code \
-                  or '(unknown)'
-            )
+            self.add_note('header-last-modified', IMS_STATUS,
+                          ims_status=self.response.status_code,
+                          enc_ims_status=self.response.status_code or '(unknown)')
         # TODO: check entity headers
 
 
@@ -118,7 +104,8 @@ indicating that it doesn't support `Last-Modified` validation."""
 class IMS_UNKNOWN(Note):
     category = categories.VALIDATION
     level = levels.INFO
-    summary = u"An If-Modified-Since conditional request returned the full content, but it had changed."
+    summary = \
+    u"An If-Modified-Since conditional request returned the full content, but it had changed."
     text = u"""\
 HTTP allows clients to make conditional requests to see if a copy that they hold is still valid.
 Since this response has a `Last-Modified` header, clients should be able to use an
