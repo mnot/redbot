@@ -213,28 +213,6 @@ wire. However, this response could not be decompressed; the error encountered wa
 "`%(chunk_sample)s`"."""
 
 
-class CONTENT_TRANSFER_ENCODING(Note):
-    category = categories.GENERAL
-    level = levels.WARN
-    summary = u"The Content-Transfer-Encoding header isn't necessary in HTTP."
-    text = u"""\
-`Content-Transfer-Encoding` is a MIME header, not a HTTP header; it's only used when HTTP messages
-are moved over MIME-based protocols (e.g., SMTP), which is uncommon.
-
-You can safely remove this header.
-    """
-
-class MIME_VERSION(Note):
-    category = categories.GENERAL
-    level = levels.WARN
-    summary = u"The MIME-Version header isn't necessary in HTTP."
-    text = u"""\
-`MIME_Version` is a MIME header, not a HTTP header; it's only used when HTTP messages are moved
-over MIME-based protocols (e.g., SMTP), which is uncommon.
-
-You can safely remove this header.
-    """
-
 class MISSING_HDRS_304(Note):
     category = categories.VALIDATION
     level = levels.WARN
