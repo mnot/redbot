@@ -73,11 +73,11 @@ class HttpMessage(object):
     def __getstate__(self):
         state = self.__dict__.copy()
         for key in [
-            '_decoded_procs',
-            '_md5_processor', 
-            '_md5_post_processor',
-            '_gzip_processor',
-            '_link_parser'
+                '_decoded_procs',
+                '_md5_processor',
+                '_md5_post_processor',
+                '_gzip_processor',
+                '_link_parser'
         ]:
             if state.has_key(key):
                 del state[key]
@@ -91,7 +91,7 @@ class HttpMessage(object):
         "Set a list of link processors that get called upon each link."
         self._link_parser = link_parse.HTMLLinkParser(
             self.base_uri, link_procs)
-        
+
     def set_headers(self, headers):
         """
         Feed a list of (key, value) header tuples in and process them.
@@ -101,14 +101,14 @@ class HttpMessage(object):
         self.character_encoding = self.parsed_headers.get(
             'content-type', (None, {})
         )[1].get('charset', 'utf-8') # default isn't UTF-8, but oh well
-        
+
     def feed_body(self, chunk):
         """
         Feed a chunk of the body in.
-        
-        If body_procs is a non-empty list, each processor will be 
+
+        If body_procs is a non-empty list, each processor will be
         run over the chunk.
-        
+
         decoded_sample is also populated.
         """
         self.payload_sample.append((self.payload_len, chunk))
@@ -142,10 +142,10 @@ class HttpMessage(object):
                     self._link_parser.feed(self, decoded_chunk)
             else:
                 self.decoded_sample_complete = False
-        
+
     def body_done(self, complete, trailers=None):
         """
-        Signal that the body is done. Complete should be True if we 
+        Signal that the body is done. Complete should be True if we
         know it's complete.
         """
         # TODO: check trailers
@@ -161,22 +161,21 @@ class HttpMessage(object):
                 if self.payload_len == self.parsed_headers['content-length']:
                     self.add_note('header-content-length', CL_CORRECT)
                 else:
-                    self.add_note('header-content-length', 
-                                    CL_INCORRECT,
-                                    body_length=f_num(self.payload_len)
-                    )
+                    self.add_note('header-content-length',
+                                  CL_INCORRECT,
+                                  body_length=f_num(self.payload_len))
             if self.parsed_headers.has_key('content-md5'):
                 c_md5_calc = base64.encodestring(self.payload_md5)[:-1]
                 if self.parsed_headers['content-md5'] == c_md5_calc:
                     self.add_note('header-content-md5', CMD5_CORRECT)
                 else:
-                    self.add_note('header-content-md5', 
+                    self.add_note('header-content-md5',
                                   CMD5_INCORRECT, calc_md5=c_md5_calc)
 
     def _process_content_codings(self, chunk):
         """
         Decode a chunk according to the message's content-encoding header.
-        
+
         Currently supports gzip.
         """
         content_codings = self.parsed_headers.get('content-encoding', [])
@@ -187,24 +186,21 @@ class HttpMessage(object):
                 if not self._in_gzip_body:
                     self._gzip_header_buffer += chunk
                     try:
-                        chunk = self._read_gzip_header(
-                            self._gzip_header_buffer
-                        )
+                        chunk = self._read_gzip_header(self._gzip_header_buffer)
                         self._in_gzip_body = True
                     except IndexError:
                         return '' # not a full header yet
                     except IOError, gzip_error:
                         self.add_note('header-content-encoding',
-                                        BAD_GZIP,
-                                        gzip_error=str(gzip_error)
-                        )
+                                      BAD_GZIP,
+                                      gzip_error=str(gzip_error))
                         self._decode_ok = False
                         return
                 try:
                     chunk = self._gzip_processor.decompress(chunk)
                 except zlib.error, zlib_error:
                     self.add_note(
-                        'header-content-encoding', 
+                        'header-content-encoding',
                         BAD_ZLIB,
                         zlib_error=str(zlib_error),
                         ok_zlib_len=f_num(self.payload_sample[-1][0]),
@@ -241,10 +237,10 @@ class HttpMessage(object):
             raise IOError, \
                 u'Not a gzip header (magic is hex %s, should be 1f8b)' % \
                 magic.encode('hex-codec')
-        method = ord( content[2:3] )
+        method = ord(content[2:3])
         if method != 8:
             raise IOError, 'Unknown compression method'
-        flag = ord( content[3:4] )
+        flag = ord(content[3:4])
         content_l = list(content[10:])
         if flag & gz_flags['FEXTRA']:
             # Read & discard the extra field, if present
@@ -252,7 +248,7 @@ class HttpMessage(object):
             xlen = xlen + 256*ord(content_l.pop(0))
             content_l = content_l[xlen:]
         if flag & gz_flags['FNAME']:
-            # Read and discard a null-terminated string 
+            # Read and discard a null-terminated string
             # containing the filename
             while True:
                 st1 = content_l.pop(0)
@@ -267,15 +263,15 @@ class HttpMessage(object):
         if flag & gz_flags['FHCRC']:
             content_l = content_l[2:]   # Read & discard the 16-bit header CRC
         return "".join(content_l)
-        
+
     def add_note(self, subject, note, subreq=None, **kw):
         "Set a note."
         kw['response'] = response.get(
             self.name, response['this']
         )
         self.notes.append(note(subject, subreq, kw))
-        
-        
+
+
 class HttpRequest(HttpMessage):
     """
     A HTTP Request message.
@@ -285,7 +281,7 @@ class HttpRequest(HttpMessage):
         self.is_request = True
         self.method = None
         self.uri = None
-        
+
     def set_iri(self, iri):
         """
         Given an IRI or URI, convert to a URI and make sure it's sensible.
@@ -295,16 +291,13 @@ class HttpRequest(HttpMessage):
         except (ValueError, UnicodeError), why:
             self.http_error = httperr.UrlError(why[0])
             return
-        if not re.match("^\s*%s\s*$" % rfc3986.URI, self.uri, re.VERBOSE):
+        if not re.match(r"^\s*%s\s*$" % rfc3986.URI, self.uri, re.VERBOSE):
             self.add_note('uri', URI_BAD_SYNTAX)
         if '#' in self.uri:
             # chop off the fragment
             self.uri = self.uri[:self.uri.index('#')]
         if len(self.uri) > MAX_URI:
-            self.add_note('uri',
-                URI_TOO_LONG,
-                uri_len=f_num(len(self.uri))
-            )
+            self.add_note('uri', URI_TOO_LONG, uri_len=f_num(len(self.uri)))
 
     @staticmethod
     def iri_to_uri(iri):
@@ -318,21 +311,12 @@ class HttpRequest(HttpMessage):
             authority = authority.encode('idna')
         sub_delims = "!$&'()*+,;="
         pchar = "-.+~" + sub_delims + ":@"
-        path = urllib.quote(
-          path.encode('utf-8'),
-          safe = pchar + "/"
-        )
-        query = urllib.quote(
-          query.encode('utf-8'),
-          safe = pchar + "/?"
-        )
-        frag = urllib.quote(
-          frag.encode('utf-8'),
-          safe = pchar + "/?"
-        )
-        return urlparse.urlunsplit((scheme, authority, path, query, frag))
+        path = urllib.quote(path.encode('utf-8'), safe=pchar+"/")
+        quer = urllib.quote(query.encode('utf-8'), safe=pchar+"/?")
+        frag = urllib.quote(frag.encode('utf-8'), safe=pchar+"/?")
+        return urlparse.urlunsplit((scheme, authority, path, quer, frag))
 
-        
+
 class HttpResponse(HttpMessage):
     """
     A HTTP Response message.
