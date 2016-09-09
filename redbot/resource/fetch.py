@@ -19,7 +19,7 @@ import thor.http.error as httperr
 
 from redbot import __version__
 from redbot.cache_file import CacheFile
-import redbot.speak as rs
+from redbot.speak import Note, levels, categories
 from redbot.state import RedState
 from redbot.message import HttpRequest, HttpResponse
 from redbot.message.status import StatusChecker
@@ -275,12 +275,12 @@ class RedFetcher(RedState):
         self.response.complete_time = thor.time()
         self.response.http_error = error
         if isinstance(error, httperr.BodyForbiddenError):
-            self.add_note('header-none', rs.BODY_NOT_ALLOWED)
+            self.add_note('header-none', BODY_NOT_ALLOWED)
 #        elif isinstance(error, httperr.ExtraDataErr):
 #            res.payload_len += len(err.get('detail', ''))
         elif isinstance(error, httperr.ChunkError):
             err_msg = error.detail[:20] or ""
-            self.add_note('header-transfer-encoding', rs.BAD_CHUNK,
+            self.add_note('header-transfer-encoding', BAD_CHUNK,
                 chunk_sample=err_msg.encode('string_escape')
             )
         self.done()
@@ -307,6 +307,42 @@ def url_to_origin(url):
 class RobotsTxtError(httperr.HttpError):
     desc = "Forbidden by robots.txt"
     server_status = ("502", "Gateway Error")
+
+
+class BODY_NOT_ALLOWED(Note):
+    category = categories.CONNECTION
+    level = levels.BAD
+    summary = u"%(response)s is not allowed to have a body."
+    text = u"""\
+HTTP defines a few special situations where a response does not allow a body. This includes 101,
+204 and 304 responses, as well as responses to the `HEAD` method.
+
+%(response)s had a body, despite it being disallowed. Clients receiving it may treat the body as
+the next response in the connection, leading to interoperability and security issues."""
+
+class BAD_CHUNK(Note):
+    category = categories.CONNECTION
+    level = levels.BAD
+    summary = u"%(response)s had chunked encoding errors."
+    text = u"""\
+The response indicates it uses HTTP chunked encoding, but there was a problem decoding the
+chunking.
+
+A valid chunk looks something like this:
+
+`[chunk-size in hex]\\r\\n[chunk-data]\\r\\n`
+
+However, the chunk sent started like this:
+
+`%(chunk_sample)s`
+
+This is a serious problem, because HTTP uses chunking to delimit one response from the next one;
+incorrect chunking can lead to interoperability and security problems.
+
+This issue is often caused by sending an integer chunk size instead of one in hex, or by sending
+`Transfer-Encoding: chunked` without actually chunking the response body."""
+
+
 
 
 if __name__ == "__main__":

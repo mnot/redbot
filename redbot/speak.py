@@ -98,45 +98,6 @@ their cached copies."""
 
 
 
-
-# fetch notes
-
-class BODY_NOT_ALLOWED(Note):
-    category = categories.CONNECTION
-    level = levels.BAD
-    summary = u"%(response)s is not allowed to have a body."
-    text = u"""\
-HTTP defines a few special situations where a response does not allow a body. This includes 101,
-204 and 304 responses, as well as responses to the `HEAD` method.
-
-%(response)s had a body, despite it being disallowed. Clients receiving it may treat the body as
-the next response in the connection, leading to interoperability and security issues."""
-
-class BAD_CHUNK(Note):
-    category = categories.CONNECTION
-    level = levels.BAD
-    summary = u"%(response)s had chunked encoding errors."
-    text = u"""\
-The response indicates it uses HTTP chunked encoding, but there was a problem decoding the
-chunking.
-
-A valid chunk looks something like this:
-
-`[chunk-size in hex]\\r\\n[chunk-data]\\r\\n`
-
-However, the chunk sent started like this:
-
-`%(chunk_sample)s`
-
-This is a serious problem, because HTTP uses chunking to delimit one response from the next one;
-incorrect chunking can lead to interoperability and security problems.
-
-This issue is often caused by sending an integer chunk size instead of one in hex, or by sending
-`Transfer-Encoding: chunked` without actually chunking the response body."""
-
-
-
-
 if __name__ == '__main__':
     # do a sanity check on all of the defined messages
     import re, types
