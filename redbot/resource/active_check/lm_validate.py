@@ -6,8 +6,8 @@ Subrequest for Last-Modified validation checks.
 
 from datetime import datetime
 
-from redbot.resource.active_check.base import SubRequest
-from redbot.speak import Note, categories, levels, MISSING_HDRS_304
+from redbot.resource.active_check.base import SubRequest, MISSING_HDRS_304
+from redbot.speak import Note, categories, levels
 
 
 class LmValidate(SubRequest):

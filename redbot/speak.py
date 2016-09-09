@@ -81,20 +81,6 @@ response = {
     'range': 'The partial response',
 }
 
-# common notes
-
-class MISSING_HDRS_304(Note):
-    category = categories.VALIDATION
-    level = levels.WARN
-    summary = u"The %(subreq_type)s response is missing required headers."
-    text = u"""\
-HTTP requires `304 Not Modified` responses to have certain headers, if they are also present in a
-normal (e.g., `200 OK` response).
-
-%(response)s is missing the following headers: `%(missing_hdrs)s`.
-
-This can affect cache operation; because the headers are missing, caches might remove them from
-their cached copies."""
 
 
 
