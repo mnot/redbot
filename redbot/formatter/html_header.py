@@ -6,7 +6,7 @@ u"""\
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta name="ROBOTS" content="INDEX, NOFOLLOW" />
     <link rel="stylesheet" type="text/css" href="%(static)s/style.css">
-	<!--[if IE]> 
+	<!--[if IE]>
     <style type="text/css">
         #right_column {
         	width: 650px;
@@ -31,7 +31,7 @@ u"""\
         <span class="help right">Type in a URI here and press 'return' to
         check it. You can also specify request headers by clicking 'add a
         request header.'</span>
-        <input type="url" name="uri" value="%(html_uri)s" 
+        <input type="url" name="uri" value="%(html_uri)s"
          id="uri" autocomplete="off" autofocus /><br />
         <div id="req_hdrs"></div>
         <script type="text/javascript">
