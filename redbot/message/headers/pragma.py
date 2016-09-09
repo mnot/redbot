@@ -52,4 +52,4 @@ class PragmaTest(headers.HeaderTest):
     name = 'Pragma'
     inputs = ['no-cache']
     expected_out = ['no-cache']
-    expected_err = [PRAGMA_NO_CACHE]
+    expected_err = [PRAGMA_NO_CACHE, headers.HEADER_DEPRECATED]

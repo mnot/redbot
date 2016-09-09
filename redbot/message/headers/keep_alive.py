@@ -38,10 +38,10 @@ class KeepAliveTest(headers.HeaderTest):
     name = 'Keep-Alive'
     inputs = ['timeout=30']
     expected_out = [("timeout", "30")]
-    expected_err = []
+    expected_err = [headers.HEADER_DEPRECATED]
 
 class EmptyKeepAliveTest(headers.HeaderTest):
     name = 'Keep-Alive'
     inputs = ['']
     expected_out = []
-    expected_err = []
+    expected_err = [headers.HEADER_DEPRECATED]
