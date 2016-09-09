@@ -133,7 +133,7 @@ privateuse = r"x (?: \- {alphanum}{{1,8}} ){{1,}}".format(**locals())
 #                 *("-" extension)
 #                 ["-" privateuse]
 
-langtag = r"""(?: 
+langtag = r"""(?:
   {language}
   (?: \- {script} )?
   (?: \- {region} )?
@@ -146,4 +146,4 @@ langtag = r"""(?:
 #               / privateuse          ; private use tag
 #               / grandfathered       ; grandfathered tags
 
-Language_Tag =  r"(?: {langtag} | {privateuse} | {grandfathered} )".format(**locals())
+Language_Tag = r"(?: {langtag} | {privateuse} | {grandfathered} )".format(**locals())

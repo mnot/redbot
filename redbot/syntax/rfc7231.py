@@ -132,7 +132,7 @@ HTTP_date = r"(?: {IMF_fixdate} | {obs_date} )".format(**locals())
 # weight = OWS ";" OWS "q=" qvalue
 
 weight = r"(?: {OWS} \; {OWS} q\= {qvalue} )".format(**locals())
- 
+
 # accept-ext = OWS ";" OWS token [ "=" ( token / quoted-string ) ]
 
 accept_ext = r"(?: {OWS} ; {OWS} {token} (?: \= (?: {token} | {quoted_string} ) )? )".format(**locals())

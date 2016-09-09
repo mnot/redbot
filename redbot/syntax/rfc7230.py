@@ -62,27 +62,24 @@ quoted_string = r"(?: \" (?: {qdtext} | {quoted_pair} )* \" )".format(**locals()
 
 
 
-def list_rule(element, min=None):
+def list_rule(element, minimum=None):
     """
-    Given a piece of ABNF, wrap it in the "list rule" 
+    Given a piece of ABNF, wrap it in the "list rule"
     as per RFC7230, Section 7.
-    
+
     <http://httpwg.org/specs/rfc7230.html#abnf.extension>
-    
+
     Uses the sender syntax, not the more lenient recipient syntax.
     """
-    
-    one_plus_element = r"(?: {element} (?: {OWS} , {OWS} {element} ){repeat_qual} )"
-    repeat_qual = "*"
-    
-    if min == 1:
+
+    if minimum == 1:
         # 1#element => element *( OWS "," OWS element )
         return r"(?: {element} (?: {OWS} , {OWS} {element} )* )".format(element=element, OWS=OWS)
-    elif min > 1:
+    elif minimum > 1:
         # <n>#<m>element => element <n-1>*<m-1>( OWS "," OWS element )
-        adj_min = min - 1
+        adj_min = minimum - 1
         return r"(?: {element} (?: {OWS} , {OWS} {element} ){{{adj_min},}} )".format(
-                  element=element, OWS=OWS, adj_min=adj_min)
+            element=element, OWS=OWS, adj_min=adj_min)
     else:
         # element => [ 1#element ]
         return r"(?: {element} (?: {OWS} , {OWS} {element} )* )?".format(element=element, OWS=OWS)
@@ -103,7 +100,7 @@ Connection = list_rule(connection_option, 1)
 # Content-Length = 1*DIGIT
 
 Content_Length = r"{DIGIT}+".format(**locals())
- 
+
 # Host = uri-host [ ":" port ]
 
 Host = r"{uri_host} (?: : {port} )?".format(**locals())
@@ -131,7 +128,7 @@ transfer_coding = r"(?: chunked | compress | deflate | gzip | {transfer_extensio
 # t-codings = "trailers" / ( transfer-coding [ t-ranking ] )
 
 t_codings = r"(?: trailers | (?: {transfer_coding} (?: {t_ranking}? ) ) )".format(**locals())
- 
+
 # TE = #t-codings
 
 TE = list_rule(t_codings)
@@ -159,7 +156,7 @@ protocol_version = token
 # protocol = protocol-name [ "/" protocol-version ]
 
 protocol = r"(?: {protocol_name} (?: {protocol_version} )? )".format(**locals())
- 
+
 # Upgrade = 1#protocol
 
 Upgrade = list_rule(protocol, 1)
@@ -182,7 +179,7 @@ received_protocol = r"(?: (?: {protocol_name} / )? {protocol_version} )".format(
 #  / obs-text
 
 ctext = r"(?: {HTAB} | {SP} | [\x21-\x27] | [\x2A-\x5b] | \x5D-\x7E | {obs_text} )".format(**locals())
- 
+
 # comment = "(" *( ctext / quoted-pair / comment ) ")"
 
 comment = r"(?: (?: {ctext} | {quoted_pair} )* ) ".format(**locals())
@@ -190,7 +187,7 @@ comment = r"(?: (?: {ctext} | {quoted_pair} )* ) ".format(**locals())
 
 # Via = 1#( received-protocol RWS received-by [ RWS comment ] )
 
-Via = list_rule( r"(?: {received_protocol} {RWS} {received_by} (?: {RWS} {comment} )? )".format(**locals()), 1)
+Via = list_rule(r"(?: {received_protocol} {RWS} {received_by} (?: {RWS} {comment} )? )".format(**locals()), 1)
 
 
 
@@ -208,7 +205,7 @@ field_content = r"(?: {field_vchar} (?: (?: {SP} | {HTAB} )+ {field_vchar} )? )"
 # field-value = *( field-content / obs-fold )
 
 field_value = r"(?: {field_content} | {obs_fold} )*".format(**locals())
- 
+
 # header-field = field-name ":" OWS field-value OWS
 
 header_field = r"(?: {field_name} : {OWS} {field_value} {OWS} )".format(**locals())
@@ -220,7 +217,7 @@ header_field = r"(?: {field_name} : {OWS} {field_value} {OWS} )".format(**locals
 
 # chunk-size = 1*HEXDIG
 
-chunk_size =  r"(?: {HEXDIG}+ )".format(**locals())
+chunk_size = r"(?: {HEXDIG}+ )".format(**locals())
 
 # chunk-ext-name = token
 
@@ -237,7 +234,7 @@ chunk_ext = r"(?: \; {chunk_ext_name} (?: \= {chunk_ext_val} )? )".format(**loca
 # chunk-data = 1*OCTET
 
 chunk_data = r"{OCTET}+".format(**locals())
- 
+
 # chunk = chunk-size [ chunk-ext ] CRLF chunk-data CRLF
 
 chunk = r"(?: {chunk_size} (?: {chunk_ext} )? {CRLF} {chunk_data} {CRLF} )".format(**locals())
@@ -286,7 +283,7 @@ https_URI = r"(?: https:// {authority} {path_abempty} (?: \? {query} )? (?: \# {
 # origin-form = absolute-path [ "?" query ]
 
 origin_form = r"(?: {absolute_path} (?: {query} )? )".format(**locals())
- 
+
 # partial-URI = relative-part [ "?" query ]
 
 partial_URI = r"(?: {relative_part} (?: {query} )? )".format(**locals())
@@ -335,7 +332,7 @@ start_line = r"(?: {request_line} | {status_line} )".format(**locals())
 # message-body = *OCTET
 
 message_body = r"(?: {OCTET}* )".format(**locals())
- 
+
 # HTTP-message = start-line *( header-field CRLF ) CRLF [ message-body ]
 
 HTTP_message = r"(?: {start_line} (?: {header_field} {CRLF} )* {CRLF} (?: {message_body} )? )".format(**locals())

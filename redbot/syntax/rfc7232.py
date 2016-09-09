@@ -34,7 +34,7 @@ entity_tag = r"(?: {weak}? {opaque_tag} )".format(**locals())
 # ETag = entity-tag
 
 ETag = entity_tag
- 
+
 # If-Match = "*" / 1#entity-tag
 
 If_Match = r"(?: \* | %s )" % list_rule(entity_tag, 1)
@@ -48,9 +48,9 @@ If_Modified_Since = HTTP_date
 If_None_Match = r"(?: \* | %s )" % list_rule(entity_tag, 1)
 
 # If-Unmodified-Since = HTTP-date
- 
+
 If_Unmodified_Since = HTTP_date
-  
+
 # Last-Modified = HTTP-date
 
 Last_Modified = HTTP_date

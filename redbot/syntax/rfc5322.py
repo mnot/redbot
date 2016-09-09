@@ -66,7 +66,7 @@ atext = r"(?: {ALPHA} | {DIGIT} | [!#$%&'*+-/=?^_`{{|}}~] )".format(**locals())
 atom = r"(?: {CFWS}? {atext}{{1,}} {CFWS}? )".format(**locals())
 
 # word            =   atom / quoted-string
- 
+
 word = r"(?: {atom} | {quoted_string} )".format(**locals())
 
 # phrase          =   1*word / obs-phrase
