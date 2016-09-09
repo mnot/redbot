@@ -15,7 +15,7 @@ import zlib
 from redbot.message import link_parse
 from redbot.message.headers import HeaderProcessor
 from redbot.formatter import f_num
-from redbot.speak import Note, levels, categories
+from redbot.speak import Note, levels, categories, response
 
 from redbot.syntax import rfc3986
 
@@ -270,8 +270,8 @@ class HttpMessage(object):
         
     def add_note(self, subject, note, subreq=None, **kw):
         "Set a note."
-        kw['response'] = rs.response.get(
-            self.name, rs.response['this']
+        kw['response'] = response.get(
+            self.name, response['this']
         )
         self.notes.append(note(subject, subreq, kw))
         

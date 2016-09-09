@@ -46,11 +46,11 @@ def checkCaching(response, request=None):
     # assure there aren't any dup directives with different values
     for cc in cc_keys:
         if cc.lower() in known_cc and cc != cc.lower():
-            response.add_note('header-cache-control', rs.CC_MISCAP,
+            response.add_note('header-cache-control', CC_MISCAP,
                 cc_lower = cc.lower(), cc=cc
             )
         if cc in known_cc and cc_list.count(cc) > 1:
-            response.add_note('header-cache-control', rs.CC_DUP,
+            response.add_note('header-cache-control', CC_DUP,
                 cc=cc
             )
 
@@ -58,43 +58,43 @@ def checkCaching(response, request=None):
     if request and request.method not in cacheable_methods:
         response.store_shared = response.store_private = False
         request.add_note('method', 
-            rs.METHOD_UNCACHEABLE,
+            METHOD_UNCACHEABLE,
             method=request.method
         )
         return # bail; nothing else to see here
     elif 'no-store' in cc_keys:
         response.store_shared = response.store_private = False
-        response.add_note('header-cache-control', rs.NO_STORE)
+        response.add_note('header-cache-control', NO_STORE)
         return # bail; nothing else to see here
     elif 'private' in cc_keys:
         response.store_shared = False
         response.store_private = True
-        response.add_note('header-cache-control', rs.PRIVATE_CC)
+        response.add_note('header-cache-control', PRIVATE_CC)
     elif request \
     and 'authorization' in [k.lower() for k, v in request.headers] \
     and not 'public' in cc_keys:
         response.store_shared = False
         response.store_private = True
-        response.add_note('header-cache-control', rs.PRIVATE_AUTH)
+        response.add_note('header-cache-control', PRIVATE_AUTH)
     else:
         response.store_shared = response.store_private = True
-        response.add_note('header-cache-control', rs.STOREABLE)
+        response.add_note('header-cache-control', STOREABLE)
 
     # no-cache?
     if 'no-cache' in cc_keys:
         if "last-modified" not in response.parsed_headers.keys() \
            and "etag" not in response.parsed_headers.keys():
             response.add_note('header-cache-control',
-                rs.NO_CACHE_NO_VALIDATOR
+                NO_CACHE_NO_VALIDATOR
             )
         else:
-            response.add_note('header-cache-control', rs.NO_CACHE)
+            response.add_note('header-cache-control', NO_CACHE)
         return
 
     # pre-check / post-check
     if 'pre-check' in cc_keys or 'post-check' in cc_keys:
         if 'pre-check' not in cc_keys or 'post-check' not in cc_keys:
-            response.add_note('header-cache-control', rs.CHECK_SINGLE)
+            response.add_note('header-cache-control', CHECK_SINGLE)
         else:
             pre_check = post_check = None
             try:
@@ -102,25 +102,25 @@ def checkCaching(response, request=None):
                 post_check = int(cc_dict['post-check'])
             except ValueError:
                 response.add_note('header-cache-control',
-                    rs.CHECK_NOT_INTEGER
+                    CHECK_NOT_INTEGER
                 )
             if pre_check is not None and post_check is not None:
                 if pre_check == 0 and post_check == 0:
                     response.add_note('header-cache-control',
-                        rs.CHECK_ALL_ZERO
+                        CHECK_ALL_ZERO
                     )
                 elif post_check > pre_check:
                     response.add_note('header-cache-control',
-                        rs.CHECK_POST_BIGGER
+                        CHECK_POST_BIGGER
                     )
                     post_check = pre_check
                 elif post_check == 0:
                     response.add_note('header-cache-control',
-                        rs.CHECK_POST_ZERO
+                        CHECK_POST_ZERO
                     )
                 else:
                     response.add_note('header-cache-control',
-                        rs.CHECK_POST_PRE,
+                        CHECK_POST_PRE,
                         pre_check=pre_check,
                         post_check=post_check
                     )
@@ -128,18 +128,18 @@ def checkCaching(response, request=None):
     # vary?
     vary = response.parsed_headers.get('vary', set())
     if "*" in vary:
-        response.add_note('header-vary', rs.VARY_ASTERISK)
+        response.add_note('header-vary', VARY_ASTERISK)
         return # bail; nothing else to see here
     elif len(vary) > 3:
         response.add_note('header-vary', 
-            rs.VARY_COMPLEX, 
+            VARY_COMPLEX, 
             vary_count=f_num(len(vary))
         )
     else:
         if "user-agent" in vary:
-            response.add_note('header-vary', rs.VARY_USER_AGENT)
+            response.add_note('header-vary', VARY_USER_AGENT)
         if "host" in vary:
-            response.add_note('header-vary', rs.VARY_HOST)
+            response.add_note('header-vary', VARY_HOST)
         # TODO: enumerate the axes in a message
 
     # calculate age
@@ -156,26 +156,26 @@ def checkCaching(response, request=None):
     response.age = age_hdr
     if age_hdr >= 1:
         response.add_note('header-age header-date', 
-            rs.CURRENT_AGE,
+            CURRENT_AGE,
             age=age_str
         )
 
     # Check for clock skew and dateless origin server.
     skew = date_hdr - response.start_time + age_hdr
     if not date_hdr:
-        response.add_note('', rs.DATE_CLOCKLESS)
+        response.add_note('', DATE_CLOCKLESS)
         if response.parsed_headers.has_key('expires') or \
           response.parsed_headers.has_key('last-modified'):
             response.add_note('header-expires header-last-modified', 
-                            rs.DATE_CLOCKLESS_BAD_HDR)
+                            DATE_CLOCKLESS_BAD_HDR)
     elif age_hdr > max_clock_skew and current_age - skew < max_clock_skew:
-        response.add_note('header-date header-age', rs.AGE_PENALTY)
+        response.add_note('header-date header-age', AGE_PENALTY)
     elif abs(skew) > max_clock_skew:
-        response.add_note('header-date', rs.DATE_INCORRECT,
+        response.add_note('header-date', DATE_INCORRECT,
            clock_skew_string=relative_time(skew, 0, 2)
         )
     else:
-        response.add_note('header-date', rs.DATE_CORRECT)
+        response.add_note('header-date', DATE_CORRECT)
 
     # calculate freshness
     freshness_lifetime = 0
@@ -210,21 +210,21 @@ def checkCaching(response, request=None):
     fresh = freshness_left > 0
     if has_explicit_freshness:
         if fresh:
-            response.add_note(" ".join(freshness_hdrs), rs.FRESHNESS_FRESH,
+            response.add_note(" ".join(freshness_hdrs), FRESHNESS_FRESH,
                  freshness_lifetime=freshness_lifetime_str,
                  freshness_left=freshness_left_str,
                  current_age = current_age_str
             )
         elif has_cc_freshness and response.age > freshness_lifetime:
             response.add_note(" ".join(freshness_hdrs),
-                rs.FRESHNESS_STALE_CACHE,
+                FRESHNESS_STALE_CACHE,
                 freshness_lifetime=freshness_lifetime_str,
                 freshness_left=freshness_left_str,
                 current_age = current_age_str
             )
         else:
             response.add_note(" ".join(freshness_hdrs),
-                rs.FRESHNESS_STALE_ALREADY,
+                FRESHNESS_STALE_ALREADY,
                 freshness_lifetime=freshness_lifetime_str,
                 freshness_left=freshness_left_str,
                 current_age = current_age_str
@@ -232,38 +232,38 @@ def checkCaching(response, request=None):
 
     # can heuristic freshness be used?
     elif response.status_code in heuristic_cacheable_status:
-        response.add_note('header-last-modified', rs.FRESHNESS_HEURISTIC)
+        response.add_note('header-last-modified', FRESHNESS_HEURISTIC)
     else:
-        response.add_note('', rs.FRESHNESS_NONE)
+        response.add_note('', FRESHNESS_NONE)
 
     # can stale responses be served?
     if 'must-revalidate' in cc_keys:
         if fresh:
             response.add_note('header-cache-control',
-                rs.FRESH_MUST_REVALIDATE
+                FRESH_MUST_REVALIDATE
         )
         elif has_explicit_freshness:
             response.add_note('header-cache-control',
-                rs.STALE_MUST_REVALIDATE
+                STALE_MUST_REVALIDATE
             )
     elif 'proxy-revalidate' in cc_keys or 's-maxage' in cc_keys:
         if fresh:
             response.add_note('header-cache-control',
-                rs.FRESH_PROXY_REVALIDATE
+                FRESH_PROXY_REVALIDATE
             )
         elif has_explicit_freshness:
             response.add_note('header-cache-control',
-                rs.STALE_PROXY_REVALIDATE
+                STALE_PROXY_REVALIDATE
             )
     else:
         if fresh:
-            response.add_note('header-cache-control', rs.FRESH_SERVABLE)
+            response.add_note('header-cache-control', FRESH_SERVABLE)
         elif has_explicit_freshness:
-            response.add_note('header-cache-control', rs.STALE_SERVABLE)
+            response.add_note('header-cache-control', STALE_SERVABLE)
 
     # public?
     if 'public' in cc_keys: # TODO: check for authentication in request
-        response.add_note('header-cache-control', rs.PUBLIC)
+        response.add_note('header-cache-control', PUBLIC)
 
 
 class LM_FUTURE(Note):
