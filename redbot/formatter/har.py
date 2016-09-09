@@ -9,7 +9,7 @@ import datetime
 try:
     import json
 except ImportError:
-    import simplejson as json 
+    import simplejson as json
 
 from thor.http import get_header
 from redbot import __version__
@@ -24,7 +24,7 @@ class HarFormatter(Formatter):
     can_multiple = True
     name = "har"
     media_type = "application/json"
-    
+
     def __init__(self, *args, **kw):
         Formatter.__init__(self, *args, **kw)
         self.har = {
@@ -46,7 +46,7 @@ class HarFormatter(Formatter):
 
     def start_output(self):
         pass
-        
+
     def status(self, msg):
         pass
 
@@ -64,17 +64,16 @@ class HarFormatter(Formatter):
                     self.add_entry(linked_state, page_id)
         self.output(json.dumps(self.har, indent=4))
         self.done()
-        
+
     def add_entry(self, state, page_ref=None):
         entry = {
             "startedDateTime": isoformat(state.request.start_time),
-            "time": int((state.response.complete_time - \
-                         state.request.start_time) * 1000),
+            "time": int((state.response.complete_time - state.request.start_time) * 1000),
             "_red_messages": self.format_notes(state)
         }
         if page_ref:
             entry['pageref'] = "page%s" % page_ref
-        
+
         request = {
             'method': state.request.method,
             'url': state.request.uri,
@@ -85,38 +84,32 @@ class HarFormatter(Formatter):
             'headersSize': -1,
             'bodySize': -1,
         }
-        
+
         response = {
             'status': state.response.status_code,
             'statusText': state.response.status_phrase,
-            'httpVersion': "HTTP/%s" % state.response.version, 
+            'httpVersion': "HTTP/%s" % state.response.version,
             'cookies': [],
             'headers': self.format_headers(state.response.headers),
             'content': {
                 'size': state.response.decoded_len,
-                'compression': state.response.decoded_len - \
-                               state.response.payload_len,
-                'mimeType': (
-                    get_header(state.response.headers, 'content-type') \
-                    or [""])[0],
+                'compression': state.response.decoded_len - state.response.payload_len,
+                'mimeType': (get_header(state.response.headers, 'content-type') or [""])[0],
             },
             'redirectURL': (
-                    get_header(state.response.headers, 'location') \
-                    or [""])[0],
+                get_header(state.response.headers, 'location') or [""])[0],
             'headersSize': state.response.header_length,
             'bodySize': state.response.payload_len,
         }
-        
+
         cache = {}
         timings = {
             'dns': -1,
             'connect': -1,
             'blocked': 0,
-            'send': 0, 
-            'wait': int((state.response.start_time - \
-                         state.request.start_time) * 1000),
-            'receive': int((state.response.complete_time - \
-                            state.response.start_time) * 1000),
+            'send': 0,
+            'wait': int((state.response.start_time - state.request.start_time) * 1000),
+            'receive': int((state.response.complete_time - state.response.start_time) * 1000),
         }
 
         entry.update({
@@ -127,7 +120,7 @@ class HarFormatter(Formatter):
         })
         self.har['log']['entries'].append(entry)
 
-        
+
     def add_page(self, state):
         page_id = self.last_id + 1
         page = {
@@ -143,7 +136,7 @@ class HarFormatter(Formatter):
         return page_id
 
     def format_headers(self, hdrs):
-        return [ {'name': n, 'value': v} for n, v in hdrs ]
+        return [{'name': n, 'value': v} for n, v in hdrs]
 
     def format_notes(self, state):
         out = []
@@ -156,8 +149,7 @@ class HarFormatter(Formatter):
             }
             smsgs = [i for i in getattr(
                 m.subrequest, "notes", []) if i.level in [levels.BAD]]
-            msg["subrequests"] = \
-            [{
+            msg["subrequests"] = [{
                 "subject": sm.subject,
                 "category": sm.category,
                 "level": sm.level,
@@ -168,7 +160,6 @@ class HarFormatter(Formatter):
 
 def isoformat(timestamp):
     class TZ(datetime.tzinfo):
-        def utcoffset(self, dt): 
+        def utcoffset(self, dt):
             return datetime.timedelta(minutes=0)
     return "%sZ" % datetime.datetime.utcfromtimestamp(timestamp).isoformat()
-      
