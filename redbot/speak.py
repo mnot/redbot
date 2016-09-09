@@ -12,7 +12,7 @@ from cgi import escape as e_html
 from markdown import markdown
 
 
-class _Categories:
+class _Categories(object):
     "Note classifications."
     GENERAL = u"General"
     SECURITY = u"Security"
@@ -23,7 +23,7 @@ class _Categories:
     RANGE = u"Partial Content"
 categories = _Categories()
 
-class _Levels:
+class _Levels(object):
     "Note levels."
     GOOD = u'good'
     WARN = u'warning'
@@ -31,7 +31,7 @@ class _Levels:
     INFO = u'info'
 levels = _Levels()
 
-class Note:
+class Note(object):
     """
     A note about an HTTP resource, representation, or other component
     related to the URI under test.
@@ -56,16 +56,16 @@ class Note:
     def show_summary(self, lang):
         """
         Output a textual summary of the message as a Unicode string.
-        
-        Note that if it is displayed in an environment that needs 
+
+        Note that if it is displayed in an environment that needs
         encoding (e.g., HTML), that is *NOT* done.
         """
         return self.summary % self.vars
-        
+
     def show_text(self, lang):
         """
         Show the HTML text for the message as a Unicode string.
-        
+
         The resulting string is already HTML-encoded.
         """
         return markdown(self.text % dict(
@@ -88,13 +88,13 @@ if __name__ == '__main__':
     # do a sanity check on all of the defined messages
     import re, types
     for n, v in locals().items():
-        if type(v) is types.ClassType and issubclass(v, Note) \
+        if isinstance(v, types.ClassType) and issubclass(v, Note) \
           and n != "Note":
             print "checking", n
             assert v.category in categories.__class__.__dict__.values(), n
             assert v.level in levels.__class__.__dict__.values(), n
-            assert type(v.summary) is types.UnicodeType, n
+            assert isinstance(v.summary, types.UnicodeType), n
             assert v.summary != "", n
-            assert not re.search("\s{2,}", v.summary), n
-            assert type(v.text) is types.UnicodeType, n
+            assert not re.search(r"\s{2,}", v.summary), n
+            assert isinstance(v.text, types.UnicodeType), n
     #        assert v.text != "", n
