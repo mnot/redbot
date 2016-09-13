@@ -11,9 +11,9 @@ import re
 import textwrap
 
 import thor.http.error as httperr
-import redbot.speak as rs
 
 from redbot.formatter import Formatter
+from redbot.speak import levels, categories
 
 nl = u"\n"
 
@@ -25,16 +25,21 @@ class BaseTextFormatter(Formatter):
     media_type = "text/plain"
 
     note_categories = [
-        rs.c.GENERAL, rs.c.SECURITY, rs.c.CONNECTION, rs.c.CONNEG,
-        rs.c.CACHING, rs.c.VALIDATION, rs.c.RANGE
+        categories.GENERAL,
+        categories.SECURITY,
+        categories.CONNECTION,
+        categories.CONNEG,
+        categories.CACHING,
+        categories.VALIDATION,
+        categories.RANGE
     ]
 
     link_order = [
-          ('link', 'Head Links'),
-          ('script', 'Script Links'),
-          ('frame', 'Frame Links'),
-          ('iframe', 'IFrame Links'),
-          ('img', 'Image Links'),
+        ('link', 'Head Links'),
+        ('script', 'Script Links'),
+        ('frame', 'Frame Links'),
+        ('iframe', 'IFrame Links'),
+        ('img', 'Image Links'),
     ]
 
     error_template = "Error: %s\n"
@@ -68,9 +73,9 @@ class BaseTextFormatter(Formatter):
 
     def format_headers(self, state):
         out = [u"HTTP/%s %s %s" % (
-                state.response.version, 
-                state.response.status_code, 
-                state.response.status_phrase
+            state.response.version,
+            state.response.status_code,
+            state.response.status_phrase
         )]
         return nl.join(out + [u"%s:%s" % h for h in state.response.headers])
 
@@ -93,8 +98,8 @@ class BaseTextFormatter(Formatter):
                 out.append('')
                 out.extend('    ' + line for line in self.format_text(m))
                 out.append('')
-            smsgs = [note for note in getattr(m.subrequest, "notes", []) 
-                     if note.level in [rs.l.BAD]]
+            smsgs = [note for note in getattr(m.subrequest, "notes", [])
+                     if note.level in [levels.BAD]]
             if smsgs:
                 out.append("")
                 for sm in smsgs:
@@ -114,8 +119,8 @@ class BaseTextFormatter(Formatter):
         return textwrap.wrap(
             strip_tags(
                 re.sub(
-                    r"(?m)\s\s+", 
-                    " ", 
+                    r"(?m)\s\s+",
+                    " ",
                     m.show_text("en")
                 )
             )
@@ -125,19 +130,19 @@ class BaseTextFormatter(Formatter):
         if self.kw.get('tty_out', False):
             # info
             color_start = u"\033[0;32m"
-            color_end   = u"\033[0;39m"
+            color_end = u"\033[0;39m"
             if level == "good":
                 color_start = u"\033[1;32m"
-                color_end   = u"\033[0;39m"
+                color_end = u"\033[0;39m"
             if level == "bad":
                 color_start = u"\033[1;31m"
-                color_end   = u"\033[0;39m"
+                color_end = u"\033[0;39m"
             if level == "warning":
                 color_start = u"\033[1;33m"
-                color_end   = u"\033[0;39m"
+                color_end = u"\033[0;39m"
             if level == "uri":
                 color_start = u"\033[1;34m"
-                color_end   = u"\033[0;39m"
+                color_end = u"\033[0;39m"
             return color_start + string + color_end
         else:
             return string

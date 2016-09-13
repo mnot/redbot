@@ -1,11 +1,27 @@
 #!/usr/bin/env python
 
 
-import redbot.speak as rs
+from redbot.message import headers
+from redbot.speak import Note, categories, levels
+from redbot.syntax import rfc7231
 
-description = u"""\
+class content_location(headers.HttpHeader):
+    canonical_name = u"Content-Location"
+    description = u"""\
 The `Content-Location` header can used to supply an address for the
 representation when it is accessible from a location separate from the request
 URI."""
+    reference = u"%s#header.content_location" % rfc7231.SPEC_URL
+    syntax = rfc7231.Content_Location
+    list_header = False
+    deprecated = False
+    valid_in_requests = False
+    valid_in_responses = True
 
-reference = u"%s#header.content-language" % rs.rfc7231
+
+
+class ContentLocationTest(headers.HeaderTest):
+    name = 'Content-Location'
+    inputs = ['/foo']
+    expected_out = '/foo'
+    expected_err = []

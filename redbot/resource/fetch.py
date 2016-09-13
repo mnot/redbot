@@ -9,7 +9,6 @@ based upon the provided headers.
 """
 
 import hashlib
-import os
 from os import path
 from robotparser import RobotFileParser
 from urlparse import urlsplit
@@ -19,7 +18,7 @@ import thor.http.error as httperr
 
 from redbot import __version__
 from redbot.cache_file import CacheFile
-import redbot.speak as rs
+from redbot.speak import Note, levels, categories
 from redbot.state import RedState
 from redbot.message import HttpRequest, HttpResponse
 from redbot.message.status import StatusChecker
@@ -166,8 +165,7 @@ class RedFetcher(RedState):
 
                 self.robot_files[origin] = robots_txt
                 if self.robot_cache_dir:
-                    robot_fd = CacheFile(
-                        path.join(self.robot_cache_dir, origin_hash))
+                    robot_fd = CacheFile(path.join(self.robot_cache_dir, origin_hash))
                     robot_fd.write(robots_txt, 60*30)
 
                 for _cb in self.robot_lookups[origin]:
@@ -176,8 +174,7 @@ class RedFetcher(RedState):
 
             p_url = urlsplit(url)
             robots_url = "%s://%s/robots.txt" % (p_url.scheme, p_url.netloc)
-            exchange.request_start("GET", robots_url,
-                [('User-Agent', UA_STRING)])
+            exchange.request_start("GET", robots_url, [('User-Agent', UA_STRING)])
             exchange.request_done([])
 
     def run(self, done_cb=None):
@@ -208,7 +205,8 @@ class RedFetcher(RedState):
             pass
         else:
             checker = RobotFileParser()
-            checker.parse(robots_txt.decode('ascii', 'replace').encode('ascii', 'replace').splitlines())
+            checker.parse(
+                robots_txt.decode('ascii', 'replace').encode('ascii', 'replace').splitlines())
             if not checker.can_fetch(UA_STRING, self.request.uri):
                 self.response.http_error = RobotsTxtError()
                 self.finish_task()
@@ -275,14 +273,13 @@ class RedFetcher(RedState):
         self.response.complete_time = thor.time()
         self.response.http_error = error
         if isinstance(error, httperr.BodyForbiddenError):
-            self.add_note('header-none', rs.BODY_NOT_ALLOWED)
+            self.add_note('header-none', BODY_NOT_ALLOWED)
 #        elif isinstance(error, httperr.ExtraDataErr):
 #            res.payload_len += len(err.get('detail', ''))
         elif isinstance(error, httperr.ChunkError):
             err_msg = error.detail[:20] or ""
-            self.add_note('header-transfer-encoding', rs.BAD_CHUNK,
-                chunk_sample=err_msg.encode('string_escape')
-            )
+            self.add_note('header-transfer-encoding', BAD_CHUNK,
+                          chunk_sample=err_msg.encode('string_escape'))
         self.done()
         self.finish_task()
 
@@ -290,15 +287,13 @@ class RedFetcher(RedState):
 def url_to_origin(url):
     "Convert an URL to an RFC6454 Origin."
     default_port = {
-    	'http': 80,
-    	'https': 443
-    }
+        'http': 80,
+        'https': 443}
     try:
         p_url = urlsplit(url)
         origin = "%s://%s:%s" % (p_url.scheme.lower(),
                                  p_url.hostname.lower(),
-                                 p_url.port or default_port.get(p_url.scheme, 0)
-        )
+                                 p_url.port or default_port.get(p_url.scheme, 0))
     except (AttributeError, ValueError):
         origin = None
     return origin
@@ -307,6 +302,42 @@ def url_to_origin(url):
 class RobotsTxtError(httperr.HttpError):
     desc = "Forbidden by robots.txt"
     server_status = ("502", "Gateway Error")
+
+
+class BODY_NOT_ALLOWED(Note):
+    category = categories.CONNECTION
+    level = levels.BAD
+    summary = u"%(response)s is not allowed to have a body."
+    text = u"""\
+HTTP defines a few special situations where a response does not allow a body. This includes 101,
+204 and 304 responses, as well as responses to the `HEAD` method.
+
+%(response)s had a body, despite it being disallowed. Clients receiving it may treat the body as
+the next response in the connection, leading to interoperability and security issues."""
+
+class BAD_CHUNK(Note):
+    category = categories.CONNECTION
+    level = levels.BAD
+    summary = u"%(response)s had chunked encoding errors."
+    text = u"""\
+The response indicates it uses HTTP chunked encoding, but there was a problem decoding the
+chunking.
+
+A valid chunk looks something like this:
+
+`[chunk-size in hex]\\r\\n[chunk-data]\\r\\n`
+
+However, the chunk sent started like this:
+
+`%(chunk_sample)s`
+
+This is a serious problem, because HTTP uses chunking to delimit one response from the next one;
+incorrect chunking can lead to interoperability and security problems.
+
+This issue is often caused by sending an integer chunk size instead of one in hex, or by sending
+`Transfer-Encoding: chunked` without actually chunking the response body."""
+
+
 
 
 if __name__ == "__main__":
@@ -319,10 +350,10 @@ if __name__ == "__main__":
         def done(self):
             print self.notes
     T = TestFetcher(
-         sys.argv[1],
-         req_hdrs=[(u'Accept-Encoding', u'gzip')],
-         status_cb=status_p,
-         name='test'
+        sys.argv[1],
+        req_hdrs=[(u'Accept-Encoding', u'gzip')],
+        status_cb=status_p,
+        name='test'
     )
     T.run()
     thor.run()

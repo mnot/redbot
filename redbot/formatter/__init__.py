@@ -29,8 +29,8 @@ def find_formatter(name, default="html", multiple=False):
     """
     Find the formatter for name, and use default if it can't be found.
     If you need to represent more than one result, set multiple to True.
-    
-    Note that you MUST "from redbot.formatter import *" before calling. 
+
+    Note that you MUST "from redbot.formatter import *" before calling.
     Yes, that's a hack that needs to be fixed.
     """
     if name not in _formatters.keys():
@@ -40,7 +40,7 @@ def find_formatter(name, default="html", multiple=False):
         for candidate in _formatters[name]:
             if not candidate.can_multiple:
                 return candidate
-    for candidate in _formatters[name]:            
+    for candidate in _formatters[name]:
         if candidate.can_multiple:
             return candidate
     raise RuntimeError, "Can't find a format in %s" % _formatters
@@ -48,8 +48,8 @@ def find_formatter(name, default="html", multiple=False):
 def available_formatters():
     """
     Return a list of the available formatter names.
-    
-    Note that you MUST "from redbot.formatter import *" before calling. 
+
+    Note that you MUST "from redbot.formatter import *" before calling.
     Yes, that's a hack that needs to be fixed.
     """
     return _formatters.keys()
@@ -60,14 +60,14 @@ class Formatter(object):
     A formatter for RED objects. start_output() is called first,
     followed by zero or more calls to feed() and status(), finishing
     with finish_output().
-    
+
     Is available to UIs based upon the 'name' attribute.
     """
-    __metaclass__ = FormatterType    
+    __metaclass__ = FormatterType
     media_type = None # the media type of the format.
     name = None # name of the format.
     can_multiple = False # formatter can represent multiple responses.
-    
+
     def __init__(self, ui_uri, uri, req_hdrs, check_type, lang, output, **kw):
         """
         Formatter for the given URI, writing
@@ -88,18 +88,18 @@ class Formatter(object):
         Set the RedState to be formatted.
         """
         self.state = state
-        
+
     def done(self):
         """Clean up. Must be called by finish_output."""
         self.state = None
         self.output = None
-    
+
     def feed(self, state, sample):
         """
         Feed a body sample to processor(s).
         """
         raise NotImplementedError
-        
+
     def start_output(self):
         """
         Send preliminary output.
@@ -110,8 +110,8 @@ class Formatter(object):
         """
         Output a status message.
         """
-        raise NotImplementedError        
-        
+        raise NotImplementedError
+
     def finish_output(self):
         """
         Finalise output.
@@ -207,13 +207,13 @@ class RelativeTimeTester(unittest.TestCase):
         (+year+(90*day)+(3*hour), "1 year 90 days from now"),
         (+(13*day)-.4, "13 days from now"),
     ]
-    
+
     def setUp(self):
         self.now = time.time()
-    
+
     def test_relative_time(self):
         for delta, result in self.cases:
             self.assertEqual(
-                relative_time(self.now + delta, self.now), 
+                relative_time(self.now + delta, self.now),
                 result
             )

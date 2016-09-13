@@ -9,7 +9,7 @@ objects (e.g., the HTTP client machinery) are kept elsewhere.
 
 import types
 
-import redbot.speak as rs
+from redbot.speak import response
 
 class RedState(object):
     "Base class for things that have test state."
@@ -32,7 +32,7 @@ class RedState(object):
 
     def add_note(self, subject, note, subreq=None, **kw):
         "Set a note."
-        kw['response'] = rs.response.get(
-            self.name, rs.response['this']
+        kw['response'] = response.get(
+            self.name, response['this']
         )
         self.notes.append(note(subject, subreq, kw))

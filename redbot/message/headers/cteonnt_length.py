@@ -10,4 +10,3 @@ response.
 It takes this form because the most efficient way of assuring that clients
 don't see the header is to rearrange or change individual characters in its
 name. """
-

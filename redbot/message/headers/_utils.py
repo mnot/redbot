@@ -4,12 +4,12 @@ from email.utils import parsedate as lib_parsedate
 import re
 import urllib
 
-from redbot.message import http_syntax as syntax
-import redbot.speak as rs
+from redbot.syntax import rfc7231
+from ._notes import *
 
 def parse_date(value):
     """Parse a HTTP date. Raises ValueError if it's bad."""
-    if not re.match(r"%s$" % syntax.DATE, value, re.VERBOSE):
+    if not re.match(r"%s$" % rfc7231.HTTP_date, value, re.VERBOSE):
         raise ValueError
     date_tuple = lib_parsedate(value)
     if date_tuple is None:
@@ -52,16 +52,16 @@ def split_string(instr, item, split):
     if not instr:
         return []
     return [h.strip() for h in re.findall(
-        r'%s(?=%s|\s*$)' % (item, split), instr
+        r'%s(?=%s|\s*$)' % (item, split), instr, re.VERBOSE
     )]
 
-def parse_params(msg, subject, instr, nostar=None, delim=";"):
+def parse_params(instr, add_note, nostar=None, delim=";"):
     """
     Parse parameters into a dictionary.
 
-    @param msg: the message instance to use
-    @param subject: the subject identifier
     @param instr: string to be parsed
+    @param add_note: add_note function to recode results
+    @param subject: the subject identifier
     @param nostar: list of parameters that definitely don't get a star. If
                    True, no parameter can be starred.
     @param delim: delimter between params, default ";"
@@ -69,7 +69,7 @@ def parse_params(msg, subject, instr, nostar=None, delim=";"):
     """
     param_dict = {}
     instr = instr.encode('ascii') # TODO: non-ascii input?
-    for param in split_string(instr, syntax.PARAMETER, r"\s*%s\s*" % delim):
+    for param in split_string(instr, rfc7231.parameter, r"\s*%s\s*" % delim):
         try:
             key, val = param.split("=", 1)
         except ValueError:
@@ -77,41 +77,28 @@ def parse_params(msg, subject, instr, nostar=None, delim=";"):
             continue
         k_norm = key.lower() # TODO: warn on upper-case in param?
         if param_dict.has_key(k_norm):
-            msg.add_note(subject, rs.PARAM_REPEATS, param=k_norm)
+            add_note(PARAM_REPEATS, param=k_norm)
         if val[0] == val[-1] == "'":
-            msg.add_note(subject,
-                rs.PARAM_SINGLE_QUOTED,
-                param=k_norm,
-                param_val=val,
-                param_val_unquoted=val[1:-1]
-            )
+            add_note(PARAM_SINGLE_QUOTED, param=k_norm, param_val=val, param_val_unquoted=val[1:-1])
         if key[-1] == '*':
             if nostar is True or (nostar and k_norm[:-1] in nostar):
-                msg.add_note(subject, rs.PARAM_STAR_BAD,
-                                param=k_norm[:-1])
+                add_note(PARAM_STAR_BAD, param=k_norm[:-1])
             else:
                 if val[0] == '"' and val[-1] == '"':
-                    msg.add_note(subject, rs.PARAM_STAR_QUOTED,
-                                    param=k_norm)
+                    add_note(PARAM_STAR_QUOTED, param=k_norm)
                     val = unquote_string(val).encode('ascii')
                 try:
                     enc, lang, esc_v = val.split("'", 3)
                 except ValueError:
-                    msg.add_note(subject, rs.PARAM_STAR_ERROR,
-                                    param=k_norm)
+                    add_note(PARAM_STAR_ERROR, param=k_norm)
                     continue
                 enc = enc.lower()
                 lang = lang.lower()
                 if enc == '':
-                    msg.add_note(subject,
-                        rs.PARAM_STAR_NOCHARSET, param=k_norm)
+                    add_note(PARAM_STAR_NOCHARSET, param=k_norm)
                     continue
                 elif enc not in ['utf-8']:
-                    msg.add_note(subject,
-                        rs.PARAM_STAR_CHARSET,
-                        param=k_norm,
-                        enc=enc
-                    )
+                    add_note(PARAM_STAR_CHARSET, param=k_norm, enc=enc)
                     continue
                 # TODO: catch unquoting errors, range of chars, charset
                 unq_v = urllib.unquote(esc_v)
@@ -120,4 +107,3 @@ def parse_params(msg, subject, instr, nostar=None, delim=";"):
         else:
             param_dict[k_norm] = unquote_string(val)
     return param_dict
-

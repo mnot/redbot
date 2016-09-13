@@ -5,33 +5,35 @@ from calendar import timegm
 from re import match, split
 from urlparse import urlsplit
 
-import redbot.speak as rs
-from redbot.message import headers as rh
-from redbot.message import http_syntax as syntax
+from redbot.message import headers
+from redbot.speak import Note, categories, levels
 
 
-description = u"""\
+class set_cookie(headers.HttpHeader):
+    canonical_name = u"Set-Cookie"
+    description = u"""\
 The `Set-Cookie` response header sets a stateful "cookie" on the client, to be included in future
 requests to the server."""
+    syntax = False
+    reference = headers.rfc6265
+    list_header = False
+    nonstandard_syntax = True
+    deprecated = False
+    valid_in_requests = False
+    valid_in_responses = True
 
-reference = rs.rfc6265
-
-
-@rh.ResponseHeader
-def parse(subject, value, red):
-    path = urlsplit(red.base_uri).path # pylint: disable=E1103
-    try:
-        set_cookie = loose_parse(value, path, red.start_time, subject, red)
-    except ValueError:
-        set_cookie = None
-    return set_cookie
-
-def join(subject, values, red):
-    return values
+    def parse(self, field_value, add_note):
+        path = urlsplit(self.message.base_uri).path
+        start_time = 0 # FIXME
+        try:
+            set_cookie = loose_parse(field_value, path, start_time, add_note)
+        except ValueError:
+            set_cookie = None
+        return set_cookie
 
 
 # TODO: properly escape note
-def loose_parse(set_cookie_string, uri_path, current_time, subject, red):
+def loose_parse(set_cookie_string, uri_path, current_time, add_note):
     """
     Parse a Set-Cookie string, as per RFC6265, Section 5.2.
     """
@@ -43,13 +45,12 @@ def loose_parse(set_cookie_string, uri_path, current_time, subject, red):
     try:
         name, value = name_value_pair.split("=", 1)
     except ValueError:
-        red.add_note(subject, rs.SET_COOKIE_NO_VAL,
-            name_value_pair.strip()
-        )
+        print "couldn't parse", name_value_pair
+        add_note(SET_COOKIE_NO_VAL)
         raise ValueError, "Cookie doesn't have a value"
     name, value = name.strip(), value.strip()
     if name == "":
-        red.add_note(subject, rs.SET_COOKIE_NO_NAME)
+        add_note(SET_COOKIE_NO_NAME)
         raise ValueError, "Cookie doesn't have a name"
     cookie_name, cookie_value = name, value
     cookie_attribute_list = []
@@ -69,34 +70,24 @@ def loose_parse(set_cookie_string, uri_path, current_time, subject, red):
             try:
                 expiry_time = loose_date_parse(attribute_value)
             except ValueError, why:
-                red.add_note(subject, rs.SET_COOKIE_BAD_DATE, why=why,
-                    cookie_name=cookie_name
-                )
+                add_note(SET_COOKIE_BAD_DATE, why=why, cookie_name=cookie_name)
                 continue
             cookie_attribute_list.append(("Expires", expiry_time))
         elif case_norm_attribute_name == "max-age":
             if attribute_value == "":
-                red.add_note(subject, rs.SET_COOKIE_EMPTY_MAX_AGE,
-                    cookie_name=cookie_name
-                )
+                add_note(SET_COOKIE_EMPTY_MAX_AGE, cookie_name=cookie_name)
                 continue
             if attribute_value[0] == "0":
-                red.add_note(subject, rs.SET_COOKIE_LEADING_ZERO_MAX_AGE,
-                    cookie_name=cookie_name
-                )
+                add_note(SET_COOKIE_LEADING_ZERO_MAX_AGE, cookie_name=cookie_name)
                 continue
             if not attribute_value.isdigit():
-                red.add_note(subject, rs.SET_COOKIE_NON_DIGIT_MAX_AGE,
-                    cookie_name=cookie_name
-                )
+                add_note(SET_COOKIE_NON_DIGIT_MAX_AGE, cookie_name=cookie_name)
                 continue
             delta_seconds = int(attribute_value)
             cookie_attribute_list.append(("Max-Age", delta_seconds))
         elif case_norm_attribute_name == "domain":
             if attribute_value == "":
-                red.add_note(subject, rs.SET_COOKIE_EMPTY_DOMAIN,
-                    cookie_name=cookie_name
-                )
+                add_note(SET_COOKIE_EMPTY_DOMAIN, cookie_name=cookie_name)
                 continue
             elif attribute_value[0] == ".":
                 cookie_domain = attribute_value[1:]
@@ -120,15 +111,14 @@ def loose_parse(set_cookie_string, uri_path, current_time, subject, red):
         elif case_norm_attribute_name == "httponly":
             cookie_attribute_list.append(("HttpOnly", ""))
         else:
-            red.add_note(subject, rs.SET_COOKIE_UNKNOWN_ATTRIBUTE,
-                cookie_name=cookie_name,
-                attribute=attribute_name
-            )
+            add_note(SET_COOKIE_UNKNOWN_ATTRIBUTE,
+                     cookie_name=cookie_name,
+                     attribute=attribute_name)
     return (cookie_name, cookie_value, cookie_attribute_list)
 
 
 DELIMITER = r'(?:[\x09\x20-\x2F\x3B-\x40\x5B-\x60\x7B-\x7E])'
-NON_DELIMTER = r'(?:[\x00-\x08\x0A-\x1F0-0\:a-zA-Z\x7F-\xFF])'
+NON_DELIMITER = r'(?:[\x00-\x08\x0A-\x1F0-0\:a-zA-Z\x7F-\xFF])'
 MONTHS = {
     'jan': 1,
     'feb': 2,
@@ -184,10 +174,14 @@ def loose_date_parse(cookie_date):
         year_value += 2000
     if False in [found_time, found_day_of_month, found_month, found_year]:
         missing = []
-        if not found_time: missing.append("time")
-        if not found_day_of_month: missing.append("day")
-        if not found_month: missing.append("month")
-        if not found_year: missing.append("year")
+        if not found_time:
+            missing.append("time")
+        if not found_day_of_month:
+            missing.append("day")
+        if not found_month:
+            missing.append("month")
+        if not found_year:
+            missing.append("year")
         raise ValueError, "didn't have a: %s" % ",".join(missing)
     if day_of_month_value < 1 or day_of_month_value > 31:
         raise ValueError, "%s is out of range for day_of_month" % \
@@ -211,63 +205,139 @@ def loose_date_parse(cookie_date):
     return parsed_cookie_date
 
 
-class BasicSCTest(rh.HeaderTest):
+
+
+class SET_COOKIE_NO_VAL(Note):
+    category = categories.GENERAL
+    level = levels.BAD
+    summary = u"%(response)s has a Set-Cookie header that can't be parsed."
+    text = u"""\
+  This `Set-Cookie` header can't be parsed into a name and a value; it must start with a `name=value`
+  structure.
+
+  Browsers will ignore this cookie."""
+
+class SET_COOKIE_NO_NAME(Note):
+    category = categories.GENERAL
+    level = levels.BAD
+    summary = u"%(response)s has a Set-Cookie header without a cookie-name."
+    text = u"""\
+  This `Set-Cookie` header has an empty name; there needs to be a name before the `=`.
+
+  Browsers will ignore this cookie."""
+
+class SET_COOKIE_BAD_DATE(Note):
+    category = categories.GENERAL
+    level = levels.WARN
+    summary = u"The %(cookie_name)s Set-Cookie header has an invalid Expires date."
+    text = u"""\
+  The `expires` date on this `Set-Cookie` header isn't valid; see
+  [RFC6265](http://tools.ietf.org/html/rfc6265) for details of the correct format."""
+
+class SET_COOKIE_EMPTY_MAX_AGE(Note):
+    category = categories.GENERAL
+    level = levels.WARN
+    summary = u"The %(cookie_name)s Set-Cookie header has an empty Max-Age."
+    text = u"""\
+  The `max-age` parameter on this `Set-Cookie` header doesn't have a value.
+
+  Browsers will ignore the `max-age` value as a result."""
+
+class SET_COOKIE_LEADING_ZERO_MAX_AGE(Note):
+    category = categories.GENERAL
+    level = levels.WARN
+    summary = u"The %(cookie_name)s Set-Cookie header has a Max-Age with a leading zero."
+    text = u"""\
+  The `max-age` parameter on this `Set-Cookie` header has a leading zero.
+
+  Browsers will ignore the `max-age` value as a result."""
+
+class SET_COOKIE_NON_DIGIT_MAX_AGE(Note):
+    category = categories.GENERAL
+    level = levels.WARN
+    summary = u"The %(cookie_name)s Set-Cookie header has a non-numeric Max-Age."
+    text = u"""\
+  The `max-age` parameter on this `Set-Cookie` header isn't numeric.
+
+
+  Browsers will ignore the `max-age` value as a result."""
+
+class SET_COOKIE_EMPTY_DOMAIN(Note):
+    category = categories.GENERAL
+    level = levels.WARN
+    summary = u"The %(cookie_name)s Set-Cookie header has an empty domain."
+    text = u"""\
+  The `domain` parameter on this `Set-Cookie` header is empty.
+
+  Browsers will probably ignore it as a result."""
+
+class SET_COOKIE_UNKNOWN_ATTRIBUTE(Note):
+    category = categories.GENERAL
+    level = levels.WARN
+    summary = u"The %(cookie_name)s Set-Cookie header has an unknown attribute, '%(attribute)s'."
+    text = u"""\
+  This `Set-Cookie` header has an extra parameter, "%(attribute)s".
+
+  Browsers will ignore it."""
+
+
+
+class BasicSCTest(headers.HeaderTest):
     name = 'Set-Cookie'
     inputs = ['SID=31d4d96e407aad42']
-    expected_out = [("SID", "31d4d96e407aad42", [])]
+    expected_out = [(u"SID", u"31d4d96e407aad42", [])]
     expected_err = []
 
-class ParameterSCTest(rh.HeaderTest):
+class ParameterSCTest(headers.HeaderTest):
     name = 'Set-Cookie'
     inputs = ['SID=31d4d96e407aad42; Path=/; Domain=example.com']
-    expected_out = [("SID", "31d4d96e407aad42",
-        [("Path", "/"), ("Domain", "example.com")])]
+    expected_out = [(u"SID", u"31d4d96e407aad42",
+                     [(u"Path", u"/"), (u"Domain", u"example.com")])]
     expected_err = []
 
-class TwoSCTest(rh.HeaderTest):
+class TwoSCTest(headers.HeaderTest):
     name = 'Set-Cookie'
     inputs = [
         "SID=31d4d96e407aad42; Path=/; Secure; HttpOnly",
-        "lang=en-US; Path=/; Domain=example.com"
-    ]
+        "lang=en-US; Path=/; Domain=example.com"]
     expected_out = [
-        ("SID", "31d4d96e407aad42", [("Path", "/"), ("Secure", ""), ("HttpOnly", "")]),
-        ("lang", "en-US", [("Path", "/"), ("Domain", "example.com")])
-    ]
+        (u"SID", u"31d4d96e407aad42", [(u"Path", u"/"), (u"Secure", u""), (u"HttpOnly", u"")]),
+        (u"lang", u"en-US", [(u"Path", "/"), (u"Domain", u"example.com")])]
     expected_err = []
 
-class ExpiresScTest(rh.HeaderTest):
+class ExpiresScTest(headers.HeaderTest):
     name = "Set-Cookie"
     inputs = ["lang=en-US; Expires=Wed, 09 Jun 2021 10:18:14 GMT"]
-    expected_out = [("lang", "en-US", [("Expires", 1623233894)])]
+    expected_out = [(u"lang", u"en-US", [(u"Expires", 1623233894)])]
     expected_err = []
 
-class ExpiresSingleScTest(rh.HeaderTest):
+class ExpiresSingleScTest(headers.HeaderTest):
     name = "Set-Cookie"
     inputs = ["lang=en-US; Expires=Wed, 9 Jun 2021 10:18:14 GMT"]
-    expected_out = [("lang", "en-US", [("Expires", 1623233894)])]
+    expected_out = [(u"lang", u"en-US", [(u"Expires", 1623233894)])]
     expected_err = []
 
-class MaxAgeScTest(rh.HeaderTest):
+class MaxAgeScTest(headers.HeaderTest):
     name = "Set-Cookie"
     inputs = ["lang=en-US; Max-Age=123"]
-    expected_out = [("lang", "en-US", [("Max-Age", 123)])]
+    expected_out = [(u"lang", u"en-US", [(u"Max-Age", 123)])]
     expected_err = []
 
-class MaxAgeLeadingZeroScTest(rh.HeaderTest):
+class MaxAgeLeadingZeroScTest(headers.HeaderTest):
     name = "Set-Cookie"
     inputs = ["lang=en-US; Max-Age=0123"]
-    expected_out = [("lang", "en-US", [])]
-    expected_err = [rs.SET_COOKIE_LEADING_ZERO_MAX_AGE]
+    expected_out = [(u"lang", u"en-US", [])]
+    expected_err = [SET_COOKIE_LEADING_ZERO_MAX_AGE]
 
-class RemoveSCTest(rh.HeaderTest):
+class RemoveSCTest(headers.HeaderTest):
     name = "Set-Cookie"
     inputs = ["lang=; Expires=Sun, 06 Nov 1994 08:49:37 GMT"]
-    expected_out = [("lang", "", [("Expires", 784111777)])]
+    expected_out = [(u"lang", u"", [(u"Expires", 784111777)])]
     expected_err = []
 
-class WolframSCTest(rh.HeaderTest):
+class WolframSCTest(headers.HeaderTest):
     name = "Set-Cookie"
-    inputs = ["WR_SID=50.56.234.188.1393830943825054; path=/; max-age=315360000; domain=.wolframalpha.com"]
-    expected_out = [("WR_SID","50.56.234.188.1393830943825054", [('Path', '/'), ('Max-Age', 315360000), ('Domain', 'wolframalpha.com')])]
+    inputs = ["WR_SID=50.56.234.188.1398; path=/; max-age=315360000; domain=.wolframalpha.com"]
+    expected_out = [(u"WR_SID", u"50.56.234.188.1398",
+                     [(u'Path', u'/'), (u'Max-Age', 315360000), (u'Domain', u'wolframalpha.com')])]
     expected_err = []

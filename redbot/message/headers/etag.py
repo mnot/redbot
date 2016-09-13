@@ -1,44 +1,43 @@
 #!/usr/bin/env python
 
 
-import redbot.speak as rs
-from redbot.message import headers as rh
-from redbot.message import http_syntax as syntax
+from redbot.message import headers
+from redbot.speak import Note, categories, levels
+from redbot.syntax import rfc7232
 
-
-description = u"""\
+class etag(headers.HttpHeader):
+    canonical_name = u"ETag"
+    description = u"""\
 The `ETag` header provides an opaque identifier for the representation."""
+    reference = u"%s#header.etag" % rfc7232.SPEC_URL
+    syntax = rfc7232.ETag
+    list_header = False
+    deprecated = False
+    valid_in_requests = True
+    valid_in_responses = True
 
-reference = u"%s#header.etag" % rs.rfc7232
-    
-@rh.GenericHeaderSyntax
-@rh.ResponseOrPutHeader
-@rh.CheckFieldSyntax(
-  r'\*|(?:W/)?%s' % syntax.QUOTED_STRING, rh.rfc2616 % "section-14.19")
-def parse(subject, value, red):
-    if value[:2] == 'W/':
-        return (True, rh.unquote_string(value[2:]))
-    else:
-        return (False, rh.unquote_string(value))
+    def parse(self, field_value, add_note):
+        if field_value[:2] == 'W/':
+            return (True, headers.unquote_string(field_value[2:]))
+        else:
+            return (False, headers.unquote_string(field_value))
 
-@rh.SingleFieldValue
-def join(subject, values, red):
-    return values[-1]
-        
-class ETagTest(rh.HeaderTest):
+
+
+class ETagTest(headers.HeaderTest):
     name = 'ETag'
     inputs = ['"foo"']
     expected_out = (False, 'foo')
     expected_err = []
 
-class WeakETagTest(rh.HeaderTest):
+class WeakETagTest(headers.HeaderTest):
     name = 'ETag'
     inputs = ['W/"foo"']
     expected_out = (True, 'foo')
     expected_err = []
 
-class UnquotedETagTest(rh.HeaderTest):
+class UnquotedETagTest(headers.HeaderTest):
     name = 'ETag'
     inputs = ['foo']
-    expected_out = None
-    expected_err = [rs.BAD_SYNTAX]
+    expected_out = (False, 'foo')
+    expected_err = [headers.BAD_SYNTAX]

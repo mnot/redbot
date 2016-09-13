@@ -5,9 +5,10 @@ import sys
 import unittest
 sys.path.insert(0, "..")
 
+from functools import partial
+
 import redbot.message.headers as headers
-from redbot.message import http_syntax as syntax
-import redbot.speak as rs
+from redbot.syntax import rfc7230
 from redbot.message import DummyMsg
 
 class GeneralHeaderTesters(unittest.TestCase):
@@ -25,15 +26,7 @@ class GeneralHeaderTesters(unittest.TestCase):
             (r'"f\\o\\o"', r'f\o\o', []),
             (r'"fo\o"', 'foo', []),
         ]:
-            self.red.__init__()
             out_str = headers.unquote_string(unicode(instr))
-            diff = set(
-                [n.__name__ for n in expected_notes]).symmetric_difference(
-                set(self.red.note_classes)
-            )
-            self.assertEqual(len(diff), 0, 
-                "[%s] Mismatched notes: %s" % (i, diff)
-            )
             self.assertEqual(expected_str, out_str, 
                 "[%s] %s != %s" % (i, str(expected_str), str(out_str)))
             i += 1
@@ -43,12 +36,12 @@ class GeneralHeaderTesters(unittest.TestCase):
         for (instr, expected_outlist, item, split) in [
             ('"abc", "def"', 
              ['"abc"', '"def"'], 
-             syntax.QUOTED_STRING, 
+             rfc7230.quoted_string, 
              r"\s*,\s*"
             ),
             (r'"\"ab", "c\d"', 
              [r'"\"ab"', r'"c\d"'], 
-             syntax.QUOTED_STRING, 
+             rfc7230.quoted_string, 
              r"\s*,\s*"
             )
         ]:
@@ -70,7 +63,7 @@ class GeneralHeaderTesters(unittest.TestCase):
             (r'foo="b\"ar"', {'foo': 'b"ar'}, [], ';'),
             (r'foo=bar; foo=baz', 
              {'foo': 'baz'}, 
-             [rs.PARAM_REPEATS], 
+             [headers.PARAM_REPEATS], 
              ';'
             ),
             ('foo=bar; baz="b;at"', 
@@ -90,38 +83,38 @@ class GeneralHeaderTesters(unittest.TestCase):
             ),
             ("foo=bar; baz='bat'", 
              {'foo': 'bar', 'baz': "'bat'"}, 
-             [rs.PARAM_SINGLE_QUOTED], 
+             [headers.PARAM_SINGLE_QUOTED], 
              ';'
             ),
             ("foo*=\"UTF-8''a%cc%88.txt\"", 
              {'foo*': u'a\u0308.txt'},
-             [rs.PARAM_STAR_QUOTED], 
+             [headers.PARAM_STAR_QUOTED], 
              ';'
             ),
             ("foo*=''a%cc%88.txt", 
              {},
-             [rs.PARAM_STAR_NOCHARSET], 
+             [headers.PARAM_STAR_NOCHARSET], 
              ';'
             ),
             ("foo*=utf-16''a%cc%88.txt", 
              {},
-             [rs.PARAM_STAR_CHARSET], 
+             [headers.PARAM_STAR_CHARSET], 
              ';'
             ),
             ("nostar*=utf-8''a%cc%88.txt",
              {},
-             [rs.PARAM_STAR_BAD], 
+             [headers.PARAM_STAR_BAD], 
              ';'
             ),
             ("NOstar*=utf-8''a%cc%88.txt",
              {},
-             [rs.PARAM_STAR_BAD], 
+             [headers.PARAM_STAR_BAD], 
              ';'
             )
         ]:
             self.red.__init__()
             param_dict = headers.parse_params(
-              self.red, 'test', instr, ['nostar'], delim
+              instr, partial(self.red.add_note, "test"), ['nostar'], delim
             )
             diff = set(
                 [n.__name__ for n in expected_notes]).symmetric_difference(

@@ -11,6 +11,8 @@ They should be processed with re.VERBOSE.
 from rfc5234 import ALPHA, DIGIT, SP
 from rfc7230 import list_rule, BWS, OWS, quoted_string, token
 
+SPEC_URL = u"http://httpwg.org/specs/rfc7235"
+
 
 # auth-param = token BWS "=" BWS ( token / quoted-string )
 
@@ -24,46 +26,46 @@ auth_scheme = token
 
 token68 = r"(?: (?: {ALPHA} | {DIGIT} | \- | \. | _ | \~ | \+ | / )* =* )".format(**locals())
 
-# challenge = auth-scheme 
-#             [ 1*SP 
-#               ( token68 / 
-#                 [ 
-#                    ( "," / auth-param ) 
+# challenge = auth-scheme
+#             [ 1*SP
+#               ( token68 /
+#                 [
+#                    ( "," / auth-param )
 #                   *( OWS "," [ OWS auth-param ] )
-#                 ] 
-#               ) 
+#                 ]
+#               )
 #             ]
 
-challenge = r"""(?: {auth_scheme} 
+challenge = r"""(?: {auth_scheme}
                         (?: {SP}+
-                          (?: {token68} | 
-                            (?: 
+                          (?: {token68} |
+                            (?:
                                 (?: , | {auth_param} )
                                 (?: {OWS} , (?: OWS {auth_param} )? )*
                             )?
-                          ) 
-                        )? 
+                          )
+                        )?
 )""".format(**locals())
 
-# credentials = auth-scheme 
-#             [ 1*SP 
-#               ( token68 / 
-#                 [ 
-#                    ( "," / auth-param ) 
+# credentials = auth-scheme
+#             [ 1*SP
+#               ( token68 /
+#                 [
+#                    ( "," / auth-param )
 #                   *( OWS "," [ OWS auth-param ] )
-#                 ] 
-#               ) 
+#                 ]
+#               )
 #             ]
 
-credentials = r"""(?: {auth_scheme} 
+credentials = r"""(?: {auth_scheme}
                         (?: {SP}+
-                          (?: {token68} | 
-                            (?: 
+                          (?: {token68} |
+                            (?:
                                 (?: , | {auth_param} )
                                 (?: {OWS} , (?: OWS {auth_param} )? )*
                             )?
-                          ) 
-                        )? 
+                          )
+                        )?
 )""".format(**locals())
 
 # Authorization = credentials

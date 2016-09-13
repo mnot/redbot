@@ -1,21 +1,18 @@
 #!/usr/bin/env python
 
 
-import redbot.speak as rs
-from redbot.message import headers as rh
-from redbot.message import http_syntax as syntax
+from redbot.message import headers
+from redbot.speak import Note, categories, levels
+from redbot.syntax import rfc7231
 
-description = u"""\
+class server(headers.HttpHeader):
+    canonical_name = u"Server"
+    description = u"""\
 The `Server` header contains information about the software used by the origin server to handle the
 request."""
-
-reference = u"%s#header.server" % rs.rfc7231
-
-
-@rh.ResponseHeader
-def parse(subject, value, red):
-    # TODO: check syntax, flag servers?
-    pass
-    
-def join(subject, values, red):
-    return values
+    reference = u"%s#header.server" % rfc7231.SPEC_URL
+    syntax = rfc7231.Server
+    list_header = True
+    deprecated = False
+    valid_in_requests = False
+    valid_in_responses = True

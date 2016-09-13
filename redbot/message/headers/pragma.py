@@ -1,27 +1,55 @@
 #!/usr/bin/env python
 
 
-import redbot.speak as rs
-from redbot.message import headers as rh
-from redbot.message import http_syntax as syntax
+from redbot.message import headers
+from redbot.speak import Note, categories, levels
+from redbot.syntax import rfc7234
 
-
-description = u"""\
+class pragma(headers.HttpHeader):
+    canonical_name = u"Pragma"
+    description = u"""\
 The `Pragma` header is used to include implementation-specific directives that might apply to any
-recipient along the request/response chain.<p> This header is deprecated, in favour of
-`Cache-Control`."""
+recipient along the request/response chain.
 
-reference = u"%s#header.pragma" % rs.rfc7234
+This header is deprecated, in favour of `Cache-Control`."""
+    reference = u"%s#header.pragma" % rfc7234.SPEC_URL
+    syntax = rfc7234.Pragma
+    list_header = True
+    deprecated = True
+    valid_in_requests = False
+    valid_in_responses = True
 
-@rh.RequestHeader
-@rh.GenericHeaderSyntax
-def parse(subject, value, red):
-    return value.lower()
-    
-def join(subject, values, red):
-    if "no-cache" in values:
-        red.add_note(subject, rs.PRAGMA_NO_CACHE)
-    others = [True for v in values if v != "no-cache"]
-    if others:
-        red.add_note(subject, rs.PRAGMA_OTHER)
-    return set(values)
+    def parse(self, field_value, add_note):
+        return field_value.lower()
+
+    def evaluate(self, add_note):
+        if "no-cache" in self.value:
+            add_note(PRAGMA_NO_CACHE)
+        others = [True for v in self.value if v != "no-cache"]
+        if others:
+            add_note(PRAGMA_OTHER)
+
+
+class PRAGMA_NO_CACHE(Note):
+    category = categories.CACHING
+    level = levels.WARN
+    summary = u"Pragma: no-cache is a request directive, not a response \
+  directive."
+    text = u"""\
+  `Pragma` is a very old request header that is sometimes used as a response header, even though this
+  is not specified behaviour. `Cache-Control: no-cache` is more appropriate."""
+
+class PRAGMA_OTHER(Note):
+    category = categories.GENERAL
+    level = levels.WARN
+    summary = u"""\
+  The Pragma header is being used in an undefined way."""
+    text = u"""\
+  HTTP only defines `Pragma: no-cache`; other uses of this header are deprecated."""
+
+
+class PragmaTest(headers.HeaderTest):
+    name = 'Pragma'
+    inputs = ['no-cache']
+    expected_out = ['no-cache']
+    expected_err = [PRAGMA_NO_CACHE, headers.HEADER_DEPRECATED]

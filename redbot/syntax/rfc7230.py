@@ -12,6 +12,8 @@ They should be processed with re.VERBOSE.
 from rfc5234 import ALPHA, CR, LF, CRLF, CTL, DIGIT, DQUOTE, HEXDIG, HTAB, OCTET, SP, VCHAR
 from rfc3986 import URI_reference, absolute_URI, authority, fragment, path_abempty, port, query, relative_part, scheme, segment, host as uri_host
 
+SPEC_URL = u"http://httpwg.org/specs/rfc7230"
+
 
 ## Basics
 
@@ -37,7 +39,7 @@ obs_text = r"[\x80-\xff]"
 
 # tchar = "!" / "#" / "$" / "%" / "&" / "'" / "*" / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~" / DIGIT / ALPHA
 
-tchar = r"(?: ! | # | \$ | %% | & | ' | \* | \+ | - | . | \^ | _ | ` | \| | ~ | {DIGIT} | {ALPHA} )".format(**locals())
+tchar = r"(?: ! | \# | \$ | % | & | ' | \* | \+ | \- | \. | \^ | _ | ` | \| | \~ | {DIGIT} | {ALPHA} )".format(**locals())
 
 # token = 1*tchar
 
@@ -55,26 +57,40 @@ quoted_pair = r"(?: \\ (?: {HTAB} | {SP} | {VCHAR} | {obs_text} ) )".format(**lo
 
 # quoted-string = DQUOTE *( qdtext / quoted-pair ) DQUOTE
 
-quoted_string = r"\" (?: {qdtext} | {quoted_pair} )* \"".format(**locals())
+quoted_string = r"(?: \" (?: {qdtext} | {quoted_pair} )* \" )".format(**locals())
 
 
 
 
-def list_rule(element, min=None):
+class list_rule(object):
     """
-    Given a piece of ABNF, wrap it in the "list rule" 
+    Given a piece of ABNF, wrap it in the "list rule"
     as per RFC7230, Section 7.
-    
+
+    <http://httpwg.org/specs/rfc7230.html#abnf.extension>
+
     Uses the sender syntax, not the more lenient recipient syntax.
     """
-    
-    if min:
-        min = r"?"
-    else:
-        min = r""
-    
-    # element *( OWS "," OWS element )
-    return r"{element} (?: {OWS} , {OWS} {element} ){min}".format(element=element, OWS=OWS, min=min)
+  
+    def __init__(self, element, minimum=None):
+        self.element = element
+        self.minimum = minimum
+
+    def __str__(self):
+        if self.minimum == 1:
+            # 1#element => element *( OWS "," OWS element )
+            return r"(?: {element} (?: {OWS} , {OWS} {element} )* )".format(
+                element=self.element, OWS=OWS)
+        elif self.minimum > 1:
+            # <n>#<m>element => element <n-1>*<m-1>( OWS "," OWS element )
+            adj_min = self.minimum - 1
+            return r"(?: {element} (?: {OWS} , {OWS} {element} ){{{adj_min},}} )".format(
+                 element=self.element, OWS=OWS, adj_min=adj_min)
+        else:
+            # element => [ 1#element ]
+            return r"(?: {element} (?: {OWS} , {OWS} {element} )* )?".format(
+                element=self.element, OWS=OWS)
+
 
 
 
@@ -91,18 +107,18 @@ Connection = list_rule(connection_option, 1)
 # Content-Length = 1*DIGIT
 
 Content_Length = r"{DIGIT}+".format(**locals())
- 
+
 # Host = uri-host [ ":" port ]
 
 Host = r"{uri_host} (?: : {port} )?".format(**locals())
 
 # transfer-parameter = token BWS "=" BWS ( token / quoted-string )
 
-transfer_parameter = r"(?: {token} {BWS} \= {BWS} (?: {token} | {quoted_string} ) )".format(**locals())
+transfer_parameter = r"(?: {token} {BWS} = {BWS} (?: {token} | {quoted_string} ) )".format(**locals())
 
 # transfer-extension = token *( OWS ";" OWS transfer-parameter )
 
-transfer_extension = r"(?: {token} (?: {OWS} \; {OWS} (%tranfer_parameter) )* )".format(**locals())
+transfer_extension = r"(?: {token} (?: {OWS} ; {OWS} {transfer_parameter} )* )".format(**locals())
 
 # rank = ( "0" [ "." *3DIGIT ] ) / ( "1" [ "." *3"0" ] )
 
@@ -119,7 +135,7 @@ transfer_coding = r"(?: chunked | compress | deflate | gzip | {transfer_extensio
 # t-codings = "trailers" / ( transfer-coding [ t-ranking ] )
 
 t_codings = r"(?: trailers | (?: {transfer_coding} (?: {t_ranking}? ) ) )".format(**locals())
- 
+
 # TE = #t-codings
 
 TE = list_rule(t_codings)
@@ -146,8 +162,8 @@ protocol_version = token
 
 # protocol = protocol-name [ "/" protocol-version ]
 
-protocol = r"(?: {protocol_name} (?: %(protocol-version) )? )".format(**locals())
- 
+protocol = r"(?: {protocol_name} (?: {protocol_version} )? )".format(**locals())
+
 # Upgrade = 1#protocol
 
 Upgrade = list_rule(protocol, 1)
@@ -162,7 +178,7 @@ received_by = r"(?: (?: {uri_host} (?: : {port} )? ) | {pseudonym} )".format(**l
 
 # received-protocol = [ protocol-name "/" ] protocol-version
 
-received_protocol = r"(?: (?: {protocol_name} )? / {protocol_version} )".format(**locals())
+received_protocol = r"(?: (?: {protocol_name} / )? {protocol_version} )".format(**locals())
 
 # ctext = HTAB / SP / %x21-27 ; '!'-'''
 #  / %x2A-5B ; '*'-'['
@@ -170,15 +186,15 @@ received_protocol = r"(?: (?: {protocol_name} )? / {protocol_version} )".format(
 #  / obs-text
 
 ctext = r"(?: {HTAB} | {SP} | [\x21-\x27] | [\x2A-\x5b] | \x5D-\x7E | {obs_text} )".format(**locals())
- 
+
 # comment = "(" *( ctext / quoted-pair / comment ) ")"
 
 comment = r"(?: (?: {ctext} | {quoted_pair} )* ) ".format(**locals())
-# FIXME: handle recursive comments - see <https://pypi.python.org/pypi/regex/>
+# TODO: handle recursive comments - see <https://pypi.python.org/pypi/regex/>
 
 # Via = 1#( received-protocol RWS received-by [ RWS comment ] )
 
-Via = list_rule( r"(?: {received_protocol} {RWS} {received_by} (?: {RWS} {comment} ) )".format(**locals()), 1)
+Via = list_rule(r"(?: {received_protocol} {RWS} {received_by} (?: {RWS} {comment} )? )".format(**locals()), 1)
 
 
 
@@ -196,7 +212,7 @@ field_content = r"(?: {field_vchar} (?: (?: {SP} | {HTAB} )+ {field_vchar} )? )"
 # field-value = *( field-content / obs-fold )
 
 field_value = r"(?: {field_content} | {obs_fold} )*".format(**locals())
- 
+
 # header-field = field-name ":" OWS field-value OWS
 
 header_field = r"(?: {field_name} : {OWS} {field_value} {OWS} )".format(**locals())
@@ -208,7 +224,7 @@ header_field = r"(?: {field_name} : {OWS} {field_value} {OWS} )".format(**locals
 
 # chunk-size = 1*HEXDIG
 
-chunk_size =  r"(?: {HEXDIG}+ )".format(**locals())
+chunk_size = r"(?: {HEXDIG}+ )".format(**locals())
 
 # chunk-ext-name = token
 
@@ -225,7 +241,7 @@ chunk_ext = r"(?: \; {chunk_ext_name} (?: \= {chunk_ext_val} )? )".format(**loca
 # chunk-data = 1*OCTET
 
 chunk_data = r"{OCTET}+".format(**locals())
- 
+
 # chunk = chunk-size [ chunk-ext ] CRLF chunk-data CRLF
 
 chunk = r"(?: {chunk_size} (?: {chunk_ext} )? {CRLF} {chunk_data} {CRLF} )".format(**locals())
@@ -274,7 +290,7 @@ https_URI = r"(?: https:// {authority} {path_abempty} (?: \? {query} )? (?: \# {
 # origin-form = absolute-path [ "?" query ]
 
 origin_form = r"(?: {absolute_path} (?: {query} )? )".format(**locals())
- 
+
 # partial-URI = relative-part [ "?" query ]
 
 partial_URI = r"(?: {relative_part} (?: {query} )? )".format(**locals())
@@ -323,7 +339,7 @@ start_line = r"(?: {request_line} | {status_line} )".format(**locals())
 # message-body = *OCTET
 
 message_body = r"(?: {OCTET}* )".format(**locals())
- 
+
 # HTTP-message = start-line *( header-field CRLF ) CRLF [ message-body ]
 
 HTTP_message = r"(?: {start_line} (?: {header_field} {CRLF} )* {CRLF} (?: {message_body} )? )".format(**locals())

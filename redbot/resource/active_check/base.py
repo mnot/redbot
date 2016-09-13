@@ -9,6 +9,7 @@ This is the base class for all subrequests.
 
 
 from redbot.resource.fetch import RedFetcher
+from redbot.speak import Note, levels, categories
 
 
 class SubRequest(RedFetcher):
@@ -19,29 +20,28 @@ class SubRequest(RedFetcher):
     def __init__(self, base_resource, name):
         self.base = base_resource
         req_hdrs = self.modify_req_hdrs()
-        RedFetcher.__init__(self, 
-                            self.base.request.uri, 
-                            self.base.request.method, 
+        RedFetcher.__init__(self,
+                            self.base.request.uri,
+                            self.base.request.method,
                             req_hdrs,
-                            self.base.request.payload, 
-                            self.base.status_cb, 
-                            [], 
-                            name
-        )
+                            self.base.request.payload,
+                            self.base.status_cb,
+                            [],
+                            name)
         if self.preflight():
             self.base.subreqs[name] = self
-    
+
     def modify_req_hdrs(self):
         """
         Usually overidden; modifies the request's headers.
-        
+
         Make sure it returns a copy of the orignals, not them.
         """
         return list(self.base.orig_req_hdrs)
 
     def add_note(self, subject, note, subreq=None, **kw):
         self.base.add_note(subject, note, self.name, **kw)
-        
+
     def check_missing_hdrs(self, hdrs, note, subreq_type):
         """
         See if the listed headers are missing in the subrequest; if so,
@@ -54,6 +54,19 @@ class SubRequest(RedFetcher):
                 missing_hdrs.append(hdr)
         if missing_hdrs:
             self.add_note('headers', note,
-                missing_hdrs=", ".join(missing_hdrs),
-                subreq_type=subreq_type
-            )
+                          missing_hdrs=", ".join(missing_hdrs),
+                          subreq_type=subreq_type)
+
+
+class MISSING_HDRS_304(Note):
+    category = categories.VALIDATION
+    level = levels.WARN
+    summary = u"The %(subreq_type)s response is missing required headers."
+    text = u"""\
+HTTP requires `304 Not Modified` responses to have certain headers, if they are also present in a
+normal (e.g., `200 OK` response).
+
+%(response)s is missing the following headers: `%(missing_hdrs)s`.
+
+This can affect cache operation; because the headers are missing, caches might remove them from
+their cached copies."""

@@ -20,7 +20,7 @@ SPEC_URL = u"http://httpwg.org/specs/rfc7231"
 
 # parameter = token "=" ( token / quoted-string )
 
-parameter = r"(?: {token} \= (?: {token} | {quoted_string} ) )".format(**locals())
+parameter = r"(?: {token} = (?: {token} | {quoted_string} ) )".format(**locals())
 
 # qvalue = ( "0" [ "." *3DIGIT ] ) / ( "1" [ "." *3"0" ] )
 
@@ -132,7 +132,7 @@ HTTP_date = r"(?: {IMF_fixdate} | {obs_date} )".format(**locals())
 # weight = OWS ";" OWS "q=" qvalue
 
 weight = r"(?: {OWS} \; {OWS} q\= {qvalue} )".format(**locals())
- 
+
 # accept-ext = OWS ";" OWS token [ "=" ( token / quoted-string ) ]
 
 accept_ext = r"(?: {OWS} ; {OWS} {token} (?: \= (?: {token} | {quoted_string} ) )? )".format(**locals())

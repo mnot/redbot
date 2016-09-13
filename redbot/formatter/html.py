@@ -23,11 +23,11 @@ from markdown import markdown
 import thor
 import thor.http.error as httperr
 
-import redbot.speak as rs
 from redbot import __version__
 from redbot.formatter import Formatter, html_header, relative_time, f_num
 from redbot.resource import HttpResource
-from redbot.message.headers import load_header_func
+from redbot.message.headers import HeaderProcessor
+from redbot.speak import levels, categories
 
 nl = u"\n"
 
@@ -41,7 +41,7 @@ class BaseHtmlFormatter(Formatter):
     """
     Base class for HTML formatters."""
     media_type = "text/html"
-    
+
     def __init__(self, *args, **kw):
         Formatter.__init__(self, *args, **kw)
         self.hidden_text = []
@@ -71,12 +71,12 @@ class BaseHtmlFormatter(Formatter):
             u'html_uri': e_html(self.uri),
             u'js_uri': e_js(self.uri),
             u'config': e_fragment(json.dumps({
-              u'redbot_uri': self.uri,
-              u'redbot_req_hdrs': self.req_hdrs,
-              u'redbot_version': __version__
+                u'redbot_uri': self.uri,
+                u'redbot_req_hdrs': self.req_hdrs,
+                u'redbot_version': __version__
             }, ensure_ascii=False)),
             u'js_req_hdrs': u", ".join([u'["%s", "%s"]' % (
-                e_js(n), e_js(v)) for n,v in self.req_hdrs]),
+                e_js(n), e_js(v)) for n, v in self.req_hdrs]),
             u'extra_js': self.format_extra(u'.js'),
             u'test_id': self.kw.get('test_id', u""),
             u'extra_title': extra_title,
@@ -86,14 +86,14 @@ class BaseHtmlFormatter(Formatter):
 
     def finish_output(self):
         """
-        Default to no input. 
+        Default to no input.
         """
         self.output(self.format_extra())
         self.output(self.format_footer())
         self.output(u"</body></html>\n")
         self.done()
 
- 
+
     def status(self, message):
         "Update the status bar of the browser"
         self.output(u"""
@@ -102,15 +102,14 @@ class BaseHtmlFormatter(Formatter):
 window.status="%s";
 -->
 </script>
-        """ % (thor.time() - self.start, e_html(message)))
+""" % (thor.time() - self.start, e_html(message)))
 
     def final_status(self):
 #        See issue #51
 #        self.status("RED made %(reqs)s requests in %(elapse)2.3f seconds." % {
 #            'reqs': fetch.total_requests,
         self.status(u"RED finished in %(elapse)2.3f seconds." % {
-           u'elapse': thor.time() - self.start
-        })
+            u'elapse': thor.time() - self.start})
 
     def format_extra(self, etype='.html'):
         """
@@ -118,24 +117,18 @@ window.status="%s";
         Type controls the extension included; currently supported:
           - '.html': shown only on start page, after input block
           - '.js': javascript block (with script tag surrounding)
-            included on every page view. 
+            included on every page view.
         """
         o = []
         if extra_dir and os.path.isdir(extra_dir):
-            extra_files = [
-                p for p in os.listdir(extra_dir) if \
-                os.path.splitext(p)[1] == etype
-            ]
+            extra_files = [p for p in os.listdir(extra_dir) if os.path.splitext(p)[1] == etype]
             for extra_file in extra_files:
                 extra_path = os.path.join(extra_dir, extra_file)
                 try:
-                    o.append(
-                        codecs.open(extra_path, mode='r', 
-                            encoding='utf-8', errors='replace').read()
-                    )
+                    o.append(codecs.open(
+                        extra_path, mode='r', encoding='utf-8', errors='replace').read())
                 except IOError, why:
-                    o.append("<!-- error opening %s: %s -->" % (
-                        extra_file, why))
+                    o.append("<!-- error opening %s: %s -->" % (extra_file, why))
         return nl.join(o)
 
     def format_hidden_list(self):
@@ -162,28 +155,25 @@ title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
 </p>
 </div>
 
-""" % {
-       'baseuri': e_html(self.ui_uri),
-       'version': __version__,
-       }
+""" % {'baseuri': e_html(self.ui_uri), 'version': __version__}
 
     def req_qs(self, link=None, check_type=None, res_format=None, use_stored=True, referer=True):
         """
         Format a query string to refer to another RED resource.
-        
+
         "link" is the resource to test; it is evaluated relative to the current context
         If blank, it is the same resource.
-        
-        "check_type" is the request type to show; see active_check/__init__.py. If not specified, 
+
+        "check_type" is the request type to show; see active_check/__init__.py. If not specified,
         that of the current context will be used.
-        
+
         "res_format" is the response format; see formatter/*.py. If not specified, HTML will be
         used.
-        
+
         If "use_stored" is true, we'll refer to the test_id, rather than make a new request.
-        
+
         If 'referer" is true, we'll strip any existing Referer and add our own.
-        
+
         Request headers are copied over from the current context.
         """
         out = []
@@ -192,12 +182,10 @@ title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
         else:
             out.append(u"uri=%s" % e_query_arg(urljoin(self.uri, link or "")))
         if self.req_hdrs:
-            for k,v in self.req_hdrs:
-                if referer and k.lower() == 'referer': continue
-                out.append(u"req_hdr=%s%%3A%s" % (
-                    e_query_arg(k), 
-                    e_query_arg(v)
-                ))
+            for k, v in self.req_hdrs:
+                if referer and k.lower() == 'referer':
+                    continue
+                out.append(u"req_hdr=%s%%3A%s" % (e_query_arg(k), e_query_arg(v)))
         if referer:
             out.append(u"req_hdr=Referer%%3A%s" % e_query_arg(self.uri))
         if check_type:
@@ -207,7 +195,7 @@ title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
         if res_format:
             out.append(u"format=%s" % e_query_arg(res_format))
         return "&".join(out)
-       
+
 
 class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     """
@@ -215,22 +203,20 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     """
     # the order of note categories to display
     note_categories = [
-        rs.c.GENERAL, 
-        rs.c.SECURITY, 
-        rs.c.CONNECTION, 
-        rs.c.CONNEG, 
-        rs.c.CACHING, 
-        rs.c.VALIDATION, 
-        rs.c.RANGE
-    ]
+        categories.GENERAL,
+        categories.SECURITY,
+        categories.CONNECTION,
+        categories.CONNEG,
+        categories.CACHING,
+        categories.VALIDATION,
+        categories.RANGE]
 
     # associating categories with subrequests
     note_responses = {
-        rs.c.CONNEG: ["Identity"],
-        rs.c.VALIDATION: ['If-None-Match', 'If-Modified-Since'],
-        rs.c.RANGE: ['Range']
-    }
-    
+        categories.CONNEG: ["Identity"],
+        categories.VALIDATION: ['If-None-Match', 'If-Modified-Since'],
+        categories.RANGE: ['Range']}
+
     # Media types that browsers can view natively
     viewable_types = [
         'text/plain',
@@ -245,8 +231,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         'application/x-javascript',
         'text/javascript',
         'text/x-javascript',
-        'text/css',
-    ]
+        'text/css']
 
     # Validator uris, by media type
     validators = {
@@ -254,8 +239,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         'text/css': "http://jigsaw.w3.org/css-validator/validator?uri=%s&",
         'application/xhtml+xml': "http://validator.w3.org/check?uri=%s",
         'application/atom+xml': "http://feedvalidator.org/check.cgi?url=%s",
-        'application/rss+xml': "http://feedvalidator.org/check.cgi?url=%s",
-    }
+        'application/rss+xml': "http://feedvalidator.org/check.cgi?url=%s"}
 
     # HTML template for the main response body
     template = u"""\
@@ -279,11 +263,11 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     </div>
 
     <br />
-    
+
     <div id='body'>
     %(body)s
     </div>
-    
+
     %(footer)s
 
     <div class='hidden' id='hidden_list'>%(hidden_list)s</div>
@@ -295,13 +279,13 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     <p class="error">
      %s
     </p>
-    """    
-    
+    """
+
     name = "html"
 
     def __init__(self, *args, **kw):
         BaseHtmlFormatter.__init__(self, *args, **kw)
-        
+
     def finish_output(self):
         self.final_status()
         if self.state.response.complete:
@@ -313,8 +297,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     for cat in self.note_categories]),
                 'body': self.format_body_sample(self.state),
                 'footer': self.format_footer(),
-                'hidden_list': self.format_hidden_list(),
-            })
+                'hidden_list': self.format_hidden_list()})
         else:
             if self.state.response.http_error == None:
                 pass # usually a global timeout...
@@ -322,18 +305,12 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 if self.state.response.http_error.detail:
                     self.output(self.error_template % u"%s (%s)" % (
                         self.state.response.http_error.desc,
-                        self.state.response.http_error.detail
-                    )
-                )
+                        self.state.response.http_error.detail))
                 else:
-                    self.output(self.error_template % (
-                      self.state.response.http_error.desc
-                    ))
+                    self.output(self.error_template % (self.state.response.http_error.desc))
             else:
                 raise AssertionError, \
-                  "Unknown incomplete response error %s" % (
-                     self.state.response.http_error
-                )
+                  "Unknown incomplete response error %s" % (self.state.response.http_error)
         self.done()
 
     def format_response(self, state):
@@ -343,37 +320,32 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         for (name, value) in state.response.headers:
             offset += 1
             headers.append(self.format_header(name, value, offset))
-            
-        return \
-        u"    <span class='status'>HTTP/%s %s %s</span>\n" % (
+
+        return u"    <span class='status'>HTTP/%s %s %s</span>\n" % (
             e_html(state.response.version),
             e_html(state.response.status_code),
-            e_html(state.response.status_phrase)
-        ) + \
-        nl.join(headers)
+            e_html(state.response.status_phrase)) + nl.join(headers)
 
     def format_header(self, name, value, offset):
         "Return an individual HTML header as HTML"
         token_name = "header-%s" % name.lower()
-        header_desc = load_header_func(name, 'description')
+        header_desc = HeaderProcessor.find_header_handler(name).description
         if header_desc and token_name not in [i[0] for i in self.hidden_text]:
-            html_desc = markdown(header_desc % { 'field_name': name }, output_format="html5")
+            html_desc = markdown(header_desc % {'field_name': name}, output_format="html5")
             self.hidden_text.append((token_name, html_desc))
         return u"""\
     <span data-offset='%s' data-name='%s' class='hdr'>%s:%s</span>""" % (
-            offset, 
-            e_html(name.lower()), 
-            e_html(name), 
-            self.header_presenter.Show(name, value)
-        )
+        offset,
+        e_html(name.lower()),
+        e_html(name),
+        self.header_presenter.Show(name, value))
 
     def format_body_sample(self, state):
         """show the stored body sample"""
         try:
             uni_sample = unicode(state.response.decoded_sample,
-                                 state.response.character_encoding, 
-                                 'ignore'
-            )
+                                 state.response.character_encoding,
+                                 'ignore')
         except LookupError:
             uni_sample = unicode(state.response.decoded_sample, 'utf-8', 'ignore')
         safe_sample = e_html(uni_sample)
@@ -391,19 +363,16 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                             matchobj.group(1),
                             self.req_qs(link),
                             e_html(link),
-                            matchobj.group(1)
-                        )
-                    safe_sample = re.sub(r"(['\"])%s\1" % \
-                        re.escape(link), link_to, safe_sample)
+                            matchobj.group(1))
+                    safe_sample = re.sub(r"(['\"])%s\1" % re.escape(link), link_to, safe_sample)
         if not state.response.decoded_sample_complete:
             message = \
 "<p class='btw'>RED isn't showing the whole body, because it's so big!</p>"
-        return """<pre class="prettyprint">%s</pre>\n%s""" % (
-            safe_sample, message)
+        return """<pre class="prettyprint">%s</pre>\n%s""" % (safe_sample, message)
 
     def format_category(self, category, state):
         """
-        For a given category, return all of the non-detail 
+        For a given category, return all of the non-detail
         notes in it as an HTML list.
         """
         notes = [note for note in state.notes if note.category == category]
@@ -413,35 +382,29 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         out.append(u"<h3>%s\n" % category)
         if category in self.note_responses.keys():
             for check_type in self.note_responses[category]:
-                if not state.subreqs.has_key(check_type): continue
+                if not state.subreqs.has_key(check_type):
+                    continue
                 out.append(u'<span class="req_link"> (<a href="?%s">%s response</a>' % \
-                  (self.req_qs(check_type=check_type), check_type)
-                )
+                  (self.req_qs(check_type=check_type), check_type))
                 smsgs = [note for note in getattr(state.subreqs[check_type], "notes", []) if \
-                  note.level in [rs.l.BAD]]
+                  note.level in [levels.BAD]]
                 if len(smsgs) == 1:
                     out.append(" - %i warning\n" % len(smsgs))
                 elif smsgs:
-                    out.append(" - %i warnings\n" % len(smsgs))                    
+                    out.append(" - %i warnings\n" % len(smsgs))
                 out.append(u')</span>\n')
         out.append(u"</h3>\n")
         out.append(u"<ul>\n")
         for note in notes:
-            out.append(
-             u"""\
+            out.append(u"""\
     <li class='%s note' data-subject='%s' data-name='noteid-%s'>
         <span>%s</span>
-    </li>"""
-            % (
-                note.level, 
-                e_html(note.subject), 
-                id(note), 
-                e_html(note.show_summary(self.lang)),
-             )
-            )
-            self.hidden_text.append(
-                ("noteid-%s" % id(note), note.show_text(self.lang))
-            )
+    </li>""" % (
+        note.level,
+        e_html(note.subject),
+        id(note),
+        e_html(note.show_summary(self.lang))))
+            self.hidden_text.append(("noteid-%s" % id(note), note.show_text(self.lang)))
         out.append(u"</ul>\n")
         return nl.join(out)
 
@@ -451,59 +414,45 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         media_type = state.response.parsed_headers.get('content-type', [""])[0]
         options.append(
             (u"response headers: %s bytes" % \
-             f_num(state.response.header_length), 
-             u"how large the response headers are, including the status line"
-            )
-        )
+             f_num(state.response.header_length),
+             u"how large the response headers are, including the status line"))
         options.append((u"body: %s bytes" % f_num(state.response.payload_len),
-            u"how large the response body is"))
-        transfer_overhead = state.response.transfer_length - \
-            state.response.payload_len
+                        u"how large the response body is"))
+        transfer_overhead = state.response.transfer_length - state.response.payload_len
         if transfer_overhead > 0:
-            options.append(
-                (
-                 u"transfer overhead: %s bytes" % f_num(transfer_overhead),
-                 u"how much using chunked encoding adds to the response size"
-                )
-            )
+            options.append((
+                u"transfer overhead: %s bytes" % f_num(transfer_overhead),
+                u"how much using chunked encoding adds to the response size"))
         options.append(None)
         options.append((u"""\
 <script type="text/javascript">
    document.write("<a href='#' id='body_view' accesskey='b'>view body</a>")
-</script>""", 
-    "View this response body (with any gzip compression removed)"
-        ))
+</script>""",
+                        "View this response body (with any gzip compression removed)"))
         if isinstance(state, HttpResource):
             options.append(
                 (u"""\
-        <a href='?%s' accesskey='h'>view har</a>""" % self.req_qs(res_format='har'), 
-                "View a HAR (HTTP ARchive, a JSON format) file for this test"
-            ))
+        <a href='?%s' accesskey='h'>view har</a>""" % self.req_qs(res_format='har'),
+                 "View a HAR (HTTP ARchive, a JSON format) file for this test"))
         if not self.kw.get('is_saved', False):
             if self.kw.get('allow_save', False):
                 options.append((
-                    u"<a href='#' id='save' accesskey='s'>save</a>", 
-                    "Save these results for future reference"
-                ))
+                    u"<a href='#' id='save' accesskey='s'>save</a>",
+                    "Save these results for future reference"))
             if self.validators.has_key(media_type):
-                options.append(
-                    (
+                options.append((
                     u"<a href='%s' accesskey='v'>validate body</a>" %
-                        self.validators[media_type] % 
-                        e_query_arg(state.request.uri), 
-                     ""
-                    )
-                )
+                    self.validators[media_type] %
+                    e_query_arg(state.request.uri),
+                    ""))
             if hasattr(state, "link_count") and state.link_count > 0:
                 options.append((
                     u"<a href='?descend=True&%s' accesskey='a'>" \
-                    u"check embedded</a>" % self.req_qs(use_stored=False), 
-                    "run RED on images, frames and embedded links"
-                ))
+                    u"check embedded</a>" % self.req_qs(use_stored=False),
+                    "run RED on images, frames and embedded links"))
         return nl.join(
             [o and u"<span class='option' title='%s'>%s</span>" % (o[1], o[0])
-             or u"<br>" for o in options]
-        )
+             or u"<br>" for o in options])
 
 
 class HeaderPresenter(object):
@@ -520,7 +469,7 @@ class HeaderPresenter(object):
 
     def Show(self, name, value):
         """
-        Return the given header name/value pair after 
+        Return the given header name/value pair after
         presentation processing.
         """
         name = name.lower()
@@ -538,21 +487,15 @@ class HeaderPresenter(object):
         return u"%s<a href='?%s'>%s</a>" % (
             " " * space,
             self.formatter.req_qs(svalue, use_stored=False),
-            self.I(e_html(svalue), len(name))
-        )
-    content_location = \
-    location = \
-    x_xrds_location = \
-    BARE_URI
+            self.I(e_html(svalue), len(name)))
+    content_location = location = x_xrds_location = BARE_URI
 
     @staticmethod
     def I(value, sub_width):
         "wrap a line to fit in the header box"
         hdr_sz = 75
         sw = hdr_sz - min(hdr_sz-1, sub_width)
-        tr = textwrap.TextWrapper(
-            width=sw, subsequent_indent=" "*8, break_long_words=True
-        )
+        tr = textwrap.TextWrapper(width=sw, subsequent_indent=" "*8, break_long_words=True)
         return tr.fill(value)
 
 
@@ -583,7 +526,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
     can_multiple = True
     name = "html"
 
-    
+
     def __init__(self, *args, **kw):
         BaseHtmlFormatter.__init__(self, *args, **kw)
         self.problems = []
@@ -595,17 +538,15 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             'problems': self.format_problems(),
             'options': self.format_options(self.state),
             'footer': self.format_footer(),
-            'hidden_list': self.format_hidden_list(),
-        })
+            'hidden_list': self.format_hidden_list()})
         self.done()
 
     link_order = [
-          ('link', u'Head Links'),
-          ('script', u'Script Links'),
-          ('frame', u'Frame Links'),
-          ('iframe', u'IFrame Links'),
-          ('img', u'Image Links'),
-    ]
+        ('link', u'Head Links'),
+        ('script', u'Script Links'),
+        ('frame', u'Frame Links'),
+        ('iframe', u'IFrame Links'),
+        ('img', u'Image Links')]
     def format_tables(self, state):
         out = [self.format_table_header()]
         out.append(self.format_droid(state))
@@ -613,9 +554,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             droids = [d[0] for d in state.linked if d[1] == hdr_tag]
             if droids:
                 droids.sort(key=operator.attrgetter('response.base_uri'))
-                out.append(
-                    self.format_table_header(heading + u" (%s)" % len(droids))
-                )
+                out.append(self.format_table_header(heading + u" (%s)" % len(droids)))
                 out += [self.format_droid(d) for d in droids]
         return nl.join(out)
 
@@ -633,37 +572,30 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         <a href="%s" title="%s"%s>%s<span class="fade1">%s</span><span class="fade2">%s</span><span class="fade3">%s</span>
         </a>
     </td>""" % (
-                    u"?%s" % self.req_qs(state.request.uri, use_stored=False), 
-                    e_html(state.request.uri), 
-                    cl, 
-                    e_html(state.request.uri[:m-2]),
-                    e_html(state.request.uri[m-2]), 
-                    e_html(state.request.uri[m-1]), 
-                    e_html(state.request.uri[m]),
-                )
-            )
+        u"?%s" % self.req_qs(state.request.uri, use_stored=False),
+        e_html(state.request.uri),
+        cl,
+        e_html(state.request.uri[:m-2]),
+        e_html(state.request.uri[m-2]),
+        e_html(state.request.uri[m-1]),
+        e_html(state.request.uri[m])))
         else:
             out.append(
                 u'<td class="uri"><a href="%s" title="%s"%s>%s</a></td>' % (
-                    u"?%s" % self.req_qs(state.request.uri, use_stored=False), 
-                    e_html(state.request.uri), 
-                    cl, 
-                    e_html(state.request.uri)
-                )
-            )
+                    u"?%s" % self.req_qs(state.request.uri, use_stored=False),
+                    e_html(state.request.uri),
+                    cl,
+                    e_html(state.request.uri)))
         if state.response.complete:
             if state.response.status_code in ['301', '302', '303', '307', '308'] and \
               state.response.parsed_headers.has_key('location'):
                 out.append(
                     u'<td><a href="?descend=True&%s">%s</a></td>' % (
                         self.req_qs(state.response.parsed_headers['location'], use_stored=False),
-                        state.response.status_code
-                    )
-                )
+                        state.response.status_code))
             elif state.response.status_code in ['400', '404', '410']:
                 out.append(u'<td class="bad">%s</td>' % (
-                    state.response.status_code
-                ))
+                    state.response.status_code))
             else:
                 out.append(u'<td>%s</td>' % state.response.status_code)
     # pconn
@@ -680,8 +612,8 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                 out.append(self.format_yes_no(state.gzip_support))
             out.append(self.format_yes_no(state.partial_support))
             problems = [m for m in state.notes if \
-                m.level in [rs.l.WARN, rs.l.BAD]]
-    # TODO:        problems += sum([m[2].notes for m in state.notes if  
+                m.level in [levels.WARN, levels.BAD]]
+    # TODO:        problems += sum([m[2].notes for m in state.notes if
     # m[2] != None], [])
             out.append(u"<td>")
             pr_enum = []
@@ -696,9 +628,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                 m = self.problems[p]
                 out.append(u"<span class='prob_num'>" \
                            u" %s <span class='hidden'>%s</span></span>" % (
-                    p + 1, e_html(m.show_summary(self.lang))
-                    )
-                )
+                               p + 1, e_html(m.show_summary(self.lang))))
         else:
             if state.response.http_error == None:
                 err = u"response incomplete"
@@ -763,63 +693,56 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         options = []
         media_type = state.response.parsed_headers.get('content-type', [""])[0]
         options.append((
-          u"<a href='?descend=True&%s'>view har</a>" % self.req_qs(res_format="har"),
-          u"View a HAR (HTTP ARchive) file for this response"
-        ))
+            u"<a href='?descend=True&%s'>view har</a>" % self.req_qs(res_format="har"),
+            u"View a HAR (HTTP ARchive) file for this response"))
         if not self.kw.get('is_saved', False):
             if self.kw.get('allow_save', False):
                 options.append((
-                    u"<a href='#' id='save'>save</a>", 
-                    u"Save these results for future reference"
-                ))
+                    u"<a href='#' id='save'>save</a>",
+                    u"Save these results for future reference"))
         return nl.join(
             [o and u"<span class='option' title='%s'>%s</span>" % (o[1], o[0])
-             or u"<br>" for o in options]
-        )
+             or u"<br>" for o in options])
 
     def format_problems(self):
         out = [u'<br /><h2>Notes</h2><ol>']
         for m in self.problems:
             out.append(u"""\
     <li class='%s %s note' name='msgid-%s'><span>%s</span></li>""" % (
-                    m.level, 
-                    e_html(m.subject), 
-                    id(m), 
-                    e_html(m.show_summary(self.lang))
-                )
-            )
-            self.hidden_text.append(
-                (u"msgid-%s" % id(m), m.show_text(self.lang))
-            )
+        m.level,
+        e_html(m.subject),
+        id(m),
+        e_html(m.show_summary(self.lang))))
+            self.hidden_text.append((u"msgid-%s" % id(m), m.show_text(self.lang)))
         out.append(u"</ol>\n")
         return nl.join(out)
 
 
-# Escaping functions. 
+# Escaping functions.
 uri_gen_delims = r":/?#[]@"
 uri_sub_delims = r"!$&'()*+,;="
 def unicode_url_escape(url, safe):
     """
-    URL esape a unicode string. Assume that anything already encoded 
+    URL esape a unicode string. Assume that anything already encoded
     is to be left alone.
     """
-    # also include "~" because it doesn't need to be encoded, 
+    # also include "~" because it doesn't need to be encoded,
     # but Python does anyway :/
     return urllib.quote(url.encode('utf-8', 'replace'), safe + '%~')
 e_url = partial(unicode_url_escape, safe=uri_gen_delims + uri_sub_delims)
 e_authority = partial(unicode_url_escape, safe=uri_sub_delims + r"[]:@")
 e_path = partial(unicode_url_escape, safe=uri_sub_delims + r":@/")
-e_path_seg = partial(unicode_url_escape, safe=uri_sub_delims + r":@") 
+e_path_seg = partial(unicode_url_escape, safe=uri_sub_delims + r":@")
 e_query = partial(unicode_url_escape, safe=uri_sub_delims + r":@/?")
 e_query_arg = partial(unicode_url_escape, safe=r"!$'()*+,:@/?")
 e_fragment = partial(unicode_url_escape, safe=r"!$&'()*+,;:@=/?")
 
 def e_js(instr):
     """
-    Make sure instr is safe for writing into a double-quoted 
+    Make sure instr is safe for writing into a double-quoted
     JavaScript string.
     """
-    if not instr: 
+    if not instr:
         return u""
     instr = instr.replace(u'\\', u'\\\\')
     instr = instr.replace(u'"', ur'\"')

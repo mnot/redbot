@@ -31,11 +31,11 @@ cache_directive = r"(?: {token} (?: = (?: {token} | {quoted_string} ) )? )".form
 # Cache-Control = 1#cache-directive
 
 Cache_Control = list_rule(cache_directive, 1)
- 
+
 # Expires = HTTP-date
 
 Expires = HTTP_date
- 
+
 # extension-pragma = token [ "=" ( token / quoted-string ) ]
 
 extension_pragma = r"(?: {token} (?: = (?: {token} | {quoted_string} ) )? )".format(**locals())
@@ -47,7 +47,7 @@ pragma_directive = r"(?: no-cache | {extension_pragma} )".format(**locals())
 # Pragma = 1#pragma-directive
 
 Pragma = list_rule(pragma_directive, 1)
- 
+
 # warn-agent = ( uri-host [ ":" port ] ) / pseudonym
 
 warn_agent = r"(?: (?: {uri_host} (?: : {port} )? ) | {pseudonym} )"
