@@ -134,7 +134,7 @@ def checkCaching(response, request=None):
 
     # Check for clock skew and dateless origin server.
     skew = date_hdr - response.start_time + age_hdr
-    if not date_hdr:
+    if not response.parsed_headers.has_key('date'):
         response.add_note('', DATE_CLOCKLESS)
         if response.parsed_headers.has_key('expires') or \
           response.parsed_headers.has_key('last-modified'):
@@ -166,11 +166,9 @@ def checkCaching(response, request=None):
         has_explicit_freshness = True
         freshness_hdrs.append('header-expires')
         if response.parsed_headers.has_key('date'):
-            freshness_lifetime = response.parsed_headers['expires'] - \
-                response.parsed_headers['date']
+            freshness_lifetime = response.parsed_headers['expires'] - date_hdr
         else:
-            freshness_lifetime = response.parsed_headers['expires'] - \
-                response.start_time # ?
+            freshness_lifetime = response.parsed_headers['expires'] - response.start_time # ?
 
     freshness_left = freshness_lifetime - current_age
     freshness_left_str = relative_time(abs(int(freshness_left)), 0, 0)
