@@ -23,7 +23,7 @@ It is used by caches as input to expiration calculations, and to detect clock dr
             date = headers.parse_date(field_value)
         except ValueError:
             add_note(BAD_DATE_SYNTAX)
-            return None
+            raise
         return date
 
 

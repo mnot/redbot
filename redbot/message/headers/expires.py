@@ -21,7 +21,7 @@ The `Expires` header gives a time after which the response is considered stale."
             date = headers.parse_date(field_value)
         except ValueError:
             add_note(headers.BAD_DATE_SYNTAX)
-            return None
+            raise
         return date
 
 

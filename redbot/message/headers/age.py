@@ -21,10 +21,10 @@ validation) was generated at the origin server."""
             age = int(field_value)
         except ValueError:
             add_note(AGE_NOT_INT)
-            return
+            raise
         if age < 0:
             add_note(AGE_NEGATIVE)
-            return
+            raise ValueError
         return age
 
 

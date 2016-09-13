@@ -25,7 +25,7 @@ response (since they can't be sure if they have the whole response)."""
         try:
             return int(field_value)
         except ValueError:
-            return
+            raise
 
 
 class ContentLengthTest(headers.HeaderTest):

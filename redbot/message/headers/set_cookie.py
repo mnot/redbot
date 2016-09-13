@@ -28,7 +28,7 @@ requests to the server."""
         try:
             set_cookie = loose_parse(field_value, path, start_time, add_note)
         except ValueError:
-            set_cookie = None
+            raise
         return set_cookie
 
 

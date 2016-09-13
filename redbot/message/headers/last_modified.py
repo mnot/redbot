@@ -22,7 +22,7 @@ representation was last modified."""
             date = headers.parse_date(field_value)
         except ValueError:
             add_note(headers.BAD_DATE_SYNTAX)
-            return
+            raise
         return date
 
 
