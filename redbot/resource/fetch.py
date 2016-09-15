@@ -54,12 +54,12 @@ class RedFetcher(thor.events.EventEmitter):
         self.notes = []
         self.transfer_in = 0
         self.transfer_out = 0
-        self.request = HttpRequest(self.notes, self.name)
+        self.request = HttpRequest(self.add_note, self.name)
         self.request.method = method
         self.request.set_iri(iri)
         self.request.headers = req_hdrs or []
         self.request.payload = req_body
-        self.response = HttpResponse(self.notes, self.name)
+        self.response = HttpResponse(self.add_note, self.name)
         self.response.is_head_response = (method == "HEAD")
         self.response.base_uri = self.request.uri
         self.exchange = None

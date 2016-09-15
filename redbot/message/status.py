@@ -4,6 +4,7 @@
 The Resource Expert Droid Status Code Checker.
 """
 
+from functools import partial
 
 from thor.http import header_dict, get_header, safe_methods
 from redbot.speak import Note, levels, categories
@@ -20,24 +21,13 @@ class StatusChecker(object):
         assert response.is_request is False
         self.request = request
         self.response = response
+        self.add_note = partial(response.add_note, status=response.status_code)
         try:
             status_m = getattr(self, "status%s" % response.status_code.encode('ascii', 'ignore'))
         except AttributeError:
             self.add_note('status', STATUS_NONSTANDARD)
             return
         status_m()
-
-    def add_note(self, name, note, **kw):
-        if name:
-            subject = 'status %s' % name
-        else:
-            subject = 'status'
-        self.response.add_note(
-            subject,
-            note,
-            status=self.response.status_code,
-            **kw
-        )
 
     def status100(self):        # Continue
         if self.request and not "100-continue" in get_header(self.request.headers, 'expect'):

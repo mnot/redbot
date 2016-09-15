@@ -29,8 +29,11 @@ class HttpMessage(thor.events.EventEmitter):
   
     Emits "chunk" for each chunk of the response body (after decoding Content-Encoding).
     """
-    def __init__(self, notes=None, name=None):
+    def __init__(self, add_note, name=None):
         thor.events.EventEmitter.__init__(self)
+        if not hasattr(self, 'add_note'):
+            self.add_note = add_note
+        self.name = name
         self.is_request = None
         self.version = ""
         self.base_uri = ""
@@ -60,11 +63,6 @@ class HttpMessage(thor.events.EventEmitter):
         self._gzip_processor = zlib.decompressobj(-zlib.MAX_WBITS)
         self._in_gzip_body = False
         self._gzip_header_buffer = ""
-        self.name = name
-        if notes is None:
-            self.notes = []
-        else:
-            self.notes = notes
 
     def __repr__(self):
         status = [self.__class__.__module__ + "." + self.__class__.__name__]
@@ -248,20 +246,13 @@ class HttpMessage(thor.events.EventEmitter):
             content_l = content_l[2:]   # Read & discard the 16-bit header CRC
         return "".join(content_l)
 
-    def add_note(self, subject, note, subreq=None, **kw):
-        "Set a note."
-        kw['response'] = response.get(
-            self.name, response['this']
-        )
-        self.notes.append(note(subject, subreq, kw))
-
 
 class HttpRequest(HttpMessage):
     """
     A HTTP Request message.
     """
-    def __init__(self, notes=None, name=None):
-        HttpMessage.__init__(self, notes, name)
+    def __init__(self, add_note, name=None):
+        HttpMessage.__init__(self, add_note, name)
         self.is_request = True
         self.method = None
         self.uri = None
@@ -305,8 +296,8 @@ class HttpResponse(HttpMessage):
     """
     A HTTP Response message.
     """
-    def __init__(self, notes=None, name=None):
-        HttpMessage.__init__(self, notes, name)
+    def __init__(self, add_note, name=None):
+        HttpMessage.__init__(self, add_note, name)
         self.is_request = False
         self.is_head_response = False
         self.status_code = None
@@ -321,14 +312,15 @@ class DummyMsg(HttpResponse):
     """
     A dummy HTTP message, for testing.
     """
-    def __init__(self, notes=None, name=None):
-        HttpResponse.__init__(self, notes, name)
+    def __init__(self, add_note=None, name=None):
+        HttpResponse.__init__(self, add_note, name)
         self.base_uri = "http://www.example.com/foo/bar/baz.html?bat=bam"
         self.start_time = time.time()
         self.status_phrase = ""
+        self.notes = []
         self.note_classes = []
 
-    def add_note(self, subject, note, **kw):
+    def add_note(self, subject, note, subreq=None, **kw):
         "Record the classes of notes set."
         self.notes.append(note(subject, None, kw))
         self.note_classes.append(note.__name__)
