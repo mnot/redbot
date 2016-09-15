@@ -54,7 +54,8 @@ class RangeRequest(SubRequest):
             c_e = 'content-encoding'
             if 'gzip' in self.base.response.parsed_headers.get(c_e, []) == \
                'gzip' not in self.response.parsed_headers.get(c_e, []):
-                self.add_base_note('header-accept-ranges header-content-encoding', RANGE_NEG_MISMATCH)
+                self.add_base_note('header-accept-ranges header-content-encoding',
+                                   RANGE_NEG_MISMATCH)
                 return
             if not [True for h in self.base.orig_req_hdrs if h[0].lower() == 'if-range']:
                 self.check_missing_hdrs([
@@ -69,11 +70,11 @@ class RangeRequest(SubRequest):
                     # the body samples are just bags of bits
                     self.base.partial_support = False
                     self.add_base_note('header-accept-ranges', RANGE_INCORRECT,
-                                  range="bytes=%s-%s" % (self.range_start, self.range_end),
-                                  range_expected=self.range_target.encode('string_escape'),
-                                  range_expected_bytes=f_num(len(self.range_target)),
-                                  range_received=self.response.payload.encode('string_escape'),
-                                  range_received_bytes=f_num(self.response.payload_len))
+                                       range="bytes=%s-%s" % (self.range_start, self.range_end),
+                                       range_expected=self.range_target.encode('string_escape'),
+                                       range_expected_bytes=f_num(len(self.range_target)),
+                                       range_received=self.response.payload.encode('string_escape'),
+                                       range_received_bytes=f_num(self.response.payload_len))
             else:
                 self.add_base_note('header-accept-ranges', RANGE_CHANGED)
 
@@ -83,8 +84,8 @@ class RangeRequest(SubRequest):
             self.add_base_note('header-accept-ranges', RANGE_FULL)
         else:
             self.add_base_note('header-accept-ranges', RANGE_STATUS,
-                          range_status=self.response.status_code,
-                          enc_range_status=self.response.status_code or '(unknown)')
+                               range_status=self.response.status_code,
+                               enc_range_status=self.response.status_code or '(unknown)')
 
 
 

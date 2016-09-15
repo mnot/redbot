@@ -54,13 +54,13 @@ class ETagValidate(SubRequest):
                         self.add_base_note('header-etag', INM_DUP_ETAG_WEAK)
                     else: # strong
                         self.add_base_note('header-etag', INM_DUP_ETAG_STRONG,
-                                      etag=self.base.response.parsed_headers['etag'])
+                                           etag=self.base.response.parsed_headers['etag'])
                 else:
                     self.add_base_note('header-etag', INM_UNKNOWN)
         else:
             self.add_base_note('header-etag', INM_STATUS,
-                          inm_status=self.response.status_code,
-                          enc_inm_status=self.response.status_code or '(unknown)')
+                               inm_status=self.response.status_code,
+                               enc_inm_status=self.response.status_code or '(unknown)')
         # TODO: check entity headers
 
 

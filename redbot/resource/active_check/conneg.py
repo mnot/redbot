@@ -44,8 +44,8 @@ class ConnegCheck(SubRequest):
             # check status
             if self.base.response.status_code != self.response.status_code:
                 self.add_base_note('status', VARY_STATUS_MISMATCH,
-                              neg_status=self.base.response.status_code,
-                              noneg_status=self.response.status_code)
+                                   neg_status=self.base.response.status_code,
+                                   noneg_status=self.response.status_code)
                 return  # Can't be sure what's going on...
 
             # check headers that should be invariant
@@ -61,8 +61,8 @@ class ConnegCheck(SubRequest):
                 self.add_base_note('header-vary', CONNEG_NO_VARY)
             if no_conneg_vary_headers != vary_headers:
                 self.add_base_note('header-vary', VARY_INCONSISTENT,
-                              conneg_vary=", ".join(vary_headers),
-                              no_conneg_vary=", ".join(no_conneg_vary_headers))
+                                   conneg_vary=", ".join(vary_headers),
+                                   no_conneg_vary=", ".join(no_conneg_vary_headers))
 
             # check body
             if self.base.response.decoded_md5 != self.response.payload_md5:
@@ -85,14 +85,14 @@ class ConnegCheck(SubRequest):
             self.base.gzip_savings = savings
             if savings >= 0:
                 self.add_base_note('header-content-encoding', CONNEG_GZIP_GOOD,
-                              savings=savings,
-                              orig_size=f_num(self.response.payload_len),
-                              gzip_size=f_num(self.base.response.payload_len))
+                                   savings=savings,
+                                   orig_size=f_num(self.response.payload_len),
+                                   gzip_size=f_num(self.base.response.payload_len))
             else:
                 self.add_base_note('header-content-encoding', CONNEG_GZIP_BAD,
-                              savings=abs(savings),
-                              orig_size=f_num(self.response.payload_len),
-                              gzip_size=f_num(self.base.response.payload_len))
+                                   savings=abs(savings),
+                                   orig_size=f_num(self.response.payload_len),
+                                   gzip_size=f_num(self.base.response.payload_len))
 
 
 class CONNEG_SUBREQ_PROBLEM(Note):

@@ -26,7 +26,7 @@ MAX_URI = 8000
 class HttpMessage(thor.events.EventEmitter):
     """
     Base class for HTTP message state.
-  
+
     Emits "chunk" for each chunk of the response body (after decoding Content-Encoding).
     """
     def __init__(self, add_note, name=None):
