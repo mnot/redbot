@@ -18,22 +18,22 @@ import thor
 from redbot.formatter import f_num
 from redbot.message import link_parse
 from redbot.resource.fetch import RedFetcher, UA_STRING
-from redbot.resource.active_check import ActiveChecks
+from redbot.resource import active_check
 
 
 
 class HttpResource(RedFetcher):
     """
-    Given a URI (optionally with method, request headers and body), as well
-    as an optional status callback and list of body processors, examine the
-    URI for issues and notable conditions, making any necessary additional
-    requests.
+    Given a URI (optionally with method, request headers and body), examine the URI for issues and
+    notable conditions, making any necessary additional requests.
 
-    Note that this primary request negotiates for gzip content-encoding;
-    see ConnegCheck.
+    Note that this primary request negotiates for gzip content-encoding; see ConnegCheck.
 
-    After processing the response-specific attributes of RedFetcher will be
-    populated, as well as its notes; see that class for details.
+    After processing the response-specific attributes of RedFetcher will be populated, as well as
+    its notes; see that class for details.
+    
+    if descend is true, the response will be parsed for links and HttpResources started for each
+    link, enumerated in .linked.
   
     Emits "done" when everything has finished.
     """
@@ -65,8 +65,7 @@ class HttpResource(RedFetcher):
         the "main" response.
         """
         if self.response.complete:
-            active_checks = ActiveChecks(self)
-            active_checks.check()
+            active_check.start(self)
 
     def add_check(self, *resources):
         "Do a subordinate check on one or more HttpResource instance."
