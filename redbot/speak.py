@@ -40,9 +40,8 @@ class Note(object):
     level = None
     summary = u""
     text = u""
-    def __init__(self, subject, subrequest=None, vrs=None):
+    def __init__(self, subject, vrs=None):
         self.subject = subject
-        self.subrequest = subrequest
         self.vars = vrs or {}
 
     def __eq__(self, other):

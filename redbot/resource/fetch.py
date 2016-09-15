@@ -76,12 +76,12 @@ class RedFetcher(thor.events.EventEmitter):
         status.append("'%s'" % self.name)
         return "<%s at %#x>" % (", ".join(status), id(self))
 
-    def add_note(self, subject, note, subreq=None, **kw):
+    def add_note(self, subject, note, **kw):
         "Set a note."
         kw['response'] = response_phrase.get(
             self.name, response_phrase['this']
         )
-        self.notes.append(note(subject, subreq, kw))
+        self.notes.append(note(subject, kw))
 
     def preflight(self):
         """

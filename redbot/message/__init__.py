@@ -320,9 +320,9 @@ class DummyMsg(HttpResponse):
         self.notes = []
         self.note_classes = []
 
-    def add_note(self, subject, note, subreq=None, **kw):
+    def add_note(self, subject, note, **kw):
         "Record the classes of notes set."
-        self.notes.append(note(subject, None, kw))
+        self.notes.append(note(subject, kw))
         self.note_classes.append(note.__name__)
 
 

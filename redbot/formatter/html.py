@@ -35,7 +35,6 @@ nl = u"\n"
 static_root = u'static' # where status resources are located
 extra_dir = u'extra' # where extra resources are located
 
-# TODO: make subrequests explorable
 
 class BaseHtmlFormatter(Formatter):
     """
