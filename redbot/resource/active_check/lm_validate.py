@@ -12,7 +12,7 @@ from redbot.speak import Note, categories, levels
 
 class LmValidate(SubRequest):
     "If Last-Modified is present, see if it will validate."
-
+    check_name = "Last-Modified Validation"
     _weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
     _months = [None, 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul',
                'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -44,23 +44,23 @@ class LmValidate(SubRequest):
 
     def done(self):
         if not self.response.complete:
-            self.add_note('', LM_SUBREQ_PROBLEM, problem=self.response.http_error.desc)
+            self.add_base_note('', LM_SUBREQ_PROBLEM, problem=self.response.http_error.desc)
             return
 
         if self.response.status_code == '304':
             self.base.ims_support = True
-            self.add_note('header-last-modified', IMS_304)
+            self.add_base_note('header-last-modified', IMS_304)
             self.check_missing_hdrs([
                 'cache-control', 'content-location', 'etag',
                 'expires', 'vary'], MISSING_HDRS_304, 'If-Modified-Since')
         elif self.response.status_code == self.base.response.status_code:
             if self.response.payload_md5 == self.base.response.payload_md5:
                 self.base.ims_support = False
-                self.add_note('header-last-modified', IMS_FULL)
+                self.add_base_note('header-last-modified', IMS_FULL)
             else:
-                self.add_note('header-last-modified', IMS_UNKNOWN)
+                self.add_base_note('header-last-modified', IMS_UNKNOWN)
         else:
-            self.add_note('header-last-modified', IMS_STATUS,
+            self.add_base_note('header-last-modified', IMS_STATUS,
                           ims_status=self.response.status_code,
                           enc_ims_status=self.response.status_code or '(unknown)')
         # TODO: check entity headers

@@ -12,23 +12,25 @@ import urllib
 import urlparse
 import zlib
 
-from redbot.message import link_parse
 from redbot.message.headers import HeaderProcessor
 from redbot.formatter import f_num
 from redbot.speak import Note, levels, categories, response
 
 from redbot.syntax import rfc3986
 
-import thor.http.error as httperr
+import thor
 
 ### configuration
 MAX_URI = 8000
 
-class HttpMessage(object):
+class HttpMessage(thor.events.EventEmitter):
     """
     Base class for HTTP message state.
+  
+    Emits "chunk" for each chunk of the response body (after decoding Content-Encoding).
     """
     def __init__(self, notes=None, name=None):
+        thor.events.EventEmitter.__init__(self)
         self.is_request = None
         self.version = ""
         self.base_uri = ""
@@ -38,20 +40,18 @@ class HttpMessage(object):
         self.headers = []
         self.parsed_headers = {}
         self.header_length = 0
-        self.payload = ""  # bytes, not unicode
+        self.payload = ""  # bytes, not unicode. Only used for 206 responses
         self.payload_len = 0
         self.payload_md5 = None
         self.payload_sample = []  # [(offset, chunk)]{,4} bytes, not unicode
         self.character_encoding = None
         self.decoded_len = 0
         self.decoded_md5 = None
-        self.decoded_sample = "" # first sample_size bytes
+        self.decoded_sample = "" # first decoded_sample_size bytes
         self.decoded_sample_size = 128 * 1024
         self._decoded_sample_seen = 0
         self.decoded_sample_complete = True
-        self._decoded_procs = []
         self._decode_ok = True # turn False if we have a problem
-        self._link_parser = None
         self.transfer_length = 0
         self.trailers = []
         self.http_error = None  # any parse errors encountered; see httperr
@@ -73,24 +73,13 @@ class HttpMessage(object):
     def __getstate__(self):
         state = self.__dict__.copy()
         for key in [
-                '_decoded_procs',
                 '_md5_processor',
                 '_md5_post_processor',
                 '_gzip_processor',
-                '_link_parser'
         ]:
             if state.has_key(key):
                 del state[key]
         return state
-
-    def set_decoded_procs(self, decoded_procs):
-        "Set a list of processors for the decoded body."
-        self._decoded_procs = decoded_procs
-
-    def set_link_procs(self, link_procs):
-        "Set a list of link processors that get called upon each link."
-        self._link_parser = link_parse.HTMLLinkParser(
-            self.base_uri, link_procs)
 
     def set_headers(self, headers):
         """
@@ -101,6 +90,7 @@ class HttpMessage(object):
         self.character_encoding = self.parsed_headers.get(
             'content-type', (None, {})
         )[1].get('charset', 'utf-8') # default isn't UTF-8, but oh well
+        self.emit("headers_available")
 
     def feed_body(self, chunk):
         """
@@ -132,14 +122,7 @@ class HttpMessage(object):
                     self.decoded_sample_complete = False
                 else:
                     self.decoded_sample_complete = False
-
-                for processor in self._decoded_procs:
-                    # TODO: figure out why raising an error in a body_proc
-                    # results in a "server dropped the connection" instead of
-                    # a hard error.
-                    processor(self, decoded_chunk)
-                if self._link_parser:
-                    self._link_parser.feed(self, decoded_chunk)
+                self.emit("chunk", self, decoded_chunk)
             else:
                 self.decoded_sample_complete = False
 
@@ -171,6 +154,7 @@ class HttpMessage(object):
                 else:
                     self.add_note('header-content-md5',
                                   CMD5_INCORRECT, calc_md5=c_md5_calc)
+        self.emit('content_available')
 
     def _process_content_codings(self, chunk):
         """
@@ -289,7 +273,7 @@ class HttpRequest(HttpMessage):
         try:
             self.uri = self.iri_to_uri(iri)
         except (ValueError, UnicodeError), why:
-            self.http_error = httperr.UrlError(why[0])
+            self.http_error = thor.http.error.UrlError(why[0])
             return
         if not re.match(r"^\s*%s\s*$" % rfc3986.URI, self.uri, re.VERBOSE):
             self.add_note('uri', URI_BAD_SYNTAX)

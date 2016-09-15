@@ -67,10 +67,11 @@ def main():
     formatter.set_state(red)
     formatter.start_output()
     
+    @thor.events.on(red)
     def done():
         formatter.finish_output()
         thor.stop()
-    red.run(done)
+    red.check()
     thor.run()
 
 

@@ -18,8 +18,7 @@ import thor.http.error as httperr
 
 from redbot import __version__
 from redbot.cache_file import CacheFile
-from redbot.speak import Note, levels, categories
-from redbot.state import RedState
+from redbot.speak import Note, levels, categories, response as response_phrase
 from redbot.message import HttpRequest, HttpResponse
 from redbot.message.status import StatusChecker
 from redbot.message.cache import checkCaching
@@ -33,30 +32,28 @@ class RedHttpClient(thor.http.HttpClient):
     read_timeout = 15
 
 
-class RedFetcher(RedState):
+class RedFetcher(thor.events.EventEmitter):
     """
     Abstract class for a fetcher.
 
-    Fetches the given URI (with the provided method, headers and body) and
-    calls:
-      - status_cb as it progresses, and
-      - every function in the body_procs list with each chunk of the body, and
-      - done_cb when all tasks are done.
-    If provided, type indicates the type of the request, and is used to
-    help set notes and status_cb appropriately.
+    Fetches the given URI (with the provided method, headers and body) and:
+      - emits 'status' as it progresses
+      - emits 'fetch_done' when the fetch is finsihed.
 
-    The done() method is called when the response is done, NOT when all
-    tasks are done. It can add tasks by calling add_task().
-
+    If provided, 'name' indicates the type of the request, and is used to
+    help set notes and status events appropriately.
     """
     client = RedHttpClient()
     robot_files = {} # cache of robots.txt
     robot_cache_dir = None
     robot_lookups = {}
 
-    def __init__(self, iri, method="GET", req_hdrs=None, req_body=None,
-                 status_cb=None, body_procs=None, name=None):
-        RedState.__init__(self, name)
+    def __init__(self, iri, method="GET", req_hdrs=None, req_body=None, name=None):
+        thor.events.EventEmitter.__init__(self)
+        self.name = name
+        self.notes = []
+        self.transfer_in = 0
+        self.transfer_out = 0
         self.request = HttpRequest(self.notes, self.name)
         self.request.method = method
         self.request.set_iri(iri)
@@ -65,50 +62,33 @@ class RedFetcher(RedState):
         self.response = HttpResponse(self.notes, self.name)
         self.response.is_head_response = (method == "HEAD")
         self.response.base_uri = self.request.uri
-        self.response.set_decoded_procs(body_procs or [])
-        self.subreqs = {} # subordinate requests' RedState objects
         self.exchange = None
-        self.status_cb = status_cb
-        self.done_cb = None # really should be "all tasks done"
-        self.outstanding_tasks = 0
         self.follow_robots_txt = True # Should we pay attention to robots file?
         self._st = [] # FIXME: this is temporary, for debugging thor
 
     def __getstate__(self):
         state = self.__dict__.copy()
         del state['exchange']
-        del state['status_cb']
-        del state['done_cb']
         return state
 
-    def add_task(self, task, *args):
-        "Remeber that we've started a task."
-        self.outstanding_tasks += 1
-        self._st.append('add_task(%s)' % str(task))
-        task(*args, done_cb=self.finish_task)
-
-    def finish_task(self):
-        "Note that we've finished a task, and see if we're done."
-        self.outstanding_tasks -= 1
-        self._st.append('finish_task()')
-        assert self.outstanding_tasks >= 0, self._st
-        if self.outstanding_tasks == 0:
-            if self.done_cb:
-                self.done_cb()
-                self.done_cb = None
-            # clean up potentially cyclic references
-            self.status_cb = None
-
-    def done(self):
-        "Callback for when the response is complete and analysed."
-        raise NotImplementedError
+    def __repr__(self):
+        status = [self.__class__.__module__ + "." + self.__class__.__name__]
+        status.append("'%s'" % self.name)
+        return "<%s at %#x>" % (", ".join(status), id(self))
 
     def preflight(self):
         """
-        Callback to check to see if we should bother running. Return True
+        Check to see if we should bother running. Return True
         if so; False if not.
         """
         return True
+
+    def add_note(self, subject, note, subreq=None, **kw):
+        "Set a note."
+        kw['response'] = response_phrase.get(
+            self.name, response_phrase['this']
+        )
+        self.notes.append(note(subject, subreq, kw))
 
     def fetch_robots_txt(self, url, cb, network=True):
         """
@@ -177,18 +157,16 @@ class RedFetcher(RedState):
             exchange.request_start("GET", robots_url, [('User-Agent', UA_STRING)])
             exchange.request_done([])
 
-    def run(self, done_cb=None):
+    def check(self):
         """
-        Make an asynchronous HTTP request to uri, calling status_cb as it's
-        updated and done_cb when it's done. Reason is used to explain what the
+        Make an asynchronous HTTP request to uri, emitting 'status' as it's
+        updated and 'done' when it's done. Reason is used to explain what the
         request is in the status callback.
         """
-        self.outstanding_tasks += 1
-        self._st.append('run(%s)' % str(done_cb))
-        self.done_cb = done_cb
+        self._st.append('check')
         if not self.preflight() or self.request.uri == None:
             # generally a good sign that we're not going much further.
-            self.finish_task()
+            self.emit("fetch_done")
             return
 
         if self.follow_robots_txt:
@@ -209,7 +187,7 @@ class RedFetcher(RedState):
                 robots_txt.decode('ascii', 'replace').encode('ascii', 'replace').splitlines())
             if not checker.can_fetch(UA_STRING, self.request.uri):
                 self.response.http_error = RobotsTxtError()
-                self.finish_task()
+                self.emit("fetch_done")
                 return # TODO: show error?
 
         if 'user-agent' not in [i[0].lower() for i in self.request.headers]:
@@ -220,10 +198,7 @@ class RedFetcher(RedState):
         self.exchange.on('response_body', self._response_body)
         self.exchange.on('response_done', self._response_done)
         self.exchange.on('error', self._response_error)
-        if self.status_cb and self.name:
-            self.status_cb("fetching %s (%s)" % (
-                self.request.uri, self.name
-            ))
+        self.emit("status", "fetching %s (%s)" % (self.request.uri, self.name))
         req_hdrs = [
             (k.encode('ascii', 'replace'), v.encode('latin-1', 'replace')) \
             for (k, v) in self.request.headers
@@ -260,16 +235,13 @@ class RedFetcher(RedState):
         self.response.transfer_length = self.exchange.input_transfer_length
         self.response.header_length = self.exchange.input_header_length
         self.response.body_done(True, trailers)
-        if self.status_cb and self.name:
-            self.status_cb("fetched %s (%s)" % (
-                self.request.uri, self.name
-            ))
-        self.done()
-        self.finish_task()
+        self.emit("status", "fetched %s (%s)" % (self.request.uri, self.name))
+        self.emit("fetch_done")
 
     def _response_error(self, error):
         "Handle an error encountered while fetching the response."
         self._st.append('_response_error(%s)' % (str(error)))
+        self.emit("status", "fetch error %s (%s)" % (self.request.uri, self.name))
         self.response.complete_time = thor.time()
         self.response.http_error = error
         if isinstance(error, httperr.BodyForbiddenError):
@@ -280,8 +252,7 @@ class RedFetcher(RedState):
             err_msg = error.detail[:20] or ""
             self.add_note('header-transfer-encoding', BAD_CHUNK,
                           chunk_sample=err_msg.encode('string_escape'))
-        self.done()
-        self.finish_task()
+        self.emit("fetch_done")
 
 
 def url_to_origin(url):
@@ -342,18 +313,17 @@ This issue is often caused by sending an integer chunk size instead of one in he
 
 if __name__ == "__main__":
     import sys
-    def status_p(msg):
-        "Print status"
-        print msg
-    class TestFetcher(RedFetcher):
-        "Test a fetcher."
-        def done(self):
-            print self.notes
-    T = TestFetcher(
+    T = RedFetcher(
         sys.argv[1],
         req_hdrs=[(u'Accept-Encoding', u'gzip')],
-        status_cb=status_p,
         name='test'
     )
-    T.run()
+    @thor.events.on(T)
+    def fetch_done():
+        print 'done'
+        thor.stop()
+    @thor.events.on(T)
+    def status(msg):
+        print msg    
+    T.check()
     thor.run()

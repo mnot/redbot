@@ -213,9 +213,9 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 
     # associating categories with subrequests
     note_responses = {
-        categories.CONNEG: ["Identity"],
-        categories.VALIDATION: ['If-None-Match', 'If-Modified-Since'],
-        categories.RANGE: ['Range']}
+        categories.CONNEG: ["Content Negotiation"],
+        categories.VALIDATION: ['ETag Validation', 'Last-Modified Validation'],
+        categories.RANGE: ['Partial Content']}
 
     # Media types that browsers can view natively
     viewable_types = [

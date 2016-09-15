@@ -275,10 +275,10 @@ class RedWebUi(object):
         resource = HttpResource(
             self.test_uri,
             req_hdrs=self.req_hdrs,
-            status_cb=formatter.status,
-            body_procs=[formatter.feed],
             descend=self.descend
         )
+        resource.on("status", formatter.status)
+        resource.response.on("chunk", formatter.feed)
 #        sys.stdout.write(pickle.dumps(resource))
         formatter.start_output()
 
@@ -307,8 +307,8 @@ class RedWebUi(object):
                     e_url(self.test_uri),
                     str(self.descend)
                 ))
-
-        resource.run(done)
+        resource.on("done", done)
+        resource.check()
 
     def show_default(self):
         """Show the default page."""
