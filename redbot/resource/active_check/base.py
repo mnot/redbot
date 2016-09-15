@@ -52,9 +52,7 @@ class SubRequest(RedFetcher):
         return list(self.base.orig_req_hdrs)
 
     def add_base_note(self, subject, note, subreq=None, **kw):
-        """
-        Add a Note to the base resource.
-        """
+        "Add a Note to the base resource."
         self.base.add_note(subject, note, self.name, **kw)
 
     def check_missing_hdrs(self, hdrs, note, subreq_type):
