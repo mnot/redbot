@@ -55,10 +55,9 @@ class HttpResource(RedFetcher):
         self._outstanding_tasks = 1
         self.response.on("content_available", self.active_checks)
         self.on("fetch_done", self.finish_check)
-        if descend:
-            self._link_parser = link_parse.HTMLLinkParser(self.response.base_uri,
-                                                          [self.process_link])
-            self.response.on("chunk", self._link_parser.feed)
+        self._link_parser = link_parse.HTMLLinkParser(self.response.base_uri,
+                                                      [self.process_link])
+        self.response.on("chunk", self._link_parser.feed)
 
     def active_checks(self):
         """
