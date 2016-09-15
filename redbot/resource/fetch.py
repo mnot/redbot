@@ -18,7 +18,7 @@ import thor.http.error as httperr
 
 from redbot import __version__
 from redbot.cache_file import CacheFile
-from redbot.speak import Note, levels, categories, response as response_phrase
+from redbot.speak import Note, levels, categories
 from redbot.message import HttpRequest, HttpResponse
 from redbot.message.status import StatusChecker
 from redbot.message.cache import checkCaching
@@ -43,23 +43,24 @@ class RedFetcher(thor.events.EventEmitter):
     If provided, 'name' indicates the type of the request, and is used to
     help set notes and status events appropriately.
     """
+    check_name = u"undefined"
+    response_phrase = u"undefined"
     client = RedHttpClient()
     robot_files = {} # cache of robots.txt
     robot_cache_dir = None
     robot_lookups = {}
 
-    def __init__(self, iri, method="GET", req_hdrs=None, req_body=None, name=None):
+    def __init__(self, iri, method="GET", req_hdrs=None, req_body=None):
         thor.events.EventEmitter.__init__(self)
-        self.name = name
         self.notes = []
         self.transfer_in = 0
         self.transfer_out = 0
-        self.request = HttpRequest(self.add_note, self.name)
+        self.request = HttpRequest(self.add_note)
         self.request.method = method
         self.request.set_iri(iri)
         self.request.headers = req_hdrs or []
         self.request.payload = req_body
-        self.response = HttpResponse(self.add_note, self.name)
+        self.response = HttpResponse(self.add_note)
         self.response.is_head_response = (method == "HEAD")
         self.response.base_uri = self.request.uri
         self.exchange = None
@@ -73,14 +74,12 @@ class RedFetcher(thor.events.EventEmitter):
 
     def __repr__(self):
         status = [self.__class__.__module__ + "." + self.__class__.__name__]
-        status.append("'%s'" % self.name)
+        status.append("'%s'" % self.check_name)
         return "<%s at %#x>" % (", ".join(status), id(self))
 
     def add_note(self, subject, note, **kw):
         "Set a note."
-        kw['response'] = response_phrase.get(
-            self.name, response_phrase['this']
-        )
+        kw['response'] = self.response_phrase
         self.notes.append(note(subject, kw))
 
     def preflight(self):
@@ -198,7 +197,7 @@ class RedFetcher(thor.events.EventEmitter):
         self.exchange.on('response_body', self._response_body)
         self.exchange.on('response_done', self._response_done)
         self.exchange.on('error', self._response_error)
-        self.emit("status", "fetching %s (%s)" % (self.request.uri, self.name))
+        self.emit("status", "fetching %s (%s)" % (self.request.uri, self.check_name))
         req_hdrs = [
             (k.encode('ascii', 'replace'), v.encode('latin-1', 'replace')) \
             for (k, v) in self.request.headers
@@ -235,13 +234,13 @@ class RedFetcher(thor.events.EventEmitter):
         self.response.transfer_length = self.exchange.input_transfer_length
         self.response.header_length = self.exchange.input_header_length
         self.response.body_done(True, trailers)
-        self.emit("status", "fetched %s (%s)" % (self.request.uri, self.name))
+        self.emit("status", "fetched %s (%s)" % (self.request.uri, self.check_name))
         self.emit("fetch_done")
 
     def _response_error(self, error):
         "Handle an error encountered while fetching the response."
         self._st.append('_response_error(%s)' % (str(error)))
-        self.emit("status", "fetch error %s (%s)" % (self.request.uri, self.name))
+        self.emit("status", "fetch error %s (%s)" % (self.request.uri, self.check_name))
         self.response.complete_time = thor.time()
         self.response.http_error = error
         if isinstance(error, httperr.BodyForbiddenError):

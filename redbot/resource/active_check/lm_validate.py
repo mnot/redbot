@@ -12,7 +12,8 @@ from redbot.speak import Note, categories, levels
 
 class LmValidate(SubRequest):
     "If Last-Modified is present, see if it will validate."
-    check_name = "Last-Modified Validation"
+    check_name = u"Last-Modified Validation"
+    response_phrase = u"The 304 response"
     _weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
     _months = [None, 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul',
                'Aug', 'Sep', 'Oct', 'Nov', 'Dec']

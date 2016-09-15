@@ -11,7 +11,6 @@ it need to be escaped to be safe for use in HTML.
 from cgi import escape as e_html
 from markdown import markdown
 
-
 class _Categories(object):
     "Note classifications."
     GENERAL = u"General"
@@ -70,15 +69,6 @@ class Note(object):
         return markdown(self.text % dict(
             [(k, e_html(unicode(v), True)) for k, v in self.vars.items()]
         ), output_format="html5")
-
-
-response = {
-    'this': 'This response',
-    'conneg': 'The uncompressed response',
-    'LM validation': 'The 304 response',
-    'ETag validation': 'The 304 response',
-    'range': 'The partial response',
-}
 
 
 

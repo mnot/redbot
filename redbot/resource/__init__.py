@@ -37,10 +37,13 @@ class HttpResource(RedFetcher):
   
     Emits "done" when everything has finished.
     """
+    check_name = u"default"
+    response_phrase = u"This response"
+    
     def __init__(self, uri, method="GET", req_hdrs=None, req_body=None, descend=False):
         orig_req_hdrs = req_hdrs or []
         new_req_hdrs = orig_req_hdrs + [(u'Accept-Encoding', u'gzip')]
-        RedFetcher.__init__(self, uri, method, new_req_hdrs, req_body, name=method)
+        RedFetcher.__init__(self, uri, method, new_req_hdrs, req_body)
         self.descend = descend
         self.subreqs = {}  # subordinate requests
         self.links = {}    # {type: set(link...)}

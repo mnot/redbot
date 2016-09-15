@@ -17,7 +17,8 @@ class SubRequest(RedFetcher):
     Base class for a subrequest of a "main" HttpResource, made to perform
     additional behavioural tests on the resource.
     """
-    check_name = "undefined"
+    check_name = u"undefined"
+    response_phrase = u"undefined"
     
     def __init__(self, base_resource, name):
         self.base = base_resource
@@ -26,8 +27,7 @@ class SubRequest(RedFetcher):
                             self.base.request.uri,
                             self.base.request.method,
                             req_hdrs,
-                            self.base.request.payload,
-                            name)
+                            self.base.request.payload)
         if self.preflight():
             self.base.subreqs[name] = self
             self.on('fetch_done', self.done)

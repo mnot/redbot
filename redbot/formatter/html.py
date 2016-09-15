@@ -25,7 +25,7 @@ import thor.http.error as httperr
 
 from redbot import __version__
 from redbot.formatter import Formatter, html_header, relative_time, f_num
-from redbot.resource import HttpResource
+from redbot.resource import HttpResource, active_check
 from redbot.message.headers import HeaderProcessor
 from redbot.speak import levels, categories
 
@@ -212,9 +212,10 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 
     # associating categories with subrequests
     note_responses = {
-        categories.CONNEG: ["Content Negotiation"],
-        categories.VALIDATION: ['ETag Validation', 'Last-Modified Validation'],
-        categories.RANGE: ['Partial Content']}
+        categories.CONNEG: [active_check.ConnegCheck.check_name],
+        categories.VALIDATION: [active_check.ETagValidate.check_name,
+                                active_check.LmValidate.check_name],
+        categories.RANGE: [active_check.RangeRequest.check_name]}
 
     # Media types that browsers can view natively
     viewable_types = [

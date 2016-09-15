@@ -11,7 +11,9 @@ from redbot.speak import Note, categories, levels
 
 class ETagValidate(SubRequest):
     "If an ETag is present, see if it will validate."
-    check_name = "ETag Validation"
+    check_name = u"ETag Validation"
+    response_phrase = u"The 304 response"
+
     def modify_req_hdrs(self):
         req_hdrs = list(self.base.request.headers)
         if self.base.response.parsed_headers.has_key('etag'):

@@ -13,7 +13,8 @@ from redbot.speak import Note, categories, levels
 
 class RangeRequest(SubRequest):
     "Check for partial content support (if advertised)"
-    check_name = "Partial Content"
+    check_name = u"Partial Content"
+    response_phrase = u"The partial response"
     def __init__(self, red, name):
         self.range_start = None
         self.range_end = None

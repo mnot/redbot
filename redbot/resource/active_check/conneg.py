@@ -17,7 +17,9 @@ class ConnegCheck(SubRequest):
     Note that this depends on the "main" request being sent with
     Accept-Encoding: gzip
     """
-    check_name = "Content Negotiation"
+    check_name = u"Content Negotiation"
+    response_phrase = u"The uncompressed response"
+    
     def modify_req_hdrs(self):
         return [h for h in self.base.orig_req_hdrs
                 if h[0].lower() != 'accept-encoding'] + \

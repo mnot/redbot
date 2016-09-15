@@ -14,7 +14,7 @@ import zlib
 
 from redbot.message.headers import HeaderProcessor
 from redbot.formatter import f_num
-from redbot.speak import Note, levels, categories, response
+from redbot.speak import Note, levels, categories
 
 from redbot.syntax import rfc3986
 
@@ -29,11 +29,10 @@ class HttpMessage(thor.events.EventEmitter):
 
     Emits "chunk" for each chunk of the response body (after decoding Content-Encoding).
     """
-    def __init__(self, add_note, name=None):
+    def __init__(self, add_note):
         thor.events.EventEmitter.__init__(self)
         if not hasattr(self, 'add_note'):
             self.add_note = add_note
-        self.name = name
         self.is_request = None
         self.version = ""
         self.base_uri = ""
@@ -251,8 +250,8 @@ class HttpRequest(HttpMessage):
     """
     A HTTP Request message.
     """
-    def __init__(self, add_note, name=None):
-        HttpMessage.__init__(self, add_note, name)
+    def __init__(self, add_note):
+        HttpMessage.__init__(self, add_note)
         self.is_request = True
         self.method = None
         self.uri = None
@@ -296,8 +295,8 @@ class HttpResponse(HttpMessage):
     """
     A HTTP Response message.
     """
-    def __init__(self, add_note, name=None):
-        HttpMessage.__init__(self, add_note, name)
+    def __init__(self, add_note):
+        HttpMessage.__init__(self, add_note)
         self.is_request = False
         self.is_head_response = False
         self.status_code = None
@@ -312,8 +311,8 @@ class DummyMsg(HttpResponse):
     """
     A dummy HTTP message, for testing.
     """
-    def __init__(self, add_note=None, name=None):
-        HttpResponse.__init__(self, add_note, name)
+    def __init__(self, add_note=None):
+        HttpResponse.__init__(self, add_note)
         self.base_uri = "http://www.example.com/foo/bar/baz.html?bat=bam"
         self.start_time = time.time()
         self.status_phrase = ""
