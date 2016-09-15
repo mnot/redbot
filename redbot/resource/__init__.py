@@ -61,8 +61,7 @@ class HttpResource(RedFetcher):
 
     def active_checks(self):
         """
-        Response is available; perform further processing that's specific to
-        the "main" response.
+        Response is available; perform subordinate requests (e.g., conneg check).
         """
         if self.response.complete:
             active_check.start(self)
@@ -77,6 +76,7 @@ class HttpResource(RedFetcher):
                 self.finish_check()
 
     def finish_check(self):
+        "A subordinate check is done. Was that the last one?"
         self._outstanding_tasks -= 1
         self._st.append('finish_check')
         assert self._outstanding_tasks >= 0, self._st
@@ -84,7 +84,7 @@ class HttpResource(RedFetcher):
             self.emit('done')
 
     def process_link(self, base, link, tag, title):
-        "Handle a link from content"
+        "Handle a link from content."
         self.link_count += 1
         if not self.links.has_key(tag):
             self.links[tag] = set()
