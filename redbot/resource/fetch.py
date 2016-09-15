@@ -8,20 +8,15 @@ problems and other interesting characteristics. It only makes one request,
 based upon the provided headers.
 """
 
-import hashlib
-from os import path
-from robotparser import RobotFileParser
-from urlparse import urlsplit
-
 import thor
 import thor.http.error as httperr
 
 from redbot import __version__
-from redbot.cache_file import CacheFile
 from redbot.speak import Note, levels, categories
 from redbot.message import HttpRequest, HttpResponse
 from redbot.message.status import StatusChecker
 from redbot.message.cache import checkCaching
+from redbot.resource.robot_fetch import RobotFetcher
 
 
 UA_STRING = u"RED/%s (https://redbot.org/)" % __version__
@@ -46,9 +41,7 @@ class RedFetcher(thor.events.EventEmitter):
     check_name = u"undefined"
     response_phrase = u"undefined"
     client = RedHttpClient()
-    robot_files = {} # cache of robots.txt
-    robot_cache_dir = None
-    robot_lookups = {}
+    robot_fetcher = RobotFetcher()
 
     def __init__(self, iri, method="GET", req_hdrs=None, req_body=None):
         thor.events.EventEmitter.__init__(self)
@@ -102,100 +95,27 @@ class RedFetcher(thor.events.EventEmitter):
             return
 
         if self.follow_robots_txt:
-            self.fetch_robots_txt(self.request.uri, self.run_continue)
+            self.robot_fetcher.once("robot-%s" % self.request.uri, self.run_continue)
+            self.robot_fetcher.check_robots(self.request.uri)
         else:
-            self.run_continue("")
+            self.run_continue(True)
 
-    def fetch_robots_txt(self, url, cb, network=True):
-        """
-        Fetch the robots.txt URL and then feed the response to cb.
-        If the status code is not 200, send a blank doc back.
-
-        If network is False, we won't use the network, will return the result
-        immediately if cached, and will assume it's OK if we don't have a
-        cached file.
-        """
-
-        origin = url_to_origin(self.request.uri)
-        if origin == None:
-            cb("")
-            return ""
-        origin_hash = hashlib.sha1(origin).hexdigest()
-
-        if self.robot_files.has_key(origin):
-            # FIXME: freshness lifetime
-            cb(self.robot_files[origin])
-            return self.robot_files[origin]
-
-        if self.robot_cache_dir:
-            robot_fd = CacheFile(path.join(self.robot_cache_dir, origin_hash))
-            cached_robots_txt = robot_fd.read()
-            if cached_robots_txt != None:
-                cb(cached_robots_txt)
-                return cached_robots_txt
-
-        if not network:
-            cb("")
-            return ""
-
-        if self.robot_lookups.has_key(origin):
-            self.robot_lookups[origin].append(cb)
-        else:
-            self.robot_lookups[origin] = [cb]
-            exchange = self.client.exchange()
-            @thor.on(exchange)
-            def response_start(status, phrase, headers):
-                exchange.status = status
-
-            exchange.res_body = ""
-            @thor.on(exchange)
-            def response_body(chunk):
-                exchange.res_body += chunk
-
-            @thor.on(exchange)
-            def response_done(trailers):
-                if not exchange.status.startswith("2"):
-                    robots_txt = ""
-                else:
-                    robots_txt = exchange.res_body
-
-                self.robot_files[origin] = robots_txt
-                if self.robot_cache_dir:
-                    robot_fd = CacheFile(path.join(self.robot_cache_dir, origin_hash))
-                    robot_fd.write(robots_txt, 60*30)
-
-                for _cb in self.robot_lookups[origin]:
-                    _cb(robots_txt)
-                del self.robot_lookups[origin]
-
-            p_url = urlsplit(url)
-            robots_url = "%s://%s/robots.txt" % (p_url.scheme, p_url.netloc)
-            exchange.request_start("GET", robots_url, [('User-Agent', UA_STRING)])
-            exchange.request_done([])
-
-    def run_continue(self, robots_txt):
+    def run_continue(self, allowed):
         """
         Continue after getting the robots file.
-        TODO: refactor callback style into events.
         """
-        if robots_txt == "": # empty or non-200
-            pass
-        else:
-            checker = RobotFileParser()
-            checker.parse(
-                robots_txt.decode('ascii', 'replace').encode('ascii', 'replace').splitlines())
-            if not checker.can_fetch(UA_STRING, self.request.uri):
-                self.response.http_error = RobotsTxtError()
-                self.emit("fetch_done")
-                return # TODO: show error?
+        if not allowed:
+            self.response.http_error = RobotsTxtError()
+            self.emit("fetch_done")
+            return # TODO: show error?
 
         if 'user-agent' not in [i[0].lower() for i in self.request.headers]:
             self.request.headers.append(
                 (u"User-Agent", UA_STRING))
         self.exchange = self.client.exchange()
-        self.exchange.on('response_start', self._response_start)
+        self.exchange.once('response_start', self._response_start)
         self.exchange.on('response_body', self._response_body)
-        self.exchange.on('response_done', self._response_done)
+        self.exchange.once('response_done', self._response_done)
         self.exchange.on('error', self._response_error)
         self.emit("status", "fetching %s (%s)" % (self.request.uri, self.check_name))
         req_hdrs = [
@@ -254,20 +174,6 @@ class RedFetcher(thor.events.EventEmitter):
         self.emit("fetch_done")
 
 
-def url_to_origin(url):
-    "Convert an URL to an RFC6454 Origin."
-    default_port = {
-        'http': 80,
-        'https': 443}
-    try:
-        p_url = urlsplit(url)
-        origin = "%s://%s:%s" % (p_url.scheme.lower(),
-                                 p_url.hostname.lower(),
-                                 p_url.port or default_port.get(p_url.scheme, 0))
-    except (AttributeError, ValueError):
-        origin = None
-    return origin
-
 
 class RobotsTxtError(httperr.HttpError):
     desc = "Forbidden by robots.txt"
@@ -315,7 +221,6 @@ if __name__ == "__main__":
     T = RedFetcher(
         sys.argv[1],
         req_hdrs=[(u'Accept-Encoding', u'gzip')],
-        name='test'
     )
     @thor.events.on(T)
     def fetch_done():
@@ -323,6 +228,6 @@ if __name__ == "__main__":
         thor.stop()
     @thor.events.on(T)
     def status(msg):
-        print msg    
+        print msg
     T.check()
     thor.run()
