@@ -38,7 +38,7 @@ class RedFetcher(thor.events.EventEmitter):
 
     Fetches the given URI (with the provided method, headers and body) and:
       - emits 'status' as it progresses
-      - emits 'fetch_done' when the fetch is finsihed.
+      - emits 'fetch_done' when the fetch is finished.
 
     If provided, 'name' indicates the type of the request, and is used to
     help set notes and status events appropriately.
@@ -76,19 +76,36 @@ class RedFetcher(thor.events.EventEmitter):
         status.append("'%s'" % self.name)
         return "<%s at %#x>" % (", ".join(status), id(self))
 
-    def preflight(self):
-        """
-        Check to see if we should bother running. Return True
-        if so; False if not.
-        """
-        return True
-
     def add_note(self, subject, note, subreq=None, **kw):
         "Set a note."
         kw['response'] = response_phrase.get(
             self.name, response_phrase['this']
         )
         self.notes.append(note(subject, subreq, kw))
+
+    def preflight(self):
+        """
+        Check to see if we should bother running. Return True
+        if so; False if not. Can be overridden.
+        """
+        return True
+
+    def check(self):
+        """
+        Make an asynchronous HTTP request to uri, emitting 'status' as it's
+        updated and 'done' when it's done. Reason is used to explain what the
+        request is in the status callback.
+        """
+        self._st.append('check')
+        if not self.preflight() or self.request.uri == None:
+            # generally a good sign that we're not going much further.
+            self.emit("fetch_done")
+            return
+
+        if self.follow_robots_txt:
+            self.fetch_robots_txt(self.request.uri, self.run_continue)
+        else:
+            self.run_continue("")
 
     def fetch_robots_txt(self, url, cb, network=True):
         """
@@ -156,23 +173,6 @@ class RedFetcher(thor.events.EventEmitter):
             robots_url = "%s://%s/robots.txt" % (p_url.scheme, p_url.netloc)
             exchange.request_start("GET", robots_url, [('User-Agent', UA_STRING)])
             exchange.request_done([])
-
-    def check(self):
-        """
-        Make an asynchronous HTTP request to uri, emitting 'status' as it's
-        updated and 'done' when it's done. Reason is used to explain what the
-        request is in the status callback.
-        """
-        self._st.append('check')
-        if not self.preflight() or self.request.uri == None:
-            # generally a good sign that we're not going much further.
-            self.emit("fetch_done")
-            return
-
-        if self.follow_robots_txt:
-            self.fetch_robots_txt(self.request.uri, self.run_continue)
-        else:
-            self.run_continue("")
 
     def run_continue(self, robots_txt):
         """
