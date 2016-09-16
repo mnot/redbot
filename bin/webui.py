@@ -524,7 +524,6 @@ def cgi_main():
         for k, v in res_hdrs:
             sys.stdout.write("%s: %s\n" % (k, v))
         sys.stdout.write("\n")
-        return sys.stdout.write, thor.stop
     def response_done(trailers):
         thor.schedule(0, thor.stop)
     try:
