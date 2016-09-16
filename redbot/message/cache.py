@@ -20,7 +20,10 @@ def checkCaching(response, request=None):
 
     # get header values
     lm = response.parsed_headers.get('last-modified', None)
-    date = response.parsed_headers.get('date', None)
+    date = response.parsed_headers.get('date', 0)
+    expires = response.parsed_headers.get('expires', None)
+    etag = response.parsed_headers.get('etag', None)
+    age = response.parsed_headers.get('age', 0)
     cc_set = response.parsed_headers.get('cache-control', [])
     cc_list = [k for (k, v) in cc_set]
     cc_dict = dict(cc_set)
@@ -62,9 +65,8 @@ def checkCaching(response, request=None):
         response.store_shared = False
         response.store_private = True
         response.add_note('header-cache-control', PRIVATE_CC)
-    elif request \
-    and 'authorization' in [k.lower() for k, v in request.headers] \
-    and not 'public' in cc_keys:
+    elif request and 'authorization' in [k.lower() for k, v in request.headers] \
+      and not 'public' in cc_keys:
         response.store_shared = False
         response.store_private = True
         response.add_note('header-cache-control', PRIVATE_AUTH)
@@ -74,8 +76,7 @@ def checkCaching(response, request=None):
 
     # no-cache?
     if 'no-cache' in cc_keys:
-        if "last-modified" not in response.parsed_headers.keys() \
-           and "etag" not in response.parsed_headers.keys():
+        if lm is None and etag is None:
             response.add_note('header-cache-control', NO_CACHE_NO_VALIDATOR)
         else:
             response.add_note('header-cache-control', NO_CACHE)
@@ -119,27 +120,24 @@ def checkCaching(response, request=None):
         # TODO: enumerate the axes in a message
 
     # calculate age
-    age_hdr = response.parsed_headers.get('age', 0)
-    date_hdr = response.parsed_headers.get('date', 0)
-    if date_hdr > 0:
-        apparent_age = max(0, int(response.start_time - date_hdr))
+    if date > 0:
+        apparent_age = max(0, int(response.start_time - date))
     else:
         apparent_age = 0
-    current_age = max(apparent_age, age_hdr)
+    current_age = max(apparent_age, age)
     current_age_str = relative_time(current_age, 0, 0)
-    age_str = relative_time(age_hdr, 0, 0)
-    response.age = age_hdr
-    if age_hdr >= 1:
+    age_str = relative_time(age, 0, 0)
+    response.age = age
+    if age >= 1:
         response.add_note('header-age header-date', CURRENT_AGE, age=age_str)
 
     # Check for clock skew and dateless origin server.
-    skew = date_hdr - response.start_time + age_hdr
-    if not response.parsed_headers.has_key('date'):
+    skew = date - response.start_time + age
+    if not date:
         response.add_note('', DATE_CLOCKLESS)
-        if response.parsed_headers.has_key('expires') or \
-          response.parsed_headers.has_key('last-modified'):
+        if expires or lm:
             response.add_note('header-expires header-last-modified', DATE_CLOCKLESS_BAD_HDR)
-    elif age_hdr > max_clock_skew and current_age - skew < max_clock_skew:
+    elif age > max_clock_skew and current_age - skew < max_clock_skew:
         response.add_note('header-date header-age', AGE_PENALTY)
     elif abs(skew) > max_clock_skew:
         response.add_note('header-date', DATE_INCORRECT,
@@ -162,13 +160,13 @@ def checkCaching(response, request=None):
         freshness_hdrs.append('header-cache-control')
         has_explicit_freshness = True
         has_cc_freshness = True
-    elif response.parsed_headers.has_key('expires'):
+    elif expires != None:
         has_explicit_freshness = True
         freshness_hdrs.append('header-expires')
-        if response.parsed_headers.has_key('date'):
-            freshness_lifetime = response.parsed_headers['expires'] - date_hdr
+        if date:
+            freshness_lifetime = expires - date
         else:
-            freshness_lifetime = response.parsed_headers['expires'] - response.start_time # ?
+            freshness_lifetime = expires - response.start_time # ?
 
     freshness_left = freshness_lifetime - current_age
     freshness_left_str = relative_time(abs(int(freshness_left)), 0, 0)

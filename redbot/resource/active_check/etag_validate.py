@@ -14,8 +14,9 @@ class ETagValidate(SubRequest):
 
     def modify_req_hdrs(self):
         req_hdrs = list(self.base.request.headers)
-        if self.base.response.parsed_headers.has_key('etag'):
-            weak, etag = self.base.response.parsed_headers['etag']
+        etag_value = self.base.response.parsed_headers.get("etag", None)
+        if etag_value:
+            weak, etag = etag_value
             if weak:
                 weak_str = u"W/"
                 # #65: note on weak etag
@@ -26,7 +27,8 @@ class ETagValidate(SubRequest):
         return req_hdrs
 
     def preflight(self):
-        if self.base.response.parsed_headers.has_key('etag'):
+        etag = self.base.response.parsed_headers.get("etag", None)
+        if etag:
             return True
         else:
             self.base.inm_support = False

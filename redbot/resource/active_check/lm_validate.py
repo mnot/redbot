@@ -19,7 +19,8 @@ class LmValidate(SubRequest):
 
     def modify_req_hdrs(self):
         req_hdrs = list(self.base.request.headers)
-        if self.base.response.parsed_headers.has_key('last-modified'):
+        lm = self.base.response.parsed_headers.get('last-modified', None)
+        if lm:
             try:
                 l_m = datetime.utcfromtimestamp(self.base.response.parsed_headers['last-modified'])
             except ValueError:
@@ -36,7 +37,7 @@ class LmValidate(SubRequest):
         return req_hdrs
 
     def preflight(self):
-        if self.base.response.parsed_headers.has_key('last-modified'):
+        if self.base.response.parsed_headers.get('last-modified', None):
             return True
         else:
             self.base.ims_support = False
