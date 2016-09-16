@@ -66,9 +66,9 @@ class RedFetcher(thor.events.EventEmitter):
         return state
 
     def __repr__(self):
-        status = [self.__class__.__module__ + "." + self.__class__.__name__]
-        status.append("'%s'" % self.check_name)
-        return "<%s at %#x>" % (", ".join(status), id(self))
+        status = [self.__class__.__module__ + u"." + self.__class__.__name__]
+        status.append(u"'%s'" % self.check_name)
+        return u"<%s at %#x>" % (", ".join(status), id(self))
 
     def add_note(self, subject, note, **kw):
         "Set a note."
@@ -88,7 +88,7 @@ class RedFetcher(thor.events.EventEmitter):
         updated and 'done' when it's done. Reason is used to explain what the
         request is in the status callback.
         """
-        self._st.append('check')
+        self._st.append(u'check')
         if not self.preflight() or self.request.uri == None:
             # generally a good sign that we're not going much further.
             self.emit("fetch_done")
@@ -133,7 +133,7 @@ class RedFetcher(thor.events.EventEmitter):
 
     def _response_start(self, status, phrase, res_headers):
         "Process the response start-line and headers."
-        self._st.append('_response_start(%s, %s)' % (status, phrase))
+        self._st.append(u'_response_start(%s, %s)' % (status, phrase))
         self.response.start_time = thor.time()
         self.response.version = self.exchange.res_version
         self.response.status_code = status.decode('iso-8859-1', 'replace')
@@ -149,7 +149,7 @@ class RedFetcher(thor.events.EventEmitter):
 
     def _response_done(self, trailers):
         "Finish analysing the response, handling any parse errors."
-        self._st.append('_response_done()')
+        self._st.append(u'_response_done()')
         self.response.complete_time = thor.time()
         self.response.transfer_length = self.exchange.input_transfer_length
         self.response.header_length = self.exchange.input_header_length
@@ -159,7 +159,7 @@ class RedFetcher(thor.events.EventEmitter):
 
     def _response_error(self, error):
         "Handle an error encountered while fetching the response."
-        self._st.append('_response_error(%s)' % (str(error)))
+        self._st.append(u'_response_error(%s)' % (str(error)))
         self.emit("status", "fetch error %s (%s)" % (self.request.uri, self.check_name))
         self.response.complete_time = thor.time()
         self.response.http_error = error

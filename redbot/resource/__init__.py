@@ -73,7 +73,7 @@ class HttpResource(RedFetcher):
         "Do a subordinate check on one or more HttpResource instance."
         for resource in resources:
             self._outstanding_tasks += 1
-            self._st.append('add_check(%s)' % str(resource))
+            self._st.append(u'add_check(%s)' % unicode(resource))
             @thor.events.on(resource)
             def done():
                 self.finish_check()
@@ -81,7 +81,7 @@ class HttpResource(RedFetcher):
     def finish_check(self):
         "A subordinate check is done. Was that the last one?"
         self._outstanding_tasks -= 1
-        self._st.append('finish_check')
+        self._st.append(u'finish_check')
         assert self._outstanding_tasks >= 0, self._st
         if self._outstanding_tasks == 0:
             self.emit('done')
