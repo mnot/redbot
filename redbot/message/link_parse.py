@@ -29,8 +29,7 @@ class HTMLLinkParser(HTMLParser):
     link_parseable_types = [
         'text/html',
         'application/xhtml+xml',
-        'application/atom+xml'
-    ]
+        'application/atom+xml']
 
     def __init__(self, base_uri, link_procs, err=None):
         self.base = base_uri
@@ -43,8 +42,7 @@ class HTMLLinkParser(HTMLParser):
             'img': ['src', None],
             'script': ['src', None],
             'frame': ['src', None],
-            'iframe': ['src', None],
-        }
+            'iframe': ['src', None]}
         self.errors = 0
         self.last_err_pos = None
         self.ok = True
@@ -56,23 +54,17 @@ class HTMLLinkParser(HTMLParser):
             'doc_enc': self.doc_enc,
             'errors': self.errors,
             'last_err_pos': self.last_err_pos,
-            'ok': self.ok,
-        }
+            'ok': self.ok}
 
     def feed(self, msg, chunk):
         "Feed a given chunk of HTML data to the parser"
         if not self.ok:
             return
-        if msg.parsed_headers.get('content-type', [None])[0] in \
-          self.link_parseable_types:
+        if msg.parsed_headers.get('content-type', [None])[0] in self.link_parseable_types:
             try:
                 if chunk.__class__.__name__ != 'unicode':
                     try:
-                        chunk = unicode(
-                            chunk,
-                            self.doc_enc or msg.character_encoding,
-                            'ignore'
-                        )
+                        chunk = unicode(chunk, self.doc_enc or msg.character_encoding, 'ignore')
                     except LookupError:
                         pass
                 HTMLParser.feed(self, chunk)
@@ -128,9 +120,7 @@ class HTMLLinkParser(HTMLParser):
         if self.getpos() == self.last_err_pos:
             # we're in a loop; give up.
             if self.err:
-                self.err(
-                    "giving up on link parsing after %s errors" % self.errors
-                )
+                self.err("giving up on link parsing after %s errors" % self.errors)
             self.ok = False
             raise BadErrorIReallyMeanIt()
         else:
@@ -160,4 +150,4 @@ if __name__ == "__main__":
             out = "%.3d) [%s] %s" % (TestFetcher.count, tag, link)
             print out.encode('utf-8', 'strict')
     p = HTMLLinkParser(uri, TestFetcher.show_link, TestFetcher.err)
-    TestFetcher(uri, req_hdrs=req_hdrs, body_procs=[p.feed])
+    TestFetcher(uri, req_hdrs=req_hdrs)
