@@ -73,6 +73,7 @@ class HttpMessage(thor.events.EventEmitter):
                 '_md5_processor',
                 '_md5_post_processor',
                 '_gzip_processor',
+                'add_note'
         ]:
             if state.has_key(key):
                 del state[key]
