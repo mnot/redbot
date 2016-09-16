@@ -98,7 +98,7 @@ class BaseHtmlFormatter(Formatter):
         self.output(u"""
 <script>
 <!-- %3.3f
-window.status="%s";
+$('#red_status').text("%s");
 -->
 </script>
 """ % (thor.time() - self.start, e_html(message)))

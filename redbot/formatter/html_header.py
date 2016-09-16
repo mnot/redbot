@@ -19,6 +19,7 @@ u"""\
 
 <body class="%(extra_body_class)s">
 
+<div id="red_status"></div>
 <div id="popup"></div>
 <form method="POST" id="save_form"
  action="?id=%(test_id)s&save=True%(descend)s">

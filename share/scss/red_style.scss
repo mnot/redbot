@@ -17,7 +17,7 @@ body {
   color: $text_colour;
   font: 12pt/14pt "Helvetica Neue", Helvetica, Arial, sans-serif;
   margin: 1em 50px;
-	max-width: 1100px; 
+  max-width: 1100px; 
   &.blank {
     margin: $vertical_space * 2 auto $vertical_space auto;
     width: $content_width;
@@ -25,21 +25,21 @@ body {
 }
 
 #left_column {
-	width: $content_width;
+  width: $content_width;
   float: left;
   margin: 0;
   padding: 0;
 }
 
 #right_column {
-	width: 400px;
+  width: 400px;
   float: right;
   margin: 1em 0 0 40px;
   padding: 0;
 }
 
 @media screen and (max-width: 1200px) {
-	#left_column, #right_column {
+  #left_column, #right_column {
     width: $content_width;
     margin: 0;
     padding: 0;
@@ -54,8 +54,8 @@ h1 {
   font-size: 1.8em;
   width: 100%;
   a {
-  	color: #444;
-  	text-decoration: none;
+    color: #444;
+    text-decoration: none;
   }
 }
 
@@ -64,7 +64,7 @@ h1 {
 }
 
 .save {
-	color: $detail_text_colour;
+  color: $detail_text_colour;
 }
 
 h2 {
@@ -90,13 +90,21 @@ h3 {
   @include centered-detail;
 }
 
+#red_status {
+  color: $detail_text_colour;
+  font-size: $detail_font_size;
+  position: absolute;
+  bottom: 1em;
+  left: 50px;
+}
+
 .btw {
   @include centered-detail;
   font-style: italic;
 }
 
 br {
-	clear:both;
+  clear:both;
 }
 
 
@@ -117,7 +125,7 @@ li {
 /* request */
 
 input#uri {
-	width: $content_width - 5px;
+  width: $content_width - 5px;
   font-size: 1.1em;
   &.active {
     color: $text_colour;
@@ -133,7 +141,7 @@ input#uri {
   -moz-border-radius-bottomleft: 0.5em;
   -moz-border-radius-bottomright: 0.5em;
   background-color: #898984;
-	width: $content_width;
+  width: $content_width;
   margin: 0;
 }
 
@@ -216,7 +224,7 @@ table#summary {
   @include rounded_corners(1em);
   border: 1px solid black;
   padding: 1em;
-	margin-top: 1em;
+  margin-top: 1em;
   th {
     text-align: left;
     padding: 2em 0.5em 0.25em 0.5em;
@@ -266,28 +274,28 @@ table#summary {
 /* note levels */
 
 .good {
-    color: #060;
-    list-style-image: url(icon/accept1.png);
+  color: #060;
+  list-style-image: url(icon/accept1.png);
 }
 .warning {
-    color: #660;
+  color: #660;
 }
 ul li.warning {
-    list-style-image: url(icon/yellowflag1.png);
+  list-style-image: url(icon/yellowflag1.png);
 }
 .bad {
-    color: #800;
+  color: #800;
 }
 td.bad {
-    color: #e66;
-    font-style: bold;
+  color: #e66;
+  font-style: bold;
 }
 ul li.bad {
     list-style-image: url(icon/remove-16.png);
 }
 .info {
-    color: $text_colour;
-    list-style-image: url(icon/infomation-16.png);
+  color: $text_colour;
+  list-style-image: url(icon/infomation-16.png);
 }
 
 .req_link {
@@ -316,7 +324,7 @@ ul li.bad {
 /* footer */
 
 .footer {
-	max-width: $content-width;
+  max-width: $content-width;
 }
 
 body.blank > .footer {
@@ -332,7 +340,7 @@ body.blank > .footer {
   text-align: center;
   font-size: 1.0;
   font-weight: normal;
-	width: $content_width;
+  width: $content_width;
 }
 .news-banner {
   color: $detail_text_colour;
@@ -394,12 +402,12 @@ body.blank > .footer {
 /* iPad, iPhone, etc. -------------------- */
 
 @media only screen and (max-device-width : 1024px) {
-	#left_column, #right_column {
+  #left_column, #right_column {
     width: 100%;
     margin: 0;
     padding: 0;
     float: left;
-	}
+  }
   .req_hdr, .add_req_hdr { width: 100%; }
   input#uri { width: 98%; }
 }
