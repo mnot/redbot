@@ -142,7 +142,7 @@ def mod_python_handler(r):
                  response_start, r.write, response_done)
         thor.run()
     except:
-        except_handler_factory(r.write)()
+        except_handler_factory(Config, r.write)()
     return apache.OK
 
 
@@ -169,7 +169,7 @@ def cgi_main():
                  response_start, sys.stdout.write, response_done)
         thor.run()
     except:
-        except_handler_factory(sys.stdout.write)()
+        except_handler_factory(Config, sys.stdout.write)()
 
 
 def standalone_main(host, port, static_dir):
@@ -210,7 +210,7 @@ RED has encountered a fatal error which it really, really can't recover from
 in standalone server mode. Details follow.
 
 """)
-                    except_handler_factory(sys.stderr.write)()
+                    except_handler_factory(Config, sys.stderr.write)()
                     sys.stderr.write("\n")
                     thor.stop()
                     sys.exit(1)

@@ -263,7 +263,7 @@ class RedWebUi(object):
 
 
 # adapted from cgitb.Hook
-def except_handler_factory(out=None):
+def except_handler_factory(config, out=None):
     if not out:
         out = sys.stdout.write
 
@@ -275,7 +275,7 @@ def except_handler_factory(out=None):
             etype, evalue, etb = sys.exc_info()
         import cgitb
         out(cgitb.reset())
-        if self.config.exception_dir is None:
+        if config.exception_dir is None:
             out(error_template % """
     A problem has occurred, but it probably isn't your fault.
     """)
@@ -294,7 +294,7 @@ def except_handler_factory(out=None):
                     etb = etb.tb_next
                 e_file = etb.tb_frame.f_code.co_filename
                 e_line = etb.tb_frame.f_lineno
-                ldir = os.path.join(self.config.exception_dir, os.path.split(e_file)[-1])
+                ldir = os.path.join(config.exception_dir, os.path.split(e_file)[-1])
                 if not os.path.exists(ldir):
                     os.umask(0000)
                     os.makedirs(ldir)
