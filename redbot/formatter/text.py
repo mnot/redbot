@@ -98,20 +98,6 @@ class BaseTextFormatter(Formatter):
                 out.append('')
                 out.extend('    ' + line for line in self.format_text(m))
                 out.append('')
-            smsgs = [note for note in getattr(m.subrequest, "notes", [])
-                     if note.level in [levels.BAD]]
-            if smsgs:
-                out.append("")
-                for sm in smsgs:
-                    out.append(
-                        u"    * %s" %
-                        (self.colorize(sm.level, sm.show_summary("en")))
-                    )
-                    if self.verbose:
-                        out.append('')
-                        out.extend('     ' + ln for ln in self.format_text(sm))
-                        out.append('')
-                out.append(nl)
         out.append(nl)
         return nl.join(out)
 

@@ -80,7 +80,7 @@ class HttpHeader(object):
                 element_syntax = isinstance(self.syntax, rfc7230.list_rule) \
                   and self.syntax.element or self.syntax
                 if not re.match(r"^\s*(?:%s)\s*$" % element_syntax, value, RE_FLAGS):
-                  add_note(BAD_SYNTAX, ref_uri=self.reference)
+                    add_note(BAD_SYNTAX, ref_uri=self.reference)
             try:
                 parsed_value = self.parse(value.strip(), add_note)
             except ValueError:

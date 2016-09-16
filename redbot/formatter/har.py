@@ -147,14 +147,6 @@ class HarFormatter(Formatter):
                 "level": m.level,
                 "summary": m.show_summary(self.lang)
             }
-            smsgs = [i for i in getattr(
-                m.subrequest, "notes", []) if i.level in [levels.BAD]]
-            msg["subrequests"] = [{
-                "subject": sm.subject,
-                "category": sm.category,
-                "level": sm.level,
-                "summary": m.show_summary(self.lang)
-            } for sm in smsgs]
             out.append(msg)
         return out
 

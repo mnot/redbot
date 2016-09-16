@@ -17,6 +17,9 @@ class SubRequest(RedFetcher):
     Base class for a subrequest of a "main" HttpResource, made to perform
     additional behavioural tests on the resource.
     """
+    check_name = u"undefined"
+    response_phrase = u"undefined"
+    
     def __init__(self, base_resource, name):
         self.base = base_resource
         req_hdrs = self.modify_req_hdrs()
@@ -24,12 +27,21 @@ class SubRequest(RedFetcher):
                             self.base.request.uri,
                             self.base.request.method,
                             req_hdrs,
-                            self.base.request.payload,
-                            self.base.status_cb,
-                            [],
-                            name)
+                            self.base.request.payload)
         if self.preflight():
             self.base.subreqs[name] = self
+            self.on('fetch_done', self.done)
+        self.on('fetch_done', self.subrequest_done)
+        self.on('status', self.status)
+
+    def status(self, msg):
+        self.base.emit('status', msg)
+
+    def done(self):
+        raise NotImplementedError
+
+    def subrequest_done(self):
+        self.emit("done")
 
     def modify_req_hdrs(self):
         """
@@ -39,8 +51,9 @@ class SubRequest(RedFetcher):
         """
         return list(self.base.orig_req_hdrs)
 
-    def add_note(self, subject, note, subreq=None, **kw):
-        self.base.add_note(subject, note, self.name, **kw)
+    def add_base_note(self, subject, note, **kw):
+        "Add a Note to the base resource."
+        self.base.add_note(subject, note, **kw)
 
     def check_missing_hdrs(self, hdrs, note, subreq_type):
         """

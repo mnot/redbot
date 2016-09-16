@@ -10,7 +10,6 @@ import cPickle as pickle
 import gzip
 import locale
 import os
-from robotparser import RobotFileParser
 import sys
 import tempfile
 import time
@@ -23,7 +22,9 @@ assert sys.version_info[0] == 2 and sys.version_info[1] >= 6, \
 import thor
 from redbot import __version__
 from redbot.cache_file import CacheFile
+from redbot.message import HttpRequest
 from redbot.resource import HttpResource, RedFetcher, UA_STRING
+from redbot.resource.robot_fetch import RobotFetcher
 from redbot.formatter import *
 from redbot.formatter import find_formatter, html
 from redbot.formatter.html import e_url
@@ -63,7 +64,7 @@ referer_spam_domains = ['www.youtube.com']
 # None to disable; 0 to log all.
 log_traffic = 1024 * 1024 * 8
 
-RedFetcher.robot_cache_dir = "/var/state/robots-txt/" if not debug else False
+RobotFetcher.robot_cache_dir = "/var/state/robots-txt/" if not debug else False
 
 ### End configuration ######################################################
 
@@ -275,10 +276,10 @@ class RedWebUi(object):
         resource = HttpResource(
             self.test_uri,
             req_hdrs=self.req_hdrs,
-            status_cb=formatter.status,
-            body_procs=[formatter.feed],
             descend=self.descend
         )
+        resource.on("status", formatter.status)
+        resource.response.on("chunk", formatter.feed)
 #        sys.stdout.write(pickle.dumps(resource))
         formatter.start_output()
 
@@ -307,8 +308,8 @@ class RedWebUi(object):
                     e_url(self.test_uri),
                     str(self.descend)
                 ))
-
-        resource.run(done)
+        resource.on("done", done)
+        resource.check()
 
     def show_default(self):
         """Show the default page."""
@@ -359,16 +360,9 @@ class RedWebUi(object):
         
         This does not fetch robots.txt.
         """
-        
-        fetcher = RedFetcher(iri)
-        uri = fetcher.request.uri
-        robots_txt = fetcher.fetch_robots_txt(uri, lambda a:a, network=False)
-        if robots_txt == "":
-            return True
-        checker = RobotFileParser()
-        checker.parse(robots_txt.splitlines())
-        return checker.can_fetch(UA_STRING.encode('utf-8'), uri)
 
+        robot_fetcher = RobotFetcher()
+        return robot_fetcher.check_robots(HttpRequest.iri_to_uri(iri), sync=True)
 
 # adapted from cgitb.Hook
 def except_handler_factory(out=None):

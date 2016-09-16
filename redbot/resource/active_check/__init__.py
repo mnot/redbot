@@ -11,9 +11,11 @@ from redbot.resource.active_check.range import RangeRequest
 from redbot.resource.active_check.etag_validate import ETagValidate
 from redbot.resource.active_check.lm_validate import LmValidate
 
-def spawn_all(resource):
-    "Run all active checks against resource."
-    resource.add_task(ConnegCheck(resource, 'Identity').run)
-    resource.add_task(RangeRequest(resource, 'Range').run)
-    resource.add_task(ETagValidate(resource, 'If-None-Match').run)
-    resource.add_task(LmValidate(resource, 'If-Modified-Since').run)
+checks = [ConnegCheck, RangeRequest, ETagValidate, LmValidate]
+
+def start(resource):
+    "Start the active checks."
+    check_instances = [ac(resource, ac.check_name) for ac in checks]
+    resource.add_check(*check_instances)
+    for instance in check_instances:
+        instance.check()

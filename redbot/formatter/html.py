@@ -25,7 +25,7 @@ import thor.http.error as httperr
 
 from redbot import __version__
 from redbot.formatter import Formatter, html_header, relative_time, f_num
-from redbot.resource import HttpResource
+from redbot.resource import HttpResource, active_check
 from redbot.message.headers import HeaderProcessor
 from redbot.speak import levels, categories
 
@@ -35,7 +35,6 @@ nl = u"\n"
 static_root = u'static' # where status resources are located
 extra_dir = u'extra' # where extra resources are located
 
-# TODO: make subrequests explorable
 
 class BaseHtmlFormatter(Formatter):
     """
@@ -213,9 +212,10 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 
     # associating categories with subrequests
     note_responses = {
-        categories.CONNEG: ["Identity"],
-        categories.VALIDATION: ['If-None-Match', 'If-Modified-Since'],
-        categories.RANGE: ['Range']}
+        categories.CONNEG: [active_check.ConnegCheck.check_name],
+        categories.VALIDATION: [active_check.ETagValidate.check_name,
+                                active_check.LmValidate.check_name],
+        categories.RANGE: [active_check.RangeRequest.check_name]}
 
     # Media types that browsers can view natively
     viewable_types = [

@@ -85,7 +85,7 @@ class Formatter(object):
 
     def set_state(self, state):
         """
-        Set the RedState to be formatted.
+        Set the HttpResource to be formatted.
         """
         self.state = state
 
