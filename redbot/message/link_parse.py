@@ -15,7 +15,7 @@ class HTMLLinkParser(HTMLParser):
     """
     Parse the links out of an HTML document in a very forgiving way.
 
-    feed() accepts a HttpResponse object and a chunk of the document at a
+    feed() accepts a HttpMessage object and a chunk of the document at a
     time.
 
     When links are found, link_procs will be called for each with the

@@ -11,6 +11,8 @@ from redbot.speak import Note, categories, levels
 
 class ETagValidate(SubRequest):
     "If an ETag is present, see if it will validate."
+    check_name = u"ETag Validation"
+    response_phrase = u"The 304 response"
 
     def modify_req_hdrs(self):
         req_hdrs = list(self.base.request.headers)
@@ -36,33 +38,33 @@ class ETagValidate(SubRequest):
 
     def done(self):
         if not self.response.complete:
-            self.add_note('', ETAG_SUBREQ_PROBLEM, problem=self.response.http_error.desc)
+            self.add_base_note('', ETAG_SUBREQ_PROBLEM, problem=self.response.http_error.desc)
             return
 
         if self.response.status_code == '304':
             self.base.inm_support = True
-            self.add_note('header-etag', INM_304)
+            self.add_base_note('header-etag', INM_304)
             self.check_missing_hdrs([
                 'cache-control', 'content-location', 'etag', 'expires', 'vary'
                 ], MISSING_HDRS_304, 'If-None-Match')
         elif self.response.status_code == self.base.response.status_code:
             if self.response.payload_md5 == self.base.response.payload_md5:
                 self.base.inm_support = False
-                self.add_note('header-etag', INM_FULL)
+                self.add_base_note('header-etag', INM_FULL)
             else: # bodies are different
                 if self.base.response.parsed_headers['etag'] == \
                   self.response.parsed_headers.get('etag', 1):
                     if self.base.response.parsed_headers['etag'][0]: # weak
-                        self.add_note('header-etag', INM_DUP_ETAG_WEAK)
+                        self.add_base_note('header-etag', INM_DUP_ETAG_WEAK)
                     else: # strong
-                        self.add_note('header-etag', INM_DUP_ETAG_STRONG,
-                                      etag=self.base.response.parsed_headers['etag'])
+                        self.add_base_note('header-etag', INM_DUP_ETAG_STRONG,
+                                           etag=self.base.response.parsed_headers['etag'])
                 else:
-                    self.add_note('header-etag', INM_UNKNOWN)
+                    self.add_base_note('header-etag', INM_UNKNOWN)
         else:
-            self.add_note('header-etag', INM_STATUS,
-                          inm_status=self.response.status_code,
-                          enc_inm_status=self.response.status_code or '(unknown)')
+            self.add_base_note('header-etag', INM_STATUS,
+                               inm_status=self.response.status_code,
+                               enc_inm_status=self.response.status_code or '(unknown)')
         # TODO: check entity headers
 
 
