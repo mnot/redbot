@@ -140,7 +140,9 @@ class DummyHttpHeader(HttpHeader):
 
 
 class HeaderProcessor(object):
-
+    """
+    Parses and runs checks on a set of headers.
+    """
     # map of header name aliases, lowercase-normalised
     header_aliases = {
         'x-pad-for-netscrape-bug': 'x-pad',
