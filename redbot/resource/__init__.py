@@ -82,6 +82,8 @@ class HttpResource(RedFetcher):
         "A subordinate check is done. Was that the last one?"
         self._outstanding_tasks -= 1
         self._st.append(u'finish_check')
+        self.emit("status", u"%s done, %i left" % (
+            self.check_name or u'?', self._outstanding_tasks))
         assert self._outstanding_tasks >= 0, self._st
         if self._outstanding_tasks == 0:
             self.emit('done')
