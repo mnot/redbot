@@ -61,7 +61,7 @@ class RedFetcher(thor.events.EventEmitter):
         self._st = [] # FIXME: this is temporary, for debugging thor
 
     def __getstate__(self):
-        state = self.__dict__.copy()
+        state = thor.events.EventEmitter.__getstate__(self)
         del state['exchange']
         return state
 

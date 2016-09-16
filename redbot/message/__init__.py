@@ -68,7 +68,7 @@ class HttpMessage(thor.events.EventEmitter):
         return "<%s at %#x>" % (", ".join(status), id(self))
 
     def __getstate__(self):
-        state = self.__dict__.copy()
+        state = thor.events.EventEmitter.__getstate__(self)
         for key in [
                 '_md5_processor',
                 '_md5_post_processor',
