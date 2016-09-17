@@ -20,10 +20,10 @@ def checkCaching(response, request=None):
 
     # get header values
     lm = response.parsed_headers.get('last-modified', None)
-    date = response.parsed_headers.get('date', 0)
+    date = response.parsed_headers.get('date', None)
     expires = response.parsed_headers.get('expires', None)
     etag = response.parsed_headers.get('etag', None)
-    age = response.parsed_headers.get('age', 0)
+    age = response.parsed_headers.get('age', None)
     cc_set = response.parsed_headers.get('cache-control', [])
     cc_list = [k for (k, v) in cc_set]
     cc_dict = dict(cc_set)
@@ -32,7 +32,7 @@ def checkCaching(response, request=None):
     # Last-Modified
     if lm:
         serv_date = date or response.start_time
-        if lm > (date or serv_date):
+        if lm > serv_date:
             response.add_note('header-last-modified', LM_FUTURE)
         else:
             response.add_note('header-last-modified', LM_PRESENT,
@@ -132,18 +132,19 @@ def checkCaching(response, request=None):
         response.add_note('header-age header-date', CURRENT_AGE, age=age_str)
 
     # Check for clock skew and dateless origin server.
-    skew = date - response.start_time + age
     if not date:
         response.add_note('', DATE_CLOCKLESS)
         if expires or lm:
             response.add_note('header-expires header-last-modified', DATE_CLOCKLESS_BAD_HDR)
-    elif age > max_clock_skew and current_age - skew < max_clock_skew:
-        response.add_note('header-date header-age', AGE_PENALTY)
-    elif abs(skew) > max_clock_skew:
-        response.add_note('header-date', DATE_INCORRECT,
-                          clock_skew_string=relative_time(skew, 0, 2))
     else:
-        response.add_note('header-date', DATE_CORRECT)
+        skew = date - response.start_time + (age or 0)        
+        if age > max_clock_skew and (current_age - skew) < max_clock_skew:
+            response.add_note('header-date header-age', AGE_PENALTY)
+        elif abs(skew) > max_clock_skew:
+            response.add_note('header-date', DATE_INCORRECT,
+                              clock_skew_string=relative_time(skew, 0, 2))
+        else:
+            response.add_note('header-date', DATE_CORRECT)
 
     # calculate freshness
     freshness_lifetime = 0
@@ -160,13 +161,11 @@ def checkCaching(response, request=None):
         freshness_hdrs.append('header-cache-control')
         has_explicit_freshness = True
         has_cc_freshness = True
-    elif expires != None:
+    elif response.parsed_headers.has_key('expires'):
+        # An invalid Expires header means it's automatically stale
         has_explicit_freshness = True
         freshness_hdrs.append('header-expires')
-        if date:
-            freshness_lifetime = expires - date
-        else:
-            freshness_lifetime = expires - response.start_time # ?
+        freshness_lifetime = (expires or 0) - (date or response.start_time)
 
     freshness_left = freshness_lifetime - current_age
     freshness_left_str = relative_time(abs(int(freshness_left)), 0, 0)
