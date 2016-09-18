@@ -18,9 +18,8 @@ The `Expires` header gives a time after which the response is considered stale."
 
     def parse(self, field_value, add_note):
         try:
-            date = headers.parse_date(field_value)
+            date = headers.parse_date(field_value, add_note)
         except ValueError:
-            add_note(headers.BAD_DATE_SYNTAX)
             raise
         return date
 

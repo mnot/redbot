@@ -15,7 +15,7 @@ import unittest
 from redbot.syntax import rfc7230, rfc7231
 from redbot.formatter import f_num
 
-from ._utils import parse_date, unquote_string, split_string, parse_params
+from ._utils import RE_FLAGS, parse_date, unquote_string, split_string, parse_params
 from ._notes import *
 
 # base URLs for references
@@ -28,7 +28,6 @@ rfc6266 = u"http://tools.ietf.org/html/rfc6266.html#section-4"
 MAX_HDR_SIZE = 4 * 1024
 MAX_TTL_HDR = 8 * 1000
 
-RE_FLAGS = re.VERBOSE | re.IGNORECASE
 
 class HttpHeader(object):
     """A HTTP Header handler."""

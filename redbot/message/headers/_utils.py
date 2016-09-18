@@ -7,10 +7,15 @@ import urllib
 from redbot.syntax import rfc7231
 from ._notes import *
 
-def parse_date(value):
+RE_FLAGS = re.VERBOSE | re.IGNORECASE
+
+def parse_date(value, add_note):
     """Parse a HTTP date. Raises ValueError if it's bad."""
-    if not re.match(r"%s$" % rfc7231.HTTP_date, value, re.VERBOSE):
+    if not re.match(r"^%s$" % rfc7231.HTTP_date, value, RE_FLAGS):
+        add_note(BAD_DATE_SYNTAX)
         raise ValueError
+    if re.match(r"^%s$" % rfc7231.obs_date, value, RE_FLAGS):
+        add_note(DATE_OBSOLETE)
     date_tuple = lib_parsedate(value)
     if date_tuple is None:
         raise ValueError

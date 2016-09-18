@@ -125,6 +125,16 @@ is a fixed-width field), and sending a date in a timezone other than GMT. See [t
 specification](http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3) for more
 information."""
 
+class DATE_OBSOLETE(Note):
+    category = categories.GENERAL
+    level = levels.WARN
+    summary = u"The %(field_name)s header's value uses an obsolete format."
+    text = u"""\
+HTTP has a number of defined date formats for historical reasons. This header is using an old
+format that are now obsolete. See [the
+specification](http://httpwg.org/specs/rfc7231.html#http.date) for more information.
+"""
+
 class HEADER_TOO_LARGE(Note):
     category = categories.GENERAL
     level = levels.WARN

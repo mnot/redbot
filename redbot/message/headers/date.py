@@ -20,9 +20,8 @@ It is used by caches as input to expiration calculations, and to detect clock dr
 
     def parse(self, field_value, add_note):
         try:
-            date = headers.parse_date(field_value)
+            date = headers.parse_date(field_value, add_note)
         except ValueError:
-            add_note(BAD_DATE_SYNTAX)
             raise
         return date
 
