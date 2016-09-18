@@ -58,7 +58,7 @@ day = r"(?: {DIGIT} {DIGIT} )".format(**locals())
 #  / %x53.61.74 ; Sat
 #  / %x53.75.6E ; Sun
 
-day_name = r"(?: Mon | Tue | Wed | Thu | Fri | Say | Sun )"
+day_name = r"(?: Mon | Tue | Wed | Thu | Fri | Sat | Sun )"
 
 # day-name-l = %x4D.6F.6E.64.61.79 ; Monday
 #  / %x54.75.65.73.64.61.79 ; Tuesday
@@ -87,7 +87,7 @@ month = r"(?: Jan | Feb | Mar | Apr | May | Jun | Jul | Aug | Sep | Oct | Nov | 
 
 # year = 4DIGIT
 
-year = r"(?: {DIGIT} {DIGIT} {DIGIT} {DIGIT} )".format(**locals())
+year = r"(?: {DIGIT}{{4}} )".format(**locals())
 
 # GMT = %x47.4D.54 ; GMT
 
@@ -107,7 +107,7 @@ date3 = r"(?: {month} {SP} (?: {DIGIT}{{2}} | (?: {SP} {DIGIT} ) ) )".format(**l
 
 # IMF-fixdate = day-name "," SP date1 SP time-of-day SP GMT
 
-IMF_fixdate = r"(?: {day_name} , [ ] {date1} [ ] {time_of_day} [ ] {GMT} )".format(**locals())
+IMF_fixdate = r"(?: {day_name} , {SP} {date1} {SP} {time_of_day} {SP} {GMT} )".format(**locals())
 
 # asctime-date = day-name SP date3 SP time-of-day SP year
 
