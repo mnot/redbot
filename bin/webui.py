@@ -162,11 +162,23 @@ def cgi_main():
         for k, v in res_hdrs:
             sys.stdout.write("%s: %s\n" % (k, v))
         sys.stdout.write("\n")
+
+    freak_ceiling = 20000
+    def response_body(chunk):
+        rest = None
+        if len(chunk) > freak_ceiling:
+            rest = chunk[freak_ceiling:]
+            chunk = chunk[:freak_ceiling]
+        sys.stdout.write(chunk)
+        sys.stdout.flush()
+        if rest:
+            response_body(rest)
+
     def response_done(trailers):
         thor.schedule(0, thor.stop)
     try:
         RedWebUi(Config, base_uri, method, query_string,
-                 response_start, sys.stdout.write, response_done)
+                 response_start, response_body, response_done)
         thor.run()
     except:
         except_handler_factory(Config, sys.stdout.write)()
