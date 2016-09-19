@@ -7,6 +7,7 @@ Parse links from a stream of HTML data.
 
 from htmlentitydefs import entitydefs
 from HTMLParser import HTMLParser
+import types
 
 from redbot.message import headers as rh
 from redbot.syntax import rfc7231
@@ -62,9 +63,10 @@ class HTMLLinkParser(HTMLParser):
             return
         if msg.parsed_headers.get('content-type', [None])[0] in self.link_parseable_types:
             try:
-                if chunk.__class__.__name__ != 'unicode':
+                if not isinstance(chunk, types.UnicodeType) \
+                  and not isinstance(chunk, types.StringType):
                     try:
-                        chunk = unicode(chunk, self.doc_enc or msg.character_encoding, 'ignore')
+                        chunk = chunk.decode(self.doc_enc or msg.character_encoding, 'ignore')
                     except LookupError:
                         pass
                 HTMLParser.feed(self, chunk)
