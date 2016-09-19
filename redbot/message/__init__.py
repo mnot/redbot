@@ -127,10 +127,11 @@ class HttpMessage(thor.events.EventEmitter):
     def body_done(self, complete, trailers=None):
         """
         Signal that the body is done. Complete should be True if we
-        know it's complete.
+        know it's complete (e.g., final chunk, Content-Length).
         """
         # TODO: check trailers
         self.complete = complete
+        self.complete_time = thor.time()
         self.trailers = trailers or []
         self.payload_md5 = self._md5_processor.digest()
         self.decoded_md5 = self._md5_post_processor.digest()

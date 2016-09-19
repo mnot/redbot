@@ -25,6 +25,8 @@ class RedHttpClient(thor.http.HttpClient):
     "Thor HttpClient for RedFetcher"
     connect_timeout = 10
     read_timeout = 15
+    retry_delay = 1
+    careful = False
 
 
 class RedFetcher(thor.events.EventEmitter):
@@ -117,7 +119,7 @@ class RedFetcher(thor.events.EventEmitter):
         self.exchange.on('response_body', self._response_body)
         self.exchange.once('response_done', self._response_done)
         self.exchange.on('error', self._response_error)
-        self.emit("status", "fetching %s (%s)" % (self.request.uri, self.check_name))
+        self.emit("status", u"fetching %s (%s)" % (self.request.uri, self.check_name))
         req_hdrs = [
             (k.encode('ascii', 'replace'), v.encode('latin-1', 'replace')) \
             for (k, v) in self.request.headers
@@ -136,8 +138,8 @@ class RedFetcher(thor.events.EventEmitter):
         self._st.append(u'_response_start(%s, %s)' % (status, phrase))
         self.response.start_time = thor.time()
         self.response.version = self.exchange.res_version
-        self.response.status_code = status.decode('iso-8859-1', 'replace')
-        self.response.status_phrase = phrase.decode('iso-8859-1', 'replace')
+        self.response.status_code = status
+        self.response.status_phrase = phrase
         self.response.set_headers(res_headers)
         StatusChecker(self.response, self.request)
         checkCaching(self.response, self.request)
@@ -150,28 +152,28 @@ class RedFetcher(thor.events.EventEmitter):
     def _response_done(self, trailers):
         "Finish analysing the response, handling any parse errors."
         self._st.append(u'_response_done()')
-        self.response.complete_time = thor.time()
         self.response.transfer_length = self.exchange.input_transfer_length
         self.response.header_length = self.exchange.input_header_length
         self.response.body_done(True, trailers)
-        self.emit("status", "fetched %s (%s)" % (self.request.uri, self.check_name))
+        self.emit("status", u"fetched %s (%s)" % (self.request.uri, self.check_name))
         self.emit("fetch_done")
 
     def _response_error(self, error):
         "Handle an error encountered while fetching the response."
         self._st.append(u'_response_error(%s)' % (str(error)))
-        self.emit("status", "fetch error %s (%s)" % (self.request.uri, self.check_name))
-        self.response.complete_time = thor.time()
-        self.response.http_error = error
-        if isinstance(error, httperr.BodyForbiddenError):
-            self.add_note('header-none', BODY_NOT_ALLOWED)
-#        elif isinstance(error, httperr.ExtraDataErr):
-#            res.payload_len += len(err.get('detail', ''))
-        elif isinstance(error, httperr.ChunkError):
-            err_msg = error.detail[:20] or ""
-            self.add_note('header-transfer-encoding', BAD_CHUNK,
-                          chunk_sample=err_msg.encode('string_escape'))
-        self.emit("fetch_done")
+        self.emit("status", u"fetch error %s (%s)" % (self.request.uri, self.check_name))
+        err_sample = error.detail[:40].encode('unicode_escape').decode('utf-8') or u""
+        if isinstance(error, httperr.ExtraDataError):
+            if self.response.status_code == u"304":
+                self.add_note('body', BODY_NOT_ALLOWED, sample=err_sample)
+            else:
+                self.add_note('body', EXTRA_DATA, sample=err_sample)
+        else:
+            if isinstance(error, httperr.ChunkError):
+                self.add_note('header-transfer-encoding', BAD_CHUNK, chunk_sample=err_sample)
+            self.response.http_error = error
+            if not self.response.complete_time:
+                self.emit("fetch_done")
 
 
 
@@ -188,8 +190,27 @@ class BODY_NOT_ALLOWED(Note):
 HTTP defines a few special situations where a response does not allow a body. This includes 101,
 204 and 304 responses, as well as responses to the `HEAD` method.
 
-%(response)s had a body, despite it being disallowed. Clients receiving it may treat the body as
-the next response in the connection, leading to interoperability and security issues."""
+%(response)s had data after the headers ended, despite it being disallowed. Clients receiving it
+may treat the body as the next response in the connection, leading to interoperability and security
+issues.
+
+The extra data started with:
+
+    %(sample)s
+"""
+
+class EXTRA_DATA(Note):
+    category = categories.CONNECTION
+    level = levels.BAD
+    summary = u"%(response)s had extra data after it."
+    text = u"""\
+The server sent data after the message ended. This can be caused by an incorrect `Content-Length`
+header, or by a programming error in the server itself.
+
+The extra data started with:
+
+    %(sample)s
+"""
 
 class BAD_CHUNK(Note):
     category = categories.CONNECTION

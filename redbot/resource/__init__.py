@@ -86,7 +86,8 @@ class HttpResource(RedFetcher):
             self.check_name or u'?', self._outstanding_tasks))
         assert self._outstanding_tasks >= 0, self._st
         if self._outstanding_tasks == 0:
-            self.emit('done')
+            # Wait just a bit to see if there's extra data. Yes, this is a race.
+            thor.schedule(0.1, self.emit, 'done')
 
     def process_link(self, base, link, tag, title):
         "Handle a link from content."
