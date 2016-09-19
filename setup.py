@@ -18,7 +18,7 @@ setup(name='redbot',
       package_dir={'redbot': 'redbot'},
       scripts=['bin/redbot'],
       install_requires = [
-          'thor >= 0.1',
+          'thor >= 0.3.0',
           'markdown >= 2.6.5'
       ],
       classifiers=[
