@@ -720,12 +720,12 @@ uri_gen_delims = r":/?#[]@"
 uri_sub_delims = r"!$&'()*+,;="
 def unicode_url_escape(url, safe):
     """
-    URL esape a unicode string. Assume that anything already encoded
+    URL escape a unicode string. Assume that anything already encoded
     is to be left alone.
     """
     # also include "~" because it doesn't need to be encoded,
     # but Python does anyway :/
-    return urllib.quote(url.encode('utf-8', 'replace'), safe + '%~')
+    return urllib.quote(url.encode('utf-8', 'replace'), safe + r'%~')
 e_url = partial(unicode_url_escape, safe=uri_gen_delims + uri_sub_delims)
 e_authority = partial(unicode_url_escape, safe=uri_sub_delims + r"[]:@")
 e_path = partial(unicode_url_escape, safe=uri_sub_delims + r":@/")
