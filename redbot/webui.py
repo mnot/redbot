@@ -42,13 +42,14 @@ class RedWebUi(object):
     If descend is true, spider the links and present a summary.
     """
     def __init__(self, config, base_uri, method, query_string,
-                 response_start, response_body, response_done):
+                 response_start, response_body, response_done, error_log=sys.stderr.write):
         self.config = config
         self.base_uri = base_uri
         self.method = method
         self.response_start = response_start
         self.response_body = response_body
         self._response_done = response_done
+        self.error_log = error_log
 
         self.test_uri = None
         self.req_hdrs = None # tuple of unicode K,V
@@ -245,6 +246,7 @@ class RedWebUi(object):
 
     def timeoutError(self):
         """ Max runtime reached."""
+        self.error_log("RED TIMEOUT: <%s> descend=%s" % (self.test_uri, self.descend))
         self.output(error_template % ("RED timeout."))
         self.response_done([])
 
