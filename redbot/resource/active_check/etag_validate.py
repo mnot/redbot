@@ -128,9 +128,9 @@ should the ETag.
 Here, the same `ETag` was used for two different responses during validation, which means that
 downstream clients and caches might confuse them.
 
-If the changes between the two versions aren't important, and they can be used interchangeably, a
-"weak" ETag should be used; to do that, just prepend `W/`, to make it `W/%(etag)s`. Otherwise, a
-different `ETag` needs to be used."""
+If the changes between the two representations aren't important (i.e., they can be used
+interchangeably), they can share a "weak" ETag; to do that, just prepend `W/`, to make its value
+`W/%(etag)s`. Otherwise, they need to use different `ETag`s."""
 
 class INM_UNKNOWN(Note):
     category = categories.VALIDATION
