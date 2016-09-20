@@ -7,23 +7,12 @@ Formatters for RED output.
 
 from collections import defaultdict
 import locale
+import sys
 import time
+from types import TypeType
 import unittest
 
-__all__ = ['html', 'text', 'har']
-
-_formatters = defaultdict(list)
-
-class FormatterType(type):
-    """
-    Type for Formatters that populates _formatters, to keep track
-    of names and their mapping to Formatter-derived classes.
-    """
-    def __new__(mcs, name, bases, attrs):
-        cls = super(FormatterType, mcs).__new__(mcs, name, bases, attrs)
-        if attrs.get('name', None) != None:
-            _formatters[attrs['name']].append(cls)
-        return cls
+_formatters = ['html', 'text', 'har']
 
 def find_formatter(name, default="html", multiple=False):
     """
@@ -33,14 +22,22 @@ def find_formatter(name, default="html", multiple=False):
     Note that you MUST "from redbot.formatter import *" before calling.
     Yes, that's a hack that needs to be fixed.
     """
-    if name not in _formatters.keys():
+    if name not in _formatters:
         name = default
+    try:
+        module_name = "redbot.formatter.%s" % name
+        __import__(module_name)
+        module = sys.modules[module_name]
+    except (ImportError, KeyError, TypeError):
+        return find_formatter(default)
+    formatter_candidates = [v for k,v in module.__dict__.items() \
+      if isinstance(v, TypeType) and issubclass(v, Formatter) and getattr(v, 'name') == name]
     # find single-preferred formatters first
     if not multiple:
-        for candidate in _formatters[name]:
+        for candidate in formatter_candidates:
             if not candidate.can_multiple:
                 return candidate
-    for candidate in _formatters[name]:
+    for candidate in formatter_candidates:
         if candidate.can_multiple:
             return candidate
     raise RuntimeError, "Can't find a format in %s" % _formatters
@@ -52,7 +49,7 @@ def available_formatters():
     Note that you MUST "from redbot.formatter import *" before calling.
     Yes, that's a hack that needs to be fixed.
     """
-    return _formatters.keys()
+    return _formatters
 
 
 class Formatter(object):
@@ -63,7 +60,6 @@ class Formatter(object):
 
     Is available to UIs based upon the 'name' attribute.
     """
-    __metaclass__ = FormatterType
     media_type = None # the media type of the format.
     name = None # name of the format.
     can_multiple = False # formatter can represent multiple responses.
