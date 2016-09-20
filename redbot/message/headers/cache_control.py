@@ -26,7 +26,6 @@ in a request does not imply that the same directive is in effect in the response
             directive_name = field_value
             directive_val = None
         directive_name = directive_name.lower()
-        # TODO: warn on upper-cased directives?
         if directive_name in ['max-age', 's-maxage']:
             try:
                 directive_val = int(directive_val)

@@ -272,7 +272,6 @@ class HeaderProcessor(object):
         return header_name.replace('-', '_').lower().encode('ascii', 'ignore')
 
 
-# TODO: allow testing of request headers
 class HeaderTest(unittest.TestCase):
     """
     Testing machinery for headers.
