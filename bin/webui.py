@@ -215,7 +215,7 @@ def standalone_main(host, port, static_dir):
                 try:
                     RedWebUi(Config, '/', method, query_string,
                              x.response_start, x.response_body, x.response_done)
-                except RuntimeError:
+                except Exception:
                     sys.stderr.write("""
 
 *** FATAL ERROR
@@ -223,10 +223,8 @@ RED has encountered a fatal error which it really, really can't recover from
 in standalone server mode. Details follow.
 
 """)
-                    except_handler_factory(Config, sys.stderr.write)()
-                    sys.stderr.write("\n")
                     thor.stop()
-                    sys.exit(1)
+                    raise
             else:
                 x.response_start("404", "Not Found", [])
                 x.response_done([])
