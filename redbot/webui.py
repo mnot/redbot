@@ -91,7 +91,6 @@ class RedWebUi(object):
         except (OSError, IOError):
             self.response_start("500", "Internal Server Error",
                                 [("Content-Type", "text/html; charset=%s" % self.config.charset),])
-            # TODO: better error message (through formatter?)
             self.response_body(error_template % "Sorry, I couldn't save that.")
         self.response_done([])
 
@@ -104,7 +103,6 @@ class RedWebUi(object):
             self.response_start("404", "Not Found", [
                 ("Content-Type", "text/html; charset=%s" % self.config.charset),
                 ("Cache-Control", "max-age=600, must-revalidate")])
-            # TODO: better error page (through formatter?)
             self.response_body(error_template % "I'm sorry, I can't find that saved response.")
             self.response_done([])
             return

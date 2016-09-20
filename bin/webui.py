@@ -27,7 +27,8 @@ class Config(object):
     """
     Configuration object.
     """
-    # TODO: make language configurable/dynamic
+
+    # Output language (not working yet; see #169)
     lang = "en"
 
     # Output character set. No real reason to change from UTF-8...
@@ -238,8 +239,6 @@ in standalone server mode. Details follow.
     except KeyboardInterrupt:
         sys.stderr.write("Stopping...\n")
         thor.stop()
-    # TODO: logging
-    # TODO: extra resources
 
 def standalone_monitor(host, port, static_dir):
     """Fork a process as a standalone Web server and watch it."""
@@ -249,8 +248,6 @@ def standalone_monitor(host, port, static_dir):
         sys.stderr.write("* Starting RED server...\n")
         p.start()
         p.join()
-        # TODO: listen to socket and drop privs
-
 
 
 if __name__ == "__main__":

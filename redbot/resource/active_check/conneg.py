@@ -55,7 +55,6 @@ class ConnegCheck(SubRequest):
                 if self.base.response.parsed_headers.get(hdr) != \
                     self.response.parsed_headers.get(hdr, None):
                     self.add_base_note('header-%s' % hdr, VARY_HEADER_MISMATCH, header=hdr)
-                    # TODO: expose on-the-wire values.
 
             # check Vary headers
             vary_headers = self.base.response.parsed_headers.get('vary', [])

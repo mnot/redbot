@@ -151,7 +151,7 @@ def checkCaching(response, request=None):
     has_explicit_freshness = False
     has_cc_freshness = False
     freshness_hdrs = ['header-date']
-    if 's-maxage' in cc_keys: # TODO: differentiate message for s-maxage
+    if 's-maxage' in cc_keys:
         freshness_lifetime = cc_dict['s-maxage']
         freshness_hdrs.append('header-cache-control')
         has_explicit_freshness = True

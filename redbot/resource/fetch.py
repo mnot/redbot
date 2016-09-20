@@ -109,7 +109,7 @@ class RedFetcher(thor.events.EventEmitter):
         if not allowed:
             self.response.http_error = RobotsTxtError()
             self.emit("fetch_done")
-            return # TODO: show error?
+            return
 
         if 'user-agent' not in [i[0].lower() for i in self.request.headers]:
             self.request.headers.append(

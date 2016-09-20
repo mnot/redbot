@@ -65,7 +65,6 @@ class LmValidate(SubRequest):
             self.add_base_note('header-last-modified', IMS_STATUS,
                                ims_status=self.response.status_code,
                                enc_ims_status=self.response.status_code or '(unknown)')
-        # TODO: check entity headers
 
 
 class LM_SUBREQ_PROBLEM(Note):

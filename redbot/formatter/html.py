@@ -612,8 +612,6 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             out.append(self.format_yes_no(state.partial_support))
             problems = [m for m in state.notes if \
                 m.level in [levels.WARN, levels.BAD]]
-    # TODO:        problems += sum([m[2].notes for m in state.notes if
-    # m[2] != None], [])
             out.append(u"<td>")
             pr_enum = []
             for problem in problems:

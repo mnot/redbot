@@ -100,7 +100,7 @@ class HttpMessage(thor.events.EventEmitter):
         decoded_sample is also populated.
         """
         self.payload_sample.append((self.payload_len, chunk))
-        if len(self.payload_sample) > 4: # TODO: bytes, not chunks
+        if len(self.payload_sample) > 4:
             self.payload_sample.pop(0)
         self._md5_processor.update(chunk)
         self.payload_len += len(chunk)
@@ -129,7 +129,6 @@ class HttpMessage(thor.events.EventEmitter):
         Signal that the body is done. Complete should be True if we
         know it's complete (e.g., final chunk, Content-Length).
         """
-        # TODO: check trailers
         self.complete = complete
         self.complete_time = thor.time()
         self.trailers = trailers or []
@@ -164,7 +163,6 @@ class HttpMessage(thor.events.EventEmitter):
         content_codings = self.parsed_headers.get('content-encoding', [])
         content_codings.reverse()
         for coding in content_codings:
-            # TODO: deflate support
             if coding in ['gzip', 'x-gzip'] and self._decode_ok:
                 if not self._in_gzip_body:
                     self._gzip_header_buffer += chunk
