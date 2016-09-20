@@ -353,9 +353,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         if hasattr(state, "links"):
             for tag, link_set in state.links.items():
                 for link in link_set:
-                    print "looking for:", link
                     def link_to(matchobj):
-                        print "link to:", link
                         try:
                             qlink = urljoin(state.response.base_uri, link)
                         except ValueError, why:
