@@ -24,6 +24,7 @@ class RobotFetcher(thor.events.EventEmitter):
     """
     check_name = u"robot"
     response_phrase = u"The robots.txt response"
+    freshness_lifetime = 30 * 60
     client = thor.http.HttpClient()
     robot_checkers = {} # cache of robots.txt checkers
     robot_cache_dir = None
@@ -88,7 +89,7 @@ class RobotFetcher(thor.events.EventEmitter):
                 self._load_checker(origin, robots_txt)
                 if self.robot_cache_dir:
                     robot_fd = CacheFile(path.join(self.robot_cache_dir, origin_hash))
-                    robot_fd.write(robots_txt, 60*30)
+                    robot_fd.write(robots_txt, self.freshness_lifetime)
 
                 while True:
                     try:
@@ -112,6 +113,12 @@ class RobotFetcher(thor.events.EventEmitter):
             checker.parse(
                 robots_txt.decode('ascii', 'replace').encode('ascii', 'replace').splitlines())
         self.robot_checkers[origin] = checker
+        def del_checker():
+            try:
+                del self.robot_checkers[origin]
+            except:
+                pass
+        thor.schedule(self.freshness_lifetime, del_checker)
 
     def _robot_check(self, url, robots_checker, sync=False):
         """Continue after getting the robots file."""
