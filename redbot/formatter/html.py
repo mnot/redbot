@@ -353,7 +353,9 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         if hasattr(state, "links"):
             for tag, link_set in state.links.items():
                 for link in link_set:
+                    print "looking for:", link
                     def link_to(matchobj):
+                        print "link to:", link
                         try:
                             qlink = urljoin(state.response.base_uri, link)
                         except ValueError, why:
@@ -364,10 +366,9 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                             self.req_qs(link),
                             e_html(link),
                             matchobj.group(1))
-                    safe_sample = re.sub(r"(['\"])%s\1" % re.escape(link), link_to, safe_sample)
+                    safe_sample = re.sub(r"('|&quot;)%s\1" % re.escape(link), link_to, safe_sample)
         if not state.response.decoded_sample_complete:
-            message = \
-"<p class='btw'>RED isn't showing the whole body, because it's so big!</p>"
+            message = "<p class='btw'>RED isn't showing the whole body, because it's so big!</p>"
         return """<pre class="prettyprint">%s</pre>\n%s""" % (safe_sample, message)
 
     def format_category(self, category, state):
