@@ -52,7 +52,6 @@ class RobotFetcher(thor.events.EventEmitter):
         origin_hash = hashlib.sha1(origin).hexdigest()
 
         if self.robot_checkers.has_key(origin):
-            # FIXME: freshness lifetime
             return self._robot_check(url, self.robot_checkers[origin], sync)
 
         if self.robot_cache_dir:
