@@ -9,7 +9,7 @@ all: script.js style.css
 clean:
 	rm -f script.js style.css red_style.css script.js.map
 
-script.js:
+script.js: $(JSFILES)
 	closure-compiler --create_source_map script.js.map --js_output_file script.js $(JSFILES) 
 	echo "\n//# sourceMappingURL=script.js.map" >> script.js
 
