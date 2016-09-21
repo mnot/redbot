@@ -14,7 +14,7 @@ from rfc5234 import DIGIT, ALPHA, HEXDIG
 
 
 #   pct-encoded   = "%" HEXDIG HEXDIG
-pct_encoded = r" %% {HEXDIG} {HEXDIG}".format(**locals())
+pct_encoded = r" % {HEXDIG} {HEXDIG}".format(**locals())
 
 #   unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
 unreserved = r"(?: {ALPHA} | {DIGIT} | \- | \. | _ | ~ )".format(**locals())
