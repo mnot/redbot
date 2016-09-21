@@ -2,17 +2,7 @@
 /* Configuration */
 
 
-
-function get_config () {
-  
-  "use strict";
-  
-  var scripts = document.getElementsByTagName('script');
-  var myScript = scripts[ scripts.length - 1 ];
-  var frag = unescape(myScript.src.replace(/^[^\#]+\#?/,''));
-  return jQuery.parseJSON(frag);
-}
-var config = get_config();
+var config = JSON.parse($("#config").html());
 
 
 $(document).ready(function() {

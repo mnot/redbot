@@ -69,11 +69,11 @@ class BaseHtmlFormatter(Formatter):
             u'version': __version__,
             u'html_uri': e_html(self.uri),
             u'js_uri': e_js(self.uri),
-            u'config': e_fragment(json.dumps({
+            u'config': json.dumps({
                 u'redbot_uri': self.uri,
                 u'redbot_req_hdrs': self.req_hdrs,
                 u'redbot_version': __version__
-            }, ensure_ascii=False)),
+            }, ensure_ascii=False).replace(u'<', u'\\u003c').decode('utf-8'),
             u'js_req_hdrs': u", ".join([u'["%s", "%s"]' % (
                 e_js(n), e_js(v)) for n, v in self.req_hdrs]),
             u'extra_js': self.format_extra(u'.js'),

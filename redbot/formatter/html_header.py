@@ -13,7 +13,8 @@ u"""\
             float: left;
     </style>
     <![endif]-->
-    <script src='%(static)s/script.js#%(config)s' type="text/javascript"></script>
+    <script id="config" type="application/json">%(config)s</script>
+    <script src="%(static)s/script.js" type="text/javascript"></script>
     %(extra_js)s
 </head>
 
