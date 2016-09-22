@@ -20,7 +20,7 @@ class SubRequest(RedFetcher):
     check_name = u"undefined"
     response_phrase = u"undefined"
     
-    def __init__(self, base_resource, name):
+    def __init__(self, base_resource):
         self.base = base_resource
         req_hdrs = self.modify_req_hdrs()
         RedFetcher.__init__(self,
@@ -29,7 +29,7 @@ class SubRequest(RedFetcher):
                             req_hdrs,
                             self.base.request.payload)
         if self.preflight():
-            self.base.subreqs[name] = self
+            self.base.subreqs[self.check_name] = self
             self.on('fetch_done', self.done)
         self.on('fetch_done', self.subrequest_done)
         self.on('status', self.status)

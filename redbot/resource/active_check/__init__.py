@@ -15,7 +15,7 @@ checks = [ConnegCheck, RangeRequest, ETagValidate, LmValidate]
 
 def start(resource):
     "Start the active checks."
-    check_instances = [ac(resource, ac.check_name) for ac in checks]
+    check_instances = [ac(resource) for ac in checks]
     resource.add_check(*check_instances)
     for instance in check_instances:
         instance.check()
