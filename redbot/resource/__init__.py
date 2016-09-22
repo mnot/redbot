@@ -56,13 +56,13 @@ class HttpResource(RedFetcher):
         self.gzip_support = None
         self.gzip_savings = 0
         self._outstanding_tasks = 1
-        self.response.on("content_available", self.active_checks)
+        self.response.on("content_available", self.run_active_checks)
         self.on("fetch_done", self.finish_check)
         self._link_parser = link_parse.HTMLLinkParser(self.response.base_uri,
                                                       [self.process_link])
         self.response.on("chunk", self._link_parser.feed)
 
-    def active_checks(self):
+    def run_active_checks(self):
         """
         Response is available; perform subordinate requests (e.g., conneg check).
         """
