@@ -50,7 +50,7 @@ class RedFetcher(thor.events.EventEmitter):
         self.notes = []
         self.transfer_in = 0
         self.transfer_out = 0
-        self.request = HttpRequest(self.add_note)
+        self.request = HttpRequest(self.ignore_note)
         self.request.method = method
         self.request.set_iri(iri)
         self.request.headers = req_hdrs or []
@@ -76,6 +76,10 @@ class RedFetcher(thor.events.EventEmitter):
         "Set a note."
         kw['response'] = self.response_phrase
         self.notes.append(note(subject, kw))
+
+    def ignore_note(self, subject, note, **kw):
+        "Ignore a note (for requests)."
+        return
 
     def preflight(self):
         """
