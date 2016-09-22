@@ -30,12 +30,11 @@ class RangeRequest(SubRequest):
             self.range_end = self.range_start + sample_len
             self.range_target = self.base.response.payload_sample[sample_num][1][:sample_len + 1]
             # TODO: uses the compressed version (if available). Revisit.
-            req_hdrs += [(u'Range', u"bytes=%s-%s" % (self.range_start, self.range_end))]
+            req_hdrs.append((u'Range', u"bytes=%s-%s" % (self.range_start, self.range_end)))
         return req_hdrs
 
     def preflight(self):
-        if 'bytes' in \
-          self.base.response.parsed_headers.get('accept-ranges', []):
+        if 'bytes' in self.base.response.parsed_headers.get('accept-ranges', []):
             if len(self.base.response.payload_sample) == 0:
                 return False
             if self.range_start == self.range_end:
