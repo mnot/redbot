@@ -24,7 +24,7 @@ class LmValidate(SubRequest):
             try:
                 l_m = datetime.utcfromtimestamp(self.base.response.parsed_headers['last-modified'])
             except ValueError:
-                return base_headers # TODO: sensible error message.
+                return base_headers # this shouldn't really happen
             date_str = u"%s, %.2d %s %.4d %.2d:%.2d:%.2d GMT" % (
                 self._weekdays[l_m.weekday()],
                 l_m.day,

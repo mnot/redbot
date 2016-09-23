@@ -32,7 +32,7 @@ requests to the server."""
         return set_cookie
 
 
-# TODO: properly escape note
+# TODO: properly escape notes
 def loose_parse(set_cookie_string, uri_path, current_time, add_note):
     """
     Parse a Set-Cookie string, as per RFC6265, Section 5.2.
@@ -156,7 +156,6 @@ def loose_date_parse(cookie_date):
                 found_day_of_month = True
                 day_of_month_value = int(re_match.group(1))
                 continue
-        # TODO: shorter than three chars
         if not found_month and date_token[:3].lower() in MONTHS.keys():
             found_month = True
             month_value = MONTHS[date_token[:3].lower()]

@@ -16,8 +16,6 @@ max_clock_skew = 5  # seconds
 def checkCaching(response, request=None):
     "Examine HTTP caching characteristics."
 
-    # TODO: check URI for query string, message about HTTP/1.0 if so
-
     # get header values
     lm = response.parsed_headers.get('last-modified', None)
     date = response.parsed_headers.get('date', None)
