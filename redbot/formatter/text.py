@@ -17,7 +17,6 @@ from redbot.speak import levels, categories
 
 nl = u"\n"
 
-# TODO: errors and status on stderr with CLI?
 
 class BaseTextFormatter(Formatter):
     """
