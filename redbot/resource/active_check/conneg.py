@@ -76,9 +76,12 @@ class ConnegCheck(SubRequest):
                     self.add_base_note('header-etag', VARY_ETAG_DOESNT_CHANGE)
 
             # check compression efficiency
-            if negotiated.payload_len > 0:
+            if negotiated.payload_len > 0 and bare.payload_len > 0:
                 savings = int(100 * (
                     (float(bare.payload_len) - negotiated.payload_len) / bare.payload_len))
+            elif negotiated.payload_len > 0 and bare.payload_len == 0:
+                # weird. # TODO: figure out if we need to say something else.
+                return 
             else:
                 savings = 0
             self.base.gzip_support = True
