@@ -18,7 +18,7 @@ import thor
 from redbot.formatter import f_num
 from redbot.message import link_parse
 from redbot.resource.fetch import RedFetcher, UA_STRING
-from redbot.resource import active_check
+from redbot.resource.active_check import active_checks
 
 
 
@@ -27,67 +27,79 @@ class HttpResource(RedFetcher):
     Given a URI (optionally with method, request headers and body), examine the URI for issues and
     notable conditions, making any necessary additional requests.
 
-    Note that this primary request negotiates for gzip content-encoding; see ConnegCheck.
-
     After processing the response-specific attributes of RedFetcher will be populated, as well as
     its notes; see that class for details.
-    
+
     if descend is true, the response will be parsed for links and HttpResources started for each
     link, enumerated in .linked.
-  
-    Emits "done" when everything has finished.
+
+    Emits "check_done" when everything has finished.
     """
     check_name = u"default"
     response_phrase = u"This response"
-    
-    def __init__(self, uri, method="GET", req_hdrs=None, req_body=None, descend=False):
-        orig_req_hdrs = req_hdrs or []
-        new_req_hdrs = orig_req_hdrs + [(u'Accept-Encoding', u'gzip')]
-        RedFetcher.__init__(self, uri, method, new_req_hdrs, req_body)
+
+    def __init__(self, descend=False):
+        RedFetcher.__init__(self)
         self.descend = descend
-        self.subreqs = {}  # subordinate requests
-        self.links = {}    # {type: set(link...)}
-        self.link_count = 0
-        self.linked = []   # list of linked HttpResources (if descend=True)
-        self.orig_req_hdrs = orig_req_hdrs
+        self.check_done = False
         self.partial_support = None
         self.inm_support = None
         self.ims_support = None
         self.gzip_support = None
         self.gzip_savings = 0
-        self._outstanding_tasks = 1
-        self.response.on("content_available", self.run_active_checks)
-        self.on("fetch_done", self.finish_check)
-        self._link_parser = link_parse.HTMLLinkParser(self.response.base_uri,
-                                                      [self.process_link])
+        self._task_map = set([None]) # None is the original request
+        self.subreqs = {ac.check_name:ac(self) for ac in active_checks}  # subordinate requests
+        self.response.once("content_available", self.run_active_checks)
+        def finish_check():
+            self.finish_check(None)
+        self.on("fetch_done", finish_check)
+        self.links = {}    # {type: set(link...)}
+        self.link_count = 0
+        self.linked = []   # list of linked HttpResources (if descend=True)
+        self._link_parser = link_parse.HTMLLinkParser(self.response, [self.process_link])
         self.response.on("chunk", self._link_parser.feed)
+#        self.show_task_map() # for debugging
 
     def run_active_checks(self):
         """
         Response is available; perform subordinate requests (e.g., conneg check).
         """
         if self.response.complete:
-            active_check.start(self)
+            for active_check in self.subreqs.values():
+                self.add_check(active_check)
+                active_check.check()
 
     def add_check(self, *resources):
-        "Do a subordinate check on one or more HttpResource instance."
+        "Remember a subordinate check on one or more HttpResource instance."
         for resource in resources:
-            self._outstanding_tasks += 1
-            self._st.append(u'add_check(%s)' % unicode(resource))
+            self._task_map.add(resource)
             @thor.events.on(resource)
-            def done():
-                self.finish_check()
+            def status(message):
+                self.emit('status', message)
+            @thor.events.on(resource)
+            def check_done():
+                self.finish_check(resource)
 
-    def finish_check(self):
-        "A subordinate check is done. Was that the last one?"
-        self._outstanding_tasks -= 1
-        self._st.append(u'finish_check')
-        self.emit("status", u"%s done, %i left" % (
-            self.check_name or u'?', self._outstanding_tasks))
-        assert self._outstanding_tasks >= 0, self._st
-        if self._outstanding_tasks == 0:
-            # Wait just a bit to see if there's extra data. Yes, this is a race.
-            thor.schedule(0.1, self.emit, 'done')
+    def finish_check(self, resource):
+        "A check is done. Was that the last one?"
+        try:
+            self._task_map.remove(resource)
+        except KeyError:
+            raise KeyError, "* Can't find %s in task map" % resource
+        tasks_left = len(self._task_map)
+#        self.emit("status", u"Checks remaining: %i" % tasks_left)
+        if tasks_left == 0:
+            self.check_done = True
+            self.emit('check_done')
+
+    def show_task_map(self):
+        """
+        Show the task map for debugging.
+        """
+        import sys
+        sys.stderr.write("* %s - %s\n" % (self, self._task_map))
+        if self._task_map:
+            thor.schedule(5, self.show_task_map)
 
     def process_link(self, base, link, tag, title):
         "Handle a link from content."
@@ -95,10 +107,8 @@ class HttpResource(RedFetcher):
         if not self.links.has_key(tag):
             self.links[tag] = set()
         if self.descend and tag not in ['a'] and link not in self.links[tag]:
-            linked = HttpResource(
-                urljoin(base, link),
-                req_hdrs=self.orig_req_hdrs,
-            )
+            linked = HttpResource()
+            linked.set_request(urljoin(base, link), req_hdrs=self.request.headers)
             self.linked.append((linked, tag))
             self.add_check(linked)
             linked.check()
@@ -109,13 +119,14 @@ class HttpResource(RedFetcher):
 
 if __name__ == "__main__":
     import sys
-    RED = HttpResource(sys.argv[1])
+    RED = HttpResource()
+    RED.set_request(sys.argv[1])
     @thor.events.on(RED)
     def status(msg):
         print msg
     @thor.events.on(RED)
-    def done():
-        print 'done'
+    def check_done():
+        print 'check_done'
         thor.stop()
     RED.check()
     thor.run()

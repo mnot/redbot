@@ -11,11 +11,4 @@ from redbot.resource.active_check.range import RangeRequest
 from redbot.resource.active_check.etag_validate import ETagValidate
 from redbot.resource.active_check.lm_validate import LmValidate
 
-checks = [ConnegCheck, RangeRequest, ETagValidate, LmValidate]
-
-def start(resource):
-    "Start the active checks."
-    check_instances = [ac(resource) for ac in checks]
-    resource.add_check(*check_instances)
-    for instance in check_instances:
-        instance.check()
+active_checks = [ConnegCheck, RangeRequest, ETagValidate, LmValidate]

@@ -12,6 +12,9 @@ import time
 from types import TypeType
 import unittest
 
+import thor
+from thor.events import EventEmitter
+
 _formatters = ['html', 'text', 'har']
 
 def find_formatter(name, default="html", multiple=False):
@@ -30,7 +33,7 @@ def find_formatter(name, default="html", multiple=False):
         module = sys.modules[module_name]
     except (ImportError, KeyError, TypeError):
         return find_formatter(default)
-    formatter_candidates = [v for k,v in module.__dict__.items() \
+    formatter_candidates = [v for k, v in module.__dict__.items() \
       if isinstance(v, TypeType) and issubclass(v, Formatter) and getattr(v, 'name') == name]
     # find single-preferred formatters first
     if not multiple:
@@ -52,11 +55,9 @@ def available_formatters():
     return _formatters
 
 
-class Formatter(object):
+class Formatter(EventEmitter):
     """
-    A formatter for RED objects. start_output() is called first,
-    followed by zero or more calls to feed() and status(), finishing
-    with finish_output().
+    A formatter for HttpResources.
 
     Is available to UIs based upon the 'name' attribute.
     """
@@ -64,41 +65,53 @@ class Formatter(object):
     name = None # name of the format.
     can_multiple = False # formatter can represent multiple responses.
 
-    def __init__(self, ui_uri, uri, req_hdrs, check_type, lang, output, **kw):
+    def __init__(self, ui_uri, lang, output, **kw):
         """
         Formatter for the given URI, writing
         to the callable output(uni_str). Output is Unicode; callee
         is responsible for encoding correctly.
         """
-        self.ui_uri = ui_uri         # the URI of the HTML UI itself
-        self.uri = uri               # the URI under test
-        self.req_hdrs = req_hdrs     # list of (name, value) request headers
-        self.check_type = check_type # 'Identity', 'If-None-Match', 'If-Modified-Since', 'Range'
+        EventEmitter.__init__(self)
+        self.ui_uri = ui_uri         # the URI of the UI itself
         self.lang = lang
         self.output = output         # output file object
         self.kw = kw                 # extra keyword arguments
-        self.state = None
+        self.resource = None
 
-    def set_state(self, state):
+    def bind_resource(self, display_resource):
         """
-        Set the HttpResource to be formatted.
+        Bind a resource to the formatter, listening for nominated events
+        and calling the corresponding methods.
         """
-        self.state = state
+        self.resource = display_resource
+        if display_resource.check_done:
+            self.start_output()
+            self._done()
+        else:
+            if display_resource.request.complete:
+                self.start_output()
+            else:
+                display_resource.request.on('headers_available', self.start_output)
+            display_resource.response.on('chunk', self.feed)
+            display_resource.on('status', self.status)
+            # we want to wait just a little bit, for extra data.
+            @thor.events.on(display_resource)
+            def check_done():
+                thor.schedule(0.1, self._done)
 
-    def done(self):
-        """Clean up. Must be called by finish_output."""
-        self.state = None
-        self.output = None
-
-    def feed(self, state, sample):
-        """
-        Feed a body sample to processor(s).
-        """
-        raise NotImplementedError
+    def _done(self):
+        self.finish_output()
+        self.emit('formatter_done')
 
     def start_output(self):
         """
         Send preliminary output.
+        """
+        raise NotImplementedError
+
+    def feed(self, sample):
+        """
+        Feed a body sample to processor(s).
         """
         raise NotImplementedError
 

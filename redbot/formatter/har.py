@@ -50,56 +50,55 @@ class HarFormatter(Formatter):
     def status(self, msg):
         pass
 
-    def feed(self, state, sample):
+    def feed(self, sample):
         pass
 
     def finish_output(self):
         "Fill in the template with RED's results."
-        if self.state.response.complete:
-            page_id = self.add_page(self.state)
-            self.add_entry(self.state, page_id)
-            for linked_state in [d[0] for d in self.state.linked]:
+        if self.resource.response.complete:
+            page_id = self.add_page(self.resource)
+            self.add_entry(self.resource, page_id)
+            for linked_resource in [d[0] for d in self.resource.linked]:
                 # filter out incomplete responses
-                if linked_state.response.complete:
-                    self.add_entry(linked_state, page_id)
+                if linked_resource.response.complete:
+                    self.add_entry(linked_resource, page_id)
         self.output(json.dumps(self.har, indent=4))
-        self.done()
 
-    def add_entry(self, state, page_ref=None):
+    def add_entry(self, resource, page_ref=None):
         entry = {
-            "startedDateTime": isoformat(state.request.start_time),
-            "time": int((state.response.complete_time - state.request.start_time) * 1000),
-            "_red_messages": self.format_notes(state)
+            "startedDateTime": isoformat(resource.request.start_time),
+            "time": int((resource.response.complete_time - resource.request.start_time) * 1000),
+            "_red_messages": self.format_notes(resource)
         }
         if page_ref:
             entry['pageref'] = "page%s" % page_ref
 
         request = {
-            'method': state.request.method,
-            'url': state.request.uri,
+            'method': resource.request.method,
+            'url': resource.request.uri,
             'httpVersion': "HTTP/1.1",
             'cookies': [],
-            'headers': self.format_headers(state.request.headers),
+            'headers': self.format_headers(resource.request.headers),
             'queryString': [],
             'headersSize': -1,
             'bodySize': -1,
         }
 
         response = {
-            'status': state.response.status_code,
-            'statusText': state.response.status_phrase,
-            'httpVersion': "HTTP/%s" % state.response.version,
+            'status': resource.response.status_code,
+            'statusText': resource.response.status_phrase,
+            'httpVersion': "HTTP/%s" % resource.response.version,
             'cookies': [],
-            'headers': self.format_headers(state.response.headers),
+            'headers': self.format_headers(resource.response.headers),
             'content': {
-                'size': state.response.decoded_len,
-                'compression': state.response.decoded_len - state.response.payload_len,
-                'mimeType': (get_header(state.response.headers, 'content-type') or [""])[0],
+                'size': resource.response.decoded_len,
+                'compression': resource.response.decoded_len - resource.response.payload_len,
+                'mimeType': (get_header(resource.response.headers, 'content-type') or [""])[0],
             },
             'redirectURL': (
-                get_header(state.response.headers, 'location') or [""])[0],
-            'headersSize': state.response.header_length,
-            'bodySize': state.response.payload_len,
+                get_header(resource.response.headers, 'location') or [""])[0],
+            'headersSize': resource.response.header_length,
+            'bodySize': resource.response.payload_len,
         }
 
         cache = {}
@@ -108,8 +107,8 @@ class HarFormatter(Formatter):
             'connect': -1,
             'blocked': 0,
             'send': 0,
-            'wait': int((state.response.start_time - state.request.start_time) * 1000),
-            'receive': int((state.response.complete_time - state.response.start_time) * 1000),
+            'wait': int((resource.response.start_time - resource.request.start_time) * 1000),
+            'receive': int((resource.response.complete_time - resource.response.start_time) * 1000),
         }
 
         entry.update({
@@ -121,10 +120,10 @@ class HarFormatter(Formatter):
         self.har['log']['entries'].append(entry)
 
 
-    def add_page(self, state):
+    def add_page(self, resource):
         page_id = self.last_id + 1
         page = {
-            "startedDateTime": isoformat(state.request.start_time),
+            "startedDateTime": isoformat(resource.request.start_time),
             "id": "page%s" % page_id,
             "title": "",
             "pageTimings": {
@@ -138,9 +137,9 @@ class HarFormatter(Formatter):
     def format_headers(self, hdrs):
         return [{'name': n, 'value': v} for n, v in hdrs]
 
-    def format_notes(self, state):
+    def format_notes(self, resource):
         out = []
-        for m in state.notes:
+        for m in resource.notes:
             msg = {
                 "subject": m.subject,
                 "category": m.category,

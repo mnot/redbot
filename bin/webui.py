@@ -11,8 +11,7 @@ import os
 import sys
 from urlparse import urlsplit
 
-assert sys.version_info[0] == 2 and sys.version_info[1] >= 6, \
-    "Please use Python 2.6 or greater"
+assert sys.version_info[0] == 2 and sys.version_info[1] >= 6, "Please use Python 2.6 or greater"
 
 import thor
 from redbot import __version__
@@ -20,6 +19,8 @@ from redbot.resource.robot_fetch import RobotFetcher
 from redbot.formatter import html
 from redbot.webui import RedWebUi, except_handler_factory
 
+from thor.loop import _loop
+_loop.precision = .1 # FIXME
 
 ### Configuration ##########################################################
 
@@ -136,7 +137,7 @@ def mod_python_handler(r):
         for hdr in hdrs:
             r.headers_out[hdr[0]] = hdr[1]
     def response_done(trailers):
-        thor.schedule(thor.stop)
+        thor.schedule(0, thor.stop)
     query_string = cgi.parse_qs(r.args or "")
     try:
         RedWebUi(Config, r.unparsed_uri, r.method, query_string,
@@ -150,7 +151,7 @@ def mod_python_handler(r):
 def cgi_main():
     """Run RED as a CGI Script."""
     sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
-    base_uri = "%s://%s%s%s" % (
+    ui_uri = "%s://%s%s%s" % (
         os.environ.has_key('HTTPS') and "https" or "http",
         os.environ.get('HTTP_HOST'),
         os.environ.get('SCRIPT_NAME'),
@@ -178,7 +179,7 @@ def cgi_main():
     def response_done(trailers):
         thor.schedule(0, thor.stop)
     try:
-        RedWebUi(Config, base_uri, method, query_string,
+        RedWebUi(Config, ui_uri, method, query_string,
                  response_start, response_body, response_done)
         thor.run()
     except:

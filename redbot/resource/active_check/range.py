@@ -21,19 +21,21 @@ class RangeRequest(SubRequest):
         self.range_target = None
         SubRequest.__init__(self, resource)
 
-    def modify_req_hdrs(self):
-        req_hdrs = list(self.base.request.headers)
+    def modify_request_headers(self, base_headers):
         if len(self.base.response.payload_sample) != 0:
             sample_num = random.randint(0, len(self.base.response.payload_sample) - 1)
             sample_len = min(96, len(self.base.response.payload_sample[sample_num][1]))
             self.range_start = self.base.response.payload_sample[sample_num][0]
             self.range_end = self.range_start + sample_len
             self.range_target = self.base.response.payload_sample[sample_num][1][:sample_len + 1]
-            # TODO: uses the compressed version (if available). Revisit.
-            req_hdrs.append((u'Range', u"bytes=%s-%s" % (self.range_start, self.range_end)))
-        return req_hdrs
+            base_headers.append((u'Range', u"bytes=%s-%s" % (self.range_start, self.range_end)))
+        return base_headers
 
     def preflight(self):
+        if self.base.response.status_code[0] == '3':
+            return False
+        if self.base.response.status_code == '206':
+            return False
         if 'bytes' in self.base.response.parsed_headers.get('accept-ranges', []):
             if len(self.base.response.payload_sample) == 0:
                 return False
@@ -57,10 +59,10 @@ class RangeRequest(SubRequest):
                 self.add_base_note('header-accept-ranges header-content-encoding',
                                    RANGE_NEG_MISMATCH)
                 return
-            if not [True for h in self.base.orig_req_hdrs if h[0].lower() == 'if-range']:
+            if not [True for h in self.base.request.headers if h[0].lower() == 'if-range']:
                 self.check_missing_hdrs([
                     'date', 'cache-control', 'content-location', 'etag',
-                    'expires', 'vary'], MISSING_HDRS_206, 'Range')
+                    'expires', 'vary'], MISSING_HDRS_206)
             if self.response.parsed_headers.get('etag', 1) == \
               self.base.response.parsed_headers.get('etag', 2):
                 if self.response.payload == self.range_target:

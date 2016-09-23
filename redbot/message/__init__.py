@@ -120,7 +120,7 @@ class HttpMessage(thor.events.EventEmitter):
                     self.decoded_sample_complete = False
                 else:
                     self.decoded_sample_complete = False
-                self.emit("chunk", self, decoded_chunk)
+                self.emit("chunk", decoded_chunk)
             else:
                 self.decoded_sample_complete = False
 

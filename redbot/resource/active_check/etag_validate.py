@@ -14,8 +14,7 @@ class ETagValidate(SubRequest):
     check_name = u"ETag Validation"
     response_phrase = u"The 304 response"
 
-    def modify_req_hdrs(self):
-        req_hdrs = list(self.base.request.headers)
+    def modify_request_headers(self, base_headers):
         etag_value = self.base.response.parsed_headers.get("etag", None)
         if etag_value:
             weak, etag = etag_value
@@ -25,10 +24,12 @@ class ETagValidate(SubRequest):
             else:
                 weak_str = u""
             etag_str = u'%s"%s"' % (weak_str, etag)
-            req_hdrs += [(u'If-None-Match', etag_str),]
-        return req_hdrs
+            base_headers.append((u'If-None-Match', etag_str))
+        return base_headers
 
     def preflight(self):
+        if self.base.response.status_code[0] == '3':
+            return False
         etag = self.base.response.parsed_headers.get("etag", None)
         if etag:
             return True
@@ -45,8 +46,7 @@ class ETagValidate(SubRequest):
             self.base.inm_support = True
             self.add_base_note('header-etag', INM_304)
             self.check_missing_hdrs([
-                'cache-control', 'content-location', 'etag', 'expires', 'vary'
-                ], MISSING_HDRS_304, 'If-None-Match')
+                'cache-control', 'content-location', 'etag', 'expires', 'vary'], MISSING_HDRS_304)
         elif self.response.status_code == self.base.response.status_code:
             if self.response.payload_md5 == self.base.response.payload_md5:
                 self.base.inm_support = False

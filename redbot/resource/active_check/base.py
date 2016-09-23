@@ -19,43 +19,38 @@ class SubRequest(RedFetcher):
     """
     check_name = u"undefined"
     response_phrase = u"undefined"
-    
+
     def __init__(self, base_resource):
         self.base = base_resource
-        req_hdrs = self.modify_req_hdrs()
-        RedFetcher.__init__(self,
-                            self.base.request.uri,
-                            self.base.request.method,
-                            req_hdrs,
-                            self.base.request.payload)
-        if self.preflight():
-            self.base.subreqs[self.check_name] = self
-            self.on('fetch_done', self.done)
-        self.on('fetch_done', self.subrequest_done)
-        self.on('status', self.status)
-
-    def status(self, msg):
-        self.base.emit('status', msg)
+        RedFetcher.__init__(self)
+        self.check_done = False
+        self.on('fetch_done', self._check_done)
 
     def done(self):
+        """The subrequest is done, process it. Must be overridden."""
         raise NotImplementedError
 
-    def subrequest_done(self):
-        self.emit("done")
+    def _check_done(self):
+        if self.preflight():
+            self.done()
+        self.check_done = True
+        self.emit("check_done")
 
-    def modify_req_hdrs(self):
-        """
-        Usually overidden; modifies the request's headers.
+    def check(self):
+        modified_headers = self.modify_request_headers(list(self.base.request.headers))
+        RedFetcher.set_request(self, self.base.request.uri, self.base.request.method,
+                               modified_headers, self.base.request.payload)
+        RedFetcher.check(self)
 
-        Make sure it returns a copy of the orignals, not them.
-        """
-        return list(self.base.orig_req_hdrs)
+    def modify_request_headers(self, base_request_headers):
+        """Usually overidden; modifies the request headers."""
+        return base_request_headers
 
     def add_base_note(self, subject, note, **kw):
         "Add a Note to the base resource."
         self.base.add_note(subject, note, **kw)
 
-    def check_missing_hdrs(self, hdrs, note, subreq_type):
+    def check_missing_hdrs(self, hdrs, note):
         """
         See if the listed headers are missing in the subrequest; if so,
         set the specified note.
@@ -66,9 +61,7 @@ class SubRequest(RedFetcher):
             and not self.response.parsed_headers.has_key(hdr):
                 missing_hdrs.append(hdr)
         if missing_hdrs:
-            self.add_note('headers', note,
-                          missing_hdrs=", ".join(missing_hdrs),
-                          subreq_type=subreq_type)
+            self.add_note('headers', note, missing_hdrs=", ".join(missing_hdrs))
 
 
 class MISSING_HDRS_304(Note):

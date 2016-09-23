@@ -46,15 +46,21 @@ class BaseHtmlFormatter(Formatter):
         self.hidden_text = []
         self.start = thor.time()
 
-    def feed(self, state, chunk):
+    def feed(self, chunk):
         pass
 
     def start_output(self):
+        if self.resource:
+            uri = self.resource.request.uri
+            req_headers = self.resource.request.headers
+        else:
+            uri = u""
+            req_headers = []
         extra_title = u" <span class='save'>"
         if self.kw.get('is_saved', None):
             extra_title += u" saved "
-        if self.check_type:
-            extra_title += "%s response" % e_html(self.check_type)
+        if self.resource and self.resource.check_name != "default":
+            extra_title += "%s response" % e_html(self.resource.check_name)
         extra_title += u"</span>"
         if self.kw.get('is_blank', None):
             extra_body_class = u"blank"
@@ -67,15 +73,15 @@ class BaseHtmlFormatter(Formatter):
         self.output(html_header.__doc__ % {
             u'static': static_root,
             u'version': __version__,
-            u'html_uri': e_html(self.uri),
-            u'js_uri': e_js(self.uri),
+            u'html_uri': e_html(uri),
+            u'js_uri': e_js(uri),
+            u'js_req_hdrs': u", ".join([u'["%s", "%s"]' % (
+                e_js(n), e_js(v)) for n, v in req_headers]),
             u'config': json.dumps({
-                u'redbot_uri': self.uri,
-                u'redbot_req_hdrs': self.req_hdrs,
+                u'redbot_uri': uri,
+                u'redbot_req_hdrs': req_headers,
                 u'redbot_version': __version__
             }, ensure_ascii=False).replace(u'<', u'\\u003c').decode('utf-8'),
-            u'js_req_hdrs': u", ".join([u'["%s", "%s"]' % (
-                e_js(n), e_js(v)) for n, v in self.req_hdrs]),
             u'extra_js': self.format_extra(u'.js'),
             u'test_id': self.kw.get('test_id', u""),
             u'extra_title': extra_title,
@@ -85,13 +91,17 @@ class BaseHtmlFormatter(Formatter):
 
     def finish_output(self):
         """
-        Default to no input.
+        The bottom bits.
         """
         self.output(self.format_extra())
         self.output(self.format_footer())
         self.output(u"</body></html>\n")
-        self.done()
 
+    def error_output(self, message):
+        """
+        Something bad happend.
+        """
+        self.output(u"<p class='error'>%s</p>" % message)
 
     def status(self, message):
         "Update the status bar of the browser"
@@ -156,14 +166,14 @@ title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
 
 """ % {'baseuri': e_html(self.ui_uri), 'version': __version__}
 
-    def req_qs(self, link=None, check_type=None, res_format=None, use_stored=True, referer=True):
+    def req_qs(self, link=None, check_name=None, res_format=None, use_stored=True, referer=True):
         """
         Format a query string to refer to another RED resource.
 
         "link" is the resource to test; it is evaluated relative to the current context
         If blank, it is the same resource.
 
-        "check_type" is the request type to show; see active_check/__init__.py. If not specified,
+        "check_name" is the request type to show; see active_check/__init__.py. If not specified,
         that of the current context will be used.
 
         "res_format" is the response format; see formatter/*.py. If not specified, HTML will be
@@ -176,21 +186,22 @@ title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
         Request headers are copied over from the current context.
         """
         out = []
+        uri = self.resource.request.uri
         if use_stored and self.kw.get('test_id', None):
             out.append(u"id=%s" % e_query_arg(self.kw['test_id']))
         else:
-            out.append(u"uri=%s" % e_query_arg(urljoin(self.uri, link or "")))
-        if self.req_hdrs:
-            for k, v in self.req_hdrs:
+            out.append(u"uri=%s" % e_query_arg(urljoin(uri, link or "")))
+        if self.resource.request.headers:
+            for k, v in self.resource.request.headers:
                 if referer and k.lower() == 'referer':
                     continue
                 out.append(u"req_hdr=%s%%3A%s" % (e_query_arg(k), e_query_arg(v)))
         if referer:
-            out.append(u"req_hdr=Referer%%3A%s" % e_query_arg(self.uri))
-        if check_type:
-            out.append(u"request=%s" % e_query_arg(check_type))
-        elif self.check_type != None:
-            out.append(u"request=%s" % e_query_arg(self.check_type))
+            out.append(u"req_hdr=Referer%%3A%s" % e_query_arg(uri))
+        if check_name:
+            out.append(u"check_name=%s" % e_query_arg(check_name))
+        elif self.resource.check_name != None:
+            out.append(u"check_name=%s" % e_query_arg(self.resource.check_name))
         if res_format:
             out.append(u"format=%s" % e_query_arg(res_format))
         return "&".join(out)
@@ -274,13 +285,6 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     </body></html>
     """
 
-    error_template = u"""\
-
-    <p class="error">
-     %s
-    </p>
-    """
-
     name = "html"
 
     def __init__(self, *args, **kw):
@@ -288,43 +292,42 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 
     def finish_output(self):
         self.final_status()
-        if self.state.response.complete:
+        if self.resource.response.complete:
             self.header_presenter = HeaderPresenter(self)
             self.output(self.template % {
-                'response': self.format_response(self.state),
-                'options': self.format_options(self.state),
-                'notes': nl.join([self.format_category(cat, self.state) \
+                'response': self.format_response(self.resource),
+                'options': self.format_options(self.resource),
+                'notes': nl.join([self.format_category(cat, self.resource) \
                     for cat in self.note_categories]),
-                'body': self.format_body_sample(self.state),
+                'body': self.format_body_sample(self.resource),
                 'footer': self.format_footer(),
                 'hidden_list': self.format_hidden_list()})
         else:
-            if self.state.response.http_error == None:
+            if self.resource.response.http_error == None:
                 pass # usually a global timeout...
-            elif isinstance(self.state.response.http_error, httperr.HttpError):
-                if self.state.response.http_error.detail:
-                    self.output(self.error_template % u"%s (%s)" % (
-                        self.state.response.http_error.desc,
-                        self.state.response.http_error.detail))
+            elif isinstance(self.resource.response.http_error, httperr.HttpError):
+                if self.resource.response.http_error.detail:
+                    self.error_output(u"%s (%s)" % (
+                        self.resource.response.http_error.desc,
+                        self.resource.response.http_error.detail))
                 else:
-                    self.output(self.error_template % (self.state.response.http_error.desc))
+                    self.error_output(self.resource.response.http_error.desc)
             else:
                 raise AssertionError, \
-                  "Unknown incomplete response error %s" % (self.state.response.http_error)
-        self.done()
+                  "Unknown incomplete response error %s" % (self.resource.response.http_error)
 
-    def format_response(self, state):
+    def format_response(self, resource):
         "Return the HTTP response line and headers as HTML"
         offset = 0
         headers = []
-        for (name, value) in state.response.headers:
+        for (name, value) in resource.response.headers:
             offset += 1
             headers.append(self.format_header(name, value, offset))
 
         return u"    <span class='status'>HTTP/%s %s %s</span>\n" % (
-            e_html(state.response.version),
-            e_html(state.response.status_code),
-            e_html(state.response.status_phrase)) + nl.join(headers)
+            e_html(resource.response.version),
+            e_html(resource.response.status_code),
+            e_html(resource.response.status_phrase)) + nl.join(headers)
 
     def format_header(self, name, value, offset):
         "Return an individual HTML header as HTML"
@@ -340,22 +343,24 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         e_html(name),
         self.header_presenter.Show(name, value))
 
-    def format_body_sample(self, state):
+    def format_body_sample(self, resource):
         """show the stored body sample"""
+        if resource.response.status_code == "206":
+            sample = resource.response.payload
+        else:
+            sample = resource.response.decoded_sample
         try:
-            uni_sample = unicode(state.response.decoded_sample,
-                                 state.response.character_encoding,
-                                 'ignore')
+            uni_sample = sample.decode(resource.response.character_encoding, "ignore")
         except LookupError:
-            uni_sample = unicode(state.response.decoded_sample, 'utf-8', 'ignore')
+            uni_sample = sample.decode('utf-8', 'ignore')
         safe_sample = e_html(uni_sample)
         message = ""
-        if hasattr(state, "links"):
-            for tag, link_set in state.links.items():
+        if hasattr(resource, "links"):
+            for tag, link_set in resource.links.items():
                 for link in link_set:
                     def link_to(matchobj):
                         try:
-                            qlink = urljoin(state.response.base_uri, link)
+                            qlink = urljoin(resource.response.base_uri, link)
                         except ValueError, why:
                             pass # TODO: pass link problem upstream?
                                  # e.g., ValueError("Invalid IPv6 URL")
@@ -365,27 +370,26 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                             e_html(link),
                             matchobj.group(1))
                     safe_sample = re.sub(r"('|&quot;)%s\1" % re.escape(link), link_to, safe_sample)
-        if not state.response.decoded_sample_complete:
+        if not resource.response.decoded_sample_complete:
             message = "<p class='btw'>RED isn't showing the whole body, because it's so big!</p>"
         return """<pre class="prettyprint">%s</pre>\n%s""" % (safe_sample, message)
 
-    def format_category(self, category, state):
+    def format_category(self, category, resource):
         """
         For a given category, return all of the non-detail
         notes in it as an HTML list.
         """
-        notes = [note for note in state.notes if note.category == category]
+        notes = [note for note in resource.notes if note.category == category]
         if not notes:
             return nl
         out = []
+        # banner, possibly with links to subreqs
         out.append(u"<h3>%s\n" % category)
-        if category in self.note_responses.keys():
-            for check_type in self.note_responses[category]:
-                if not state.subreqs.has_key(check_type):
-                    continue
+        if isinstance(resource, HttpResource) and category in self.note_responses.keys():
+            for check_name in self.note_responses[category]:
                 out.append(u'<span class="req_link"> (<a href="?%s">%s response</a>' % \
-                  (self.req_qs(check_type=check_type), check_type))
-                smsgs = [note for note in getattr(state.subreqs[check_type], "notes", []) if \
+                  (self.req_qs(check_name=check_name), check_name))
+                smsgs = [note for note in getattr(resource.subreqs[check_name], "notes", []) if \
                   note.level in [levels.BAD]]
                 if len(smsgs) == 1:
                     out.append(" - %i warning\n" % len(smsgs))
@@ -407,17 +411,17 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         out.append(u"</ul>\n")
         return nl.join(out)
 
-    def format_options(self, state):
+    def format_options(self, resource):
         "Return things that the user can do with the URI as HTML links"
         options = []
-        media_type = state.response.parsed_headers.get('content-type', [""])[0]
+        media_type = resource.response.parsed_headers.get('content-type', [""])[0]
         options.append(
             (u"response headers: %s bytes" % \
-             f_num(state.response.header_length),
+             f_num(resource.response.header_length),
              u"how large the response headers are, including the status line"))
-        options.append((u"body: %s bytes" % f_num(state.response.payload_len),
+        options.append((u"body: %s bytes" % f_num(resource.response.payload_len),
                         u"how large the response body is"))
-        transfer_overhead = state.response.transfer_length - state.response.payload_len
+        transfer_overhead = resource.response.transfer_length - resource.response.payload_len
         if transfer_overhead > 0:
             options.append((
                 u"transfer overhead: %s bytes" % f_num(transfer_overhead),
@@ -428,7 +432,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
    document.write("<a href='#' id='body_view' accesskey='b'>view body</a>")
 </script>""",
                         "View this response body (with any gzip compression removed)"))
-        if isinstance(state, HttpResource):
+        if isinstance(resource, HttpResource):
             options.append(
                 (u"""\
         <a href='?%s' accesskey='h'>view har</a>""" % self.req_qs(res_format='har'),
@@ -442,9 +446,9 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 options.append((
                     u"<a href='%s' accesskey='v'>validate body</a>" %
                     self.validators[media_type] %
-                    e_query_arg(state.request.uri),
+                    e_query_arg(resource.request.uri),
                     ""))
-            if hasattr(state, "link_count") and state.link_count > 0:
+            if hasattr(resource, "link_count") and resource.link_count > 0:
                 options.append((
                     u"<a href='?descend=True&%s' accesskey='a'>" \
                     u"check embedded</a>" % self.req_qs(use_stored=False),
@@ -533,12 +537,11 @@ class TableHtmlFormatter(BaseHtmlFormatter):
     def finish_output(self):
         self.final_status()
         self.output(self.template % {
-            'table': self.format_tables(self.state),
+            'table': self.format_tables(self.resource),
             'problems': self.format_problems(),
-            'options': self.format_options(self.state),
+            'options': self.format_options(self.resource),
             'footer': self.format_footer(),
             'hidden_list': self.format_hidden_list()})
-        self.done()
 
     link_order = [
         ('link', u'Head Links'),
@@ -546,71 +549,71 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         ('frame', u'Frame Links'),
         ('iframe', u'IFrame Links'),
         ('img', u'Image Links')]
-    def format_tables(self, state):
+    def format_tables(self, resource):
         out = [self.format_table_header()]
-        out.append(self.format_droid(state))
+        out.append(self.format_droid(resource))
         for hdr_tag, heading in self.link_order:
-            droids = [d[0] for d in state.linked if d[1] == hdr_tag]
+            droids = [d[0] for d in resource.linked if d[1] == hdr_tag]
             if droids:
                 droids.sort(key=operator.attrgetter('response.base_uri'))
                 out.append(self.format_table_header(heading + u" (%s)" % len(droids)))
                 out += [self.format_droid(d) for d in droids]
         return nl.join(out)
 
-    def format_droid(self, state):
+    def format_droid(self, resource):
         out = [u'<tr class="droid %s">']
         m = 50
-        ct = state.response.parsed_headers.get('content-type', [""])
+        ct = resource.response.parsed_headers.get('content-type', [""])
         if ct[0][:6] == 'image/':
             cl = u" class='preview'"
         else:
             cl = u""
-        if len(state.request.uri) > m:
+        if len(resource.request.uri) > m:
             out.append(u"""\
     <td class="uri">
         <a href="%s" title="%s"%s>%s<span class="fade1">%s</span><span class="fade2">%s</span><span class="fade3">%s</span>
         </a>
     </td>""" % (
-        u"?%s" % self.req_qs(state.request.uri, use_stored=False),
-        e_html(state.request.uri),
+        u"?%s" % self.req_qs(resource.request.uri, use_stored=False),
+        e_html(resource.request.uri),
         cl,
-        e_html(state.request.uri[:m-2]),
-        e_html(state.request.uri[m-2]),
-        e_html(state.request.uri[m-1]),
-        e_html(state.request.uri[m])))
+        e_html(resource.request.uri[:m-2]),
+        e_html(resource.request.uri[m-2]),
+        e_html(resource.request.uri[m-1]),
+        e_html(resource.request.uri[m])))
         else:
             out.append(
                 u'<td class="uri"><a href="%s" title="%s"%s>%s</a></td>' % (
-                    u"?%s" % self.req_qs(state.request.uri, use_stored=False),
-                    e_html(state.request.uri),
+                    u"?%s" % self.req_qs(resource.request.uri, use_stored=False),
+                    e_html(resource.request.uri),
                     cl,
-                    e_html(state.request.uri)))
-        if state.response.complete:
-            if state.response.status_code in ['301', '302', '303', '307', '308'] and \
-              state.response.parsed_headers.has_key('location'):
+                    e_html(resource.request.uri)))
+        if resource.response.complete:
+            if resource.response.status_code in ['301', '302', '303', '307', '308'] and \
+              resource.response.parsed_headers.has_key('location'):
                 out.append(
                     u'<td><a href="?descend=True&%s">%s</a></td>' % (
-                        self.req_qs(state.response.parsed_headers['location'], use_stored=False),
-                        state.response.status_code))
-            elif state.response.status_code in ['400', '404', '410']:
+                        self.req_qs(resource.response.parsed_headers['location'], use_stored=False),
+                        resource.response.status_code))
+            elif resource.response.status_code in ['400', '404', '410']:
                 out.append(u'<td class="bad">%s</td>' % (
-                    state.response.status_code))
+                    resource.response.status_code))
             else:
-                out.append(u'<td>%s</td>' % state.response.status_code)
+                out.append(u'<td>%s</td>' % resource.response.status_code)
     # pconn
-            out.append(self.format_size(state.response.payload_len))
-            out.append(self.format_yes_no(state.response.store_shared))
-            out.append(self.format_yes_no(state.response.store_private))
-            out.append(self.format_time(state.response.age))
-            out.append(self.format_time(state.response.freshness_lifetime))
-            out.append(self.format_yes_no(state.ims_support))
-            out.append(self.format_yes_no(state.inm_support))
-            if state.gzip_support:
-                out.append(u"<td>%s%%</td>" % state.gzip_savings)
+            out.append(self.format_size(resource.response.payload_len))
+            out.append(self.format_yes_no(resource.response.store_shared))
+            out.append(self.format_yes_no(resource.response.store_private))
+            out.append(self.format_time(resource.response.age))
+            out.append(self.format_time(resource.response.freshness_lifetime))
+            out.append(self.format_yes_no(resource.ims_support))
+            out.append(self.format_yes_no(resource.inm_support))
+            if resource.gzip_support:
+                out.append(u"<td>%s%%</td>" % resource.gzip_savings)
             else:
-                out.append(self.format_yes_no(state.gzip_support))
-            out.append(self.format_yes_no(state.partial_support))
-            problems = [m for m in state.notes if \
+                out.append(self.format_yes_no(resource.gzip_support))
+            out.append(self.format_yes_no(resource.partial_support))
+            problems = [m for m in resource.notes if \
                 m.level in [levels.WARN, levels.BAD]]
             out.append(u"<td>")
             pr_enum = []
@@ -627,10 +630,10 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                            u" %s <span class='hidden'>%s</span></span>" % (
                                p + 1, e_html(m.show_summary(self.lang))))
         else:
-            if state.response.http_error == None:
+            if resource.response.http_error == None:
                 err = u"response incomplete"
             else:
-                err = state.response.http_error.desc or u'unknown problem'
+                err = resource.response.http_error.desc or u'unknown problem'
             out.append(u'<td colspan="11">%s' % err)
         out.append(u"</td>")
         out.append(u'</tr>')
@@ -685,10 +688,10 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         else:
             raise AssertionError, 'unknown value'
 
-    def format_options(self, state):
+    def format_options(self, resource):
         "Return things that the user can do with the URI as HTML links"
         options = []
-        media_type = state.response.parsed_headers.get('content-type', [""])[0]
+        media_type = resource.response.parsed_headers.get('content-type', [""])[0]
         options.append((
             u"<a href='?descend=True&%s'>view har</a>" % self.req_qs(res_format="har"),
             u"View a HAR (HTTP ARchive) file for this response"))

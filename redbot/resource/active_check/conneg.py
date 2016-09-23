@@ -13,51 +13,52 @@ from redbot.speak import Note, categories, levels
 class ConnegCheck(SubRequest):
     """
     See if content negotiation for compression is supported, and how.
-
-    Note that this depends on the "main" request being sent with
-    Accept-Encoding: gzip
     """
     check_name = u"Content Negotiation"
-    response_phrase = u"The uncompressed response"
-    
-    def modify_req_hdrs(self):
-        return [h for h in self.base.orig_req_hdrs
-                if h[0].lower() != 'accept-encoding'] + \
-                [(u'accept-encoding', u'identity')]
+    response_phrase = u"The compressed response"
+
+    def modify_request_headers(self, base_headers):
+        return [h for h in base_headers if h[0].lower() != 'accept-encoding'] \
+            + [(u'accept-encoding', u'gzip')]
 
     def preflight(self):
-        if "gzip" in self.base.response.parsed_headers.get('content-encoding', []):
-            return True
-        else:
-            self.base.gzip_support = False
+        if 'accept-encoding' in [k.lower() for (k, v) in self.base.request.headers]:
             return False
+        if self.base.response.status_code == '206':
+            return False
+        return True
 
     def done(self):
-        if not self.response.complete:
-            self.add_base_note('', CONNEG_SUBREQ_PROBLEM, problem=self.response.http_error.desc)
+        negotiated = self.response
+        bare = self.base.response
+
+        if not negotiated.complete:
+            self.add_base_note('', CONNEG_SUBREQ_PROBLEM, problem=negotiated.http_error.desc)
             return
 
         # see if it was compressed when not negotiated
-        no_conneg_vary_headers = self.response.parsed_headers.get('vary', [])
-        if 'gzip' in self.response.parsed_headers.get('content-encoding', []) \
-          or 'x-gzip' in self.response.parsed_headers.get('content-encoding', []):
+        no_conneg_vary_headers = bare.parsed_headers.get('vary', [])
+        if 'gzip' in bare.parsed_headers.get('content-encoding', []) \
+          or 'x-gzip' in bare.parsed_headers.get('content-encoding', []):
             self.add_base_note('header-vary header-content-encoding', CONNEG_GZIP_WITHOUT_ASKING)
+        if 'gzip' not in negotiated.parsed_headers.get('content-encoding', []) \
+          and 'x-gzip' not in negotiated.parsed_headers.get('content-encoding', []):
+            self.base.gzip_support = False
         else: # Apparently, content negotiation is happening.
             # check status
-            if self.base.response.status_code != self.response.status_code:
+            if bare.status_code != negotiated.status_code:
                 self.add_base_note('status', VARY_STATUS_MISMATCH,
-                                   neg_status=self.base.response.status_code,
-                                   noneg_status=self.response.status_code)
+                                   neg_status=negotiated.status_code,
+                                   noneg_status=bare.status_code)
                 return  # Can't be sure what's going on...
 
             # check headers that should be invariant
             for hdr in ['content-type']:
-                if self.base.response.parsed_headers.get(hdr) != \
-                    self.response.parsed_headers.get(hdr, None):
+                if bare.parsed_headers.get(hdr) != negotiated.parsed_headers.get(hdr, None):
                     self.add_base_note('header-%s' % hdr, VARY_HEADER_MISMATCH, header=hdr)
 
             # check Vary headers
-            vary_headers = self.base.response.parsed_headers.get('vary', [])
+            vary_headers = negotiated.parsed_headers.get('vary', [])
             if (not "accept-encoding" in vary_headers) and (not "*" in vary_headers):
                 self.add_base_note('header-vary', CONNEG_NO_VARY)
             if no_conneg_vary_headers != vary_headers:
@@ -66,20 +67,19 @@ class ConnegCheck(SubRequest):
                                    no_conneg_vary=", ".join(no_conneg_vary_headers))
 
             # check body
-            if self.base.response.decoded_md5 != self.response.payload_md5:
+            if bare.decoded_md5 != negotiated.payload_md5:
                 self.add_base_note('body', VARY_BODY_MISMATCH)
 
             # check ETag
-            if self.response.parsed_headers.get('etag', 1) == \
-              self.base.response.parsed_headers.get('etag', 2):
+            if bare.parsed_headers.get('etag', 1) == negotiated.parsed_headers.get('etag', 2):
                 if not self.base.response.parsed_headers['etag'][0]: # strong
                     self.add_base_note('header-etag', VARY_ETAG_DOESNT_CHANGE)
 
             # check compression efficiency
-            if self.response.payload_len > 0:
+            if negotiated.payload_len > 0:
                 savings = int(100 * (
-                    (float(self.response.payload_len) - self.base.response.payload_len) \
-                    / self.response.payload_len))
+                    (float(bare.payload_len) - negotiated.payload_len) \
+                    / bare.payload_len))
             else:
                 savings = 0
             self.base.gzip_support = True
@@ -87,13 +87,13 @@ class ConnegCheck(SubRequest):
             if savings >= 0:
                 self.add_base_note('header-content-encoding', CONNEG_GZIP_GOOD,
                                    savings=savings,
-                                   orig_size=f_num(self.response.payload_len),
-                                   gzip_size=f_num(self.base.response.payload_len))
+                                   orig_size=f_num(bare.payload_len),
+                                   gzip_size=f_num(negotiated.payload_len))
             else:
                 self.add_base_note('header-content-encoding', CONNEG_GZIP_BAD,
                                    savings=abs(savings),
-                                   orig_size=f_num(self.response.payload_len),
-                                   gzip_size=f_num(self.base.response.payload_len))
+                                   orig_size=f_num(bare.payload_len),
+                                   gzip_size=f_num(negotiated.payload_len))
 
 
 class CONNEG_SUBREQ_PROBLEM(Note):

@@ -51,7 +51,7 @@ class BaseTextFormatter(Formatter):
     def start_output(self):
         pass
 
-    def feed(self, state, chunk):
+    def feed(self, chunk):
         pass
 
     def status(self, msg):
@@ -59,32 +59,32 @@ class BaseTextFormatter(Formatter):
 
     def finish_output(self):
         "Fill in the template with RED's results."
-        if self.state.response.complete:
-            self.output(self.format_headers(self.state) + nl + nl)
-            self.output(self.format_recommendations(self.state) + nl)
+        if self.resource.response.complete:
+            self.output(self.format_headers(self.resource) + nl + nl)
+            self.output(self.format_recommendations(self.resource) + nl)
         else:
-            if self.state.response.http_error == None:
+            if self.resource.response.http_error == None:
                 pass
-            elif isinstance(self.state.response.http_error, httperr.HttpError):
+            elif isinstance(self.resource.response.http_error, httperr.HttpError):
                 self.output(self.error_template % \
-                            self.state.response.http_error.desc)
+                            self.resource.response.http_error.desc)
             else:
                 raise AssertionError, "Unknown incomplete response error."
 
-    def format_headers(self, state):
+    def format_headers(self, resource):
         out = [u"HTTP/%s %s %s" % (
-            state.response.version,
-            state.response.status_code,
-            state.response.status_phrase
+            resource.response.version,
+            resource.response.status_code,
+            resource.response.status_phrase
         )]
-        return nl.join(out + [u"%s:%s" % h for h in state.response.headers])
+        return nl.join(out + [u"%s:%s" % h for h in resource.response.headers])
 
-    def format_recommendations(self, state):
-        return "".join([self.format_recommendation(state, category) \
+    def format_recommendations(self, resource):
+        return "".join([self.format_recommendation(resource, category) \
             for category in self.note_categories])
 
-    def format_recommendation(self, state, category):
-        notes = [note for note in state.notes if note.category == category]
+    def format_recommendation(self, resource, category):
+        notes = [note for note in resource.notes if note.category == category]
         if not notes:
             return ""
         out = []
@@ -147,7 +147,6 @@ class TextFormatter(BaseTextFormatter):
 
     def finish_output(self):
         BaseTextFormatter.finish_output(self)
-        self.done()
 
 
 class VerboseTextFormatter(TextFormatter):
@@ -162,7 +161,7 @@ class TextListFormatter(BaseTextFormatter):
     """
     Format multiple RED responses as a textual list.
     """
-    name = "txt"
+    name = "text"
     media_type = "text/plain"
     can_multiple = True
 
@@ -174,20 +173,19 @@ class TextListFormatter(BaseTextFormatter):
         BaseTextFormatter.finish_output(self)
         sep = "=" * 78
         for hdr_tag, heading in self.link_order:
-            droids = [d[0] for d in self.state.linked if d[1] == hdr_tag]
+            subresources = [d[0] for d in self.resource.linked if d[1] == hdr_tag]
             self.output("%s\n%s (%d)\n%s\n" % (
-                sep, heading, len(droids), sep
+                sep, heading, len(subresources), sep
             ))
-            if droids:
-                droids.sort(key=operator.attrgetter('uri'))
-                for droid in droids:
-                    self.output(self.format_uri(droid) + nl + nl)
-                    self.output(self.format_headers(droid) + nl + nl)
-                    self.output(self.format_recommendations(droid) + nl + nl)
-        self.done()
+            if subresources:
+                subresources.sort(key=operator.attrgetter('request.uri'))
+                for subresource in subresources:
+                    self.output(self.format_uri(subresource) + nl + nl)
+                    self.output(self.format_headers(subresource) + nl + nl)
+                    self.output(self.format_recommendations(subresource) + nl + nl)
 
-    def format_uri(self, state):
-        return self.colorize("uri", state.request.uri)
+    def format_uri(self, resource):
+        return self.colorize("uri", resource.request.uri)
 
 
 class VerboseTextListFormatter(TextListFormatter):

@@ -45,7 +45,6 @@ def loose_parse(set_cookie_string, uri_path, current_time, add_note):
     try:
         name, value = name_value_pair.split("=", 1)
     except ValueError:
-        print "couldn't parse", name_value_pair
         add_note(SET_COOKIE_NO_VAL)
         raise ValueError, "Cookie doesn't have a value"
     name, value = name.strip(), value.strip()

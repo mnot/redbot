@@ -9,7 +9,7 @@ from htmlentitydefs import entitydefs
 from HTMLParser import HTMLParser
 import types
 
-from redbot.message import headers as rh
+from redbot.message import headers
 from redbot.syntax import rfc7231
 
 class HTMLLinkParser(HTMLParser):
@@ -32,11 +32,10 @@ class HTMLLinkParser(HTMLParser):
         'application/xhtml+xml',
         'application/atom+xml']
 
-    def __init__(self, base_uri, link_procs, err=None):
-        self.base = base_uri
+    def __init__(self, message, link_procs, err=None):
+        self.message = message
         self.link_procs = link_procs
         self.err = err
-        self.doc_enc = None
         self.link_types = {
             'link': ['href', ['stylesheet']],
             'a': ['href', None],
@@ -51,22 +50,19 @@ class HTMLLinkParser(HTMLParser):
 
     def __getstate__(self):
         return {
-            'base': self.base,
-            'doc_enc': self.doc_enc,
             'errors': self.errors,
             'last_err_pos': self.last_err_pos,
             'ok': self.ok}
 
-    def feed(self, msg, chunk):
+    def feed(self, chunk):
         "Feed a given chunk of HTML data to the parser"
         if not self.ok:
             return
-        if msg.parsed_headers.get('content-type', [None])[0] in self.link_parseable_types:
+        if self.message.parsed_headers.get('content-type', [None])[0] in self.link_parseable_types:
             try:
-                if not isinstance(chunk, types.UnicodeType) \
-                  and not isinstance(chunk, types.StringType):
+                if not isinstance(chunk, (types.UnicodeType, types.StringType)):
                     try:
-                        chunk = chunk.decode(self.doc_enc or msg.character_encoding, 'ignore')
+                        chunk = chunk.decode(self.message.character_encoding, 'ignore')
                     except LookupError:
                         pass
                 HTMLParser.feed(self, chunk)
@@ -90,11 +86,10 @@ class HTMLLinkParser(HTMLParser):
                     if "#" in target:
                         target = target[:target.index('#')]
                     for proc in self.link_procs:
-                        proc(self.base, target, tag, title)
+                        proc(self.message.base_uri, target, tag, title)
         elif tag == 'base':
-            self.base = attr_d.get('href', self.base)
-        elif tag == 'meta' and \
-          attr_d.get('http-equiv', '').lower() == 'content-type':
+            self.message.base_uri = attr_d.get('href', self.message.base_uri)
+        elif tag == 'meta' and attr_d.get('http-equiv', '').lower() == 'content-type':
             ct = attr_d.get('content', None)
             if ct:
                 try:
@@ -103,13 +98,14 @@ class HTMLLinkParser(HTMLParser):
                     media_type, params = ct, ''
                 media_type = media_type.lower()
                 param_dict = {}
-                for param in rh.split_string(params, rfc7231.parameter, r"\s*;\s*"):
+                for param in headers.split_string(params, rfc7231.parameter, r"\s*;\s*"):
                     try:
                         a, v = param.split("=", 1)
-                        param_dict[a.lower()] = rh.unquote_string(v)
+                        param_dict[a.lower()] = headers.unquote_string(v)
                     except ValueError:
                         param_dict[param.lower()] = None
-                self.doc_enc = param_dict.get('charset', self.doc_enc)
+                self.message.character_encoding = param_dict.get('charset',
+                                                                 self.message.character_encoding)
 
     def handle_charref(self, name):
         return entitydefs.get(name, '')
@@ -136,20 +132,22 @@ class BadErrorIReallyMeanIt(Exception):
 
 if __name__ == "__main__":
     import sys
+    import thor
     from redbot.resource.fetch import RedFetcher
-    uri = sys.argv[1]
-    req_hdrs = [(u'Accept-Encoding', u'gzip')]
-    class TestFetcher(RedFetcher):
-        count = 0
-        def done(self):
-            pass
-        @staticmethod
-        def err(mesg):
-            sys.stderr.write("ERROR: %s\n" % mesg)
-        @staticmethod
-        def show_link(link, tag, title):
-            TestFetcher.count += 1
-            out = "%.3d) [%s] %s" % (TestFetcher.count, tag, link)
-            print out.encode('utf-8', 'strict')
-    p = HTMLLinkParser(uri, TestFetcher.show_link, TestFetcher.err)
-    TestFetcher(uri, req_hdrs=req_hdrs)
+    T = RedFetcher()
+    T.set_request(sys.argv[1], req_hdrs=[(u'Accept-Encoding', u"gzip")])
+    def show_link(base, link, tag, title):
+        print "* [%s] %s -- %s" % (tag, base, link)
+    P = HTMLLinkParser(T.response, [show_link], sys.stderr.write)
+    @thor.events.on(T)
+    def fetch_done():
+        print 'done'
+        thor.stop()
+    @thor.events.on(T)
+    def status(msg):
+        print msg
+    @thor.events.on(T.response)
+    def chunk(decoded_chunk):
+        P.feed(decoded_chunk)
+    T.check()
+    thor.run()

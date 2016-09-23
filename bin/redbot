@@ -6,10 +6,8 @@ CLI interface to REDbot
 
 __author__ = "Jerome Renard <jerome.renard@gmail.com>"
 
-
 import sys
-assert sys.version_info[0] == 2 and sys.version_info[1] >= 6, \
-    "Please use Python 2.6 or greater"
+assert sys.version_info[0] == 2 and sys.version_info[1] >= 6, "Please use Python 2.6 or greater"
 
 from optparse import OptionParser
 
@@ -19,32 +17,21 @@ from redbot.resource import HttpResource
 from redbot.formatter import *
 from redbot.formatter import find_formatter, available_formatters
 
-
-lang = "en"  # TODO: add as CL option
+lang = "en"
 charset = "utf-8"
 
 def main():
-    usage   = """Usage: %prog [options] <url>"""
+    usage = """Usage: %prog [options] <url>"""
     version = """Redbot version %s, http://redbot.org/ """ % __version__
 
     opt_parser = OptionParser(usage=usage, version=version)
-    opt_parser.set_defaults(
-        version=False, 
-        descend=False, 
-        output_format="txt", 
-        show_recommendations=False
-    )
+    opt_parser.set_defaults(version=False, descend=False, output_format="text",
+                            show_recommendations=False)
 
-    opt_parser.add_option(
-        "-a", "--assets",
-        action="store_true", dest="descend",
-        help="check assets, if the URL contains HTML"
-    )
-    opt_parser.add_option(
-        "-o", "--output-format",
-        action="store", dest="output_format",
-        help="one of: %s" % ", ".join(available_formatters())
-    )
+    opt_parser.add_option("-a", "--assets", action="store_true", dest="descend",
+                          help="check assets, if the URL contains HTML")
+    opt_parser.add_option("-o", "--output-format", action="store", dest="output_format",
+                          help="one of: %s" % ", ".join(available_formatters()))
 
     (options, args) = opt_parser.parse_args()
 
@@ -55,23 +42,19 @@ def main():
         opt_parser.error("Unrecognised output format.")
 
     url = args[0]
-    red = HttpResource(
-        url,
-        descend=options.descend
-    )
 
-    formatter = find_formatter(options.output_format, 'txt', options.descend)(
-        sys.argv[0], url, [], None, lang, output,
-        tty_out = sys.stdout.isatty()
-    )
-    formatter.set_state(red)
-    formatter.start_output()
-    
-    @thor.events.on(red)
-    def done():
-        formatter.finish_output()
+    resource = HttpResource(descend=options.descend)
+    resource.set_request(url)
+
+    formatter = find_formatter(options.output_format, 'text', options.descend)(
+        sys.argv[0], lang, output, tty_out=sys.stdout.isatty(), descend=options.descend)
+
+    formatter.bind_resource(resource)
+    @thor.events.on(formatter)
+    def formatter_done():
         thor.stop()
-    red.check()
+
+    resource.check()
     thor.run()
 
 

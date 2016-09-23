@@ -26,13 +26,8 @@ from redbot.formatter import find_formatter, html
 from redbot.formatter.html import e_url
 
 
-# HTML template for error bodies
-error_template = u"""\
+error_template = u"<p class='error'>%s</p>"
 
-<p class="error">
- %s
-</p>
-"""
 
 class RedWebUi(object):
     """
@@ -41,10 +36,10 @@ class RedWebUi(object):
     Given a URI, run RED on it and present the results to output as HTML.
     If descend is true, spider the links and present a summary.
     """
-    def __init__(self, config, base_uri, method, query_string,
+    def __init__(self, config, ui_uri, method, query_string,
                  response_start, response_body, response_done, error_log=sys.stderr.write):
         self.config = config
-        self.base_uri = base_uri
+        self.ui_uri = ui_uri
         self.method = method
         self.response_start = response_start
         self.response_body = response_body
@@ -55,7 +50,7 @@ class RedWebUi(object):
         self.req_hdrs = None # tuple of unicode K,V
         self.format = None
         self.test_id = None
-        self.check_type = None
+        self.check_name = None
         self.descend = None
         self.save = None
         self.parse_qs(method, query_string)
@@ -108,7 +103,7 @@ class RedWebUi(object):
             return
         is_saved = mtime > thor.time()
         try:
-            state = pickle.load(fd)
+            top_resource = pickle.load(fd)
         except (pickle.PickleError, IOError, EOFError):
             self.response_start("500", "Internal Server Error", [
                 ("Content-Type", "text/html; charset=%s" % self.config.charset),
@@ -119,20 +114,22 @@ class RedWebUi(object):
         finally:
             fd.close()
 
-        formatter = find_formatter(self.format, 'html', self.descend)(
-            self.base_uri, state.request.uri, state.orig_req_hdrs, self.check_type, self.config.lang,
-            self.output, allow_save=(not is_saved), is_saved=True,
-            test_id=self.test_id)
+        if self.check_name:
+            display_resource = top_resource.subreqs.get(self.check_name, top_resource)
+        else:
+            display_resource = top_resource
+
+        formatter = find_formatter(self.format, 'html', top_resource.descend)(
+            self.ui_uri, self.config.lang, self.output,
+            allow_save=(not is_saved), is_saved=True, test_id=self.test_id)
+
         self.response_start("200", "OK", [
             ("Content-Type", "%s; charset=%s" % (formatter.media_type, self.config.charset)),
             ("Cache-Control", "max-age=3600, must-revalidate")])
-        if self.check_type:
-            state = state.subreqs.get(self.check_type, state)
-
-        formatter.start_output()
-        formatter.set_state(state)
-        formatter.finish_output()
-        self.response_done([])
+        @thor.events.on(formatter)
+        def formatter_done():
+            self.response_done([])
+        formatter.bind_resource(display_resource)
 
     def run_test(self):
         """Test a URI."""
@@ -146,10 +143,15 @@ class RedWebUi(object):
         else:
             test_id = None
 
+        top_resource = HttpResource(descend=self.descend)
+        top_resource.set_request(self.test_uri, req_hdrs=self.req_hdrs)
         formatter = find_formatter(self.format, 'html', self.descend)(
-            self.base_uri, self.test_uri, self.req_hdrs, self.check_type, self.config.lang,
-            self.output, allow_save=test_id, is_saved=False,
-            test_id=test_id, descend=self.descend)
+            self.ui_uri, self.config.lang, self.output,
+            allow_save=test_id, is_saved=False, test_id=test_id, descend=self.descend)
+        if self.check_name:
+            display_resource = top_resource.subreqs.get(self.check_name, top_resource)
+        else:
+            display_resource = top_resource
 
         referers = []
         for hdr, value in self.req_hdrs:
@@ -159,13 +161,13 @@ class RedWebUi(object):
         if len(referers) > 1:
             referer_error = "Multiple referers not allowed."
         if referers and urlsplit(referers[0]).hostname in self.config.referer_spam_domains:
-            referer_error = "Referer now allowed."
+            referer_error = "Referer not allowed."
         if referer_error:
             self.response_start("403", "Forbidden", [
                 ("Content-Type", "%s; charset=%s" % (formatter.media_type, self.config.charset)),
                 ("Cache-Control", "max-age=360, must-revalidate")])
             formatter.start_output()
-            self.output(error_template % referer_error)
+            formatter.error_output(referer_error)
             self.response_done([])
             return
 
@@ -174,49 +176,36 @@ class RedWebUi(object):
                 ("Content-Type", "%s; charset=%s" % (formatter.media_type, self.config.charset)),
                 ("Cache-Control", "max-age=60, must-revalidate")])
             formatter.start_output()
-            self.output(error_template % "Forbidden by robots.txt.")
+            formatter.error_output("Forbidden by robots.txt.")
             self.response_done([])
             return
 
-        self.response_start("200", "OK", [
-            ("Content-Type", "%s; charset=%s" % (formatter.media_type, self.config.charset)),
-            ("Cache-Control", "max-age=60, must-revalidate")])
-
-        resource = HttpResource(self.test_uri, req_hdrs=self.req_hdrs, descend=self.descend)
-        resource.on("status", formatter.status)
-        resource.response.on("chunk", formatter.feed)
-#        sys.stdout.write(pickle.dumps(resource))
-        formatter.start_output()
-
-        def done():
-            if self.check_type:
-                state = resource.subreqs.get(self.check_type, resource)
-            else:
-                state = resource
-            formatter.set_state(state)
-            formatter.finish_output()
+        @thor.events.on(formatter)
+        def formatter_done():
             self.response_done([])
             if test_id:
                 try:
                     tmp_file = gzip.open(path, 'w')
-                    pickle.dump(resource, tmp_file)
+                    pickle.dump(top_resource, tmp_file)
                     tmp_file.close()
                 except (IOError, zlib.error, pickle.PickleError):
                     pass # we don't cry if we can't store it.
-#            objgraph.show_growth()
-            ti = sum([i.transfer_in for i, t in resource.linked], resource.transfer_in)
-            to = sum([i.transfer_out for i, t in resource.linked], resource.transfer_out)
+            ti = sum([i.transfer_in for i, t in top_resource.linked], top_resource.transfer_in)
+            to = sum([i.transfer_out for i, t in top_resource.linked], top_resource.transfer_out)
             if ti + to > self.config.log_traffic:
-                sys.stderr.write("%iK in %iK out for <%s> (descend %s)" % (
+                self.error_log("%iK in %iK out for <%s> (descend %s)" % (
                     ti / 1024, to / 1024, e_url(self.test_uri), str(self.descend)))
-        resource.on("done", done)
-        resource.check()
+
+        self.response_start("200", "OK", [
+            ("Content-Type", "%s; charset=%s" % (formatter.media_type, self.config.charset)),
+            ("Cache-Control", "max-age=60, must-revalidate")])
+        formatter.bind_resource(display_resource)
+        top_resource.check()
 
     def show_default(self):
         """Show the default page."""
         formatter = html.BaseHtmlFormatter(
-            self.base_uri, self.test_uri, self.req_hdrs, self.check_type,
-            self.config.lang, self.output, is_blank=True)
+            self.ui_uri, self.config.lang, self.output, is_blank=True)
         self.response_start(
             "200", "OK", [
                 ("Content-Type", "%s; charset=%s" % (formatter.media_type, self.config.charset)),
@@ -231,9 +220,10 @@ class RedWebUi(object):
         self.req_hdrs = [tuple(rh.decode(self.config.charset, 'replace').split(":", 1))
                          for rh in qs.get("req_hdr", []) if rh.find(":") > 0]
         self.format = qs.get('format', ['html'])[0]
-        self.check_type = qs.get('request', [None])[0]
-        self.test_id = qs.get('id', [None])[0]
         self.descend = qs.get('descend', [False])[0]
+        if not self.descend:
+            self.check_name = qs.get('check_name', [None])[0]
+        self.test_id = qs.get('id', [None])[0]
         if method == "POST":
             self.save = qs.get('save', [False])[0]
         else:

@@ -18,14 +18,13 @@ class LmValidate(SubRequest):
     _months = [None, 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul',
                'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-    def modify_req_hdrs(self):
-        req_hdrs = list(self.base.request.headers)
-        lm = self.base.response.parsed_headers.get('last-modified', None)
-        if lm:
+    def modify_request_headers(self, base_headers):
+        lm_value = self.base.response.parsed_headers.get('last-modified', None)
+        if lm_value:
             try:
                 l_m = datetime.utcfromtimestamp(self.base.response.parsed_headers['last-modified'])
             except ValueError:
-                return req_hdrs # TODO: sensible error message.
+                return base_headers # TODO: sensible error message.
             date_str = u"%s, %.2d %s %.4d %.2d:%.2d:%.2d GMT" % (
                 self._weekdays[l_m.weekday()],
                 l_m.day,
@@ -34,10 +33,12 @@ class LmValidate(SubRequest):
                 l_m.hour,
                 l_m.minute,
                 l_m.second)
-            req_hdrs += [(u'If-Modified-Since', date_str),]
-        return req_hdrs
+            base_headers.append((u'If-Modified-Since', date_str))
+        return base_headers
 
     def preflight(self):
+        if self.base.response.status_code[0] == '3':
+            return False
         if self.base.response.parsed_headers.get('last-modified', None):
             return True
         else:
@@ -53,8 +54,7 @@ class LmValidate(SubRequest):
             self.base.ims_support = True
             self.add_base_note('header-last-modified', IMS_304)
             self.check_missing_hdrs([
-                'cache-control', 'content-location', 'etag',
-                'expires', 'vary'], MISSING_HDRS_304, 'If-Modified-Since')
+                'cache-control', 'content-location', 'etag', 'expires', 'vary'], MISSING_HDRS_304)
         elif self.response.status_code == self.base.response.status_code:
             if self.response.payload_md5 == self.base.response.payload_md5:
                 self.base.ims_support = False
