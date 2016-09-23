@@ -189,6 +189,12 @@ def cgi_main():
 def standalone_main(host, port, static_dir):
     """Run RED as a standalone Web server."""
 
+    static_types = {
+        '.js': 'text/javascript',
+        '.css': 'text/css',
+        '.png': 'image/png',
+    }
+
     # load static files
     static_files = {}
     def static_walker(arg, dirname, names):
@@ -208,7 +214,12 @@ def standalone_main(host, port, static_dir):
         def request_start(method, uri, req_hdrs):
             p_uri = urlsplit(uri)
             if static_files.has_key(p_uri.path):
-                x.response_start("200", "OK", []) # TODO: headers
+                headers = []
+                file_ext = os.path.splitext(p_uri.path)[1].lower()
+                content_encoding = static_types.get(file_ext, 'application/octet-stream')
+                headers.append(('Content-Encoding', content_encoding))
+                headers.append(('Cache-Control', 'max-age=300'))
+                x.response_start("200", "OK", headers)
                 x.response_body(static_files[p_uri.path])
                 x.response_done([])
             elif p_uri.path == "/":
