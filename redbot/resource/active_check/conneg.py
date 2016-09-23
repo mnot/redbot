@@ -78,8 +78,7 @@ class ConnegCheck(SubRequest):
             # check compression efficiency
             if negotiated.payload_len > 0:
                 savings = int(100 * (
-                    (float(bare.payload_len) - negotiated.payload_len) \
-                    / bare.payload_len))
+                    (float(bare.payload_len) - negotiated.payload_len) / bare.payload_len))
             else:
                 savings = 0
             self.base.gzip_support = True
