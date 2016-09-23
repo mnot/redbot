@@ -81,7 +81,7 @@ class BaseHtmlFormatter(Formatter):
                 u'redbot_uri': uri,
                 u'redbot_req_hdrs': req_headers,
                 u'redbot_version': __version__
-            }, ensure_ascii=False).replace(u'<', u'\\u003c').decode('utf-8'),
+            }, ensure_ascii=False).decode('utf-8').replace(u'<', u'\\u003c'),
             u'extra_js': self.format_extra(u'.js'),
             u'test_id': self.kw.get('test_id', u""),
             u'extra_title': extra_title,
