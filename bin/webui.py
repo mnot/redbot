@@ -190,9 +190,9 @@ def standalone_main(host, port, static_dir):
     """Run RED as a standalone Web server."""
 
     static_types = {
-        '.js': 'text/javascript',
-        '.css': 'text/css',
-        '.png': 'image/png',
+        u'.js': u'text/javascript',
+        u'.css': u'text/css',
+        u'.png': u'image/png',
     }
 
     # load static files
@@ -217,13 +217,13 @@ def standalone_main(host, port, static_dir):
                 headers = []
                 file_ext = os.path.splitext(p_uri.path)[1].lower()
                 content_encoding = static_types.get(file_ext, 'application/octet-stream')
-                headers.append(('Content-Encoding', content_encoding))
-                headers.append(('Cache-Control', 'max-age=300'))
-                x.response_start("200", "OK", headers)
+                headers.append((u'Content-Encoding', content_encoding))
+                headers.append((u'Cache-Control', u'max-age=300'))
+                x.response_start(u"200", u"OK", headers)
                 x.response_body(static_files[p_uri.path])
                 x.response_done([])
-            elif p_uri.path == "/":
-                query_string = cgi.parse_qs(p_uri.query)
+            elif p_uri.path == u"/":
+                query_string = cgi.parse_qs(p_uri.query.encode('utf-8'))
                 try:
                     RedWebUi(Config, '/', method, query_string,
                              x.response_start, x.response_body, x.response_done)
@@ -235,8 +235,9 @@ RED has encountered a fatal error which it really, really can't recover from
 in standalone server mode. Details follow.
 
 """)
+                    import traceback
+                    traceback.print_exc()
                     thor.stop()
-                    raise
             else:
                 x.response_start("404", "Not Found", [])
                 x.response_done([])
