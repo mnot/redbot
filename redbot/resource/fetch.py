@@ -175,7 +175,7 @@ class RedFetcher(thor.events.EventEmitter):
     def _response_error(self, error):
         "Handle an error encountered while fetching the response."
         self.emit("status", u"fetch error %s (%s)" % (self.request.uri, self.check_name))
-        err_sample = error.detail[:40].encode('unicode_escape').decode('utf-8') or u""
+        err_sample = error.detail[:40].decode('unicode_escape').encode('utf-8') or u""
         if isinstance(error, httperr.ExtraDataError):
             if self.response.status_code == u"304":
                 self.add_note('body', BODY_NOT_ALLOWED, sample=err_sample)
