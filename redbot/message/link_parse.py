@@ -60,7 +60,7 @@ class HTMLLinkParser(HTMLParser):
             return
         if self.message.parsed_headers.get('content-type', [None])[0] in self.link_parseable_types:
             try:
-                if not isinstance(chunk, (types.UnicodeType, types.StringType)):
+                if not isinstance(chunk, (types.UnicodeType)):
                     try:
                         chunk = chunk.decode(self.message.character_encoding, 'ignore')
                     except LookupError:
