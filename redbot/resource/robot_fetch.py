@@ -98,6 +98,11 @@ class RobotFetcher(thor.events.EventEmitter):
                     self._robot_check(check_url, self.robot_checkers[origin])
                 del self.robot_lookups[origin]
 
+            @thor.on(exchange)
+            def response_error(error):
+                exchange.status = "500"
+                response_done([])
+
             p_url = urlsplit(url)
             robots_url = "%s://%s/robots.txt" % (p_url.scheme, p_url.netloc)
             exchange.request_start("GET", robots_url, [('User-Agent', UA_STRING)])
