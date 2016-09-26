@@ -61,8 +61,8 @@ class RangeRequest(SubRequest):
                 return            
             self.check_missing_hdrs(['date', 'cache-control', 'content-location', 'etag',
                                     'expires', 'vary'], MISSING_HDRS_206)
-            if self.response.parsed_headers.get('etag', 1) == \
-              self.base.response.parsed_headers.get('etag', 2):
+            if self.response.parsed_headers.get('etag', None) == \
+              self.base.response.parsed_headers.get('etag', None):
                 if self.response.payload == self.range_target:
                     self.base.partial_support = True
                     self.add_base_note('header-accept-ranges', RANGE_CORRECT)
