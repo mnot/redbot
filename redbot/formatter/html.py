@@ -416,8 +416,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         options = []
         media_type = resource.response.parsed_headers.get('content-type', [""])[0]
         options.append(
-            (u"response headers: %s bytes" % \
-             f_num(resource.response.header_length),
+            (u"response headers: %s bytes" % f_num(resource.response.header_length),
              u"how large the response headers are, including the status line"))
         options.append((u"body: %s bytes" % f_num(resource.response.payload_len),
                         u"how large the response body is"))
@@ -431,28 +430,26 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 <script type="text/javascript">
    document.write("<a href='#' id='body_view' accesskey='b'>view body</a>")
 </script>""",
-                        "View this response body (with any gzip compression removed)"))
+                        u"View this response body (with any gzip compression removed)"))
         if isinstance(resource, HttpResource):
             options.append(
                 (u"""\
-        <a href='?%s' accesskey='h'>view har</a>""" % self.req_qs(res_format='har'),
-                 "View a HAR (HTTP ARchive, a JSON format) file for this test"))
+        <a href="?%s" accesskey="h">view har</a>""" % self.req_qs(res_format='har'),
+                 u"View a HAR (HTTP ARchive, a JSON format) file for this test"))
         if not self.kw.get('is_saved', False):
             if self.kw.get('allow_save', False):
                 options.append((
-                    u"<a href='#' id='save' accesskey='s'>save</a>",
-                    "Save these results for future reference"))
+                    u"<a href=\"#\" id='save' accesskey='s'>save</a>",
+                    u"Save these results for future reference"))
             if self.validators.has_key(media_type):
                 options.append((
-                    u"<a href='%s' accesskey='v'>validate body</a>" %
-                    self.validators[media_type] %
-                    e_query_arg(resource.request.uri),
-                    ""))
+                    u"<a href=\"%s\" accesskey='v'>validate body</a>" %
+                    self.validators[media_type] % e_query_arg(resource.request.uri), ""))
             if hasattr(resource, "link_count") and resource.link_count > 0:
                 options.append((
-                    u"<a href='?descend=True&%s' accesskey='a'>" \
+                    u"<a href=\"?descend=True&%s\" accesskey='a'>" \
                     u"check embedded</a>" % self.req_qs(use_stored=False),
-                    "run RED on images, frames and embedded links"))
+                    u"run RED on images, frames and embedded links"))
         return nl.join(
             [o and u"<span class='option' title='%s'>%s</span>" % (o[1], o[0])
              or u"<br>" for o in options])
