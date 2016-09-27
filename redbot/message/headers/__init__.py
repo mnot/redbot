@@ -158,11 +158,8 @@ class HeaderProcessor(object):
     def __init__(self, message):
         self.message = message
         self._header_handlers = {}
-        unicode_headers, parsed_headers = self.process()
-        message.headers = unicode_headers
-        message.parsed_headers = parsed_headers
 
-    def process(self):
+    def process(self, headers):
         """
         Given a message, parse its headers and:
          - calculate the total header block size
@@ -182,7 +179,7 @@ class HeaderProcessor(object):
         else:
             header_block_size += len(self.message.status_phrase) + 5
 
-        for name, value in self.message.headers:
+        for name, value in headers:
             offset += 1
             add_note = partial(self.message.add_note, "offset-%s" % offset)
 

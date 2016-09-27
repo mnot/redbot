@@ -81,7 +81,7 @@ class BaseHtmlFormatter(Formatter):
                 u'redbot_uri': uri,
                 u'redbot_req_hdrs': req_headers,
                 u'redbot_version': __version__
-            }, ensure_ascii=False).decode('utf-8').replace(u'<', u'\\u003c'),
+            }, ensure_ascii=True).decode('ascii').replace(u'<', u'\\u003c'),
             u'extra_js': self.format_extra(u'.js'),
             u'test_id': self.kw.get('test_id', u""),
             u'extra_title': extra_title,
@@ -193,7 +193,7 @@ title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
             out.append(u"uri=%s" % e_query_arg(urljoin(uri, link or "")))
         if self.resource.request.headers:
             for k, v in self.resource.request.headers:
-                if referer and k.lower() == 'referer':
+                if referer and k.lower() == b'referer':
                     continue
                 out.append(u"req_hdr=%s%%3A%s" % (e_query_arg(k), e_query_arg(v)))
         if referer:
@@ -350,7 +350,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         else:
             sample = resource.response.decoded_sample
         try:
-            uni_sample = sample.decode(resource.response.character_encoding, "ignore")
+            uni_sample = sample.decode(
+                resource.response.character_encoding.encode('ascii', 'replace'), "ignore")
         except LookupError:
             uni_sample = sample.decode('utf-8', 'ignore')
         safe_sample = e_html(uni_sample)
@@ -484,7 +485,7 @@ class HeaderPresenter(object):
         value = value.rstrip()
         svalue = value.lstrip()
         space = len(value) - len(svalue)
-        return u"%s<a href='?%s'>%s</a>" % (
+        return u"%s<a href=\"?%s\">%s</a>" % (
             " " * space,
             self.formatter.req_qs(svalue, use_stored=False),
             self.I(e_html(svalue), len(name)))

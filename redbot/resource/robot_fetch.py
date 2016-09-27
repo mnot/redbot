@@ -49,7 +49,7 @@ class RobotFetcher(thor.events.EventEmitter):
             else:
                 self.emit("robot-%s" % url, True)
                 return
-        origin_hash = hashlib.sha1(origin).hexdigest()
+        origin_hash = hashlib.sha1(origin.encode('ascii', 'replace')).hexdigest()
 
         if self.robot_checkers.has_key(origin):
             return self._robot_check(url, self.robot_checkers[origin], sync)
@@ -126,7 +126,7 @@ class RobotFetcher(thor.events.EventEmitter):
 
     def _robot_check(self, url, robots_checker, sync=False):
         """Continue after getting the robots file."""
-        result = robots_checker.can_fetch(UA_STRING, url)
+        result = robots_checker.can_fetch(UA_STRING, url.encode('ascii', 'replace'))
         if sync:
             return result
         else:
@@ -141,9 +141,9 @@ def url_to_origin(url):
         'https': 443}
     try:
         p_url = urlsplit(url)
-        origin = "%s://%s:%s" % (p_url.scheme.lower(),
-                                 p_url.hostname.lower(),
-                                 p_url.port or default_port.get(p_url.scheme, 0))
+        origin = u"%s://%s:%s" % (p_url.scheme.lower(),
+                                  p_url.hostname.lower(),
+                                  p_url.port or default_port.get(p_url.scheme, 0))
     except (AttributeError, ValueError):
         origin = None
     return origin

@@ -62,7 +62,8 @@ class HTMLLinkParser(HTMLParser):
             try:
                 if not isinstance(chunk, (types.UnicodeType)):
                     try:
-                        chunk = chunk.decode(self.message.character_encoding, 'ignore')
+                        chunk = chunk.decode(
+                            self.message.character_encoding.encode('ascii'), 'ignore')
                     except LookupError:
                         pass
                 HTMLParser.feed(self, chunk)

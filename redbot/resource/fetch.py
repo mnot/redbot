@@ -23,10 +23,13 @@ UA_STRING = u"RED/%s (https://redbot.org/)" % __version__
 
 class RedHttpClient(thor.http.HttpClient):
     "Thor HttpClient for RedFetcher"
-    connect_timeout = 10
-    read_timeout = 15
-    retry_delay = 1
-    careful = False
+    
+    def __init__(self, loop=None):
+        thor.http.HttpClient.__init__(self, loop)
+        self.connect_timeout = 10
+        self.read_timeout = 15
+        self.retry_delay = 1
+        self.careful = False
 
 
 class RedFetcher(thor.events.EventEmitter):
@@ -92,12 +95,14 @@ class RedFetcher(thor.events.EventEmitter):
         """
         Set the resource's request.
         """
-        self.request.method = method
+        enc = 'utf-8'
+        self.request.method = method.encode(enc)
         self.response.is_head_response = (method == "HEAD")
         self.request.set_iri(iri)
         self.response.base_uri = self.request.uri
-        self.request.set_headers(req_hdrs or [])
-        self.request.payload = req_body
+        if req_hdrs:
+            self.request.set_headers([(n.encode(enc), v.encode(enc)) for (n, v) in req_hdrs])
+        self.request.payload = req_body # FIXME: encoding
         self.request.complete = True  # cheating a bit
 
     def check(self):
@@ -136,13 +141,10 @@ class RedFetcher(thor.events.EventEmitter):
         self.exchange.once('response_done', self._response_done)
         self.exchange.on('error', self._response_error)
         self.emit("status", u"fetching %s (%s)" % (self.request.uri, self.check_name))
-        req_hdrs = [
-            (k.encode('ascii', 'replace'), v.encode('latin-1', 'replace')) \
-            for (k, v) in self.request.headers
-        ]
+        req_hdrs = [(k.encode('ascii', 'replace'), v.encode('ascii', 'replace'))
+                    for (k, v) in self.request.headers]
         self.exchange.request_start(
-            self.request.method, self.request.uri, req_hdrs
-        )
+            self.request.method.encode('ascii'), self.request.uri.encode('ascii'), req_hdrs)
         self.request.start_time = thor.time()
         if self.request.payload != None:
             self.exchange.request_body(self.request.payload)
@@ -152,9 +154,7 @@ class RedFetcher(thor.events.EventEmitter):
     def _response_start(self, status, phrase, res_headers):
         "Process the response start-line and headers."
         self.response.start_time = thor.time()
-        self.response.version = self.exchange.res_version
-        self.response.status_code = status
-        self.response.status_phrase = phrase
+        self.response.set_top_line(self.exchange.res_version, status, phrase)
         self.response.set_headers(res_headers)
         StatusChecker(self.response, self.request)
         checkCaching(self.response, self.request)
@@ -174,19 +174,20 @@ class RedFetcher(thor.events.EventEmitter):
 
     def _response_error(self, error):
         "Handle an error encountered while fetching the response."
-        self.emit("status", u"fetch error %s (%s)" % (self.request.uri, self.check_name))
-        err_sample = error.detail[:40].decode('unicode_escape').encode('unicode_escape') or u""
-        if isinstance(error, httperr.ExtraDataError):
-            if self.response.status_code == u"304":
-                self.add_note('body', BODY_NOT_ALLOWED, sample=err_sample)
-            else:
-                self.add_note('body', EXTRA_DATA, sample=err_sample)
-        else:
-            if isinstance(error, httperr.ChunkError):
+        self.emit("status", u"fetch error %s (%s) - %s" % (
+            self.request.uri, self.check_name, error.desc))
+        if error.client_recoverable:
+            err_sample = error.detail[:40].decode('unicode_escape').encode('unicode_escape') or u""
+            if isinstance(error, httperr.ExtraDataError):
+                if self.response.status_code == u"304":
+                    self.add_note('body', BODY_NOT_ALLOWED, sample=err_sample)
+                else:
+                    self.add_note('body', EXTRA_DATA, sample=err_sample)
+            elif isinstance(error, httperr.ChunkError):
                 self.add_note('header-transfer-encoding', BAD_CHUNK, chunk_sample=err_sample)
+        else:
             self.response.http_error = error
-            if not self.response.complete_time:
-                self._fetch_done()
+            self._fetch_done()
 
     def _fetch_done(self):
         self.fetch_done = True

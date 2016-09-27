@@ -82,11 +82,12 @@ class RedWebUi(object):
             if self.descend:
                 location = "%s&descend=True" % location
             self.response_start("303", "See Other", [("Location", location)])
-            self.response_body("Redirecting to the saved test page...")
+            self.response_body(u"Redirecting to the saved test page...".encode(self.config.charset))
         except (OSError, IOError):
-            self.response_start("500", "Internal Server Error",
-                                [("Content-Type", "text/html; charset=%s" % self.config.charset),])
-            self.response_body(error_template % "Sorry, I couldn't save that.")
+            self.response_start(b"500", b"Internal Server Error",
+                [(b"Content-Type", b"text/html; charset=%s" % self.config.charset),])
+            self.response_body(error_template % \
+                u"Sorry, I couldn't save that.".encode(self.config.charset))
         self.response_done([])
 
     def load_saved_test(self):
@@ -95,20 +96,22 @@ class RedWebUi(object):
             fd = gzip.open(os.path.join(self.config.save_dir, os.path.basename(self.test_id)))
             mtime = os.fstat(fd.fileno()).st_mtime
         except (OSError, IOError, TypeError, zlib.error):
-            self.response_start("404", "Not Found", [
-                ("Content-Type", "text/html; charset=%s" % self.config.charset),
-                ("Cache-Control", "max-age=600, must-revalidate")])
-            self.response_body(error_template % "I'm sorry, I can't find that saved response.")
+            self.response_start(b"404", b"Not Found", [
+                (b"Content-Type", b"text/html; charset=%s" % self.config.charset),
+                (b"Cache-Control", b"max-age=600, must-revalidate")])
+            self.response_body(error_template % \
+                u"I'm sorry, I can't find that saved response.".encode(self.config.charset))
             self.response_done([])
             return
         is_saved = mtime > thor.time()
         try:
             top_resource = pickle.load(fd)
         except (pickle.PickleError, IOError, EOFError):
-            self.response_start("500", "Internal Server Error", [
-                ("Content-Type", "text/html; charset=%s" % self.config.charset),
-                ("Cache-Control", "max-age=600, must-revalidate")])
-            self.response_body(error_template % "I'm sorry, I had a problem loading that response.")
+            self.response_start(b"500", b"Internal Server Error", [
+                (b"Content-Type", b"text/html; charset=%s" % self.config.charset),
+                (b"Cache-Control", b"max-age=600, must-revalidate")])
+            self.response_body(error_template % \
+                u"I'm sorry, I had a problem loading that.".encode(self.config.charset))
             self.response_done([])
             return
         finally:
@@ -123,9 +126,9 @@ class RedWebUi(object):
             self.ui_uri, self.config.lang, self.output,
             allow_save=(not is_saved), is_saved=True, test_id=self.test_id)
 
-        self.response_start("200", "OK", [
-            ("Content-Type", "%s; charset=%s" % (formatter.media_type, self.config.charset)),
-            ("Cache-Control", "max-age=3600, must-revalidate")])
+        self.response_start(b"200", b"OK", [
+            (b"Content-Type", b"%s; charset=%s" % (formatter.media_type, self.config.charset)),
+            (b"Cache-Control", b"max-age=3600, must-revalidate")])
         @thor.events.on(formatter)
         def formatter_done():
             self.response_done([])
@@ -159,24 +162,24 @@ class RedWebUi(object):
                 referers.append(value)
         referer_error = None
         if len(referers) > 1:
-            referer_error = "Multiple referers not allowed."
+            referer_error = u"Multiple referers not allowed."
         if referers and urlsplit(referers[0]).hostname in self.config.referer_spam_domains:
-            referer_error = "Referer not allowed."
+            referer_error = u"Referer not allowed."
         if referer_error:
-            self.response_start("403", "Forbidden", [
-                ("Content-Type", "%s; charset=%s" % (formatter.media_type, self.config.charset)),
-                ("Cache-Control", "max-age=360, must-revalidate")])
+            self.response_start(b"403", b"Forbidden", [
+                (b"Content-Type", b"%s; charset=%s" % (formatter.media_type, self.config.charset)),
+                (b"Cache-Control", b"max-age=360, must-revalidate")])
             formatter.start_output()
             formatter.error_output(referer_error)
             self.response_done([])
             return
 
         if not self.robots_precheck(self.test_uri):
-            self.response_start("502", "Gateway Error", [
-                ("Content-Type", "%s; charset=%s" % (formatter.media_type, self.config.charset)),
-                ("Cache-Control", "max-age=60, must-revalidate")])
+            self.response_start(b"502", b"Gateway Error", [
+                (b"Content-Type", b"%s; charset=%s" % (formatter.media_type, self.config.charset)),
+                (b"Cache-Control", b"max-age=60, must-revalidate")])
             formatter.start_output()
-            formatter.error_output("Forbidden by robots.txt.")
+            formatter.error_output(u"Forbidden by robots.txt.")
             self.response_done([])
             return
 
@@ -193,12 +196,12 @@ class RedWebUi(object):
             ti = sum([i.transfer_in for i, t in top_resource.linked], top_resource.transfer_in)
             to = sum([i.transfer_out for i, t in top_resource.linked], top_resource.transfer_out)
             if ti + to > self.config.log_traffic:
-                self.error_log("%iK in %iK out for <%s> (descend %s)" % (
+                self.error_log(u"%iK in %iK out for <%s> (descend %s)" % (
                     ti / 1024, to / 1024, e_url(self.test_uri), str(self.descend)))
 
-        self.response_start("200", "OK", [
-            ("Content-Type", "%s; charset=%s" % (formatter.media_type, self.config.charset)),
-            ("Cache-Control", "max-age=60, must-revalidate")])
+        self.response_start(b"200", b"OK", [
+            (b"Content-Type", b"%s; charset=%s" % (formatter.media_type, self.config.charset)),
+            (b"Cache-Control", b"max-age=60, must-revalidate")])
         formatter.bind_resource(display_resource)
         top_resource.check()
 
@@ -206,10 +209,9 @@ class RedWebUi(object):
         """Show the default page."""
         formatter = html.BaseHtmlFormatter(
             self.ui_uri, self.config.lang, self.output, is_blank=True)
-        self.response_start(
-            "200", "OK", [
-                ("Content-Type", "%s; charset=%s" % (formatter.media_type, self.config.charset)),
-                ("Cache-Control", "max-age=300")])
+        self.response_start(b"200", b"OK", [
+                (b"Content-Type", b"%s; charset=%s" % (formatter.media_type, self.config.charset)),
+                (b"Cache-Control", b"max-age=300")])
         formatter.start_output()
         formatter.finish_output()
         self.response_done([])

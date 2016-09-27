@@ -135,12 +135,12 @@ def f_num(i, by1024=False):
         m = int(k / 1024)
         g = int(m / 1024)
         if g:
-            return locale.format("%d", g, grouping=True) + "g"
+            return locale.format(u"%d", g, grouping=True) + u"g"
         elif m:
-            return locale.format("%d", m, grouping=True) + "m"
+            return locale.format(u"%d", m, grouping=True) + u"m"
         elif k:
-            return locale.format("%d", k, grouping=True) + "k"
-    return locale.format("%d", i, grouping=True)
+            return locale.format(u"%d", k, grouping=True) + u"k"
+    return locale.format(u"%d", i, grouping=True)
 
 
 def relative_time(utime, now=None, show_sign=1):
@@ -153,9 +153,9 @@ def relative_time(utime, now=None, show_sign=1):
      '''
 
     signs = {
-        0:    ('0', '', ''),
-        1:    ('now', 'ago', 'from now'),
-        2:    ('none', 'behind', 'ahead'),
+        0:    (u'0', u'', u''),
+        1:    (u'now', 'ago', u'from now'),
+        2:    (u'none', u'behind', u'ahead'),
     }
 
     if  utime == None:
@@ -182,23 +182,23 @@ def relative_time(utime, now=None, show_sign=1):
 
     arr = []
     if yrs == 1:
-        arr.append(str(yrs) + ' year')
+        arr.append(str(yrs) + u' year')
     elif yrs > 1:
-        arr.append(str(yrs) + ' years')
+        arr.append(str(yrs) + u' years')
     if day == 1:
-        arr.append(str(day) + ' day')
+        arr.append(str(day) + u' day')
     elif day > 1:
-        arr.append(str(day) + ' days')
+        arr.append(str(day) + u' days')
     if hrs:
-        arr.append(str(hrs) + ' hr')
+        arr.append(str(hrs) + u' hr')
     if mnt:
-        arr.append(str(mnt) + ' min')
+        arr.append(str(mnt) + u' min')
     if sec:
-        arr.append(str(sec) + ' sec')
+        arr.append(str(sec) + u' sec')
     arr = arr[:2]        # resolution
     if show_sign:
         arr.append(sign)
-    return " ".join(arr)
+    return u" ".join(arr)
 
 
 class RelativeTimeTester(unittest.TestCase):
@@ -207,14 +207,14 @@ class RelativeTimeTester(unittest.TestCase):
     day = hour * 24
     year = day * 365
     cases = [
-        (+year, "1 year from now"),
-        (-year, "1 year ago"),
-        (+year+1, "1 year 1 sec from now"),
-        (+year+.9, "1 year 1 sec from now"),
-        (+year+day, "1 year 1 day from now"),
-        (+year+(10*day), "1 year 10 days from now"),
-        (+year+(90*day)+(3*hour), "1 year 90 days from now"),
-        (+(13*day)-.4, "13 days from now"),
+        (+year, u"1 year from now"),
+        (-year, u"1 year ago"),
+        (+year+1, u"1 year 1 sec from now"),
+        (+year+.9, u"1 year 1 sec from now"),
+        (+year+day, u"1 year 1 day from now"),
+        (+year+(10*day), u"1 year 10 days from now"),
+        (+year+(90*day)+(3*hour), u"1 year 90 days from now"),
+        (+(13*day)-.4, u"13 days from now"),
     ]
 
     def setUp(self):

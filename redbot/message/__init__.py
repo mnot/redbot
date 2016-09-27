@@ -73,8 +73,7 @@ class HttpMessage(thor.events.EventEmitter):
                 '_md5_processor',
                 '_md5_post_processor',
                 '_gzip_processor',
-                'add_note'
-        ]:
+                'add_note']:
             if state.has_key(key):
                 del state[key]
         return state
@@ -83,11 +82,10 @@ class HttpMessage(thor.events.EventEmitter):
         """
         Feed a list of (key, value) header tuples in and process them.
         """
-        self.headers = headers
-        HeaderProcessor(self)
-        self.character_encoding = self.parsed_headers.get(
-            'content-type', (None, {})
-        )[1].get('charset', 'utf-8') # default isn't UTF-8, but oh well
+        hp = HeaderProcessor(self)
+        self.headers, self.parsed_headers = hp.process(headers)
+        self.character_encoding = self.parsed_headers.get('content-type', (None, {})
+            )[1].get('charset', u'utf-8') # default isn't UTF-8, but oh well
         self.emit("headers_available")
 
     def feed_body(self, chunk):
@@ -258,8 +256,9 @@ class HttpRequest(HttpMessage):
 
     def set_iri(self, iri):
         """
-        Given an IRI or URI, convert to a URI and make sure it's sensible.
+        Given a unicode string (possibly an IRI), convert to a URI and make sure it's sensible.
         """
+        self.iri = iri
         try:
             self.uri = self.iri_to_uri(iri)
         except (ValueError, UnicodeError), why:
@@ -275,7 +274,7 @@ class HttpRequest(HttpMessage):
 
     @staticmethod
     def iri_to_uri(iri):
-        "Takes a Unicode string that can contain an IRI and emits a URI."
+        "Takes a unicode string that can contain an IRI and emits a unicode URI."
         scheme, authority, path, query, frag = urlparse.urlsplit(iri)
         scheme = scheme.encode('utf-8')
         if ":" in authority:
@@ -284,11 +283,11 @@ class HttpRequest(HttpMessage):
         else:
             authority = authority.encode('idna')
         sub_delims = "!$&'()*+,;="
-        pchar = "-.+~" + sub_delims + ":@"
+        pchar = "-.+~" + sub_delims + ":@" + "%"
         path = urllib.quote(path.encode('utf-8'), safe=pchar+"/")
         quer = urllib.quote(query.encode('utf-8'), safe=pchar+"/?")
         frag = urllib.quote(frag.encode('utf-8'), safe=pchar+"/?")
-        return urlparse.urlunsplit((scheme, authority, path, quer, frag))
+        return urlparse.urlunsplit((scheme, authority, path, quer, frag)).decode('ascii')
 
 
 class HttpResponse(HttpMessage):
@@ -300,11 +299,20 @@ class HttpResponse(HttpMessage):
         self.is_request = False
         self.is_head_response = False
         self.status_code = None
-        self.status_phrase = ""
+        self.status_phrase = u""
         self.freshness_lifetime = None
         self.age = None
         self.store_shared = None
         self.store_private = None
+
+    def set_top_line(self, version, status_code, status_phrase):
+        self.version = version.decode('ascii', 'replace')
+        self.status_code = status_code.decode('ascii', 'replace')
+        try:
+            self.status_phrase = status_phrase.decode('ascii', 'strict')
+        except UnicodeDecodeError:
+            self.status_phrase = status_phrase.decode('ascii', 'replace')
+            self.add_note('status', STATUS_PHRASE_ENCODING)
 
 
 class DummyMsg(HttpResponse):
@@ -315,7 +323,7 @@ class DummyMsg(HttpResponse):
         HttpResponse.__init__(self, add_note)
         self.base_uri = "http://www.example.com/foo/bar/baz.html?bat=bam"
         self.start_time = time.time()
-        self.status_phrase = ""
+        self.status_phrase = u""
         self.notes = []
         self.note_classes = []
 
@@ -341,6 +349,14 @@ class URI_BAD_SYNTAX(Note):
     text = u"""\
 This isn't a valid URI. Look for illegal characters and other problems; see
 [RFC3986](http://www.ietf.org/rfc/rfc3986.txt) for more information."""
+
+class STATUS_PHRASE_ENCODING(Note):
+    category = categories.GENERAL
+    level = levels.BAD
+    summary = u"The status phrase contains non-ASCII characters."
+    text = u"""\
+The status phrase can only contain ASCII characters. RED has detected (and possibly removed)
+non-ASCII characters in it."""
 
 class CL_CORRECT(Note):
     category = categories.GENERAL
