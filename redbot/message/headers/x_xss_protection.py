@@ -5,12 +5,12 @@ from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7231
 
 class x_xss_protection(headers.HttpHeader):
-    canonical_name = u"X-XSS-Protection"
-    description = u"""\
+    canonical_name = "X-XSS-Protection"
+    description = """\
 The `X-XSS-Protection` response header field can be sent by servers to control how
 older versions of Internet Explorer configure their Cross Site Scripting protection."""
     reference = \
-        u"https://blogs.msdn.microsoft.com/ieinternals/2011/01/31/controlling-the-xss-filter/"
+        "https://blogs.msdn.microsoft.com/ieinternals/2011/01/31/controlling-the-xss-filter/"
     syntax = r'(?:[10](?:\s*;\s*%s)*)' % rfc7231.parameter
     list_header = False
     deprecated = False
@@ -41,8 +41,8 @@ older versions of Internet Explorer configure their Cross Site Scripting protect
 class XSS_PROTECTION_ON(Note):
     category = categories.SECURITY
     level = levels.INFO
-    summary = u"%(response)s enables XSS filtering in IE8+."
-    text = u"""\
+    summary = "%(response)s enables XSS filtering in IE8+."
+    text = """\
 Recent versions of Internet Explorer have built-in Cross-Site Scripting (XSS) attack protection;
 they try to automatically filter requests that fit a particular profile.
 
@@ -57,8 +57,8 @@ See [this blog entry](http://bit.ly/tJbICH) for more information."""
 class XSS_PROTECTION_OFF(Note):
     category = categories.SECURITY
     level = levels.INFO
-    summary = u"%(response)s disables XSS filtering in IE8+."
-    text = u"""\
+    summary = "%(response)s disables XSS filtering in IE8+."
+    text = """\
 Recent versions of Internet Explorer have built-in Cross-Site Scripting (XSS) attack protection;
 they try to automatically filter requests that fit a particular profile.
 
@@ -72,8 +72,8 @@ See [this blog entry](http://bit.ly/tJbICH) for more information."""
 class XSS_PROTECTION_BLOCK(Note):
     category = categories.SECURITY
     level = levels.INFO
-    summary = u"%(response)s blocks XSS attacks in IE8+."
-    text = u"""\
+    summary = "%(response)s blocks XSS attacks in IE8+."
+    text = """\
 Recent versions of Internet Explorer have built-in Cross-Site Scripting (XSS) attack protection;
 they try to automatically filter requests that fit a particular profile.
 

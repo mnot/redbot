@@ -6,8 +6,8 @@ from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7230, rfc7231
 
 class keep_alive(headers.HttpHeader):
-    canonical_name = u"Keep-Alive"
-    description = u"""\
+    canonical_name = "Keep-Alive"
+    description = """\
 The `Keep-Alive` header is completely optional; it is defined primarily because the `keep-alive`
 connection token implies that such a header exists, not because anyone actually uses it.
 
@@ -16,7 +16,7 @@ to convey how many requests they're willing to serve on a single connection, wha
 timeout is and other information. However, this isn't usually used by clients.
 
 It's safe to remove this header if you wish to save a few bytes in the response."""
-    reference = u"https://tools.ietf.org/html/rfc2068#section-19.7.1"
+    reference = "https://tools.ietf.org/html/rfc2068#section-19.7.1"
     syntax = rfc7230.list_rule(rfc7231.parameter)
     list_header = True
     deprecated = True

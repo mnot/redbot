@@ -9,10 +9,10 @@ These regex are directly derived from the collected ABNF in RFC7230:
 They should be processed with re.VERBOSE.
 """
 
-from rfc5234 import ALPHA, CR, LF, CRLF, CTL, DIGIT, DQUOTE, HEXDIG, HTAB, OCTET, SP, VCHAR
-from rfc3986 import URI_reference, absolute_URI, authority, fragment, path_abempty, port, query, relative_part, scheme, segment, host as uri_host
+from .rfc5234 import ALPHA, CR, LF, CRLF, CTL, DIGIT, DQUOTE, HEXDIG, HTAB, OCTET, SP, VCHAR
+from .rfc3986 import URI_reference, absolute_URI, authority, fragment, path_abempty, port, query, relative_part, scheme, segment, host as uri_host
 
-SPEC_URL = u"http://httpwg.org/specs/rfc7230"
+SPEC_URL = "http://httpwg.org/specs/rfc7230"
 
 
 ## Basics

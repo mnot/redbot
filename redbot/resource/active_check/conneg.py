@@ -14,12 +14,12 @@ class ConnegCheck(SubRequest):
     """
     See if content negotiation for compression is supported, and how.
     """
-    check_name = u"Content Negotiation"
-    response_phrase = u"The compressed response"
+    check_name = "Content Negotiation"
+    response_phrase = "The compressed response"
 
     def modify_request_headers(self, base_headers):
         return [h for h in base_headers if h[0].lower() != 'accept-encoding'] \
-            + [(u'accept-encoding', u'gzip')]
+            + [('accept-encoding', 'gzip')]
 
     def preflight(self):
         if 'accept-encoding' in [k.lower() for (k, v) in self.base.request.headers]:
@@ -101,8 +101,8 @@ class ConnegCheck(SubRequest):
 class CONNEG_SUBREQ_PROBLEM(Note):
     category = categories.CONNEG
     level = levels.BAD
-    summary = u"There was a problem checking for Content Negotiation support."
-    text = u"""\
+    summary = "There was a problem checking for Content Negotiation support."
+    text = """\
 When RED tried to check the resource for content negotiation support, there was a problem:
 
 `%(problem)s`
@@ -112,8 +112,8 @@ Trying again might fix it."""
 class CONNEG_GZIP_GOOD(Note):
     category = categories.CONNEG
     level = levels.GOOD
-    summary = u'Content negotiation for gzip compression is supported, saving %(savings)s%%.'
-    text = u"""\
+    summary = 'Content negotiation for gzip compression is supported, saving %(savings)s%%.'
+    text = """\
 HTTP supports compression of responses by negotiating for `Content-Encoding`. When RED asked for a
 compressed response, the resource provided one, saving %(savings)s%% of its original size (from
 %(orig_size)s to %(gzip_size)s bytes).
@@ -123,8 +123,8 @@ The compressed response's headers are displayed."""
 class CONNEG_GZIP_BAD(Note):
     category = categories.CONNEG
     level = levels.WARN
-    summary = u'Content negotiation for gzip compression makes the response %(savings)s%% larger.'
-    text = u"""\
+    summary = 'Content negotiation for gzip compression makes the response %(savings)s%% larger.'
+    text = """\
 HTTP supports compression of responses by negotiating for `Content-Encoding`. When RED asked for a
 compressed response, the resource provided one, but it was %(savings)s%% _larger_ than the original
 response; from %(orig_size)s to %(gzip_size)s bytes.
@@ -138,16 +138,16 @@ The compressed response's headers are displayed."""
 class CONNEG_NO_GZIP(Note):
     category = categories.CONNEG
     level = levels.INFO
-    summary = u'Content negotiation for gzip compression isn\'t supported.'
-    text = u"""\
+    summary = 'Content negotiation for gzip compression isn\'t supported.'
+    text = """\
 HTTP supports compression of responses by negotiating for `Content-Encoding`. When RED asked for a
 compressed response, the resource did not provide one."""
 
 class CONNEG_NO_VARY(Note):
     category = categories.CONNEG
     level = levels.BAD
-    summary = u"%(response)s is negotiated, but doesn't have an appropriate Vary header."
-    text = u"""\
+    summary = "%(response)s is negotiated, but doesn't have an appropriate Vary header."
+    text = """\
 All content negotiated responses need to have a `Vary` header that reflects the header(s) used to
 select the response.
 
@@ -157,8 +157,8 @@ select the response.
 class CONNEG_GZIP_WITHOUT_ASKING(Note):
     category = categories.CONNEG
     level = levels.WARN
-    summary = u"A gzip-compressed response was sent when it wasn't asked for."
-    text = u"""\
+    summary = "A gzip-compressed response was sent when it wasn't asked for."
+    text = """\
 HTTP supports compression of responses by negotiating for `Content-Encoding`. Even though RED
 didn't ask for a compressed response, the resource provided one anyway.
 
@@ -168,8 +168,8 @@ expecting a compressed response."""
 class VARY_INCONSISTENT(Note):
     category = categories.CONNEG
     level = levels.BAD
-    summary = u"The resource doesn't send Vary consistently."
-    text = u"""\
+    summary = "The resource doesn't send Vary consistently."
+    text = """\
 HTTP requires that the `Vary` response header be sent consistently for all responses if they change
 based upon different aspects of the request.
 
@@ -185,8 +185,8 @@ cache key for a given URI is."""
 class VARY_STATUS_MISMATCH(Note):
     category = categories.CONNEG
     level = levels.WARN
-    summary = u"The response status is different when content negotiation happens."
-    text = u"""\
+    summary = "The response status is different when content negotiation happens."
+    text = """\
 When content negotiation is used, the response status shouldn't change between negotiated and
 non-negotiated responses.
 
@@ -198,16 +198,16 @@ RED hasn't checked other aspects of content negotiation because of this."""
 class VARY_HEADER_MISMATCH(Note):
     category = categories.CONNEG
     level = levels.BAD
-    summary = u"The %(header)s header is different when content negotiation happens."
-    text = u"""\
+    summary = "The %(header)s header is different when content negotiation happens."
+    text = """\
 When content negotiation is used, the %(header)s response header shouldn't change between
 negotiated and non-negotiated responses."""
 
 class VARY_BODY_MISMATCH(Note):
     category = categories.CONNEG
     level = levels.INFO
-    summary = u"The response body is different when content negotiation happens."
-    text = u"""\
+    summary = "The response body is different when content negotiation happens."
+    text = """\
 When content negotiation is used, the response body typically shouldn't change between negotiated
 and non-negotiated responses.
 
@@ -217,8 +217,8 @@ requests. However, RED's output may be skewed as a result."""
 class VARY_ETAG_DOESNT_CHANGE(Note):
     category = categories.CONNEG
     level = levels.BAD
-    summary = u"The ETag doesn't change between negotiated representations."
-    text = u"""\
+    summary = "The ETag doesn't change between negotiated representations."
+    text = """\
 HTTP requires that the `ETag`s for two different responses associated with the same URI be
 different as well, to help caches and other receivers disambiguate them.
 

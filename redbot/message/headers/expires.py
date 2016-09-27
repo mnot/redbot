@@ -6,10 +6,10 @@ from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7234
 
 class expires(headers.HttpHeader):
-    canonical_name = u"Expires"
-    description = u"""\
+    canonical_name = "Expires"
+    description = """\
 The `Expires` header gives a time after which the response is considered stale."""
-    reference = u"%s#header.expires" % rfc7234.SPEC_URL
+    reference = "%s#header.expires" % rfc7234.SPEC_URL
     syntax = False # rfc7234.Expires
     list_header = False
     deprecated = False

@@ -4,18 +4,16 @@
 A Web UI for RED, the Resource Expert Droid.
 """
 
-import cPickle as pickle
+import cgi
 import gzip
 import locale
 import os
+import pickle as pickle
 import sys
 import tempfile
 import time
-from urlparse import urlsplit
+from urllib.parse import urlsplit
 import zlib
-
-assert sys.version_info[0] == 2 and sys.version_info[1] >= 6, \
-    "Please use Python 2.6 or greater"
 
 import thor
 from redbot import __version__
@@ -26,7 +24,7 @@ from redbot.formatter import find_formatter, html
 from redbot.formatter.html import e_url
 
 
-error_template = u"<p class='error'>%s</p>"
+error_template = "<p class='error'>%s</p>"
 
 
 class RedWebUi(object):
@@ -35,26 +33,44 @@ class RedWebUi(object):
 
     Given a URI, run RED on it and present the results to output as HTML.
     If descend is true, spider the links and present a summary.
+    
+    * method - 
+    * query_string -
     """
     def __init__(self, config, ui_uri, method, query_string,
                  response_start, response_body, response_done, error_log=sys.stderr.write):
-        self.config = config
-        self.ui_uri = ui_uri
-        self.method = method
+        self.config = config  # Config object, see bin/webui.py
+        self.ui_uri = ui_uri  # Base URI for the web ux
+        self.method = method  # Request method to the UX
         self.response_start = response_start
         self.response_body = response_body
         self._response_done = response_done
-        self.error_log = error_log
-
-        self.test_uri = None
-        self.req_hdrs = None # tuple of unicode K,V
-        self.format = None
-        self.test_id = None
+        self.error_log = error_log  # function to log errors to
+        self.test_uri = None  # string
+        self.req_hdrs = None  # tuple of string K,V
+        self.format = None    # string
+        self.test_id = None   # string
         self.check_name = None
         self.descend = None
         self.save = None
-        self.parse_qs(method, query_string)
+        self.run(query_string)
 
+    def run(self, query_string):
+        """Given a bytes query_string from the wire, set attributes."""
+        assert isinstance(query_string, bytes)
+        qs = cgi.parse_qs(query_string.decode(self.config.charset, 'replace'))
+        self.test_uri = qs.get('uri', [''])[0]
+        self.req_hdrs = [tuple(rh.split(":", 1))
+                         for rh in qs.get("req_hdr", []) if rh.find(":") > 0]
+        self.format = qs.get('format', ['html'])[0]
+        self.descend = qs.get('descend', [False])[0]
+        if not self.descend:
+            self.check_name = qs.get('check_name', [None])[0]
+        self.test_id = qs.get('id', [None])[0]
+        if self.method == "POST":
+            self.save = qs.get('save', [False])[0]
+        else:
+            self.save = False
         self.start = time.time()
         self.timeout = thor.schedule(self.config.max_runtime, self.timeoutError)
         if self.save and self.config.save_dir and self.test_id:
@@ -66,12 +82,6 @@ class RedWebUi(object):
         else:
             self.show_default()
 
-    def response_done(self, trailers):
-        if self.timeout:
-            self.timeout.delete()
-            self.timeout = None
-        self._response_done(trailers)
-
     def save_test(self):
         """Save a previously run test_id."""
         try:
@@ -82,12 +92,12 @@ class RedWebUi(object):
             if self.descend:
                 location = "%s&descend=True" % location
             self.response_start("303", "See Other", [("Location", location)])
-            self.response_body(u"Redirecting to the saved test page...".encode(self.config.charset))
+            self.response_body("Redirecting to the saved test page...".encode(self.config.charset))
         except (OSError, IOError):
             self.response_start(b"500", b"Internal Server Error",
                 [(b"Content-Type", b"text/html; charset=%s" % self.config.charset),])
             self.response_body(error_template % \
-                u"Sorry, I couldn't save that.".encode(self.config.charset))
+                "Sorry, I couldn't save that.".encode(self.config.charset))
         self.response_done([])
 
     def load_saved_test(self):
@@ -100,7 +110,7 @@ class RedWebUi(object):
                 (b"Content-Type", b"text/html; charset=%s" % self.config.charset),
                 (b"Cache-Control", b"max-age=600, must-revalidate")])
             self.response_body(error_template % \
-                u"I'm sorry, I can't find that saved response.".encode(self.config.charset))
+                "I'm sorry, I can't find that saved response.".encode(self.config.charset))
             self.response_done([])
             return
         is_saved = mtime > thor.time()
@@ -111,7 +121,7 @@ class RedWebUi(object):
                 (b"Content-Type", b"text/html; charset=%s" % self.config.charset),
                 (b"Cache-Control", b"max-age=600, must-revalidate")])
             self.response_body(error_template % \
-                u"I'm sorry, I had a problem loading that.".encode(self.config.charset))
+                "I'm sorry, I had a problem loading that.".encode(self.config.charset))
             self.response_done([])
             return
         finally:
@@ -125,9 +135,10 @@ class RedWebUi(object):
         formatter = find_formatter(self.format, 'html', top_resource.descend)(
             self.ui_uri, self.config.lang, self.output,
             allow_save=(not is_saved), is_saved=True, test_id=self.test_id)
+        content_type = "%s; charset=%s" % (formatter.media_type, self.config.charset)
 
         self.response_start(b"200", b"OK", [
-            (b"Content-Type", b"%s; charset=%s" % (formatter.media_type, self.config.charset)),
+            (b"Content-Type", content_type.encode('ascii')),
             (b"Cache-Control", b"max-age=3600, must-revalidate")])
         @thor.events.on(formatter)
         def formatter_done():
@@ -151,6 +162,7 @@ class RedWebUi(object):
         formatter = find_formatter(self.format, 'html', self.descend)(
             self.ui_uri, self.config.lang, self.output,
             allow_save=test_id, is_saved=False, test_id=test_id, descend=self.descend)
+        content_type = "%s; charset=%s" % (formatter.media_type, self.config.charset)
         if self.check_name:
             display_resource = top_resource.subreqs.get(self.check_name, top_resource)
         else:
@@ -162,12 +174,12 @@ class RedWebUi(object):
                 referers.append(value)
         referer_error = None
         if len(referers) > 1:
-            referer_error = u"Multiple referers not allowed."
+            referer_error = "Multiple referers not allowed."
         if referers and urlsplit(referers[0]).hostname in self.config.referer_spam_domains:
-            referer_error = u"Referer not allowed."
+            referer_error = "Referer not allowed."
         if referer_error:
             self.response_start(b"403", b"Forbidden", [
-                (b"Content-Type", b"%s; charset=%s" % (formatter.media_type, self.config.charset)),
+                (b"Content-Type", content_type.encode('ascii')),
                 (b"Cache-Control", b"max-age=360, must-revalidate")])
             formatter.start_output()
             formatter.error_output(referer_error)
@@ -176,10 +188,10 @@ class RedWebUi(object):
 
         if not self.robots_precheck(self.test_uri):
             self.response_start(b"502", b"Gateway Error", [
-                (b"Content-Type", b"%s; charset=%s" % (formatter.media_type, self.config.charset)),
+                (b"Content-Type", content_type.encode('ascii')),
                 (b"Cache-Control", b"max-age=60, must-revalidate")])
             formatter.start_output()
-            formatter.error_output(u"Forbidden by robots.txt.")
+            formatter.error_output("Forbidden by robots.txt.")
             self.response_done([])
             return
 
@@ -196,11 +208,11 @@ class RedWebUi(object):
             ti = sum([i.transfer_in for i, t in top_resource.linked], top_resource.transfer_in)
             to = sum([i.transfer_out for i, t in top_resource.linked], top_resource.transfer_out)
             if ti + to > self.config.log_traffic:
-                self.error_log(u"%iK in %iK out for <%s> (descend %s)" % (
+                self.error_log("%iK in %iK out for <%s> (descend %s)" % (
                     ti / 1024, to / 1024, e_url(self.test_uri), str(self.descend)))
 
         self.response_start(b"200", b"OK", [
-            (b"Content-Type", b"%s; charset=%s" % (formatter.media_type, self.config.charset)),
+            (b"Content-Type", content_type.encode('ascii')),
             (b"Cache-Control", b"max-age=60, must-revalidate")])
         formatter.bind_resource(display_resource)
         top_resource.check()
@@ -209,37 +221,28 @@ class RedWebUi(object):
         """Show the default page."""
         formatter = html.BaseHtmlFormatter(
             self.ui_uri, self.config.lang, self.output, is_blank=True)
+        content_type = "%s; charset=%s" % (formatter.media_type, self.config.charset)
         self.response_start(b"200", b"OK", [
-                (b"Content-Type", b"%s; charset=%s" % (formatter.media_type, self.config.charset)),
+                (b"Content-Type", content_type.encode('ascii')),
                 (b"Cache-Control", b"max-age=300")])
         formatter.start_output()
         formatter.finish_output()
         self.response_done([])
 
-    def parse_qs(self, method, qs):
-        """Given an method and a query-string dict, set attributes."""
-        self.test_uri = qs.get('uri', [''])[0].decode(self.config.charset, 'replace')
-        self.req_hdrs = [tuple(rh.decode(self.config.charset, 'replace').split(":", 1))
-                         for rh in qs.get("req_hdr", []) if rh.find(":") > 0]
-        self.format = qs.get('format', ['html'])[0]
-        self.descend = qs.get('descend', [False])[0]
-        if not self.descend:
-            self.check_name = qs.get('check_name', [None])[0]
-        self.test_id = qs.get('id', [None])[0]
-        if method == "POST":
-            self.save = qs.get('save', [False])[0]
-        else:
-            self.save = False
-
     def output(self, chunk):
         self.response_body(chunk.encode(self.config.charset, 'replace'))
+
+    def response_done(self, trailers):
+        if self.timeout:
+            self.timeout.delete()
+            self.timeout = None
+        self._response_done(trailers)
 
     def timeoutError(self):
         """ Max runtime reached."""
         self.error_log("RED TIMEOUT: <%s> descend=%s" % (self.test_uri, self.descend))
         self.output(error_template % ("RED timeout."))
         self.response_done([])
-
 
     def robots_precheck(self, iri):
         """
@@ -248,7 +251,6 @@ class RedWebUi(object):
 
         This does not fetch robots.txt.
         """
-
         robot_fetcher = RobotFetcher()
         return robot_fetcher.check_robots(HttpRequest.iri_to_uri(iri), sync=True)
 

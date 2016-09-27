@@ -8,11 +8,11 @@ These regex are directly derived from the collected ABNF in RFC7232.
 They should be processed with re.VERBOSE.
 """
 
-from rfc5234 import DQUOTE
-from rfc7230 import list_rule, OWS, obs_text
-from rfc7231 import HTTP_date
+from .rfc5234 import DQUOTE
+from .rfc7230 import list_rule, OWS, obs_text
+from .rfc7231 import HTTP_date
 
-SPEC_URL = u"http://httpwg.org/specs/rfc7232"
+SPEC_URL = "http://httpwg.org/specs/rfc7232"
 
 
 # weak = %x57.2F ; W/

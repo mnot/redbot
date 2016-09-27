@@ -8,10 +8,10 @@ These regex are directly derived from the collected ABNF in RFC7235.
 They should be processed with re.VERBOSE.
 """
 
-from rfc5234 import ALPHA, DIGIT, SP
-from rfc7230 import list_rule, BWS, OWS, quoted_string, token
+from .rfc5234 import ALPHA, DIGIT, SP
+from .rfc7230 import list_rule, BWS, OWS, quoted_string, token
 
-SPEC_URL = u"http://httpwg.org/specs/rfc7235"
+SPEC_URL = "http://httpwg.org/specs/rfc7235"
 
 
 # auth-param = token BWS "=" BWS ( token / quoted-string )

@@ -5,8 +5,8 @@ from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7234
 
 class x_pad(headers.HttpHeader):
-    canonical_name = u"X-Pad"
-    description = u"""\
+    canonical_name = "X-Pad"
+    description = """\
   The `%(field_name)s` header is used to "pad" the response header size.
 
   Very old versions of the Netscape browser had a bug whereby a response whose headers were exactly

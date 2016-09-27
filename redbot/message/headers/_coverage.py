@@ -31,14 +31,14 @@ def CheckHeaderModule(header_name):
 
     attrs = dir(header_obj)
     checks = [
-        ('canonical_name', types.UnicodeType),
-        ('reference', types.UnicodeType),
-        ('description', types.UnicodeType),
-        ('valid_in_requests', types.BooleanType),
-        ('valid_in_responses', types.BooleanType),
-        ('syntax', types.StringType),
-        ('list_header', types.BooleanType),
-        ('deprecated', types.BooleanType),
+        ('canonical_name', str),
+        ('reference', str),
+        ('description', str),
+        ('valid_in_requests', bool),
+        ('valid_in_responses', bool),
+        ('syntax', bytes),
+        ('list_header', bool),
+        ('deprecated', bool),
     ]
     for (attr_name, attr_type) in checks:
         attr_value = getattr(header_obj, attr_name)

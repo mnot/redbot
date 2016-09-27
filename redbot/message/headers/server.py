@@ -6,11 +6,11 @@ from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7231
 
 class server(headers.HttpHeader):
-    canonical_name = u"Server"
-    description = u"""\
+    canonical_name = "Server"
+    description = """\
 The `Server` header contains information about the software used by the origin server to handle the
 request."""
-    reference = u"%s#header.server" % rfc7231.SPEC_URL
+    reference = "%s#header.server" % rfc7231.SPEC_URL
     syntax = rfc7231.Server
     list_header = True
     deprecated = False

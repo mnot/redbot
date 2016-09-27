@@ -6,13 +6,13 @@ from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7234
 
 class pragma(headers.HttpHeader):
-    canonical_name = u"Pragma"
-    description = u"""\
+    canonical_name = "Pragma"
+    description = """\
 The `Pragma` header is used to include implementation-specific directives that might apply to any
 recipient along the request/response chain.
 
 This header is deprecated, in favour of `Cache-Control`."""
-    reference = u"%s#header.pragma" % rfc7234.SPEC_URL
+    reference = "%s#header.pragma" % rfc7234.SPEC_URL
     syntax = rfc7234.Pragma
     list_header = True
     deprecated = True
@@ -33,18 +33,18 @@ This header is deprecated, in favour of `Cache-Control`."""
 class PRAGMA_NO_CACHE(Note):
     category = categories.CACHING
     level = levels.WARN
-    summary = u"Pragma: no-cache is a request directive, not a response \
+    summary = "Pragma: no-cache is a request directive, not a response \
   directive."
-    text = u"""\
+    text = """\
   `Pragma` is a very old request header that is sometimes used as a response header, even though this
   is not specified behaviour. `Cache-Control: no-cache` is more appropriate."""
 
 class PRAGMA_OTHER(Note):
     category = categories.GENERAL
     level = levels.WARN
-    summary = u"""\
+    summary = """\
   The Pragma header is being used in an undefined way."""
-    text = u"""\
+    text = """\
   HTTP only defines `Pragma: no-cache`; other uses of this header are deprecated."""
 
 

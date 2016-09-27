@@ -34,7 +34,7 @@ class StatusChecker(object):
             self.add_note('', UNEXPECTED_CONTINUE)
     def status101(self):        # Switching Protocols
         if self.request \
-        and not 'upgrade' in header_dict(self.request.headers).keys():
+        and not 'upgrade' in list(header_dict(self.request.headers).keys()):
             self.add_note('', UPGRADE_NOT_REQUESTED)
     def status102(self):        # Processing
         pass
@@ -43,7 +43,7 @@ class StatusChecker(object):
     def status201(self):        # Created
         if self.request and self.request.method in safe_methods:
             self.add_note('status', CREATED_SAFE_METHOD, method=self.request.method)
-        if not self.response.parsed_headers.has_key('location'):
+        if 'location' not in self.response.parsed_headers:
             self.add_note('header-location', CREATED_WITHOUT_LOCATION)
     def status202(self):        # Accepted
         pass
@@ -55,9 +55,9 @@ class StatusChecker(object):
         pass
     def status206(self):        # Partial Content
         if self.request \
-        and not "range" in header_dict(self.request.headers).keys():
+        and not "range" in list(header_dict(self.request.headers).keys()):
             self.add_note('', PARTIAL_NOT_REQUESTED)
-        if not self.response.parsed_headers.has_key('content-range'):
+        if 'content-range' not in self.response.parsed_headers:
             self.add_note('header-location', PARTIAL_WITHOUT_RANGE)
     def status207(self):        # Multi-Status
         pass
@@ -66,26 +66,26 @@ class StatusChecker(object):
     def status300(self):        # Multiple Choices
         pass
     def status301(self):        # Moved Permanently
-        if not self.response.parsed_headers.has_key('location'):
+        if 'location' not in self.response.parsed_headers:
             self.add_note('header-location', REDIRECT_WITHOUT_LOCATION)
     def status302(self):        # Found
-        if not self.response.parsed_headers.has_key('location'):
+        if 'location' not in self.response.parsed_headers:
             self.add_note('header-location', REDIRECT_WITHOUT_LOCATION)
     def status303(self):        # See Other
-        if not self.response.parsed_headers.has_key('location'):
+        if 'location' not in self.response.parsed_headers:
             self.add_note('header-location', REDIRECT_WITHOUT_LOCATION)
     def status304(self):        # Not Modified
-        if not self.response.parsed_headers.has_key('date'):
+        if 'date' not in self.response.parsed_headers:
             self.add_note('status', NO_DATE_304)
     def status305(self):        # Use Proxy
         self.add_note('', STATUS_DEPRECATED)
     def status306(self):        # Reserved
         self.add_note('', STATUS_RESERVED)
     def status307(self):        # Temporary Redirect
-        if not self.response.parsed_headers.has_key('location'):
+        if 'location' not in self.response.parsed_headers:
             self.add_note('header-location', REDIRECT_WITHOUT_LOCATION)
     def status308(self):        # Permanent Redirect
-        if not self.response.parsed_headers.has_key('location'):
+        if 'location' not in self.response.parsed_headers:
             self.add_note('header-location', REDIRECT_WITHOUT_LOCATION)
     def status400(self):        # Bad Request
         self.add_note('', STATUS_BAD_REQUEST)
@@ -157,16 +157,16 @@ class StatusChecker(object):
 class NO_DATE_304(Note):
     category = categories.VALIDATION
     level = levels.WARN
-    summary = u"304 responses need to have a Date header."
-    text = u"""\
+    summary = "304 responses need to have a Date header."
+    text = """\
 HTTP requires `304 Not Modified` responses to have a `Date` header in all but the most unusual
 circumstances."""
 
 class UNEXPECTED_CONTINUE(Note):
     category = categories.GENERAL
     level = levels.BAD
-    summary = u"A 100 Continue response was sent when it wasn't asked for."
-    text = u"""\
+    summary = "A 100 Continue response was sent when it wasn't asked for."
+    text = """\
 HTTP allows clients to ask a server if a request with a body (e.g., uploading a large file) will
 succeed before sending it, using a mechanism called "Expect/continue".
 
@@ -181,8 +181,8 @@ problems."""
 class UPGRADE_NOT_REQUESTED(Note):
     category = categories.GENERAL
     level = levels.BAD
-    summary = u"The protocol was upgraded without being requested."
-    text = u"""\
+    summary = "The protocol was upgraded without being requested."
+    text = """\
 HTTP defines the `Upgrade` header as a means of negotiating a change of protocol; i.e., it allows
 you to switch the protocol on a given connection from HTTP to something else.
 
@@ -194,8 +194,8 @@ Trying to upgrade the connection without the client's participation obviously wo
 class CREATED_SAFE_METHOD(Note):
     category = categories.GENERAL
     level = levels.WARN
-    summary = u"A new resource was created in response to a safe request."
-    text = u"""\
+    summary = "A new resource was created in response to a safe request."
+    text = """\
 The `201 Created` status code indicates that processing the request had the side effect of creating
 a new resource.
 
@@ -209,8 +209,8 @@ re-try safe methods when they fail."""
 class CREATED_WITHOUT_LOCATION(Note):
     category = categories.GENERAL
     level = levels.BAD
-    summary = u"A new resource was created without its location being sent."
-    text = u"""\
+    summary = "A new resource was created without its location being sent."
+    text = """\
 The `201 Created` status code indicates that processing the request had the side effect of creating
 a new resource.
 
@@ -221,8 +221,8 @@ isn't present in this response."""
 class PARTIAL_WITHOUT_RANGE(Note):
     category = categories.GENERAL
     level = levels.BAD
-    summary = u"%(response)s doesn't have a Content-Range header."
-    text = u"""\
+    summary = "%(response)s doesn't have a Content-Range header."
+    text = """\
 The `206 Partial Response` status code indicates that the response body is only partial.
 
 However, for a response to be partial, it needs to have a `Content-Range` header to indicate what
@@ -232,8 +232,8 @@ won't be able to process it."""
 class PARTIAL_NOT_REQUESTED(Note):
     category = categories.GENERAL
     level = levels.BAD
-    summary = u"A partial response was sent when it wasn't requested."
-    text = u"""\
+    summary = "A partial response was sent when it wasn't requested."
+    text = """\
 The `206 Partial Response` status code indicates that the response body is only partial.
 
 However, the client needs to ask for it with the `Range` header.
@@ -244,32 +244,32 @@ interoperability problems."""
 class REDIRECT_WITHOUT_LOCATION(Note):
     category = categories.GENERAL
     level = levels.BAD
-    summary = u"Redirects need to have a Location header."
-    text = u"""\
+    summary = "Redirects need to have a Location header."
+    text = """\
 The %(status)s status code redirects users to another URI. The `Location` header is used to convey
 this URI, but a valid one isn't present in this response."""
 
 class STATUS_DEPRECATED(Note):
     category = categories.GENERAL
     level = levels.BAD
-    summary = u"The %(status)s status code is deprecated."
-    text = u"""\
+    summary = "The %(status)s status code is deprecated."
+    text = """\
 When a status code is deprecated, it should not be used, because its meaning is not well-defined
 enough to ensure interoperability."""
 
 class STATUS_RESERVED(Note):
     category = categories.GENERAL
     level = levels.BAD
-    summary = u"The %(status)s status code is reserved."
-    text = u"""\
+    summary = "The %(status)s status code is reserved."
+    text = """\
 Reserved status codes can only be used by future, standard protocol extensions; they are not for
 private use."""
 
 class STATUS_NONSTANDARD(Note):
     category = categories.GENERAL
     level = levels.BAD
-    summary = u"%(status)s is not a standard HTTP status code."
-    text = u"""\
+    summary = "%(status)s is not a standard HTTP status code."
+    text = """\
 Non-standard status codes are not well-defined and interoperable. Instead of defining your own
 status code, you should reuse one of the more generic ones; for example, 400 for a client-side
 problem, or 500 for a server-side problem."""
@@ -277,106 +277,106 @@ problem, or 500 for a server-side problem."""
 class STATUS_BAD_REQUEST(Note):
     category = categories.GENERAL
     level = levels.WARN
-    summary = u"The server didn't understand the request."
-    text = u"""\
+    summary = "The server didn't understand the request."
+    text = """\
  """
 
 class STATUS_FORBIDDEN(Note):
     category = categories.GENERAL
     level = levels.INFO
-    summary = u"The server has forbidden this request."
-    text = u"""\
+    summary = "The server has forbidden this request."
+    text = """\
  """
 
 class STATUS_NOT_FOUND(Note):
     category = categories.GENERAL
     level = levels.INFO
-    summary = u"The resource could not be found."
-    text = u"""\
+    summary = "The resource could not be found."
+    text = """\
 The server couldn't find any resource to serve for the
      given URI."""
 
 class STATUS_NOT_ACCEPTABLE(Note):
     category = categories.GENERAL
     level = levels.INFO
-    summary = u"The resource could not be found."
-    text = u"""\
+    summary = "The resource could not be found."
+    text = """\
 """
 
 class STATUS_CONFLICT(Note):
     category = categories.GENERAL
     level = levels.INFO
-    summary = u"The request conflicted with the state of the resource."
-    text = u"""\
+    summary = "The request conflicted with the state of the resource."
+    text = """\
  """
 
 class STATUS_GONE(Note):
     category = categories.GENERAL
     level = levels.INFO
-    summary = u"The resource is gone."
-    text = u"""\
+    summary = "The resource is gone."
+    text = """\
 The server previously had a resource at the given URI, but it is no longer there."""
 
 class STATUS_REQUEST_ENTITY_TOO_LARGE(Note):
     category = categories.GENERAL
     level = levels.INFO
-    summary = u"The request body was too large for the server."
-    text = u"""\
+    summary = "The request body was too large for the server."
+    text = """\
 The server rejected the request because the request body sent was too large."""
 
 class STATUS_URI_TOO_LONG(Note):
     category = categories.GENERAL
     level = levels.BAD
-    summary = u"The server won't accept a URI this long %(uri_len)s."
-    text = u"""\
+    summary = "The server won't accept a URI this long %(uri_len)s."
+    text = """\
 The %(status)s status code means that the server can't or won't accept a request-uri this long."""
 
 class STATUS_UNSUPPORTED_MEDIA_TYPE(Note):
     category = categories.GENERAL
     level = levels.INFO
-    summary = u"The resource doesn't support this media type in requests."
-    text = u"""\
+    summary = "The resource doesn't support this media type in requests."
+    text = """\
  """
 
 class STATUS_INTERNAL_SERVICE_ERROR(Note):
     category = categories.GENERAL
     level = levels.INFO
-    summary = u"There was a general server error."
-    text = u"""\
+    summary = "There was a general server error."
+    text = """\
  """
 
 class STATUS_NOT_IMPLEMENTED(Note):
     category = categories.GENERAL
     level = levels.INFO
-    summary = u"The server doesn't implement the request method."
-    text = u"""\
+    summary = "The server doesn't implement the request method."
+    text = """\
  """
 
 class STATUS_BAD_GATEWAY(Note):
     category = categories.GENERAL
     level = levels.INFO
-    summary = u"An intermediary encountered an error."
-    text = u"""\
+    summary = "An intermediary encountered an error."
+    text = """\
  """
 
 class STATUS_SERVICE_UNAVAILABLE(Note):
     category = categories.GENERAL
     level = levels.INFO
-    summary = u"The server is temporarily unavailable."
-    text = u"""\
+    summary = "The server is temporarily unavailable."
+    text = """\
  """
 
 class STATUS_GATEWAY_TIMEOUT(Note):
     category = categories.GENERAL
     level = levels.INFO
-    summary = u"An intermediary timed out."
-    text = u"""\
+    summary = "An intermediary timed out."
+    text = """\
  """
 
 class STATUS_VERSION_NOT_SUPPORTED(Note):
     category = categories.GENERAL
     level = levels.BAD
-    summary = u"The request HTTP version isn't supported."
-    text = u"""\
+    summary = "The request HTTP version isn't supported."
+    text = """\
  """
 

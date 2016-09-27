@@ -7,7 +7,7 @@ unit:
 
 .PHONY: speak
 speak:
-	PYTHONPATH=../ python -m redbot.speak
+	PYTHONPATH=../ python3 -m redbot.speak
 
 .PHONY: webui
 webui: deploy

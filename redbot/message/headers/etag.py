@@ -6,10 +6,10 @@ from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7232
 
 class etag(headers.HttpHeader):
-    canonical_name = u"ETag"
-    description = u"""\
+    canonical_name = "ETag"
+    description = """\
 The `ETag` header provides an opaque identifier for the representation."""
-    reference = u"%s#header.etag" % rfc7232.SPEC_URL
+    reference = "%s#header.etag" % rfc7232.SPEC_URL
     syntax = rfc7232.ETag
     list_header = False
     deprecated = False

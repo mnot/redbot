@@ -1,20 +1,20 @@
 #!/usr/bin/env python
 
 import re
-from urlparse import urljoin
+from urllib.parse import urljoin
 
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7231, rfc3986
 
 class location(headers.HttpHeader):
-    canonical_name = u"Location"
-    description = u"""\
+    canonical_name = "Location"
+    description = """\
 The `Location` header is used in `3xx` responses to redirect the recipient to a different location
 to complete the request.
 
 In `201 Created``` responses, it identifies a newly created resource."""
-    reference = u"%s#header.location" % rfc7231.SPEC_URL
+    reference = "%s#header.location" % rfc7231.SPEC_URL
     syntax = rfc7231.Location
     list_header = False
     deprecated = False
@@ -33,8 +33,8 @@ In `201 Created``` responses, it identifies a newly created resource."""
 class LOCATION_UNDEFINED(Note):
     category = categories.GENERAL
     level = levels.WARN
-    summary = u"%(response)s doesn't define any meaning for the Location header."
-    text = u"""\
+    summary = "%(response)s doesn't define any meaning for the Location header."
+    text = """\
 The `Location` header is used for specific purposes in HTTP; mostly to indicate the URI of another
 resource (e.g., in redirection, or when a new resource is created).
 
@@ -47,8 +47,8 @@ the message that it appears in."""
 class LOCATION_NOT_ABSOLUTE(Note):
     category = categories.GENERAL
     level = levels.INFO
-    summary = u"The Location header contains a relative URI."
-    text = u"""\
+    summary = "The Location header contains a relative URI."
+    text = """\
 `Location` was originally specified to contain an absolute, not relative, URI.
 
 It is in the process of being updated, and most clients will work around this.

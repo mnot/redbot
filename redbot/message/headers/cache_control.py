@@ -6,12 +6,12 @@ from redbot.syntax import rfc7234
 
 
 class cache_control(headers.HttpHeader):
-    canonical_name = u"Cache-Control"
-    description = u"""\
+    canonical_name = "Cache-Control"
+    description = """\
 The `Cache-Control` header is used to specify directives that must be obeyed by all caches along
 the request/response chain. Cache directives are unidirectional in that the presence of a directive
 in a request does not imply that the same directive is in effect in the response."""
-    reference = u"%s#header.cache-control" % rfc7234.SPEC_URL
+    reference = "%s#header.cache-control" % rfc7234.SPEC_URL
     syntax = rfc7234.Cache_Control
     list_header = True
     deprecated = False
@@ -38,32 +38,32 @@ in a request does not imply that the same directive is in effect in the response
 class BAD_CC_SYNTAX(Note):
     category = categories.CACHING
     level = levels.BAD
-    summary = u"The %(bad_cc_attr)s Cache-Control directive's syntax is incorrect."
-    text = u"This value must be an integer."
+    summary = "The %(bad_cc_attr)s Cache-Control directive's syntax is incorrect."
+    text = "This value must be an integer."
 
 
 class CacheControlTest(headers.HeaderTest):
     name = 'Cache-Control'
     inputs = ['a=b, c=d', 'e=f', 'g']
-    expected_out = [(u'a', u'b'), (u'c', u'd'), (u'e', u'f'), (u'g', None)]
+    expected_out = [('a', 'b'), ('c', 'd'), ('e', 'f'), ('g', None)]
     expected_err = []
 
 class CacheControlCaseTest(headers.HeaderTest):
     name = 'Cache-Control'
     inputs = ['A=b, c=D']
-    expected_out = [(u'a', u'b'), (u'c', u'D')]
+    expected_out = [('a', 'b'), ('c', 'D')]
     expected_err = []
 
 class CacheControlQuotedTest(headers.HeaderTest):
     name = 'Cache-Control'
     inputs = ['a="b,c", c=d']
-    expected_out = [(u'a', u'b,c'), (u'c', u'd')]
+    expected_out = [('a', 'b,c'), ('c', 'd')]
     expected_err = []
 
 class CacheControlMaxAgeTest(headers.HeaderTest):
     name = 'Cache-Control'
     inputs = ['max-age=5']
-    expected_out = [(u'max-age', 5)]
+    expected_out = [('max-age', 5)]
     expected_err = []
 
 class CacheControlBadMaxAgeTest(headers.HeaderTest):

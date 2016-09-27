@@ -5,11 +5,11 @@ from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7233
 
 class content_range(headers.HttpHeader):
-    canonical_name = u"Content-Range"
-    description = u"""\
+    canonical_name = "Content-Range"
+    description = """\
 The `Content-Range` header is sent with a partial body to specify where in the full body the
 partial body should be applied."""
-    reference = u"%s#header.content_range" % rfc7233.SPEC_URL
+    reference = "%s#header.content_range" % rfc7233.SPEC_URL
     syntax = rfc7233.Content_Range
     list_header = False
     deprecated = False
@@ -26,8 +26,8 @@ partial body should be applied."""
 class CONTENT_RANGE_MEANINGLESS(Note):
     category = categories.RANGE
     level = levels.WARN
-    summary = u"%(response)s shouldn't have a Content-Range header."
-    text = u"""\
+    summary = "%(response)s shouldn't have a Content-Range header."
+    text = """\
 HTTP only defines meaning for the `Content-Range` header in responses with a `206 Partial Content`
 or `416 Requested Range Not Satisfiable` status code.
 

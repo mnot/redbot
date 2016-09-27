@@ -5,7 +5,7 @@ HAR Formatter for REDbot.
 """
 
 
-from HTMLParser import HTMLParser
+from html.parser import HTMLParser
 import operator
 import re
 import textwrap
@@ -15,7 +15,7 @@ import thor.http.error as httperr
 from redbot.formatter import Formatter
 from redbot.speak import levels, categories
 
-nl = u"\n"
+nl = "\n"
 
 
 class BaseTextFormatter(Formatter):
@@ -68,15 +68,15 @@ class BaseTextFormatter(Formatter):
                 self.output(self.error_template % \
                             self.resource.response.http_error.desc)
             else:
-                raise AssertionError, "Unknown incomplete response error."
+                raise AssertionError("Unknown incomplete response error.")
 
     def format_headers(self, resource):
-        out = [u"HTTP/%s %s %s" % (
+        out = ["HTTP/%s %s %s" % (
             resource.response.version,
             resource.response.status_code,
             resource.response.status_phrase
         )]
-        return nl.join(out + [u"%s:%s" % h for h in resource.response.headers])
+        return nl.join(out + ["%s:%s" % h for h in resource.response.headers])
 
     def format_recommendations(self, resource):
         return "".join([self.format_recommendation(resource, category) \
@@ -88,10 +88,10 @@ class BaseTextFormatter(Formatter):
             return ""
         out = []
         if [note for note in notes]:
-            out.append(u"* %s:" % category)
+            out.append("* %s:" % category)
         for m in notes:
             out.append(
-                u"  * %s" % (self.colorize(m.level, m.show_summary("en")))
+                "  * %s" % (self.colorize(m.level, m.show_summary("en")))
             )
             if self.verbose:
                 out.append('')
@@ -114,20 +114,20 @@ class BaseTextFormatter(Formatter):
     def colorize(self, level, string):
         if self.kw.get('tty_out', False):
             # info
-            color_start = u"\033[0;32m"
-            color_end = u"\033[0;39m"
+            color_start = "\033[0;32m"
+            color_end = "\033[0;39m"
             if level == "good":
-                color_start = u"\033[1;32m"
-                color_end = u"\033[0;39m"
+                color_start = "\033[1;32m"
+                color_end = "\033[0;39m"
             if level == "bad":
-                color_start = u"\033[1;31m"
-                color_end = u"\033[0;39m"
+                color_start = "\033[1;31m"
+                color_end = "\033[0;39m"
             if level == "warning":
-                color_start = u"\033[1;33m"
-                color_end = u"\033[0;39m"
+                color_start = "\033[1;33m"
+                color_end = "\033[0;39m"
             if level == "uri":
-                color_start = u"\033[1;34m"
-                color_end = u"\033[0;39m"
+                color_start = "\033[1;34m"
+                color_end = "\033[0;39m"
             return color_start + string + color_end
         else:
             return string

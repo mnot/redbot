@@ -8,12 +8,12 @@ These regex are directly derived from the collected ABNF in RFC7234.
 They should be processed with re.VERBOSE.
 """
 
-from rfc3986 import port, host as uri_host
-from rfc5234 import DIGIT, DQUOTE, SP
-from rfc7230 import list_rule, OWS, field_name, pseudonym, quoted_string, token
-from rfc7231 import HTTP_date
+from .rfc3986 import port, host as uri_host
+from .rfc5234 import DIGIT, DQUOTE, SP
+from .rfc7230 import list_rule, OWS, field_name, pseudonym, quoted_string, token
+from .rfc7231 import HTTP_date
 
-SPEC_URL = u"http://httpwg.org/specs/rfc7234"
+SPEC_URL = "http://httpwg.org/specs/rfc7234"
 
 
 # delta-seconds = 1*DIGIT

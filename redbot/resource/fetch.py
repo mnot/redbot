@@ -19,11 +19,11 @@ from redbot.message.cache import checkCaching
 from redbot.resource.robot_fetch import RobotFetcher
 
 
-UA_STRING = u"RED/%s (https://redbot.org/)" % __version__
+UA_STRING = "RED/%s (https://redbot.org/)" % __version__
 
 class RedHttpClient(thor.http.HttpClient):
     "Thor HttpClient for RedFetcher"
-    
+
     def __init__(self, loop=None):
         thor.http.HttpClient.__init__(self, loop)
         self.connect_timeout = 10
@@ -43,8 +43,8 @@ class RedFetcher(thor.events.EventEmitter):
     If provided, 'name' indicates the type of the request, and is used to
     help set notes and status events appropriately.
     """
-    check_name = u"undefined"
-    response_phrase = u"undefined"
+    check_name = "undefined"
+    response_phrase = "undefined"
     client = RedHttpClient()
     robot_fetcher = RobotFetcher()
 
@@ -73,7 +73,7 @@ class RedFetcher(thor.events.EventEmitter):
             status.append("fetch_started")
         if self.fetch_done:
             status.append("fetch_done")
-        return u"<%s at %#x>" % (", ".join(status), id(self))
+        return "<%s at %#x>" % (", ".join(status), id(self))
 
     def add_note(self, subject, note, **kw):
         "Set a note."
@@ -94,14 +94,16 @@ class RedFetcher(thor.events.EventEmitter):
 
     def set_request(self, iri, method="GET", req_hdrs=None, req_body=None):
         """
-        Set the resource's request.
+        Set the resource's request. All values are strings.
+        
         """
         enc = 'utf-8'
-        self.request.method = method.encode(enc)
+        self.request.method = method
         self.response.is_head_response = (method == "HEAD")
         self.request.set_iri(iri)
         self.response.base_uri = self.request.uri
         if req_hdrs:
+            # convert to bytes because that's what set_headers wants.
             self.request.set_headers([(n.encode(enc), v.encode(enc)) for (n, v) in req_hdrs])
         self.request.payload = req_body # FIXME: encoding
         self.request.complete = True  # cheating a bit
@@ -136,15 +138,15 @@ class RedFetcher(thor.events.EventEmitter):
 
         if 'user-agent' not in [i[0].lower() for i in self.request.headers]:
             self.request.headers.append(
-                (u"User-Agent", UA_STRING))
+                ("User-Agent", UA_STRING))
         self.exchange = self.client.exchange()
         self.exchange.once('response_start', self._response_start)
         self.exchange.on('response_body', self._response_body)
         self.exchange.once('response_done', self._response_done)
         self.exchange.on('error', self._response_error)
-        self.emit("status", u"fetching %s (%s)" % (self.request.uri, self.check_name))
-        req_hdrs = [(k.encode('ascii', 'replace'), v.encode('ascii', 'replace'))
-                    for (k, v) in self.request.headers]
+        self.emit("status", "fetching %s (%s)" % (self.request.uri, self.check_name))
+        print(self.request.headers)
+        req_hdrs = [(k.encode('ascii'), v.encode('ascii')) for (k, v) in self.request.headers]
         self.exchange.request_start(
             self.request.method.encode('ascii'), self.request.uri.encode('ascii'), req_hdrs)
         self.request.start_time = thor.time()
@@ -168,7 +170,7 @@ class RedFetcher(thor.events.EventEmitter):
 
     def _response_done(self, trailers):
         "Finish analysing the response, handling any parse errors."
-        self.emit("status", u"fetched %s (%s)" % (self.request.uri, self.check_name))
+        self.emit("status", "fetched %s (%s)" % (self.request.uri, self.check_name))
         self.response.transfer_length = self.exchange.input_transfer_length
         self.response.header_length = self.exchange.input_header_length
         self.response.body_done(True, trailers)
@@ -176,12 +178,12 @@ class RedFetcher(thor.events.EventEmitter):
 
     def _response_error(self, error):
         "Handle an error encountered while fetching the response."
-        self.emit("status", u"fetch error %s (%s) - %s" % (
+        self.emit("status", "fetch error %s (%s) - %s" % (
             self.request.uri, self.check_name, error.desc))
         if error.client_recoverable:
-            err_sample = error.detail[:40].decode('unicode_escape').encode('unicode_escape') or u""
+            err_sample = error.detail[:40] or ""
             if isinstance(error, httperr.ExtraDataError):
-                if self.response.status_code == u"304":
+                if self.response.status_code == "304":
                     self.add_note('body', BODY_NOT_ALLOWED, sample=err_sample)
                 else:
                     self.add_note('body', EXTRA_DATA, sample=err_sample)
@@ -204,8 +206,8 @@ class RobotsTxtError(httperr.HttpError):
 class BODY_NOT_ALLOWED(Note):
     category = categories.CONNECTION
     level = levels.BAD
-    summary = u"%(response)s is not allowed to have a body."
-    text = u"""\
+    summary = "%(response)s is not allowed to have a body."
+    text = """\
 HTTP defines a few special situations where a response does not allow a body. This includes 101,
 204 and 304 responses, as well as responses to the `HEAD` method.
 
@@ -221,8 +223,8 @@ The extra data started with:
 class EXTRA_DATA(Note):
     category = categories.CONNECTION
     level = levels.BAD
-    summary = u"%(response)s had extra data after it."
-    text = u"""\
+    summary = "%(response)s had extra data after it."
+    text = """\
 The server sent data after the message ended. This can be caused by an incorrect `Content-Length`
 header, or by a programming error in the server itself.
 
@@ -234,8 +236,8 @@ The extra data started with:
 class BAD_CHUNK(Note):
     category = categories.CONNECTION
     level = levels.BAD
-    summary = u"%(response)s had chunked encoding errors."
-    text = u"""\
+    summary = "%(response)s had chunked encoding errors."
+    text = """\
 The response indicates it uses HTTP chunked encoding, but there was a problem decoding the
 chunking.
 
@@ -259,13 +261,13 @@ This issue is often caused by sending an integer chunk size instead of one in he
 if __name__ == "__main__":
     import sys
     T = RedFetcher()
-    T.set_request(sys.argv[1], req_hdrs=[(u'Accept-Encoding', u"gzip")])
+    T.set_request(sys.argv[1], req_hdrs=[('Accept-Encoding', "gzip")])
     @thor.events.on(T)
     def fetch_done():
-        print 'done'
+        print('done')
         thor.stop()
     @thor.events.on(T)
     def status(msg):
-        print msg
+        print(msg)
     T.check()
     thor.run()

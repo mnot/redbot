@@ -6,8 +6,8 @@ from redbot.speak import Note, categories, levels
 
 
 class set_cookie2(headers.HttpHeader):
-    canonical_name = u"Set-Cookie2"
-    description = u"""\
+    canonical_name = "Set-Cookie2"
+    description = """\
 The `Set-Cookie2` header has been deprecated; use `Set-Cookie` instead."""
     reference = headers.rfc6265
     list_header = True

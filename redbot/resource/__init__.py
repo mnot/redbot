@@ -11,13 +11,13 @@ of requests to probe the resource's behaviour.
 See webui.py for the Web front-end.
 """
 
-from urlparse import urljoin
+from urllib.parse import urljoin
 
 import thor
 
 from redbot.formatter import f_num
 from redbot.message import link_parse
-from redbot.resource.fetch import RedFetcher, UA_STRING
+from redbot.resource.fetch import RedFetcher
 from redbot.resource.active_check import active_checks
 
 
@@ -35,8 +35,8 @@ class HttpResource(RedFetcher):
 
     Emits "check_done" when everything has finished.
     """
-    check_name = u"default"
-    response_phrase = u"This response"
+    check_name = "default"
+    response_phrase = "This response"
 
     def __init__(self, descend=False):
         RedFetcher.__init__(self)
@@ -58,14 +58,14 @@ class HttpResource(RedFetcher):
         self.linked = []   # list of linked HttpResources (if descend=True)
         self._link_parser = link_parse.HTMLLinkParser(self.response, [self.process_link])
         self.response.on("chunk", self._link_parser.feed)
-#        self.show_task_map() # for debugging
+        self.show_task_map() # for debugging
 
     def run_active_checks(self):
         """
         Response is available; perform subordinate requests (e.g., conneg check).
         """
         if self.response.complete:
-            for active_check in self.subreqs.values():
+            for active_check in list(self.subreqs.values()):
                 self.add_check(active_check)
                 active_check.check()
 
@@ -85,7 +85,7 @@ class HttpResource(RedFetcher):
         try:
             self._task_map.remove(resource)
         except KeyError:
-            raise KeyError, "* Can't find %s in task map: %s" % (resource, self._task_map)
+            raise KeyError("* Can't find %s in task map: %s" % (resource, self._task_map))
         tasks_left = len(self._task_map)
 #        self.emit("status", u"Checks remaining: %i" % tasks_left)
         if tasks_left == 0:
@@ -104,7 +104,7 @@ class HttpResource(RedFetcher):
     def process_link(self, base, link, tag, title):
         "Handle a link from content."
         self.link_count += 1
-        if not self.links.has_key(tag):
+        if tag not in self.links:
             self.links[tag] = set()
         if self.descend and tag not in ['a'] and link not in self.links[tag]:
             linked = HttpResource()
@@ -123,11 +123,11 @@ if __name__ == "__main__":
     RED.set_request(sys.argv[1])
     @thor.events.on(RED)
     def status(msg):
-        print msg
+        print(msg)
     @thor.events.on(RED)
     def check_done():
-        print 'check_done'
+        print('check_done')
         thor.stop()
     RED.check()
     thor.run()
-    print RED.notes
+    print(RED.notes)

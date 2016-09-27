@@ -11,20 +11,20 @@ from redbot.speak import Note, categories, levels
 
 class ETagValidate(SubRequest):
     "If an ETag is present, see if it will validate."
-    check_name = u"ETag Validation"
-    response_phrase = u"The 304 response"
+    check_name = "ETag Validation"
+    response_phrase = "The 304 response"
 
     def modify_request_headers(self, base_headers):
         etag_value = self.base.response.parsed_headers.get("etag", None)
         if etag_value:
             weak, etag = etag_value
             if weak:
-                weak_str = u"W/"
+                weak_str = "W/"
                 # #65: note on weak etag
             else:
-                weak_str = u""
-            etag_str = u'%s"%s"' % (weak_str, etag)
-            base_headers.append((u'If-None-Match', etag_str))
+                weak_str = ""
+            etag_str = '%s"%s"' % (weak_str, etag)
+            base_headers.append(('If-None-Match', etag_str))
         return base_headers
 
     def preflight(self):
@@ -70,8 +70,8 @@ class ETagValidate(SubRequest):
 class ETAG_SUBREQ_PROBLEM(Note):
     category = categories.VALIDATION
     level = levels.BAD
-    summary = u"There was a problem checking for ETag validation support."
-    text = u"""\
+    summary = "There was a problem checking for ETag validation support."
+    text = """\
 When RED tried to check the resource for ETag validation support, there was a problem:
 
 `%(problem)s`
@@ -81,8 +81,8 @@ Trying again might fix it."""
 class INM_304(Note):
     category = categories.VALIDATION
     level = levels.GOOD
-    summary = u"If-None-Match conditional requests are supported."
-    text = u"""\
+    summary = "If-None-Match conditional requests are supported."
+    text = """\
 HTTP allows clients to make conditional requests to see if a copy that they hold is still valid.
 Since this response has an `ETag`, clients should be able to use an `If-None-Match` request header
 for validation. RED has done this and found that the resource sends a `304 Not Modified` response,
@@ -91,9 +91,9 @@ indicating that it supports `ETag` validation."""
 class INM_FULL(Note):
     category = categories.VALIDATION
     level = levels.WARN
-    summary = u"An If-None-Match conditional request returned the full content \
+    summary = "An If-None-Match conditional request returned the full content \
 unchanged."
-    text = u"""\
+    text = """\
 HTTP allows clients to make conditional requests to see if a copy that they hold is still valid.
 Since this response has an `ETag`, clients should be able to use an `If-None-Match` request header
 for validation.
@@ -104,8 +104,8 @@ changed, indicating that it doesn't support `ETag` validation."""
 class INM_DUP_ETAG_WEAK(Note):
     category = categories.VALIDATION
     level = levels.INFO
-    summary = u"During validation, the ETag didn't change, even though the response body did."
-    text = u"""\
+    summary = "During validation, the ETag didn't change, even though the response body did."
+    text = """\
 `ETag`s are supposed to uniquely identify the response representation; if the content changes, so
 should the ETag.
 
@@ -120,8 +120,8 @@ If the changes are important, a different `ETag` should be used."""
 class INM_DUP_ETAG_STRONG(Note):
     category = categories.VALIDATION
     level = levels.BAD
-    summary = u"During validation, the ETag didn't change, even though the response body did."
-    text = u"""\
+    summary = "During validation, the ETag didn't change, even though the response body did."
+    text = """\
 `ETag`s are supposed to uniquely identify the response representation; if the content changes, so
 should the ETag.
 
@@ -135,8 +135,8 @@ interchangeably), they can share a "weak" ETag; to do that, just prepend `W/`, t
 class INM_UNKNOWN(Note):
     category = categories.VALIDATION
     level = levels.INFO
-    summary = u"An If-None-Match conditional request returned the full content, but it had changed."
-    text = u"""\
+    summary = "An If-None-Match conditional request returned the full content, but it had changed."
+    text = """\
 HTTP allows clients to make conditional requests to see if a copy that they hold is still valid.
 Since this response has an `ETag`, clients should be able to use an `If-None-Match` request header
 for validation.
@@ -147,8 +147,8 @@ request, so RED can't tell whether or not `ETag` validation is supported."""
 class INM_STATUS(Note):
     category = categories.VALIDATION
     level = levels.INFO
-    summary = u"An If-None-Match conditional request returned a %(inm_status)s status."
-    text = u"""\
+    summary = "An If-None-Match conditional request returned a %(inm_status)s status."
+    text = """\
 HTTP allows clients to make conditional requests to see if a copy that they hold is still valid.
 Since this response has an `ETag`, clients should be able to use an `If-None-Match` request header
 for validation. RED has done this, but the response had a %(enc_inm_status)s status code, so RED
