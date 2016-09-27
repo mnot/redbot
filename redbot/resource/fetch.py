@@ -111,7 +111,6 @@ class RedFetcher(thor.events.EventEmitter):
         updated and 'fetch_done' when it's done. Reason is used to explain what the
         request is in the status callback.
         """
-        self.fetch_started = True
         if not self.preflight() or self.request.uri == None:
             # generally a good sign that we're not going much further.
             self._fetch_done()
@@ -131,6 +130,8 @@ class RedFetcher(thor.events.EventEmitter):
             self.response.http_error = RobotsTxtError()
             self._fetch_done()
             return
+
+        self.fetch_started = True
 
         if 'user-agent' not in [i[0].lower() for i in self.request.headers]:
             self.request.headers.append(

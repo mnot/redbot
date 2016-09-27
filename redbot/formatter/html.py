@@ -388,6 +388,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         out.append(u"<h3>%s\n" % category)
         if isinstance(resource, HttpResource) and category in self.note_responses.keys():
             for check_name in self.note_responses[category]:
+                if not resource.subreqs[check_name].fetch_started:
+                    continue
                 out.append(u'<span class="req_link"> (<a href="?%s">%s response</a>' % \
                   (self.req_qs(check_name=check_name), check_name))
                 smsgs = [note for note in getattr(resource.subreqs[check_name], "notes", []) if \
