@@ -288,8 +288,9 @@ class HeaderTest(unittest.TestCase):
         "Test the header."
         if not self.name:
             return self.skipTest('')
-        self.message.headers = [(self.name, inp) for inp in self.inputs]
-        HeaderProcessor(self.message)
+        hp = HeaderProcessor(self.message)
+        self.message.headers, self.message.parsed_headers = \
+            hp.process([(self.name, inp) for inp in self.inputs])
         out = self.message.parsed_headers.get(self.name.lower(), None)
         self.assertEqual(self.expected_out, out, "\n%s\n%s" % (str(self.expected_out), str(out)))
         diff = set(
