@@ -145,7 +145,6 @@ class RedFetcher(thor.events.EventEmitter):
         self.exchange.once('response_done', self._response_done)
         self.exchange.on('error', self._response_error)
         self.emit("status", "fetching %s (%s)" % (self.request.uri, self.check_name))
-        print(self.request.headers)
         req_hdrs = [(k.encode('ascii'), v.encode('ascii')) for (k, v) in self.request.headers]
         self.exchange.request_start(
             self.request.method.encode('ascii'), self.request.uri.encode('ascii'), req_hdrs)
