@@ -77,7 +77,8 @@ class RedFetcher(thor.events.EventEmitter):
 
     def add_note(self, subject, note, **kw):
         "Set a note."
-        kw['response'] = self.response_phrase
+        if not 'response' in kw:
+            kw['response'] = self.response_phrase
         self.notes.append(note(subject, kw))
 
     def ignore_note(self, subject, note, **kw):

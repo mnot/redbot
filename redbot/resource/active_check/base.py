@@ -48,6 +48,7 @@ class SubRequest(RedFetcher):
 
     def add_base_note(self, subject, note, **kw):
         "Add a Note to the base resource."
+        kw['response'] = self.response_phrase
         self.base.add_note(subject, note, **kw)
 
     def check_missing_hdrs(self, hdrs, note):
