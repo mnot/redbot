@@ -181,7 +181,7 @@ partial response is expressed as a byte range, and compression changes the bytes
 class MISSING_HDRS_206(Note):
     category = categories.VALIDATION
     level = levels.WARN
-    summary = u"The %(subreq_type)s response is missing required headers."
+    summary = u"%(response)s is missing required headers."
     text = u"""\
 HTTP requires `206 Parital Content` responses to have certain headers, if they are also present in
 a normal (e.g., `200 OK` response).

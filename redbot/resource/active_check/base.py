@@ -61,13 +61,14 @@ class SubRequest(RedFetcher):
             and not self.response.parsed_headers.has_key(hdr):
                 missing_hdrs.append(hdr)
         if missing_hdrs:
+            self.add_base_note('headers', note, missing_hdrs=", ".join(missing_hdrs))
             self.add_note('headers', note, missing_hdrs=", ".join(missing_hdrs))
 
 
 class MISSING_HDRS_304(Note):
     category = categories.VALIDATION
     level = levels.WARN
-    summary = u"The %(subreq_type)s response is missing required headers."
+    summary = u"%(response)s is missing required headers."
     text = u"""\
 HTTP requires `304 Not Modified` responses to have certain headers, if they are also present in a
 normal (e.g., `200 OK` response).
