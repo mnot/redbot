@@ -5,18 +5,16 @@ HTML Formatter for REDbot.
 """
 
 
+from cgi import escape as e_html
 import codecs
+from functools import partial
 import json
 import operator
 import os
 import re
 import textwrap
 import urllib.request, urllib.parse, urllib.error
-
-from cgi import escape as e_html
-from functools import partial
 from urllib.parse import urljoin
-e_html = partial(e_html, quote=True)
 
 from markdown import markdown
 
@@ -30,6 +28,7 @@ from redbot.message.headers import HeaderProcessor
 from redbot.speak import levels, categories
 
 nl = "\n"
+e_html = partial(e_html, quote=True)
 
 # Configuration; override to change.
 static_root = 'static' # where status resources are located
@@ -303,7 +302,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 'footer': self.format_footer(),
                 'hidden_list': self.format_hidden_list()})
         else:
-            if self.resource.response.http_error == None:
+            if self.resource.response.http_error is None:
                 pass # usually a global timeout...
             elif isinstance(self.resource.response.http_error, httperr.HttpError):
                 if self.resource.response.http_error.detail:
@@ -313,7 +312,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 else:
                     self.error_output(self.resource.response.http_error.desc)
             else:
-                raise AssertionError("Unknown incomplete response error %s" % (self.resource.response.http_error))
+                raise AssertionError("Unknown incomplete response error %s" % \
+                                     (self.resource.response.http_error))
 
     def format_response(self, resource):
         "Return the HTTP response line and headers as HTML"
@@ -357,12 +357,12 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         if hasattr(resource, "links"):
             for tag, link_set in list(resource.links.items()):
                 for link in link_set:
+                    try:
+                        link = urljoin(resource.response.base_uri, link)
+                    except ValueError as why:
+                        pass # TODO: pass link problem upstream?
+                             # e.g., ValueError("Invalid IPv6 URL")
                     def link_to(matchobj):
-                        try:
-                            qlink = urljoin(resource.response.base_uri, link)
-                        except ValueError as why:
-                            pass # TODO: pass link problem upstream?
-                                 # e.g., ValueError("Invalid IPv6 URL")
                         return r"%s<a href='?%s' class='nocode'>%s</a>%s" % (
                             matchobj.group(1),
                             self.req_qs(link),
