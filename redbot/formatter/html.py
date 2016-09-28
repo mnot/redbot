@@ -193,7 +193,7 @@ title="drag me to your toolbar to use RED any time.">RED</a> bookmarklet
             out.append("uri=%s" % e_query_arg(urljoin(uri, link or "")))
         if self.resource.request.headers:
             for k, v in self.resource.request.headers:
-                if referer and k.lower() == b'referer':
+                if referer and k.lower() == 'referer':
                     continue
                 out.append("req_hdr=%s%%3A%s" % (e_query_arg(k), e_query_arg(v)))
         if referer:
