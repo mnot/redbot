@@ -55,15 +55,14 @@ class HTMLLinkParser(HTMLParser):
             'ok': self.ok}
 
     def feed(self, chunk):
-        "Feed a given chunk of HTML data to the parser"
+        "Feed a given chunk of bytes to the parser"
         if not self.ok:
             return
         if self.message.parsed_headers.get('content-type', [None])[0] in self.link_parseable_types:
             try:
-                if not isinstance(chunk, (str)):
+                if not isinstance(chunk, str):
                     try:
-                        chunk = chunk.decode(
-                            self.message.character_encoding.encode('ascii'), 'ignore')
+                        chunk = chunk.decode(self.message.character_encoding, 'ignore')
                     except LookupError:
                         pass
                 HTMLParser.feed(self, chunk)
