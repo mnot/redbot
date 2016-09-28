@@ -78,15 +78,21 @@ class HttpMessage(thor.events.EventEmitter):
                 del state[key]
         return state
 
-    def set_headers(self, headers):
+    def process_raw_headers(self, headers):
         """
-        Feed a list of (key, value) header tuples in and process them.
+        Feed a list of (bytes name, bytes value) header tuples in and process them.
         """
         hp = HeaderProcessor(self)
         self.headers, self.parsed_headers = hp.process(headers)
         self.character_encoding = self.parsed_headers.get('content-type', (None, {})
             )[1].get('charset', 'utf-8') # default isn't UTF-8, but oh well
         self.emit("headers_available")
+
+    def set_headers(self, headers):
+        """
+        Feed a list of (str name, str value) header tuples in. Do not process.
+        """
+        self.headers = headers
 
     def feed_body(self, chunk):
         """

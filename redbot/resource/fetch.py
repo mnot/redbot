@@ -103,8 +103,7 @@ class RedFetcher(thor.events.EventEmitter):
         self.request.set_iri(iri)
         self.response.base_uri = self.request.uri
         if req_hdrs:
-            # convert to bytes because that's what set_headers wants.
-            self.request.set_headers([(n.encode(enc), v.encode(enc)) for (n, v) in req_hdrs])
+            self.request.set_headers(req_hdrs)
         self.request.payload = req_body # FIXME: encoding
         self.request.complete = True  # cheating a bit
 
@@ -158,7 +157,7 @@ class RedFetcher(thor.events.EventEmitter):
         "Process the response start-line and headers."
         self.response.start_time = thor.time()
         self.response.set_top_line(self.exchange.res_version, status, phrase)
-        self.response.set_headers(res_headers)
+        self.response.process_raw_headers_headers(res_headers)
         StatusChecker(self.response, self.request)
         checkCaching(self.response, self.request)
 

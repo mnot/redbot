@@ -90,7 +90,7 @@ def parse_params(instr, add_note, nostar=None, delim=";"):
             else:
                 if val[0] == '"' and val[-1] == '"':
                     add_note(PARAM_STAR_QUOTED, param=k_norm)
-                    val = unquote_string(val).encode('ascii')
+                    val = unquote_string(val)
                 try:
                     enc, lang, esc_v = val.split("'", 3)
                 except ValueError:
@@ -106,8 +106,7 @@ def parse_params(instr, add_note, nostar=None, delim=";"):
                     continue
                 # TODO: catch unquoting errors, range of chars, charset
                 unq_v = urllib.parse.unquote(esc_v)
-                dec_v = unq_v.decode(enc) # ok, because we limit enc above
-                param_dict[k_norm] = dec_v
+                param_dict[k_norm] = unq_v
         else:
             param_dict[k_norm] = unquote_string(val)
     return param_dict

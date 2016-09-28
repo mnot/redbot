@@ -161,7 +161,7 @@ class HeaderProcessor(object):
 
     def process(self, headers):
         """
-        Given a message, parse its headers and:
+        Given a list of (bytes name, bytes value) headers and:
          - calculate the total header block size
          - call msg.add_note as appropriate
         Returns:
@@ -290,11 +290,20 @@ class HeaderTest(unittest.TestCase):
         "Test the header."
         if not self.name:
             return self.skipTest('')
+        if not isinstance(self.name, bytes):
+            name = self.name.encode('utf-8')
+        else:
+            name = self.name
+        inputs = []
+        for val in self.inputs:
+            if not isinstance(val, bytes):
+                val = val.encode('utf-8')
+            inputs.append(val)
         hp = HeaderProcessor(self.message)
         self.message.headers, self.message.parsed_headers = \
-            hp.process([(self.name, inp) for inp in self.inputs])
+            hp.process([(name, inp) for inp in inputs])
         out = self.message.parsed_headers.get(self.name.lower(), None)
-        self.assertEqual(self.expected_out, out, "\n%s\n%s" % (str(self.expected_out), str(out)))
+        self.assertEqual(self.expected_out, out)
         diff = set(
             [n.__name__ for n in self.expected_err]).symmetric_difference(
                 set(self.message.note_classes))
