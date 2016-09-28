@@ -157,7 +157,7 @@ class RedFetcher(thor.events.EventEmitter):
         "Process the response start-line and headers."
         self.response.start_time = thor.time()
         self.response.set_top_line(self.exchange.res_version, status, phrase)
-        self.response.process_raw_headers_headers(res_headers)
+        self.response.process_raw_headers(res_headers)
         StatusChecker(self.response, self.request)
         checkCaching(self.response, self.request)
 
