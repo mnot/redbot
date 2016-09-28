@@ -365,7 +365,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     def link_to(matchobj):
                         return r"%s<a href='?%s' class='nocode'>%s</a>%s" % (
                             matchobj.group(1),
-                            self.req_qs(link),
+                            self.req_qs(link, use_stored=False),
                             e_html(link),
                             matchobj.group(1))
                     safe_sample = re.sub(r"('|&quot;)%s\1" % re.escape(link), link_to, safe_sample)
