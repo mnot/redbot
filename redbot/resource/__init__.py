@@ -58,7 +58,7 @@ class HttpResource(RedFetcher):
         self.linked = []   # list of linked HttpResources (if descend=True)
         self._link_parser = link_parse.HTMLLinkParser(self.response, [self.process_link])
         self.response.on("chunk", self._link_parser.feed)
-        self.show_task_map() # for debugging
+#        self.show_task_map() # for debugging
 
     def run_active_checks(self):
         """
