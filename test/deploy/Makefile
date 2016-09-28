@@ -1,11 +1,12 @@
 
 source = ../../
+PYTHON=python3
 
 all: redbot
 
 .PHONY: server
 server: clean all
-	python3 webui.py 8080 static/
+	$(PYTHON) webui.py 8080 static/
 
 redbot-share:
 	cd $(source)/share; make
