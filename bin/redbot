@@ -7,7 +7,6 @@ CLI interface to REDbot
 __author__ = "Jerome Renard <jerome.renard@gmail.com>"
 
 import sys
-assert sys.version_info[0] == 2 and sys.version_info[1] >= 6, "Please use Python 2.6 or greater"
 
 from optparse import OptionParser
 
@@ -59,7 +58,7 @@ def main():
 
 
 def output(out):
-    sys.stdout.write(out.encode(charset, 'replace'))
+    sys.stdout.write(out)
 
 
 if __name__ == "__main__":
