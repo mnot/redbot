@@ -23,7 +23,7 @@ class StatusChecker(object):
         self.response = response
         self.add_note = partial(response.add_note, status=response.status_code)
         try:
-            status_m = getattr(self, "status%s" % response.status_code.encode('ascii', 'ignore'))
+            status_m = getattr(self, "status%s" % response.status_code)
         except AttributeError:
             self.add_note('status', STATUS_NONSTANDARD)
             return
