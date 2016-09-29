@@ -15,7 +15,7 @@ import re
 import textwrap
 try:
     from urllib.parse import urljoin, quote as urlquote
-except ImportError:
+except ImportError: # python2
     from urlparse import urljoin
     from urllib import quote as urlquote
 

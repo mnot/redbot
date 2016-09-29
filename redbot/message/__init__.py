@@ -10,7 +10,7 @@ import re
 import time
 try:
     from urllib.parse import urlsplit, urlunsplit, quote as urlquote
-except ImportError:
+except ImportError: # python2
     from urlparse import urlsplit, urlunsplit
     from urllib import quote as urlquote
 import zlib

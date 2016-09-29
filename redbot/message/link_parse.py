@@ -7,7 +7,7 @@ Parse links from a stream of HTML data.
 try:
     from html.entities import entitydefs
     from html.parser import HTMLParser
-except ImportError:
+except ImportError: # python2
     from htmlentitydefs import entitydefs
     from HTMLParser import HTMLParser
 

@@ -11,7 +11,7 @@ from os import path
 try:
     from urllib.robotparser import RobotFileParser
     from urllib.parse import urlsplit
-except ImportError:
+except ImportError: # python2
     from robotparser import RobotFileParser
     from urlparse import urlsplit
 

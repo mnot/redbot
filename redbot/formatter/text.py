@@ -7,7 +7,7 @@ HAR Formatter for REDbot.
 
 try:
     from html.parser import HTMLParser
-except ImportError:
+except ImportError: # python2
     from HTMLParser import HTMLParser
 import operator
 import re

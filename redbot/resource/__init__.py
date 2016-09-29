@@ -13,7 +13,7 @@ See webui.py for the Web front-end.
 
 try:
     from urllib.parse import urljoin
-except ImportError:
+except ImportError: # python2
     from urlparse import urljoin
 
 import thor

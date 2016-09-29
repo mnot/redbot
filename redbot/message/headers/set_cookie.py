@@ -5,7 +5,7 @@ from calendar import timegm
 from re import match, split
 try:
     from urllib.parse import urlsplit
-except ImportError:
+except ImportError: # python2
     from urlparse import urlsplit
 
 from redbot.message import headers

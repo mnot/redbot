@@ -3,7 +3,7 @@
 import re
 try:
     from urllib.parse import urljoin
-except ImportError:
+except ImportError: # python2
     from urlparse import urljoin
 
 from redbot.message import headers

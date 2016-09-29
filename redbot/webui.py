@@ -12,7 +12,7 @@ import tempfile
 import time
 try:
     from urllib.parse import parse_qs, urlsplit
-except ImportError:
+except ImportError: # python2
     from cgi import parse_qs
     from urlparse import urlsplit
 import zlib
@@ -40,7 +40,7 @@ class RedWebUi(object):
                  response_start, response_body, response_done, error_log=sys.stderr.write):
         self.config = config  # Config object, see bin/webui.py
         self.ui_uri = ui_uri  # Base URI for the web ux
-        self.method = method  # Request method to the UX
+        self.method = method  # Request method to the UX; bytes
         self.response_start = response_start
         self.response_body = response_body
         self._response_done = response_done

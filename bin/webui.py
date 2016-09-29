@@ -10,7 +10,7 @@ import os
 import sys
 try:
     from urllib.parse import urlsplit
-except ImportError:
+except ImportError: # python2
     from urlparse import urlsplit
 
 from redbot import __version__

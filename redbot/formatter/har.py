@@ -8,7 +8,7 @@ HAR Formatter for REDbot.
 import datetime
 try:
     import json
-except ImportError:
+except ImportError: # python2
     import simplejson as json
 
 from thor.http import get_header

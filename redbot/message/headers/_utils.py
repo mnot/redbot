@@ -4,7 +4,7 @@ from email.utils import parsedate as lib_parsedate
 import re
 try:
     from urllib.parse import unquote as urlunquote
-except ImportError:
+except ImportError: # python2
     from urllib import unquote as unquote_to_bytes
     def urlunquote(instr):
         return unquote_to_bytes(instr.encode('ascii', 'replace')).decode('utf-8', 'replace')
