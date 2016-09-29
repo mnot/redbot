@@ -5,7 +5,10 @@ HAR Formatter for REDbot.
 """
 
 
-from html.parser import HTMLParser
+try:
+    from html.parser import HTMLParser
+except ImportError:
+    from HTMLParser import HTMLParser
 import operator
 import re
 import textwrap
