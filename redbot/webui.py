@@ -52,6 +52,7 @@ class RedWebUi(object):
         self.check_name = None
         self.descend = None
         self.save = None
+        self.timeout = None
         self.run(query_string)
 
     def run(self, query_string):
