@@ -61,7 +61,7 @@ class HttpResource(RedFetcher):
         self.linked = []   # list of linked HttpResources (if descend=True)
         self._link_parser = link_parse.HTMLLinkParser(self.response, [self.process_link])
         self.response.on("chunk", self._link_parser.feed)
-#        self.show_task_map() # for debugging
+#        self.show_task_map(True) # for debugging
 
     def run_active_checks(self):
         """
@@ -95,14 +95,16 @@ class HttpResource(RedFetcher):
             self.check_done = True
             self.emit('check_done')
 
-    def show_task_map(self):
+    def show_task_map(self, watch=False):
         """
         Show the task map for debugging.
         """
         import sys
-        sys.stderr.write("* %s - %s\n" % (self, self._task_map))
-        if self._task_map:
+        if self._task_map and watch:
+            sys.stderr.write("* %s - %s\n" % (self, self._task_map))
             thor.schedule(5, self.show_task_map)
+        else:
+            return repr(self._task_map)
 
     def process_link(self, base, link, tag, title):
         "Handle a link from content."

@@ -71,7 +71,6 @@ class RedWebUi(object):
         else:
             self.save = False
         self.start = time.time()
-        self.timeout = thor.schedule(self.config.max_runtime, self.timeoutError)
         if self.save and self.config.save_dir and self.test_id:
             self.save_test()
         elif self.test_id:
@@ -157,6 +156,8 @@ class RedWebUi(object):
             test_id = None
 
         top_resource = HttpResource(descend=self.descend)
+        self.timeout = thor.schedule(self.config.max_runtime, self.timeoutError,
+            top_resource.show_task_map)
         top_resource.set_request(self.test_uri, req_hdrs=self.req_hdrs)
         formatter = find_formatter(self.format, 'html', self.descend)(
             self.ui_uri, self.config.lang, self.output,
@@ -237,9 +238,9 @@ class RedWebUi(object):
             self.timeout = None
         self._response_done(trailers)
 
-    def timeoutError(self):
+    def timeoutError(self, detail):
         """ Max runtime reached."""
-        self.error_log("RED TIMEOUT: <%s> descend=%s" % (self.test_uri, self.descend))
+        self.error_log("RED TIMEOUT: <%s> descend=%s; %s" % (self.test_uri, self.descend, detail()))
         self.output(error_template % ("RED timeout."))
         self.response_done([])
 
