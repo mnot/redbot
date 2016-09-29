@@ -193,7 +193,7 @@ class HttpMessage(thor.events.EventEmitter):
                         BAD_ZLIB,
                         zlib_error=str(zlib_error),
                         ok_zlib_len=f_num(self.payload_sample[-1][0]),
-                        chunk_sample=chunk[:20].decode('unicode_escape')
+                        chunk_sample=chunk[:20].decode('unicode_escape', 'replace')
                     )
                     self._decode_ok = False
                     return
