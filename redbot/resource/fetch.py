@@ -134,8 +134,7 @@ class RedFetcher(thor.events.EventEmitter):
         self.fetch_started = True
 
         if 'user-agent' not in [i[0].lower() for i in self.request.headers]:
-            self.request.headers.append(
-                ("User-Agent", UA_STRING))
+            self.request.headers.append(("User-Agent", UA_STRING))
         self.exchange = self.client.exchange()
         self.exchange.once('response_start', self._response_start)
         self.exchange.on('response_body', self._response_body)
