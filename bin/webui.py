@@ -149,8 +149,11 @@ def mod_python_handler(r):
 
 def cgi_main():
     """Run RED as a CGI Script."""
-    def out(instr):
-        sys.stdout.write(instr.decode(Config.charset))
+    def out(inbytes):
+        try:
+            sys.stdout.buffer.write(inbytes)
+        except AttributeError: # python2
+            sys.stdout.write(inbytes)
         sys.stdout.flush()
     ui_uri = "%s://%s%s%s" % (
         'HTTPS' in os.environ and "https" or "http",
@@ -161,11 +164,12 @@ def cgi_main():
     query_string = os.environ.get('QUERY_STRING', "").encode(Config.charset)
 
     def response_start(code, phrase, res_hdrs):
-        out_v = ["Status: %s %s" % (code, phrase)]
+        out_v = [b"Status: %s %s" % (code, phrase)]
         for k, v in res_hdrs:
-            out_v.append("%s: %s" % (k, v))
-        out_v.append("")
-        out("\n".join(out_v))
+            out_v.append(b"%s: %s" % (k, v))
+        out_v.append(b"")
+        out_v.append(b"")
+        out(b"\n".join(out_v))
 
     freak_ceiling = 20000
     def response_body(chunk):
