@@ -39,24 +39,24 @@ class HttpMessage(thor.events.EventEmitter):
         self.start_time = None
         self.complete = False
         self.complete_time = None
-        self.headers = []
+        self.headers = []           # (str name, str value)
         self.parsed_headers = {}
         self.header_length = 0
-        self.payload = b""  # Only used for 206 responses
+        self.payload = b""          # Only used for 206 responses
         self.payload_len = 0
         self.payload_md5 = None
-        self.payload_sample = []  # [(offset, chunk)]{,4} bytes, not unicode
+        self.payload_sample = []    # [(int offset, bytes chunk)]{,4}
         self.character_encoding = None
         self.decoded_len = 0
         self.decoded_md5 = None
-        self.decoded_sample = b"" # first decoded_sample_size bytes
+        self.decoded_sample = b""   # first decoded_sample_size bytes
         self.decoded_sample_size = 128 * 1024
         self._decoded_sample_seen = 0
         self.decoded_sample_complete = True
-        self._decode_ok = True # turn False if we have a problem
+        self._decode_ok = True      # turn False if we have a problem
         self.transfer_length = 0
         self.trailers = []
-        self.http_error = None  # any parse errors encountered; see httperr
+        self.http_error = None      # any parse errors encountered; see httperr
         self._md5_processor = hashlib.new('md5')
         self._md5_post_processor = hashlib.new('md5')
         self._gzip_processor = zlib.decompressobj(-zlib.MAX_WBITS)
@@ -189,7 +189,7 @@ class HttpMessage(thor.events.EventEmitter):
                         BAD_ZLIB,
                         zlib_error=str(zlib_error),
                         ok_zlib_len=f_num(self.payload_sample[-1][0]),
-                        chunk_sample=chunk[:20].encode('string_escape')
+                        chunk_sample=chunk[:20].decode('unicode_escape')
                     )
                     self._decode_ok = False
                     return
@@ -310,7 +310,7 @@ class HttpResponse(HttpMessage):
         self.store_shared = None
         self.store_private = None
 
-    def set_top_line(self, version, status_code, status_phrase):
+    def process_top_line(self, version, status_code, status_phrase):
         self.version = version.decode('ascii', 'replace')
         self.status_code = status_code.decode('ascii', 'replace')
         try:

@@ -95,9 +95,7 @@ class RedFetcher(thor.events.EventEmitter):
     def set_request(self, iri, method="GET", req_hdrs=None, req_body=None):
         """
         Set the resource's request. All values are strings.
-        
         """
-        enc = 'utf-8'
         self.request.method = method
         self.response.is_head_response = (method == "HEAD")
         self.request.set_iri(iri)
@@ -156,7 +154,7 @@ class RedFetcher(thor.events.EventEmitter):
     def _response_start(self, status, phrase, res_headers):
         "Process the response start-line and headers."
         self.response.start_time = thor.time()
-        self.response.set_top_line(self.exchange.res_version, status, phrase)
+        self.response.process_top_line(self.exchange.res_version, status, phrase)
         self.response.process_raw_headers(res_headers)
         StatusChecker(self.response, self.request)
         checkCaching(self.response, self.request)
