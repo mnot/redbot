@@ -149,20 +149,23 @@ def mod_python_handler(r):
 
 def cgi_main():
     """Run RED as a CGI Script."""
-    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
+    def out(instr):
+        sys.stdout.write(instr.decode(Config.charset))
+        sys.stdout.flush()
     ui_uri = "%s://%s%s%s" % (
         'HTTPS' in os.environ and "https" or "http",
         os.environ.get('HTTP_HOST'),
         os.environ.get('SCRIPT_NAME'),
         os.environ.get('PATH_INFO', ''))
-    method = os.environ.get('REQUEST_METHOD')
-    query_string = os.environ.get('QUERY_STRING', "")
+    method = os.environ.get('REQUEST_METHOD').encode(Config.charset)
+    query_string = os.environ.get('QUERY_STRING', "").encode(Config.charset)
 
     def response_start(code, phrase, res_hdrs):
-        sys.stdout.write("Status: %s %s\n" % (code, phrase))
+        out_v = ["Status: %s %s" % (code, phrase)]
         for k, v in res_hdrs:
-            sys.stdout.write("%s: %s\n" % (k, v))
-        sys.stdout.write("\n")
+            out_v.append("%s: %s" % (k, v))
+        out_v.append("")
+        out("\n".join(out_v))
 
     freak_ceiling = 20000
     def response_body(chunk):
@@ -170,8 +173,7 @@ def cgi_main():
         if len(chunk) > freak_ceiling:
             rest = chunk[freak_ceiling:]
             chunk = chunk[:freak_ceiling]
-        sys.stdout.write(chunk)
-        sys.stdout.flush()
+        out(chunk)
         if rest:
             response_body(rest)
 
