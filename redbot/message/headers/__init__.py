@@ -302,7 +302,7 @@ class HeaderTest(unittest.TestCase):
         hp = HeaderProcessor(self.message)
         self.message.headers, self.message.parsed_headers = \
             hp.process([(name, inp) for inp in inputs])
-        out = self.message.parsed_headers.get(self.name.lower(), None)
+        out = self.message.parsed_headers.get(self.name.lower(), 'HEADER HANDLER NOT FOUND')
         self.assertEqual(self.expected_out, out)
         diff = set(
             [n.__name__ for n in self.expected_err]).symmetric_difference(
