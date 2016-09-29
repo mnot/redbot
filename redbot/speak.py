@@ -8,8 +8,11 @@ However, the longer text field IS NOT ESCAPED, and therefore all variables to be
 it need to be escaped to be safe for use in HTML.
 """
 
-from cgi import escape as e_html
+from cgi import escape as cgi_escape
+from functools import partial
 from markdown import markdown
+
+e_html = partial(cgi_escape, quote=True)
 
 class _Categories(object):
     "Note classifications."
@@ -44,12 +47,9 @@ class Note(object):
         self.vars = vrs or {}
 
     def __eq__(self, other):
-        if self.__class__ == other.__class__ \
+        return bool(self.__class__ == other.__class__ \
            and self.vars == other.vars \
-           and self.subject == other.subject:
-            return True
-        else:
-            return False
+           and self.subject == other.subject)
 
     def show_summary(self, lang):
         """
@@ -67,7 +67,7 @@ class Note(object):
         The resulting string is already HTML-encoded.
         """
         return markdown(self.text % dict(
-            [(k, e_html(str(v), True)) for k, v in list(self.vars.items())]
+            [(k, e_html(str(v))) for k, v in list(self.vars.items())]
         ), output_format="html5")
 
 
@@ -75,7 +75,7 @@ class Note(object):
 
 if __name__ == '__main__':
     # do a sanity check on all of the defined messages
-    import re, types
+    import re
     for n, v in list(locals().items()):
         if isinstance(v, type) and issubclass(v, Note) \
           and n != "Note":

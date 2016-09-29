@@ -43,7 +43,7 @@ class RobotFetcher(thor.events.EventEmitter):
         """
 
         origin = url_to_origin(url)
-        if origin == None:
+        if origin is None:
             if sync:
                 return True
             else:
@@ -81,7 +81,7 @@ class RobotFetcher(thor.events.EventEmitter):
             @thor.on(exchange)
             def response_done(trailers):
                 if not exchange.status.startswith(b"2"):
-                    robots_txt = ""
+                    robots_txt = b""
                 else:
                     robots_txt = exchange.res_body
 
@@ -105,7 +105,8 @@ class RobotFetcher(thor.events.EventEmitter):
 
             p_url = urlsplit(url)
             robots_url = "%s://%s/robots.txt" % (p_url.scheme, p_url.netloc)
-            exchange.request_start(b"GET", robots_url.encode('ascii'), [(b'User-Agent', UA_STRING.encode('ascii'))])
+            exchange.request_start(b"GET", robots_url.encode('ascii'),
+                                   [(b'User-Agent', UA_STRING.encode('ascii'))])
             exchange.request_done([])
 
     def _load_checker(self, origin, robots_txt):
@@ -141,8 +142,8 @@ def url_to_origin(url):
     try:
         p_url = urlsplit(url)
         origin = "%s://%s:%s" % (p_url.scheme.lower(),
-                                  p_url.hostname.lower(),
-                                  p_url.port or default_port.get(p_url.scheme, 0))
+                                 p_url.hostname.lower(),
+                                 p_url.port or default_port.get(p_url.scheme, 0))
     except (AttributeError, ValueError):
         origin = None
     return origin

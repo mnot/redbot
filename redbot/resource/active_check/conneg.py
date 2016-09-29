@@ -81,7 +81,7 @@ class ConnegCheck(SubRequest):
                     (float(bare.payload_len) - negotiated.payload_len) / bare.payload_len))
             elif negotiated.payload_len > 0 and bare.payload_len == 0:
                 # weird. # TODO: figure out if we need to say something else.
-                return 
+                return
             else:
                 savings = 0
             self.base.gzip_support = True

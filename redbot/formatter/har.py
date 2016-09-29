@@ -14,7 +14,6 @@ except ImportError:
 from thor.http import get_header
 from redbot import __version__
 from redbot.formatter import Formatter
-from redbot.speak import levels
 
 
 class HarFormatter(Formatter):

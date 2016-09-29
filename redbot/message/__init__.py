@@ -9,7 +9,6 @@ import hashlib
 import re
 import time
 import urllib.request, urllib.parse, urllib.error
-import urllib.parse
 import zlib
 
 from redbot.message.headers import HeaderProcessor
@@ -85,7 +84,8 @@ class HttpMessage(thor.events.EventEmitter):
         hp = HeaderProcessor(self)
         self.headers, self.parsed_headers = hp.process(headers)
         self.character_encoding = self.parsed_headers.get('content-type', (None, {})
-            )[1].get('charset', 'utf-8') # default isn't UTF-8, but oh well
+                                                         )[1].get('charset', 'utf-8')
+                                                         # default isn't UTF-8, but oh well
         self.emit("headers_available")
 
     def set_headers(self, headers):
@@ -150,7 +150,7 @@ class HttpMessage(thor.events.EventEmitter):
                                   CL_INCORRECT,
                                   body_length=f_num(self.payload_len))
             if 'content-md5' in self.parsed_headers:
-                c_md5_calc = base64.encodestring(self.payload_md5)[:-1]
+                c_md5_calc = base64.encodebytes(self.payload_md5)[:-1]
                 if self.parsed_headers['content-md5'] == c_md5_calc:
                     self.add_note('header-content-md5', CMD5_CORRECT)
                 else:
@@ -258,6 +258,7 @@ class HttpRequest(HttpMessage):
         self.is_request = True
         self.method = None
         self.uri = None
+        self.iri = None
 
     def set_iri(self, iri):
         """
@@ -325,14 +326,14 @@ class DummyMsg(HttpResponse):
     A dummy HTTP message, for testing.
     """
     def __init__(self, add_note=None):
-        HttpResponse.__init__(self, add_note)
+        HttpResponse.__init__(self, self.dummy_add_note)
         self.base_uri = "http://www.example.com/foo/bar/baz.html?bat=bam"
         self.start_time = time.time()
         self.status_phrase = ""
         self.notes = []
         self.note_classes = []
 
-    def add_note(self, subject, note, **kw):
+    def dummy_add_note(self, subject, note, **kw):
         "Record the classes of notes set."
         self.notes.append(note(subject, kw))
         self.note_classes.append(note.__name__)

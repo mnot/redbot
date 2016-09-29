@@ -7,7 +7,6 @@ Parse links from a stream of HTML data.
 
 from html.entities import entitydefs
 from html.parser import HTMLParser
-import types
 
 from redbot.message import headers
 from redbot.syntax import rfc7231
@@ -134,6 +133,7 @@ if __name__ == "__main__":
     import sys
     import thor
     from redbot.resource.fetch import RedFetcher
+
     T = RedFetcher()
     T.set_request(sys.argv[1], req_hdrs=[('Accept-Encoding', "gzip")])
     def show_link(base, link, tag, title):

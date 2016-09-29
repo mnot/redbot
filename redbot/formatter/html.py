@@ -5,7 +5,7 @@ HTML Formatter for REDbot.
 """
 
 
-from cgi import escape as e_html
+from cgi import escape as cgi_escape
 import codecs
 from functools import partial
 import json
@@ -28,7 +28,7 @@ from redbot.message.headers import HeaderProcessor
 from redbot.speak import levels, categories
 
 nl = "\n"
-e_html = partial(e_html, quote=True)
+e_html = partial(cgi_escape, quote=True)
 
 # Configuration; override to change.
 static_root = 'static' # where status resources are located
@@ -628,7 +628,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                            " %s <span class='hidden'>%s</span></span>" % (
                                p + 1, e_html(m.show_summary(self.lang))))
         else:
-            if resource.response.http_error == None:
+            if resource.response.http_error is None:
                 err = "response incomplete"
             else:
                 err = resource.response.http_error.desc or 'unknown problem'

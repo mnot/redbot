@@ -58,9 +58,9 @@ class RangeRequest(SubRequest):
                'gzip' not in self.response.parsed_headers.get(c_e, []):
                 self.add_base_note('header-accept-ranges header-content-encoding',
                                    RANGE_NEG_MISMATCH)
-                return            
+                return
             self.check_missing_hdrs(['date', 'cache-control', 'content-location', 'etag',
-                                    'expires', 'vary'], MISSING_HDRS_206)
+                                     'expires', 'vary'], MISSING_HDRS_206)
             if self.response.parsed_headers.get('etag', None) == \
               self.base.response.parsed_headers.get('etag', None):
                 if self.response.payload == self.range_target:

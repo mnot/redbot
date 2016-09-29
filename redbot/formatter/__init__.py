@@ -158,9 +158,9 @@ def relative_time(utime, now=None, show_sign=1):
         2:    ('none', 'behind', 'ahead'),
     }
 
-    if  utime == None:
+    if  utime is None:
         return None
-    if now == None:
+    if now is None:
         now = time.time()
     age = round(now - utime)
     if age == 0:

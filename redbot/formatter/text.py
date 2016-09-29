@@ -62,7 +62,7 @@ class BaseTextFormatter(Formatter):
             self.output(self.format_headers(self.resource) + nl + nl)
             self.output(self.format_recommendations(self.resource) + nl)
         else:
-            if self.resource.response.http_error == None:
+            if self.resource.response.http_error is None:
                 pass
             elif isinstance(self.resource.response.http_error, httperr.HttpError):
                 self.output(self.error_template % \

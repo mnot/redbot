@@ -33,8 +33,7 @@ class StatusChecker(object):
         if self.request and not "100-continue" in get_header(self.request.headers, 'expect'):
             self.add_note('', UNEXPECTED_CONTINUE)
     def status101(self):        # Switching Protocols
-        if self.request \
-        and not 'upgrade' in list(header_dict(self.request.headers).keys()):
+        if self.request and 'upgrade' not in list(header_dict(self.request.headers).keys()):
             self.add_note('', UPGRADE_NOT_REQUESTED)
     def status102(self):        # Processing
         pass
@@ -54,8 +53,7 @@ class StatusChecker(object):
     def status205(self):        # Reset Content
         pass
     def status206(self):        # Partial Content
-        if self.request \
-        and not "range" in list(header_dict(self.request.headers).keys()):
+        if self.request and "range" not in list(header_dict(self.request.headers).keys()):
             self.add_note('', PARTIAL_NOT_REQUESTED)
         if 'content-range' not in self.response.parsed_headers:
             self.add_note('header-location', PARTIAL_WITHOUT_RANGE)
@@ -379,4 +377,3 @@ class STATUS_VERSION_NOT_SUPPORTED(Note):
     summary = "The request HTTP version isn't supported."
     text = """\
  """
-

@@ -4,15 +4,13 @@
 A Web UI for RED, the Resource Expert Droid.
 """
 
-import cgi
 import gzip
-import locale
 import os
 import pickle as pickle
 import sys
 import tempfile
 import time
-from urllib.parse import urlsplit
+from urllib import parse as urlparse
 import zlib
 
 import thor
@@ -33,9 +31,6 @@ class RedWebUi(object):
 
     Given a URI, run RED on it and present the results to output as HTML.
     If descend is true, spider the links and present a summary.
-    
-    * method - 
-    * query_string -
     """
     def __init__(self, config, ui_uri, method, query_string,
                  response_start, response_body, response_done, error_log=sys.stderr.write):
@@ -58,7 +53,7 @@ class RedWebUi(object):
     def run(self, query_string):
         """Given a bytes query_string from the wire, set attributes."""
         assert isinstance(query_string, bytes)
-        qs = cgi.parse_qs(query_string.decode(self.config.charset, 'replace'))
+        qs = urlparse.parse_qs(query_string.decode(self.config.charset, 'replace'))
         self.test_uri = qs.get('uri', [''])[0]
         self.req_hdrs = [tuple(rh.split(":", 1))
                          for rh in qs.get("req_hdr", []) if rh.find(":") > 0]
@@ -97,7 +92,7 @@ class RedWebUi(object):
             self.response_start(b"500", b"Internal Server Error",
                 [(b"Content-Type", b"text/html; charset=%s" % self.config.charset),])
             self.response_body(error_template % \
-                "Sorry, I couldn't save that.".encode(self.config.charset))
+                               "Sorry, I couldn't save that.".encode(self.config.charset))
         self.response_done([])
 
     def load_saved_test(self):
@@ -175,7 +170,7 @@ class RedWebUi(object):
         referer_error = None
         if len(referers) > 1:
             referer_error = "Multiple referers not allowed."
-        if referers and urlsplit(referers[0]).hostname in self.config.referer_spam_domains:
+        if referers and urlparse.urlsplit(referers[0]).hostname in self.config.referer_spam_domains:
             referer_error = "Referer not allowed."
         if referer_error:
             self.response_start(b"403", b"Forbidden", [
@@ -223,8 +218,8 @@ class RedWebUi(object):
             self.ui_uri, self.config.lang, self.output, is_blank=True)
         content_type = "%s; charset=%s" % (formatter.media_type, self.config.charset)
         self.response_start(b"200", b"OK", [
-                (b"Content-Type", content_type.encode('ascii')),
-                (b"Cache-Control", b"max-age=300")])
+            (b"Content-Type", content_type.encode('ascii')),
+            (b"Cache-Control", b"max-age=300")])
         formatter.start_output()
         formatter.finish_output()
         self.response_done([])
