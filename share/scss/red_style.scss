@@ -1,6 +1,9 @@
 @import 'red_mixins.scss';
 
-$content_width: 650px;
+$left_width: 650px;
+$right_width: 550px;
+$column_spacing: 50px;
+$max_width: $left_width + $right_width + $column_spacing;
 $text_colour: #111;
 $detail_text_colour: #aaa;
 $console_colour: #111;
@@ -13,37 +16,38 @@ $vertical_space: 3em;
 /* layout, major elements */
 
 body {
-  background-color: #f9f9f4;
+  background-color: #f9f9f9;
   color: $text_colour;
   font: 12pt/14pt "Helvetica Neue", Helvetica, Arial, sans-serif;
   margin: 1em 50px;
-  max-width: 1100px; 
+  max-width: $max_width; 
   &.blank {
     margin: $vertical_space * 2 auto $vertical_space auto;
-    width: $content_width;
+    width: $left_width;
   }
 }
 
 #left_column {
-  width: $content_width;
+  width: $left_width;
   float: left;
   margin: 0;
   padding: 0;
 }
 
 #right_column {
-  width: 400px;
+  width: $right_width;
   float: right;
-  margin: 1em 0 0 40px;
+  margin: 1em 0 0 $column_spacing;
   padding: 0;
 }
 
-@media screen and (max-width: 1200px) {
+@media screen and (max-width: $max_width + ($column_spacing * 2.5)) {
   #left_column, #right_column {
-    width: $content_width;
+    width: $left_width;
     margin: 0;
     padding: 0;
     float: left;
+    clear: both;
 	}
 }
 
@@ -125,7 +129,7 @@ li {
 /* request */
 
 input#uri {
-  width: $content_width - 5px;
+  width: $left_width - 7px;
   font-size: 1.1em;
   &.active {
     color: $text_colour;
@@ -141,7 +145,7 @@ input#uri {
   -moz-border-radius-bottomleft: 0.5em;
   -moz-border-radius-bottomright: 0.5em;
   background-color: #898984;
-  width: $content_width;
+  width: $left_width;
   margin: 0;
 }
 
@@ -159,7 +163,7 @@ input#uri {
 
 .req_hdr {
   background-color: #898984;
-  width: $content_width;
+  width: $left_width;
   white-space: nowrap;
 }
 
@@ -324,14 +328,14 @@ ul li.bad {
 /* footer */
 
 .footer {
-  max-width: $content-width;
+  max-width: $left_width;
 }
 
 body.blank > .footer {
   position: absolute;
   margin: 0 auto;
   bottom: 1em;
-  width: $content_width;
+  width: $left_width;
 }
 
 /* news */
@@ -340,7 +344,7 @@ body.blank > .footer {
   text-align: center;
   font-size: 1.0;
   font-weight: normal;
-  width: $content_width;
+  width: $left_width;
 }
 .news-banner {
   color: $detail_text_colour;
@@ -355,7 +359,7 @@ body.blank > .footer {
   padding: 0.5em;
   font-weight: bold;
   font-size: 1.1em;
-  max-width: $content_width;
+  max-width: $left_width;
 }
 
 /* help bubbles */

@@ -1,10 +1,10 @@
 /* layout, major elements */
 body {
-  background-color: #f9f9f4;
+  background-color: #f9f9f9;
   color: #111;
   font: 12pt/14pt "Helvetica Neue", Helvetica, Arial, sans-serif;
   margin: 1em 50px;
-  max-width: 1100px; }
+  max-width: 1250px; }
   body.blank {
     margin: 6em auto 3em auto;
     width: 650px; }
@@ -16,17 +16,18 @@ body {
   padding: 0; }
 
 #right_column {
-  width: 400px;
+  width: 550px;
   float: right;
-  margin: 1em 0 0 40px;
+  margin: 1em 0 0 50px;
   padding: 0; }
 
-@media screen and (max-width: 1200px) {
+@media screen and (max-width: 1375px) {
   #left_column, #right_column {
     width: 650px;
     margin: 0;
     padding: 0;
-    float: left; } }
+    float: left;
+    clear: both; } }
 h1 {
   color: #111;
   padding: 0;
@@ -95,7 +96,7 @@ li {
 
 /* request */
 input#uri {
-  width: 645px;
+  width: 643px;
   font-size: 1.1em; }
   input#uri.active {
     color: #111; }
