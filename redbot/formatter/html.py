@@ -13,8 +13,7 @@ import operator
 import os
 import re
 import textwrap
-import urllib.request, urllib.parse, urllib.error
-from urllib.parse import urljoin
+from urllib.parse import urljoin, quote as urlquote
 
 from markdown import markdown
 
@@ -726,7 +725,7 @@ def unicode_url_escape(url, safe):
     """
     # also include "~" because it doesn't need to be encoded,
     # but Python does anyway :/
-    return urllib.parse.quote(url, safe + r'%~')
+    return urlquote(url, safe + r'%~')
 e_url = partial(unicode_url_escape, safe=uri_gen_delims + uri_sub_delims)
 e_authority = partial(unicode_url_escape, safe=uri_sub_delims + r"[]:@")
 e_path = partial(unicode_url_escape, safe=uri_sub_delims + r":@/")

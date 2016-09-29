@@ -2,7 +2,7 @@
 import calendar
 from email.utils import parsedate as lib_parsedate
 import re
-import urllib.request, urllib.parse, urllib.error
+from urllib.parse import unquote as urlunquote
 
 from redbot.syntax import rfc7231
 from ._notes import *
@@ -105,7 +105,7 @@ def parse_params(instr, add_note, nostar=None, delim=";"):
                     add_note(PARAM_STAR_CHARSET, param=k_norm, enc=enc)
                     continue
                 # TODO: catch unquoting errors, range of chars, charset
-                unq_v = urllib.parse.unquote(esc_v)
+                unq_v = urlunquote(esc_v)
                 param_dict[k_norm] = unq_v
         else:
             param_dict[k_norm] = unquote_string(val)

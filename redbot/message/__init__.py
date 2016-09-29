@@ -8,7 +8,7 @@ import base64
 import hashlib
 import re
 import time
-import urllib.request, urllib.parse, urllib.error
+from urllib.parse import urlsplit, urlunsplit, quote as urlquote
 import zlib
 
 from redbot.message.headers import HeaderProcessor
@@ -281,7 +281,7 @@ class HttpRequest(HttpMessage):
     @staticmethod
     def iri_to_uri(iri):
         "Takes a unicode string that can contain an IRI and emits a unicode URI."
-        scheme, authority, path, query, frag = urllib.parse.urlsplit(iri)
+        scheme, authority, path, query, frag = urlsplit(iri)
         scheme = scheme
         if ":" in authority:
             host, port = authority.split(":", 1)
@@ -290,10 +290,10 @@ class HttpRequest(HttpMessage):
             authority = authority.encode('idna').decode('ascii')
         sub_delims = "!$&'()*+,;="
         pchar = "-.+~" + sub_delims + ":@" + "%"
-        path = urllib.parse.quote(path, safe=pchar+"/")
-        quer = urllib.parse.quote(query, safe=pchar+"/?")
-        frag = urllib.parse.quote(frag, safe=pchar+"/?")
-        return urllib.parse.urlunsplit((scheme, authority, path, quer, frag))
+        path = urlquote(path, safe=pchar+"/")
+        quer = urlquote(query, safe=pchar+"/?")
+        frag = urlquote(frag, safe=pchar+"/?")
+        return urlunsplit((scheme, authority, path, quer, frag))
 
 
 class HttpResponse(HttpMessage):

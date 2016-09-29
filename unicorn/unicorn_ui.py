@@ -17,7 +17,6 @@ from xml.dom.minidom import parseString
 import re
 import cgi
 import logging
-import urllib.request, urllib.parse, urllib.error
 import nbhttp
 from string import Template
 
