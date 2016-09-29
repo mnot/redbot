@@ -16,7 +16,7 @@ class location(headers.HttpHeader):
 The `Location` header is used in `3xx` responses to redirect the recipient to a different location
 to complete the request.
 
-In `201 Created``` responses, it identifies a newly created resource."""
+In `201 Created` responses, it identifies a newly created resource."""
     reference = "%s#header.location" % rfc7231.SPEC_URL
     syntax = rfc7231.Location
     list_header = False
