@@ -17,24 +17,24 @@ def checkCaching(response, request=None):
     "Examine HTTP caching characteristics."
 
     # get header values
-    lm = response.parsed_headers.get('last-modified', None)
-    date = response.parsed_headers.get('date', None)
-    expires = response.parsed_headers.get('expires', None)
-    etag = response.parsed_headers.get('etag', None)
-    age = response.parsed_headers.get('age', None)
+    lm_hdr = response.parsed_headers.get('last-modified', None)
+    date_hdr = response.parsed_headers.get('date', None)
+    expires_hdr = response.parsed_headers.get('expires', None)
+    etag_hdr = response.parsed_headers.get('etag', None)
+    age_hdr = response.parsed_headers.get('age', None)
     cc_set = response.parsed_headers.get('cache-control', [])
     cc_list = [k for (k, v) in cc_set]
     cc_dict = dict(cc_set)
     cc_keys = list(cc_dict.keys())
 
     # Last-Modified
-    if lm:
-        serv_date = date or response.start_time
-        if lm > serv_date:
+    if lm_hdr:
+        serv_date = date_hdr or response.start_time
+        if lm_hdr > serv_date:
             response.add_note('header-last-modified', LM_FUTURE)
         else:
             response.add_note('header-last-modified', LM_PRESENT,
-                              last_modified_string=relative_time(lm, serv_date))
+                              last_modified_string=relative_time(lm_hdr, serv_date))
 
     # known Cache-Control directives that don't allow duplicates
     known_cc = ["max-age", "no-store", "s-maxage", "public",
@@ -64,7 +64,7 @@ def checkCaching(response, request=None):
         response.store_private = True
         response.add_note('header-cache-control', PRIVATE_CC)
     elif request and 'authorization' in [k.lower() for k, v in request.headers] \
-      and not 'public' in cc_keys:
+      and 'public' not in cc_keys:
         response.store_shared = False
         response.store_private = True
         response.add_note('header-cache-control', PRIVATE_AUTH)
@@ -74,7 +74,7 @@ def checkCaching(response, request=None):
 
     # no-cache?
     if 'no-cache' in cc_keys:
-        if lm is None and etag is None:
+        if lm_hdr is None and etag_hdr is None:
             response.add_note('header-cache-control', NO_CACHE_NO_VALIDATOR)
         else:
             response.add_note('header-cache-control', NO_CACHE)
@@ -118,25 +118,25 @@ def checkCaching(response, request=None):
         # TODO: enumerate the axes in a message
 
     # calculate age
-    if date > 0:
-        apparent_age = max(0, int(response.start_time - date))
+    response.age = age_hdr or 0
+    age_str = relative_time(response.age, 0, 0)
+    if date_hdr > 0:
+        apparent_age = max(0, int(response.start_time - date_hdr))
     else:
         apparent_age = 0
-    current_age = max(apparent_age, age or 0)
+    current_age = max(apparent_age, response.age)
     current_age_str = relative_time(current_age, 0, 0)
-    age_str = relative_time(age, 0, 0)
-    response.age = age
-    if age or 0 >= 1:
+    if response.age >= 1:
         response.add_note('header-age header-date', CURRENT_AGE, age=age_str)
 
     # Check for clock skew and dateless origin server.
-    if not date:
+    if not date_hdr:
         response.add_note('', DATE_CLOCKLESS)
-        if expires or lm:
+        if expires_hdr or lm_hdr:
             response.add_note('header-expires header-last-modified', DATE_CLOCKLESS_BAD_HDR)
     else:
-        skew = date - response.start_time + (age or 0)        
-        if age or 0 > max_clock_skew and (current_age - skew) < max_clock_skew:
+        skew = date_hdr - response.start_time + (response.age)
+        if response.age > max_clock_skew and (current_age - skew) < max_clock_skew:
             response.add_note('header-date header-age', AGE_PENALTY)
         elif abs(skew) > max_clock_skew:
             response.add_note('header-date', DATE_INCORRECT,
@@ -163,7 +163,7 @@ def checkCaching(response, request=None):
         # An invalid Expires header means it's automatically stale
         has_explicit_freshness = True
         freshness_hdrs.append('header-expires')
-        freshness_lifetime = (expires or 0) - (date or response.start_time)
+        freshness_lifetime = (expires_hdr or 0) - (date_hdr or response.start_time)
 
     freshness_left = freshness_lifetime - current_age
     freshness_left_str = relative_time(abs(int(freshness_left)), 0, 0)
@@ -177,6 +177,7 @@ def checkCaching(response, request=None):
                               freshness_lifetime=freshness_lifetime_str,
                               freshness_left=freshness_left_str,
                               current_age=current_age_str)
+        # FIXME: response.age = None
         elif has_cc_freshness and response.age > freshness_lifetime:
             response.add_note(" ".join(freshness_hdrs), FRESHNESS_STALE_CACHE,
                               freshness_lifetime=freshness_lifetime_str,
