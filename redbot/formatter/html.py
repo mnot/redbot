@@ -152,7 +152,6 @@ $('#red_status').text("%s");
         return """\
 <br />
 <div class="footer">
-<p class="version">this is RED %(version)s.</p>
 <p class="navigation">
 <a href="https://REDbot.org/about/">about</a> |
 <script type="text/javascript">
@@ -262,7 +261,9 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     <pre id='response'>%(response)s</pre>
 
     <p class="options">
-        <span class='help'>Here, you can see the response body, a HAR document for the request, and when appropriate, validate the response or check its assets (such as referenced images, stylesheets and scripts).</span>
+        <span class='help'>Here, you can see the response body, a HAR document for the request, and
+        when appropriate, validate the response or check its assets (such as referenced images,
+        stylesheets and scripts).</span>
         %(options)s
     </p>
     </div>
@@ -273,6 +274,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     about your URL; hover over each one for a detailed explanation.</span>
     %(notes)s
     </div>
+    <span class="help">If something doesn't seem right, feel free to <a
+    href="https://github.com/mnot/redbot/issues/new">file an issue</a>!</span>
     </div>
 
     <br />
