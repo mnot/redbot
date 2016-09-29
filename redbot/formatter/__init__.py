@@ -6,10 +6,10 @@ Formatters for RED output.
 
 
 from collections import defaultdict
+import inspect
 import locale
 import sys
 import time
-from types import TypeType
 import unittest
 
 import thor
@@ -33,8 +33,8 @@ def find_formatter(name, default="html", multiple=False):
         module = sys.modules[module_name]
     except (ImportError, KeyError, TypeError):
         return find_formatter(default)
-    formatter_candidates = [v for k, v in module.__dict__.items() \
-      if isinstance(v, TypeType) and issubclass(v, Formatter) and getattr(v, 'name') == name]
+    formatter_candidates = [v for k, v in list(module.__dict__.items()) \
+      if inspect.isclass(v) and issubclass(v, Formatter) and getattr(v, 'name') == name]
     # find single-preferred formatters first
     if not multiple:
         for candidate in formatter_candidates:
@@ -43,7 +43,7 @@ def find_formatter(name, default="html", multiple=False):
     for candidate in formatter_candidates:
         if candidate.can_multiple:
             return candidate
-    raise RuntimeError, "Can't find a format in %s" % _formatters
+    raise RuntimeError("Can't find a format in %s" % _formatters)
 
 def available_formatters():
     """
@@ -135,12 +135,12 @@ def f_num(i, by1024=False):
         m = int(k / 1024)
         g = int(m / 1024)
         if g:
-            return locale.format(u"%d", g, grouping=True) + u"g"
+            return locale.format("%d", g, grouping=True) + "g"
         elif m:
-            return locale.format(u"%d", m, grouping=True) + u"m"
+            return locale.format("%d", m, grouping=True) + "m"
         elif k:
-            return locale.format(u"%d", k, grouping=True) + u"k"
-    return locale.format(u"%d", i, grouping=True)
+            return locale.format("%d", k, grouping=True) + "k"
+    return locale.format("%d", i, grouping=True)
 
 
 def relative_time(utime, now=None, show_sign=1):
@@ -153,14 +153,14 @@ def relative_time(utime, now=None, show_sign=1):
      '''
 
     signs = {
-        0:    (u'0', u'', u''),
-        1:    (u'now', 'ago', u'from now'),
-        2:    (u'none', u'behind', u'ahead'),
+        0:    ('0', '', ''),
+        1:    ('now', 'ago', 'from now'),
+        2:    ('none', 'behind', 'ahead'),
     }
 
-    if  utime == None:
+    if  utime is None:
         return None
-    if now == None:
+    if now is None:
         now = time.time()
     age = round(now - utime)
     if age == 0:
@@ -182,23 +182,23 @@ def relative_time(utime, now=None, show_sign=1):
 
     arr = []
     if yrs == 1:
-        arr.append(str(yrs) + u' year')
+        arr.append(str(yrs) + ' year')
     elif yrs > 1:
-        arr.append(str(yrs) + u' years')
+        arr.append(str(yrs) + ' years')
     if day == 1:
-        arr.append(str(day) + u' day')
+        arr.append(str(day) + ' day')
     elif day > 1:
-        arr.append(str(day) + u' days')
+        arr.append(str(day) + ' days')
     if hrs:
-        arr.append(str(hrs) + u' hr')
+        arr.append(str(hrs) + ' hr')
     if mnt:
-        arr.append(str(mnt) + u' min')
+        arr.append(str(mnt) + ' min')
     if sec:
-        arr.append(str(sec) + u' sec')
+        arr.append(str(sec) + ' sec')
     arr = arr[:2]        # resolution
     if show_sign:
         arr.append(sign)
-    return u" ".join(arr)
+    return " ".join(arr)
 
 
 class RelativeTimeTester(unittest.TestCase):
@@ -207,14 +207,14 @@ class RelativeTimeTester(unittest.TestCase):
     day = hour * 24
     year = day * 365
     cases = [
-        (+year, u"1 year from now"),
-        (-year, u"1 year ago"),
-        (+year+1, u"1 year 1 sec from now"),
-        (+year+.9, u"1 year 1 sec from now"),
-        (+year+day, u"1 year 1 day from now"),
-        (+year+(10*day), u"1 year 10 days from now"),
-        (+year+(90*day)+(3*hour), u"1 year 90 days from now"),
-        (+(13*day)-.4, u"13 days from now"),
+        (+year, "1 year from now"),
+        (-year, "1 year ago"),
+        (+year+1, "1 year 1 sec from now"),
+        (+year+.9, "1 year 1 sec from now"),
+        (+year+day, "1 year 1 day from now"),
+        (+year+(10*day), "1 year 10 days from now"),
+        (+year+(90*day)+(3*hour), "1 year 90 days from now"),
+        (+(13*day)-.4, "13 days from now"),
     ]
 
     def setUp(self):

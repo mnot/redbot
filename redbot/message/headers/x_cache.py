@@ -5,8 +5,8 @@ from redbot.speak import Note, categories, levels
 
 
 class x_cache(headers.HttpHeader):
-    canonical_name = u"X-Cache"
-    description = u"""\
+    canonical_name = "X-Cache"
+    description = """\
 The `X-Cache` header is used by some caches to indicate whether or not the response was served from
 cache; if it contains `HIT`, it was."""
     list_header = True

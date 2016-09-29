@@ -19,10 +19,10 @@ from ._utils import RE_FLAGS, parse_date, unquote_string, split_string, parse_pa
 from ._notes import *
 
 # base URLs for references
-rfc2616 = u"http://tools.ietf.org/html/rfc2616.html#%s"
-rfc5988 = u"http://tools.ietf.org/html/rfc5988.html#section-5"
-rfc6265 = u"http://tools.ietf.org/html/rfc6265.html#%s"
-rfc6266 = u"http://tools.ietf.org/html/rfc6266.html#section-4"
+rfc2616 = "http://tools.ietf.org/html/rfc2616.html#%s"
+rfc5988 = "http://tools.ietf.org/html/rfc5988.html#section-5"
+rfc6265 = "http://tools.ietf.org/html/rfc6265.html#%s"
+rfc6266 = "http://tools.ietf.org/html/rfc6266.html#section-4"
 
 ### configuration
 MAX_HDR_SIZE = 4 * 1024
@@ -161,7 +161,7 @@ class HeaderProcessor(object):
 
     def process(self, headers):
         """
-        Given a message, parse its headers and:
+        Given a list of (bytes name, bytes value) headers and:
          - calculate the total header block size
          - call msg.add_note as appropriate
         Returns:
@@ -180,6 +180,8 @@ class HeaderProcessor(object):
             header_block_size += len(self.message.status_phrase) + 5
 
         for name, value in headers:
+            assert isinstance(name, bytes)
+            assert isinstance(value, bytes)
             offset += 1
             add_note = partial(self.message.add_note, "offset-%s" % offset)
 
@@ -207,7 +209,7 @@ class HeaderProcessor(object):
             header_handler.handle_input(value, field_add_note)
 
         # check each of the complete header values and get the parsed value
-        for header_name, header_handler in self._header_handlers.items():
+        for header_name, header_handler in list(self._header_handlers.items()):
             header_add_note = partial(self.message.add_note,
                                       "header-%s" % header_handler.canonical_name,
                                       field_name=header_handler.canonical_name)
@@ -222,7 +224,7 @@ class HeaderProcessor(object):
         otherwise, instantiate and return a new one.
         """
         norm_name = header_name.lower()
-        if self._header_handlers.has_key(norm_name):
+        if norm_name in self._header_handlers:
             return self._header_handlers[norm_name]
         else:
             handler = self.find_header_handler(header_name)(header_name, self.message)
@@ -252,7 +254,7 @@ class HeaderProcessor(object):
         name_token = HeaderProcessor.name_token(header_name)
         if name_token[0] == '_':  # these are special
             return
-        if HeaderProcessor.header_aliases.has_key(name_token):
+        if name_token in HeaderProcessor.header_aliases:
             name_token = HeaderProcessor.header_aliases[name_token]
         try:
             module_name = "redbot.message.headers.%s" % name_token
@@ -266,7 +268,7 @@ class HeaderProcessor(object):
         """
         Return a tokenised, python-friendly name for a header.
         """
-        return header_name.replace('-', '_').lower().encode('ascii', 'ignore')
+        return header_name.replace('-', '_').lower()
 
 
 class HeaderTest(unittest.TestCase):
@@ -288,11 +290,20 @@ class HeaderTest(unittest.TestCase):
         "Test the header."
         if not self.name:
             return self.skipTest('')
+        if not isinstance(self.name, bytes):
+            name = self.name.encode('utf-8')
+        else:
+            name = self.name
+        inputs = []
+        for val in self.inputs:
+            if not isinstance(val, bytes):
+                val = val.encode('utf-8')
+            inputs.append(val)
         hp = HeaderProcessor(self.message)
         self.message.headers, self.message.parsed_headers = \
-            hp.process([(self.name, inp) for inp in self.inputs])
-        out = self.message.parsed_headers.get(self.name.lower(), None)
-        self.assertEqual(self.expected_out, out, "\n%s\n%s" % (str(self.expected_out), str(out)))
+            hp.process([(name, inp) for inp in inputs])
+        out = self.message.parsed_headers.get(self.name.lower(), 'HEADER HANDLER NOT FOUND')
+        self.assertEqual(self.expected_out, out)
         diff = set(
             [n.__name__ for n in self.expected_err]).symmetric_difference(
                 set(self.message.note_classes))

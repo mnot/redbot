@@ -8,22 +8,26 @@ Fetches robots.txt for a given URL.
 
 import hashlib
 from os import path
-from robotparser import RobotFileParser
-from urlparse import urlsplit
+try:
+    from urllib.robotparser import RobotFileParser
+    from urllib.parse import urlsplit
+except ImportError:
+    from robotparser import RobotFileParser
+    from urlparse import urlsplit
 
 import thor
 
 from redbot import __version__
 from redbot.cache_file import CacheFile
 
-UA_STRING = u"RED/%s (https://redbot.org/)" % __version__
+UA_STRING = "RED/%s (https://redbot.org/)" % __version__
 
 class RobotFetcher(thor.events.EventEmitter):
     """
     Fetch robots.txt and check to see if we're allowed.
     """
-    check_name = u"robot"
-    response_phrase = u"The robots.txt response"
+    check_name = "robot"
+    response_phrase = "The robots.txt response"
     freshness_lifetime = 30 * 60
     client = thor.http.HttpClient()
     robot_checkers = {} # cache of robots.txt checkers
@@ -43,7 +47,7 @@ class RobotFetcher(thor.events.EventEmitter):
         """
 
         origin = url_to_origin(url)
-        if origin == None:
+        if origin is None:
             if sync:
                 return True
             else:
@@ -51,7 +55,7 @@ class RobotFetcher(thor.events.EventEmitter):
                 return
         origin_hash = hashlib.sha1(origin.encode('ascii', 'replace')).hexdigest()
 
-        if self.robot_checkers.has_key(origin):
+        if origin in self.robot_checkers:
             return self._robot_check(url, self.robot_checkers[origin], sync)
 
         if self.robot_cache_dir:
@@ -64,7 +68,7 @@ class RobotFetcher(thor.events.EventEmitter):
         if sync:
             return True
 
-        if self.robot_lookups.has_key(origin):
+        if origin in self.robot_lookups:
             self.robot_lookups[origin].add(url)
         else:
             self.robot_lookups[origin] = set([url])
@@ -73,15 +77,15 @@ class RobotFetcher(thor.events.EventEmitter):
             def response_start(status, phrase, headers):
                 exchange.status = status
 
-            exchange.res_body = ""
+            exchange.res_body = b""
             @thor.on(exchange)
             def response_body(chunk):
                 exchange.res_body += chunk
 
             @thor.on(exchange)
             def response_done(trailers):
-                if not exchange.status.startswith("2"):
-                    robots_txt = ""
+                if not exchange.status.startswith(b"2"):
+                    robots_txt = b""
                 else:
                     robots_txt = exchange.res_body
 
@@ -100,12 +104,13 @@ class RobotFetcher(thor.events.EventEmitter):
 
             @thor.on(exchange)
             def response_error(error):
-                exchange.status = "500"
+                exchange.status = b"500"
                 response_done([])
 
             p_url = urlsplit(url)
             robots_url = "%s://%s/robots.txt" % (p_url.scheme, p_url.netloc)
-            exchange.request_start("GET", robots_url, [('User-Agent', UA_STRING)])
+            exchange.request_start(b"GET", robots_url.encode('ascii'),
+                                   [(b'User-Agent', UA_STRING.encode('ascii'))])
             exchange.request_done([])
 
     def _load_checker(self, origin, robots_txt):
@@ -114,8 +119,7 @@ class RobotFetcher(thor.events.EventEmitter):
             checker = DummyChecker()
         else:
             checker = RobotFileParser()
-            checker.parse(
-                robots_txt.decode('ascii', 'replace').encode('ascii', 'replace').splitlines())
+            checker.parse(robots_txt.decode('ascii', 'replace').splitlines())
         self.robot_checkers[origin] = checker
         def del_checker():
             try:
@@ -126,7 +130,7 @@ class RobotFetcher(thor.events.EventEmitter):
 
     def _robot_check(self, url, robots_checker, sync=False):
         """Continue after getting the robots file."""
-        result = robots_checker.can_fetch(UA_STRING, url.encode('ascii', 'replace'))
+        result = robots_checker.can_fetch(UA_STRING, url)
         if sync:
             return result
         else:
@@ -141,9 +145,9 @@ def url_to_origin(url):
         'https': 443}
     try:
         p_url = urlsplit(url)
-        origin = u"%s://%s:%s" % (p_url.scheme.lower(),
-                                  p_url.hostname.lower(),
-                                  p_url.port or default_port.get(p_url.scheme, 0))
+        origin = "%s://%s:%s" % (p_url.scheme.lower(),
+                                 p_url.hostname.lower(),
+                                 p_url.port or default_port.get(p_url.scheme, 0))
     except (AttributeError, ValueError):
         origin = None
     return origin

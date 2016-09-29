@@ -5,11 +5,11 @@ from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7235
 
 class www_authenticate(headers.HttpHeader):
-    canonical_name = u"WWW-Authenticate"
-    description = u"""\
+    canonical_name = "WWW-Authenticate"
+    description = """\
 The `WWW-Authenticate` response header consists of at least one challenge that
 indicates the authentication scheme(s) and parameters applicable."""
-    reference = u"%s#header.www-authenticate" % rfc7235.SPEC_URL
+    reference = "%s#header.www-authenticate" % rfc7235.SPEC_URL
     syntax = rfc7235.WWW_Authenticate
     list_header = True
     deprecated = False

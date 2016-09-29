@@ -12,8 +12,8 @@ from redbot.speak import Note, categories, levels
 
 class LmValidate(SubRequest):
     "If Last-Modified is present, see if it will validate."
-    check_name = u"Last-Modified Validation"
-    response_phrase = u"The 304 response"
+    check_name = "Last-Modified Validation"
+    response_phrase = "The 304 response"
     _weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
     _months = [None, 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul',
                'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -25,7 +25,7 @@ class LmValidate(SubRequest):
                 l_m = datetime.utcfromtimestamp(self.base.response.parsed_headers['last-modified'])
             except ValueError:
                 return base_headers # this shouldn't really happen
-            date_str = u"%s, %.2d %s %.4d %.2d:%.2d:%.2d GMT" % (
+            date_str = "%s, %.2d %s %.4d %.2d:%.2d:%.2d GMT" % (
                 self._weekdays[l_m.weekday()],
                 l_m.day,
                 self._months[l_m.month],
@@ -33,7 +33,7 @@ class LmValidate(SubRequest):
                 l_m.hour,
                 l_m.minute,
                 l_m.second)
-            base_headers.append((u'If-Modified-Since', date_str))
+            base_headers.append(('If-Modified-Since', date_str))
         return base_headers
 
     def preflight(self):
@@ -70,8 +70,8 @@ class LmValidate(SubRequest):
 class LM_SUBREQ_PROBLEM(Note):
     category = categories.VALIDATION
     level = levels.BAD
-    summary = u"There was a problem checking for Last-Modified validation support."
-    text = u"""\
+    summary = "There was a problem checking for Last-Modified validation support."
+    text = """\
 When RED tried to check the resource for Last-Modified validation support, there was a problem:
 
 `%(problem)s`
@@ -81,8 +81,8 @@ Trying again might fix it."""
 class IMS_304(Note):
     category = categories.VALIDATION
     level = levels.GOOD
-    summary = u"If-Modified-Since conditional requests are supported."
-    text = u"""\
+    summary = "If-Modified-Since conditional requests are supported."
+    text = """\
 HTTP allows clients to make conditional requests to see if a copy that they hold is still valid.
 Since this response has a `Last-Modified` header, clients should be able to use an
 `If-Modified-Since` request header for validation.
@@ -93,8 +93,8 @@ it supports `Last-Modified` validation."""
 class IMS_FULL(Note):
     category = categories.VALIDATION
     level = levels.WARN
-    summary = u"An If-Modified-Since conditional request returned the full content unchanged."
-    text = u"""\
+    summary = "An If-Modified-Since conditional request returned the full content unchanged."
+    text = """\
 HTTP allows clients to make conditional requests to see if a copy that they hold is still valid.
 Since this response has a `Last-Modified` header, clients should be able to use an
 `If-Modified-Since` request header for validation.
@@ -106,8 +106,8 @@ class IMS_UNKNOWN(Note):
     category = categories.VALIDATION
     level = levels.INFO
     summary = \
-    u"An If-Modified-Since conditional request returned the full content, but it had changed."
-    text = u"""\
+    "An If-Modified-Since conditional request returned the full content, but it had changed."
+    text = """\
 HTTP allows clients to make conditional requests to see if a copy that they hold is still valid.
 Since this response has a `Last-Modified` header, clients should be able to use an
 `If-Modified-Since` request header for validation.
@@ -118,8 +118,8 @@ request, so RED can't tell whether or not `Last-Modified` validation is supporte
 class IMS_STATUS(Note):
     category = categories.VALIDATION
     level = levels.INFO
-    summary = u"An If-Modified-Since conditional request returned a %(ims_status)s status."
-    text = u"""\
+    summary = "An If-Modified-Since conditional request returned a %(ims_status)s status."
+    text = """\
 HTTP allows clients to make conditional requests to see if a copy that they hold is still valid.
 Since this response has a `Last-Modified` header, clients should be able to use an
 `If-Modified-Since` request header for validation.

@@ -19,11 +19,11 @@ def check_regex():
         module = sys.modules[module_name]
         for attr_name in dir(module):
             attr_value = getattr(module, attr_name, None)
-            if isinstance(attr_value, types.StringType):
+            if isinstance(attr_value, bytes):
                 try:
                     re.compile(attr_value, re.VERBOSE)
-                except re.error, why:
-                    print "*", module_name, attr_name, why.message
+                except re.error as why:
+                    print("*", module_name, attr_name, why.message)
 
 
 if __name__ == "__main__":

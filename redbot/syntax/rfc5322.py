@@ -1,5 +1,5 @@
 
-from rfc5234 import VCHAR, WSP, CRLF, ALPHA, DIGIT
+from .rfc5234 import VCHAR, WSP, CRLF, ALPHA, DIGIT
 
 
 # qtext           =  %d33 /             ; Printable US-ASCII

@@ -5,13 +5,13 @@ from redbot.message import headers
 from redbot.syntax import rfc7231
 
 class date(headers.HttpHeader):
-    canonical_name = u"Date"
-    description = u"""\
+    canonical_name = "Date"
+    description = """\
 The `Date` header represents the time when the message was generated, regardless of caching that
 happened since.
 
 It is used by caches as input to expiration calculations, and to detect clock drift."""
-    reference = u"%s#header.date" % rfc7231.SPEC_URL
+    reference = "%s#header.date" % rfc7231.SPEC_URL
     syntax = False # rfc7231.Date
     list_header = False
     deprecated = False
@@ -29,8 +29,8 @@ It is used by caches as input to expiration calculations, and to detect clock dr
 class BAD_DATE_SYNTAX(Note):
     category = categories.GENERAL
     level = levels.BAD
-    summary = u"The %(field_name)s header's value isn't a valid date."
-    text = u"""\
+    summary = "The %(field_name)s header's value isn't a valid date."
+    text = """\
 HTTP dates have very specific syntax, and sending an invalid date can cause a number of problems,
 especially around caching. Common problems include sending "1 May" instead of "01 May" (the month
 is a fixed-width field), and sending a date in a timezone other than GMT. See [the HTTP

@@ -6,7 +6,7 @@ These regex are directly derived from the collected ABNF in RFC5646.
 They should be processed with re.VERBOSE.
 """
 
-from rfc5234 import DIGIT, ALPHA
+from .rfc5234 import DIGIT, ALPHA
 
 
 # alphanum      = (ALPHA / DIGIT)     ; letters and numbers

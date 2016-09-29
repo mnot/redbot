@@ -8,8 +8,11 @@ import base64
 import hashlib
 import re
 import time
-import urllib
-import urlparse
+try:
+    from urllib.parse import urlsplit, urlunsplit, quote as urlquote
+except ImportError:
+    from urlparse import urlsplit, urlunsplit
+    from urllib import quote as urlquote
 import zlib
 
 from redbot.message.headers import HeaderProcessor
@@ -39,29 +42,29 @@ class HttpMessage(thor.events.EventEmitter):
         self.start_time = None
         self.complete = False
         self.complete_time = None
-        self.headers = []
+        self.headers = []           # (str name, str value)
         self.parsed_headers = {}
         self.header_length = 0
-        self.payload = ""  # bytes, not unicode. Only used for 206 responses
+        self.payload = b""          # Only used for 206 responses
         self.payload_len = 0
         self.payload_md5 = None
-        self.payload_sample = []  # [(offset, chunk)]{,4} bytes, not unicode
+        self.payload_sample = []    # [(int offset, bytes chunk)]{,4}
         self.character_encoding = None
         self.decoded_len = 0
         self.decoded_md5 = None
-        self.decoded_sample = "" # first decoded_sample_size bytes
+        self.decoded_sample = b""   # first decoded_sample_size bytes
         self.decoded_sample_size = 128 * 1024
         self._decoded_sample_seen = 0
         self.decoded_sample_complete = True
-        self._decode_ok = True # turn False if we have a problem
+        self._decode_ok = True      # turn False if we have a problem
         self.transfer_length = 0
         self.trailers = []
-        self.http_error = None  # any parse errors encountered; see httperr
+        self.http_error = None      # any parse errors encountered; see httperr
         self._md5_processor = hashlib.new('md5')
         self._md5_post_processor = hashlib.new('md5')
         self._gzip_processor = zlib.decompressobj(-zlib.MAX_WBITS)
         self._in_gzip_body = False
-        self._gzip_header_buffer = ""
+        self._gzip_header_buffer = b""
 
     def __repr__(self):
         status = [self.__class__.__module__ + "." + self.__class__.__name__]
@@ -74,19 +77,26 @@ class HttpMessage(thor.events.EventEmitter):
                 '_md5_post_processor',
                 '_gzip_processor',
                 'add_note']:
-            if state.has_key(key):
+            if key in state:
                 del state[key]
         return state
 
-    def set_headers(self, headers):
+    def process_raw_headers(self, headers):
         """
-        Feed a list of (key, value) header tuples in and process them.
+        Feed a list of (bytes name, bytes value) header tuples in and process them.
         """
         hp = HeaderProcessor(self)
         self.headers, self.parsed_headers = hp.process(headers)
         self.character_encoding = self.parsed_headers.get('content-type', (None, {})
-            )[1].get('charset', u'utf-8') # default isn't UTF-8, but oh well
+                                                         )[1].get('charset', 'utf-8')
+                                                         # default isn't UTF-8, but oh well
         self.emit("headers_available")
+
+    def set_headers(self, headers):
+        """
+        Feed a list of (str name, str value) header tuples in. Do not process.
+        """
+        self.headers = headers
 
     def feed_body(self, chunk):
         """
@@ -136,15 +146,15 @@ class HttpMessage(thor.events.EventEmitter):
         if self.is_request or \
           (not self.is_head_response and self.status_code not in ['304']):
             # check payload basics
-            if self.parsed_headers.has_key('content-length'):
+            if 'content-length' in self.parsed_headers:
                 if self.payload_len == self.parsed_headers['content-length']:
                     self.add_note('header-content-length', CL_CORRECT)
                 else:
                     self.add_note('header-content-length',
                                   CL_INCORRECT,
                                   body_length=f_num(self.payload_len))
-            if self.parsed_headers.has_key('content-md5'):
-                c_md5_calc = base64.encodestring(self.payload_md5)[:-1]
+            if 'content-md5' in self.parsed_headers:
+                c_md5_calc = base64.encodebytes(self.payload_md5)[:-1]
                 if self.parsed_headers['content-md5'] == c_md5_calc:
                     self.add_note('header-content-md5', CMD5_CORRECT)
                 else:
@@ -168,8 +178,8 @@ class HttpMessage(thor.events.EventEmitter):
                         chunk = self._read_gzip_header(self._gzip_header_buffer)
                         self._in_gzip_body = True
                     except IndexError:
-                        return '' # not a full header yet
-                    except IOError, gzip_error:
+                        return b'' # not a full header yet
+                    except IOError as gzip_error:
                         self.add_note('header-content-encoding',
                                       BAD_GZIP,
                                       gzip_error=str(gzip_error))
@@ -177,13 +187,13 @@ class HttpMessage(thor.events.EventEmitter):
                         return
                 try:
                     chunk = self._gzip_processor.decompress(chunk)
-                except zlib.error, zlib_error:
+                except zlib.error as zlib_error:
                     self.add_note(
                         'header-content-encoding',
                         BAD_ZLIB,
                         zlib_error=str(zlib_error),
                         ok_zlib_len=f_num(self.payload_sample[-1][0]),
-                        chunk_sample=chunk[:20].encode('string_escape')
+                        chunk_sample=chunk[:20].decode('unicode_escape', 'replace')
                     )
                     self._decode_ok = False
                     return
@@ -210,15 +220,14 @@ class HttpMessage(thor.events.EventEmitter):
             'FCOMMENT': 16
         }
         if len(content) < 10:
-            raise IndexError, "Header not complete yet"
+            raise IndexError("Header not complete yet")
         magic = content[:2]
-        if magic != '\037\213':
-            raise IOError, \
-                u'Not a gzip header (magic is hex %s, should be 1f8b)' % \
-                magic.encode('hex-codec')
+        if magic != b'\037\213':
+            raise IOError('Not a gzip header (magic is hex %s, should be 1f8b)' % \
+                magic.encode('hex-codec'))
         method = ord(content[2:3])
         if method != 8:
-            raise IOError, 'Unknown compression method'
+            raise IOError('Unknown compression method')
         flag = ord(content[3:4])
         content_l = list(content[10:])
         if flag & gz_flags['FEXTRA']:
@@ -231,17 +240,17 @@ class HttpMessage(thor.events.EventEmitter):
             # containing the filename
             while True:
                 st1 = content_l.pop(0)
-                if not content_l or st1 == '\000':
+                if not content_l or st1 == b'\000':
                     break
         if flag & gz_flags['FCOMMENT']:
             # Read and discard a null-terminated string containing a comment
             while True:
                 st2 = content_l.pop(0)
-                if not content_l or st2 == '\000':
+                if not content_l or st2 == b'\000':
                     break
         if flag & gz_flags['FHCRC']:
             content_l = content_l[2:]   # Read & discard the 16-bit header CRC
-        return "".join(content_l)
+        return bytes(content_l)
 
 
 class HttpRequest(HttpMessage):
@@ -253,6 +262,7 @@ class HttpRequest(HttpMessage):
         self.is_request = True
         self.method = None
         self.uri = None
+        self.iri = None
 
     def set_iri(self, iri):
         """
@@ -261,7 +271,7 @@ class HttpRequest(HttpMessage):
         self.iri = iri
         try:
             self.uri = self.iri_to_uri(iri)
-        except (ValueError, UnicodeError), why:
+        except (ValueError, UnicodeError) as why:
             self.http_error = thor.http.error.UrlError(why[0])
             return
         if not re.match(r"^\s*%s\s*$" % rfc3986.URI, self.uri, re.VERBOSE):
@@ -275,19 +285,19 @@ class HttpRequest(HttpMessage):
     @staticmethod
     def iri_to_uri(iri):
         "Takes a unicode string that can contain an IRI and emits a unicode URI."
-        scheme, authority, path, query, frag = urlparse.urlsplit(iri)
-        scheme = scheme.encode('utf-8')
+        scheme, authority, path, query, frag = urlsplit(iri)
+        scheme = scheme
         if ":" in authority:
             host, port = authority.split(":", 1)
-            authority = host.encode('idna') + ":%s" % port
+            authority = host.encode('idna').decode('ascii') + ":%s" % port
         else:
-            authority = authority.encode('idna')
+            authority = authority.encode('idna').decode('ascii')
         sub_delims = "!$&'()*+,;="
         pchar = "-.+~" + sub_delims + ":@" + "%"
-        path = urllib.quote(path.encode('utf-8'), safe=pchar+"/")
-        quer = urllib.quote(query.encode('utf-8'), safe=pchar+"/?")
-        frag = urllib.quote(frag.encode('utf-8'), safe=pchar+"/?")
-        return urlparse.urlunsplit((scheme, authority, path, quer, frag)).decode('ascii')
+        path = urlquote(path, safe=pchar+"/")
+        quer = urlquote(query, safe=pchar+"/?")
+        frag = urlquote(frag, safe=pchar+"/?")
+        return urlunsplit((scheme, authority, path, quer, frag))
 
 
 class HttpResponse(HttpMessage):
@@ -299,13 +309,13 @@ class HttpResponse(HttpMessage):
         self.is_request = False
         self.is_head_response = False
         self.status_code = None
-        self.status_phrase = u""
+        self.status_phrase = ""
         self.freshness_lifetime = None
         self.age = None
         self.store_shared = None
         self.store_private = None
 
-    def set_top_line(self, version, status_code, status_phrase):
+    def process_top_line(self, version, status_code, status_phrase):
         self.version = version.decode('ascii', 'replace')
         self.status_code = status_code.decode('ascii', 'replace')
         try:
@@ -320,14 +330,14 @@ class DummyMsg(HttpResponse):
     A dummy HTTP message, for testing.
     """
     def __init__(self, add_note=None):
-        HttpResponse.__init__(self, add_note)
+        HttpResponse.__init__(self, self.dummy_add_note)
         self.base_uri = "http://www.example.com/foo/bar/baz.html?bat=bam"
         self.start_time = time.time()
-        self.status_phrase = u""
+        self.status_phrase = ""
         self.notes = []
         self.note_classes = []
 
-    def add_note(self, subject, note, **kw):
+    def dummy_add_note(self, subject, note, **kw):
         "Record the classes of notes set."
         self.notes.append(note(subject, kw))
         self.note_classes.append(note.__name__)
@@ -337,32 +347,32 @@ class DummyMsg(HttpResponse):
 class URI_TOO_LONG(Note):
     category = categories.GENERAL
     level = levels.WARN
-    summary = u"The URI is very long (%(uri_len)s characters)."
-    text = u"""\
+    summary = "The URI is very long (%(uri_len)s characters)."
+    text = """\
 Long URIs aren't supported by some implementations, including proxies. A reasonable upper size
 limit is 8192 characters."""
 
 class URI_BAD_SYNTAX(Note):
     category = categories.GENERAL
     level = levels.BAD
-    summary = u"The URI's syntax isn't valid."
-    text = u"""\
+    summary = "The URI's syntax isn't valid."
+    text = """\
 This isn't a valid URI. Look for illegal characters and other problems; see
 [RFC3986](http://www.ietf.org/rfc/rfc3986.txt) for more information."""
 
 class STATUS_PHRASE_ENCODING(Note):
     category = categories.GENERAL
     level = levels.BAD
-    summary = u"The status phrase contains non-ASCII characters."
-    text = u"""\
+    summary = "The status phrase contains non-ASCII characters."
+    text = """\
 The status phrase can only contain ASCII characters. RED has detected (and possibly removed)
 non-ASCII characters in it."""
 
 class CL_CORRECT(Note):
     category = categories.GENERAL
     level = levels.GOOD
-    summary = u'The Content-Length header is correct.'
-    text = u"""\
+    summary = 'The Content-Length header is correct.'
+    text = """\
 `Content-Length` is used by HTTP to delimit messages; that is, to mark the end of one message and
 the beginning of the next. RED has checked the length of the body and found the `Content-Length` to
 be correct."""
@@ -370,8 +380,8 @@ be correct."""
 class CL_INCORRECT(Note):
     category = categories.GENERAL
     level = levels.BAD
-    summary = u"%(response)s's Content-Length header is incorrect."
-    text = u"""\
+    summary = "%(response)s's Content-Length header is incorrect."
+    text = """\
 `Content-Length` is used by HTTP to delimit messages; that is, to mark the end of one message and
 the beginning of the next. RED has checked the length of the body and found the `Content-Length` is
 not correct. This can cause problems not only with connection handling, but also caching, since an
@@ -382,16 +392,16 @@ The actual body size sent was %(body_length)s bytes."""
 class CMD5_CORRECT(Note):
     category = categories.GENERAL
     level = levels.GOOD
-    summary = u'The Content-MD5 header is correct.'
-    text = u"""\
+    summary = 'The Content-MD5 header is correct.'
+    text = """\
 `Content-MD5` is a hash of the body, and can be used to ensure integrity of the response. RED has
 checked its value and found it to be correct."""
 
 class CMD5_INCORRECT(Note):
     category = categories.GENERAL
     level = levels.BAD
-    summary = u'The Content-MD5 header is incorrect.'
-    text = u"""\
+    summary = 'The Content-MD5 header is incorrect.'
+    text = """\
 `Content-MD5` is a hash of the body, and can be used to ensure integrity of the response. RED has
 checked its value and found it to be incorrect; i.e., the given `Content-MD5` does not match what
 RED thinks it should be (%(calc_md5)s)."""
@@ -399,17 +409,17 @@ RED thinks it should be (%(calc_md5)s)."""
 class BAD_GZIP(Note):
     category = categories.CONNEG
     level = levels.BAD
-    summary = u"%(response)s was compressed using GZip, but the header wasn't \
+    summary = "%(response)s was compressed using GZip, but the header wasn't \
 valid."
-    text = u"""\
+    text = """\
 GZip-compressed responses have a header that contains metadata. %(response)s's header wasn't valid;
 the error encountered was "`%(gzip_error)s`"."""
 
 class BAD_ZLIB(Note):
     category = categories.CONNEG
     level = levels.BAD
-    summary = u"%(response)s was compressed using GZip, but the data was corrupt."
-    text = u"""\
+    summary = "%(response)s was compressed using GZip, but the data was corrupt."
+    text = """\
 GZip-compressed responses use zlib compression to reduce the number of bytes transferred on the
 wire. However, this response could not be decompressed; the error encountered was
 "`%(zlib_error)s`".

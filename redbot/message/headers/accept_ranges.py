@@ -6,11 +6,11 @@ from redbot.syntax import rfc7233
 
 
 class accept_ranges(headers.HttpHeader):
-    canonical_name = u"Accept-Ranges"
-    description = u"""\
+    canonical_name = "Accept-Ranges"
+    description = """\
 The `Accept-Ranges` header allows the server to indicate that it accepts range requests for a
 resource."""
-    reference = u"%s#header.accept-ranges" % rfc7233.SPEC_URL
+    reference = "%s#header.accept-ranges" % rfc7233.SPEC_URL
     syntax = rfc7233.Accept_Ranges
     list_header = True
     deprecated = False
@@ -27,8 +27,8 @@ resource."""
 class UNKNOWN_RANGE(Note):
     category = categories.RANGE
     level = levels.WARN
-    summary = u"%(response)s advertises support for non-standard range-units."
-    text = u"""\
+    summary = "%(response)s advertises support for non-standard range-units."
+    text = """\
 The `Accept-Ranges` response header tells clients what `range-unit`s a resource is willing to
 process in future requests. HTTP only defines two: `bytes` and `none`.
 

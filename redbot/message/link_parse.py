@@ -4,10 +4,12 @@
 Parse links from a stream of HTML data.
 """
 
-
-from htmlentitydefs import entitydefs
-from HTMLParser import HTMLParser
-import types
+try:
+    from html.entities import entitydefs
+    from html.parser import HTMLParser
+except ImportError:
+    from htmlentitydefs import entitydefs
+    from HTMLParser import HTMLParser
 
 from redbot.message import headers
 from redbot.syntax import rfc7231
@@ -55,21 +57,20 @@ class HTMLLinkParser(HTMLParser):
             'ok': self.ok}
 
     def feed(self, chunk):
-        "Feed a given chunk of HTML data to the parser"
+        "Feed a given chunk of bytes to the parser"
         if not self.ok:
             return
         if self.message.parsed_headers.get('content-type', [None])[0] in self.link_parseable_types:
             try:
-                if not isinstance(chunk, (types.UnicodeType)):
+                if not isinstance(chunk, str):
                     try:
-                        chunk = chunk.decode(
-                            self.message.character_encoding.encode('ascii'), 'ignore')
+                        chunk = chunk.decode(self.message.character_encoding, 'ignore')
                     except LookupError:
                         pass
                 HTMLParser.feed(self, chunk)
             except BadErrorIReallyMeanIt:
                 pass
-            except Exception, why: # oh, well...
+            except Exception as why: # oh, well...
                 if self.err:
                     self.err("feed problem: %s" % why)
                 self.errors += 1
@@ -79,7 +80,7 @@ class HTMLLinkParser(HTMLParser):
     def handle_starttag(self, tag, attrs):
         attr_d = dict(attrs)
         title = attr_d.get('title', '').strip()
-        if tag in self.link_types.keys():
+        if tag in list(self.link_types.keys()):
             url_attr, rels = self.link_types[tag]
             if not rels or attr_d.get("rel", None) in rels:
                 target = attr_d.get(url_attr, "")
@@ -135,18 +136,19 @@ if __name__ == "__main__":
     import sys
     import thor
     from redbot.resource.fetch import RedFetcher
+
     T = RedFetcher()
-    T.set_request(sys.argv[1], req_hdrs=[(u'Accept-Encoding', u"gzip")])
+    T.set_request(sys.argv[1], req_hdrs=[('Accept-Encoding', "gzip")])
     def show_link(base, link, tag, title):
-        print "* [%s] %s -- %s" % (tag, base, link)
+        print("* [%s] %s -- %s" % (tag, base, link))
     P = HTMLLinkParser(T.response, [show_link], sys.stderr.write)
     @thor.events.on(T)
     def fetch_done():
-        print 'done'
+        print('done')
         thor.stop()
     @thor.events.on(T)
     def status(msg):
-        print msg
+        print(msg)
     @thor.events.on(T.response)
     def chunk(decoded_chunk):
         P.feed(decoded_chunk)

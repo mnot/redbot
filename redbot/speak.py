@@ -8,26 +8,29 @@ However, the longer text field IS NOT ESCAPED, and therefore all variables to be
 it need to be escaped to be safe for use in HTML.
 """
 
-from cgi import escape as e_html
+from cgi import escape as cgi_escape
+from functools import partial
 from markdown import markdown
+
+e_html = partial(cgi_escape, quote=True)
 
 class _Categories(object):
     "Note classifications."
-    GENERAL = u"General"
-    SECURITY = u"Security"
-    CONNEG = u"Content Negotiation"
-    CACHING = u"Caching"
-    VALIDATION = u"Validation"
-    CONNECTION = u"Connection"
-    RANGE = u"Partial Content"
+    GENERAL = "General"
+    SECURITY = "Security"
+    CONNEG = "Content Negotiation"
+    CACHING = "Caching"
+    VALIDATION = "Validation"
+    CONNECTION = "Connection"
+    RANGE = "Partial Content"
 categories = _Categories()
 
 class _Levels(object):
     "Note levels."
-    GOOD = u'good'
-    WARN = u'warning'
-    BAD = u'bad'
-    INFO = u'info'
+    GOOD = 'good'
+    WARN = 'warning'
+    BAD = 'bad'
+    INFO = 'info'
 levels = _Levels()
 
 class Note(object):
@@ -37,19 +40,16 @@ class Note(object):
     """
     category = None
     level = None
-    summary = u""
-    text = u""
+    summary = ""
+    text = ""
     def __init__(self, subject, vrs=None):
         self.subject = subject
         self.vars = vrs or {}
 
     def __eq__(self, other):
-        if self.__class__ == other.__class__ \
+        return bool(self.__class__ == other.__class__ \
            and self.vars == other.vars \
-           and self.subject == other.subject:
-            return True
-        else:
-            return False
+           and self.subject == other.subject)
 
     def show_summary(self, lang):
         """
@@ -67,7 +67,7 @@ class Note(object):
         The resulting string is already HTML-encoded.
         """
         return markdown(self.text % dict(
-            [(k, e_html(unicode(v), True)) for k, v in self.vars.items()]
+            [(k, e_html(str(v))) for k, v in list(self.vars.items())]
         ), output_format="html5")
 
 
@@ -75,15 +75,15 @@ class Note(object):
 
 if __name__ == '__main__':
     # do a sanity check on all of the defined messages
-    import re, types
-    for n, v in locals().items():
-        if isinstance(v, types.ClassType) and issubclass(v, Note) \
+    import re
+    for n, v in list(locals().items()):
+        if isinstance(v, type) and issubclass(v, Note) \
           and n != "Note":
-            print "checking", n
-            assert v.category in categories.__class__.__dict__.values(), n
-            assert v.level in levels.__class__.__dict__.values(), n
-            assert isinstance(v.summary, types.UnicodeType), n
+            print("checking", n)
+            assert v.category in list(categories.__class__.__dict__.values()), n
+            assert v.level in list(levels.__class__.__dict__.values()), n
+            assert isinstance(v.summary, str), n
             assert v.summary != "", n
             assert not re.search(r"\s{2,}", v.summary), n
-            assert isinstance(v.text, types.UnicodeType), n
+            assert isinstance(v.text, str), n
     #        assert v.text != "", n

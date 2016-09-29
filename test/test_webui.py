@@ -30,7 +30,7 @@ class BasicWebUiTest(unittest.TestCase):
         try:
             self.browser.find_element_by_css_selector("div.footer")
         except NoSuchElementException:
-            raise Exception, "Page not complete."
+            raise Exception("Page not complete.")
             self.browser.save_screenshot('dump.png')
     
     def tearDown(self):
@@ -54,6 +54,6 @@ if __name__ == "__main__":
     p = Process(target=redbot_run)
     p.start()
     unittest.main(exit=False, verbosity=2)
-    print "done webui test..."
+    print("done webui test...")
     p.terminate()
     

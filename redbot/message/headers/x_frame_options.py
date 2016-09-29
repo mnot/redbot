@@ -19,9 +19,9 @@ X_Frame_Options = r"""(?:
 )""".format(**locals())
 
 class x_frame_options(headers.HttpHeader):
-    canonical_name = u"X-Frame-Options"
-    reference = u"https://tools.ietf.org/html/rfc7034"
-    description = u"""
+    canonical_name = "X-Frame-Options"
+    reference = "https://tools.ietf.org/html/rfc7034"
+    description = """
 The X-Frame-Options HTTP header field declares a policy regarding whether the browser may display
 the transmitted content in frames that are part of other web pages.
   """
@@ -46,8 +46,8 @@ the transmitted content in frames that are part of other web pages.
 class FRAME_OPTIONS_DENY(Note):
     category = categories.SECURITY
     level = levels.INFO
-    summary = u"%(response)s prevents some browsers from rendering it within a frame."
-    text = u"""\
+    summary = "%(response)s prevents some browsers from rendering it within a frame."
+    text = """\
 The `X-Frame-Options` response header controls how IE8 handles HTML frames; the `DENY` value
 prevents this content from being rendered within a frame, which defends against certain types of
 attacks.
@@ -59,8 +59,8 @@ class FRAME_OPTIONS_SAMEORIGIN(Note):
     category = categories.SECURITY
     level = levels.INFO
     summary = \
-        u"%(response)s prevents some browsers from rendering it within a frame on another site."
-    text = u"""\
+        "%(response)s prevents some browsers from rendering it within a frame on another site."
+    text = """\
 The `X-Frame-Options` response header controls how IE8 handles HTML frames; the `DENY` value
 prevents this content from being rendered within a frame on another site, which defends against
 certain types of attacks.
@@ -73,8 +73,8 @@ See [this blog entry](http://bit.ly/v5Bh5Q) for more information.
 class FRAME_OPTIONS_UNKNOWN(Note):
     category = categories.SECURITY
     level = levels.WARN
-    summary = u"%(response)s contains an X-Frame-Options header with an unknown value."
-    text = u"""\
+    summary = "%(response)s contains an X-Frame-Options header with an unknown value."
+    text = """\
 Only two values are currently defined for this header, `DENY` and `SAMEORIGIN`. Using other values
 here won't necessarily cause problems, but they probably won't have any effect either.
 

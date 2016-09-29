@@ -13,8 +13,8 @@ from redbot.speak import Note, categories, levels
 
 class RangeRequest(SubRequest):
     "Check for partial content support (if advertised)"
-    check_name = u"Partial Content"
-    response_phrase = u"The partial response"
+    check_name = "Partial Content"
+    response_phrase = "The partial response"
     def __init__(self, resource):
         self.range_start = None
         self.range_end = None
@@ -28,7 +28,7 @@ class RangeRequest(SubRequest):
             self.range_start = self.base.response.payload_sample[sample_num][0]
             self.range_end = self.range_start + sample_len
             self.range_target = self.base.response.payload_sample[sample_num][1][:sample_len + 1]
-            base_headers.append((u'Range', u"bytes=%s-%s" % (self.range_start, self.range_end)))
+            base_headers.append(('Range', "bytes=%s-%s" % (self.range_start, self.range_end)))
         return base_headers
 
     def preflight(self):
@@ -58,9 +58,9 @@ class RangeRequest(SubRequest):
                'gzip' not in self.response.parsed_headers.get(c_e, []):
                 self.add_base_note('header-accept-ranges header-content-encoding',
                                    RANGE_NEG_MISMATCH)
-                return            
+                return
             self.check_missing_hdrs(['date', 'cache-control', 'content-location', 'etag',
-                                    'expires', 'vary'], MISSING_HDRS_206)
+                                     'expires', 'vary'], MISSING_HDRS_206)
             if self.response.parsed_headers.get('etag', None) == \
               self.base.response.parsed_headers.get('etag', None):
                 if self.response.payload == self.range_target:
@@ -70,11 +70,11 @@ class RangeRequest(SubRequest):
                     # the body samples are just bags of bits
                     self.base.partial_support = False
                     self.add_base_note('header-accept-ranges', RANGE_INCORRECT,
-                                       range="bytes=%s-%s" % (self.range_start, self.range_end),
-                                       range_expected=self.range_target.encode('string_escape'),
-                                       range_expected_bytes=f_num(len(self.range_target)),
-                                       range_received=self.response.payload.encode('string_escape'),
-                                       range_received_bytes=f_num(self.response.payload_len))
+                        range="bytes=%s-%s" % (self.range_start, self.range_end),
+                        range_expected=self.range_target.encode('unicode_escape'),
+                        range_expected_bytes=f_num(len(self.range_target)),
+                        range_received=self.response.payload.encode('unicode_escape'),
+                        range_received_bytes=f_num(self.response.payload_len))
             else:
                 self.add_base_note('header-accept-ranges', RANGE_CHANGED)
 
@@ -92,8 +92,8 @@ class RangeRequest(SubRequest):
 class RANGE_SUBREQ_PROBLEM(Note):
     category = categories.RANGE
     level = levels.BAD
-    summary = u"There was a problem checking for Partial Content support."
-    text = u"""\
+    summary = "There was a problem checking for Partial Content support."
+    text = """\
 When RED tried to check the resource for partial content support, there was a problem:
 
 `%(problem)s`
@@ -103,8 +103,8 @@ Trying again might fix it."""
 class UNKNOWN_RANGE(Note):
     category = categories.RANGE
     level = levels.WARN
-    summary = u"%(response)s advertises support for non-standard range-units."
-    text = u"""\
+    summary = "%(response)s advertises support for non-standard range-units."
+    text = """\
 The `Accept-Ranges` response header tells clients what `range-unit`s a resource is willing to
 process in future requests. HTTP only defines two: `bytes` and `none`.
 
@@ -113,8 +113,8 @@ Clients who don't know about the non-standard range-unit will not be able to use
 class RANGE_CORRECT(Note):
     category = categories.RANGE
     level = levels.GOOD
-    summary = u"A ranged request returned the correct partial content."
-    text = u"""\
+    summary = "A ranged request returned the correct partial content."
+    text = """\
 This resource advertises support for ranged requests with `Accept-Ranges`; that is, it allows
 clients to specify that only part of it should be sent. RED has tested this by requesting part of
 this response, which was returned correctly."""
@@ -122,8 +122,8 @@ this response, which was returned correctly."""
 class RANGE_INCORRECT(Note):
     category = categories.RANGE
     level = levels.BAD
-    summary = u'A ranged request returned partial content, but it was incorrect.'
-    text = u"""\
+    summary = 'A ranged request returned partial content, but it was incorrect.'
+    text = """\
 This resource advertises support for ranged requests with `Accept-Ranges`; that is, it allows
 clients to specify that only part of the response should be sent. RED has tested this by requesting
 part of this response, but the partial response doesn't correspond with the full response retrieved
@@ -143,16 +143,16 @@ _(showing samples of up to 100 characters)_"""
 class RANGE_CHANGED(Note):
     category = categories.RANGE
     level = levels.WARN
-    summary = u"A ranged request returned another representation."
-    text = u"""\
+    summary = "A ranged request returned another representation."
+    text = """\
 A new representation was retrieved when checking support of ranged request. This is not an error,
 it just indicates that RED cannot draw any conclusion at this time."""
 
 class RANGE_FULL(Note):
     category = categories.RANGE
     level = levels.WARN
-    summary = u"A ranged request returned the full rather than partial content."
-    text = u"""\
+    summary = "A ranged request returned the full rather than partial content."
+    text = """\
 This resource advertises support for ranged requests with `Accept-Ranges`; that is, it allows
 clients to specify that only part of the response should be sent. RED has tested this by requesting
 part of this response, but the entire response was returned. In other words, although the resource
@@ -161,8 +161,8 @@ advertises support for partial content, it doesn't appear to actually do so."""
 class RANGE_STATUS(Note):
     category = categories.RANGE
     level = levels.INFO
-    summary = u"A ranged request returned a %(range_status)s status."
-    text = u"""\
+    summary = "A ranged request returned a %(range_status)s status."
+    text = """\
 This resource advertises support for ranged requests; that is, it allows clients to specify that
 only part of the response should be sent. RED has tested this by requesting part of this response,
 but a %(enc_range_status)s response code was returned, which RED was not expecting."""
@@ -170,8 +170,8 @@ but a %(enc_range_status)s response code was returned, which RED was not expecti
 class RANGE_NEG_MISMATCH(Note):
     category = categories.RANGE
     level = levels.BAD
-    summary = u"Partial responses don't have the same support for compression that full ones do."
-    text = u"""\
+    summary = "Partial responses don't have the same support for compression that full ones do."
+    text = """\
 This resource supports ranged requests and also supports negotiation for gzip compression, but
 doesn't support compression for both full and partial responses.
 
@@ -181,8 +181,8 @@ partial response is expressed as a byte range, and compression changes the bytes
 class MISSING_HDRS_206(Note):
     category = categories.VALIDATION
     level = levels.WARN
-    summary = u"%(response)s is missing required headers."
-    text = u"""\
+    summary = "%(response)s is missing required headers."
+    text = """\
 HTTP requires `206 Parital Content` responses to have certain headers, if they are also present in
 a normal (e.g., `200 OK` response).
 

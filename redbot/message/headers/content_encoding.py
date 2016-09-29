@@ -7,15 +7,15 @@ from redbot.syntax import rfc7231
 
 
 class content_encoding(headers.HttpHeader):
-    canonical_name = u"Content-Encoding"
-    description = u"""\
+    canonical_name = "Content-Encoding"
+    description = """\
 The `Content-Encoding` header's value indicates what additional content codings have
 been applied to the body, and thus what decoding mechanisms must be applied in order to obtain the
 media-type referenced by the Content-Type header field.
 
 Content-Encoding is primarily used to allow a document to be compressed without losing the identity
 of its underlying media type; e.g., `gzip` and `deflate`."""
-    reference = u"%s#header.content_encoding" % rfc7231.SPEC_URL
+    reference = "%s#header.content_encoding" % rfc7231.SPEC_URL
     syntax = rfc7231.Content_Encoding
     list_header = True
     deprecated = False
@@ -33,8 +33,8 @@ of its underlying media type; e.g., `gzip` and `deflate`."""
 class ENCODING_UNWANTED(Note):
     category = categories.CONNEG
     level = levels.WARN
-    summary = u"%(response)s contained unwanted content-codings."
-    text = u"""\
+    summary = "%(response)s contained unwanted content-codings."
+    text = """\
 %(response)s's `Content-Encoding` header indicates it has content-codings applied
 (`%(unwanted_codings)s`) that RED didn't ask for.
 

@@ -7,14 +7,14 @@ from redbot.syntax import rfc7230
 
 
 class content_length(headers.HttpHeader):
-    canonical_name = u"Content-Length"
-    description = u"""\
+    canonical_name = "Content-Length"
+    description = """\
 The `Content-Length` header indicates the size of the body, in number of bytes. In responses to the
 HEAD method, it indicates the size of the body that would have been sent had the request been a GET.
 
 If Content-Length is incorrect, persistent connections will not work, and caches may not store the
 response (since they can't be sure if they have the whole response)."""
-    reference = u"%s#header.content_length" % rfc7230.SPEC_URL
+    reference = "%s#header.content_length" % rfc7230.SPEC_URL
     syntax = rfc7230.Content_Length
     list_header = False
     deprecated = False
@@ -55,5 +55,5 @@ class ContentLengthSpaceTest(headers.HeaderTest):
 class ContentLengthBigTest(headers.HeaderTest):
     name = 'Content-Length'
     inputs = ['9' * 999]
-    expected_out = long('9' * 999)
+    expected_out = int('9' * 999)
     expected_err = []

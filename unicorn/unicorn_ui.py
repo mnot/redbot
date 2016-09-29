@@ -17,7 +17,6 @@ from xml.dom.minidom import parseString
 import re
 import cgi
 import logging
-import urllib
 import nbhttp
 from string import Template
 
@@ -54,7 +53,7 @@ class UnicornUi(object):
                 elif self.red.response.http_error['desc'] == nbhttp.error.ERR_HTTP_VERSION['desc']:
                     error_string = "<code>%s</code> isn't HTTP." % e(self.red.response.http_error.get('detail', '')[:20])
                 else:
-                    raise AssertionError, "Unidentified incomplete response error."
+                    raise AssertionError("Unidentified incomplete response error.")
                 self.result = self._generate_error_xml(error_string).toprettyxml()
         except:
             import traceback
@@ -117,7 +116,7 @@ class UnicornUi(object):
         """
         Getting Classification key from values
         """
-        category = _Classifications.__dict__.keys()[_Classifications.__dict__.values().index(category_value)]
+        category = list(_Classifications.__dict__.keys())[list(_Classifications.__dict__.values()).index(category_value)]
         self.groups.append(category)
         return str(category).lower()
     
@@ -268,7 +267,7 @@ def application(environ, start_response):
 def standalone_main(test_uri):
     test_uri = cgi.escape(test_uri, True) 
     red = UnicornUi(test_uri) 
-    print red.get_result()
+    print(red.get_result())
 
 if __name__ == "__main__":
     import sys

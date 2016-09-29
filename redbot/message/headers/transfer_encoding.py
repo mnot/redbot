@@ -6,8 +6,8 @@ from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7230
 
 class transfer_encoding(headers.HttpHeader):
-    canonical_name = u"Transfer-Encoding"
-    description = u"""\
+    canonical_name = "Transfer-Encoding"
+    description = """\
 The `Transfer-Encoding` header indicates what (if any) type of transformation has been applied to
 the message body.
 
@@ -17,7 +17,7 @@ end-to-end.
 
 The most commonly used transfer-coding is `chunked`, which allows persistent connections to be used
 without knowing the entire body's length."""
-    reference = u"%s#header.transfer-encoding" % rfc7230.SPEC_URL
+    reference = "%s#header.transfer-encoding" % rfc7230.SPEC_URL
     syntax = rfc7230.Transfer_Encoding
     list_header = True
     deprecated = False
@@ -46,8 +46,8 @@ without knowing the entire body's length."""
 class TRANSFER_CODING_IDENTITY(Note):
     category = categories.CONNECTION
     level = levels.INFO
-    summary = u"The identity transfer-coding isn't necessary."
-    text = u"""\
+    summary = "The identity transfer-coding isn't necessary."
+    text = """\
 HTTP defines _transfer-codings_ as a hop-by-hop encoding of the message body. The `identity`
 tranfer-coding was defined as the absence of encoding; it doesn't do anything, so it's necessary.
 
@@ -56,8 +56,8 @@ You can remove this token to save a few bytes."""
 class TRANSFER_CODING_UNWANTED(Note):
     category = categories.CONNECTION
     level = levels.BAD
-    summary = u"%(response)s has unsupported transfer-coding."
-    text = u"""\
+    summary = "%(response)s has unsupported transfer-coding."
+    text = """\
 %(response)s's `Transfer-Encoding` header indicates it has transfer-codings applied, but RED didn't
 ask for it (or them) to be.
 
@@ -69,8 +69,8 @@ the client doesn't explicitly request can lead to interoperability problems."""
 class TRANSFER_CODING_PARAM(Note):
     category = categories.CONNECTION
     level = levels.WARN
-    summary = u"%(response)s had parameters on its transfer-codings."
-    text = u"""\
+    summary = "%(response)s had parameters on its transfer-codings."
+    text = """\
 HTTP allows transfer-codings in the `Transfer-Encoding` header to have optional parameters, but it
 doesn't define what they mean.
 

@@ -1,17 +1,19 @@
+PYTHON=python
+
 .PHONY: all
 all: unit speak webui
 
 .PHONY: unit
 unit:
-	python unit_tests.py
+	$(PYTHON) unit_tests.py
 
 .PHONY: speak
 speak:
-	PYTHONPATH=../ python -m redbot.speak
+	PYTHONPATH=../ $(PYTHON) -m redbot.speak
 
 .PHONY: webui
 webui: deploy
-	python test_webui.py
+	$(PYTHON) test_webui.py
 
 .PHONY: deploy
 deploy:

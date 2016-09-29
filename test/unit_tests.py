@@ -26,7 +26,7 @@ class GeneralHeaderTesters(unittest.TestCase):
             (r'"f\\o\\o"', r'f\o\o', []),
             (r'"fo\o"', 'foo', []),
         ]:
-            out_str = headers.unquote_string(unicode(instr))
+            out_str = headers.unquote_string(str(instr))
             self.assertEqual(expected_str, out_str, 
                 "[%s] %s != %s" % (i, str(expected_str), str(out_str)))
             i += 1
@@ -46,7 +46,7 @@ class GeneralHeaderTesters(unittest.TestCase):
             )
         ]:
             self.red.__init__()
-            outlist = headers.split_string(unicode(instr), item, split)
+            outlist = headers.split_string(str(instr), item, split)
             self.assertEqual(expected_outlist, outlist, 
                 "[%s] %s != %s" % (i, str(expected_outlist), str(outlist)))
             i += 1

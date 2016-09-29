@@ -5,8 +5,8 @@ from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7231
 
 class x_ua_compatible(headers.HttpHeader):
-    canonical_name = u"X-UA-Compatible"
-    reference = u"http://msdn.microsoft.com/en-us/library/cc288325(VS.85).aspx"
+    canonical_name = "X-UA-Compatible"
+    reference = "http://msdn.microsoft.com/en-us/library/cc288325(VS.85).aspx"
     syntax = rfc7231.parameter
     list_header = False
     deprecated = False
@@ -25,7 +25,7 @@ class x_ua_compatible(headers.HttpHeader):
         directives = {}
         warned = False
         attr, attr_value = self.value
-        if directives.has_key(attr) and not warned:
+        if attr in directives and not warned:
             add_note(UA_COMPATIBLE_REPEAT)
             warned = True
         directives[attr] = attr_value
@@ -36,8 +36,8 @@ class x_ua_compatible(headers.HttpHeader):
 class UA_COMPATIBLE(Note):
     category = categories.GENERAL
     level = levels.INFO
-    summary = u"%(response)s explicitly sets a rendering mode for Internet Explorer 8."
-    text = u"""\
+    summary = "%(response)s explicitly sets a rendering mode for Internet Explorer 8."
+    text = """\
 Internet Explorer 8 allows responses to explicitly set the rendering mode used for a given page
 (known a the "compatibility mode").
 
@@ -47,8 +47,8 @@ more information."""
 class UA_COMPATIBLE_REPEAT(Note):
     category = categories.GENERAL
     level = levels.BAD
-    summary = u"%(response)s has multiple X-UA-Compatible directives targeted at the same UA."
-    text = u"""\
+    summary = "%(response)s has multiple X-UA-Compatible directives targeted at the same UA."
+    text = """\
 Internet Explorer 8 allows responses to explicitly set the rendering mode used for a page.
 
 This response has more than one such directive targetted at one browser; this may cause
@@ -62,5 +62,5 @@ information."""
 class BasicUACTest(headers.HeaderTest):
     name = 'X-UA-Compatible'
     inputs = ['foo=bar']
-    expected_out = (u"foo", u"bar")
+    expected_out = ("foo", "bar")
     expected_err = [UA_COMPATIBLE]

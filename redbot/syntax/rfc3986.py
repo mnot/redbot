@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 """
 Regex for URIs
 
@@ -10,7 +12,7 @@ These regex are directly derived from the collected ABNF in RFC3986:
 They should be processed with re.VERBOSE.
 """
 
-from rfc5234 import DIGIT, ALPHA, HEXDIG
+from .rfc5234 import DIGIT, ALPHA, HEXDIG
 
 
 #   pct-encoded   = "%" HEXDIG HEXDIG
@@ -203,25 +205,25 @@ if __name__ == "__main__":
     try:
         instr = sys.argv[1]
     except IndexError:
-        print "usage: %s test-string" % sys.argv[0]
+        print("usage: %s test-string" % sys.argv[0])
         sys.exit(1)
 
-    print 'testing: "%s"' % instr
+    print('testing: "%s"' % instr)
 
-    print "URI:",
+    print("URI:", end=' ')
     if re.match("^%s$" % URI, instr, re.VERBOSE):
-        print "yes"
+        print("yes")
     else:
-        print "no"
+        print("no")
 
-    print "URI reference:",
+    print("URI reference:", end=' ')
     if re.match("^%s$" % URI_reference, instr, re.VERBOSE):
-        print "yes"
+        print("yes")
     else:
-        print "no"
+        print("no")
 
-    print "Absolute URI:",
+    print("Absolute URI:", end=' ')
     if re.match("^%s$" % absolute_URI, instr, re.VERBOSE):
-        print "yes"
+        print("yes")
     else:
-        print "no"
+        print("no")

@@ -5,20 +5,20 @@ A Web UI for RED, the Resource Expert Droid.
 """
 
 
-import cgi
 import locale
 import os
 import sys
-from urlparse import urlsplit
+try:
+    from urllib.parse import urlsplit
+except ImportError:
+    from urlparse import urlsplit
 
-assert sys.version_info[0] == 2 and sys.version_info[1] >= 6, "Please use Python 2.6 or greater"
-
-import thor
 from redbot import __version__
 from redbot.resource.robot_fetch import RobotFetcher
 from redbot.formatter import html
 from redbot.webui import RedWebUi, except_handler_factory
 
+import thor
 from thor.loop import _loop
 _loop.precision = .1 # FIXME
 
@@ -138,9 +138,8 @@ def mod_python_handler(r):
             r.headers_out[hdr[0]] = hdr[1]
     def response_done(trailers):
         thor.schedule(0, thor.stop)
-    query_string = cgi.parse_qs(r.args or "")
     try:
-        RedWebUi(Config, r.unparsed_uri, r.method, query_string,
+        RedWebUi(Config, r.unparsed_uri, r.method, r.args or "",
                  response_start, r.write, response_done)
         thor.run()
     except:
@@ -152,12 +151,12 @@ def cgi_main():
     """Run RED as a CGI Script."""
     sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
     ui_uri = "%s://%s%s%s" % (
-        os.environ.has_key('HTTPS') and "https" or "http",
+        'HTTPS' in os.environ and "https" or "http",
         os.environ.get('HTTP_HOST'),
         os.environ.get('SCRIPT_NAME'),
         os.environ.get('PATH_INFO', ''))
     method = os.environ.get('REQUEST_METHOD')
-    query_string = cgi.parse_qs(os.environ.get('QUERY_STRING', ""))
+    query_string = os.environ.get('QUERY_STRING', "")
 
     def response_start(code, phrase, res_hdrs):
         sys.stdout.write("Status: %s %s\n" % (code, phrase))
@@ -189,43 +188,38 @@ def cgi_main():
 def standalone_main(host, port, static_dir):
     """Run RED as a standalone Web server."""
 
-    static_types = {
-        '.js': 'text/javascript',
-        '.css': 'text/css',
-        '.png': 'image/png',
-    }
-
     # load static files
+    static_types = {
+        '.js': b'text/javascript',
+        '.css': b'text/css',
+        '.png': b'image/png',
+    }
     static_files = {}
-    def static_walker(arg, dirname, names):
-        for name in names:
+    for root, dirs, files in os.walk(static_dir):
+        for name in files:
             try:
-                path = os.path.join(dirname, name)
-                if os.path.isdir(path):
-                    continue
+                path = os.path.join(root, name)
                 uri = os.path.relpath(path, static_dir)
-                static_files["/static/%s" % uri] = open(path).read()
+                static_files[b"/static/%s" % uri.encode('utf-8')] = open(path, 'rb').read()
             except IOError:
                 sys.stderr.write("* Problem loading %s\n" % path)
-    os.path.walk(static_dir, static_walker, "")
 
     def red_handler(x):
         @thor.events.on(x)
         def request_start(method, uri, req_hdrs):
             p_uri = urlsplit(uri)
-            if static_files.has_key(p_uri.path):
+            if p_uri.path in static_files:
                 headers = []
                 file_ext = os.path.splitext(p_uri.path)[1].lower()
-                content_encoding = static_types.get(file_ext, 'application/octet-stream')
-                headers.append(('Content-Encoding', content_encoding))
-                headers.append(('Cache-Control', 'max-age=300'))
-                x.response_start("200", "OK", headers)
+                content_encoding = static_types.get(file_ext, b'application/octet-stream')
+                headers.append((b'Content-Encoding', content_encoding))
+                headers.append((b'Cache-Control', b'max-age=300'))
+                x.response_start(b"200", b"OK", headers)
                 x.response_body(static_files[p_uri.path])
                 x.response_done([])
-            elif p_uri.path == "/":
-                query_string = cgi.parse_qs(p_uri.query)
+            elif p_uri.path == b"/":
                 try:
-                    RedWebUi(Config, '/', method, query_string,
+                    RedWebUi(Config, '/', method, p_uri.query,
                              x.response_start, x.response_body, x.response_done)
                 except Exception:
                     sys.stderr.write("""
@@ -239,7 +233,7 @@ in standalone server mode. Details follow.
                     traceback.print_exc()
                     thor.stop()
             else:
-                x.response_start("404", "Not Found", [])
+                x.response_start(b"404", b"Not Found", [])
                 x.response_done([])
 
     server = thor.http.HttpServer(host, port)
@@ -262,7 +256,7 @@ def standalone_monitor(host, port, static_dir):
 
 
 if __name__ == "__main__":
-    if os.environ.has_key('GATEWAY_INTERFACE'):  # CGI
+    if 'GATEWAY_INTERFACE' in os.environ:  # CGI
         cgi_main()
     else:
         # standalone server
@@ -272,23 +266,15 @@ if __name__ == "__main__":
         option_parser = OptionParser(usage=usage, version=version)
         (options, args) = option_parser.parse_args()
         if len(args) < 2:
-            option_parser.error(
-                "Please specify a port and a static directory."
-            )
+            option_parser.error("Please specify a port and a static directory.")
         try:
             port = int(args[0])
         except ValueError:
-            option_parser.error(
-                "Port is not an integer."
-            )
+            option_parser.error("Port is not an integer.")
 
         static_dir = args[1]
         sys.stderr.write(
             "Starting standalone server on PID %s...\n" % os.getpid() + \
-            "http://localhost:%s/\n" % port
-        )
+            "http://localhost:%s/\n" % port)
 
-#       import pdb
-#       pdb.run('standalone_main("", port, static_dir)')
         standalone_main("", port, static_dir)
-#       standalone_monitor("", port, static_dir)

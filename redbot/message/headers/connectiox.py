@@ -7,7 +7,7 @@ from redbot.syntax import rfc7230
 
 
 class connectiox(headers.HttpHeader):
-    description = u"""\
+    description = """\
 The `%(field_name)s` field usually means that a HTTP load balancer, proxy or other intermediary in
 front of the server has rewritten the `Connection` header, to allow it to insert its own.
 

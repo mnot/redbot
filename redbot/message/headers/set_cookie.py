@@ -3,15 +3,18 @@
 
 from calendar import timegm
 from re import match, split
-from urlparse import urlsplit
+try:
+    from urllib.parse import urlsplit
+except ImportError:
+    from urlparse import urlsplit
 
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
 
 
 class set_cookie(headers.HttpHeader):
-    canonical_name = u"Set-Cookie"
-    description = u"""\
+    canonical_name = "Set-Cookie"
+    description = """\
 The `Set-Cookie` response header sets a stateful "cookie" on the client, to be included in future
 requests to the server."""
     syntax = False
@@ -46,11 +49,11 @@ def loose_parse(set_cookie_string, uri_path, current_time, add_note):
         name, value = name_value_pair.split("=", 1)
     except ValueError:
         add_note(SET_COOKIE_NO_VAL)
-        raise ValueError, "Cookie doesn't have a value"
+        raise ValueError("Cookie doesn't have a value")
     name, value = name.strip(), value.strip()
     if name == "":
         add_note(SET_COOKIE_NO_NAME)
-        raise ValueError, "Cookie doesn't have a name"
+        raise ValueError("Cookie doesn't have a name")
     cookie_name, cookie_value = name, value
     cookie_attribute_list = []
     while unparsed_attributes != "":
@@ -68,7 +71,7 @@ def loose_parse(set_cookie_string, uri_path, current_time, add_note):
         if case_norm_attribute_name == "expires":
             try:
                 expiry_time = loose_date_parse(attribute_value)
-            except ValueError, why:
+            except ValueError as why:
                 add_note(SET_COOKIE_BAD_DATE, why=why, cookie_name=cookie_name)
                 continue
             cookie_attribute_list.append(("Expires", expiry_time))
@@ -156,7 +159,7 @@ def loose_date_parse(cookie_date):
                 found_day_of_month = True
                 day_of_month_value = int(re_match.group(1))
                 continue
-        if not found_month and date_token[:3].lower() in MONTHS.keys():
+        if not found_month and date_token[:3].lower() in list(MONTHS.keys()):
             found_month = True
             month_value = MONTHS[date_token[:3].lower()]
             continue
@@ -180,18 +183,18 @@ def loose_date_parse(cookie_date):
             missing.append("month")
         if not found_year:
             missing.append("year")
-        raise ValueError, "didn't have a: %s" % ",".join(missing)
+        raise ValueError("didn't have a: %s" % ",".join(missing))
     if day_of_month_value < 1 or day_of_month_value > 31:
-        raise ValueError, "%s is out of range for day_of_month" % \
-            day_of_month_value
+        raise ValueError("%s is out of range for day_of_month" % \
+            day_of_month_value)
     if year_value < 1601:
-        raise ValueError, "%s is out of range for year" % year_value
+        raise ValueError("%s is out of range for year" % year_value)
     if hour_value > 23:
-        raise ValueError, "%s is out of range for hour" % hour_value
+        raise ValueError("%s is out of range for hour" % hour_value)
     if minute_value > 59:
-        raise ValueError, "%s is out of range for minute" % minute_value
+        raise ValueError("%s is out of range for minute" % minute_value)
     if second_value > 59:
-        raise ValueError, "%s is out of range for second" % second_value
+        raise ValueError("%s is out of range for second" % second_value)
     parsed_cookie_date = timegm((
         year_value,
         month_value,
@@ -208,8 +211,8 @@ def loose_date_parse(cookie_date):
 class SET_COOKIE_NO_VAL(Note):
     category = categories.GENERAL
     level = levels.BAD
-    summary = u"%(response)s has a Set-Cookie header that can't be parsed."
-    text = u"""\
+    summary = "%(response)s has a Set-Cookie header that can't be parsed."
+    text = """\
   This `Set-Cookie` header can't be parsed into a name and a value; it must start with a `name=value`
   structure.
 
@@ -218,8 +221,8 @@ class SET_COOKIE_NO_VAL(Note):
 class SET_COOKIE_NO_NAME(Note):
     category = categories.GENERAL
     level = levels.BAD
-    summary = u"%(response)s has a Set-Cookie header without a cookie-name."
-    text = u"""\
+    summary = "%(response)s has a Set-Cookie header without a cookie-name."
+    text = """\
   This `Set-Cookie` header has an empty name; there needs to be a name before the `=`.
 
   Browsers will ignore this cookie."""
@@ -227,16 +230,16 @@ class SET_COOKIE_NO_NAME(Note):
 class SET_COOKIE_BAD_DATE(Note):
     category = categories.GENERAL
     level = levels.WARN
-    summary = u"The %(cookie_name)s Set-Cookie header has an invalid Expires date."
-    text = u"""\
+    summary = "The %(cookie_name)s Set-Cookie header has an invalid Expires date."
+    text = """\
   The `expires` date on this `Set-Cookie` header isn't valid; see
   [RFC6265](http://tools.ietf.org/html/rfc6265) for details of the correct format."""
 
 class SET_COOKIE_EMPTY_MAX_AGE(Note):
     category = categories.GENERAL
     level = levels.WARN
-    summary = u"The %(cookie_name)s Set-Cookie header has an empty Max-Age."
-    text = u"""\
+    summary = "The %(cookie_name)s Set-Cookie header has an empty Max-Age."
+    text = """\
   The `max-age` parameter on this `Set-Cookie` header doesn't have a value.
 
   Browsers will ignore the `max-age` value as a result."""
@@ -244,8 +247,8 @@ class SET_COOKIE_EMPTY_MAX_AGE(Note):
 class SET_COOKIE_LEADING_ZERO_MAX_AGE(Note):
     category = categories.GENERAL
     level = levels.WARN
-    summary = u"The %(cookie_name)s Set-Cookie header has a Max-Age with a leading zero."
-    text = u"""\
+    summary = "The %(cookie_name)s Set-Cookie header has a Max-Age with a leading zero."
+    text = """\
   The `max-age` parameter on this `Set-Cookie` header has a leading zero.
 
   Browsers will ignore the `max-age` value as a result."""
@@ -253,8 +256,8 @@ class SET_COOKIE_LEADING_ZERO_MAX_AGE(Note):
 class SET_COOKIE_NON_DIGIT_MAX_AGE(Note):
     category = categories.GENERAL
     level = levels.WARN
-    summary = u"The %(cookie_name)s Set-Cookie header has a non-numeric Max-Age."
-    text = u"""\
+    summary = "The %(cookie_name)s Set-Cookie header has a non-numeric Max-Age."
+    text = """\
   The `max-age` parameter on this `Set-Cookie` header isn't numeric.
 
 
@@ -263,8 +266,8 @@ class SET_COOKIE_NON_DIGIT_MAX_AGE(Note):
 class SET_COOKIE_EMPTY_DOMAIN(Note):
     category = categories.GENERAL
     level = levels.WARN
-    summary = u"The %(cookie_name)s Set-Cookie header has an empty domain."
-    text = u"""\
+    summary = "The %(cookie_name)s Set-Cookie header has an empty domain."
+    text = """\
   The `domain` parameter on this `Set-Cookie` header is empty.
 
   Browsers will probably ignore it as a result."""
@@ -272,8 +275,8 @@ class SET_COOKIE_EMPTY_DOMAIN(Note):
 class SET_COOKIE_UNKNOWN_ATTRIBUTE(Note):
     category = categories.GENERAL
     level = levels.WARN
-    summary = u"The %(cookie_name)s Set-Cookie header has an unknown attribute, '%(attribute)s'."
-    text = u"""\
+    summary = "The %(cookie_name)s Set-Cookie header has an unknown attribute, '%(attribute)s'."
+    text = """\
   This `Set-Cookie` header has an extra parameter, "%(attribute)s".
 
   Browsers will ignore it."""
@@ -283,14 +286,14 @@ class SET_COOKIE_UNKNOWN_ATTRIBUTE(Note):
 class BasicSCTest(headers.HeaderTest):
     name = 'Set-Cookie'
     inputs = ['SID=31d4d96e407aad42']
-    expected_out = [(u"SID", u"31d4d96e407aad42", [])]
+    expected_out = [("SID", "31d4d96e407aad42", [])]
     expected_err = []
 
 class ParameterSCTest(headers.HeaderTest):
     name = 'Set-Cookie'
     inputs = ['SID=31d4d96e407aad42; Path=/; Domain=example.com']
-    expected_out = [(u"SID", u"31d4d96e407aad42",
-                     [(u"Path", u"/"), (u"Domain", u"example.com")])]
+    expected_out = [("SID", "31d4d96e407aad42",
+                     [("Path", "/"), ("Domain", "example.com")])]
     expected_err = []
 
 class TwoSCTest(headers.HeaderTest):
@@ -299,43 +302,43 @@ class TwoSCTest(headers.HeaderTest):
         "SID=31d4d96e407aad42; Path=/; Secure; HttpOnly",
         "lang=en-US; Path=/; Domain=example.com"]
     expected_out = [
-        (u"SID", u"31d4d96e407aad42", [(u"Path", u"/"), (u"Secure", u""), (u"HttpOnly", u"")]),
-        (u"lang", u"en-US", [(u"Path", "/"), (u"Domain", u"example.com")])]
+        ("SID", "31d4d96e407aad42", [("Path", "/"), ("Secure", ""), ("HttpOnly", "")]),
+        ("lang", "en-US", [("Path", "/"), ("Domain", "example.com")])]
     expected_err = []
 
 class ExpiresScTest(headers.HeaderTest):
     name = "Set-Cookie"
     inputs = ["lang=en-US; Expires=Wed, 09 Jun 2021 10:18:14 GMT"]
-    expected_out = [(u"lang", u"en-US", [(u"Expires", 1623233894)])]
+    expected_out = [("lang", "en-US", [("Expires", 1623233894)])]
     expected_err = []
 
 class ExpiresSingleScTest(headers.HeaderTest):
     name = "Set-Cookie"
     inputs = ["lang=en-US; Expires=Wed, 9 Jun 2021 10:18:14 GMT"]
-    expected_out = [(u"lang", u"en-US", [(u"Expires", 1623233894)])]
+    expected_out = [("lang", "en-US", [("Expires", 1623233894)])]
     expected_err = []
 
 class MaxAgeScTest(headers.HeaderTest):
     name = "Set-Cookie"
     inputs = ["lang=en-US; Max-Age=123"]
-    expected_out = [(u"lang", u"en-US", [(u"Max-Age", 123)])]
+    expected_out = [("lang", "en-US", [("Max-Age", 123)])]
     expected_err = []
 
 class MaxAgeLeadingZeroScTest(headers.HeaderTest):
     name = "Set-Cookie"
     inputs = ["lang=en-US; Max-Age=0123"]
-    expected_out = [(u"lang", u"en-US", [])]
+    expected_out = [("lang", "en-US", [])]
     expected_err = [SET_COOKIE_LEADING_ZERO_MAX_AGE]
 
 class RemoveSCTest(headers.HeaderTest):
     name = "Set-Cookie"
     inputs = ["lang=; Expires=Sun, 06 Nov 1994 08:49:37 GMT"]
-    expected_out = [(u"lang", u"", [(u"Expires", 784111777)])]
+    expected_out = [("lang", "", [("Expires", 784111777)])]
     expected_err = []
 
 class WolframSCTest(headers.HeaderTest):
     name = "Set-Cookie"
     inputs = ["WR_SID=50.56.234.188.1398; path=/; max-age=315360000; domain=.wolframalpha.com"]
-    expected_out = [(u"WR_SID", u"50.56.234.188.1398",
-                     [(u'Path', u'/'), (u'Max-Age', 315360000), (u'Domain', u'wolframalpha.com')])]
+    expected_out = [("WR_SID", "50.56.234.188.1398",
+                     [('Path', '/'), ('Max-Age', 315360000), ('Domain', 'wolframalpha.com')])]
     expected_err = []

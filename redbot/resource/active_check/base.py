@@ -17,8 +17,8 @@ class SubRequest(RedFetcher):
     Base class for a subrequest of a "main" HttpResource, made to perform
     additional behavioural tests on the resource.
     """
-    check_name = u"undefined"
-    response_phrase = u"undefined"
+    check_name = "undefined"
+    response_phrase = "undefined"
 
     def __init__(self, base_resource):
         self.base = base_resource
@@ -58,8 +58,8 @@ class SubRequest(RedFetcher):
         """
         missing_hdrs = []
         for hdr in hdrs:
-            if self.base.response.parsed_headers.has_key(hdr) \
-            and not self.response.parsed_headers.has_key(hdr):
+            if hdr in self.base.response.parsed_headers \
+            and hdr not in self.response.parsed_headers:
                 missing_hdrs.append(hdr)
         if missing_hdrs:
             self.add_base_note('headers', note, missing_hdrs=", ".join(missing_hdrs))
@@ -69,8 +69,8 @@ class SubRequest(RedFetcher):
 class MISSING_HDRS_304(Note):
     category = categories.VALIDATION
     level = levels.WARN
-    summary = u"%(response)s is missing required headers."
-    text = u"""\
+    summary = "%(response)s is missing required headers."
+    text = """\
 HTTP requires `304 Not Modified` responses to have certain headers, if they are also present in a
 normal (e.g., `200 OK` response).
 

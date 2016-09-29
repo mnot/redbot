@@ -8,12 +8,12 @@ These regex are directly derived from the collected ABNF in RFC7233.
 They should be processed with re.VERBOSE.
 """
 
-from rfc5234 import DIGIT, SP, VCHAR
-from rfc7230 import list_rule, OWS, token
-from rfc7231 import HTTP_date
-from rfc7232 import entity_tag
+from .rfc5234 import DIGIT, SP, VCHAR
+from .rfc7230 import list_rule, OWS, token
+from .rfc7231 import HTTP_date
+from .rfc7232 import entity_tag
 
-SPEC_URL = u"http://httpwg.org/specs/rfc7233"
+SPEC_URL = "http://httpwg.org/specs/rfc7233"
 
 
 # bytes-unit = "bytes"

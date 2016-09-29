@@ -6,11 +6,11 @@ from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7232
 
 class last_modified(headers.HttpHeader):
-    canonical_name = u"Last-Modified"
-    description = u"""\
+    canonical_name = "Last-Modified"
+    description = """\
 The `Last-Modified` header indicates the time that the origin server believes the
 representation was last modified."""
-    reference = u"%s#header.last_modified" % rfc7232.SPEC_URL
+    reference = "%s#header.last_modified" % rfc7232.SPEC_URL
     syntax = False # rfc7232.Last_Modified
     list_header = False
     deprecated = False

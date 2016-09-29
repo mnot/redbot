@@ -5,7 +5,7 @@ from redbot.speak import Note, categories, levels
 
 
 class x_content_type_options(headers.HttpHeader):
-    canonical_name = u"X-Content-Type-Options"
+    canonical_name = "X-Content-Type-Options"
     list_header = True
     deprecated = False
     valid_in_requests = False
@@ -21,8 +21,8 @@ class x_content_type_options(headers.HttpHeader):
 class CONTENT_TYPE_OPTIONS(Note):
     category = categories.SECURITY
     level = levels.INFO
-    summary = u"%(response)s instructs Internet Explorer not to 'sniff' its media type."
-    text = u"""\
+    summary = "%(response)s instructs Internet Explorer not to 'sniff' its media type."
+    text = """\
 Many Web browers "sniff" the media type of responses to figure out whether they're HTML, RSS or
 another format, no matter what the `Content-Type` header says.
 
@@ -34,8 +34,8 @@ See [this blog entry](http://bit.ly/t1UHW2) for more information about this head
 class CONTENT_TYPE_OPTIONS_UNKNOWN(Note):
     category = categories.SECURITY
     level = levels.WARN
-    summary = u"%(response)s contains an X-Content-Type-Options header with an unknown value."
-    text = u"""\
+    summary = "%(response)s contains an X-Content-Type-Options header with an unknown value."
+    text = """\
 Only one value is currently defined for this header, `nosniff`. Using other values here won't
 necessarily cause problems, but they probably won't have any effect either.
 

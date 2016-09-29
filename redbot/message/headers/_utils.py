@@ -2,7 +2,12 @@
 import calendar
 from email.utils import parsedate as lib_parsedate
 import re
-import urllib
+try:
+    from urllib.parse import unquote as urlunquote
+except ImportError:
+    from urllib import unquote as unquote_to_bytes
+    def urlunquote(instr):
+        return unquote_to_bytes(instr.encode('ascii', 'replace')).decode('utf-8', 'replace')
 
 from redbot.syntax import rfc7231
 from ._notes import *
@@ -37,7 +42,7 @@ def unquote_string(instr):
     @return: unquoted string
     @rtype: unicode
     """
-    instr = unicode(instr).strip()
+    instr = str(instr).strip()
     if not instr or instr == '*':
         return instr
     if instr[0] == instr[-1] == '"':
@@ -73,7 +78,6 @@ def parse_params(instr, add_note, nostar=None, delim=";"):
     @return: dictionary of {name: value}
     """
     param_dict = {}
-    instr = instr.encode('ascii') # TODO: non-ascii input?
     for param in split_string(instr, rfc7231.parameter, r"\s*%s\s*" % delim):
         try:
             key, val = param.split("=", 1)
@@ -81,7 +85,7 @@ def parse_params(instr, add_note, nostar=None, delim=";"):
             param_dict[param.lower()] = None
             continue
         k_norm = key.lower() # TODO: warn on upper-case in param?
-        if param_dict.has_key(k_norm):
+        if k_norm in param_dict:
             add_note(PARAM_REPEATS, param=k_norm)
         if val[0] == val[-1] == "'":
             add_note(PARAM_SINGLE_QUOTED, param=k_norm, param_val=val, param_val_unquoted=val[1:-1])
@@ -91,7 +95,7 @@ def parse_params(instr, add_note, nostar=None, delim=";"):
             else:
                 if val[0] == '"' and val[-1] == '"':
                     add_note(PARAM_STAR_QUOTED, param=k_norm)
-                    val = unquote_string(val).encode('ascii')
+                    val = val[1:-1]
                 try:
                     enc, lang, esc_v = val.split("'", 3)
                 except ValueError:
@@ -106,9 +110,8 @@ def parse_params(instr, add_note, nostar=None, delim=";"):
                     add_note(PARAM_STAR_CHARSET, param=k_norm, enc=enc)
                     continue
                 # TODO: catch unquoting errors, range of chars, charset
-                unq_v = urllib.unquote(esc_v)
-                dec_v = unq_v.decode(enc) # ok, because we limit enc above
-                param_dict[k_norm] = dec_v
+                unq_v = urlunquote(esc_v)
+                param_dict[k_norm] = unq_v
         else:
             param_dict[k_norm] = unquote_string(val)
     return param_dict
