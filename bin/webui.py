@@ -10,12 +10,12 @@ import os
 import sys
 from urllib.parse import urlsplit
 
-import thor
 from redbot import __version__
 from redbot.resource.robot_fetch import RobotFetcher
 from redbot.formatter import html
 from redbot.webui import RedWebUi, except_handler_factory
 
+import thor
 from thor.loop import _loop
 _loop.precision = .1 # FIXME
 
