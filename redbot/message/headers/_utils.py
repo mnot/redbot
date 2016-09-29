@@ -5,7 +5,9 @@ import re
 try:
     from urllib.parse import unquote as urlunquote
 except ImportError:
-    from urllib import unquote as urlunquote
+    from urllib import unquote as unquote_to_bytes
+    def urlunquote(instr):
+        return unquote_to_bytes(instr.encode('ascii', 'replace')).decode('utf-8', 'replace')
 
 from redbot.syntax import rfc7231
 from ._notes import *
@@ -93,7 +95,7 @@ def parse_params(instr, add_note, nostar=None, delim=";"):
             else:
                 if val[0] == '"' and val[-1] == '"':
                     add_note(PARAM_STAR_QUOTED, param=k_norm)
-                    val = unquote_string(val)
+                    val = val[1:-1]
                 try:
                     enc, lang, esc_v = val.split("'", 3)
                 except ValueError:
