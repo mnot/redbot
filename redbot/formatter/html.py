@@ -13,7 +13,11 @@ import operator
 import os
 import re
 import textwrap
-from urllib.parse import urljoin, quote as urlquote
+try:
+    from urllib.parse import urljoin, quote as urlquote
+except ImportError:
+    from urlparse import urljoin
+    from urllib import quote as urlquote
 
 from markdown import markdown
 

@@ -8,7 +8,10 @@ A Web UI for RED, the Resource Expert Droid.
 import locale
 import os
 import sys
-from urllib.parse import urlsplit
+try:
+    from urllib.parse import urlsplit
+except ImportError:
+    from urlparse import urlsplit
 
 from redbot import __version__
 from redbot.resource.robot_fetch import RobotFetcher

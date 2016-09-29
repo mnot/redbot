@@ -8,7 +8,11 @@ import base64
 import hashlib
 import re
 import time
-from urllib.parse import urlsplit, urlunsplit, quote as urlquote
+try:
+    from urllib.parse import urlsplit, urlunsplit, quote as urlquote
+except ImportError:
+    from urlparse import urlsplit, urlunsplit
+    from urllib import quote as urlquote
 import zlib
 
 from redbot.message.headers import HeaderProcessor

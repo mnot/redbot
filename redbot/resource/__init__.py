@@ -11,7 +11,10 @@ of requests to probe the resource's behaviour.
 See webui.py for the Web front-end.
 """
 
-from urllib.parse import urljoin
+try:
+    from urllib.parse import urljoin
+except ImportError:
+    from urlparse import urljoin
 
 import thor
 

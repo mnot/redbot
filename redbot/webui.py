@@ -10,7 +10,11 @@ import pickle as pickle
 import sys
 import tempfile
 import time
-from urllib import parse as urlparse
+try:
+    from urllib.parse import parse_qs, urlsplit
+except ImportError:
+    from cgi import parse_qs
+    from urlparse import urlsplit
 import zlib
 
 import thor
@@ -53,7 +57,7 @@ class RedWebUi(object):
     def run(self, query_string):
         """Given a bytes query_string from the wire, set attributes."""
         assert isinstance(query_string, bytes)
-        qs = urlparse.parse_qs(query_string.decode(self.config.charset, 'replace'))
+        qs = parse_qs(query_string.decode(self.config.charset, 'replace'))
         self.test_uri = qs.get('uri', [''])[0]
         self.req_hdrs = [tuple(rh.split(":", 1))
                          for rh in qs.get("req_hdr", []) if rh.find(":") > 0]
@@ -170,7 +174,7 @@ class RedWebUi(object):
         referer_error = None
         if len(referers) > 1:
             referer_error = "Multiple referers not allowed."
-        if referers and urlparse.urlsplit(referers[0]).hostname in self.config.referer_spam_domains:
+        if referers and urlsplit(referers[0]).hostname in self.config.referer_spam_domains:
             referer_error = "Referer not allowed."
         if referer_error:
             self.response_start(b"403", b"Forbidden", [

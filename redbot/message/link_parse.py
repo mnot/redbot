@@ -4,9 +4,12 @@
 Parse links from a stream of HTML data.
 """
 
-
-from html.entities import entitydefs
-from html.parser import HTMLParser
+try:
+    from html.entities import entitydefs
+    from html.parser import HTMLParser
+except ImportError:
+    from htmlentitydefs import entitydefs
+    from HTMLParser import HTMLParser
 
 from redbot.message import headers
 from redbot.syntax import rfc7231

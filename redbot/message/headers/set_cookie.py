@@ -3,7 +3,10 @@
 
 from calendar import timegm
 from re import match, split
-from urllib.parse import urlsplit
+try:
+    from urllib.parse import urlsplit
+except ImportError:
+    from urlparse import urlsplit
 
 from redbot.message import headers
 from redbot.speak import Note, categories, levels

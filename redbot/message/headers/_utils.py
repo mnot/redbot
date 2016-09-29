@@ -2,7 +2,10 @@
 import calendar
 from email.utils import parsedate as lib_parsedate
 import re
-from urllib.parse import unquote as urlunquote
+try:
+    from urllib.parse import unquote as urlunquote
+except ImportError:
+    from urllib import unquote as urlunquote
 
 from redbot.syntax import rfc7231
 from ._notes import *
