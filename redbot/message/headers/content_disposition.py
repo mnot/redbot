@@ -121,7 +121,7 @@ class FilenameStarCDTest(headers.HeaderTest):
     inputs = ["attachment; filename=foo.txt; filename*=UTF-8''a%cc%88.txt"]
     expected_out = ('attachment', {
         'filename': 'foo.txt',
-        'filename*': 'a\u0308.txt'})
+        'filename*': u'a\u0308.txt'})
     expected_err = []
 
 class FilenameStarQuotedCDTest(headers.HeaderTest):
@@ -129,7 +129,7 @@ class FilenameStarQuotedCDTest(headers.HeaderTest):
     inputs = ["attachment; filename=foo.txt; filename*=\"UTF-8''a%cc%88.txt\""]
     expected_out = ('attachment', {
         'filename': 'foo.txt',
-        'filename*': 'a\u0308.txt'})
+        'filename*': u'a\u0308.txt'})
     expected_err = [headers.PARAM_STAR_QUOTED]
 
 class FilenamePercentCDTest(headers.HeaderTest):

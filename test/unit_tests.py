@@ -87,7 +87,7 @@ class GeneralHeaderTesters(unittest.TestCase):
              ';'
             ),
             ("foo*=\"UTF-8''a%cc%88.txt\"", 
-             {'foo*': 'a\u0308.txt'},
+             {'foo*': u'a\u0308.txt'},
              [headers.PARAM_STAR_QUOTED], 
              ';'
             ),
