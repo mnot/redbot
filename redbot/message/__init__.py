@@ -5,6 +5,7 @@ All checks that can be performed on a message in isolation.
 """
 
 import base64
+import binascii
 import hashlib
 import re
 import time
