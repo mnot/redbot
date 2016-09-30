@@ -224,7 +224,7 @@ class HttpMessage(thor.events.EventEmitter):
         magic = content[:2]
         if magic != b'\037\213':
             raise IOError('Not a gzip header (magic is hex %s, should be 1f8b)' % \
-                magic.encode('hex-codec'))
+                magic.decode('hex-codec'))
         method = ord(content[2:3])
         if method != 8:
             raise IOError('Unknown compression method')
