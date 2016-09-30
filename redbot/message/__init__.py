@@ -427,5 +427,5 @@ wire. However, this response could not be decompressed; the error encountered wa
 
 %(ok_zlib_len)s bytes were decompressed successfully before this; the erroneous chunk starts with (in hex):
 
-    `%(chunk_sample)s`
+    %(chunk_sample)s
 """
