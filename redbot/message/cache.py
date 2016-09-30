@@ -120,7 +120,7 @@ def checkCaching(response, request=None):
     # calculate age
     response.age = age_hdr or 0
     age_str = relative_time(response.age, 0, 0)
-    if date_hdr > 0:
+    if date_hdr and date_hdr > 0:
         apparent_age = max(0, int(response.start_time - date_hdr))
     else:
         apparent_age = 0
