@@ -291,7 +291,7 @@ def except_handler_factory(config, out=None):
                 e_line = etb.tb_frame.f_lineno
                 ldir = os.path.join(config.exception_dir, os.path.split(e_file)[-1])
                 if not os.path.exists(ldir):
-                    os.umask(0002)
+                    os.umask(0o002)
                     os.makedirs(ldir)
                 (fd, path) = tempfile.mkstemp(prefix="%s_" % e_line, suffix='.html', dir=ldir)
                 fh = os.fdopen(fd, 'w')
