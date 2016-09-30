@@ -151,10 +151,14 @@ def cgi_main():
     """Run RED as a CGI Script."""
     def out(inbytes):
         try:
-            sys.stdout.buffer.write(inbytes)
-        except AttributeError: # python2
-            sys.stdout.write(inbytes)
-        sys.stdout.flush()
+            if hasattr(sys.stdout, 'buffer'):
+                sys.stdout.buffer.write(inbytes)
+            else: # python2
+                sys.stdout.write(inbytes)                
+            sys.stdout.flush()
+        except IOError: 
+            pass
+            
     ui_uri = "%s://%s%s%s" % (
         'HTTPS' in os.environ and "https" or "http",
         os.environ.get('HTTP_HOST'),
