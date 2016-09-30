@@ -143,7 +143,7 @@ def mod_python_handler(r):
                  response_start, r.write, response_done)
         thor.run()
     except:
-        except_handler_factory(Config, r.write)()
+        except_handler_factory(Config, r.write, qs=r.args)()
     return apache.OK
 
 
@@ -188,7 +188,7 @@ def cgi_main():
                  response_start, response_body, response_done)
         thor.run()
     except:
-        except_handler_factory(Config, sys.stdout.write)()
+        except_handler_factory(Config, qs=query_string)()
 
 
 def standalone_main(host, port, static_dir):

@@ -258,7 +258,12 @@ class RedWebUi(object):
 
 
 # adapted from cgitb.Hook
-def except_handler_factory(config, out=None):
+def except_handler_factory(config, out=None, qs=None):
+    """
+    Log an exception gracefully.
+    
+    config is a config object; out is a function that takes a string; qs is a bytes query string.
+    """
     if not out:
         out = sys.stdout.write
 
@@ -277,10 +282,12 @@ def except_handler_factory(config, out=None):
         else:
             import stat
             import traceback
+            if qs:
+                doc = "<h3><code>%s</code></h3>" % qs.decode('utf-8', 'replace')
             try:
-                doc = cgitb.html((etype, evalue, etb), 5)
+                doc += cgitb.html((etype, evalue, etb), 5)
             except:                  # just in case something goes wrong
-                doc = "<pre>" + ''.join(traceback.format_exception(etype, evalue, etb)) + "</pre>"
+                doc += "<pre>" + ''.join(traceback.format_exception(etype, evalue, etb)) + "</pre>"
             if config.debug:
                 out(doc)
                 return
