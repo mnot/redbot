@@ -280,7 +280,7 @@ def except_handler_factory(config, out=None):
             try:
                 doc = cgitb.html((etype, evalue, etb), 5)
             except:                  # just in case something goes wrong
-                doc = ''.join(traceback.format_exception(etype, evalue, etb))
+                doc = "<pre>" + ''.join(traceback.format_exception(etype, evalue, etb)) + "</pre>"
             if config.debug:
                 out(doc)
                 return
