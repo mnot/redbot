@@ -39,6 +39,7 @@ class RedWebUi(object):
     def __init__(self, config, ui_uri, method, query_string,
                  response_start, response_body, response_done, error_log=sys.stderr.write):
         self.config = config  # Config object, see bin/webui.py
+        self.charset_bytes = self.config.charset.encode('ascii')
         self.ui_uri = ui_uri  # Base URI for the web ux
         self.method = method  # Request method to the UX; bytes
         self.response_start = response_start
@@ -94,7 +95,7 @@ class RedWebUi(object):
             self.response_body("Redirecting to the saved test page...".encode(self.config.charset))
         except (OSError, IOError):
             self.response_start(b"500", b"Internal Server Error",
-                [(b"Content-Type", b"text/html; charset=%s" % self.config.charset),])
+                [(b"Content-Type", b"text/html; charset=%s" % self.charset_bytes),])
             self.response_body(error_template % \
                                "Sorry, I couldn't save that.".encode(self.config.charset))
         self.response_done([])
@@ -106,7 +107,7 @@ class RedWebUi(object):
             mtime = os.fstat(fd.fileno()).st_mtime
         except (OSError, IOError, TypeError, zlib.error):
             self.response_start(b"404", b"Not Found", [
-                (b"Content-Type", b"text/html; charset=%s" % self.config.charset),
+                (b"Content-Type", b"text/html; charset=%s" % self.charset_bytes),
                 (b"Cache-Control", b"max-age=600, must-revalidate")])
             self.response_body(error_template % \
                 "I'm sorry, I can't find that saved response.".encode(self.config.charset))
@@ -117,7 +118,7 @@ class RedWebUi(object):
             top_resource = pickle.load(fd)
         except (pickle.PickleError, IOError, EOFError):
             self.response_start(b"500", b"Internal Server Error", [
-                (b"Content-Type", b"text/html; charset=%s" % self.config.charset),
+                (b"Content-Type", b"text/html; charset=%s" % self.charset_bytes),
                 (b"Cache-Control", b"max-age=600, must-revalidate")])
             self.response_body(error_template % \
                 "I'm sorry, I had a problem loading that.".encode(self.config.charset))
