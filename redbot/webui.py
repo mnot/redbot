@@ -26,9 +26,6 @@ from redbot.formatter import find_formatter, html
 from redbot.formatter.html import e_url
 
 
-error_template = "<p class='error'>%s</p>"
-
-
 class RedWebUi(object):
     """
     A Web UI for RED.
@@ -95,9 +92,8 @@ class RedWebUi(object):
             self.response_body("Redirecting to the saved test page...".encode(self.config.charset))
         except (OSError, IOError):
             self.response_start(b"500", b"Internal Server Error",
-                [(b"Content-Type", b"text/html; charset=%s" % self.charset_bytes),])
-            self.response_body(error_template % \
-                               "Sorry, I couldn't save that.".encode(self.config.charset))
+                                [(b"Content-Type", b"text/html; charset=%s" % self.charset_bytes),])
+            self.response_body(self.show_error("Sorry, I couldn't save that."))
         self.response_done([])
 
     def load_saved_test(self):
@@ -109,8 +105,7 @@ class RedWebUi(object):
             self.response_start(b"404", b"Not Found", [
                 (b"Content-Type", b"text/html; charset=%s" % self.charset_bytes),
                 (b"Cache-Control", b"max-age=600, must-revalidate")])
-            self.response_body(error_template % \
-                "I'm sorry, I can't find that saved response.".encode(self.config.charset))
+            self.response_body(self.show_error("I'm sorry, I can't find that saved response."))
             self.response_done([])
             return
         is_saved = mtime > thor.time()
@@ -120,8 +115,7 @@ class RedWebUi(object):
             self.response_start(b"500", b"Internal Server Error", [
                 (b"Content-Type", b"text/html; charset=%s" % self.charset_bytes),
                 (b"Cache-Control", b"max-age=600, must-revalidate")])
-            self.response_body(error_template % \
-                "I'm sorry, I had a problem loading that.".encode(self.config.charset))
+            self.response_body(self.show_error("I'm sorry, I had a problem loading that."))
             self.response_done([])
             return
         finally:
@@ -159,7 +153,7 @@ class RedWebUi(object):
 
         top_resource = HttpResource(descend=self.descend)
         self.timeout = thor.schedule(self.config.max_runtime, self.timeoutError,
-            top_resource.show_task_map)
+                                     top_resource.show_task_map)
         top_resource.set_request(self.test_uri, req_hdrs=self.req_hdrs)
         formatter = find_formatter(self.format, 'html', self.descend)(
             self.ui_uri, self.config.lang, self.output,
@@ -231,6 +225,10 @@ class RedWebUi(object):
         formatter.finish_output()
         self.response_done([])
 
+    def show_error(self, message):
+        "Dislay a message as binary"
+        return ("<p class='error'>%s</p>" % message).encode(self.config.charset)
+
     def output(self, chunk):
         self.response_body(chunk.encode(self.config.charset, 'replace'))
 
@@ -243,7 +241,7 @@ class RedWebUi(object):
     def timeoutError(self, detail):
         """ Max runtime reached."""
         self.error_log("RED TIMEOUT: <%s> descend=%s; %s" % (self.test_uri, self.descend, detail()))
-        self.output(error_template % ("RED timeout."))
+        self.output(self.show_error("RED timeout."))
         self.response_done([])
 
     def robots_precheck(self, iri):
@@ -262,11 +260,12 @@ class RedWebUi(object):
 def except_handler_factory(config, out=None, qs=None):
     """
     Log an exception gracefully.
-    
+
     config is a config object; out is a function that takes a string; qs is a bytes query string.
     """
     if not out:
         out = sys.stdout.write
+    error_template = "<p class='error'>%s</p>"
 
     def except_handler(etype=None, evalue=None, etb=None):
         """
