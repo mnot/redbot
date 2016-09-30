@@ -193,7 +193,7 @@ class HttpMessage(thor.events.EventEmitter):
                         BAD_ZLIB,
                         zlib_error=str(zlib_error),
                         ok_zlib_len=f_num(self.payload_sample[-1][0]),
-                        chunk_sample=chunk[:20].decode('unicode_escape', 'replace')
+                        chunk_sample="0x%s" % binascii.hexlify(chunk[:20]).decode('ascii')
                     )
                     self._decode_ok = False
                     return
@@ -424,5 +424,7 @@ GZip-compressed responses use zlib compression to reduce the number of bytes tra
 wire. However, this response could not be decompressed; the error encountered was
 "`%(zlib_error)s`".
 
-%(ok_zlib_len)s bytes were decompressed successfully before this; the erroneous chunk starts with
-"`%(chunk_sample)s`"."""
+%(ok_zlib_len)s bytes were decompressed successfully before this; the erroneous chunk starts with (in hex):
+
+    `%(chunk_sample)s`
+"""
