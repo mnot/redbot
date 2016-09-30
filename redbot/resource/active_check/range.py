@@ -91,7 +91,7 @@ class RangeRequest(SubRequest):
 
 class RANGE_SUBREQ_PROBLEM(Note):
     category = categories.RANGE
-    level = levels.BAD
+    level = levels.INFO
     summary = "There was a problem checking for Partial Content support."
     text = """\
 When RED tried to check the resource for partial content support, there was a problem:

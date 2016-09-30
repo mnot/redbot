@@ -69,7 +69,7 @@ class LmValidate(SubRequest):
 
 class LM_SUBREQ_PROBLEM(Note):
     category = categories.VALIDATION
-    level = levels.BAD
+    level = levels.INFO
     summary = "There was a problem checking for Last-Modified validation support."
     text = """\
 When RED tried to check the resource for Last-Modified validation support, there was a problem:

@@ -69,7 +69,7 @@ class ETagValidate(SubRequest):
 
 class ETAG_SUBREQ_PROBLEM(Note):
     category = categories.VALIDATION
-    level = levels.BAD
+    level = levels.INFO
     summary = "There was a problem checking for ETag validation support."
     text = """\
 When RED tried to check the resource for ETag validation support, there was a problem:

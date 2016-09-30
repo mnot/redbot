@@ -100,7 +100,7 @@ class ConnegCheck(SubRequest):
 
 class CONNEG_SUBREQ_PROBLEM(Note):
     category = categories.CONNEG
-    level = levels.BAD
+    level = levels.INFO
     summary = "There was a problem checking for Content Negotiation support."
     text = """\
 When RED tried to check the resource for content negotiation support, there was a problem:
