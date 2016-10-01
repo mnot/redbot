@@ -342,6 +342,9 @@ body.blank > .footer {
   -moz-box-shadow: 0px 0 3px rgba(0, 0, 0, 0.1);
   box-shadow: 0px 0 3px rgba(0, 0, 0, 0.1); }
 
+.twitterlogo {
+  margin-bottom: -10px; }
+
 /* iPad, iPhone, etc. -------------------- */
 @media only screen and (max-device-width: 1024px) {
   #left_column, #right_column {
