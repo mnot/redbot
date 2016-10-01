@@ -225,9 +225,16 @@ class RedWebUi(object):
         formatter.finish_output()
         self.response_done([])
 
-    def show_error(self, message):
-        "Dislay a message as binary"
-        return ("<p class='error'>%s</p>" % message).encode(self.config.charset)
+    def show_error(self, message, to_output=False):
+        """
+        Display a message. If to_output is True, send it to self.output(); otherwise
+        return it as binary
+        """
+        out = ("<p class='error'>%s</p>" % message)
+        if to_output:
+            self.output(out)
+        else:
+            return out.encode(self.config.charset, 'replace')
 
     def output(self, chunk):
         self.response_body(chunk.encode(self.config.charset, 'replace'))
@@ -241,7 +248,7 @@ class RedWebUi(object):
     def timeoutError(self, detail):
         """ Max runtime reached."""
         self.error_log("RED TIMEOUT: <%s> descend=%s; %s" % (self.test_uri, self.descend, detail()))
-        self.output(self.show_error("RED timeout."))
+        self.show_error("RED timeout.", to_output=True)
         self.response_done([])
 
     def robots_precheck(self, iri):
