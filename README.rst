@@ -14,17 +14,17 @@ locally and use it on the command line, or even self-host your own Web checker.
 
 
 Contributing to REDbot
-----------------------
+==========================
 
 Your ideas, questions and other contributions are most welcome. See
 `CONTRIBUTING.md`_ for details.
 
 
 Setting Up Your Own REDbot
-==========================
+--------------------------
 
 Requirements
-------------
+============
 
 RED needs:
 
@@ -35,7 +35,7 @@ RED needs:
 
 
 Installing RED
---------------
+==============
 
 Unpack the RED tarball. There are a number of interesting files:
 
@@ -51,7 +51,7 @@ To install from source (e.g., if you clone from github)::
 installs RED's libraries as well as the command-line version as 'redbot'.
 
 Setting up your Web Server
---------------------------
+==========================
 
 To run RED from the Web, place webui.py where you wish it to be served from by
 the Web server. For example, with Apache you can put it in a directory and add
@@ -78,7 +78,7 @@ configure a cron job to regularly clean it. For example::
 If you don't want to allow users to store responses, set save_dir to 'None'.
 
 Running under mod_python
-------------------------
+========================
 
 It's also possible to run RED as a mod_python handler. For example::
 
@@ -90,7 +90,7 @@ number of Apache children you configure; each child should use anywhere from
 20M-35M of RAM.
 
 Docker deployment
------------------
+=================
 
 You can also build the project through docker, clone from Github then :
 
@@ -108,7 +108,7 @@ Use the command line
 
 
 Credits
-=======
+-------
 
 Icons by `Momenticon`_. REDbot includes code from `jQuery`_ and `prettify.js`_.
 
