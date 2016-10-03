@@ -19,7 +19,8 @@ RED needs:
 
 1. Python 3 or greater; see <http://python.org/>
 2. The Thor HTTP library; see <http://github.com/mnot/thor/>
-3. To use RED on the Web, you'll need a Web server that implements the CGI interface; e.g., Apache <http://httpd.apache.org/>.
+3. The markdown library; see <https://pythonhosted.org/Markdown/>
+4. To use RED on the Web, you'll need a Web server that implements the CGI interface; e.g., `Apache`_.
 
 
 Installing RED
@@ -51,7 +52,7 @@ these configuration directives (e.g., in .htaccess, if enabled)::
 If the directory is the root directory for your server "example.com",
 this will configure RED to be at the URI "http://example.com/".
 
-The contents of the share directory* also need to be made available on the
+The contents of the share directory also need to be made available on the
 server; by default, they're in the 'static' subdirectory of the script's URI.
 This can be changed using the 'html.static_root' configuration variable in
 webui.py.
@@ -65,7 +66,6 @@ configure a cron job to regularly clean it. For example::
 
 If you don't want to allow users to store responses, set save_dir to 'None'.
 
-* Note that you really only need script.js and style.js, but it doesn't hurt to have the rest.
 
 Running under mod_python
 ------------------------
@@ -82,7 +82,7 @@ number of Apache children you configure; each child should use anywhere from
 Docker deployment
 -----------------
 
-You can also build the project through docker, clone from github then :
+You can also build the project through docker, clone from Github then :
 
   docker build -t redbot .
 
@@ -99,15 +99,17 @@ Use the command line
 Support, Reporting Issues and Contributing
 ------------------------------------------
 
-See <http://REDbot.org/project> to give feedback, report issues, and
-contribute to the project. You can also join the redbot-users mailing list
-there.
+See `CONTRIBUTING.md`_ for details.
+
 
 Credits
 -------
 
-Icons by Momenticon <http://momenticon.com/>. REDbot also includes code
-from jQuery <http://jquery.com/> and prettify.js
-<http://code.google.com/p/google-code-prettify/>.
+Icons by `Momenticon`_. REDbot includes code from `jQuery`_ and `prettify.js`_.
 
 
+.. _Apache: http://httpd.apache.org/
+.. _Contributing.md: https://github.com/mnot/redbot/blob/master/CONTRIBUTING.md
+.. _Momenticon: http://momenticon.com/
+.. _ jQuery: http://jquery.com/
+.. _ prettify.js: http://code.google.com/p/google-code-prettify
