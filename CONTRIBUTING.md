@@ -7,7 +7,7 @@ rules, use your best judgment and feel free to propose changes to this document 
 
 ## Code of Conduct
 
-This project adheres to the Contributor Covenant [code of
+This project adheres to the [Contributor Covenant code of
 conduct](http://contributor-covenant.org/version/1/4/). By participating, you are expected to
 uphold this code. Please report unacceptable behavior to [red@redbot.org](mailto:red@redbot.org).
 
@@ -19,7 +19,7 @@ By contributing code, bugs or enhancement requests to this project (whether that
 
 ## Reporting Bugs and Suggesting Enhancements
 
-The [issues list](http://contributor-covenant.org/version/1/4/) is the best place to report
+The [issues list](https://github.com/mnot/redbot/issues) is the best place to report
 problems or suggest new features. Before you submit something, it would be great if you had a look
 through the current issues to see if it's already there.
 
