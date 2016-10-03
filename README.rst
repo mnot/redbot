@@ -4,8 +4,9 @@ RED
 
 This is RED, the Resource Expert Droid.
 
-RED checks HTTP resources for feature support and common HTTP problems. For
-more information, see <http://redbot.org/about/>.
+RED checks HTTP resources for feature support and common protocol problems. You
+can use the public instance on <https://redbot.org/>, or you can self-host your
+own.
 
 .. image:: https://secure.travis-ci.org/mnot/redbot.png?branch=master
    :alt: build status
