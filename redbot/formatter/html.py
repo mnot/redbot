@@ -159,7 +159,7 @@ $('#red_status').text("%s");
 <script type="text/javascript">
    document.write('<a href="#help" id="help"><strong>help</strong></a> |')
 </script>
-<a href="https://twitter.com/redbotorg"><img class="twitterlogo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAcCAYAAAAAwr0iAAACzElEQVR4Ae1VRbQTMRTFdcUGnUlxd3d3d4clGxzWuLPEnUla3N1hhfsK3+BOJ6lbyJvJKflYfmeH5Jx78n7bf+97Ny8vBf6vv2ft5YULXOJFCsx3UCjvl7ygd1Ld4oIcBH+dUCG9kE4A8JOlfm747eqGFRxmkHBftCNYRv1ZxY28VM66zTbyoqafdlAr+pW4ie3VJqZptDvNASL+gCx7oknCzUW8AQVYXYVDW3EhJ2vyGZmYRUxCZ6tJZS2VO8LBlZWPcG4SBsIpE7MU2pngKBAViMDnuwwcapg/cYf4UhHYzEC4BZBCRYZFN5Yjb0vnSUTa7iYZ4gamSZGAEKQZAYgzkBAi9CGygiOVpHUJSAd2RUzTssOmP8J9+0SFFn2GLDZJPV/fNtoW7YhzsB+EIQGJbIz8oYku73wpnoMLCNOVjjimUbDVtxdi9gYRtt+w7GnCocVQvSoqAccA+8us9Xv3Onu+Hai8/UtlA7MpguQp2hEDsgQQQ8W+/Zz7DnCOdqXyCqsJ7ErC/tjY+6JkljeXu18J05qyqWLC/rRLbHM3ZpCMAEupwgqSjluEnc0OIkCuA0j0wPoqJ/jPLNaAJcAlg7C5Dh8MpJyWtMvYy0siyw4IwqhsMl0SaqIZH/7SRH//tS7QgcKJW85xADnRJhGHxoVGVbvfewLb7dFA6DYV01WfMv1hp3pksXq66vXHIM8OkdAEGK/QXALpX4nDAHJuB7an687e29uA6TYYTFChhIxZHOYBiBuYLv/2VgA8rio7Q+UqBSKGj0SrIBIcIYQOiAoZXD05dl0Q5kxK+RbMUh8rz8+vnANtBOFhqBCuIgCE0O4UR3syEDuQzXkAHhzd853Dcgmqn+TFxSzvYRJ7kRA5InBTOHAfYXpF7HvgpTS2hxoofVNEb3uOTug/lw2r6XbvSUBV0M0QfyfaGT73LuzhWLiCv2X9X18B0u/OW4cIaXcAAAAASUVORK5CYII="/></a> |
+<a href="https://twitter.com/redbotorg"><img class="twitterlogo" src="%(static_root)s/icon/twitter.png"/></a> |
 <span class="help">Drag the bookmarklet to your bookmark bar - it makes
 checking easy!</span>
 <a href="javascript:location%%20=%%20'%(baseuri)s?uri='+encodeURIComponent(location);%%20void%%200"
@@ -167,7 +167,7 @@ title="drag me to your toolbar to use RED any time.">REDbot</a> bookmarklet
 </p>
 </div>
 
-""" % {'baseuri': e_html(self.ui_uri), 'version': __version__}
+""" % {'baseuri': e_html(self.ui_uri), 'version': __version__, 'static_root': static_root}
 
     def req_qs(self, link=None, check_name=None, res_format=None, use_stored=True, referer=True):
         """
