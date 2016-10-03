@@ -103,7 +103,7 @@ class RobotFetcher(thor.events.EventEmitter):
                 del self.robot_lookups[origin]
 
             @thor.on(exchange)
-            def response_error(error):
+            def error(error):
                 exchange.status = b"500"
                 response_done([])
 
