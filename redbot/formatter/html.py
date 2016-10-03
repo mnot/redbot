@@ -119,8 +119,10 @@ $('#red_status').text("%s");
 #        See issue #51
 #        self.status("RED made %(reqs)s requests in %(elapse)2.3f seconds." % {
 #            'reqs': fetch.total_requests,
-        self.status("RED finished in %(elapse)2.3f seconds." % {
-            'elapse': thor.time() - self.start})
+        self.status("")
+        self.output("""
+<div id="final_status">%(elapse)2.2f seconds</div>
+""" % {'elapse': thor.time() - self.start})
 
     def format_extra(self, etype='.html'):
         """

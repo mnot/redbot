@@ -97,9 +97,17 @@ h3 {
 #red_status {
   color: $detail_text_colour;
   font-size: $detail_font_size;
+  margin-top: 1em;
+  @include centered-detail;
+  width: $left_width;
+}
+
+#final_status {
+  color: $detail_text_colour;
+  font-size: $detail_font_size;  
   position: absolute;
-  bottom: 1em;
-  right: 50px;
+  top: 2em;
+  right: 2em;
 }
 
 .btw {

@@ -69,9 +69,18 @@ h3 {
 #red_status {
   color: #aaa;
   font-size: 0.8em;
+  margin-top: 1em;
+  text-align: center;
+  color: #aaa;
+  font-size: 0.8em;
+  width: 650px; }
+
+#final_status {
+  color: #aaa;
+  font-size: 0.8em;
   position: absolute;
-  bottom: 1em;
-  right: 50px; }
+  top: 2em;
+  right: 2em; }
 
 .btw {
   text-align: center;
