@@ -13,7 +13,8 @@ setup(name='redbot',
                 'redbot.message.headers',
                 'redbot.formatter',
                 'redbot.resource',
-                'redbot.resource.active_check'
+                'redbot.resource.active_check',
+                'redbot.syntax'
       ],
       package_dir={'redbot': 'redbot'},
       scripts=['bin/redbot'],
