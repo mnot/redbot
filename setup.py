@@ -22,9 +22,15 @@ setup(name='redbot',
           'markdown >= 2.6.5'
       ],
       classifiers=[
-        'Programming Language :: Python'
+        'Programming Language :: Python :: 3.5',
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',      
+        'Intended Audience :: System Administrators',
+        'Environment :: Web Environment',
+        'Topic :: Internet :: WWW/HTTP',
+        'Topic :: Software Development :: Testing',
+        'Operating System :: Unix',
+        'Operating System :: MacOS :: MacOS X',
+        'License :: OSI Approved :: MIT License',
       ],
 )
