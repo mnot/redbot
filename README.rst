@@ -5,13 +5,23 @@ RED
 This is RED, the Resource Expert Droid.
 
 RED checks HTTP resources for feature support and common protocol problems. You
-can use the public instance on <https://redbot.org/>, or you can self-host your
-own.
+can use the public instance on <https://redbot.org/>, or you can install it
+locally and use it on the command line, or even self-host your own Web checker.
 
 .. image:: https://secure.travis-ci.org/mnot/redbot.png?branch=master
    :alt: build status
    :target: http://travis-ci.org/mnot/redbot
 
+
+Contributing to REDbot
+----------------------
+
+Your ideas, questions and other contributions are most welcome. See
+`CONTRIBUTING.md`_ for details.
+
+
+Setting Up Your Own REDbot
+==========================
 
 Requirements
 ------------
@@ -67,7 +77,6 @@ configure a cron job to regularly clean it. For example::
 
 If you don't want to allow users to store responses, set save_dir to 'None'.
 
-
 Running under mod_python
 ------------------------
 
@@ -97,14 +106,9 @@ Use the command line
 
 
 
-Support, Reporting Issues and Contributing
-------------------------------------------
-
-See `CONTRIBUTING.md`_ for details.
-
 
 Credits
--------
+=======
 
 Icons by `Momenticon`_. REDbot includes code from `jQuery`_ and `prettify.js`_.
 
