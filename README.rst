@@ -111,5 +111,5 @@ Icons by `Momenticon`_. REDbot includes code from `jQuery`_ and `prettify.js`_.
 .. _Apache: http://httpd.apache.org/
 .. _Contributing.md: https://github.com/mnot/redbot/blob/master/CONTRIBUTING.md
 .. _Momenticon: http://momenticon.com/
-.. _ jQuery: http://jquery.com/
-.. _ prettify.js: http://code.google.com/p/google-code-prettify
+.. _jQuery: http://jquery.com/
+.. _prettify.js: http://code.google.com/p/google-code-prettify
