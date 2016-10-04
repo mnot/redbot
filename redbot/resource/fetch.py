@@ -189,8 +189,9 @@ class RedFetcher(thor.events.EventEmitter):
             self._fetch_done()
 
     def _fetch_done(self):
-        self.fetch_done = True
-        self.emit("fetch_done")
+        if not self.fetch_done:
+            self.fetch_done = True
+            self.emit("fetch_done")
 
 
 class RobotsTxtError(httperr.HttpError):
