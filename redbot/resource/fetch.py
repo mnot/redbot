@@ -175,18 +175,19 @@ class RedFetcher(thor.events.EventEmitter):
         "Handle an error encountered while fetching the response."
         self.emit("status", "fetch error %s (%s) - %s" % (
             self.request.uri, self.check_name, error.desc))
+        err_sample = error.detail[:40] or ""
         if error.client_recoverable:
-            err_sample = error.detail[:40] or ""
-            if isinstance(error, httperr.ExtraDataError):
-                if self.response.status_code == "304":
-                    self.add_note('body', BODY_NOT_ALLOWED, sample=err_sample)
-                else:
-                    self.add_note('body', EXTRA_DATA, sample=err_sample)
-            elif isinstance(error, httperr.ChunkError):
-                self.add_note('header-transfer-encoding', BAD_CHUNK, chunk_sample=err_sample)
+            pass # we'll get to this later.
+        elif isinstance(error, httperr.ExtraDataError):
+            if self.response.status_code == "304":
+                self.add_note('body', BODY_NOT_ALLOWED, sample=err_sample)
+            else:
+                self.add_note('body', EXTRA_DATA, sample=err_sample)
+        elif isinstance(error, httperr.ChunkError):
+            self.add_note('header-transfer-encoding', BAD_CHUNK, chunk_sample=err_sample)
         else:
             self.response.http_error = error
-            self._fetch_done()
+        self._fetch_done()
 
     def _fetch_done(self):
         if not self.fetch_done:
@@ -202,7 +203,7 @@ class RobotsTxtError(httperr.HttpError):
 class BODY_NOT_ALLOWED(Note):
     category = categories.CONNECTION
     level = levels.BAD
-    summary = "%(response)s is not allowed to have a body."
+    summary = "%(response)s has a body."
     text = """\
 HTTP defines a few special situations where a response does not allow a body. This includes 101,
 204 and 304 responses, as well as responses to the `HEAD` method.
@@ -219,7 +220,7 @@ The extra data started with:
 class EXTRA_DATA(Note):
     category = categories.CONNECTION
     level = levels.BAD
-    summary = "%(response)s had extra data after it."
+    summary = "%(response)s has extra data after it."
     text = """\
 The server sent data after the message ended. This can be caused by an incorrect `Content-Length`
 header, or by a programming error in the server itself.
@@ -232,18 +233,18 @@ The extra data started with:
 class BAD_CHUNK(Note):
     category = categories.CONNECTION
     level = levels.BAD
-    summary = "%(response)s had chunked encoding errors."
+    summary = "%(response)s has chunked encoding errors."
     text = """\
 The response indicates it uses HTTP chunked encoding, but there was a problem decoding the
 chunking.
 
 A valid chunk looks something like this:
 
-`[chunk-size in hex]\\r\\n[chunk-data]\\r\\n`
+    [chunk-size in hex]\\r\\n[chunk-data]\\r\\n
 
 However, the chunk sent started like this:
 
-`%(chunk_sample)s`
+    %(chunk_sample)s
 
 This is a serious problem, because HTTP uses chunking to delimit one response from the next one;
 incorrect chunking can lead to interoperability and security problems.
