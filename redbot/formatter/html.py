@@ -399,11 +399,12 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 out.append('<span class="req_link"> (<a href="?%s">%s response</a>' % \
                   (self.req_qs(check_name=check_name), check_name))
                 smsgs = [note for note in getattr(resource.subreqs[check_name], "notes", []) if \
-                  note.level in [levels.BAD]]
+                  note.level in [levels.BAD] and note not in notes]
+                notes.extend(smsgs)
                 if len(smsgs) == 1:
-                    out.append(" - %i warning\n" % len(smsgs))
+                    out.append(" - %i problem\n" % len(smsgs))
                 elif smsgs:
-                    out.append(" - %i warnings\n" % len(smsgs))
+                    out.append(" - %i problems\n" % len(smsgs))
                 out.append(')</span>\n')
         out.append("</h3>\n")
         out.append("<ul>\n")
