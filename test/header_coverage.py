@@ -1,3 +1,6 @@
+"""
+Check coverage of HTTP headers in REDbot, as well as definitions of headers.
+"""
 
 import os
 import sys
@@ -7,19 +10,20 @@ import xml.etree.ElementTree as ET
 from redbot.message.headers import HeaderProcessor, HttpHeader
 from redbot.syntax.rfc7230 import list_rule
 
+import common
 
-def CheckRegistryCoverage(xml_file):
+def checkRegistryCoverage(xml_file):
     """
     Given an XML file from <https://www.iana.org/assignments/message-headers/message-headers.xml>,
     See what headers are missing and check those remaining to see what they don't define.
     """
-    for header_name in ParseHeaderRegistry(xml_file):
+    for header_name in parseHeaderRegistry(xml_file):
         header_mod = HeaderProcessor.find_header_module(header_name)
         if not header_mod:
             sys.stderr.write("- %s registered but can't find module\n" % header_name)
 
 
-def ParseHeaderRegistry(xml_file):
+def parseHeaderRegistry(xml_file):
     """
     Given a filename containing XML, parse it and return a list of registered header names.
     """
@@ -34,31 +38,7 @@ def ParseHeaderRegistry(xml_file):
     return result
 
 
-def CheckHeaderDefinitions():
-    """
-    Return a list of all subclasses of HttpHeader.
-    """
-    LoadAllHeaders('../redbot/message/headers/')
-    for header_class in HttpHeader.__subclasses__():
-        CheckHeaderModule(header_class)
-    
-
-def LoadAllHeaders(header_dir):
-    """
-    Load all headers.
-    """
-    for root, dirs, files in os.walk(header_dir):
-        for name in files:
-            if name[0] == "_":
-                continue
-            base, ext = os.path.splitext(name)
-            if ext != '.py':
-                continue
-            module_name = "redbot.message.headers.%s" % base
-            __import__(module_name)
-
-
-def CheckHeaderModule(header_cls):
+def checkHeader(header_cls):
     """
     Given a header class, make sure it's complete. Complain on STDERR if not.
     """
@@ -100,5 +80,5 @@ def CheckHeaderModule(header_cls):
 
 
 if __name__ == "__main__":
-    CheckRegistryCoverage(sys.argv[1])
-    CheckHeaderDefinitions()
+    checkRegistryCoverage(sys.argv[1])
+    common.checkSubClasses(HttpHeader, checkHeader)
