@@ -7,17 +7,17 @@ all: unit speak webui
 unit:
 	$(PYTHON) unit_tests.py
 
-.PHONY: speak
-speak:
-	PYTHONPATH=../ $(PYTHON) -m redbot.speak
+.PHONY: note_coverage
+note_coverage:
+	PYTHONPATH=../ $(PYTHON) note_coverage.py
+
+.PHONY: header_coverage
+header_coverage:
+	PYTHONPATH=../ $(PYTHON) header_coverage.py registries/message-headers.xml
 
 .PHONY: webui
 webui: deploy
 	$(PYTHON) test_webui.py
-
-.PHONY: deploy
-deploy:
-	cd deploy; make
 
 .PHONY: clean
 clean:
@@ -29,6 +29,4 @@ server:
 
 .PHONY: lint
 lint:
-	PYTHONPATH=../ pylint -i y \
-	-d C0103,C0322,C0323,C0111,R0903,R0801,W0611,W0613 \
-	redbot
+	PYTHONPATH=../ pylint redbot
