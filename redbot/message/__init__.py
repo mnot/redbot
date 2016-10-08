@@ -18,7 +18,7 @@ import zlib
 
 from redbot.message.headers import HeaderProcessor
 from redbot.formatter import f_num
-from redbot.speak import Note, levels, categories
+from redbot.speak import Note, levels, categories, display_bytes
 
 from redbot.syntax import rfc3986
 
@@ -194,7 +194,7 @@ class HttpMessage(thor.events.EventEmitter):
                         BAD_ZLIB,
                         zlib_error=str(zlib_error),
                         ok_zlib_len=f_num(self.payload_sample[-1][0]),
-                        chunk_sample="0x%s" % binascii.hexlify(chunk[:20]).decode('ascii')
+                        chunk_sample=display_bytes(chunk)
                     )
                     self._decode_ok = False
                     return

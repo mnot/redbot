@@ -8,7 +8,7 @@ import random
 
 from redbot.resource.active_check.base import SubRequest
 from redbot.formatter import f_num
-from redbot.speak import Note, categories, levels
+from redbot.speak import Note, categories, levels, display_bytes
 
 
 class RangeRequest(SubRequest):
@@ -71,9 +71,9 @@ class RangeRequest(SubRequest):
                     self.base.partial_support = False
                     self.add_base_note('header-accept-ranges', RANGE_INCORRECT,
                         range="bytes=%s-%s" % (self.range_start, self.range_end),
-                        range_expected=self.range_target.decode('unicode_escape'),
+                        range_expected=display_bytes(self.range_target),
                         range_expected_bytes=f_num(len(self.range_target)),
-                        range_received=self.response.payload.decode('unicode_escape'),
+                        range_received=display_bytes(self.response.payload),
                         range_received_bytes=f_num(self.response.payload_len))
             else:
                 self.add_base_note('header-accept-ranges', RANGE_CHANGED)

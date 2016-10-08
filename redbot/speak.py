@@ -8,6 +8,7 @@ However, the longer text field IS NOT ESCAPED, and therefore all variables to be
 it need to be escaped to be safe for use in HTML.
 """
 
+from binascii import b2a_hex
 from cgi import escape as cgi_escape
 from functools import partial
 from markdown import markdown
@@ -70,8 +71,25 @@ class Note(object):
             [(k, e_html(str(v))) for k, v in list(self.vars.items())]
         ), output_format="html5")
 
-
-
+def display_bytes(inbytes, encoding='utf-8', truncate=40):
+    """
+    Format arbitrary input bytes for display.
+    
+    Printable Unicode characters are displayed without modification; 
+    everything else is shown as escaped hex.
+    """
+    try:
+        instr = inbytes.decode(encoding, 'backslashreplace')
+    except:
+        print("*** %s" % repr(inbytes))
+        raise
+    out = []
+    for char in instr[:truncate]:
+        if not char.isprintable():
+            char = r"\x%s" % b2a_hex(char.encode(encoding)).decode('ascii')
+        out.append(char)
+    return "".join(out)
+    
 
 if __name__ == '__main__':
     # do a sanity check on all of the defined messages
