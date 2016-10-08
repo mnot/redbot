@@ -1,7 +1,7 @@
 PYTHON=python3
 
 .PHONY: all
-all: unit speak webui
+all: unit webui
 
 .PHONY: unit
 unit:
