@@ -125,7 +125,7 @@ class HttpHeader(object):
 
 
 
-class DummyHttpHeader(HttpHeader):
+class UnknownHttpHeader(HttpHeader):
     """A HTTP header that we don't recognise."""
     list_header = True
     valid_in_requests = True
@@ -244,7 +244,7 @@ class HeaderProcessor(object):
         if hdr_module and hasattr(hdr_module, name_token):
             return getattr(hdr_module, name_token)
         if default:
-            return DummyHttpHeader
+            return UnknownHttpHeader
 
     @staticmethod
     def find_header_module(header_name):
