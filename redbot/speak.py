@@ -71,37 +71,18 @@ class Note(object):
             [(k, e_html(str(v))) for k, v in list(self.vars.items())]
         ), output_format="html5")
 
+
 def display_bytes(inbytes, encoding='utf-8', truncate=40):
     """
     Format arbitrary input bytes for display.
-    
-    Printable Unicode characters are displayed without modification; 
+
+    Printable Unicode characters are displayed without modification;
     everything else is shown as escaped hex.
     """
-    try:
-        instr = inbytes.decode(encoding, 'backslashreplace')
-    except:
-        print("*** %s" % repr(inbytes))
-        raise
+    instr = inbytes.decode(encoding, 'backslashreplace')
     out = []
     for char in instr[:truncate]:
         if not char.isprintable():
             char = r"\x%s" % b2a_hex(char.encode(encoding)).decode('ascii')
         out.append(char)
     return "".join(out)
-    
-
-if __name__ == '__main__':
-    # do a sanity check on all of the defined messages
-    import re
-    for n, v in list(locals().items()):
-        if isinstance(v, type) and issubclass(v, Note) \
-          and n != "Note":
-            print("checking", n)
-            assert v.category in list(categories.__class__.__dict__.values()), n
-            assert v.level in list(levels.__class__.__dict__.values()), n
-            assert isinstance(v.summary, str), n
-            assert v.summary != "", n
-            assert not re.search(r"\s{2,}", v.summary), n
-            assert isinstance(v.text, str), n
-    #        assert v.text != "", n
