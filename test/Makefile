@@ -1,4 +1,4 @@
-PYTHON=python
+PYTHON=python3
 
 .PHONY: all
 all: unit speak webui

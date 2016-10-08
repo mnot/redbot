@@ -1,6 +1,6 @@
 
 source = ../../
-PYTHON=python
+PYTHON=python3
 
 all: redbot
 
