@@ -259,7 +259,10 @@ class RedWebUi(object):
         This does not fetch robots.txt.
         """
         robot_fetcher = RobotFetcher()
-        return robot_fetcher.check_robots(HttpRequest.iri_to_uri(iri), sync=True)
+        try:
+            return robot_fetcher.check_robots(HttpRequest.iri_to_uri(iri), sync=True)
+        except (UnicodeError, ValueError):
+            return True
 
 
 
