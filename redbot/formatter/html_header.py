@@ -15,6 +15,14 @@
     <![endif]-->
     <script id="config" type="application/json">%(config)s</script>
     <script src="%(static)s/script.js" type="text/javascript"></script>
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="%(static)s/logo/apple-touch-icon-144x144.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="%(static)s/logo/apple-touch-icon-152x152.png" />
+    <link rel="icon" href="%(static)s/logo/faviconico"/>
+    <link rel="icon" type="image/png" href="%(static)s/logo/favicon-32x32.png" sizes="32x32" />
+    <link rel="icon" type="image/png" href="%(static)s/logo/favicon-16x16.png" sizes="16x16" />
+    <meta name="application-name" content="REDbot"/>
+    <meta name="msapplication-TileColor" content="#FFFFFF" />
+    <meta name="msapplication-TileImage" content="%(static)s/logo/mstile-144x144.png" />
     %(extra_js)s
 </head>
 
