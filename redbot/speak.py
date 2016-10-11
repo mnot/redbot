@@ -1,5 +1,5 @@
 """
-A collection of notes that the RED can emit.
+A collection of notes that the REDbot can emit.
 
 PLEASE NOTE: the summary field is automatically HTML escaped, so it can contain arbitrary text (as
 long as it's unicode).

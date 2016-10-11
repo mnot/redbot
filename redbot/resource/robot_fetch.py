@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-RED Robot Fetcher.
+REDbot Robot Fetcher.
 
 Fetches robots.txt for a given URL.
 """

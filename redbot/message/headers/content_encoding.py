@@ -36,7 +36,7 @@ class ENCODING_UNWANTED(Note):
     summary = "%(response)s contained unwanted content-codings."
     text = """\
 %(response)s's `Content-Encoding` header indicates it has content-codings applied
-(`%(unwanted_codings)s`) that RED didn't ask for.
+(`%(unwanted_codings)s`) that REDbot didn't ask for.
 
 Normally, clients ask for the encodings they want in the `Accept-Encoding` request header. Using
 encodings that the client doesn't explicitly request can lead to interoperability problems."""

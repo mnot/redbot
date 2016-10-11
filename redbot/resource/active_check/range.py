@@ -94,7 +94,7 @@ class RANGE_SUBREQ_PROBLEM(Note):
     level = levels.INFO
     summary = "There was a problem checking for Partial Content support."
     text = """\
-When RED tried to check the resource for partial content support, there was a problem:
+When REDbot tried to check the resource for partial content support, there was a problem:
 
 `%(problem)s`
 
@@ -116,7 +116,7 @@ class RANGE_CORRECT(Note):
     summary = "A ranged request returned the correct partial content."
     text = """\
 This resource advertises support for ranged requests with `Accept-Ranges`; that is, it allows
-clients to specify that only part of it should be sent. RED has tested this by requesting part of
+clients to specify that only part of it should be sent. REDbot has tested this by requesting part of
 this response, which was returned correctly."""
 
 class RANGE_INCORRECT(Note):
@@ -125,17 +125,18 @@ class RANGE_INCORRECT(Note):
     summary = 'A ranged request returned partial content, but it was incorrect.'
     text = """\
 This resource advertises support for ranged requests with `Accept-Ranges`; that is, it allows
-clients to specify that only part of the response should be sent. RED has tested this by requesting
-part of this response, but the partial response doesn't correspond with the full response retrieved
-at the same time. This could indicate that the range implementation isn't working properly.
+clients to specify that only part of the response should be sent. REDbot has tested this by
+requesting part of this response, but the partial response doesn't correspond with the full
+response retrieved at the same time. This could indicate that the range implementation isn't
+working properly.
 
-RED sent:
+REDbot sent:
     `Range: %(range)s`
 
-RED expected %(range_expected_bytes)s bytes:
+REDbot expected %(range_expected_bytes)s bytes:
     `%(range_expected).100s`
 
-RED received %(range_received_bytes)s bytes:
+REDbot received %(range_received_bytes)s bytes:
     `%(range_received).100s`
 
 _(showing samples of up to 100 characters)_"""
@@ -146,7 +147,7 @@ class RANGE_CHANGED(Note):
     summary = "A ranged request returned another representation."
     text = """\
 A new representation was retrieved when checking support of ranged request. This is not an error,
-it just indicates that RED cannot draw any conclusion at this time."""
+it just indicates that REDbot cannot draw any conclusion at this time."""
 
 class RANGE_FULL(Note):
     category = categories.RANGE
@@ -154,9 +155,9 @@ class RANGE_FULL(Note):
     summary = "A ranged request returned the full rather than partial content."
     text = """\
 This resource advertises support for ranged requests with `Accept-Ranges`; that is, it allows
-clients to specify that only part of the response should be sent. RED has tested this by requesting
-part of this response, but the entire response was returned. In other words, although the resource
-advertises support for partial content, it doesn't appear to actually do so."""
+clients to specify that only part of the response should be sent. REDbot has tested this by
+requesting part of this response, but the entire response was returned. In other words, although
+the resource advertises support for partial content, it doesn't appear to actually do so."""
 
 class RANGE_STATUS(Note):
     category = categories.RANGE
@@ -164,8 +165,8 @@ class RANGE_STATUS(Note):
     summary = "A ranged request returned a %(range_status)s status."
     text = """\
 This resource advertises support for ranged requests; that is, it allows clients to specify that
-only part of the response should be sent. RED has tested this by requesting part of this response,
-but a %(enc_range_status)s response code was returned, which RED was not expecting."""
+only part of the response should be sent. REDbot has tested this by requesting part of this
+response, but a %(enc_range_status)s response code was returned, which REDbot was not expecting."""
 
 class RANGE_NEG_MISMATCH(Note):
     category = categories.RANGE

@@ -117,7 +117,7 @@ $('#red_status').text("%s");
 
     def final_status(self):
 #        See issue #51
-#        self.status("RED made %(reqs)s requests in %(elapse)2.3f seconds." % {
+#        self.status("REDbot made %(reqs)s requests in %(elapse)2.3f seconds." % {
 #            'reqs': fetch.total_requests,
         self.status("")
         self.output("""
@@ -163,7 +163,7 @@ $('#red_status').text("%s");
 <span class="help">Drag the bookmarklet to your bookmark bar - it makes
 checking easy!</span>
 <a href="javascript:location%%20=%%20'%(baseuri)s?uri='+encodeURIComponent(location);%%20void%%200"
-title="drag me to your toolbar to use RED any time.">REDbot</a> bookmarklet
+title="drag me to your toolbar to use REDbot any time.">REDbot</a> bookmarklet
 </p>
 </div>
 
@@ -171,7 +171,7 @@ title="drag me to your toolbar to use RED any time.">REDbot</a> bookmarklet
 
     def req_qs(self, link=None, check_name=None, res_format=None, use_stored=True, referer=True):
         """
-        Format a query string to refer to another RED resource.
+        Format a query string to refer to another REDbot resource.
 
         "link" is the resource to test; it is evaluated relative to the current context
         If blank, it is the same resource.
@@ -212,7 +212,7 @@ title="drag me to your toolbar to use RED any time.">REDbot</a> bookmarklet
 
 class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     """
-    Present a single RED response in detail.
+    Present a single REDbot response in detail.
     """
     # the order of note categories to display
     note_categories = [
@@ -378,7 +378,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                             matchobj.group(1))
                     safe_sample = re.sub(r"('|&quot;)%s\1" % re.escape(link), link_to, safe_sample)
         if not resource.response.decoded_sample_complete:
-            message = "<p class='btw'>RED isn't showing the whole body, because it's so big!</p>"
+            message = "<p class='btw'>REDbot isn't showing the whole body, because it's so big!</p>"
         return """<pre class="prettyprint">%s</pre>\n%s""" % (safe_sample, message)
 
     def format_category(self, category, resource):
@@ -459,7 +459,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 options.append((
                     "<a href=\"?descend=True&%s\" accesskey='a'>" \
                     "check embedded</a>" % self.req_qs(use_stored=False),
-                    "run RED on images, frames and embedded links"))
+                    "run REDbot on images, frames and embedded links"))
         return nl.join(
             [o and "<span class='option' title='%s'>%s</span>" % (o[1], o[0])
              or "<br>" for o in options])
@@ -512,7 +512,7 @@ class HeaderPresenter(object):
 
 class TableHtmlFormatter(BaseHtmlFormatter):
     """
-    Present a summary of multiple RED responses.
+    Present a summary of multiple HttpResources.
     """
     # HTML template for the main response body
     template = """\
@@ -656,7 +656,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
           response.">shared</th>
         <th title="Whether a private (e.g., browser) cache can store the
           response.">private</th>
-        <th title="How long the response had been cached before RED got
+        <th title="How long the response had been cached before REDbot got
           it.">age</th>
         <th title="How long a cache can treat the response as
           fresh.">freshness</th>

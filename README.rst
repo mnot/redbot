@@ -1,11 +1,11 @@
-===
-RED
-===
+======
+REDbot
+======
 
-This is RED, the Resource Expert Droid.
+This is REDbot, the Resource Expert Droid.
 
-RED checks HTTP resources for feature support and common protocol problems. You
-can use the public instance on <https://redbot.org/>, or you can install it
+REDbot checks HTTP resources for feature support and common protocol problems.
+You can use the public instance on <https://redbot.org/>, or you can install it
 locally and use it on the command line, or even self-host your own Web checker.
 
 .. image:: https://secure.travis-ci.org/mnot/redbot.png?branch=master
@@ -26,42 +26,42 @@ Setting Up Your Own REDbot
 Requirements
 ------------
 
-RED needs:
+REDbot needs:
 
 1. Python 3 or greater; see <http://python.org/>
 2. The Thor HTTP library; see <http://github.com/mnot/thor/>
 3. The markdown library; see <https://pythonhosted.org/Markdown/>
-4. To use RED on the Web, you'll need a Web server that implements the CGI interface; e.g., `Apache`_.
+4. To use REDbot on the Web, you'll need a Web server that implements the CGI interface; e.g., `Apache`_.
 
 
 Installing RED
 --------------
 
-Unpack the RED tarball. There are a number of interesting files:
+Unpack the REDbot tarball. There are a number of interesting files:
 
-- bin/webui.py - the Web CGI script for running RED
+- bin/webui.py - the Web CGI script for running REDbot
 - bin/redbot - the command-line interface
-- redbot/ - RED's Python library files
-- share/ - RED's CSS stylesheet and JavaScript libraries
+- redbot/ - REDbot's Python library files
+- share/ - REDbot's CSS stylesheet and JavaScript libraries
 
 To install from source (e.g., if you clone from github)::
 
   python setup.py install
 
-installs RED's libraries as well as the command-line version as 'redbot'.
+installs REDbot's libraries as well as the command-line version as 'redbot'.
 
 Setting up your Web Server
 --------------------------
 
-To run RED from the Web, place webui.py where you wish it to be served from by
-the Web server. For example, with Apache you can put it in a directory and add
-these configuration directives (e.g., in .htaccess, if enabled)::
+To run REDbot from the Web, place webui.py where you wish it to be served from
+by the Web server. For example, with Apache you can put it in a directory and
+add these configuration directives (e.g., in .htaccess, if enabled)::
 
   AddHandler cgi-script .py
   DirectoryIndex webui.py
 
 If the directory is the root directory for your server "example.com",
-this will configure RED to be at the URI "http://example.com/".
+this will configure REDbot to be at the URI "http://example.com/".
 
 The contents of the share directory also need to be made available on the
 server; by default, they're in the 'static' subdirectory of the script's URI.
@@ -80,7 +80,7 @@ If you don't want to allow users to store responses, set save_dir to 'None'.
 Running under mod_python
 ------------------------
 
-It's also possible to run RED as a mod_python handler. For example::
+It's also possible to run REDbot as a mod_python handler. For example::
 
   AddHandler mod_python .py
   PythonHandler webui::mod_python_handler

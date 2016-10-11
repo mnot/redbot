@@ -16,7 +16,7 @@ This header is designed to only occur once in a message. When it occurs more tha
 needs to choose the one to use, which can lead to interoperability problems, since different
 implementations may make different choices.
 
-For the purposes of its tests, RED uses the last instance of the header that is present; other
+For the purposes of its tests, REDbot uses the last instance of the header that is present; other
 implementations may behave differently."""
 
 class FIELD_NAME_BAD_SYNTAX(Note):
@@ -70,7 +70,7 @@ Parameter values that end in '*' are reserved for non-ascii text, as explained i
 The `%(param)s` parameter on the `%(field_name)s` does not allow this; you should use %(param)s
 without the "*" on the end (and without the associated encoding).
 
-RED ignores the content of this parameter.
+REDbot ignores the content of this parameter.
      """
 
 class PARAM_STAR_NOCHARSET(Note):
@@ -147,8 +147,8 @@ class HEADER_NAME_ENCODING(Note):
     level = levels.BAD
     summary = "The %(field_name)s header's name contains non-ASCII characters."
     text = """\
-HTTP header field-names can only contain ASCII characters. RED has detected (and possibly removed)
-non-ASCII characters in this header name."""
+HTTP header field-names can only contain ASCII characters. REDbot has detected (and possibly
+removed) non-ASCII characters in this header name."""
 
 class HEADER_VALUE_ENCODING(Note):
     category = categories.GENERAL
@@ -158,7 +158,7 @@ class HEADER_VALUE_ENCODING(Note):
 HTTP headers use the ISO-8859-1 character set, but in most cases are pure ASCII (a subset of this
 encoding).
 
-This header has non-ASCII characters, which RED has interpreted as being encoded in
+This header has non-ASCII characters, which REDbot has interpreted as being encoded in
 ISO-8859-1. If another encoding is used (e.g., UTF-8), the results may be unpredictable."""
 
 class REQUEST_HDR_IN_RESPONSE(Note):
@@ -166,14 +166,14 @@ class REQUEST_HDR_IN_RESPONSE(Note):
     level = levels.BAD
     summary = '"%(field_name)s" is a request header.'
     text = """\
-%(field_name)s isn't defined to have any meaning in responses, so RED has ignored it."""
+%(field_name)s isn't defined to have any meaning in responses, so REDbot has ignored it."""
 
 class RESPONSE_HDR_IN_REQUEST(Note):
     category = categories.GENERAL
     level = levels.BAD
     summary = '"%(field_name)s" is a request header.'
     text = """\
-%(field_name)s isn't defined to have any meaning in reqeusts, so RED has ignored it."""
+%(field_name)s isn't defined to have any meaning in reqeusts, so REDbot has ignored it."""
 
 class HEADER_DEPRECATED(Note):
     category = categories.GENERAL

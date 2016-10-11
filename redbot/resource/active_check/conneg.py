@@ -103,7 +103,7 @@ class CONNEG_SUBREQ_PROBLEM(Note):
     level = levels.INFO
     summary = "There was a problem checking for Content Negotiation support."
     text = """\
-When RED tried to check the resource for content negotiation support, there was a problem:
+When REDbot tried to check the resource for content negotiation support, there was a problem:
 
 `%(problem)s`
 
@@ -114,8 +114,8 @@ class CONNEG_GZIP_GOOD(Note):
     level = levels.GOOD
     summary = 'Content negotiation for gzip compression is supported, saving %(savings)s%%.'
     text = """\
-HTTP supports compression of responses by negotiating for `Content-Encoding`. When RED asked for a
-compressed response, the resource provided one, saving %(savings)s%% of its original size (from
+HTTP supports compression of responses by negotiating for `Content-Encoding`. When REDbot asked for
+a compressed response, the resource provided one, saving %(savings)s%% of its original size (from
 %(orig_size)s to %(gzip_size)s bytes).
 
 The compressed response's headers are displayed."""
@@ -125,9 +125,9 @@ class CONNEG_GZIP_BAD(Note):
     level = levels.WARN
     summary = 'Content negotiation for gzip compression makes the response %(savings)s%% larger.'
     text = """\
-HTTP supports compression of responses by negotiating for `Content-Encoding`. When RED asked for a
-compressed response, the resource provided one, but it was %(savings)s%% _larger_ than the original
-response; from %(orig_size)s to %(gzip_size)s bytes.
+HTTP supports compression of responses by negotiating for `Content-Encoding`. When REDbot asked for
+a compressed response, the resource provided one, but it was %(savings)s%% _larger_ than the
+original response; from %(orig_size)s to %(gzip_size)s bytes.
 
 Often, this happens when the uncompressed response is very small, or can't be compressed more;
 since gzip compression has some overhead, it can make the response larger. Turning compression
@@ -140,8 +140,8 @@ class CONNEG_NO_GZIP(Note):
     level = levels.INFO
     summary = 'Content negotiation for gzip compression isn\'t supported.'
     text = """\
-HTTP supports compression of responses by negotiating for `Content-Encoding`. When RED asked for a
-compressed response, the resource did not provide one."""
+HTTP supports compression of responses by negotiating for `Content-Encoding`. When REDbot asked for
+a compressed response, the resource did not provide one."""
 
 class CONNEG_NO_VARY(Note):
     category = categories.CONNEG
@@ -190,10 +190,10 @@ class VARY_STATUS_MISMATCH(Note):
 When content negotiation is used, the response status shouldn't change between negotiated and
 non-negotiated responses.
 
-When RED send asked for a negotiated response, it got a `%(neg_status)s` status code; when it
+When REDbot send asked for a negotiated response, it got a `%(neg_status)s` status code; when it
 didn't, it got `%(noneg_status)s`.
 
-RED hasn't checked other aspects of content negotiation because of this."""
+REDbot hasn't checked other aspects of content negotiation because of this."""
 
 class VARY_HEADER_MISMATCH(Note):
     category = categories.CONNEG

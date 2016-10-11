@@ -72,7 +72,7 @@ class ETAG_SUBREQ_PROBLEM(Note):
     level = levels.INFO
     summary = "There was a problem checking for ETag validation support."
     text = """\
-When RED tried to check the resource for ETag validation support, there was a problem:
+When REDbot tried to check the resource for ETag validation support, there was a problem:
 
 `%(problem)s`
 
@@ -85,8 +85,8 @@ class INM_304(Note):
     text = """\
 HTTP allows clients to make conditional requests to see if a copy that they hold is still valid.
 Since this response has an `ETag`, clients should be able to use an `If-None-Match` request header
-for validation. RED has done this and found that the resource sends a `304 Not Modified` response,
-indicating that it supports `ETag` validation."""
+for validation. REDbot has done this and found that the resource sends a `304 Not Modified`
+response, indicating that it supports `ETag` validation."""
 
 class INM_FULL(Note):
     category = categories.VALIDATION
@@ -98,7 +98,7 @@ HTTP allows clients to make conditional requests to see if a copy that they hold
 Since this response has an `ETag`, clients should be able to use an `If-None-Match` request header
 for validation.
 
-RED has done this and found that the resource sends the same, full response even though it hadn't
+REDbot has done this and found that the resource sends the same, full response even though it hadn't
 changed, indicating that it doesn't support `ETag` validation."""
 
 class INM_DUP_ETAG_WEAK(Note):
@@ -141,8 +141,8 @@ HTTP allows clients to make conditional requests to see if a copy that they hold
 Since this response has an `ETag`, clients should be able to use an `If-None-Match` request header
 for validation.
 
-RED has done this, but the response changed between the original request and the validating
-request, so RED can't tell whether or not `ETag` validation is supported."""
+REDbot has done this, but the response changed between the original request and the validating
+request, so REDbot can't tell whether or not `ETag` validation is supported."""
 
 class INM_STATUS(Note):
     category = categories.VALIDATION
@@ -151,5 +151,5 @@ class INM_STATUS(Note):
     text = """\
 HTTP allows clients to make conditional requests to see if a copy that they hold is still valid.
 Since this response has an `ETag`, clients should be able to use an `If-None-Match` request header
-for validation. RED has done this, but the response had a %(enc_inm_status)s status code, so RED
+for validation. REDbot has done this, but the response had a %(enc_inm_status)s status code, so RED
 can't tell whether or not `ETag` validation is supported."""

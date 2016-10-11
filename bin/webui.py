@@ -77,7 +77,7 @@ except:
 
 
 def mod_python_handler(r):
-    """Run RED as a mod_python handler."""
+    """Run REDbot as a mod_python handler."""
     from mod_python import apache
     status_lookup = {
         100: apache.HTTP_CONTINUE,
@@ -148,7 +148,7 @@ def mod_python_handler(r):
 
 
 def cgi_main():
-    """Run RED as a CGI Script."""
+    """Run REDbot as a CGI Script."""
     def out(inbytes):
         try:
             if hasattr(sys.stdout, 'buffer'):
@@ -196,7 +196,7 @@ def cgi_main():
 
 
 def standalone_main(host, port, static_dir):
-    """Run RED as a standalone Web server."""
+    """Run REDbot as a standalone Web server."""
 
     # load static files
     static_types = {
@@ -235,7 +235,7 @@ def standalone_main(host, port, static_dir):
                     sys.stderr.write("""
 
 *** FATAL ERROR
-RED has encountered a fatal error which it really, really can't recover from
+REDbot has encountered a fatal error which it really, really can't recover from
 in standalone server mode. Details follow.
 
 """)
@@ -260,7 +260,7 @@ def standalone_monitor(host, port, static_dir):
     from multiprocessing import Process
     while True:
         p = Process(target=standalone_main, args=(host, port, static_dir))
-        sys.stderr.write("* Starting RED server...\n")
+        sys.stderr.write("* Starting REDbot server...\n")
         p.start()
         p.join()
 
@@ -272,7 +272,7 @@ if __name__ == "__main__":
         # standalone server
         from optparse import OptionParser
         usage = "Usage: %prog [options] port static_dir"
-        version = "RED version %s" % __version__
+        version = "REDbot version %s" % __version__
         option_parser = OptionParser(usage=usage, version=version)
         (options, args) = option_parser.parse_args()
         if len(args) < 2:

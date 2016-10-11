@@ -3,7 +3,7 @@
 """
 The Resource Expert Droid.
 
-RED will examine a HTTP resource for problems and other interesting
+REDbot will examine a HTTP resource for problems and other interesting
 characteristics, making a list of these observation notes available
 for presentation to the user. It does so by potentially making a number
 of requests to probe the resource's behaviour.

@@ -29,11 +29,11 @@ class VIA_PRESENT(Note):
     level = levels.INFO
     summary = "One or more intermediaries are present."
     text = """\
-The `Via` header indicates that one or more intermediaries are present between RED and the origin
+The `Via` header indicates that one or more intermediaries are present between REDbot and the origin
 server for the resource.
 
-This may indicate that a proxy is in between RED and the server, or that the server uses a "reverse
-proxy" or CDN in front of it.
+This may indicate that a proxy is in between REDbot and the server, or that the server uses a
+"reverse proxy" or CDN in front of it.
 
 There field has three space-separated components; first, the HTTP version of the message that the
 intermediary received, then the identity of the intermediary (usually but not always its hostname),

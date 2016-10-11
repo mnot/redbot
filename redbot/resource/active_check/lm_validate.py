@@ -72,7 +72,7 @@ class LM_SUBREQ_PROBLEM(Note):
     level = levels.INFO
     summary = "There was a problem checking for Last-Modified validation support."
     text = """\
-When RED tried to check the resource for Last-Modified validation support, there was a problem:
+When REDbot tried to check the resource for Last-Modified validation support, there was a problem:
 
 `%(problem)s`
 
@@ -87,8 +87,8 @@ HTTP allows clients to make conditional requests to see if a copy that they hold
 Since this response has a `Last-Modified` header, clients should be able to use an
 `If-Modified-Since` request header for validation.
 
-RED has done this and found that the resource sends a `304 Not Modified` response, indicating that
-it supports `Last-Modified` validation."""
+REDbot has done this and found that the resource sends a `304 Not Modified` response, indicating
+that it supports `Last-Modified` validation."""
 
 class IMS_FULL(Note):
     category = categories.VALIDATION
@@ -99,8 +99,8 @@ HTTP allows clients to make conditional requests to see if a copy that they hold
 Since this response has a `Last-Modified` header, clients should be able to use an
 `If-Modified-Since` request header for validation.
 
-RED has done this and found that the resource sends a full response even though it hadn't changed,
-indicating that it doesn't support `Last-Modified` validation."""
+REDbot has done this and found that the resource sends a full response even though it hadn't
+changed, indicating that it doesn't support `Last-Modified` validation."""
 
 class IMS_UNKNOWN(Note):
     category = categories.VALIDATION
@@ -112,8 +112,8 @@ HTTP allows clients to make conditional requests to see if a copy that they hold
 Since this response has a `Last-Modified` header, clients should be able to use an
 `If-Modified-Since` request header for validation.
 
-RED has done this, but the response changed between the original request and the validating
-request, so RED can't tell whether or not `Last-Modified` validation is supported."""
+REDbot has done this, but the response changed between the original request and the validating
+request, so REDbot can't tell whether or not `Last-Modified` validation is supported."""
 
 class IMS_STATUS(Note):
     category = categories.VALIDATION
@@ -124,5 +124,5 @@ HTTP allows clients to make conditional requests to see if a copy that they hold
 Since this response has a `Last-Modified` header, clients should be able to use an
 `If-Modified-Since` request header for validation.
 
-RED has done this, but the response had a %(enc_ims_status)s status code, so RED can't tell whether
-or not `Last-Modified` validation is supported."""
+REDbot has done this, but the response had a %(enc_ims_status)s status code, so REDbot can't tell
+whether or not `Last-Modified` validation is supported."""

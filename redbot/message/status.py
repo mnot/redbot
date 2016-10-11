@@ -172,7 +172,7 @@ When used, the client sends an `Expect: 100-continue`, in the request headers, a
 willing to process it, it will send a `100 Continue` status code to indicate that the request
 should continue.
 
-This response has a `100 Continue` status code, but RED did not ask for it (with the `Expect`
+This response has a `100 Continue` status code, but REDbot did not ask for it (with the `Expect`
 request header). Sending this status code without it being requested can cause interoperability
 problems."""
 
@@ -185,7 +185,7 @@ HTTP defines the `Upgrade` header as a means of negotiating a change of protocol
 you to switch the protocol on a given connection from HTTP to something else.
 
 However, it must be first requested by the client; this response contains an `Upgrade` header, even
-though RED did not ask for it.
+though REDbot did not ask for it.
 
 Trying to upgrade the connection without the client's participation obviously won't work."""
 
@@ -197,7 +197,7 @@ class CREATED_SAFE_METHOD(Note):
 The `201 Created` status code indicates that processing the request had the side effect of creating
 a new resource.
 
-However, the request method that RED used (%(method)s) is defined as a "safe" method; that is, it
+However, the request method that REDbot used (%(method)s) is defined as a "safe" method; that is, it
 should not have any side effects.
 
 Creating resources as a side effect of a safe method can have unintended consequences; for example,
@@ -236,7 +236,7 @@ The `206 Partial Response` status code indicates that the response body is only 
 
 However, the client needs to ask for it with the `Range` header.
 
-RED did not request a partial response; sending one without the client requesting it leads to
+REDbot did not request a partial response; sending one without the client requesting it leads to
 interoperability problems."""
 
 class REDIRECT_WITHOUT_LOCATION(Note):

@@ -366,7 +366,7 @@ class STATUS_PHRASE_ENCODING(Note):
     level = levels.BAD
     summary = "The status phrase contains non-ASCII characters."
     text = """\
-The status phrase can only contain ASCII characters. RED has detected (and possibly removed)
+The status phrase can only contain ASCII characters. REDbot has detected (and possibly removed)
 non-ASCII characters in it."""
 
 class CL_CORRECT(Note):
@@ -375,8 +375,8 @@ class CL_CORRECT(Note):
     summary = 'The Content-Length header is correct.'
     text = """\
 `Content-Length` is used by HTTP to delimit messages; that is, to mark the end of one message and
-the beginning of the next. RED has checked the length of the body and found the `Content-Length` to
-be correct."""
+the beginning of the next. REDbot has checked the length of the body and found the `Content-Length`
+to be correct."""
 
 class CL_INCORRECT(Note):
     category = categories.GENERAL
@@ -384,9 +384,9 @@ class CL_INCORRECT(Note):
     summary = "%(response)s's Content-Length header is incorrect."
     text = """\
 `Content-Length` is used by HTTP to delimit messages; that is, to mark the end of one message and
-the beginning of the next. RED has checked the length of the body and found the `Content-Length` is
-not correct. This can cause problems not only with connection handling, but also caching, since an
-incomplete response is considered uncacheable.
+the beginning of the next. REDbot has checked the length of the body and found the `Content-Length`
+is not correct. This can cause problems not only with connection handling, but also caching, since
+an incomplete response is considered uncacheable.
 
 The actual body size sent was %(body_length)s bytes."""
 
@@ -395,17 +395,17 @@ class CMD5_CORRECT(Note):
     level = levels.GOOD
     summary = 'The Content-MD5 header is correct.'
     text = """\
-`Content-MD5` is a hash of the body, and can be used to ensure integrity of the response. RED has
-checked its value and found it to be correct."""
+`Content-MD5` is a hash of the body, and can be used to ensure integrity of the response. REDbot
+has checked its value and found it to be correct."""
 
 class CMD5_INCORRECT(Note):
     category = categories.GENERAL
     level = levels.BAD
     summary = 'The Content-MD5 header is incorrect.'
     text = """\
-`Content-MD5` is a hash of the body, and can be used to ensure integrity of the response. RED has
+`Content-MD5` is a hash of the body, and can be used to ensure integrity of the response. REDbot has
 checked its value and found it to be incorrect; i.e., the given `Content-MD5` does not match what
-RED thinks it should be (%(calc_md5)s)."""
+REDbot thinks it should be (%(calc_md5)s)."""
 
 class BAD_GZIP(Note):
     category = categories.CONNEG

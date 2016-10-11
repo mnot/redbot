@@ -139,7 +139,7 @@ class BaseTextFormatter(Formatter):
 
 class TextFormatter(BaseTextFormatter):
     """
-    Format a RED object as text.
+    Format a REDbot object as text.
     """
     name = "txt"
     media_type = "text/plain"
@@ -161,7 +161,7 @@ class VerboseTextFormatter(TextFormatter):
 
 class TextListFormatter(BaseTextFormatter):
     """
-    Format multiple RED responses as a textual list.
+    Format multiple REDbot responses as a textual list.
     """
     name = "text"
     media_type = "text/plain"

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Formatters for RED output.
+Formatters for REDbot output.
 """
 
 

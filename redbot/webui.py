@@ -30,7 +30,7 @@ class RedWebUi(object):
     """
     A Web UI for RED.
 
-    Given a URI, run RED on it and present the results to output as HTML.
+    Given a URI, run REDbot on it and present the results to output as HTML.
     If descend is true, spider the links and present a summary.
     """
     def __init__(self, config, ui_uri, method, query_string,
@@ -247,8 +247,9 @@ class RedWebUi(object):
 
     def timeoutError(self, detail):
         """ Max runtime reached."""
-        self.error_log("RED TIMEOUT: <%s> descend=%s; %s" % (self.test_uri, self.descend, detail()))
-        self.show_error("RED timeout.", to_output=True)
+        self.error_log("REDbot TIMEOUT: <%s> descend=%s; %s" % (
+            self.test_uri, self.descend, detail()))
+        self.show_error("REDbot timeout.", to_output=True)
         self.response_done([])
 
     def robots_precheck(self, iri):
@@ -317,11 +318,11 @@ def except_handler_factory(config, out=None, qs=None):
                 os.chmod(path, stat.S_IROTH)
                 out(error_template % """\
 A problem has occurred, but it probably isn't your fault.
-RED has remembered it, and we'll try to fix it soon.""")
+REDbot has remembered it, and we'll try to fix it soon.""")
             except:
                 out(error_template % """\
 A problem has occurred, but it probably isn't your fault.
-RED tried to save it, but it couldn't! Oops.<br>
+REDbot tried to save it, but it couldn't! Oops.<br>
 Please e-mail the information below to
 <a href='mailto:red@redbot.org'>red@redbot.org</a>
 and we'll look into it.""")

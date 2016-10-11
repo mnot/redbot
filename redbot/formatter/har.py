@@ -18,7 +18,7 @@ from redbot.formatter import Formatter
 
 class HarFormatter(Formatter):
     """
-    Format a RED object (and any descendants) as HAR.
+    Format a HttpResource object (and any descendants) as HAR.
     """
     can_multiple = True
     name = "har"
