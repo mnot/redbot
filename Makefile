@@ -6,8 +6,8 @@ JSFILES = $(BOWER)/jquery/dist/jquery.js $(BOWER)/jquery-hoverIntent/jquery.hove
 CSSFILES = share/red_style.css $(BOWER)/google-code-prettify/src/prettify.css
 
 
-.PHONY: all
-all: unit_test webui_test
+.PHONY: test
+test: unit_test webui_test
 
 .PHONY: clean
 clean: clean-deploy
