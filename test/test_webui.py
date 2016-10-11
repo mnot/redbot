@@ -49,7 +49,7 @@ if __name__ == "__main__":
     sys.path.insert(0, "deploy")
     def redbot_run():
         import webui
-        webui.standalone_main(test_host, test_port, "deploy/static")
+        webui.standalone_main(test_host, test_port, "share")
     from multiprocessing import Process
     p = Process(target=redbot_run)
     p.start()

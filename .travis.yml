@@ -12,4 +12,4 @@ install:
   - pip install markdown
 
 
-script: "cd test; make -e"
+script: "make -e"

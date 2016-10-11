@@ -3,7 +3,6 @@
 
 import sys
 import unittest
-sys.path.insert(0, "..")
 
 from functools import partial
 
@@ -132,15 +131,13 @@ if __name__ == "__main__":
     import sys
     loader = unittest.TestLoader()
     if len(sys.argv) == 2:
-        auto_suite = loader.discover("../redbot/message/headers", 
+        auto_suite = loader.discover("redbot/message/headers", 
                                     "%s.py" % sys.argv[1],  
-                                    "../redbot"
+                                    "redbot"
         )
         all_tests = unittest.TestSuite([auto_suite])
     else:
-        auto_suite = loader.discover(
-            "../redbot", "*.py", '../redbot'
-        )
+        auto_suite = loader.discover("redbot", "*.py", 'redbot')
         local_suite = loader.loadTestsFromTestCase(GeneralHeaderTesters)
         all_tests = unittest.TestSuite([local_suite, auto_suite])
     result = unittest.TextTestRunner().run(all_tests)

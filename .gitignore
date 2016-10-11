@@ -1,9 +1,11 @@
 *.pyc
+__pycache__
 .DS_Store
-artwork
 MANIFEST
 dist
 build
-test/ghostdriver.log
-share/.sass-cache
+deploy
+artwork
+ghostdriver.log
+.sass-cache
 .coverage
