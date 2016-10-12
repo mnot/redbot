@@ -138,7 +138,7 @@ specification](http://httpwg.org/specs/rfc7231.html#http.date) for more informat
 class HEADER_TOO_LARGE(Note):
     category = categories.GENERAL
     level = levels.WARN
-    summary = "The %(field_name)s header is very large (%(header_size)s)."
+    summary = "The %(field_name)s header is very large (%(header_size)s bytes)."
     text = """\
 Some implementations limit the size of any single header line."""
 
