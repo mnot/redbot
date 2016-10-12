@@ -169,10 +169,6 @@ def loose_date_parse(cookie_date):
                 found_year = True
                 year_value = int(re_match.group(1))
                 continue
-    if 99 >= year_value >= 70:
-        year_value += 1900
-    if 69 >= year_value >= 0:
-        year_value += 2000
     if False in [found_time, found_day_of_month, found_month, found_year]:
         missing = []
         if not found_time:
@@ -184,6 +180,10 @@ def loose_date_parse(cookie_date):
         if not found_year:
             missing.append("year")
         raise ValueError("didn't have a: %s" % ",".join(missing))
+    if 99 >= year_value >= 70:
+        year_value += 1900
+    if 69 >= year_value >= 0:
+        year_value += 2000
     if day_of_month_value < 1 or day_of_month_value > 31:
         raise ValueError("%s is out of range for day_of_month" % \
             day_of_month_value)
