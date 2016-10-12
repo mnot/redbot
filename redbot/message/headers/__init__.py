@@ -205,7 +205,7 @@ class HeaderProcessor(object):
             unicode_headers.append((name, value))
 
             header_handler = self.get_header_handler(name)
-            field_add_note = partial(add_note, field_name=header_handler.canonical_name)
+            field_add_note = partial(add_note, field_name=name)
             header_handler.handle_input(value, field_add_note)
 
         # check each of the complete header values and get the parsed value
