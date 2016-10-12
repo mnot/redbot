@@ -212,7 +212,7 @@ class HeaderProcessor(object):
         for header_name, header_handler in list(self._header_handlers.items()):
             header_add_note = partial(self.message.add_note,
                                       "header-%s" % header_handler.canonical_name,
-                                      field_name=header_handler.name)
+                                      field_name=name)
             header_handler.finish(self.message, header_add_note)
             parsed_headers[header_handler.norm_name] = header_handler.value
 
