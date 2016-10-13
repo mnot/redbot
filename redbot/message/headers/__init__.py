@@ -202,18 +202,19 @@ class HeaderProcessor(object):
                 add_note(HEADER_VALUE_ENCODING, field_name=name)
             unicode_headers.append((name, value))
 
-            if header_size > MAX_HDR_SIZE:
-                add_note(HEADER_TOO_LARGE, field_name=name, header_size=f_num(header_size))
-
             header_handler = self.get_header_handler(name)
-            field_add_note = partial(add_note, field_name=name)
+            field_add_note = partial(add_note, field_name=header_handler.canonical_name)
             header_handler.handle_input(value, field_add_note)
+
+            if header_size > MAX_HDR_SIZE:
+                add_note(HEADER_TOO_LARGE, field_name=header_handler.canonical_name,
+                         header_size=f_num(header_size))
 
         # check each of the complete header values and get the parsed value
         for header_name, header_handler in list(self._header_handlers.items()):
             header_add_note = partial(self.message.add_note,
                                       "header-%s" % header_handler.canonical_name,
-                                      field_name=name)
+                                      field_name=header_handler.canonical_name)
             header_handler.finish(self.message, header_add_note)
             parsed_headers[header_handler.norm_name] = header_handler.value
 
