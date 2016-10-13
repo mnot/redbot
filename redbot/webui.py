@@ -10,11 +10,7 @@ import pickle as pickle
 import sys
 import tempfile
 import time
-try:
-    from urllib.parse import parse_qs, urlsplit
-except ImportError: # python2
-    from cgi import parse_qs
-    from urlparse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 import zlib
 
 import thor

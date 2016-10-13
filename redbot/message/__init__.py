@@ -9,11 +9,7 @@ import binascii
 import hashlib
 import re
 import time
-try:
-    from urllib.parse import urlsplit, urlunsplit, quote as urlquote
-except ImportError: # python2
-    from urlparse import urlsplit, urlunsplit
-    from urllib import quote as urlquote
+from urllib.parse import urlsplit, urlunsplit, quote as urlquote
 import zlib
 
 from redbot.message.headers import HeaderProcessor

@@ -4,11 +4,7 @@
 HAR Formatter for REDbot.
 """
 
-
-try:
-    from html.parser import HTMLParser
-except ImportError: # python2
-    from HTMLParser import HTMLParser
+from html.parser import HTMLParser
 import operator
 import re
 import textwrap

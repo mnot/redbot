@@ -8,10 +8,7 @@ A Web UI for RED, the Resource Expert Droid.
 import locale
 import os
 import sys
-try:
-    from urllib.parse import urlsplit
-except ImportError: # python2
-    from urlparse import urlsplit
+from urllib.parse import urlsplit
 
 from redbot import __version__
 from redbot.resource.robot_fetch import RobotFetcher
@@ -151,10 +148,7 @@ def cgi_main():
     """Run REDbot as a CGI Script."""
     def out(inbytes):
         try:
-            if hasattr(sys.stdout, 'buffer'):
-                sys.stdout.buffer.write(inbytes)
-            else: # python2
-                sys.stdout.write(inbytes)                
+            sys.stdout.buffer.write(inbytes)             
             sys.stdout.flush()
         except IOError: 
             pass

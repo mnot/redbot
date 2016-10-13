@@ -8,12 +8,8 @@ Fetches robots.txt for a given URL.
 
 import hashlib
 from os import path
-try:
-    from urllib.robotparser import RobotFileParser
-    from urllib.parse import urlsplit
-except ImportError: # python2
-    from robotparser import RobotFileParser
-    from urlparse import urlsplit
+from urllib.robotparser import RobotFileParser
+from urllib.parse import urlsplit
 
 import thor
 

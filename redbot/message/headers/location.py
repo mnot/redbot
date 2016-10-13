@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 
 import re
-try:
-    from urllib.parse import urljoin
-except ImportError: # python2
-    from urlparse import urljoin
+from urllib.parse import urljoin
 
 from redbot.message import headers
 from redbot.speak import Note, categories, levels

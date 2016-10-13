@@ -6,10 +6,8 @@ HAR Formatter for REDbot.
 
 
 import datetime
-try:
-    import json
-except ImportError: # python2
-    import simplejson as json
+import json
+
 
 from thor.http import get_header
 from redbot import __version__
