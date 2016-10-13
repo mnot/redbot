@@ -278,9 +278,9 @@ class HeaderTest(unittest.TestCase):
     Testing machinery for headers.
     """
     name = None
-    inputs = None
+    inputs = []
     expected_out = None
-    expected_err = None
+    expected_err = []
 
     def setUp(self):
         "Test setup."
