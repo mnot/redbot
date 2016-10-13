@@ -19,6 +19,10 @@ clean: clean-deploy
 lint:
 	PYTHONPATH=$(PYTHONPATH) pylint redbot
 
+.PHONY: typecheck
+typecheck:
+	PYTHONPATH=$(PYTHONPATH) $(PYTHON) -m mypy --config-file=test/mypy.ini redbot
+
 ## Coverage and Tests
 
 .PHONY: note_coverage
