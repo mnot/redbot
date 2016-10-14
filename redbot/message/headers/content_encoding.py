@@ -46,13 +46,13 @@ class ContentEncodingTest(headers.HeaderTest):
     name = 'Content-Encoding'
     inputs = ['gzip']
     expected_out = ['gzip']
-    expected_err = []
+    expected_err = [] # type: ignore
 
 class ContentEncodingCaseTest(headers.HeaderTest):
     name = 'Content-Encoding'
     inputs = ['GZip']
     expected_out = ['gzip']
-    expected_err = []
+    expected_err = [] # type: ignore
 
 class UnwantedContentEncodingTest(headers.HeaderTest):
     name = 'Content-Encoding'

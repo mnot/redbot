@@ -96,19 +96,19 @@ class QuotedCDTest(headers.HeaderTest):
     name = 'Content-Disposition'
     inputs = ['attachment; filename="foo.txt"']
     expected_out = ('attachment', {'filename': 'foo.txt'})
-    expected_err = []
+    expected_err = [] # type: ignore
 
 class TokenCDTest(headers.HeaderTest):
     name = 'Content-Disposition'
     inputs = ['attachment; filename=foo.txt']
     expected_out = ('attachment', {'filename': 'foo.txt'})
-    expected_err = []
+    expected_err = [] # type: ignore
 
 class InlineCDTest(headers.HeaderTest):
     name = 'Content-Disposition'
     inputs = ['inline; filename=foo.txt']
     expected_out = ('inline', {'filename': 'foo.txt'})
-    expected_err = []
+    expected_err = [] # type: ignore
 
 class RepeatCDTest(headers.HeaderTest):
     name = 'Content-Disposition'
@@ -122,7 +122,7 @@ class FilenameStarCDTest(headers.HeaderTest):
     expected_out = ('attachment', {
         'filename': 'foo.txt',
         'filename*': u'a\u0308.txt'})
-    expected_err = []
+    expected_err = [] # type: ignore
 
 class FilenameStarQuotedCDTest(headers.HeaderTest):
     name = 'Content-Disposition'

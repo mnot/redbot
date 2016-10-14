@@ -39,19 +39,19 @@ class AcceptRangeTest(headers.HeaderTest):
     name = 'Accept-Ranges'
     inputs = ['bytes']
     expected_out = (['bytes'])
-    expected_err = []
+    expected_err = [] # type: ignore
 
 class NoneAcceptRangeTest(headers.HeaderTest):
     name = 'Accept-Ranges'
     inputs = ['none']
     expected_out = (['none'])
-    expected_err = []
+    expected_err = [] # type: ignore
 
 class BothAcceptRangeTest(headers.HeaderTest):
     name = 'Accept-Ranges'
     inputs = ['bytes, none']
     expected_out = (['bytes', 'none'])
-    expected_err = []
+    expected_err = [] # type: ignore
 
 class BadAcceptRangeTest(headers.HeaderTest):
     name = 'Accept-Ranges'
@@ -63,4 +63,4 @@ class CaseAcceptRangeTest(headers.HeaderTest):
     name = 'Accept-Ranges'
     inputs = ['Bytes, NONE']
     expected_out = (['bytes', 'none'])
-    expected_err = []
+    expected_err = [] # type: ignore

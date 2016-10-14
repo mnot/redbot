@@ -90,13 +90,13 @@ See [this blog entry](http://bit.ly/tJbICH) for more information."""
 class OneXXSSTest(headers.HeaderTest):
     name = 'X-XSS-Protection'
     inputs = ['1']
-    expected_out = (1, {})
+    expected_out = (1, {}) # type: ignore
     expected_err = [XSS_PROTECTION_ON]
 
 class ZeroXXSSTest(headers.HeaderTest):
     name = 'X-XSS-Protection'
     inputs = ['0']
-    expected_out = (0, {})
+    expected_out = (0, {})  # type: ignore
     expected_err = [XSS_PROTECTION_OFF]
 
 class OneBlockXXSSTest(headers.HeaderTest):
@@ -108,5 +108,5 @@ class OneBlockXXSSTest(headers.HeaderTest):
 class BadXXSSTest(headers.HeaderTest):
     name = 'X-XSS-Protection'
     inputs = ['foo']
-    expected_out = None
+    expected_out = None # type: ignore
     expected_err = [headers.BAD_SYNTAX]

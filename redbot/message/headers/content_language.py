@@ -24,4 +24,4 @@ class ContentLanguageTest(headers.HeaderTest):
     name = 'Content-Language'
     inputs = ['en-US']
     expected_out = 'en-US'
-    expected_err = []
+    expected_err = [] # type: ignore

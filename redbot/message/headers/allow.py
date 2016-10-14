@@ -19,4 +19,4 @@ class AllowTest(headers.HeaderTest):
     name = 'Allow'
     inputs = ['GET, POST']
     expected_out = ['GET', 'POST']
-    expected_err = []
+    expected_err = [] # type: ignore

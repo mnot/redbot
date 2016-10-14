@@ -283,15 +283,15 @@ class SET_COOKIE_UNKNOWN_ATTRIBUTE(Note):
 class BasicSCTest(headers.HeaderTest):
     name = 'Set-Cookie'
     inputs = ['SID=31d4d96e407aad42']
-    expected_out = [("SID", "31d4d96e407aad42", [])]
-    expected_err = []
+    expected_out = [("SID", "31d4d96e407aad42", [])] # type: ignore
+    expected_err = [] # type: ignore
 
 class ParameterSCTest(headers.HeaderTest):
     name = 'Set-Cookie'
     inputs = ['SID=31d4d96e407aad42; Path=/; Domain=example.com']
     expected_out = [("SID", "31d4d96e407aad42",
                      [("Path", "/"), ("Domain", "example.com")])]
-    expected_err = []
+    expected_err = [] # type: ignore
 
 class TwoSCTest(headers.HeaderTest):
     name = 'Set-Cookie'
@@ -301,41 +301,41 @@ class TwoSCTest(headers.HeaderTest):
     expected_out = [
         ("SID", "31d4d96e407aad42", [("Path", "/"), ("Secure", ""), ("HttpOnly", "")]),
         ("lang", "en-US", [("Path", "/"), ("Domain", "example.com")])]
-    expected_err = []
+    expected_err = [] # type: ignore
 
 class ExpiresScTest(headers.HeaderTest):
     name = "Set-Cookie"
     inputs = ["lang=en-US; Expires=Wed, 09 Jun 2021 10:18:14 GMT"]
     expected_out = [("lang", "en-US", [("Expires", 1623233894)])]
-    expected_err = []
+    expected_err = [] # type: ignore
 
 class ExpiresSingleScTest(headers.HeaderTest):
     name = "Set-Cookie"
     inputs = ["lang=en-US; Expires=Wed, 9 Jun 2021 10:18:14 GMT"]
     expected_out = [("lang", "en-US", [("Expires", 1623233894)])]
-    expected_err = []
+    expected_err = [] # type: ignore
 
 class MaxAgeScTest(headers.HeaderTest):
     name = "Set-Cookie"
     inputs = ["lang=en-US; Max-Age=123"]
     expected_out = [("lang", "en-US", [("Max-Age", 123)])]
-    expected_err = []
+    expected_err = [] # type: ignore
 
 class MaxAgeLeadingZeroScTest(headers.HeaderTest):
     name = "Set-Cookie"
     inputs = ["lang=en-US; Max-Age=0123"]
-    expected_out = [("lang", "en-US", [])]
+    expected_out = [("lang", "en-US", [])] # type: ignore
     expected_err = [SET_COOKIE_LEADING_ZERO_MAX_AGE]
 
 class RemoveSCTest(headers.HeaderTest):
     name = "Set-Cookie"
     inputs = ["lang=; Expires=Sun, 06 Nov 1994 08:49:37 GMT"]
     expected_out = [("lang", "", [("Expires", 784111777)])]
-    expected_err = []
+    expected_err = [] # type: ignore
 
 class WolframSCTest(headers.HeaderTest):
     name = "Set-Cookie"
     inputs = ["WR_SID=50.56.234.188.1398; path=/; max-age=315360000; domain=.wolframalpha.com"]
     expected_out = [("WR_SID", "50.56.234.188.1398",
                      [('Path', '/'), ('Max-Age', 315360000), ('Domain', 'wolframalpha.com')])]
-    expected_err = []
+    expected_err = [] # type: ignore

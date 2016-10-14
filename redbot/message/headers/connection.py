@@ -26,4 +26,4 @@ class ConnectionTest(headers.HeaderTest):
     name = 'Connection'
     inputs = ['close']
     expected_out = ['close']
-    expected_err = []
+    expected_err = [] # type: ignore

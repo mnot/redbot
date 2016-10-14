@@ -43,5 +43,5 @@ class KeepAliveTest(headers.HeaderTest):
 class EmptyKeepAliveTest(headers.HeaderTest):
     name = 'Keep-Alive'
     inputs = ['']
-    expected_out = []
+    expected_out = [] # type: ignore
     expected_err = [headers.HEADER_DEPRECATED]

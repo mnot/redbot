@@ -10,6 +10,7 @@ from copy import copy
 from functools import partial
 import re
 import sys
+from typing import Any
 import unittest
 
 from redbot.syntax import rfc7230, rfc7231
@@ -31,16 +32,16 @@ MAX_TTL_HDR = 8 * 1000
 
 class HttpHeader(object):
     """A HTTP Header handler."""
-    canonical_name = None
-    description = None
-    reference = None
-    syntax = None # verbose regular expression to match a value.
-    list_header = None # Can be split into values on commas following common syntax.
-    nonstandard_syntax = False # Don't check for a single value at the end.
-    deprecated = None
-    valid_in_requests = None
-    valid_in_responses = None
-    no_coverage = False  # turns off coverage checks for syntax and tests.
+    canonical_name = None # type: str
+    description = None # type: str
+    reference = None # type: str
+    syntax = None # type: str                # Verbose regular expression to match a value.
+    list_header = None # type: bool          # Can be split into values on commas.
+    nonstandard_syntax = False # type: bool  # Don't check for a single value at the end.
+    deprecated = None # type: bool
+    valid_in_requests = None # type: bool
+    valid_in_responses = None # type: bool
+    no_coverage = False  # type: bool        # Turns off coverage checks for syntax and tests.
 
     def __init__(self, wire_name, message):
         self.wire_name = wire_name.strip()
@@ -277,10 +278,10 @@ class HeaderTest(unittest.TestCase):
     """
     Testing machinery for headers.
     """
-    name = None
-    inputs = []
-    expected_out = None
-    expected_err = []
+    name = None # type: str
+    inputs = [] # type: list[bytes]
+    expected_out = None # type: Any
+    expected_err = [] # type: List[Note]
 
     def setUp(self):
         "Test setup."

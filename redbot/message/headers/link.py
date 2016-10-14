@@ -68,7 +68,7 @@ class BasicLinkTest(headers.HeaderTest):
     name = 'Link'
     inputs = ['<http://www.example.com/>; rel=example']
     expected_out = [('http://www.example.com/', {'rel': 'example'})]
-    expected_err = []
+    expected_err = [] # type: ignore
 
 class QuotedLinkTest(headers.HeaderTest):
     name = 'Link'
@@ -80,13 +80,13 @@ class QuotedRelationLinkTest(headers.HeaderTest):
     name = 'Link'
     inputs = ['<http://www.example.com/>; rel="example"']
     expected_out = [('http://www.example.com/', {'rel': 'example'})]
-    expected_err = []
+    expected_err = [] # type: ignore
 
 class RelativeLinkTest(headers.HeaderTest):
     name = 'Link'
     inputs = ['</foo>; rel="example"']
     expected_out = [('/foo', {'rel': 'example'})]
-    expected_err = []
+    expected_err = [] # type: ignore
 
 class RepeatingRelationLinkTest(headers.HeaderTest):
     name = 'Link'

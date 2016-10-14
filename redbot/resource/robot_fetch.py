@@ -26,9 +26,9 @@ class RobotFetcher(thor.events.EventEmitter):
     response_phrase = "The robots.txt response"
     freshness_lifetime = 30 * 60
     client = thor.http.HttpClient()
-    robot_checkers = {} # cache of robots.txt checkers
-    robot_cache_dir = None
-    robot_lookups = {}
+    robot_checkers = {} # type: Dict[str, object]  # cache of robots.txt checkers
+    robot_cache_dir = None # type: str
+    robot_lookups = {} # type: Dict[str, set]
 
     def check_robots(self, url, sync=False):
         """

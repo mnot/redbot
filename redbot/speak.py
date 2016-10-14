@@ -10,12 +10,13 @@ it need to be escaped to be safe for use in HTML.
 
 from binascii import b2a_hex
 from cgi import escape as cgi_escape
+from enum import Enum
 from functools import partial
 from markdown import markdown
 
 e_html = partial(cgi_escape, quote=True)
 
-class _Categories(object):
+class categories(Enum):
     "Note classifications."
     GENERAL = "General"
     SECURITY = "Security"
@@ -24,23 +25,21 @@ class _Categories(object):
     VALIDATION = "Validation"
     CONNECTION = "Connection"
     RANGE = "Partial Content"
-categories = _Categories()
 
-class _Levels(object):
+class levels(Enum):
     "Note levels."
     GOOD = 'good'
     WARN = 'warning'
     BAD = 'bad'
     INFO = 'info'
-levels = _Levels()
 
 class Note(object):
     """
     A note about an HTTP resource, representation, or other component
     related to the URI under test.
     """
-    category = None
-    level = None
+    category = None # type: categories
+    level = None # type: levels
     summary = ""
     text = ""
     def __init__(self, subject, vrs=None):

@@ -39,6 +39,6 @@ class ContentRangeTest(headers.HeaderTest):
     name = 'Content-Range'
     inputs = ['bytes 1-100/200']
     expected_out = 'bytes 1-100/200'
-    expected_err = []
+    expected_err = [] # type: ignore
     def set_context(self, message):
         message.status_code = "206"
