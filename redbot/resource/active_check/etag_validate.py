@@ -7,14 +7,14 @@ Subrequest for ETag validation checks.
 
 from redbot.resource.active_check.base import SubRequest, MISSING_HDRS_304
 from redbot.speak import Note, categories, levels
-
+from redbot.type import StrHeaderListType
 
 class ETagValidate(SubRequest):
     "If an ETag is present, see if it will validate."
     check_name = "ETag Validation"
     response_phrase = "The 304 response"
 
-    def modify_request_headers(self, base_headers):
+    def modify_request_headers(self, base_headers: StrHeaderListType) -> StrHeaderListType:
         etag_value = self.base.response.parsed_headers.get("etag", None)
         if etag_value:
             weak, etag = etag_value
@@ -27,7 +27,7 @@ class ETagValidate(SubRequest):
             base_headers.append(('If-None-Match', etag_str))
         return base_headers
 
-    def preflight(self):
+    def preflight(self) -> bool:
         if self.base.response.status_code[0] == '3':
             return False
         etag = self.base.response.parsed_headers.get("etag", None)
@@ -37,7 +37,7 @@ class ETagValidate(SubRequest):
             self.base.inm_support = False
             return False
 
-    def done(self):
+    def done(self) -> None:
         if not self.response.complete:
             self.add_base_note('', ETAG_SUBREQ_PROBLEM, problem=self.response.http_error.desc)
             return

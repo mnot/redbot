@@ -4,9 +4,13 @@
 from calendar import timegm
 from re import match, split
 from urllib.parse import urlsplit
+from typing import List, Tuple, Union
 
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
+from redbot.type import AddNoteMethodType
+
+CookieType = Tuple[str, str, List[Tuple[str, Union[str, int]]]]
 
 
 class set_cookie(headers.HttpHeader):
@@ -22,7 +26,7 @@ requests to the server."""
     valid_in_requests = False
     valid_in_responses = True
 
-    def parse(self, field_value, add_note):
+    def parse(self, field_value: str, add_note: AddNoteMethodType) -> CookieType:
         path = urlsplit(self.message.base_uri).path
         start_time = self.message.start_time
         try:
@@ -33,7 +37,8 @@ requests to the server."""
 
 
 # TODO: properly escape notes
-def loose_parse(set_cookie_string, uri_path, current_time, add_note):
+def loose_parse(set_cookie_string: str, uri_path: str, current_time: float, 
+                add_note: AddNoteMethodType) -> CookieType:
     """
     Parse a Set-Cookie string, as per RFC6265, Section 5.2.
     """
@@ -52,7 +57,7 @@ def loose_parse(set_cookie_string, uri_path, current_time, add_note):
         add_note(SET_COOKIE_NO_NAME)
         raise ValueError("Cookie doesn't have a name")
     cookie_name, cookie_value = name, value
-    cookie_attribute_list = []
+    cookie_attribute_list = [] # type: List[Tuple[str, Union[str, int]]]
     while unparsed_attributes != "":
         if ";" in unparsed_attributes:
             cookie_av, unparsed_attributes = unparsed_attributes.split(";", 1)
@@ -132,7 +137,7 @@ MONTHS = {
     'nov': 11,
     'dec': 12
 }
-def loose_date_parse(cookie_date):
+def loose_date_parse(cookie_date: str) -> int:
     """
     Parse a date, as per RFC 6265, Section 5.1.1.
     """

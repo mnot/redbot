@@ -3,6 +3,7 @@
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7233
+from redbot.type import AddNoteMethodType
 
 
 class accept_ranges(headers.HttpHeader):
@@ -17,7 +18,7 @@ resource."""
     valid_in_requests = False
     valid_in_responses = True
 
-    def parse(self, field_value, add_note):
+    def parse(self, field_value: str, add_note: AddNoteMethodType) -> str:
         field_value = field_value.lower()
         if field_value not in ['bytes', 'none']:
             add_note(UNKNOWN_RANGE, range=field_value)

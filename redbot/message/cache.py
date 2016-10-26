@@ -5,6 +5,7 @@ Cacheability checking function.
 """
 
 from redbot.formatter import relative_time, f_num
+from redbot.message import HttpRequest, HttpResponse
 from redbot.speak import Note, categories, levels
 
 ### configuration
@@ -13,7 +14,7 @@ heuristic_cacheable_status = ['200', '203', '206', '300', '301', '410']
 max_clock_skew = 5  # seconds
 
 
-def checkCaching(response, request=None):
+def checkCaching(response: HttpResponse, request: HttpRequest=None) -> None:
     "Examine HTTP caching characteristics."
 
     # get header values

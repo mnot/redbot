@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 
+from typing import Tuple
 
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7231
+from redbot.type import AddNoteMethodType, ParamDictType
+
 
 class content_type(headers.HttpHeader):
     canonical_name = "Content-Type"
@@ -18,7 +21,7 @@ a GET."""
     valid_in_requests = True
     valid_in_responses = True
 
-    def parse(self, field_value, add_note):
+    def parse(self, field_value: str, add_note: AddNoteMethodType) -> Tuple[str, ParamDictType]:
         try:
             media_type, param_str = field_value.split(";", 1)
         except ValueError:

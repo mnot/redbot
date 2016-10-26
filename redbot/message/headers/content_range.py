@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
-from redbot.message import headers
+from redbot.message import headers, HttpMessage
 from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7233
+from redbot.type import AddNoteMethodType
+
 
 class content_range(headers.HttpHeader):
     canonical_name = "Content-Range"
@@ -16,7 +18,7 @@ partial body should be applied."""
     valid_in_requests = False
     valid_in_responses = True
 
-    def parse(self, field_value, add_note):
+    def parse(self, field_value: str, add_note: AddNoteMethodType) -> str:
         # #53: check syntax, values?
         if self.message.status_code not in ["206", "416"]:
             add_note(CONTENT_RANGE_MEANINGLESS)
@@ -40,5 +42,5 @@ class ContentRangeTest(headers.HeaderTest):
     inputs = ['bytes 1-100/200']
     expected_out = 'bytes 1-100/200'
     expected_err = [] # type: ignore
-    def set_context(self, message):
+    def set_context(self, message: HttpMessage) -> None:
         message.status_code = "206"

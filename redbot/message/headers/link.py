@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 
 import re
+from typing import Tuple
 
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc3986, rfc7231
+from redbot.type import AddNoteMethodType, ParamDictType
+
 
 class link(headers.HttpHeader):
     canonical_name = "Link"
@@ -19,7 +22,7 @@ statement of the form "[context IRI] has a [relation type] resource at [target I
     valid_in_requests = True
     valid_in_responses = True
 
-    def parse(self, field_value, add_note):
+    def parse(self, field_value: str, add_note: AddNoteMethodType) -> Tuple[str, ParamDictType]:
         try:
             link, param_str = field_value.split(";", 1)
         except ValueError:

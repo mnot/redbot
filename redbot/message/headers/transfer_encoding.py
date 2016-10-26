@@ -4,6 +4,8 @@
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7230
+from redbot.type import AddNoteMethodType
+
 
 class transfer_encoding(headers.HttpHeader):
     canonical_name = "Transfer-Encoding"
@@ -24,7 +26,7 @@ without knowing the entire body's length."""
     valid_in_requests = True
     valid_in_responses = True
 
-    def parse(self, field_value, add_note):
+    def parse(self, field_value: str, add_note: AddNoteMethodType) -> str:
         try:
             coding, param_str = field_value.split(";", 1)
         except ValueError:
@@ -35,8 +37,8 @@ without knowing the entire body's length."""
             add_note(TRANSFER_CODING_PARAM)
         return coding
 
-    def evaluate(self, add_note):
-        unwanted = set([c for c in self.value if c not in ['chunked', 'identity']]) or False
+    def evaluate(self, add_note: AddNoteMethodType) -> None:
+        unwanted = set([c for c in self.value if c not in ['chunked', 'identity']])
         if unwanted:
             add_note(TRANSFER_CODING_UNWANTED, unwanted_codings=", ".join(unwanted))
         if 'identity' in self.value:

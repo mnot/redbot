@@ -3,6 +3,7 @@
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7234
+from redbot.type import AddNoteMethodType
 
 class age(headers.HttpHeader):
     canonical_name = "Age"
@@ -16,7 +17,7 @@ validation) was generated at the origin server."""
     valid_in_requests = False
     valid_in_responses = True
 
-    def parse(self, field_value, add_note):
+    def parse(self, field_value: str, add_note: AddNoteMethodType) -> int:
         try:
             age = int(field_value)
         except ValueError:

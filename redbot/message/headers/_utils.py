@@ -2,14 +2,16 @@
 import calendar
 from email.utils import parsedate as lib_parsedate
 import re
+from typing import Callable, Dict, List, Tuple, Union
 from urllib.parse import unquote as urlunquote
 
 from redbot.syntax import rfc7231
+from redbot.type import AddNoteMethodType
 from ._notes import *
 
 RE_FLAGS = re.VERBOSE | re.IGNORECASE
 
-def parse_date(value, add_note):
+def parse_date(value: str, add_note: AddNoteMethodType) -> int:
     """Parse a HTTP date. Raises ValueError if it's bad."""
     if not re.match(r"^%s$" % rfc7231.HTTP_date, value, RE_FLAGS):
         add_note(BAD_DATE_SYNTAX)
@@ -22,13 +24,12 @@ def parse_date(value, add_note):
     # http://sourceforge.net/tracker/index.php?func=detail&aid=1194222&group_id=5470&atid=105470
     if date_tuple[0] < 100:
         if date_tuple[0] > 68:
-            date_tuple = (date_tuple[0]+1900,)+date_tuple[1:]
+            date_tuple = (date_tuple[0]+1900,) + date_tuple[1:] # type: ignore
         else:
-            date_tuple = (date_tuple[0]+2000,)+date_tuple[1:]
-    date = calendar.timegm(date_tuple)
-    return date
+            date_tuple = (date_tuple[0]+2000,) + date_tuple[1:] # type: ignore
+    return calendar.timegm(date_tuple)
 
-def unquote_string(instr):
+def unquote_string(instr: str) -> str:
     """
     Unquote a unicode string; does NOT unquote control characters.
 
@@ -45,7 +46,7 @@ def unquote_string(instr):
         instr = re.sub(r'\\(.)', r'\1', ninstr)
     return instr
 
-def split_string(instr, item, split):
+def split_string(instr: str, item: str, split: str) -> List[str]:
     """
     Split instr as a list of items separated by splits.
 
@@ -60,19 +61,12 @@ def split_string(instr, item, split):
         r'%s(?=%s|\s*$)' % (item, split), instr, re.VERBOSE
     )]
 
-def parse_params(instr, add_note, nostar=None, delim=";"):
+def parse_params(instr: str, add_note: AddNoteMethodType, nostar: Union[List[str], bool]=None,
+                 delim: str=";") -> Dict[str, str]:
     """
     Parse parameters into a dictionary.
-
-    @param instr: string to be parsed
-    @param add_note: add_note function to recode results
-    @param subject: the subject identifier
-    @param nostar: list of parameters that definitely don't get a star. If
-                   True, no parameter can be starred.
-    @param delim: delimter between params, default ";"
-    @return: dictionary of {name: value}
     """
-    param_dict = {}
+    param_dict = {} # type: Dict[str, str]
     for param in split_string(instr, rfc7231.parameter, r"\s*%s\s*" % delim):
         try:
             key, val = param.split("=", 1)
@@ -85,7 +79,7 @@ def parse_params(instr, add_note, nostar=None, delim=";"):
         if val[0] == val[-1] == "'":
             add_note(PARAM_SINGLE_QUOTED, param=k_norm, param_val=val, param_val_unquoted=val[1:-1])
         if key[-1] == '*':
-            if nostar is True or (nostar and k_norm[:-1] in nostar):
+            if nostar is True or (nostar and k_norm[:-1] in nostar): # type: ignore
                 add_note(PARAM_STAR_BAD, param=k_norm[:-1])
             else:
                 if val[0] == '"' and val[-1] == '"':

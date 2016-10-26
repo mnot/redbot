@@ -8,6 +8,8 @@ problems and other interesting characteristics. It only makes one request,
 based upon the provided headers.
 """
 
+from typing import Any, Dict, List, Tuple, Type, Union
+
 import thor
 import thor.http.error as httperr
 
@@ -17,6 +19,7 @@ from redbot.message import HttpRequest, HttpResponse
 from redbot.message.status import StatusChecker
 from redbot.message.cache import checkCaching
 from redbot.resource.robot_fetch import RobotFetcher
+from redbot.type import StrHeaderListType
 
 
 UA_STRING = "RED/%s (https://redbot.org/)" % __version__
@@ -24,7 +27,7 @@ UA_STRING = "RED/%s (https://redbot.org/)" % __version__
 class RedHttpClient(thor.http.HttpClient):
     "Thor HttpClient for RedFetcher"
 
-    def __init__(self, loop=None):
+    def __init__(self, loop: thor.loop.LoopBase=None) -> None:
         thor.http.HttpClient.__init__(self, loop)
         self.connect_timeout = 10
         self.read_timeout = 15
@@ -48,24 +51,24 @@ class RedFetcher(thor.events.EventEmitter):
     client = RedHttpClient()
     robot_fetcher = RobotFetcher()
 
-    def __init__(self):
+    def __init__(self) -> None:
         thor.events.EventEmitter.__init__(self)
-        self.notes = []
+        self.notes = [] # type: List[Note]
         self.transfer_in = 0
         self.transfer_out = 0
-        self.request = HttpRequest(self.ignore_note)
-        self.response = HttpResponse(self.add_note)
-        self.exchange = None
+        self.request = HttpRequest(self.ignore_note)  # type: HttpRequest
+        self.response = HttpResponse(self.add_note)   # type: HttpResponse
+        self.exchange = None                          # type: thor.http.ClientExchange
         self.follow_robots_txt = True # Should we pay attention to robots file?
         self.fetch_started = False
         self.fetch_done = False
 
-    def __getstate__(self):
+    def __getstate__(self) -> Dict[str, Any]:
         state = thor.events.EventEmitter.__getstate__(self)
         del state['exchange']
         return state
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         status = [self.__class__.__name__]
         if self.request.uri:
             status.append("%s" % self.request.uri)
@@ -75,43 +78,44 @@ class RedFetcher(thor.events.EventEmitter):
             status.append("fetch_done")
         return "<%s at %#x>" % (", ".join(status), id(self))
 
-    def add_note(self, subject, note, **kw):
+    def add_note(self, subject: str, note: Type[Note], **kw: Union[str, int]) -> None:
         "Set a note."
-        if not 'response' in kw:
+        if 'response' not in kw:
             kw['response'] = self.response_phrase
         self.notes.append(note(subject, kw))
 
-    def ignore_note(self, subject, note, **kw):
+    def ignore_note(self, subject: str, note: Type[Note], **kw: str) -> None:
         "Ignore a note (for requests)."
         return
 
-    def preflight(self):
+    def preflight(self) -> bool:
         """
         Check to see if we should bother running. Return True
         if so; False if not. Can be overridden.
         """
         return True
 
-    def set_request(self, iri, method="GET", req_hdrs=None, req_body=None):
+    def set_request(self, iri: str, method: str="GET",
+                    req_hdrs: StrHeaderListType=None, req_body: bytes=None) -> None:
         """
         Set the resource's request. All values are strings.
         """
         self.request.method = method
-        self.response.is_head_response = (method == "HEAD")
+        self.response.is_head_response = (method == "HEAD")   # type: ignore
         self.request.set_iri(iri)
-        self.response.base_uri = self.request.uri
+        self.response.base_uri = self.request.uri             # type: ignore
         if req_hdrs:
             self.request.set_headers(req_hdrs)
-        self.request.payload = req_body # FIXME: encoding
+        self.request.payload = req_body # type: ignore    # FIXME: encoding
         self.request.complete = True  # cheating a bit
 
-    def check(self):
+    def check(self) -> None:
         """
         Make an asynchronous HTTP request to uri, emitting 'status' as it's
         updated and 'fetch_done' when it's done. Reason is used to explain what the
         request is in the status callback.
         """
-        if not self.preflight() or self.request.uri == None:
+        if not self.preflight() or self.request.uri is None:
             # generally a good sign that we're not going much further.
             self._fetch_done()
             return
@@ -122,7 +126,7 @@ class RedFetcher(thor.events.EventEmitter):
         else:
             self.run_continue(True)
 
-    def run_continue(self, allowed):
+    def run_continue(self, allowed: bool) -> None:
         """
         Continue after getting the robots file.
         """
@@ -150,7 +154,8 @@ class RedFetcher(thor.events.EventEmitter):
             self.transfer_out += len(self.request.payload)
         self.exchange.request_done([])
 
-    def _response_start(self, status, phrase, res_headers):
+    def _response_start(self, status: bytes, phrase: bytes,
+                        res_headers: List[Tuple[bytes, bytes]]) -> None:
         "Process the response start-line and headers."
         self.response.start_time = thor.time()
         self.response.process_top_line(self.exchange.res_version, status, phrase)
@@ -158,12 +163,12 @@ class RedFetcher(thor.events.EventEmitter):
         StatusChecker(self.response, self.request)
         checkCaching(self.response, self.request)
 
-    def _response_body(self, chunk):
+    def _response_body(self, chunk: bytes) -> None:
         "Process a chunk of the response body."
         self.transfer_in += len(chunk)
         self.response.feed_body(chunk)
 
-    def _response_done(self, trailers):
+    def _response_done(self, trailers: List[Tuple[bytes, bytes]]) -> None:
         "Finish analysing the response, handling any parse errors."
         self.emit("status", "fetched %s (%s)" % (self.request.uri, self.check_name))
         self.response.transfer_length = self.exchange.input_transfer_length
@@ -171,7 +176,7 @@ class RedFetcher(thor.events.EventEmitter):
         self.response.body_done(True, trailers)
         self._fetch_done()
 
-    def _response_error(self, error):
+    def _response_error(self, error: httperr.HttpError) -> None:
         "Handle an error encountered while fetching the response."
         self.emit("status", "fetch error %s (%s) - %s" % (
             self.request.uri, self.check_name, error.desc))
@@ -189,7 +194,7 @@ class RedFetcher(thor.events.EventEmitter):
             self.response.http_error = error
         self._fetch_done()
 
-    def _fetch_done(self):
+    def _fetch_done(self) -> None:
         if not self.fetch_done:
             self.fetch_done = True
             self.emit("fetch_done")
@@ -260,11 +265,11 @@ if __name__ == "__main__":
     T = RedFetcher()
     T.set_request(sys.argv[1], req_hdrs=[('Accept-Encoding', "gzip")])
     @thor.events.on(T)
-    def fetch_done():
+    def fetch_done() -> None:
         print('done')
         thor.stop()
     @thor.events.on(T)
-    def status(msg):
+    def status(msg: str) -> None:
         print(msg)
     T.check()
     thor.run()

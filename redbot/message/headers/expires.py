@@ -4,6 +4,8 @@
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7234
+from redbot.type import AddNoteMethodType
+
 
 class expires(headers.HttpHeader):
     canonical_name = "Expires"
@@ -16,7 +18,7 @@ The `Expires` header gives a time after which the response is considered stale."
     valid_in_requests = False
     valid_in_responses = True
 
-    def parse(self, field_value, add_note):
+    def parse(self, field_value: str, add_note: AddNoteMethodType) -> int:
         try:
             date = headers.parse_date(field_value, add_note)
         except ValueError:

@@ -10,11 +10,14 @@ from copy import copy
 from functools import partial
 import re
 import sys
-from typing import Any
+from typing import Any, Callable, List, Tuple, Type, Union, TYPE_CHECKING
 import unittest
 
+if TYPE_CHECKING:
+    from redbot.message import HttpMessage
 from redbot.syntax import rfc7230, rfc7231
 from redbot.formatter import f_num
+from redbot.type import StrHeaderListType, RawHeaderListType, HeaderDictType, AddNoteMethodType
 
 from ._utils import RE_FLAGS, parse_date, unquote_string, split_string, parse_params
 from ._notes import *
@@ -35,36 +38,35 @@ class HttpHeader(object):
     canonical_name = None # type: str
     description = None # type: str
     reference = None # type: str
-    syntax = None # type: str                # Verbose regular expression to match a value.
-    list_header = None # type: bool          # Can be split into values on commas.
-    nonstandard_syntax = False # type: bool  # Don't check for a single value at the end.
+    syntax = None # type: Union[str, rfc7230.list_rule] # Verbose regular expression to match.
+    list_header = None # type: bool                     # Can be split into values on commas.
+    nonstandard_syntax = False # type: bool             # Don't check for a single value at the end.
     deprecated = None # type: bool
     valid_in_requests = None # type: bool
     valid_in_responses = None # type: bool
-    no_coverage = False  # type: bool        # Turns off coverage checks for syntax and tests.
+    no_coverage = False  # type: bool                   # Turns off coverage checks.
 
-    def __init__(self, wire_name, message):
+    def __init__(self, wire_name: str, message: 'HttpMessage') -> None:
         self.wire_name = wire_name.strip()
         self.message = message
         self.norm_name = self.wire_name.lower()
         if self.canonical_name is None:
             self.canonical_name = self.wire_name
-        self.value = []
+        self.value = [] # type: Any
 
-    def parse(self, field_value, add_note):
+    def parse(self, field_value: str, add_note: AddNoteMethodType) -> Any:
         """
-        Given a string value and a subject indicating an anchor that messages can
-        refer to, parse and return the result."""
+        Given a string value and an add_note function, parse and return the result."""
         return field_value
 
-    def evaluate(self, add_note):
+    def evaluate(self, add_note: AddNoteMethodType) -> None:
         """
         Called once header processing is done; typically used to evaluate an entire
         header's values.
         """
         pass
 
-    def handle_input(self, field_value, add_note):
+    def handle_input(self, field_value: str, add_note: AddNoteMethodType) -> None:
         """
         Basic input processing on a new field value.
         """
@@ -88,7 +90,7 @@ class HttpHeader(object):
             self.value.append(parsed_value)
 
     @staticmethod
-    def split_list_header(field_value):
+    def split_list_header(field_value: str) -> List[str]:
         "Split a header field value on commas. needs to conform to the #rule."
         return [f.strip() for f in
                 re.findall(r'((?:[^",]|%s)+)(?=%s|\s*$)' % (
@@ -97,7 +99,7 @@ class HttpHeader(object):
                 ), field_value, RE_FLAGS)
                 if f] or []
 
-    def finish(self, message, add_note):
+    def finish(self, message: 'HttpMessage', add_note: AddNoteMethodType) -> None:
         """
         Called when all headers are available.
         """
@@ -132,10 +134,10 @@ class UnknownHttpHeader(HttpHeader):
     valid_in_requests = True
     valid_in_responses = True
 
-    def parse(self, field_value, add_note):
+    def parse(self, field_value: str, add_note: AddNoteMethodType) -> Any:
         return field_value
 
-    def evaluate(self, add_note):
+    def evaluate(self, add_note: AddNoteMethodType) -> None:
         return
 
 
@@ -156,11 +158,11 @@ class HeaderProcessor(object):
         '_onnection': 'connectiox',
     }
 
-    def __init__(self, message):
+    def __init__(self, message: 'HttpMessage') -> None:
         self.message = message
-        self._header_handlers = {}
+        self._header_handlers = {}  # type: Dict[str, HttpHeader]
 
-    def process(self, headers):
+    def process(self, headers: RawHeaderListType) -> Tuple[StrHeaderListType, HeaderDictType]:
         """
         Given a list of (bytes name, bytes value) headers and:
          - calculate the total header block size
@@ -181,8 +183,6 @@ class HeaderProcessor(object):
             header_block_size += len(self.message.status_phrase) + 5
 
         for name, value in headers:
-            assert isinstance(name, bytes)
-            assert isinstance(value, bytes)
             offset += 1
             add_note = partial(self.message.add_note, "offset-%s" % offset)
 
@@ -192,20 +192,21 @@ class HeaderProcessor(object):
 
             # decode the header to make it unicode clean
             try:
-                name = name.decode('ascii', 'strict')
+                str_name = name.decode('ascii', 'strict')
             except UnicodeError:
-                name = name.decode('ascii', 'ignore')
-                add_note(HEADER_NAME_ENCODING, field_name=name)
+                str_name = name.decode('ascii', 'ignore')
+                add_note(HEADER_NAME_ENCODING, field_name=str_name)
             try:
-                value = value.decode('ascii', 'strict')
+                str_value = value.decode('ascii', 'strict')
             except UnicodeError:
-                value = value.decode('iso-8859-1', 'replace')
-                add_note(HEADER_VALUE_ENCODING, field_name=name)
-            unicode_headers.append((name, value))
+                str_value = value.decode('iso-8859-1', 'replace')
+                add_note(HEADER_VALUE_ENCODING, field_name=str_name)
+            unicode_headers.append((str_name, str_value))
 
-            header_handler = self.get_header_handler(name)
-            field_add_note = partial(add_note, field_name=header_handler.canonical_name)
-            header_handler.handle_input(value, field_add_note)
+            header_handler = self.get_header_handler(str_name)
+            field_add_note = partial(add_note, # type: ignore
+                                     field_name=header_handler.canonical_name)
+            header_handler.handle_input(str_value, field_add_note)
 
             if header_size > MAX_HDR_SIZE:
                 add_note(HEADER_TOO_LARGE, field_name=header_handler.canonical_name,
@@ -216,12 +217,12 @@ class HeaderProcessor(object):
             header_add_note = partial(self.message.add_note,
                                       "header-%s" % header_handler.canonical_name,
                                       field_name=header_handler.canonical_name)
-            header_handler.finish(self.message, header_add_note)
+            header_handler.finish(self.message, header_add_note) # type: ignore
             parsed_headers[header_handler.norm_name] = header_handler.value
 
         return unicode_headers, parsed_headers
 
-    def get_header_handler(self, header_name):
+    def get_header_handler(self, header_name: str) -> HttpHeader:
         """
         If a header handler has already been instantiated for header_name, return it;
         otherwise, instantiate and return a new one.
@@ -235,7 +236,7 @@ class HeaderProcessor(object):
             return handler
 
     @staticmethod
-    def find_header_handler(header_name, default=True):
+    def find_header_handler(header_name: str, default: bool=True) -> Type[HttpHeader]:
         """
         Return a header handler class for the given field name.
 
@@ -250,7 +251,7 @@ class HeaderProcessor(object):
             return UnknownHttpHeader
 
     @staticmethod
-    def find_header_module(header_name):
+    def find_header_module(header_name: str) -> Any:
         """
         Return a module for the given field name, or None if it can't be found.
         """
@@ -267,7 +268,7 @@ class HeaderProcessor(object):
             return
 
     @staticmethod
-    def name_token(header_name):
+    def name_token(header_name: str) -> str:
         """
         Return a tokenised, python-friendly name for a header.
         """
@@ -283,13 +284,13 @@ class HeaderTest(unittest.TestCase):
     expected_out = None # type: Any
     expected_err = [] # type: List[Note]
 
-    def setUp(self):
+    def setUp(self) -> None:
         "Test setup."
         from redbot.message import DummyMsg
         self.message = DummyMsg()
         self.set_context(self.message)
 
-    def test_header(self):
+    def test_header(self) -> Any:
         "Test the header."
         if not self.name:
             return self.skipTest('')
@@ -308,7 +309,7 @@ class HeaderTest(unittest.TestCase):
         out = self.message.parsed_headers.get(self.name.lower(), 'HEADER HANDLER NOT FOUND')
         self.assertEqual(self.expected_out, out)
         diff = set(
-            [n.__name__ for n in self.expected_err]).symmetric_difference(
+            [n.__name__ for n in self.expected_err]).symmetric_difference( # type: ignore
                 set(self.message.note_classes))
         for message in self.message.notes: # check formatting
             message.vars.update({'field_name': self.name, 'response': 'response'})
@@ -316,5 +317,5 @@ class HeaderTest(unittest.TestCase):
             self.assertTrue(message.summary % message.vars)
         self.assertEqual(len(diff), 0, "Mismatched notes: %s" % diff)
 
-    def set_context(self, message):
+    def set_context(self, message: 'HttpMessage') -> None:
         pass

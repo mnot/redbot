@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
+from typing import Tuple
+
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7234
+from redbot.type import AddNoteMethodType
 
 
 class cache_control(headers.HttpHeader):
@@ -18,7 +21,7 @@ in a request does not imply that the same directive is in effect in the response
     valid_in_requests = True
     valid_in_responses = True
 
-    def parse(self, field_value, add_note):
+    def parse(self, field_value: str, add_note: AddNoteMethodType) -> Tuple[str, str]:
         try:
             directive_name, directive_val = field_value.split("=", 1)
             directive_val = headers.unquote_string(directive_val)
@@ -28,7 +31,7 @@ in a request does not imply that the same directive is in effect in the response
         directive_name = directive_name.lower()
         if directive_name in ['max-age', 's-maxage']:
             try:
-                directive_val = int(directive_val)
+                directive_val = int(directive_val) # type: ignore
             except (ValueError, TypeError):
                 add_note(BAD_CC_SYNTAX, bad_cc_attr=directive_name)
                 raise ValueError

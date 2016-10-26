@@ -11,6 +11,7 @@ of requests to probe the resource's behaviour.
 See webui.py for the Web front-end.
 """
 
+from typing import Set, Tuple, Union
 from urllib.parse import urljoin
 
 import thor
@@ -38,29 +39,29 @@ class HttpResource(RedFetcher):
     check_name = "default"
     response_phrase = "This response"
 
-    def __init__(self, descend=False):
+    def __init__(self, descend: bool=False) -> None:
         RedFetcher.__init__(self)
-        self.descend = descend
-        self.check_done = False
-        self.partial_support = None
-        self.inm_support = None
-        self.ims_support = None
-        self.gzip_support = None
-        self.gzip_savings = 0
-        self._task_map = set([None]) # None is the original request
-        self.subreqs = {ac.check_name:ac(self) for ac in active_checks}  # subordinate requests
+        self.descend = descend       # type: bool
+        self.check_done = False      # type: bool
+        self.partial_support = None  # type: bool
+        self.inm_support = None      # type: bool
+        self.ims_support = None      # type: bool
+        self.gzip_support = None     # type: bool
+        self.gzip_savings = 0        # type: int
+        self._task_map = set([None]) # type: Set[RedFetcher]   # None is the original request
+        self.subreqs = {ac.check_name:ac(self) for ac in active_checks}  # type: ignore
         self.response.once("content_available", self.run_active_checks)
-        def finish_check():
+        def finish_check() -> None:
             self.finish_check(None)
         self.on("fetch_done", finish_check)
-        self.links = {}    # {type: set(link...)}
-        self.link_count = 0
-        self.linked = []   # list of linked HttpResources (if descend=True)
+        self.links = {}              # type: Dict[str, Set[str]]
+        self.link_count = 0          # type: int
+        self.linked = []             # type: List[Tuple[HttpResource, str]]  # linked HttpResources
         self._link_parser = link_parse.HTMLLinkParser(self.response, [self.process_link])
         self.response.on("chunk", self._link_parser.feed)
 #        self.show_task_map(True) # for debugging
 
-    def run_active_checks(self):
+    def run_active_checks(self) -> None:
         """
         Response is available; perform subordinate requests (e.g., conneg check).
         """
@@ -69,18 +70,18 @@ class HttpResource(RedFetcher):
                 self.add_check(active_check)
                 active_check.check()
 
-    def add_check(self, *resources):
+    def add_check(self, *resources: RedFetcher) -> None:
         "Remember a subordinate check on one or more HttpResource instance."
         for resource in resources:
             self._task_map.add(resource)
             @thor.events.on(resource)
-            def status(message):
+            def status(message: str) -> None:
                 self.emit('status', message)
             @thor.events.on(resource)
-            def check_done():
+            def check_done() -> None:
                 self.finish_check(resource)
 
-    def finish_check(self, resource):
+    def finish_check(self, resource: RedFetcher) -> None:
         "A check is done. Was that the last one?"
         try:
             self._task_map.remove(resource)
@@ -92,7 +93,7 @@ class HttpResource(RedFetcher):
             self.check_done = True
             self.emit('check_done')
 
-    def show_task_map(self, watch=False):
+    def show_task_map(self, watch: bool=False) -> Union[str, None]:
         """
         Show the task map for debugging.
         """
@@ -103,7 +104,7 @@ class HttpResource(RedFetcher):
         else:
             return repr(self._task_map)
 
-    def process_link(self, base, link, tag, title):
+    def process_link(self, base: str, link: str, tag: str, title: str) -> None:
         "Handle a link from content."
         self.link_count += 1
         if tag not in self.links:
@@ -124,10 +125,10 @@ if __name__ == "__main__":
     RED = HttpResource()
     RED.set_request(sys.argv[1])
     @thor.events.on(RED)
-    def status(msg):
+    def status(msg: str) -> None:
         print(msg)
     @thor.events.on(RED)
-    def check_done():
+    def check_done() -> None:
         print('check_done')
         thor.stop()
     RED.check()

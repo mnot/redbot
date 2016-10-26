@@ -10,14 +10,18 @@ import inspect
 import locale
 import sys
 import time
+from typing import Any, Callable, List, Type, TYPE_CHECKING
 import unittest
 
 import thor
 from thor.events import EventEmitter
 
+if TYPE_CHECKING:
+    from redbot.resource import HttpResource
+
 _formatters = ['html', 'text', 'har']
 
-def find_formatter(name, default="html", multiple=False):
+def find_formatter(name: str, default: str="html", multiple: bool=False) -> Type['Formatter']:
     """
     Find the formatter for name, and use default if it can't be found.
     If you need to represent more than one result, set multiple to True.
@@ -45,7 +49,7 @@ def find_formatter(name, default="html", multiple=False):
             return candidate
     raise RuntimeError("Can't find a format in %s" % _formatters)
 
-def available_formatters():
+def available_formatters() -> List[str]:
     """
     Return a list of the available formatter names.
 
@@ -65,7 +69,7 @@ class Formatter(EventEmitter):
     name = None # type: str         # the name of the format.
     can_multiple = False            # formatter can represent multiple responses.
 
-    def __init__(self, ui_uri, lang, output, **kw):
+    def __init__(self, ui_uri: str, lang: str, output: Callable[[str], None], **kw: Any) -> None:
         """
         Formatter for the given URI, writing
         to the callable output(uni_str). Output is Unicode; callee
@@ -76,9 +80,9 @@ class Formatter(EventEmitter):
         self.lang = lang
         self.output = output         # output file object
         self.kw = kw                 # extra keyword arguments
-        self.resource = None
+        self.resource = None         # type: HttpResource
 
-    def bind_resource(self, display_resource):
+    def bind_resource(self, display_resource: 'HttpResource') -> None:
         """
         Bind a resource to the formatter, listening for nominated events
         and calling the corresponding methods.
@@ -96,39 +100,39 @@ class Formatter(EventEmitter):
             display_resource.on('status', self.status)
             # we want to wait just a little bit, for extra data.
             @thor.events.on(display_resource)
-            def check_done():
+            def check_done() -> None:
                 thor.schedule(0.1, self._done)
 
-    def _done(self):
+    def _done(self) -> None:
         self.finish_output()
         self.emit('formatter_done')
 
-    def start_output(self):
+    def start_output(self) -> None:
         """
         Send preliminary output.
         """
         raise NotImplementedError
 
-    def feed(self, sample):
+    def feed(self, sample: bytes) -> None:
         """
         Feed a body sample to processor(s).
         """
         raise NotImplementedError
 
-    def status(self, status):
+    def status(self, status: str) -> None:
         """
         Output a status message.
         """
         raise NotImplementedError
 
-    def finish_output(self):
+    def finish_output(self) -> None:
         """
         Finalise output.
         """
         raise NotImplementedError
 
 
-def f_num(i, by1024=False):
+def f_num(i: int, by1024: bool=False) -> str:
     "Format a number according to the locale."
     if by1024:
         k = int(i / 1024)
@@ -143,7 +147,7 @@ def f_num(i, by1024=False):
     return locale.format("%d", i, grouping=True)
 
 
-def relative_time(utime, now=None, show_sign=1):
+def relative_time(utime: float, now: float=None, show_sign: int=1) -> str:
     '''
     Given two times, return a string that explains how far apart they are.
     show_sign can be:
@@ -217,10 +221,10 @@ class RelativeTimeTester(unittest.TestCase):
         (+(13*day)-.4, "13 days from now"),
     ]
 
-    def setUp(self):
+    def setUp(self) -> None:
         self.now = time.time()
 
-    def test_relative_time(self):
+    def test_relative_time(self) -> None:
         for delta, result in self.cases:
             self.assertEqual(
                 relative_time(self.now + delta, self.now),

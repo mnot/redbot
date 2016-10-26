@@ -5,23 +5,27 @@ Subrequest for partial content checks.
 """
 
 import random
+from typing import TYPE_CHECKING
 
 from redbot.resource.active_check.base import SubRequest
 from redbot.formatter import f_num
+if TYPE_CHECKING:
+    from redbot.resource import HttpResource
 from redbot.speak import Note, categories, levels, display_bytes
+from redbot.type import StrHeaderListType
 
 
 class RangeRequest(SubRequest):
     "Check for partial content support (if advertised)"
     check_name = "Partial Content"
     response_phrase = "The partial response"
-    def __init__(self, resource):
-        self.range_start = None
-        self.range_end = None
-        self.range_target = None
+    def __init__(self, resource: 'HttpResource') -> None:
+        self.range_start = None   # type: int
+        self.range_end = None     # type: int
+        self.range_target = None  # type: bytes
         SubRequest.__init__(self, resource)
 
-    def modify_request_headers(self, base_headers):
+    def modify_request_headers(self, base_headers: StrHeaderListType) -> StrHeaderListType:
         if len(self.base.response.payload_sample) != 0:
             sample_num = random.randint(0, len(self.base.response.payload_sample) - 1)
             sample_len = min(96, len(self.base.response.payload_sample[sample_num][1]))
@@ -31,7 +35,7 @@ class RangeRequest(SubRequest):
             base_headers.append(('Range', "bytes=%s-%s" % (self.range_start, self.range_end)))
         return base_headers
 
-    def preflight(self):
+    def preflight(self) -> bool:
         if self.base.response.status_code[0] == '3':
             return False
         if self.base.response.status_code == '206':
@@ -47,7 +51,7 @@ class RangeRequest(SubRequest):
             self.base.partial_support = False
             return False
 
-    def done(self):
+    def done(self) -> None:
         if not self.response.complete:
             self.add_base_note('', RANGE_SUBREQ_PROBLEM, problem=self.response.http_error.desc)
             return
@@ -70,11 +74,11 @@ class RangeRequest(SubRequest):
                     # the body samples are just bags of bits
                     self.base.partial_support = False
                     self.add_base_note('header-accept-ranges', RANGE_INCORRECT,
-                        range="bytes=%s-%s" % (self.range_start, self.range_end),
-                        range_expected=display_bytes(self.range_target),
-                        range_expected_bytes=f_num(len(self.range_target)),
-                        range_received=display_bytes(self.response.payload),
-                        range_received_bytes=f_num(self.response.payload_len))
+                                       range="bytes=%s-%s" % (self.range_start, self.range_end),
+                                       range_expected=display_bytes(self.range_target),
+                                       range_expected_bytes=f_num(len(self.range_target)),
+                                       range_received=display_bytes(self.response.payload),
+                                       range_received_bytes=f_num(self.response.payload_len))
             else:
                 self.add_base_note('header-accept-ranges', RANGE_CHANGED)
 

@@ -8,6 +8,7 @@ from datetime import datetime
 
 from redbot.resource.active_check.base import SubRequest, MISSING_HDRS_304
 from redbot.speak import Note, categories, levels
+from redbot.type import StrHeaderListType
 
 
 class LmValidate(SubRequest):
@@ -18,7 +19,7 @@ class LmValidate(SubRequest):
     _months = [None, 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul',
                'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-    def modify_request_headers(self, base_headers):
+    def modify_request_headers(self, base_headers: StrHeaderListType) -> StrHeaderListType:
         lm_value = self.base.response.parsed_headers.get('last-modified', None)
         if lm_value:
             try:
@@ -36,7 +37,7 @@ class LmValidate(SubRequest):
             base_headers.append(('If-Modified-Since', date_str))
         return base_headers
 
-    def preflight(self):
+    def preflight(self) -> bool:
         if self.base.response.status_code[0] == '3':
             return False
         if self.base.response.parsed_headers.get('last-modified', None):
@@ -45,7 +46,7 @@ class LmValidate(SubRequest):
             self.base.ims_support = False
             return False
 
-    def done(self):
+    def done(self) -> None:
         if not self.response.complete:
             self.add_base_note('', LM_SUBREQ_PROBLEM, problem=self.response.http_error.desc)
             return

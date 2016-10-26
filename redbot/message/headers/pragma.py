@@ -4,6 +4,8 @@
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7234
+from redbot.type import AddNoteMethodType
+
 
 class pragma(headers.HttpHeader):
     canonical_name = "Pragma"
@@ -19,10 +21,10 @@ This header is deprecated, in favour of `Cache-Control`."""
     valid_in_requests = False
     valid_in_responses = True
 
-    def parse(self, field_value, add_note):
+    def parse(self, field_value: str, add_note: AddNoteMethodType) -> str:
         return field_value.lower()
 
-    def evaluate(self, add_note):
+    def evaluate(self, add_note: AddNoteMethodType) -> None:
         if "no-cache" in self.value:
             add_note(PRAGMA_NO_CACHE)
         others = [True for v in self.value if v != "no-cache"]

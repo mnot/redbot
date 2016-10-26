@@ -3,6 +3,7 @@
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc3986, rfc7230
+from redbot.type import AddNoteMethodType
 
 # X-Frame-Options = "DENY"
 #          / "SAMEORIGIN"
@@ -31,10 +32,10 @@ the transmitted content in frames that are part of other web pages.
     valid_in_requests = False
     valid_in_responses = True
 
-    def parse(self, field_value, add_note):
+    def parse(self, field_value: str, add_note: AddNoteMethodType) -> str:
         return field_value.upper()
 
-    def evaluate(self, add_note):
+    def evaluate(self, add_note: AddNoteMethodType) -> None:
         if 'DENY' in self.value:
             add_note(FRAME_OPTIONS_DENY)
         elif 'SAMEORIGIN' in self.value:

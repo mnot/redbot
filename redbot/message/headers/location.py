@@ -3,9 +3,11 @@
 import re
 from urllib.parse import urljoin
 
-from redbot.message import headers
+from redbot.message import headers, HttpMessage
 from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7231, rfc3986
+from redbot.type import AddNoteMethodType
+
 
 class location(headers.HttpHeader):
     canonical_name = "Location"
@@ -21,7 +23,7 @@ In `201 Created` responses, it identifies a newly created resource."""
     valid_in_requests = False
     valid_in_responses = True
 
-    def parse(self, field_value, add_note):
+    def parse(self, field_value: str, add_note: AddNoteMethodType) -> str:
         if self.message.status_code not in ["201", "300", "301", "302", "303", "305", "307", "308"]:
             add_note(LOCATION_UNDEFINED)
         if not re.match(r"^\s*%s\s*$" % rfc3986.URI, field_value, re.VERBOSE):
@@ -61,5 +63,5 @@ class LocationTest(headers.HeaderTest):
     inputs = ['http://other.example.com/foo']
     expected_out = 'http://other.example.com/foo'
     expected_err = [] # type: ignore
-    def set_context(self, message):
+    def set_context(self, message: HttpMessage) -> None:
         message.status_code = "300"

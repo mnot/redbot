@@ -3,6 +3,8 @@
 from redbot.speak import Note, categories, levels
 from redbot.message import headers
 from redbot.syntax import rfc7231
+from redbot.type import AddNoteMethodType
+
 
 class date(headers.HttpHeader):
     canonical_name = "Date"
@@ -18,7 +20,7 @@ It is used by caches as input to expiration calculations, and to detect clock dr
     valid_in_requests = True
     valid_in_responses = True
 
-    def parse(self, field_value, add_note):
+    def parse(self, field_value: str, add_note: AddNoteMethodType) -> int:
         try:
             date = headers.parse_date(field_value, add_note)
         except ValueError:

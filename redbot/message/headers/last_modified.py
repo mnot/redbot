@@ -4,6 +4,8 @@
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7232
+from redbot.type import AddNoteMethodType
+
 
 class last_modified(headers.HttpHeader):
     canonical_name = "Last-Modified"
@@ -17,7 +19,7 @@ representation was last modified."""
     valid_in_requests = False
     valid_in_responses = True
 
-    def parse(self, field_value, add_note):
+    def parse(self, field_value: str, add_note: AddNoteMethodType) -> int:
         try:
             date = headers.parse_date(field_value, add_note)
         except ValueError:

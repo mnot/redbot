@@ -3,6 +3,7 @@
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7234
+from redbot.type import AddNoteMethodType
 
 class x_meta_mssmarttagspreventparsing(headers.HttpHeader):
     canonical_name = "X-Meta-MSSmartTagsPreventParsing"
@@ -11,7 +12,7 @@ class x_meta_mssmarttagspreventparsing(headers.HttpHeader):
     valid_in_requests = False
     valid_in_responses = True
 
-    def evaluate(self, add_note):
+    def evaluate(self, add_note: AddNoteMethodType) -> None:
         add_note(SMART_TAG_NO_WORK)
 
 

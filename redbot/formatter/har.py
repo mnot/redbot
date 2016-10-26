@@ -7,11 +7,13 @@ HAR Formatter for REDbot.
 
 import datetime
 import json
-
+from typing import Any, Dict, List
 
 from thor.http import get_header
 from redbot import __version__
 from redbot.formatter import Formatter
+from redbot.message.headers import StrHeaderListType
+from redbot.resource import HttpResource
 
 
 class HarFormatter(Formatter):
@@ -22,7 +24,7 @@ class HarFormatter(Formatter):
     name = "har"
     media_type = "application/json"
 
-    def __init__(self, *args, **kw):
+    def __init__(self, *args: Any, **kw: Any) -> None:
         Formatter.__init__(self, *args, **kw)
         self.har = {
             'log': {
@@ -41,16 +43,16 @@ class HarFormatter(Formatter):
         }
         self.last_id = 0
 
-    def start_output(self):
+    def start_output(self) -> None:
         pass
 
-    def status(self, msg):
+    def status(self, msg: str) -> None:
         pass
 
-    def feed(self, sample):
+    def feed(self, sample: bytes) -> None:
         pass
 
-    def finish_output(self):
+    def finish_output(self) -> None:
         "Fill in the template with RED's results."
         if self.resource.response.complete:
             page_id = self.add_page(self.resource)
@@ -61,7 +63,7 @@ class HarFormatter(Formatter):
                     self.add_entry(linked_resource, page_id)
         self.output(json.dumps(self.har, indent=4))
 
-    def add_entry(self, resource, page_ref=None):
+    def add_entry(self, resource: HttpResource, page_ref: int=None) -> None:
         entry = {
             "startedDateTime": isoformat(resource.request.start_time),
             "time": int((resource.response.complete_time - resource.request.start_time) * 1000),
@@ -98,7 +100,7 @@ class HarFormatter(Formatter):
             'bodySize': resource.response.payload_len,
         }
 
-        cache = {}
+        cache = {}  # type: Dict[None, None]
         timings = {
             'dns': -1,
             'connect': -1,
@@ -114,10 +116,10 @@ class HarFormatter(Formatter):
             'cache': cache,
             'timings': timings,
         })
-        self.har['log']['entries'].append(entry)
+        self.har['log']['entries'].append(entry) # type: ignore
 
 
-    def add_page(self, resource):
+    def add_page(self, resource: HttpResource) -> int:
         page_id = self.last_id + 1
         page = {
             "startedDateTime": isoformat(resource.request.start_time),
@@ -128,26 +130,26 @@ class HarFormatter(Formatter):
                 "onLoad": -1,
             },
         }
-        self.har['log']['pages'].append(page)
+        self.har['log']['pages'].append(page) # type: ignore
         return page_id
 
-    def format_headers(self, hdrs):
+    def format_headers(self, hdrs: StrHeaderListType) -> List[Dict[str, str]]:
         return [{'name': n, 'value': v} for n, v in hdrs]
 
-    def format_notes(self, resource):
+    def format_notes(self, resource: HttpResource) -> List[Dict[str, str]]:
         out = []
         for m in resource.notes:
             msg = {
                 "subject": m.subject,
-                "category": m.category,
-                "level": m.level,
+                "category": str(m.category),
+                "level": str(m.level),
                 "summary": m.show_summary(self.lang)
             }
             out.append(msg)
         return out
 
-def isoformat(timestamp):
+def isoformat(timestamp: float) -> str:
     class TZ(datetime.tzinfo):
-        def utcoffset(self, dt):
+        def utcoffset(self, dt): # type: ignore
             return datetime.timedelta(minutes=0)
     return "%sZ" % datetime.datetime.utcfromtimestamp(timestamp).isoformat()
