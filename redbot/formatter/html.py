@@ -356,7 +356,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             sample = resource.response.decoded_sample
         try:
             uni_sample = sample.decode(resource.response.character_encoding, "ignore")
-        except LookupError:
+        except (TypeError, LookupError):
             uni_sample = sample.decode('utf-8', 'replace')
         safe_sample = e_html(uni_sample)
         message = ""
