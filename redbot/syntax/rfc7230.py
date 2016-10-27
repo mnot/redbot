@@ -71,7 +71,7 @@ class list_rule(object):
 
     Uses the sender syntax, not the more lenient recipient syntax.
     """
-  
+
     def __init__(self, element: str, minimum: int=None) -> None:
         self.element = element
         self.minimum = minimum

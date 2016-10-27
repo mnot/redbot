@@ -37,7 +37,7 @@ requests to the server."""
 
 
 # TODO: properly escape notes
-def loose_parse(set_cookie_string: str, uri_path: str, current_time: float, 
+def loose_parse(set_cookie_string: str, uri_path: str, current_time: float,
                 add_note: AddNoteMethodType) -> CookieType:
     """
     Parse a Set-Cookie string, as per RFC6265, Section 5.2.
