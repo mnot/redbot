@@ -2,7 +2,6 @@
 
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.syntax import rfc3986, rfc7230
 from redbot.type import AddNoteMethodType
 
 # X-Frame-Options = "DENY"

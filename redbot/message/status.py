@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# pylint: disable=too-many-public-methods
+
 """
 The Resource Expert Droid Status Code Checker.
 """

@@ -19,14 +19,14 @@ validation) was generated at the origin server."""
 
     def parse(self, field_value: str, add_note: AddNoteMethodType) -> int:
         try:
-            age = int(field_value)
+            age_value = int(field_value)
         except ValueError:
             add_note(AGE_NOT_INT)
             raise
-        if age < 0:
+        if age_value < 0:
             add_note(AGE_NEGATIVE)
             raise ValueError
-        return age
+        return age_value
 
 
 

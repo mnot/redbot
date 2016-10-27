@@ -10,10 +10,10 @@ This is the base class for all subrequests.
 from abc import ABCMeta, abstractmethod
 from typing import List, Tuple, Type, Union, TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from redbot.resource import HttpResource
 from redbot.resource.fetch import RedFetcher
 from redbot.speak import Note, levels, categories
+if TYPE_CHECKING:
+    from redbot.resource import HttpResource # pylint: disable=cyclic-import,unused-import
 
 # Avoiding an import loop here
 StrHeaderListType = List[Tuple[str, str]]

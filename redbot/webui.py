@@ -10,7 +10,7 @@ import pickle as pickle
 import sys
 import tempfile
 import time
-from typing import Any, Callable, Tuple, Union
+from typing import Any, Callable, Tuple, Union # pylint: disable=unused-import
 from urllib.parse import parse_qs, urlsplit
 import zlib
 
@@ -21,7 +21,7 @@ from redbot.resource import HttpResource
 from redbot.resource.robot_fetch import RobotFetcher
 from redbot.formatter import find_formatter, html
 from redbot.formatter.html import e_url
-from redbot.type import RawHeaderListType, StrHeaderListType
+from redbot.type import RawHeaderListType, StrHeaderListType # pylint: disable=unused-import
 
 
 class RedWebUi(object):

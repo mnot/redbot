@@ -2,8 +2,8 @@
 
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.syntax import rfc7234
 from redbot.type import AddNoteMethodType
+
 
 class x_meta_mssmarttagspreventparsing(headers.HttpHeader):
     canonical_name = "X-Meta-MSSmartTagsPreventParsing"

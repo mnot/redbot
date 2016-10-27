@@ -149,7 +149,4 @@ class HarFormatter(Formatter):
         return out
 
 def isoformat(timestamp: float) -> str:
-    class TZ(datetime.tzinfo):
-        def utcoffset(self, dt): # type: ignore
-            return datetime.timedelta(minutes=0)
     return "%sZ" % datetime.datetime.utcfromtimestamp(timestamp).isoformat()

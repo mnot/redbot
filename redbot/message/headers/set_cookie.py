@@ -30,10 +30,10 @@ requests to the server."""
         path = urlsplit(self.message.base_uri).path
         start_time = self.message.start_time
         try:
-            set_cookie = loose_parse(field_value, path, start_time, add_note)
+            set_cookie_value = loose_parse(field_value, path, start_time, add_note)
         except ValueError:
             raise
-        return set_cookie
+        return set_cookie_value
 
 
 # TODO: properly escape notes

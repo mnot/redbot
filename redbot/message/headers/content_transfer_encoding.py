@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
 from redbot.message import headers
-from redbot.speak import Note, categories, levels
-from redbot.syntax import rfc7234
+
 
 class content_transfer_encoding(headers.HttpHeader):
     canonical_name = "Content-Transfer-Encoding"

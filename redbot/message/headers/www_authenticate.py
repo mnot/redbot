@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from redbot.message import headers
-from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7235
 
 class www_authenticate(headers.HttpHeader):

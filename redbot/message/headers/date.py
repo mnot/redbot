@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from redbot.speak import Note, categories, levels
 from redbot.message import headers
 from redbot.syntax import rfc7231
 from redbot.type import AddNoteMethodType
@@ -22,22 +21,10 @@ It is used by caches as input to expiration calculations, and to detect clock dr
 
     def parse(self, field_value: str, add_note: AddNoteMethodType) -> int:
         try:
-            date = headers.parse_date(field_value, add_note)
+            date_value = headers.parse_date(field_value, add_note)
         except ValueError:
             raise
-        return date
-
-
-class BAD_DATE_SYNTAX(Note):
-    category = categories.GENERAL
-    level = levels.BAD
-    summary = "The %(field_name)s header's value isn't a valid date."
-    text = """\
-HTTP dates have very specific syntax, and sending an invalid date can cause a number of problems,
-especially around caching. Common problems include sending "1 May" instead of "01 May" (the month
-is a fixed-width field), and sending a date in a timezone other than GMT. See [the HTTP
-specification](http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3) for more
-information."""
+        return date_value
 
 
 class BasicDateTest(headers.HeaderTest):

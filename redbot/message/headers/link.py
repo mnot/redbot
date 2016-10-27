@@ -24,23 +24,23 @@ statement of the form "[context IRI] has a [relation type] resource at [target I
 
     def parse(self, field_value: str, add_note: AddNoteMethodType) -> Tuple[str, ParamDictType]:
         try:
-            link, param_str = field_value.split(";", 1)
+            link_value, param_str = field_value.split(";", 1)
         except ValueError:
-            link, param_str = field_value, ''
-        link = link.strip()[1:-1] # trim the angle brackets
+            link_value, param_str = field_value, ''
+        link_value = link_value.strip()[1:-1] # trim the angle brackets
         param_dict = headers.parse_params(param_str, add_note,
                                           ['rel', 'rev', 'anchor', 'hreflang', 'type', 'media'])
         if 'rel' in param_dict: # relation_types
             pass # TODO: check relation type
         if 'rev' in param_dict:
-            add_note(LINK_REV, link=link, rev=param_dict['rev'])
+            add_note(LINK_REV, link=link_value, rev=param_dict['rev'])
         if 'anchor' in param_dict: # URI-Reference
             if not re.match(r"^\s*%s\s*$" % rfc3986.URI_reference,
                             param_dict['anchor'], re.VERBOSE):
-                add_note(LINK_BAD_ANCHOR, link=link, anchor=param_dict['anchor'])
+                add_note(LINK_BAD_ANCHOR, link=link_value, anchor=param_dict['anchor'])
         # TODO: check media-type in 'type'
         # TODO: check language tag in 'hreflang'
-        return link, param_dict
+        return link_value, param_dict
 
 
 

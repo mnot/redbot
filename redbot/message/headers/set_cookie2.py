@@ -2,7 +2,6 @@
 
 
 from redbot.message import headers
-from redbot.speak import Note, categories, levels
 
 
 class set_cookie2(headers.HttpHeader):

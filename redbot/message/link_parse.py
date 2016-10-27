@@ -127,7 +127,7 @@ class BadErrorIReallyMeanIt(Exception):
 if __name__ == "__main__":
     import sys
     import thor
-    from redbot.resource.fetch import RedFetcher
+    from redbot.resource.fetch import RedFetcher  # pylint: disable=ungrouped-imports
 
     T = RedFetcher()
     T.set_request(sys.argv[1], req_hdrs=[('Accept-Encoding', "gzip")])

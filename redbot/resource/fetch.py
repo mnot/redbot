@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 The Resource Expert Droid Fetcher.
 
@@ -69,14 +67,14 @@ class RedFetcher(thor.events.EventEmitter):
         return state
 
     def __repr__(self) -> str:
-        status = [self.__class__.__name__]
+        out = [self.__class__.__name__]
         if self.request.uri:
-            status.append("%s" % self.request.uri)
+            out.append("%s" % self.request.uri)
         if self.fetch_started:
-            status.append("fetch_started")
+            out.append("fetch_started")
         if self.fetch_done:
-            status.append("fetch_done")
-        return "<%s at %#x>" % (", ".join(status), id(self))
+            out.append("fetch_done")
+        return "<%s at %#x>" % (", ".join(out), id(self))
 
     def add_note(self, subject: str, note: Type[Note], **kw: Union[str, int]) -> None:
         "Set a note."
@@ -256,20 +254,3 @@ incorrect chunking can lead to interoperability and security problems.
 
 This issue is often caused by sending an integer chunk size instead of one in hex, or by sending
 `Transfer-Encoding: chunked` without actually chunking the response body."""
-
-
-
-
-if __name__ == "__main__":
-    import sys
-    T = RedFetcher()
-    T.set_request(sys.argv[1], req_hdrs=[('Accept-Encoding', "gzip")])
-    @thor.events.on(T)
-    def fetch_done() -> None:
-        print('done')
-        thor.stop()
-    @thor.events.on(T)
-    def status(msg: str) -> None:
-        print(msg)
-    T.check()
-    thor.run()

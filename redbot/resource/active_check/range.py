@@ -9,10 +9,10 @@ from typing import TYPE_CHECKING
 
 from redbot.resource.active_check.base import SubRequest
 from redbot.formatter import f_num
-if TYPE_CHECKING:
-    from redbot.resource import HttpResource
 from redbot.speak import Note, categories, levels, display_bytes
 from redbot.type import StrHeaderListType
+if TYPE_CHECKING:
+    from redbot.resource import HttpResource # pylint: disable=cyclic-import,unused-import
 
 
 class RangeRequest(SubRequest):

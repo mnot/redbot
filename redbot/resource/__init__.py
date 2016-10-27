@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 
 """
 The Resource Expert Droid.
@@ -11,6 +10,7 @@ of requests to probe the resource's behaviour.
 See webui.py for the Web front-end.
 """
 
+import sys
 from typing import Set, Tuple, Union
 from urllib.parse import urljoin
 
@@ -97,7 +97,6 @@ class HttpResource(RedFetcher):
         """
         Show the task map for debugging.
         """
-        import sys
         if self._task_map and watch:
             sys.stderr.write("* %s - %s\n" % (self, self._task_map))
             thor.schedule(5, self.show_task_map)
@@ -118,19 +117,3 @@ class HttpResource(RedFetcher):
         self.links[tag].add(link)
         if not self.response.base_uri:
             self.response.base_uri = base
-
-
-if __name__ == "__main__":
-    import sys
-    RED = HttpResource()
-    RED.set_request(sys.argv[1])
-    @thor.events.on(RED)
-    def status(msg: str) -> None:
-        print(msg)
-    @thor.events.on(RED)
-    def check_done() -> None:
-        print('check_done')
-        thor.stop()
-    RED.check()
-    thor.run()
-    print(RED.notes)

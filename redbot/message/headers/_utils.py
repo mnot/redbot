@@ -2,7 +2,7 @@
 import calendar
 from email.utils import parsedate as lib_parsedate
 import re
-from typing import Callable, Dict, List, Tuple, Union
+from typing import Callable, Dict, List, Tuple, Union # pylint: disable=unused-import
 from urllib.parse import unquote as urlunquote
 
 from redbot.syntax import rfc7231

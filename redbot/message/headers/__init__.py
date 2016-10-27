@@ -13,14 +13,15 @@ import sys
 from typing import Any, Callable, List, Tuple, Type, Union, TYPE_CHECKING
 import unittest
 
-if TYPE_CHECKING:
-    from redbot.message import HttpMessage
 from redbot.syntax import rfc7230, rfc7231
 from redbot.formatter import f_num
 from redbot.type import StrHeaderListType, RawHeaderListType, HeaderDictType, AddNoteMethodType
 
 from ._utils import RE_FLAGS, parse_date, unquote_string, split_string, parse_params
 from ._notes import *
+
+if TYPE_CHECKING:
+    from redbot.message import HttpMessage # pylint: disable=cyclic-import,unused-import
 
 # base URLs for references
 rfc2616 = "http://tools.ietf.org/html/rfc2616.html#%s"

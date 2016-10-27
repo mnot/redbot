@@ -17,7 +17,7 @@ import thor
 from thor.events import EventEmitter
 
 if TYPE_CHECKING:
-    from redbot.resource import HttpResource
+    from redbot.resource import HttpResource # pylint: disable=cyclic-import,unused-import
 
 _formatters = ['html', 'text', 'har']
 

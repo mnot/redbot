@@ -13,7 +13,7 @@ import operator
 import os
 import re
 import textwrap
-from typing import Any, Match, Tuple, Union
+from typing import Any, Match, Tuple, Union # pylint: disable=unused-import
 from urllib.parse import urljoin, quote as urlquote
 
 from markdown import markdown
@@ -25,7 +25,7 @@ from redbot import __version__
 from redbot.formatter import Formatter, html_header, relative_time, f_num
 from redbot.resource import HttpResource, active_check
 from redbot.message.headers import HeaderProcessor
-from redbot.speak import Note, levels, categories
+from redbot.speak import Note, levels, categories # pylint: disable=unused-import
 
 nl = "\n"
 e_html = partial(cgi_escape, quote=True)
@@ -365,7 +365,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 for link in link_set:
                     try:
                         link = urljoin(resource.response.base_uri, link)
-                    except ValueError as why:
+                    except ValueError:
                         pass # TODO: pass link problem upstream?
                              # e.g., ValueError("Invalid IPv6 URL")
                     def link_to(matchobj: Match) -> str:
@@ -643,7 +643,8 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         out.append('</tr>')
         return nl.join(out)
 
-    def format_table_header(self, heading: str=None) -> str:
+    @staticmethod
+    def format_table_header(heading: str=None) -> str:
         return """
         <tr>
         <th title="The URI tested. Click to run a detailed analysis.">%s</th>
@@ -668,19 +669,22 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         </tr>
         """ % (heading or "URI")
 
-    def format_time(self, value: float) -> str:
+    @staticmethod
+    def format_time(value: float) -> str:
         if value is None:
             return '<td>-</td>'
         else:
             return '<td>%s</td>' % relative_time(value, 0, 0)
 
-    def format_size(self, value: int) -> str:
+    @staticmethod
+    def format_size(value: int) -> str:
         if value is None:
             return '<td>-</td>'
         else:
             return '<td>%s</td>' % f_num(value, by1024=True)
 
-    def format_yes_no(self, value: Union[bool, None]) -> str:
+    @staticmethod
+    def format_yes_no(value: Union[bool, None]) -> str:
         icon_tpl = '<td><img src="%s/icon/%%s" alt="%%s"/></td>' % \
             static_root
         if value is True:

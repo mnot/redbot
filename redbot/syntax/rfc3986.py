@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
+# pylint: disable=line-too-long, unused-import
 
 """
 Regex for URIs
@@ -11,6 +11,8 @@ These regex are directly derived from the collected ABNF in RFC3986:
 
 They should be processed with re.VERBOSE.
 """
+
+from __future__ import print_function
 
 from .rfc5234 import DIGIT, ALPHA, HEXDIG
 

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from redbot.message import headers
-from redbot.speak import Note, categories, levels
 
 
 class p3p(headers.HttpHeader):

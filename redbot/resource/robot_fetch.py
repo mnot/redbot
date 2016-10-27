@@ -155,5 +155,6 @@ def url_to_origin(url: str) -> Union[str, None]:
 
 class DummyChecker(object):
     """Dummy checker for non-200 or empty responses."""
-    def can_fetch(self, ua_string: str, url: str) -> bool:
+    @staticmethod
+    def can_fetch(ua_string: str, url: str) -> bool:
         return True
