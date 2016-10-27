@@ -2,6 +2,7 @@
 
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
+from redbot.syntax import rfc3986, rfc7230  # pylint: disable=unused-import
 from redbot.type import AddNoteMethodType
 
 # X-Frame-Options = "DENY"
