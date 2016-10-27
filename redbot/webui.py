@@ -57,7 +57,8 @@ class RedWebUi(object):
         """Given a bytes query_string from the wire, set attributes."""
         qs = parse_qs(query_string.decode(self.config.charset, 'replace'))
         self.test_uri = qs.get('uri', [''])[0]
-        self.req_hdrs = [tuple(h.split(":", 1)) for h in qs.get("req_hdr", []) if h.find(":") > 0] # type: ignore
+        self.req_hdrs = [tuple(h.split(":", 1))
+                         for h in qs.get("req_hdr", []) if h.find(":") > 0] # type: ignore
         self.format = qs.get('format', ['html'])[0]
         self.descend = 'descend' in qs
         if not self.descend:
