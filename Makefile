@@ -7,7 +7,7 @@ CSSFILES = share/red_style.css $(BOWER)/google-code-prettify/src/prettify.css
 
 
 .PHONY: test
-test: unit_test webui_test
+test: typecheck unit_test webui_test
 
 .PHONY: clean
 clean: clean-deploy
