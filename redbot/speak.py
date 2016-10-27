@@ -10,12 +10,15 @@ it need to be escaped to be safe for use in HTML.
 
 from binascii import b2a_hex
 from cgi import escape as cgi_escape
+from enum import Enum
 from functools import partial
+from typing import Any, Dict, Union
+
 from markdown import markdown
 
 e_html = partial(cgi_escape, quote=True)
 
-class _Categories(object):
+class categories(Enum):
     "Note classifications."
     GENERAL = "General"
     SECURITY = "Security"
@@ -24,35 +27,33 @@ class _Categories(object):
     VALIDATION = "Validation"
     CONNECTION = "Connection"
     RANGE = "Partial Content"
-categories = _Categories()
 
-class _Levels(object):
+class levels(Enum):
     "Note levels."
     GOOD = 'good'
     WARN = 'warning'
     BAD = 'bad'
     INFO = 'info'
-levels = _Levels()
 
 class Note(object):
     """
     A note about an HTTP resource, representation, or other component
     related to the URI under test.
     """
-    category = None
-    level = None
+    category = None # type: categories
+    level = None # type: levels
     summary = ""
     text = ""
-    def __init__(self, subject, vrs=None):
+    def __init__(self, subject: str, vrs: Dict[str, Union[str, int]]=None) -> None:
         self.subject = subject
         self.vars = vrs or {}
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         return bool(self.__class__ == other.__class__ \
            and self.vars == other.vars \
            and self.subject == other.subject)
 
-    def show_summary(self, lang):
+    def show_summary(self, lang: str) -> str:
         """
         Output a textual summary of the message as a Unicode string.
 
@@ -61,7 +62,7 @@ class Note(object):
         """
         return self.summary % self.vars
 
-    def show_text(self, lang):
+    def show_text(self, lang: str) -> str:
         """
         Show the HTML text for the message as a Unicode string.
 
@@ -72,7 +73,7 @@ class Note(object):
         ), output_format="html5")
 
 
-def display_bytes(inbytes, encoding='utf-8', truncate=40):
+def display_bytes(inbytes: bytes, encoding: str='utf-8', truncate: int=40) -> str:
     """
     Format arbitrary input bytes for display.
 

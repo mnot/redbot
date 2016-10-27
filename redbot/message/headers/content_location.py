@@ -2,7 +2,6 @@
 
 
 from redbot.message import headers
-from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7231
 
 class content_location(headers.HttpHeader):
@@ -24,4 +23,4 @@ class ContentLocationTest(headers.HeaderTest):
     name = 'Content-Location'
     inputs = ['/foo']
     expected_out = '/foo'
-    expected_err = []
+    expected_err = [] # type: ignore

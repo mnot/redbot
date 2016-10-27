@@ -9,19 +9,21 @@ import binascii
 import hashlib
 import re
 import time
+from typing import Any, Callable, Dict, Tuple, Type, Union
 from urllib.parse import urlsplit, urlunsplit, quote as urlquote
 import zlib
 
-from redbot.message.headers import HeaderProcessor
 from redbot.formatter import f_num
+from redbot.message.headers import HeaderProcessor
 from redbot.speak import Note, levels, categories, display_bytes
-
 from redbot.syntax import rfc3986
+from redbot.type import StrHeaderListType, RawHeaderListType, HeaderDictType, AddNoteMethodType
 
 import thor
 
 ### configuration
 MAX_URI = 8000
+
 
 class HttpMessage(thor.events.EventEmitter):
     """
@@ -29,45 +31,45 @@ class HttpMessage(thor.events.EventEmitter):
 
     Emits "chunk" for each chunk of the response body (after decoding Content-Encoding).
     """
-    def __init__(self, add_note):
+    def __init__(self, add_note: AddNoteMethodType) -> None:
         thor.events.EventEmitter.__init__(self)
         if not hasattr(self, 'add_note'):
-            self.add_note = add_note
-        self.is_request = None
-        self.version = ""
-        self.base_uri = ""
-        self.start_time = None
-        self.complete = False
-        self.complete_time = None
-        self.headers = []           # (str name, str value)
-        self.parsed_headers = {}
-        self.header_length = 0
-        self.payload = b""          # Only used for 206 responses
-        self.payload_len = 0
-        self.payload_md5 = None
-        self.payload_sample = []    # [(int offset, bytes chunk)]{,4}
-        self.character_encoding = None
-        self.decoded_len = 0
-        self.decoded_md5 = None
-        self.decoded_sample = b""   # first decoded_sample_size bytes
-        self.decoded_sample_size = 128 * 1024
-        self._decoded_sample_seen = 0
-        self.decoded_sample_complete = True
-        self._decode_ok = True      # turn False if we have a problem
-        self.transfer_length = 0
-        self.trailers = []
-        self.http_error = None      # any parse errors encountered; see httperr
+            self.add_note = add_note    # type: AddNoteMethodType
+        self.is_request = None          # type: bool
+        self.version = ""               # type: str
+        self.base_uri = ""              # type: str
+        self.start_time = None          # type: float
+        self.complete = False           # type: bool
+        self.complete_time = None       # type: float
+        self.headers = []               # type: StrHeaderListType
+        self.parsed_headers = {}        # type: HeaderDictType
+        self.header_length = 0          # type: int
+        self.payload = b""              # type: bytes   # Only used for 206 responses
+        self.payload_len = 0            # type: int
+        self.payload_md5 = None         # type: bytes
+        self.payload_sample = []        # type: List[Tuple[int, bytes]]
+        self.character_encoding = None  # type: str
+        self.decoded_len = 0            # type: int
+        self.decoded_md5 = None         # type: bytes
+        self.decoded_sample = b""       # type: bytes   # first decoded_sample_size bytes
+        self.decoded_sample_size = 128 * 1024  # type: int
+        self._decoded_sample_seen = 0   # type: int
+        self.decoded_sample_complete = True    # type: bool
+        self._decode_ok = True          # type: bool    # turn False if we have a problem
+        self.transfer_length = 0        # type: int
+        self.trailers = []              # type: RawHeaderListType
+        self.http_error = None          # type: thor.http.error.HttpError
         self._md5_processor = hashlib.new('md5')
         self._md5_post_processor = hashlib.new('md5')
         self._gzip_processor = zlib.decompressobj(-zlib.MAX_WBITS)
         self._in_gzip_body = False
         self._gzip_header_buffer = b""
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         status = [self.__class__.__module__ + "." + self.__class__.__name__]
         return "<%s at %#x>" % (", ".join(status), id(self))
 
-    def __getstate__(self):
+    def __getstate__(self) -> Dict[str, Any]:
         state = thor.events.EventEmitter.__getstate__(self)
         for key in [
                 '_md5_processor',
@@ -78,24 +80,24 @@ class HttpMessage(thor.events.EventEmitter):
                 del state[key]
         return state
 
-    def process_raw_headers(self, headers):
+    def process_raw_headers(self, headers: RawHeaderListType) -> None:
         """
         Feed a list of (bytes name, bytes value) header tuples in and process them.
         """
         hp = HeaderProcessor(self)
         self.headers, self.parsed_headers = hp.process(headers)
-        self.character_encoding = self.parsed_headers.get('content-type', (None, {})
-                                                         )[1].get('charset', 'utf-8')
-                                                         # default isn't UTF-8, but oh well
+        if 'content-type' in self.parsed_headers:
+            self.character_encoding = self.parsed_headers['content-type'][1].get('charset', 'utf-8')
+            # default isn't UTF-8, but oh well
         self.emit("headers_available")
 
-    def set_headers(self, headers):
+    def set_headers(self, headers: StrHeaderListType) -> None:
         """
         Feed a list of (str name, str value) header tuples in. Do not process.
         """
         self.headers = headers
 
-    def feed_body(self, chunk):
+    def feed_body(self, chunk: bytes) -> None:
         """
         Feed a chunk of the body in.
 
@@ -129,7 +131,7 @@ class HttpMessage(thor.events.EventEmitter):
             else:
                 self.decoded_sample_complete = False
 
-    def body_done(self, complete, trailers=None):
+    def body_done(self, complete: bool, trailers: RawHeaderListType=None) -> None:
         """
         Signal that the body is done. Complete should be True if we
         know it's complete (e.g., final chunk, Content-Length).
@@ -159,7 +161,7 @@ class HttpMessage(thor.events.EventEmitter):
                                   CMD5_INCORRECT, calc_md5=c_md5_calc)
         self.emit('content_available')
 
-    def _process_content_codings(self, chunk):
+    def _process_content_codings(self, chunk: bytes) -> bytes:
         """
         Decode a chunk according to the message's content-encoding header.
 
@@ -181,7 +183,7 @@ class HttpMessage(thor.events.EventEmitter):
                                       BAD_GZIP,
                                       gzip_error=str(gzip_error))
                         self._decode_ok = False
-                        return
+                        return b''
                 try:
                     chunk = self._gzip_processor.decompress(chunk)
                 except zlib.error as zlib_error:
@@ -193,17 +195,17 @@ class HttpMessage(thor.events.EventEmitter):
                         chunk_sample=display_bytes(chunk)
                     )
                     self._decode_ok = False
-                    return
+                    return b''
             else:
                 # we can't handle other codecs, so punt on body processing.
                 self._decode_ok = False
-                return
+                return b''
         self._md5_post_processor.update(chunk)
         self.decoded_len += len(chunk)
         return chunk
 
     @staticmethod
-    def _read_gzip_header(content):
+    def _read_gzip_header(content: bytes) -> bytes:
         """
         Parse a string for a GZIP header; if present, return remainder of
         gzipped content.
@@ -229,8 +231,8 @@ class HttpMessage(thor.events.EventEmitter):
         content_l = list(content[10:])
         if flag & gz_flags['FEXTRA']:
             # Read & discard the extra field, if present
-            xlen = ord(content_l.pop(0))
-            xlen = xlen + 256*ord(content_l.pop(0))
+            xlen = content_l.pop(0)
+            xlen = xlen + 256 * content_l.pop(0)
             content_l = content_l[xlen:]
         if flag & gz_flags['FNAME']:
             # Read and discard a null-terminated string
@@ -254,14 +256,14 @@ class HttpRequest(HttpMessage):
     """
     A HTTP Request message.
     """
-    def __init__(self, add_note):
+    def __init__(self, add_note: AddNoteMethodType) -> None:
         HttpMessage.__init__(self, add_note)
-        self.is_request = True
-        self.method = None
-        self.uri = None
-        self.iri = None
+        self.is_request = True # type: bool
+        self.method = None     # type: str
+        self.uri = None        # type: str
+        self.iri = None        # type: str
 
-    def set_iri(self, iri):
+    def set_iri(self, iri: str) -> None:
         """
         Given a unicode string (possibly an IRI), convert to a URI and make sure it's sensible.
         """
@@ -280,7 +282,7 @@ class HttpRequest(HttpMessage):
             self.add_note('uri', URI_TOO_LONG, uri_len=f_num(len(self.uri)))
 
     @staticmethod
-    def iri_to_uri(iri):
+    def iri_to_uri(iri: str) -> str:
         "Takes a unicode string that can contain an IRI and emits a unicode URI."
         scheme, authority, path, query, frag = urlsplit(iri)
         scheme = scheme
@@ -301,18 +303,18 @@ class HttpResponse(HttpMessage):
     """
     A HTTP Response message.
     """
-    def __init__(self, add_note):
+    def __init__(self, add_note: AddNoteMethodType) -> None:
         HttpMessage.__init__(self, add_note)
         self.is_request = False
         self.is_head_response = False
-        self.status_code = None
+        self.status_code = None         # type: str
         self.status_phrase = ""
-        self.freshness_lifetime = None
-        self.age = None
-        self.store_shared = None
-        self.store_private = None
+        self.freshness_lifetime = None  # type: int
+        self.age = None                 # type: int
+        self.store_shared = None        # type: bool
+        self.store_private = None       # type: bool
 
-    def process_top_line(self, version, status_code, status_phrase):
+    def process_top_line(self, version: bytes, status_code: bytes, status_phrase: bytes) -> None:
         self.version = version.decode('ascii', 'replace')
         self.status_code = status_code.decode('ascii', 'replace')
         try:
@@ -326,15 +328,15 @@ class DummyMsg(HttpResponse):
     """
     A dummy HTTP message, for testing.
     """
-    def __init__(self, add_note=None):
+    def __init__(self, add_note: AddNoteMethodType=None) -> None:
         HttpResponse.__init__(self, self.dummy_add_note)
         self.base_uri = "http://www.example.com/foo/bar/baz.html?bat=bam"
         self.start_time = time.time()
         self.status_phrase = ""
-        self.notes = []
-        self.note_classes = []
+        self.notes = []        # type: List[Note]
+        self.note_classes = [] # type: List[str]
 
-    def dummy_add_note(self, subject, note, **kw):
+    def dummy_add_note(self, subject: str, note: Type[Note], **kw: Union[str, int]) -> None:
         "Record the classes of notes set."
         self.notes.append(note(subject, kw))
         self.note_classes.append(note.__name__)

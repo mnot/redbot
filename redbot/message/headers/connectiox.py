@@ -2,8 +2,6 @@
 
 
 from redbot.message import headers
-from redbot.speak import Note, categories, levels
-from redbot.syntax import rfc7230
 
 
 class connectiox(headers.HttpHeader):

@@ -2,7 +2,6 @@
 
 
 from redbot.message import headers
-from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7230
 
 
@@ -26,4 +25,4 @@ class ConnectionTest(headers.HeaderTest):
     name = 'Connection'
     inputs = ['close']
     expected_out = ['close']
-    expected_err = []
+    expected_err = [] # type: ignore

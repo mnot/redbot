@@ -4,6 +4,7 @@
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7231
+from redbot.type import AddNoteMethodType
 
 
 class content_encoding(headers.HttpHeader):
@@ -22,7 +23,7 @@ of its underlying media type; e.g., `gzip` and `deflate`."""
     valid_in_requests = True
     valid_in_responses = True
 
-    def parse(self, field_value, add_note):
+    def parse(self, field_value: str, add_note: AddNoteMethodType) -> str:
         # check to see if there are any non-gzip encodings, because
         # that's the only one we ask for.
         if field_value.lower() != 'gzip':
@@ -46,13 +47,13 @@ class ContentEncodingTest(headers.HeaderTest):
     name = 'Content-Encoding'
     inputs = ['gzip']
     expected_out = ['gzip']
-    expected_err = []
+    expected_err = [] # type: ignore
 
 class ContentEncodingCaseTest(headers.HeaderTest):
     name = 'Content-Encoding'
     inputs = ['GZip']
     expected_out = ['gzip']
-    expected_err = []
+    expected_err = [] # type: ignore
 
 class UnwantedContentEncodingTest(headers.HeaderTest):
     name = 'Content-Encoding'

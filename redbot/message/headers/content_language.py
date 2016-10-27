@@ -2,7 +2,6 @@
 
 
 from redbot.message import headers
-from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7231
 
 class content_language(headers.HttpHeader):
@@ -24,4 +23,4 @@ class ContentLanguageTest(headers.HeaderTest):
     name = 'Content-Language'
     inputs = ['en-US']
     expected_out = 'en-US'
-    expected_err = []
+    expected_err = [] # type: ignore

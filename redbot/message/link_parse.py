@@ -4,10 +4,10 @@
 Parse links from a stream of HTML data.
 """
 
-from html.entities import entitydefs
 from html.parser import HTMLParser
+from typing import Any, Callable, Dict, List, Tuple
 
-from redbot.message import headers
+from redbot.message import headers, HttpMessage
 from redbot.syntax import rfc7231
 
 class HTMLLinkParser(HTMLParser):
@@ -30,29 +30,31 @@ class HTMLLinkParser(HTMLParser):
         'application/xhtml+xml',
         'application/atom+xml']
 
-    def __init__(self, message, link_procs, err=None):
+    def __init__(self, message: HttpMessage,
+                 link_procs: List[Callable[[str, str, str, str], None]],
+                 err: Callable[[str], int]=None) -> None:
         self.message = message
         self.link_procs = link_procs
         self.err = err
         self.link_types = {
-            'link': ['href', ['stylesheet']],
-            'a': ['href', None],
-            'img': ['src', None],
-            'script': ['src', None],
-            'frame': ['src', None],
-            'iframe': ['src', None]}
+            'link': ('href', ['stylesheet']),
+            'a': ('href', None),
+            'img': ('src', None),
+            'script': ('src', None),
+            'frame': ('src', None),
+            'iframe': ('src', None)} # type: Dict[str, Tuple[str, List[str]]]
         self.errors = 0
-        self.last_err_pos = None
+        self.last_err_pos = None  # type: int
         self.ok = True
         HTMLParser.__init__(self)
 
-    def __getstate__(self):
+    def __getstate__(self) -> Dict[str, Any]:
         return {
             'errors': self.errors,
             'last_err_pos': self.last_err_pos,
             'ok': self.ok}
 
-    def feed(self, chunk):
+    def feed(self, chunk: str) -> None:
         "Feed a given chunk of bytes to the parser"
         if not self.ok:
             return
@@ -73,10 +75,10 @@ class HTMLLinkParser(HTMLParser):
         else:
             self.ok = False
 
-    def handle_starttag(self, tag, attrs):
+    def handle_starttag(self, tag: str, attrs: List[Tuple[str, str]]) -> None:
         attr_d = dict(attrs)
         title = attr_d.get('title', '').strip()
-        if tag in list(self.link_types.keys()):
+        if tag in self.link_types:
             url_attr, rels = self.link_types[tag]
             if not rels or attr_d.get("rel", None) in rels:
                 target = attr_d.get(url_attr, "")
@@ -105,13 +107,7 @@ class HTMLLinkParser(HTMLParser):
                 self.message.character_encoding = param_dict.get('charset',
                                                                  self.message.character_encoding)
 
-    def handle_charref(self, name):
-        return entitydefs.get(name, '')
-
-    def handle_entityref(self, name):
-        return entitydefs.get(name, '')
-
-    def error(self, message):
+    def error(self, message: str) -> None:
         self.errors += 1
         if self.getpos() == self.last_err_pos:
             # we're in a loop; give up.
@@ -120,7 +116,7 @@ class HTMLLinkParser(HTMLParser):
             self.ok = False
             raise BadErrorIReallyMeanIt()
         else:
-            self.last_err_pos = self.getpos()
+            self.last_err_pos, offset = self.getpos()
             if self.err:
                 self.err(message)
 
@@ -131,22 +127,22 @@ class BadErrorIReallyMeanIt(Exception):
 if __name__ == "__main__":
     import sys
     import thor
-    from redbot.resource.fetch import RedFetcher
+    from redbot.resource.fetch import RedFetcher  # pylint: disable=ungrouped-imports
 
     T = RedFetcher()
     T.set_request(sys.argv[1], req_hdrs=[('Accept-Encoding', "gzip")])
-    def show_link(base, link, tag, title):
+    def show_link(base: str, link: str, tag: str, title: str) -> None:
         print("* [%s] %s -- %s" % (tag, base, link))
     P = HTMLLinkParser(T.response, [show_link], sys.stderr.write)
     @thor.events.on(T)
-    def fetch_done():
+    def fetch_done() -> None:
         print('done')
         thor.stop()
     @thor.events.on(T)
-    def status(msg):
+    def status(msg: str) -> None:
         print(msg)
     @thor.events.on(T.response)
-    def chunk(decoded_chunk):
-        P.feed(decoded_chunk)
+    def chunk(decoded_chunk: bytes) -> None:
+        P.feed(decoded_chunk.decode(P.message.character_encoding, 'ignore'))
     T.check()
     thor.run()

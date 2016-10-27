@@ -8,6 +8,7 @@ Subrequest for content negotiation checks.
 from redbot.resource.active_check.base import SubRequest
 from redbot.formatter import f_num
 from redbot.speak import Note, categories, levels
+from redbot.type import StrHeaderListType
 
 
 class ConnegCheck(SubRequest):
@@ -17,18 +18,18 @@ class ConnegCheck(SubRequest):
     check_name = "Content Negotiation"
     response_phrase = "The compressed response"
 
-    def modify_request_headers(self, base_headers):
+    def modify_request_headers(self, base_headers: StrHeaderListType) -> StrHeaderListType:
         return [h for h in base_headers if h[0].lower() != 'accept-encoding'] \
             + [('accept-encoding', 'gzip')]
 
-    def preflight(self):
+    def preflight(self) -> bool:
         if 'accept-encoding' in [k.lower() for (k, v) in self.base.request.headers]:
             return False
         if self.base.response.status_code == '206':
             return False
         return True
 
-    def done(self):
+    def done(self) -> None:
         negotiated = self.response
         bare = self.base.response
 

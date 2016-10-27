@@ -13,6 +13,7 @@ import operator
 import os
 import re
 import textwrap
+from typing import Any, Match, Tuple, Union # pylint: disable=unused-import
 from urllib.parse import urljoin, quote as urlquote
 
 from markdown import markdown
@@ -24,7 +25,7 @@ from redbot import __version__
 from redbot.formatter import Formatter, html_header, relative_time, f_num
 from redbot.resource import HttpResource, active_check
 from redbot.message.headers import HeaderProcessor
-from redbot.speak import levels, categories
+from redbot.speak import Note, levels, categories # pylint: disable=unused-import
 
 nl = "\n"
 e_html = partial(cgi_escape, quote=True)
@@ -39,15 +40,15 @@ class BaseHtmlFormatter(Formatter):
     Base class for HTML formatters."""
     media_type = "text/html"
 
-    def __init__(self, *args, **kw):
+    def __init__(self, *args: Any, **kw: Any) -> None:
         Formatter.__init__(self, *args, **kw)
-        self.hidden_text = []
+        self.hidden_text = []  # type: List[Tuple[str, str]]
         self.start = thor.time()
 
-    def feed(self, chunk):
+    def feed(self, chunk: bytes) -> None:
         pass
 
-    def start_output(self):
+    def start_output(self) -> None:
         if self.resource:
             uri = self.resource.request.uri
             req_headers = self.resource.request.headers
@@ -87,7 +88,7 @@ class BaseHtmlFormatter(Formatter):
             'descend': descend
         })
 
-    def finish_output(self):
+    def finish_output(self) -> None:
         """
         The bottom bits.
         """
@@ -95,13 +96,13 @@ class BaseHtmlFormatter(Formatter):
         self.output(self.format_footer())
         self.output("</body></html>\n")
 
-    def error_output(self, message):
+    def error_output(self, message: str) -> None:
         """
         Something bad happend.
         """
         self.output("<p class='error'>%s</p>" % message)
 
-    def status(self, message):
+    def status(self, message: str) -> None:
         "Update the status bar of the browser"
         self.output("""
 <script>
@@ -111,7 +112,7 @@ $('#red_status').text("%s");
 </script>
 """ % (thor.time() - self.start, e_html(message)))
 
-    def final_status(self):
+    def final_status(self) -> None:
 #        See issue #51
 #        self.status("REDbot made %(reqs)s requests in %(elapse)2.3f seconds." % {
 #            'reqs': fetch.total_requests,
@@ -120,7 +121,7 @@ $('#red_status').text("%s");
 <div id="final_status">%(elapse)2.2f seconds</div>
 """ % {'elapse': thor.time() - self.start})
 
-    def format_extra(self, etype='.html'):
+    def format_extra(self, etype: str='.html') -> str:
         """
         Show extra content from the extra_dir, if any. MUST be UTF-8.
         Type controls the extension included; currently supported:
@@ -134,18 +135,18 @@ $('#red_status').text("%s");
             for extra_file in extra_files:
                 extra_path = os.path.join(extra_dir, extra_file)
                 try:
-                    o.append(codecs.open(
-                        extra_path, mode='r', encoding='utf-8', errors='replace').read())
+                    o.append(codecs.open(extra_path, mode='r', encoding='utf-8',
+                                         errors='replace').read())  # type: ignore
                 except IOError as why:
                     o.append("<!-- error opening %s: %s -->" % (extra_file, why))
         return nl.join(o)
 
-    def format_hidden_list(self):
+    def format_hidden_list(self) -> str:
         "return a list of hidden items to be used by the UI"
         return "<ul>" + "\n".join(["<li id='%s'>%s</li>" % (lid, text) for \
             (lid, text) in self.hidden_text]) + "</ul>"
 
-    def format_footer(self):
+    def format_footer(self) -> str:
         "page footer"
         return """\
 <br />
@@ -163,9 +164,10 @@ title="drag me to your toolbar to use REDbot any time.">REDbot</a> bookmarklet
 </p>
 </div>
 
-""" % {'baseuri': e_html(self.ui_uri), 'version': __version__, 'static_root': static_root}
+""" % {'baseuri': e_html(self.ui_uri), 'static_root': static_root}
 
-    def req_qs(self, link=None, check_name=None, res_format=None, use_stored=True, referer=True):
+    def req_qs(self, link: str=None, check_name: str=None, res_format: str=None,
+               use_stored: bool=True, referer: bool=True) -> str:
         """
         Format a query string to refer to another REDbot resource.
 
@@ -290,13 +292,13 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 
     name = "html"
 
-    def __init__(self, *args, **kw):
+    def __init__(self, *args: Any, **kw: Any) -> None:
         BaseHtmlFormatter.__init__(self, *args, **kw)
+        self.header_presenter = HeaderPresenter(self)
 
-    def finish_output(self):
+    def finish_output(self) -> None:
         self.final_status()
         if self.resource.response.complete:
-            self.header_presenter = HeaderPresenter(self)
             self.output(self.template % {
                 'response': self.format_response(self.resource),
                 'options': self.format_options(self.resource),
@@ -319,7 +321,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 raise AssertionError("Unknown incomplete response error %s" % \
                                      (self.resource.response.http_error))
 
-    def format_response(self, resource):
+    def format_response(self, resource: HttpResource) -> str:
         "Return the HTTP response line and headers as HTML"
         offset = 0
         headers = []
@@ -332,7 +334,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             e_html(resource.response.status_code),
             e_html(resource.response.status_phrase)) + nl.join(headers)
 
-    def format_header(self, name, value, offset):
+    def format_header(self, name: str, value: str, offset: int) -> str:
         "Return an individual HTML header as HTML"
         token_name = "header-%s" % name.lower()
         header_desc = HeaderProcessor.find_header_handler(name).description
@@ -346,7 +348,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         e_html(name),
         self.header_presenter.Show(name, value))
 
-    def format_body_sample(self, resource):
+    def format_body_sample(self, resource: HttpResource) -> str:
         """show the stored body sample"""
         if resource.response.status_code == "206":
             sample = resource.response.payload
@@ -354,7 +356,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             sample = resource.response.decoded_sample
         try:
             uni_sample = sample.decode(resource.response.character_encoding, "ignore")
-        except LookupError:
+        except (TypeError, LookupError):
             uni_sample = sample.decode('utf-8', 'replace')
         safe_sample = e_html(uni_sample)
         message = ""
@@ -363,10 +365,10 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 for link in link_set:
                     try:
                         link = urljoin(resource.response.base_uri, link)
-                    except ValueError as why:
+                    except ValueError:
                         pass # TODO: pass link problem upstream?
                              # e.g., ValueError("Invalid IPv6 URL")
-                    def link_to(matchobj):
+                    def link_to(matchobj: Match) -> str:
                         return r"%s<a href='?%s' class='nocode'>%s</a>%s" % (
                             matchobj.group(1),
                             self.req_qs(link, use_stored=False),
@@ -377,7 +379,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             message = "<p class='btw'>REDbot isn't showing the whole body, because it's so big!</p>"
         return """<pre class="prettyprint">%s</pre>\n%s""" % (safe_sample, message)
 
-    def format_category(self, category, resource):
+    def format_category(self, category: categories, resource: HttpResource) -> str:
         """
         For a given category, return all of the non-detail
         notes in it as an HTML list.
@@ -387,7 +389,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             return nl
         out = []
         # banner, possibly with links to subreqs
-        out.append("<h3>%s\n" % category)
+        out.append("<h3>%s\n" % category.value)
         if isinstance(resource, HttpResource) and category in list(self.note_responses.keys()):
             for check_name in self.note_responses[category]:
                 if not resource.subreqs[check_name].fetch_started:
@@ -409,7 +411,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     <li class='%s note' data-subject='%s' data-name='noteid-%s'>
         <span>%s</span>
     </li>""" % (
-        note.level,
+        note.level.value,
         e_html(note.subject),
         id(note),
         e_html(note.show_summary(self.lang))))
@@ -417,7 +419,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         out.append("</ul>\n")
         return nl.join(out)
 
-    def format_options(self, resource):
+    def format_options(self, resource: HttpResource) -> str:
         "Return things that the user can do with the URI as HTML links"
         options = []
         media_type = resource.response.parsed_headers.get('content-type', [""])[0]
@@ -470,10 +472,10 @@ class HeaderPresenter(object):
     field-name, that method will be run instead to represent the value.
     """
 
-    def __init__(self, formatter):
+    def __init__(self, formatter: Formatter) -> None:
         self.formatter = formatter
 
-    def Show(self, name, value):
+    def Show(self, name: str, value: str) -> str:
         """
         Return the given header name/value pair after
         presentation processing.
@@ -485,7 +487,7 @@ class HeaderPresenter(object):
         else:
             return self.I(e_html(value), len(name))
 
-    def BARE_URI(self, name, value):
+    def BARE_URI(self, name: str, value: str) -> str:
         "Present a bare URI header value"
         value = value.rstrip()
         svalue = value.lstrip()
@@ -497,7 +499,7 @@ class HeaderPresenter(object):
     content_location = location = x_xrds_location = BARE_URI
 
     @staticmethod
-    def I(value, sub_width):
+    def I(value: str, sub_width: int) -> str:
         "wrap a line to fit in the header box"
         hdr_sz = 75
         sw = hdr_sz - min(hdr_sz-1, sub_width)
@@ -533,11 +535,11 @@ class TableHtmlFormatter(BaseHtmlFormatter):
     name = "html"
 
 
-    def __init__(self, *args, **kw):
+    def __init__(self, *args: Any, **kw: Any) -> None:
         BaseHtmlFormatter.__init__(self, *args, **kw)
-        self.problems = []
+        self.problems = [] # type: List[Note]
 
-    def finish_output(self):
+    def finish_output(self) -> None:
         self.final_status()
         self.output(self.template % {
             'table': self.format_tables(self.resource),
@@ -552,7 +554,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         ('frame', 'Frame Links'),
         ('iframe', 'IFrame Links'),
         ('img', 'Image Links')]
-    def format_tables(self, resource):
+    def format_tables(self, resource: HttpResource) -> str:
         out = [self.format_table_header()]
         out.append(self.format_droid(resource))
         for hdr_tag, heading in self.link_order:
@@ -563,7 +565,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                 out += [self.format_droid(d) for d in droids]
         return nl.join(out)
 
-    def format_droid(self, resource):
+    def format_droid(self, resource: HttpResource) -> str:
         out = ['<tr class="droid %s">']
         m = 50
         ct = resource.response.parsed_headers.get('content-type', [""])
@@ -616,10 +618,9 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             else:
                 out.append(self.format_yes_no(resource.gzip_support))
             out.append(self.format_yes_no(resource.partial_support))
-            problems = [m for m in resource.notes if \
-                m.level in [levels.WARN, levels.BAD]]
+            problems = [m for m in resource.notes if m.level in [levels.WARN, levels.BAD]]
             out.append("<td>")
-            pr_enum = []
+            pr_enum = []  # type: List[int]
             for problem in problems:
                 if problem not in self.problems:
                     self.problems.append(problem)
@@ -628,10 +629,10 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             out[0] = out[0] % " ".join(["%d" % p for p in pr_enum])
             # append the actual problem numbers to the final <td>
             for p in pr_enum:
-                m = self.problems[p]
+                n = self.problems[p]
                 out.append("<span class='prob_num'>" \
                            " %s <span class='hidden'>%s</span></span>" % (
-                               p + 1, e_html(m.show_summary(self.lang))))
+                               p + 1, e_html(n.show_summary(self.lang))))
         else:
             if resource.response.http_error is None:
                 err = "response incomplete"
@@ -642,7 +643,8 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         out.append('</tr>')
         return nl.join(out)
 
-    def format_table_header(self, heading=None):
+    @staticmethod
+    def format_table_header(heading: str=None) -> str:
         return """
         <tr>
         <th title="The URI tested. Click to run a detailed analysis.">%s</th>
@@ -667,19 +669,22 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         </tr>
         """ % (heading or "URI")
 
-    def format_time(self, value):
+    @staticmethod
+    def format_time(value: float) -> str:
         if value is None:
             return '<td>-</td>'
         else:
             return '<td>%s</td>' % relative_time(value, 0, 0)
 
-    def format_size(self, value):
+    @staticmethod
+    def format_size(value: int) -> str:
         if value is None:
             return '<td>-</td>'
         else:
             return '<td>%s</td>' % f_num(value, by1024=True)
 
-    def format_yes_no(self, value):
+    @staticmethod
+    def format_yes_no(value: Union[bool, None]) -> str:
         icon_tpl = '<td><img src="%s/icon/%%s" alt="%%s"/></td>' % \
             static_root
         if value is True:
@@ -691,7 +696,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         else:
             raise AssertionError('unknown value')
 
-    def format_options(self, resource):
+    def format_options(self, resource: HttpResource) -> str:
         "Return things that the user can do with the URI as HTML links"
         options = []
         media_type = resource.response.parsed_headers.get('content-type', [""])[0]
@@ -707,12 +712,12 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             [o and "<span class='option' title='%s'>%s</span>" % (o[1], o[0])
              or "<br>" for o in options])
 
-    def format_problems(self):
+    def format_problems(self) -> str:
         out = ['<br /><h2>Notes</h2><ol>']
         for m in self.problems:
             out.append("""\
     <li class='%s %s note' name='msgid-%s'><span>%s</span></li>""" % (
-        m.level,
+        m.level.value,
         e_html(m.subject),
         id(m),
         e_html(m.show_summary(self.lang))))
@@ -724,7 +729,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
 # Escaping functions.
 uri_gen_delims = r":/?#[]@"
 uri_sub_delims = r"!$&'()*+,;="
-def unicode_url_escape(url, safe):
+def unicode_url_escape(url: str, safe: str) -> str:
     """
     URL escape a unicode string. Assume that anything already encoded
     is to be left alone.
@@ -740,7 +745,7 @@ e_query = partial(unicode_url_escape, safe=uri_sub_delims + r":@/?")
 e_query_arg = partial(unicode_url_escape, safe=r"!$'()*+,:@/?")
 e_fragment = partial(unicode_url_escape, safe=r"!$&'()*+,;:@=/?")
 
-def e_js(instr):
+def e_js(instr: str) -> str:
     """
     Make sure instr is safe for writing into a double-quoted
     JavaScript string.

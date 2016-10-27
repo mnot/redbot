@@ -3,6 +3,7 @@
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7230
+from redbot.type import AddNoteMethodType
 
 class via(headers.HttpHeader):
     canonical_name = "Via"
@@ -17,7 +18,7 @@ the request/response chain."""
     valid_in_requests = True
     valid_in_responses = True
 
-    def evaluate(self, add_note):
+    def evaluate(self, add_note: AddNoteMethodType) -> None:
         via_list = "<ul>" + "\n".join(
             ["<li><code>%s</code></li>" % v for v in self.value]
         ) + "</ul>"

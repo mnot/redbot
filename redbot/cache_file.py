@@ -13,10 +13,10 @@ class CacheFile(object):
     is fresh for. No locking, so errors are discarded.
     """
 
-    def __init__(self, my_path):
+    def __init__(self, my_path: str) -> None:
         self.path = my_path
 
-    def read(self):
+    def read(self) -> bytes:
         """
         Read the file, returning its contents. If it does not exist or
         cannot be read, returns None.
@@ -46,7 +46,7 @@ class CacheFile(object):
         return content
 
 
-    def write(self, content, lifetime):
+    def write(self, content: bytes, lifetime: int) -> None:
         """
         Write content to the file, marking it fresh for lifetime seconds.
         Discard errors silently.
@@ -61,7 +61,7 @@ class CacheFile(object):
             if 'fd' in locals():
                 fd.close()
 
-    def delete(self):
+    def delete(self) -> None:
         "Remove the file, discarding errors silently."
         try:
             os.remove(self.path)

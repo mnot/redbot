@@ -10,6 +10,7 @@ import pickle as pickle
 import sys
 import tempfile
 import time
+from typing import Any, Callable, Tuple, Union # pylint: disable=unused-import
 from urllib.parse import parse_qs, urlsplit
 import zlib
 
@@ -20,6 +21,7 @@ from redbot.resource import HttpResource
 from redbot.resource.robot_fetch import RobotFetcher
 from redbot.formatter import find_formatter, html
 from redbot.formatter.html import e_url
+from redbot.type import RawHeaderListType, StrHeaderListType # pylint: disable=unused-import
 
 
 class RedWebUi(object):
@@ -29,40 +31,41 @@ class RedWebUi(object):
     Given a URI, run REDbot on it and present the results to output as HTML.
     If descend is true, spider the links and present a summary.
     """
-    def __init__(self, config, ui_uri, method, query_string,
-                 response_start, response_body, response_done, error_log=sys.stderr.write):
+    def __init__(self, config: Any, ui_uri: str, method: str, query_string: bytes,
+                 response_start: Callable[..., None], response_body: Callable[..., None],
+                 response_done: Callable[..., None],
+                 error_log: Callable[[str], int]=sys.stderr.write) -> None:
         self.config = config  # Config object, see bin/webui.py
         self.charset_bytes = self.config.charset.encode('ascii')
-        self.ui_uri = ui_uri  # Base URI for the web ux
-        self.method = method  # Request method to the UX; bytes
+        self.ui_uri = ui_uri   # Base URI for the web ux
+        self.method = method   # Request method to the UX; bytes
         self.response_start = response_start
         self.response_body = response_body
         self._response_done = response_done
         self.error_log = error_log  # function to log errors to
-        self.test_uri = None  # string
-        self.req_hdrs = None  # tuple of string K,V
-        self.format = None    # string
-        self.test_id = None   # string
-        self.check_name = None
-        self.descend = None
-        self.save = None
-        self.timeout = None
+        self.test_uri = None   # type: str
+        self.req_hdrs = None   # type: StrHeaderListType
+        self.format = None     # type: str
+        self.test_id = None    # type: str
+        self.check_name = None # type: str
+        self.descend = None    # type: bool
+        self.save = None       # type: bool
+        self.timeout = None    # type: Any
         self.run(query_string)
 
-    def run(self, query_string):
+    def run(self, query_string: bytes) -> None:
         """Given a bytes query_string from the wire, set attributes."""
-        assert isinstance(query_string, bytes)
         qs = parse_qs(query_string.decode(self.config.charset, 'replace'))
         self.test_uri = qs.get('uri', [''])[0]
-        self.req_hdrs = [tuple(rh.split(":", 1))
-                         for rh in qs.get("req_hdr", []) if rh.find(":") > 0]
+        self.req_hdrs = [tuple(h.split(":", 1))
+                         for h in qs.get("req_hdr", []) if h.find(":") > 0] # type: ignore
         self.format = qs.get('format', ['html'])[0]
-        self.descend = qs.get('descend', [False])[0]
+        self.descend = 'descend' in qs
         if not self.descend:
             self.check_name = qs.get('check_name', [None])[0]
         self.test_id = qs.get('id', [None])[0]
         if self.method == "POST":
-            self.save = qs.get('save', [False])[0]
+            self.save = 'save' in qs
         else:
             self.save = False
         self.start = time.time()
@@ -75,7 +78,7 @@ class RedWebUi(object):
         else:
             self.show_default()
 
-    def save_test(self):
+    def save_test(self) -> None:
         """Save a previously run test_id."""
         try:
             # touch the save file so it isn't deleted.
@@ -92,7 +95,7 @@ class RedWebUi(object):
             self.response_body(self.show_error("Sorry, I couldn't save that."))
         self.response_done([])
 
-    def load_saved_test(self):
+    def load_saved_test(self) -> None:
         """Load a saved test by test_id."""
         try:
             fd = gzip.open(os.path.join(self.config.save_dir, os.path.basename(self.test_id)))
@@ -131,11 +134,11 @@ class RedWebUi(object):
             (b"Content-Type", content_type.encode('ascii')),
             (b"Cache-Control", b"max-age=3600, must-revalidate")])
         @thor.events.on(formatter)
-        def formatter_done():
+        def formatter_done() -> None:
             self.response_done([])
         formatter.bind_resource(display_resource)
 
-    def run_test(self):
+    def run_test(self) -> None:
         """Test a URI."""
         if self.config.save_dir and os.path.exists(self.config.save_dir):
             try:
@@ -188,7 +191,7 @@ class RedWebUi(object):
             return
 
         @thor.events.on(formatter)
-        def formatter_done():
+        def formatter_done() -> None:
             self.response_done([])
             if test_id:
                 try:
@@ -209,7 +212,7 @@ class RedWebUi(object):
         formatter.bind_resource(display_resource)
         top_resource.check()
 
-    def show_default(self):
+    def show_default(self) -> None:
         """Show the default page."""
         formatter = html.BaseHtmlFormatter(
             self.ui_uri, self.config.lang, self.output, is_blank=True)
@@ -221,7 +224,7 @@ class RedWebUi(object):
         formatter.finish_output()
         self.response_done([])
 
-    def show_error(self, message, to_output=False):
+    def show_error(self, message: str, to_output: bool=False) -> Union[None, bytes]:
         """
         Display a message. If to_output is True, send it to self.output(); otherwise
         return it as binary
@@ -232,23 +235,23 @@ class RedWebUi(object):
         else:
             return out.encode(self.config.charset, 'replace')
 
-    def output(self, chunk):
+    def output(self, chunk: str) -> None:
         self.response_body(chunk.encode(self.config.charset, 'replace'))
 
-    def response_done(self, trailers):
+    def response_done(self, trailers: RawHeaderListType) -> None:
         if self.timeout:
             self.timeout.delete()
             self.timeout = None
         self._response_done(trailers)
 
-    def timeoutError(self, detail):
+    def timeoutError(self, detail: Callable[[], str]) -> None:
         """ Max runtime reached."""
         self.error_log("REDbot TIMEOUT: <%s> descend=%s; %s" % (
             self.test_uri, self.descend, detail()))
         self.show_error("REDbot timeout.", to_output=True)
         self.response_done([])
 
-    def robots_precheck(self, iri):
+    def robots_precheck(self, iri: str) -> bool:
         """
         If we have the robots.txt file available, check it to see if the
         request is permissible.
@@ -264,7 +267,8 @@ class RedWebUi(object):
 
 
 # adapted from cgitb.Hook
-def except_handler_factory(config, out=None, qs=None):
+def except_handler_factory(config: Any, out: Callable[[str], None]=None,
+                           qs: str=None) -> Callable[..., None]:
     """
     Log an exception gracefully.
 
@@ -274,7 +278,7 @@ def except_handler_factory(config, out=None, qs=None):
         out = sys.stdout.write
     error_template = "<p class='error'>%s</p>"
 
-    def except_handler(etype=None, evalue=None, etb=None):
+    def except_handler(etype=None, evalue=None, etb=None): # type: ignore
         """
         Log uncaught exceptions and display a friendly error.
         """

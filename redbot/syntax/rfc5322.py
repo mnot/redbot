@@ -1,3 +1,4 @@
+# pylint: disable=line-too-long, unused-import
 
 from .rfc5234 import VCHAR, WSP, CRLF, ALPHA, DIGIT
 

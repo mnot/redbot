@@ -3,6 +3,7 @@
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7234
+from redbot.type import AddNoteMethodType
 
 class age(headers.HttpHeader):
     canonical_name = "Age"
@@ -16,16 +17,16 @@ validation) was generated at the origin server."""
     valid_in_requests = False
     valid_in_responses = True
 
-    def parse(self, field_value, add_note):
+    def parse(self, field_value: str, add_note: AddNoteMethodType) -> int:
         try:
-            age = int(field_value)
+            age_value = int(field_value)
         except ValueError:
             add_note(AGE_NOT_INT)
             raise
-        if age < 0:
+        if age_value < 0:
             add_note(AGE_NEGATIVE)
             raise ValueError
-        return age
+        return age_value
 
 
 
@@ -51,7 +52,7 @@ class AgeTest(headers.HeaderTest):
     name = 'Age'
     inputs = ['10']
     expected_out = 10
-    expected_err = []
+    expected_err = [] # type: ignore
 
 class MultipleAgeTest(headers.HeaderTest):
     name = 'Age'
@@ -62,11 +63,11 @@ class MultipleAgeTest(headers.HeaderTest):
 class CharAgeTest(headers.HeaderTest):
     name = 'Age'
     inputs = ['foo']
-    expected_out = None
+    expected_out = None # type: ignore
     expected_err = [AGE_NOT_INT]
 
 class NegAgeTest(headers.HeaderTest):
     name = "Age"
     inputs = ["-20"]
-    expected_out = None
+    expected_out = None # type: ignore
     expected_err = [AGE_NEGATIVE]

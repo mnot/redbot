@@ -2,6 +2,7 @@
 
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
+from redbot.type import AddNoteMethodType
 
 
 class x_content_type_options(headers.HttpHeader):
@@ -11,7 +12,7 @@ class x_content_type_options(headers.HttpHeader):
     valid_in_requests = False
     valid_in_responses = True
 
-    def evaluate(self, add_note):
+    def evaluate(self, add_note: AddNoteMethodType) -> None:
         if 'nosniff' in self.value:
             add_note(CONTENT_TYPE_OPTIONS)
         else:

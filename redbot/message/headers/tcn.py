@@ -2,9 +2,7 @@
 
 
 from redbot.message import headers
-from redbot.speak import Note, categories, levels
 
-from redbot.syntax import rfc7234
 
 class tcn(headers.HttpHeader):
     canonical_name = "TCN"

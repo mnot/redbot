@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 
+from typing import Tuple
+
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7231
+from redbot.type import AddNoteMethodType, ParamDictType
+
 
 class x_xss_protection(headers.HttpHeader):
     canonical_name = "X-XSS-Protection"
@@ -17,24 +21,24 @@ older versions of Internet Explorer configure their Cross Site Scripting protect
     valid_in_requests = False
     valid_in_responses = True
 
-    def parse(self, field_value, add_note):
+    def parse(self, field_value: str, add_note: AddNoteMethodType) -> Tuple[int, ParamDictType]:
         try:
             protect, param_str = field_value.split(';', 1)
         except ValueError:
             protect, param_str = field_value, ""
         try:
-            protect = int(protect)
+            protect_int = int(protect)
         except ValueError:
             raise
         params = headers.parse_params(param_str, add_note, True)
-        if protect == 0:
+        if protect_int == 0:
             add_note(XSS_PROTECTION_OFF)
         else: # 1
             if params.get('mode', None) == "block":
                 add_note(XSS_PROTECTION_BLOCK)
             else:
                 add_note(XSS_PROTECTION_ON)
-        return protect, params
+        return protect_int, params
 
 
 
@@ -90,13 +94,13 @@ See [this blog entry](http://bit.ly/tJbICH) for more information."""
 class OneXXSSTest(headers.HeaderTest):
     name = 'X-XSS-Protection'
     inputs = ['1']
-    expected_out = (1, {})
+    expected_out = (1, {}) # type: ignore
     expected_err = [XSS_PROTECTION_ON]
 
 class ZeroXXSSTest(headers.HeaderTest):
     name = 'X-XSS-Protection'
     inputs = ['0']
-    expected_out = (0, {})
+    expected_out = (0, {})  # type: ignore
     expected_err = [XSS_PROTECTION_OFF]
 
 class OneBlockXXSSTest(headers.HeaderTest):
@@ -108,5 +112,5 @@ class OneBlockXXSSTest(headers.HeaderTest):
 class BadXXSSTest(headers.HeaderTest):
     name = 'X-XSS-Protection'
     inputs = ['foo']
-    expected_out = None
+    expected_out = None # type: ignore
     expected_err = [headers.BAD_SYNTAX]

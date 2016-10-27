@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
+from typing import Tuple
 
 from redbot.message import headers
-from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7230, rfc7231
+from redbot.type import AddNoteMethodType
+
 
 class keep_alive(headers.HttpHeader):
     canonical_name = "Keep-Alive"
@@ -23,7 +25,7 @@ It's safe to remove this header if you wish to save a few bytes in the response.
     valid_in_requests = True
     valid_in_responses = True
 
-    def parse(self, field_value, add_note):
+    def parse(self, field_value: str, add_note: AddNoteMethodType) -> Tuple[str, str]:
         try:
             attr, attr_val = field_value.split("=", 1)
             attr_val = headers.unquote_string(attr_val)
@@ -43,5 +45,5 @@ class KeepAliveTest(headers.HeaderTest):
 class EmptyKeepAliveTest(headers.HeaderTest):
     name = 'Keep-Alive'
     inputs = ['']
-    expected_out = []
+    expected_out = [] # type: ignore
     expected_err = [headers.HEADER_DEPRECATED]

@@ -2,7 +2,7 @@
 
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.syntax import rfc7234
+from redbot.type import AddNoteMethodType
 
 class x_download_options(headers.HttpHeader):
     canonical_name = "X-Download-Options"
@@ -11,7 +11,7 @@ class x_download_options(headers.HttpHeader):
     valid_in_requests = False
     valid_in_responses = True
 
-    def evaluate(self, add_note):
+    def evaluate(self, add_note: AddNoteMethodType) -> None:
         if 'noopen' in self.value:
             add_note(DOWNLOAD_OPTIONS)
         else:

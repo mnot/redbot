@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# pylint: disable=too-many-public-methods
+
 """
 The Resource Expert Droid Status Code Checker.
 """
@@ -7,6 +9,8 @@ The Resource Expert Droid Status Code Checker.
 from functools import partial
 
 from thor.http import header_dict, get_header, safe_methods
+
+from redbot.message import HttpRequest, HttpResponse
 from redbot.speak import Note, levels, categories
 
 
@@ -17,7 +21,7 @@ class StatusChecker(object):
 
     Additional tests will be performed if the request is available.
     """
-    def __init__(self, response, request=None):
+    def __init__(self, response: HttpResponse, request: HttpRequest=None) -> None:
         assert response.is_request is False
         self.request = request
         self.response = response
@@ -29,127 +33,127 @@ class StatusChecker(object):
             return
         status_m()
 
-    def status100(self):        # Continue
+    def status100(self) -> None:        # Continue
         if self.request and not "100-continue" in get_header(self.request.headers, 'expect'):
-            self.add_note('', UNEXPECTED_CONTINUE)
-    def status101(self):        # Switching Protocols
+            self.add_note('status', UNEXPECTED_CONTINUE)
+    def status101(self) -> None:        # Switching Protocols
         if self.request and 'upgrade' not in list(header_dict(self.request.headers).keys()):
-            self.add_note('', UPGRADE_NOT_REQUESTED)
-    def status102(self):        # Processing
+            self.add_note('status', UPGRADE_NOT_REQUESTED)
+    def status102(self) -> None:        # Processing
         pass
-    def status200(self):        # OK
+    def status200(self) -> None:        # OK
         pass
-    def status201(self):        # Created
+    def status201(self) -> None:        # Created
         if self.request and self.request.method in safe_methods:
             self.add_note('status', CREATED_SAFE_METHOD, method=self.request.method)
         if 'location' not in self.response.parsed_headers:
             self.add_note('header-location', CREATED_WITHOUT_LOCATION)
-    def status202(self):        # Accepted
+    def status202(self) -> None:        # Accepted
         pass
-    def status203(self):        # Non-Authoritative Information
+    def status203(self) -> None:        # Non-Authoritative Information
         pass
-    def status204(self):        # No Content
+    def status204(self) -> None:        # No Content
         pass
-    def status205(self):        # Reset Content
+    def status205(self) -> None:        # Reset Content
         pass
-    def status206(self):        # Partial Content
+    def status206(self) -> None:        # Partial Content
         if self.request and "range" not in list(header_dict(self.request.headers).keys()):
             self.add_note('', PARTIAL_NOT_REQUESTED)
         if 'content-range' not in self.response.parsed_headers:
             self.add_note('header-location', PARTIAL_WITHOUT_RANGE)
-    def status207(self):        # Multi-Status
+    def status207(self) -> None:        # Multi-Status
         pass
-    def status226(self):        # IM Used
+    def status226(self) -> None:        # IM Used
         pass
-    def status300(self):        # Multiple Choices
+    def status300(self) -> None:        # Multiple Choices
         pass
-    def status301(self):        # Moved Permanently
+    def status301(self) -> None:        # Moved Permanently
         if 'location' not in self.response.parsed_headers:
             self.add_note('header-location', REDIRECT_WITHOUT_LOCATION)
-    def status302(self):        # Found
+    def status302(self) -> None:        # Found
         if 'location' not in self.response.parsed_headers:
             self.add_note('header-location', REDIRECT_WITHOUT_LOCATION)
-    def status303(self):        # See Other
+    def status303(self) -> None:        # See Other
         if 'location' not in self.response.parsed_headers:
             self.add_note('header-location', REDIRECT_WITHOUT_LOCATION)
-    def status304(self):        # Not Modified
+    def status304(self) -> None:        # Not Modified
         if 'date' not in self.response.parsed_headers:
             self.add_note('status', NO_DATE_304)
-    def status305(self):        # Use Proxy
+    def status305(self) -> None:        # Use Proxy
         self.add_note('', STATUS_DEPRECATED)
-    def status306(self):        # Reserved
+    def status306(self) -> None:        # Reserved
         self.add_note('', STATUS_RESERVED)
-    def status307(self):        # Temporary Redirect
+    def status307(self) -> None:        # Temporary Redirect
         if 'location' not in self.response.parsed_headers:
             self.add_note('header-location', REDIRECT_WITHOUT_LOCATION)
-    def status308(self):        # Permanent Redirect
+    def status308(self) -> None:        # Permanent Redirect
         if 'location' not in self.response.parsed_headers:
             self.add_note('header-location', REDIRECT_WITHOUT_LOCATION)
-    def status400(self):        # Bad Request
+    def status400(self) -> None:        # Bad Request
         self.add_note('', STATUS_BAD_REQUEST)
-    def status401(self):        # Unauthorized
+    def status401(self) -> None:        # Unauthorized
         pass
-    def status402(self):        # Payment Required
+    def status402(self) -> None:        # Payment Required
         pass
-    def status403(self):        # Forbidden
+    def status403(self) -> None:        # Forbidden
         self.add_note('', STATUS_FORBIDDEN)
-    def status404(self):        # Not Found
+    def status404(self) -> None:        # Not Found
         self.add_note('', STATUS_NOT_FOUND)
-    def status405(self):        # Method Not Allowed
+    def status405(self) -> None:        # Method Not Allowed
         pass # TODO: show allowed methods?
-    def status406(self):        # Not Acceptable
+    def status406(self) -> None:        # Not Acceptable
         self.add_note('', STATUS_NOT_ACCEPTABLE)
-    def status407(self):        # Proxy Authentication Required
+    def status407(self) -> None:        # Proxy Authentication Required
         pass
-    def status408(self):        # Request Timeout
+    def status408(self) -> None:        # Request Timeout
         pass
-    def status409(self):        # Conflict
+    def status409(self) -> None:        # Conflict
         self.add_note('', STATUS_CONFLICT)
-    def status410(self):        # Gone
+    def status410(self) -> None:        # Gone
         self.add_note('', STATUS_GONE)
-    def status411(self):        # Length Required
+    def status411(self) -> None:        # Length Required
         pass
-    def status412(self):        # Precondition Failed
+    def status412(self) -> None:        # Precondition Failed
         pass # TODO: test to see if it's true, alert if not
-    def status413(self):        # Request Entity Too Large
+    def status413(self) -> None:        # Request Entity Too Large
         self.add_note('', STATUS_REQUEST_ENTITY_TOO_LARGE)
-    def status414(self):        # Request-URI Too Long
+    def status414(self) -> None:        # Request-URI Too Long
         if self.request:
             uri_len = "(%s characters)" % len(self.request.uri)
         else:
             uri_len = ""
         self.add_note('uri', STATUS_URI_TOO_LONG, uri_len=uri_len)
-    def status415(self):        # Unsupported Media Type
+    def status415(self) -> None:        # Unsupported Media Type
         self.add_note('', STATUS_UNSUPPORTED_MEDIA_TYPE)
-    def status416(self):        # Requested Range Not Satisfiable
+    def status416(self) -> None:        # Requested Range Not Satisfiable
         pass # TODO: test to see if it's true, alter if not
-    def status417(self):        # Expectation Failed
+    def status417(self) -> None:        # Expectation Failed
         pass # TODO: explain, alert if it's 100-continue
-    def status422(self):        # Unprocessable Entity
+    def status422(self) -> None:        # Unprocessable Entity
         pass
-    def status423(self):        # Locked
+    def status423(self) -> None:        # Locked
         pass
-    def status424(self):        # Failed Dependency
+    def status424(self) -> None:        # Failed Dependency
         pass
-    def status426(self):        # Upgrade Required
+    def status426(self) -> None:        # Upgrade Required
         pass
-    def status500(self):        # Internal Server Error
+    def status500(self) -> None:        # Internal Server Error
         self.add_note('', STATUS_INTERNAL_SERVICE_ERROR)
-    def status501(self):        # Not Implemented
+    def status501(self) -> None:        # Not Implemented
         self.add_note('', STATUS_NOT_IMPLEMENTED)
-    def status502(self):        # Bad Gateway
+    def status502(self) -> None:        # Bad Gateway
         self.add_note('', STATUS_BAD_GATEWAY)
-    def status503(self):        # Service Unavailable
+    def status503(self) -> None:        # Service Unavailable
         self.add_note('', STATUS_SERVICE_UNAVAILABLE)
-    def status504(self):        # Gateway Timeout
+    def status504(self) -> None:        # Gateway Timeout
         self.add_note('', STATUS_GATEWAY_TIMEOUT)
-    def status505(self):        # HTTP Version Not Supported
+    def status505(self) -> None:        # HTTP Version Not Supported
         self.add_note('', STATUS_VERSION_NOT_SUPPORTED)
-    def status506(self):        # Variant Also Negotiates
+    def status506(self) -> None:        # Variant Also Negotiates
         pass
-    def status507(self):        # Insufficient Storage
+    def status507(self) -> None:        # Insufficient Storage
         pass
-    def status510(self):        # Not Extended
+    def status510(self) -> None:        # Not Extended
         pass
 
 class NO_DATE_304(Note):

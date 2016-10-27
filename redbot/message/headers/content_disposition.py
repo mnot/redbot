@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
+from typing import Tuple
+
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7231
+from redbot.type import AddNoteMethodType, ParamDictType
 
 
 class content_disposition(headers.HttpHeader):
@@ -19,7 +22,7 @@ the file, rather than display it."""
     valid_in_requests = True
     valid_in_responses = True
 
-    def parse(self, field_value, add_note):
+    def parse(self, field_value: str, add_note: AddNoteMethodType) -> Tuple[str, ParamDictType]:
         try:
             disposition, param_str = field_value.split(";", 1)
         except ValueError:
@@ -96,19 +99,19 @@ class QuotedCDTest(headers.HeaderTest):
     name = 'Content-Disposition'
     inputs = ['attachment; filename="foo.txt"']
     expected_out = ('attachment', {'filename': 'foo.txt'})
-    expected_err = []
+    expected_err = [] # type: ignore
 
 class TokenCDTest(headers.HeaderTest):
     name = 'Content-Disposition'
     inputs = ['attachment; filename=foo.txt']
     expected_out = ('attachment', {'filename': 'foo.txt'})
-    expected_err = []
+    expected_err = [] # type: ignore
 
 class InlineCDTest(headers.HeaderTest):
     name = 'Content-Disposition'
     inputs = ['inline; filename=foo.txt']
     expected_out = ('inline', {'filename': 'foo.txt'})
-    expected_err = []
+    expected_err = [] # type: ignore
 
 class RepeatCDTest(headers.HeaderTest):
     name = 'Content-Disposition'
@@ -122,7 +125,7 @@ class FilenameStarCDTest(headers.HeaderTest):
     expected_out = ('attachment', {
         'filename': 'foo.txt',
         'filename*': u'a\u0308.txt'})
-    expected_err = []
+    expected_err = [] # type: ignore
 
 class FilenameStarQuotedCDTest(headers.HeaderTest):
     name = 'Content-Disposition'

@@ -1,5 +1,7 @@
 
-import re, sys, types
+import re
+import sys
+import types
 
 __all__ = ["rfc3986",
            "rfc5234",
@@ -12,7 +14,7 @@ __all__ = ["rfc3986",
            "rfc7234",
            "rfc7235"]
 
-def check_regex():
+def check_regex() -> None:
     """Grab all the regex in this module."""
     for module_name in __all__:
         __import__(module_name)
@@ -23,7 +25,7 @@ def check_regex():
                 try:
                     re.compile(attr_value, re.VERBOSE)
                 except re.error as why:
-                    print("*", module_name, attr_name, why.message)
+                    print("*", module_name, attr_name, why)
 
 
 if __name__ == "__main__":

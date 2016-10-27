@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 
+from typing import Tuple
+
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7231
+from redbot.type import AddNoteMethodType
+
 
 class x_ua_compatible(headers.HttpHeader):
     canonical_name = "X-UA-Compatible"
@@ -13,7 +17,7 @@ class x_ua_compatible(headers.HttpHeader):
     valid_in_requests = False
     valid_in_responses = True
 
-    def parse(self, field_value, add_note):
+    def parse(self, field_value: str, add_note: AddNoteMethodType) -> Tuple[str, str]:
         try:
             attr, attr_value = field_value.split("=", 1)
         except ValueError:
@@ -21,8 +25,8 @@ class x_ua_compatible(headers.HttpHeader):
             attr_value = None
         return attr, attr_value
 
-    def evaluate(self, add_note):
-        directives = {}
+    def evaluate(self, add_note: AddNoteMethodType) -> None:
+        directives = {} # type: Dict[str, str]
         warned = False
         attr, attr_value = self.value
         if attr in directives and not warned:

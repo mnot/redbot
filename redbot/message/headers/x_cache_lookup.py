@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from redbot.message import headers
-from redbot.speak import Note, categories, levels
 
 
 class x_cache_lookup(headers.HttpHeader):
