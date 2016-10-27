@@ -141,8 +141,8 @@ class HarFormatter(Formatter):
         for m in resource.notes:
             msg = {
                 "subject": m.subject,
-                "category": str(m.category),
-                "level": str(m.level),
+                "category": m.category.name,
+                "level": m.level.name,
                 "summary": m.show_summary(self.lang)
             }
             out.append(msg)

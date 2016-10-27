@@ -389,7 +389,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             return nl
         out = []
         # banner, possibly with links to subreqs
-        out.append("<h3>%s\n" % category)
+        out.append("<h3>%s\n" % category.value)
         if isinstance(resource, HttpResource) and category in list(self.note_responses.keys()):
             for check_name in self.note_responses[category]:
                 if not resource.subreqs[check_name].fetch_started:
@@ -411,7 +411,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     <li class='%s note' data-subject='%s' data-name='noteid-%s'>
         <span>%s</span>
     </li>""" % (
-        note.level,
+        note.level.value,
         e_html(note.subject),
         id(note),
         e_html(note.show_summary(self.lang))))
@@ -618,8 +618,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             else:
                 out.append(self.format_yes_no(resource.gzip_support))
             out.append(self.format_yes_no(resource.partial_support))
-            problems = [m for m in resource.notes if \
-                m.level in [levels.WARN, levels.BAD]]
+            problems = [m for m in resource.notes if m.level in [levels.WARN, levels.BAD]]
             out.append("<td>")
             pr_enum = []  # type: List[int]
             for problem in problems:
@@ -714,7 +713,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         for m in self.problems:
             out.append("""\
     <li class='%s %s note' name='msgid-%s'><span>%s</span></li>""" % (
-        m.level,
+        m.level.value,
         e_html(m.subject),
         id(m),
         e_html(m.show_summary(self.lang))))

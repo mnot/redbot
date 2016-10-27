@@ -88,7 +88,7 @@ class BaseTextFormatter(Formatter):
             return ""
         out = []
         if [note for note in notes]:
-            out.append("* %s:" % category)
+            out.append("* %s:" % category.value)
         for m in notes:
             out.append("  * %s" % (self.colorize(m.level, m.show_summary("en"))))
             if self.verbose:
@@ -106,13 +106,13 @@ class BaseTextFormatter(Formatter):
             # info
             color_start = "\033[0;32m"
             color_end = "\033[0;39m"
-            if level == "good":
+            if level == levels.GOOD:
                 color_start = "\033[1;32m"
                 color_end = "\033[0;39m"
-            if level == "bad":
+            if level == levels.BAD:
                 color_start = "\033[1;31m"
                 color_end = "\033[0;39m"
-            if level == "warning":
+            if level == levels.WARN:
                 color_start = "\033[1;33m"
                 color_end = "\033[0;39m"
             else:
