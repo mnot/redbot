@@ -22,4 +22,4 @@ class SMART_TAG_NO_WORK(Note):
     summary = "The %(field_name)s header doesn't have any effect on smart tags."
     text = """\
 This header doesn't have any effect on Microsoft Smart Tags, except in certain beta versions of
-IE6. To turn them off, you'll need to make changes in the HTML content it"""
+IE6. To turn them off, you'll need to make changes in the HTML content itself."""
