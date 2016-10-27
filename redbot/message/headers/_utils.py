@@ -7,7 +7,9 @@ from urllib.parse import unquote as urlunquote
 
 from redbot.syntax import rfc7231
 from redbot.type import AddNoteMethodType
-from ._notes import *
+from ._notes import PARAM_REPEATS, PARAM_SINGLE_QUOTED, PARAM_STAR_BAD, PARAM_STAR_QUOTED, \
+                    PARAM_STAR_ERROR, PARAM_STAR_NOCHARSET, PARAM_STAR_CHARSET, \
+                    BAD_DATE_SYNTAX, DATE_OBSOLETE
 
 RE_FLAGS = re.VERBOSE | re.IGNORECASE
 
