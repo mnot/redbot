@@ -58,6 +58,12 @@ deploy: clean-deploy
 clean-deploy:
 	rm -rf deploy
 
+## New headers
+
+redbot/message/headers/%.py:
+	cp redbot/message/headers/_header.tpl $@
+	sed -i '' -e "s/SHORT_NAME/$*/g" $@
+
 ## Share
 
 .PHONY: share
