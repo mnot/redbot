@@ -1,21 +1,14 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
+from setuptools import setup, find_packages
 
 setup(name='redbot',
-      version='1.0',
+      version='1.1',
       description='Resource Expert Droid',
       author='Mark Nottingham',
       author_email='mnot@mnot.net',
       url='https://redbot.org/project/',
-      packages=['redbot',
-                'redbot.message',
-                'redbot.message.headers',
-                'redbot.formatter',
-                'redbot.resource',
-                'redbot.resource.active_check',
-                'redbot.syntax'
-      ],
+      packages=find_packages(),
       package_dir={'redbot': 'redbot'},
       scripts=['bin/redbot'],
       install_requires = [

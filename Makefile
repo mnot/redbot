@@ -11,9 +11,8 @@ test: typecheck unit_test webui_test
 
 .PHONY: clean
 clean: clean-deploy
-	find . -type d -name __pycache__ -exec rm -rf {} \;
-	rm -rf build dist MANIFEST
-	rm -rf ghostdriver.log
+	find . -d -type d -name __pycache__ -exec rm -rf {} \;
+	rm -rf build dist MANIFEST redbot.egg-info ghostdriver.log
 
 .PHONY: lint
 lint:
@@ -57,6 +56,13 @@ deploy: clean-deploy
 .PHONY: clean-deploy
 clean-deploy:
 	rm -rf deploy
+
+## Snapshot
+
+.PHONY: snapshot
+snapshot:
+#	git push
+	$(PYTHON) setup.py egg_info -b .dev`git log -1 --pretty=format:%h` sdist # upload
 
 ## New headers
 
