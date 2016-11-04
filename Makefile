@@ -3,7 +3,7 @@ PYTHONPATH=./
 
 BOWER = src/bower_components
 JSFILES = $(BOWER)/jquery/dist/jquery.js $(BOWER)/jquery-hoverIntent/jquery.hoverIntent.js $(BOWER)/google-code-prettify/src/prettify.js src/red_script.js src/red_popup.js src/red_req_headers.js 
-CSSFILES = share/red_style.css $(BOWER)/google-code-prettify/src/prettify.css
+CSSFILES = redbot/assets/red_style.css $(BOWER)/google-code-prettify/src/prettify.css
 
 
 .PHONY: test
@@ -44,7 +44,7 @@ unit_test:
 
 .PHONY: server
 server: clean-deploy deploy
-	PYTHONPATH=$(PYTHONPATH) $(PYTHON) bin/webui.py 8080 share/
+	PYTHONPATH=$(PYTHONPATH) $(PYTHON) bin/webui.py 8080 redbot/assets/
 
 .PHONY: deploy
 deploy: clean-deploy
@@ -70,21 +70,21 @@ redbot/message/headers/%.py:
 	cp redbot/message/headers/_header.tpl $@
 	sed -i '' -e "s/SHORT_NAME/$*/g" $@
 
-## Share
+## assets
 
-.PHONY: share
-share: share/script.js share/style.css
+.PHONY: redbot/assets
+redbot/assets: redbot/assets/script.js redbot/assets/style.css
 
-share/script.js: $(JSFILES)
-	closure-compiler --create_source_map share/script.js.map --js_output_file share/script.js $(JSFILES)
-	echo "\n//# sourceMappingURL=script.js.map" >> share/script.js
+redbot/assets/script.js: $(JSFILES)
+	closure-compiler --create_source_map $@.map --js_output_file $@ $(JSFILES)
+	echo "\n//# sourceMappingURL=script.js.map" >> $@
 
-share/red_style.css: src/scss/*.scss
-	sass src/scss/red_style.scss:share/red_style.css
+redbot/assets/red_style.css: src/scss/*.scss
+	sass src/scss/red_style.scss:$@
 
-share/style.css: $(CSSFILES)
-	cat $(CSSFILES) | cssmin > share/style.css
+redbot/assets/style.css: $(CSSFILES)
+	cat $(CSSFILES) | cssmin > $@
 
-.PHONY: clean-share
-clean-share:
-	rm -f share/script.js share/script.js.map share/style.css
+.PHONY: clean-assets
+clean-assets:
+	rm -f redbot/assets/script.js redbot/assets/script.js.map redbot/assets/style.css

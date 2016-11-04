@@ -10,8 +10,11 @@ setup(name='redbot',
       url='https://redbot.org/project/',
       packages=find_packages(),
       package_dir={'redbot': 'redbot'},
-      scripts=['bin/redbot'],
-      install_requires = [
+      scripts=['bin/redbot', 'bin/webui.py'],
+      package_data={
+              'redbot': ['assets/*', 'assets/icon/*', 'assets/logo/*']
+      },
+      install_requires=[
           'thor >= 0.3.4',
           'markdown >= 2.6.5'
       ],
