@@ -61,8 +61,8 @@ clean-deploy:
 
 .PHONY: snapshot
 snapshot:
-#	git push
-	$(PYTHON) setup.py egg_info -b .dev`git log -1 --pretty=format:%h` sdist # upload
+	git push
+	$(PYTHON) setup.py egg_info -b .dev`git log -1 --pretty=format:%h` sdist upload
 
 ## New headers
 
