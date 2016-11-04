@@ -23,4 +23,4 @@ RUN        make --directory=/redbot/test
 EXPOSE     80
 
 # Define default command.
-ENTRYPOINT /redbot/bin/webui.py 80 /redbot/share
+ENTRYPOINT /redbot/bin/webui.py 80 /redbot/redbot/assets
