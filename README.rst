@@ -28,7 +28,7 @@ Requirements
 
 REDbot needs:
 
-1. Python 3 or greater; see <http://python.org/>
+1. Python 3.5 or greater; see <http://python.org/>
 2. The Thor HTTP library; see <http://github.com/mnot/thor/>
 3. The markdown library; see <https://pythonhosted.org/Markdown/>
 4. To use REDbot on the Web, you'll need a Web server that implements the CGI interface; e.g., `Apache`_.
