@@ -390,7 +390,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         out = []
         # banner, possibly with links to subreqs
         out.append("<h3>%s\n" % category.value)
-        if isinstance(resource, HttpResource) and category in list(self.note_responses.keys()):
+        if category in self.note_responses:
             for check_name in self.note_responses[category]:
                 if not resource.subreqs[check_name].fetch_started:
                     continue
