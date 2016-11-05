@@ -398,7 +398,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                   (self.req_qs(check_name=check_name), check_name))
                 smsgs = [note for note in getattr(resource.subreqs[check_name], "notes", []) if \
                   note.level in [levels.BAD] and note not in notes]
-                notes.extend(smsgs)
+#                notes.extend(smsgs)
                 if len(smsgs) == 1:
                     out.append(" - %i problem\n" % len(smsgs))
                 elif smsgs:
