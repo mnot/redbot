@@ -45,7 +45,7 @@ First, a quick overview of the repository contents.
   * `redbot/message/headers/` checks individual HTTP headers
   * `redbot/syntax` has a collection of [ABNF](https://tools.ietf.org/html/rfc5234) translated into regex, for checking syntax
   * `redbot/formatter/` holds the different output formatters (e.g., HTML, plaintext, [HAR](http://www.softwareishard.com/blog/har-12-spec/)) for the check results
-* `share/` has all of the static assets that REDbot needs
+  * `redbot/assets/` has all of the static assets that REDbot needs
 * `src/` contains the source files for the JavaScript and CSS files
 * `test/` guess what's here?
 

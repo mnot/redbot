@@ -22,6 +22,13 @@ For example, if your header's name is `Foo-Example`, the appropriate filename is
 If your header name doesn't work with this convention, please raise an issue in [REDbot's
 tracker](https://github.com/mnot/redbot/issues).
 
+The easiest way to get started is to run (from redbot's root):
+
+> make redbot/message/headers/my_headers_name.py
+
+That will give you a skeleton to start working with.
+
+
 ### The _HttpHeader_ Class
 
 Each file should define exactly one `headers.HttpHeader` class, whose name is the same as the filename (e.g., `foo_example`, as per above).

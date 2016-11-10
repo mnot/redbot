@@ -9,3 +9,4 @@ ghostdriver.log
 .sass-cache
 .coverage
 .mypy_cache
+redbot.egg-info

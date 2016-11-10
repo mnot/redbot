@@ -28,7 +28,7 @@ Requirements
 
 REDbot needs:
 
-1. Python 3 or greater; see <http://python.org/>
+1. Python 3.5 or greater; see <http://python.org/>
 2. The Thor HTTP library; see <http://github.com/mnot/thor/>
 3. The markdown library; see <https://pythonhosted.org/Markdown/>
 4. To use REDbot on the Web, you'll need a Web server that implements the CGI interface; e.g., `Apache`_.
@@ -42,7 +42,7 @@ Unpack the REDbot tarball. There are a number of interesting files:
 - bin/webui.py - the Web CGI script for running REDbot
 - bin/redbot - the command-line interface
 - redbot/ - REDbot's Python library files
-- share/ - REDbot's CSS stylesheet and JavaScript libraries
+- redbot/assets/ - REDbot's CSS stylesheet and JavaScript library
 
 To install from source (e.g., if you clone from github)::
 
@@ -63,7 +63,7 @@ add these configuration directives (e.g., in .htaccess, if enabled)::
 If the directory is the root directory for your server "example.com",
 this will configure REDbot to be at the URI "http://example.com/".
 
-The contents of the share directory also need to be made available on the
+The contents of the assets directory also need to be made available on the
 server; by default, they're in the 'static' subdirectory of the script's URI.
 This can be changed using the 'html.static_root' configuration variable in
 webui.py.
