@@ -191,7 +191,7 @@ class HttpMessage(thor.events.EventEmitter):
                         'header-content-encoding',
                         BAD_ZLIB,
                         zlib_error=str(zlib_error),
-                        ok_zlib_len=f_num(self.payload_sample[-1][0]),
+                        ok_zlib_len=f_num(self.payload_len),
                         chunk_sample=display_bytes(chunk)
                     )
                     self._decode_ok = False
