@@ -8,3 +8,4 @@ deploy
 ghostdriver.log
 .sass-cache
 .coverage
+.mypy_cache
