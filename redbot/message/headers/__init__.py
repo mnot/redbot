@@ -25,7 +25,6 @@ if TYPE_CHECKING:
 
 # base URLs for references
 rfc2616 = "http://tools.ietf.org/html/rfc2616.html#%s"
-rfc5988 = "http://tools.ietf.org/html/rfc5988.html#section-5"
 rfc6265 = "http://tools.ietf.org/html/rfc6265.html#%s"
 rfc6266 = "http://tools.ietf.org/html/rfc6266.html#section-4"
 

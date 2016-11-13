@@ -5,7 +5,7 @@ from typing import Tuple
 
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.syntax import rfc3986, rfc7231
+from redbot.syntax import rfc3986, rfc5988
 from redbot.type import AddNoteMethodType, ParamDictType
 
 
@@ -15,8 +15,8 @@ class link(headers.HttpHeader):
 The `Link` header field allows structured links to be described. A link can be viewed as a
 statement of the form "[context IRI] has a [relation type] resource at [target IRI], which has
 [target attributes]."""
-    reference = "%s#header.link" % headers.rfc5988
-    syntax = r'(?:<%s>(?:\s*;\s*%s)*)' % (rfc3986.URI_reference, rfc7231.parameter)
+    reference = "%s#header.link" % rfc5988.SPEC_URL
+    syntax = rfc5988.Link
     list_header = True
     deprecated = False
     valid_in_requests = True
