@@ -7,6 +7,8 @@ __all__ = ["rfc3986",
            "rfc5234",
            "rfc5322",
            "rfc5646",
+           "rfc5987",
+           "rfc5988",
            "rfc7230",
            "rfc7231",
            "rfc7232",
@@ -17,8 +19,9 @@ __all__ = ["rfc3986",
 def check_regex() -> None:
     """Grab all the regex in this module."""
     for module_name in __all__:
-        __import__(module_name)
-        module = sys.modules[module_name]
+        full_name = "redbot.syntax.%s" % module_name
+        __import__(full_name)
+        module = sys.modules[full_name]
         for attr_name in dir(module):
             attr_value = getattr(module, attr_name, None)
             if isinstance(attr_value, bytes):

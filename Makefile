@@ -22,6 +22,10 @@ lint:
 typecheck:
 	PYTHONPATH=$(PYTHONPATH) $(PYTHON) -m mypy --config-file=test/mypy.ini redbot
 
+.PHONY: syntax
+syntax:
+	PYTHONPATH=$(PYTHONPATH) $(PYTHON) redbot/syntax/__init__.py
+
 ## Coverage and Tests
 
 .PHONY: note_coverage
