@@ -17,7 +17,7 @@ from redbot.message import HttpRequest, HttpResponse
 from redbot.message.status import StatusChecker
 from redbot.message.cache import checkCaching
 from redbot.resource.robot_fetch import RobotFetcher
-from redbot.type import StrHeaderListType
+from redbot.type import StrHeaderListType, RawHeaderListType
 
 
 UA_STRING = "RED/%s (https://redbot.org/)" % __version__
@@ -55,6 +55,7 @@ class RedFetcher(thor.events.EventEmitter):
         self.transfer_in = 0
         self.transfer_out = 0
         self.request = HttpRequest(self.ignore_note)  # type: HttpRequest
+        self.nonfinal_responses = []                  # type: List[HttpResponse]
         self.response = HttpResponse(self.add_note)   # type: HttpResponse
         self.exchange = None                          # type: thor.http.ClientExchange
         self.follow_robots_txt = True # Should we pay attention to robots file?
@@ -138,6 +139,7 @@ class RedFetcher(thor.events.EventEmitter):
         if 'user-agent' not in [i[0].lower() for i in self.request.headers]:
             self.request.headers.append(("User-Agent", UA_STRING))
         self.exchange = self.client.exchange()
+        self.exchange.on('response_nonfinal', self._response_nonfinal)
         self.exchange.once('response_start', self._response_start)
         self.exchange.on('response_body', self._response_body)
         self.exchange.once('response_done', self._response_done)
@@ -152,8 +154,17 @@ class RedFetcher(thor.events.EventEmitter):
             self.transfer_out += len(self.request.payload)
         self.exchange.request_done([])
 
+    def _response_nonfinal(self, status: bytes, phrase: bytes, 
+                           res_headers: RawHeaderListType) -> None:
+        "Got a non-final response."
+        nfres = HttpResponse(self.add_note)
+        nfres.process_top_line(self.exchange.res_version, status, phrase)
+        nfres.process_raw_headers(res_headers)
+        StatusChecker(nfres, self.request)
+        self.nonfinal_responses.append(nfres)
+
     def _response_start(self, status: bytes, phrase: bytes,
-                        res_headers: List[Tuple[bytes, bytes]]) -> None:
+                        res_headers: RawHeaderListType) -> None:
         "Process the response start-line and headers."
         self.response.start_time = thor.time()
         self.response.process_top_line(self.exchange.res_version, status, phrase)

@@ -24,6 +24,7 @@ import thor.http.error as httperr
 from redbot import __version__
 from redbot.formatter import Formatter, html_header, relative_time, f_num
 from redbot.resource import HttpResource, active_check
+from redbot.message import HttpResponse
 from redbot.message.headers import HeaderProcessor
 from redbot.speak import Note, levels, categories # pylint: disable=unused-import
 
@@ -256,6 +257,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     # HTML template for the main response body
     template = """\
     <div id="left_column">
+    %(nonfinal_responses)s
+    
     <span class="help">These are the response headers; hover over each one
     for an explanation of what it does.</span>
     <pre id='response'>%(response)s</pre>
@@ -300,7 +303,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         self.final_status()
         if self.resource.response.complete:
             self.output(self.template % {
-                'response': self.format_response(self.resource),
+                'nonfinal_responses': self.format_nonfinal_responses(self.resource),
+                'response': self.format_response(self.resource.response),
                 'options': self.format_options(self.resource),
                 'notes': nl.join([self.format_category(cat, self.resource) \
                     for cat in self.note_categories]),
@@ -321,18 +325,22 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 raise AssertionError("Unknown incomplete response error %s" % \
                                      (self.resource.response.http_error))
 
-    def format_response(self, resource: HttpResource) -> str:
+    def format_nonfinal_responses(self, resource: HttpResource) -> str:
+        return nl.join(["<pre class='nonfinal_response'>%s</pre>" % self.format_response(r) 
+                       for r in resource.nonfinal_responses])
+
+    def format_response(self, response: HttpResponse) -> str:
         "Return the HTTP response line and headers as HTML"
         offset = 0
         headers = []
-        for (name, value) in resource.response.headers:
+        for (name, value) in response.headers:
             offset += 1
             headers.append(self.format_header(name, value, offset))
 
         return "    <span class='status'>HTTP/%s %s %s</span>\n" % (
-            e_html(resource.response.version),
-            e_html(resource.response.status_code),
-            e_html(resource.response.status_phrase)) + nl.join(headers)
+            e_html(response.version),
+            e_html(response.status_code),
+            e_html(response.status_phrase)) + nl.join(headers)
 
     def format_header(self, name: str, value: str, offset: int) -> str:
         "Return an individual HTML header as HTML"

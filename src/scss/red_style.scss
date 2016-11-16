@@ -207,6 +207,12 @@ option[value="other..."] {
   }
 }
 
+.nonfinal_response {
+  @extend #response;
+  background-color: transparentize($console_colour, 0.4);
+  border: none;
+}
+
 .hdr.hilight {
   color: lighten($header_colour, 100%);
   font-weight: bold;
