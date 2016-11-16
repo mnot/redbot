@@ -147,7 +147,7 @@ option[value="other..."] {
   font-style: italic; }
 
 /* response detail */
-#response {
+#response, .nonfinal_response {
   font-size: 10pt;
   font-family: Courier, monospace;
   background-color: #111;
@@ -160,8 +160,12 @@ option[value="other..."] {
   padding: 1em 0;
   margin-bottom: 0;
   overflow-x: auto; }
-  #response a {
+  #response a, .nonfinal_response a {
     color: #ccf; }
+
+.nonfinal_response {
+  background-color: rgba(17, 17, 17, 0.6);
+  border: none; }
 
 .hdr.hilight {
   color: white;
