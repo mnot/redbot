@@ -48,7 +48,7 @@ unit_test:
 
 .PHONY: server
 server: clean-deploy deploy
-	PYTHONPATH=$(PYTHONPATH) $(PYTHON) bin/webui.py 8080 redbot/assets/
+	PYTHONPATH=$(PYTHONPATH) $(PYTHON) deploy/webui.py 8080 redbot/assets/
 
 .PHONY: deploy
 deploy: clean-deploy
