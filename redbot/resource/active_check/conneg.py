@@ -34,7 +34,11 @@ class ConnegCheck(SubRequest):
         bare = self.base.response
 
         if not negotiated.complete:
-            self.add_base_note('', CONNEG_SUBREQ_PROBLEM, problem=negotiated.http_error.desc)
+            if negotiated.http_error:
+                problem = negotiated.http_error.desc
+            else:
+                problem = ""
+            self.add_base_note('', CONNEG_SUBREQ_PROBLEM, problem=problem)
             return
 
         # see if it was compressed when not negotiated
