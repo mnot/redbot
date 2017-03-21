@@ -99,7 +99,10 @@ class RobotFetcher(thor.events.EventEmitter):
                     except KeyError:
                         break
                     self._robot_check(check_url, self.robot_checkers[origin])
-                del self.robot_lookups[origin]
+                try:
+                    del self.robot_lookups[origin]
+                except KeyError:
+                    pass
 
             @thor.on(exchange)
             def error(error: thor.http.error.HttpError) -> None:
