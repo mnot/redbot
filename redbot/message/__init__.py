@@ -96,6 +96,7 @@ class HttpMessage(thor.events.EventEmitter):
         Feed a list of (str name, str value) header tuples in. Do not process.
         """
         self.headers = headers
+        self.emit("headers_available")
 
     def feed_body(self, chunk: bytes) -> None:
         """
