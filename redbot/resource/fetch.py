@@ -157,7 +157,7 @@ class RedFetcher(thor.events.EventEmitter):
             self.transfer_out += len(self.request.payload)
         self.exchange.request_done([])
 
-    def _response_nonfinal(self, status: bytes, phrase: bytes, 
+    def _response_nonfinal(self, status: bytes, phrase: bytes,
                            res_headers: RawHeaderListType) -> None:
         "Got a non-final response."
         nfres = HttpResponse(self.add_note)

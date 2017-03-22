@@ -36,7 +36,7 @@ ext_name_star = r"(?: {parmname} [*] )".format(**locals())
 #                 | "[" | "]" | "^" | "_" | "`" | "{" | "|"
 #                 | "}" | "~"
 
-ptokenchar = r"""(?: 
+ptokenchar = r"""(?:
                      !  | #  | \$ | %  | &  | '  | \(
                    | \) | \* | \+ | -  | \. | /  | {DIGIT}
                    | :  | <  | =  | >  | \? | @  | {ALPHA}
@@ -77,7 +77,7 @@ relation_type = r"(?: {reg_rel_type} | {ext_rel_type} )".format(**locals())
 #  relation-types = relation-type
 #                 | <"> relation-type *( 1*SP relation-type ) <">
 
-relation_types = r"""(?: {relation_type} 
+relation_types = r"""(?: {relation_type}
                       |  " {relation_type} (?: {SP}+ {relation_type} )* " 
 )""".format(**locals())
 

@@ -326,7 +326,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                                      (self.resource.response.http_error))
 
     def format_nonfinal_responses(self, resource: HttpResource) -> str:
-        return nl.join(["<pre class='nonfinal_response'>%s</pre>" % self.format_response(r) 
+        return nl.join(["<pre class='nonfinal_response'>%s</pre>" % self.format_response(r)
                        for r in resource.nonfinal_responses])
 
     def format_response(self, response: HttpResponse) -> str:
