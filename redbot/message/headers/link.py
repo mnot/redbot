@@ -69,42 +69,42 @@ This parameter can be an absolute or relative URI; however, `%(anchor)s` is neit
 
 class BasicLinkTest(headers.HeaderTest):
     name = 'Link'
-    inputs = ['<http://www.example.com/>; rel=example']
+    inputs = [b'<http://www.example.com/>; rel=example']
     expected_out = [('http://www.example.com/', {'rel': 'example'})]
     expected_err = [] # type: ignore
 
 class QuotedLinkTest(headers.HeaderTest):
     name = 'Link'
-    inputs = ['"http://www.example.com/"; rel=example']
+    inputs = [b'"http://www.example.com/"; rel=example']
     expected_out = [('http://www.example.com/', {'rel': 'example'})]
     expected_err = [headers.BAD_SYNTAX]
 
 class QuotedRelationLinkTest(headers.HeaderTest):
     name = 'Link'
-    inputs = ['<http://www.example.com/>; rel="example"']
+    inputs = [b'<http://www.example.com/>; rel="example"']
     expected_out = [('http://www.example.com/', {'rel': 'example'})]
     expected_err = [] # type: ignore
 
 class RelativeLinkTest(headers.HeaderTest):
     name = 'Link'
-    inputs = ['</foo>; rel="example"']
+    inputs = [b'</foo>; rel="example"']
     expected_out = [('/foo', {'rel': 'example'})]
     expected_err = [] # type: ignore
 
 class RepeatingRelationLinkTest(headers.HeaderTest):
     name = 'Link'
-    inputs = ['</foo>; rel="example"; rel="another"']
+    inputs = [b'</foo>; rel="example"; rel="another"']
     expected_out = [('/foo', {'rel': 'another'})]
     expected_err = [headers.PARAM_REPEATS]
 
 class RevLinkTest(headers.HeaderTest):
     name = 'Link'
-    inputs = ['</foo>; rev="bar"']
+    inputs = [b'</foo>; rev="bar"']
     expected_out = [('/foo', {'rev': 'bar'})]
     expected_err = [LINK_REV]
 
 class BadAnchorLinkTest(headers.HeaderTest):
     name = 'Link'
-    inputs = ['</foo>; rel="bar"; anchor="{blah}"']
+    inputs = [b'</foo>; rel="bar"; anchor="{blah}"']
     expected_out = [('/foo', {'rel': 'bar', 'anchor': '{blah}'})]
     expected_err = [LINK_BAD_ANCHOR]

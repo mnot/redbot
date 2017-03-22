@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from typing import Tuple
+from typing import Tuple, Dict
 
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
@@ -65,6 +65,6 @@ information."""
 
 class BasicUACTest(headers.HeaderTest):
     name = 'X-UA-Compatible'
-    inputs = ['foo=bar']
+    inputs = [b'foo=bar']
     expected_out = ("foo", "bar")
     expected_err = [UA_COMPATIBLE]

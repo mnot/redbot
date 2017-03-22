@@ -60,7 +60,7 @@ The correct absolute URI is (probably): `%(full_uri)s`"""
 
 class LocationTest(headers.HeaderTest):
     name = 'Location'
-    inputs = ['http://other.example.com/foo']
+    inputs = [b'http://other.example.com/foo']
     expected_out = 'http://other.example.com/foo'
     expected_err = [] # type: ignore
     def set_context(self, message: HttpMessage) -> None:

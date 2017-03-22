@@ -16,6 +16,6 @@ The `Allow` header advertises the set of methods that are supported by the resou
 
 class AllowTest(headers.HeaderTest):
     name = 'Allow'
-    inputs = ['GET, POST']
+    inputs = [b'GET, POST']
     expected_out = ['GET', 'POST']
     expected_err = [] # type: ignore

@@ -39,7 +39,7 @@ Putting a `Content-Range` header in this response may confuse caches and clients
 
 class ContentRangeTest(headers.HeaderTest):
     name = 'Content-Range'
-    inputs = ['bytes 1-100/200']
+    inputs = [b'bytes 1-100/200']
     expected_out = 'bytes 1-100/200'
     expected_err = [] # type: ignore
     def set_context(self, message: HttpMessage) -> None:

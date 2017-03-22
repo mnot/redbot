@@ -38,30 +38,30 @@ Clients who don't know about the non-standard range-unit will not be able to use
 
 class AcceptRangeTest(headers.HeaderTest):
     name = 'Accept-Ranges'
-    inputs = ['bytes']
+    inputs = [b'bytes']
     expected_out = (['bytes'])
     expected_err = [] # type: ignore
 
 class NoneAcceptRangeTest(headers.HeaderTest):
     name = 'Accept-Ranges'
-    inputs = ['none']
+    inputs = [b'none']
     expected_out = (['none'])
     expected_err = [] # type: ignore
 
 class BothAcceptRangeTest(headers.HeaderTest):
     name = 'Accept-Ranges'
-    inputs = ['bytes, none']
+    inputs = [b'bytes, none']
     expected_out = (['bytes', 'none'])
     expected_err = [] # type: ignore
 
 class BadAcceptRangeTest(headers.HeaderTest):
     name = 'Accept-Ranges'
-    inputs = ['foo']
+    inputs = [b'foo']
     expected_out = (['foo'])
     expected_err = [UNKNOWN_RANGE]
 
 class CaseAcceptRangeTest(headers.HeaderTest):
     name = 'Accept-Ranges'
-    inputs = ['Bytes, NONE']
+    inputs = [b'Bytes, NONE']
     expected_out = (['bytes', 'none'])
     expected_err = [] # type: ignore

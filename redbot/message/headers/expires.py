@@ -27,18 +27,18 @@ The `Expires` header gives a time after which the response is considered stale."
 
 class BasicExpiresTest(headers.HeaderTest):
     name = 'Expires'
-    inputs = ['Mon, 04 Jul 2011 09:08:06 GMT']
+    inputs = [b'Mon, 04 Jul 2011 09:08:06 GMT']
     expected_out = 1309770486
     expected_err = [] # type: ignore
 
 class BadExpiresTest(headers.HeaderTest):
     name = 'Expires'
-    inputs = ['0']
+    inputs = [b'0']
     expected_out = None # type: ignore
     expected_err = [headers.BAD_DATE_SYNTAX]
 
 class BlankExpiresTest(headers.HeaderTest):
     name = 'Expires'
-    inputs = ['']
+    inputs = [b'']
     expected_out = None # type: ignore
     expected_err = [headers.BAD_DATE_SYNTAX]

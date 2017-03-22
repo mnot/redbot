@@ -85,24 +85,24 @@ See [this blog entry](http://bit.ly/v5Bh5Q) for more information.
 
 class DenyXFOTest(headers.HeaderTest):
     name = 'X-Frame-Options'
-    inputs = ['DENY']
+    inputs = [b'DENY']
     expected_out = 'DENY'
     expected_err = [FRAME_OPTIONS_DENY]
 
 class DenyXFOCaseTest(headers.HeaderTest):
     name = 'X-Frame-Options'
-    inputs = ['deny']
+    inputs = [b'deny']
     expected_out = 'DENY'
     expected_err = [FRAME_OPTIONS_DENY]
 
 class SameOriginXFOTest(headers.HeaderTest):
     name = 'X-Frame-Options'
-    inputs = ['SAMEORIGIN']
+    inputs = [b'SAMEORIGIN']
     expected_out = 'SAMEORIGIN'
     expected_err = [FRAME_OPTIONS_SAMEORIGIN]
 
 class UnknownXFOTest(headers.HeaderTest):
     name = 'X-Frame-Options'
-    inputs = ['foO']
+    inputs = [b'foO']
     expected_out = 'FOO'
     expected_err = [headers.BAD_SYNTAX, FRAME_OPTIONS_UNKNOWN]

@@ -45,18 +45,18 @@ encodings that the client doesn't explicitly request can lead to interoperabilit
 
 class ContentEncodingTest(headers.HeaderTest):
     name = 'Content-Encoding'
-    inputs = ['gzip']
+    inputs = [b'gzip']
     expected_out = ['gzip']
     expected_err = [] # type: ignore
 
 class ContentEncodingCaseTest(headers.HeaderTest):
     name = 'Content-Encoding'
-    inputs = ['GZip']
+    inputs = [b'GZip']
     expected_out = ['gzip']
     expected_err = [] # type: ignore
 
 class UnwantedContentEncodingTest(headers.HeaderTest):
     name = 'Content-Encoding'
-    inputs = ['gzip', 'foo']
+    inputs = [b'gzip', b'foo']
     expected_out = ['gzip', 'foo']
     expected_err = [ENCODING_UNWANTED]

@@ -38,12 +38,12 @@ It's safe to remove this header if you wish to save a few bytes in the response.
 
 class KeepAliveTest(headers.HeaderTest):
     name = 'Keep-Alive'
-    inputs = ['timeout=30']
+    inputs = [b'timeout=30']
     expected_out = [("timeout", "30")]
     expected_err = [headers.HEADER_DEPRECATED]
 
 class EmptyKeepAliveTest(headers.HeaderTest):
     name = 'Keep-Alive'
-    inputs = ['']
+    inputs = [b'']
     expected_out = [] # type: ignore
     expected_err = [headers.HEADER_DEPRECATED]

@@ -29,18 +29,18 @@ It is used by caches as input to expiration calculations, and to detect clock dr
 
 class BasicDateTest(headers.HeaderTest):
     name = 'Date'
-    inputs = ['Mon, 04 Jul 2011 09:08:06 GMT']
+    inputs = [b'Mon, 04 Jul 2011 09:08:06 GMT']
     expected_out = 1309770486
     expected_err = [] # type: ignore
 
 class BadDateTest(headers.HeaderTest):
     name = 'Date'
-    inputs = ['0']
+    inputs = [b'0']
     expected_out = None # type: ignore
     expected_err = [headers.BAD_DATE_SYNTAX]
 
 class BlankDateTest(headers.HeaderTest):
     name = 'Date'
-    inputs = ['']
+    inputs = [b'']
     expected_out = None # type: ignore
     expected_err = [headers.BAD_DATE_SYNTAX]

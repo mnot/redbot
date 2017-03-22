@@ -97,31 +97,31 @@ You should remove these characters."""
 
 class QuotedCDTest(headers.HeaderTest):
     name = 'Content-Disposition'
-    inputs = ['attachment; filename="foo.txt"']
+    inputs = [b'attachment; filename="foo.txt"']
     expected_out = ('attachment', {'filename': 'foo.txt'})
     expected_err = [] # type: ignore
 
 class TokenCDTest(headers.HeaderTest):
     name = 'Content-Disposition'
-    inputs = ['attachment; filename=foo.txt']
+    inputs = [b'attachment; filename=foo.txt']
     expected_out = ('attachment', {'filename': 'foo.txt'})
     expected_err = [] # type: ignore
 
 class InlineCDTest(headers.HeaderTest):
     name = 'Content-Disposition'
-    inputs = ['inline; filename=foo.txt']
+    inputs = [b'inline; filename=foo.txt']
     expected_out = ('inline', {'filename': 'foo.txt'})
     expected_err = [] # type: ignore
 
 class RepeatCDTest(headers.HeaderTest):
     name = 'Content-Disposition'
-    inputs = ['attachment; filename=foo.txt', 'inline; filename=bar.txt']
+    inputs = [b'attachment; filename=foo.txt', b'inline; filename=bar.txt']
     expected_out = ('inline', {'filename': 'bar.txt'})
     expected_err = [headers.SINGLE_HEADER_REPEAT]
 
 class FilenameStarCDTest(headers.HeaderTest):
     name = 'Content-Disposition'
-    inputs = ["attachment; filename=foo.txt; filename*=UTF-8''a%cc%88.txt"]
+    inputs = [b"attachment; filename=foo.txt; filename*=UTF-8''a%cc%88.txt"]
     expected_out = ('attachment', {
         'filename': 'foo.txt',
         'filename*': u'a\u0308.txt'})
@@ -129,7 +129,7 @@ class FilenameStarCDTest(headers.HeaderTest):
 
 class FilenameStarQuotedCDTest(headers.HeaderTest):
     name = 'Content-Disposition'
-    inputs = ["attachment; filename=foo.txt; filename*=\"UTF-8''a%cc%88.txt\""]
+    inputs = [b"attachment; filename=foo.txt; filename*=\"UTF-8''a%cc%88.txt\""]
     expected_out = ('attachment', {
         'filename': 'foo.txt',
         'filename*': u'a\u0308.txt'})
@@ -137,12 +137,12 @@ class FilenameStarQuotedCDTest(headers.HeaderTest):
 
 class FilenamePercentCDTest(headers.HeaderTest):
     name = 'Content-Disposition'
-    inputs = ["attachment; filename=fo%22o.txt"]
+    inputs = [b"attachment; filename=fo%22o.txt"]
     expected_out = ('attachment', {'filename': 'fo%22o.txt', })
     expected_err = [DISPOSITION_FILENAME_PERCENT]
 
 class FilenamePathCharCDTest(headers.HeaderTest):
     name = 'Content-Disposition'
-    inputs = ['attachment; filename="/foo.txt"']
+    inputs = [b'attachment; filename="/foo.txt"']
     expected_out = ('attachment', {'filename': '/foo.txt',})
     expected_err = [DISPOSITION_FILENAME_PATH_CHAR]

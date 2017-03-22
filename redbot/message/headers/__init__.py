@@ -10,7 +10,7 @@ from copy import copy
 from functools import partial
 import re
 import sys
-from typing import Any, Callable, List, Tuple, Type, Union, TYPE_CHECKING
+from typing import Any, Callable, List, Dict, Optional, Tuple, Type, Union, TYPE_CHECKING
 import unittest
 
 from redbot.syntax import rfc7230, rfc7231
@@ -38,7 +38,7 @@ class HttpHeader(object):
     canonical_name = None # type: str
     description = None # type: str
     reference = None # type: str
-    syntax = None # type: Union[str, rfc7230.list_rule] # Verbose regular expression to match.
+    syntax = None # type: Union[str, rfc7230.list_rule, bool] # Verbose regular expression to match.
     list_header = None # type: bool                     # Can be split into values on commas.
     nonstandard_syntax = False # type: bool             # Don't check for a single value at the end.
     deprecated = None # type: bool
@@ -236,7 +236,7 @@ class HeaderProcessor(object):
             return handler
 
     @staticmethod
-    def find_header_handler(header_name: str, default: bool=True) -> Type[HttpHeader]:
+    def find_header_handler(header_name: str, default: bool=True) -> Optional[Type[HttpHeader]]:
         """
         Return a header handler class for the given field name.
 
@@ -249,6 +249,7 @@ class HeaderProcessor(object):
             return getattr(hdr_module, name_token)
         if default:
             return UnknownHttpHeader
+        return None
 
     @staticmethod
     def find_header_module(header_name: str) -> Any:
@@ -282,7 +283,7 @@ class HeaderTest(unittest.TestCase):
     name = None # type: str
     inputs = [] # type: list[bytes]
     expected_out = None # type: Any
-    expected_err = [] # type: List[Note]
+    expected_err = [] # type: List[Type[Note]]
 
     def setUp(self) -> None:
         "Test setup."

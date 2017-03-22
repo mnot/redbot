@@ -23,6 +23,6 @@ it should not be reused."""
 
 class ConnectionTest(headers.HeaderTest):
     name = 'Connection'
-    inputs = ['close']
+    inputs = [b'close']
     expected_out = ['close']
     expected_err = [] # type: ignore

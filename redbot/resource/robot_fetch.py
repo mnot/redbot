@@ -8,7 +8,7 @@ Fetches robots.txt for a given URL.
 
 import hashlib
 from os import path
-from typing import Union
+from typing import Union, Dict
 from urllib.robotparser import RobotFileParser
 from urllib.parse import urlsplit
 
@@ -114,6 +114,7 @@ class RobotFetcher(thor.events.EventEmitter):
             exchange.request_start(b"GET", robots_url.encode('ascii'),
                                    [(b'User-Agent', UA_STRING.encode('ascii'))])
             exchange.request_done([])
+        return None
 
     def _load_checker(self, origin: str, robots_txt: bytes) -> None:
         """Load a checker for an origin, given its robots.txt file."""
@@ -138,6 +139,7 @@ class RobotFetcher(thor.events.EventEmitter):
             return result
         else:
             self.emit("robot-%s" % url, result)
+            return None
 
 
 

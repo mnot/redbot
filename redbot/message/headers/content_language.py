@@ -21,6 +21,6 @@ this might not convey all of the languages used within the body."""
 
 class ContentLanguageTest(headers.HeaderTest):
     name = 'Content-Language'
-    inputs = ['en-US']
+    inputs = [b'en-US']
     expected_out = 'en-US'
     expected_err = [] # type: ignore

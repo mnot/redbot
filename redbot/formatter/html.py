@@ -13,7 +13,7 @@ import operator
 import os
 import re
 import textwrap
-from typing import Any, Match, Tuple, Union # pylint: disable=unused-import
+from typing import Any, List, Match, Tuple, Union # pylint: disable=unused-import
 from urllib.parse import urljoin, quote as urlquote
 
 from markdown import markdown
@@ -136,8 +136,8 @@ $('#red_status').text("%s");
             for extra_file in extra_files:
                 extra_path = os.path.join(extra_dir, extra_file)
                 try:
-                    o.append(codecs.open(extra_path, mode='r', encoding='utf-8',
-                                         errors='replace').read())  # type: ignore
+                    o.append(codecs.open(extra_path, mode='r', encoding='utf-8', # type: ignore
+                                         errors='replace').read())
                 except IOError as why:
                     o.append("<!-- error opening %s: %s -->" % (extra_file, why))
         return nl.join(o)
@@ -327,7 +327,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 
     def format_nonfinal_responses(self, resource: HttpResource) -> str:
         return nl.join(["<pre class='nonfinal_response'>%s</pre>" % self.format_response(r)
-                       for r in resource.nonfinal_responses])
+                        for r in resource.nonfinal_responses])
 
     def format_response(self, response: HttpResponse) -> str:
         "Return the HTTP response line and headers as HTML"

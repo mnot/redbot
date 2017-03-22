@@ -83,48 +83,48 @@ cause interoperability problems. They should be removed."""
 
 class TransferEncodingTest(headers.HeaderTest):
     name = 'Transfer-Encoding'
-    inputs = ['chunked']
+    inputs = [b'chunked']
     expected_out = (['chunked'])
     expected_err = [] # type: ignore
 
 class TransferEncodingParamTest(headers.HeaderTest):
     name = 'Transfer-Encoding'
-    inputs = ['chunked; foo=bar']
+    inputs = [b'chunked; foo=bar']
     expected_out = (['chunked'])
     expected_err = [TRANSFER_CODING_PARAM]
 
 class BadTransferEncodingTest(headers.HeaderTest):
     name = 'Transfer-Encoding'
-    inputs = ['chunked=foo']
+    inputs = [b'chunked=foo']
     expected_out = ['chunked=foo']
     expected_err = [headers.BAD_SYNTAX, TRANSFER_CODING_UNWANTED]
 
 class TransferEncodingCaseTest(headers.HeaderTest):
     name = 'Transfer-Encoding'
-    inputs = ['chUNked']
+    inputs = [b'chUNked']
     expected_out = (['chunked'])
     expected_err = [] # type: ignore
 
 class TransferEncodingIdentityTest(headers.HeaderTest):
     name = 'Transfer-Encoding'
-    inputs = ['identity']
+    inputs = [b'identity']
     expected_out = (['identity'])
     expected_err = [TRANSFER_CODING_IDENTITY]
 
 class TransferEncodingUnwantedTest(headers.HeaderTest):
     name = 'Transfer-Encoding'
-    inputs = ['foo']
+    inputs = [b'foo']
     expected_out = (['foo'])
     expected_err = [TRANSFER_CODING_UNWANTED]
 
 class TransferEncodingMultTest(headers.HeaderTest):
     name = 'Transfer-Encoding'
-    inputs = ['chunked', 'identity']
+    inputs = [b'chunked', b'identity']
     expected_out = (['chunked', 'identity'])
     expected_err = [TRANSFER_CODING_IDENTITY]
 
 class TransferEncodingMultUnwantedTest(headers.HeaderTest):
     name = 'Transfer-Encoding'
-    inputs = ['chunked', 'foo', 'bar']
+    inputs = [b'chunked', b'foo', b'bar']
     expected_out = (['chunked', 'foo', 'bar'])
     expected_err = [TRANSFER_CODING_UNWANTED]

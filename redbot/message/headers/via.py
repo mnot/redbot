@@ -44,6 +44,6 @@ used)."""
 
 class ViaTest(headers.HeaderTest):
     name = 'Via'
-    inputs = ['1.1 test']
+    inputs = [b'1.1 test']
     expected_out = ['1.1 test']
     expected_err = [VIA_PRESENT]

@@ -21,6 +21,6 @@ not proof against malicious attacks."""
 
 class ContentMD5Test(headers.HeaderTest):
     name = 'Content-MD5'
-    inputs = ['Q2hlY2sgSW50ZWdyaXR5IQ==']
+    inputs = [b'Q2hlY2sgSW50ZWdyaXR5IQ==']
     expected_out = 'Q2hlY2sgSW50ZWdyaXR5IQ=='
     expected_err = [headers.HEADER_DEPRECATED]

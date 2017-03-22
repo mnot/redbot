@@ -50,24 +50,24 @@ since it was generated. The value given was negative, so it is not a valid age."
 
 class AgeTest(headers.HeaderTest):
     name = 'Age'
-    inputs = ['10']
+    inputs = [b'10']
     expected_out = 10
     expected_err = [] # type: ignore
 
 class MultipleAgeTest(headers.HeaderTest):
     name = 'Age'
-    inputs = ['20', '10']
+    inputs = [b'20', b'10']
     expected_out = 10
     expected_err = [headers.SINGLE_HEADER_REPEAT]
 
 class CharAgeTest(headers.HeaderTest):
     name = 'Age'
-    inputs = ['foo']
+    inputs = [b'foo']
     expected_out = None # type: ignore
     expected_err = [AGE_NOT_INT]
 
 class NegAgeTest(headers.HeaderTest):
     name = "Age"
-    inputs = ["-20"]
+    inputs = [b"-20"]
     expected_out = None # type: ignore
     expected_err = [AGE_NEGATIVE]

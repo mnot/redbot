@@ -9,7 +9,7 @@ import binascii
 import hashlib
 import re
 import time
-from typing import Any, Callable, Dict, Tuple, Type, Union
+from typing import Any, Callable, List, Dict, Tuple, Type, Union
 from urllib.parse import urlsplit, urlunsplit, quote as urlquote
 import zlib
 

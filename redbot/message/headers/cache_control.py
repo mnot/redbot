@@ -47,30 +47,30 @@ class BAD_CC_SYNTAX(Note):
 
 class CacheControlTest(headers.HeaderTest):
     name = 'Cache-Control'
-    inputs = ['a=b, c=d', 'e=f', 'g']
+    inputs = [b'a=b, c=d', b'e=f', b'g']
     expected_out = [('a', 'b'), ('c', 'd'), ('e', 'f'), ('g', None)]
     expected_err = [] # type: ignore
 
 class CacheControlCaseTest(headers.HeaderTest):
     name = 'Cache-Control'
-    inputs = ['A=b, c=D']
+    inputs = [b'A=b, c=D']
     expected_out = [('a', 'b'), ('c', 'D')]
     expected_err = [] # type: ignore
 
 class CacheControlQuotedTest(headers.HeaderTest):
     name = 'Cache-Control'
-    inputs = ['a="b,c", c=d']
+    inputs = [b'a="b,c", c=d']
     expected_out = [('a', 'b,c'), ('c', 'd')]
     expected_err = [] # type: ignore
 
 class CacheControlMaxAgeTest(headers.HeaderTest):
     name = 'Cache-Control'
-    inputs = ['max-age=5']
+    inputs = [b'max-age=5']
     expected_out = [('max-age', 5)]
     expected_err = [] # type: ignore
 
 class CacheControlBadMaxAgeTest(headers.HeaderTest):
     name = 'Cache-Control'
-    inputs = ['max-age=foo']
+    inputs = [b'max-age=foo']
     expected_out = [] # type: ignore
     expected_err = [BAD_CC_SYNTAX]

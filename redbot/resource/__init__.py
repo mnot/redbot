@@ -11,7 +11,7 @@ See webui.py for the Web front-end.
 """
 
 import sys
-from typing import Set, Tuple, Union
+from typing import List, Dict, Set, Tuple, Union
 from urllib.parse import urljoin
 
 import thor
@@ -100,6 +100,7 @@ class HttpResource(RedFetcher):
         if self._task_map and watch:
             sys.stderr.write("* %s - %s\n" % (self, self._task_map))
             thor.schedule(5, self.show_task_map)
+            return None
         else:
             return repr(self._task_map)
 
