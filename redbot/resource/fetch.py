@@ -101,7 +101,10 @@ class RedFetcher(thor.events.EventEmitter):
         """
         self.request.method = method
         self.response.is_head_response = (method == "HEAD")   # type: ignore
-        self.request.set_iri(iri)
+        try:
+            self.request.set_iri(iri)
+        except httperr.UrlError as why:
+            self.response.http_error = why
         self.response.base_uri = self.request.uri             # type: ignore
         if req_hdrs:
             self.request.set_headers(req_hdrs)

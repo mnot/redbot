@@ -272,7 +272,7 @@ class HttpRequest(HttpMessage):
         try:
             self.uri = self.iri_to_uri(iri)
         except (ValueError, UnicodeError) as why:
-            self.http_error = thor.http.error.UrlError(why.args[0])
+            raise thor.http.error.UrlError(why.args[0])
             return
         if not re.match(r"^\s*%s\s*$" % rfc3986.URI, self.uri, re.VERBOSE):
             self.add_note('uri', URI_BAD_SYNTAX)
