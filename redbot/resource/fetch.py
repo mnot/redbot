@@ -148,7 +148,8 @@ class RedFetcher(thor.events.EventEmitter):
         self.exchange.once('response_done', self._response_done)
         self.exchange.on('error', self._response_error)
         self.emit("status", "fetching %s (%s)" % (self.request.uri, self.check_name))
-        req_hdrs = [(k.encode('ascii'), v.encode('ascii')) for (k, v) in self.request.headers]
+        req_hdrs = [(k.encode('ascii', 'replace'), v.encode('ascii', 'replace'))
+                    for (k, v) in self.request.headers] # FIXME: should complain
         self.exchange.request_start(
             self.request.method.encode('ascii'), self.request.uri.encode('ascii'), req_hdrs)
         self.request.start_time = thor.time()
