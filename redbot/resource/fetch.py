@@ -194,15 +194,16 @@ class RedFetcher(thor.events.EventEmitter):
         self.emit("status", "fetch error %s (%s) - %s" % (
             self.request.uri, self.check_name, error.desc))
         err_sample = error.detail[:40] or ""
-        if error.client_recoverable:
-            pass # we'll get to this later.
-        elif isinstance(error, httperr.ExtraDataError):
+        if isinstance(error, httperr.ExtraDataError):
             if self.response.status_code == "304":
                 self.add_note('body', BODY_NOT_ALLOWED, sample=err_sample)
             else:
                 self.add_note('body', EXTRA_DATA, sample=err_sample)
         elif isinstance(error, httperr.ChunkError):
             self.add_note('header-transfer-encoding', BAD_CHUNK, chunk_sample=err_sample)
+        elif isinstance(error, httperr.HeaderSpaceError):
+            subject = 'header-%s' % (error.detail.lower().strip())
+            self.add_note(subject, HEADER_NAME_SPACE, header_name=error.detail)
         else:
             self.response.http_error = error
         self._fetch_done()
@@ -269,3 +270,14 @@ incorrect chunking can lead to interoperability and security problems.
 
 This issue is often caused by sending an integer chunk size instead of one in hex, or by sending
 `Transfer-Encoding: chunked` without actually chunking the response body."""
+
+class HEADER_NAME_SPACE(Note):
+    category = categories.CONNECTION
+    level = levels.BAD
+    summary = "%(response)s has whitespace at the end of the '%(header_name)s' header field name."
+    text = """\
+HTTP specifically bans whitespace between header field names and the colon, because they can easily
+be confused by recipients; some will strip it, and others won't, leading to a variety of attacks.
+
+Most HTTP implementations will refuse to process this message.
+"""
