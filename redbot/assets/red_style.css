@@ -106,10 +106,9 @@ li {
 /* request */
 input#uri {
   width: 643px;
-  font-size: 1.1em; }
-  input#uri.active {
-    color: #111; }
-  input#uri.inactive {
+  font-size: 1.1em;
+  color: #111; }
+  input#uri::placeholder {
     color: #c4c4c4; }
 
 .add_req_hdr {
