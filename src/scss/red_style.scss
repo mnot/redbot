@@ -139,10 +139,8 @@ li {
 input#uri {
   width: $left_width - 7px;
   font-size: 1.1em;
-  &.active {
-    color: $text_colour;
-  }
-  &.inactive {
+  color: $text_colour;
+  &::placeholder {
     color: lighten($text_colour, 70%);
   }
 }

@@ -10,30 +10,6 @@ $(document).ready(function() {
   "use strict";
   
   /* URI */
-  
-  var check_phrase = "Enter a http:// or https:// URL to check";
-  if (config.redbot_uri) {
-    $("#uri").val(config.redbot_uri);
-  } else if (! $("#uri").val()) {
-    $("#uri").val(check_phrase);
-    $("#uri").attr('class', 'inactive');
-  }
-
-  $("#uri").focus(function(){
-    if ($(this).val() == check_phrase) {
-      $(this).val("");
-      $("#uri").attr('class', 'active');
-    }
-  });
-
-  console.log("ok.")
-  $("#uri").keydown(function (e) {
-    console.log("***" + $(this).val());
-    if ($(this).val() == check_phrase) {
-      $(this).val("");
-      $("#uri").attr('class', 'active');
-    }
-  });
 
   $("input").keypress(function (e) {
     if (e.which == 13) {
