@@ -215,7 +215,7 @@ class HeaderProcessor(object):
         # check each of the complete header values and get the parsed value
         for header_name, header_handler in list(self._header_handlers.items()):
             header_add_note = partial(self.message.add_note,
-                                      "header-%s" % header_handler.canonical_name,
+                                      "header-%s" % header_handler.canonical_name.lower(),
                                       field_name=header_handler.canonical_name)
             header_handler.finish(self.message, header_add_note) # type: ignore
             parsed_headers[header_handler.norm_name] = header_handler.value
