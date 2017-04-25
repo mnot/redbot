@@ -111,7 +111,6 @@ class HttpMessage(thor.events.EventEmitter):
         if len(self.payload_sample) > 4:
             self.payload_sample.pop(0)
         self._md5_processor.update(chunk)
-        self.payload_len += len(chunk)
         if (not self.is_request) and self.status_code == "206":
             # only store 206; don't try to understand it
             self.payload += chunk
@@ -131,6 +130,7 @@ class HttpMessage(thor.events.EventEmitter):
                 self.emit("chunk", decoded_chunk)
             else:
                 self.decoded_sample_complete = False
+        self.payload_len += len(chunk)
 
     def body_done(self, complete: bool, trailers: RawHeaderListType=None) -> None:
         """
