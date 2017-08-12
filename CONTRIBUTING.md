@@ -37,15 +37,15 @@ Code contributions are very welcome!
 First, a quick overview of the repository contents.
 
 * `bin/` has the command-line and Web (CGI, standalone and mod_python) executables that are the glue between the outside world and REDbot
-* `redbot/` contains the redbot Python module
-  * `redbot/webui.py` is the engine for Web-based interaction with REDbot
-  * `redbot/resource/` defines the actual checker for a given URL, as `HTTPResource` in `__init__.py`. Lower-level fetching of resources is handled in `fetch.py`, and `robot_fetch.py` checks [robots.txt](http://www.robotstxt.org)
-  * `redbot/resource/active_check/` doing a check on a resource might involve making additional requests, e.g., for ETag validation. Those checks are defined here
-  * `redbot/message/` holds checks on one message, either request or response (but currently, mostly responses)
-  * `redbot/message/headers/` checks individual HTTP headers
-  * `redbot/syntax` has a collection of [ABNF](https://tools.ietf.org/html/rfc5234) translated into regex, for checking syntax
-  * `redbot/formatter/` holds the different output formatters (e.g., HTML, plaintext, [HAR](http://www.softwareishard.com/blog/har-12-spec/)) for the check results
-  * `redbot/assets/` has all of the static assets that REDbot needs
+* `redbot/` contains the redbot Python module:
+  * `assets/` contains static assets for the Web UI
+  * `formatter/` holds the different output formatters (e.g., HTML, plaintext, [HAR](http://www.softwareishard.com/blog/har-12-spec/)) for the check results
+  * `message/` checks one message, either request or response (but currently, mostly responses)
+    * `headers/` checks individual HTTP headers
+  * `resource/` defines the actual checker for a given URL, as `HTTPResource` in `__init__.py`. Lower-level fetching of resources is handled in `fetch.py`, and `robot_fetch.py` checks [robots.txt](http://www.robotstxt.org)
+    * `active_check/` doing a check on a resource might involve making additional requests, e.g., for ETag validation. Those checks are defined here
+  * `syntax/` has a collection of [ABNF](https://tools.ietf.org/html/rfc5234) translated into regex, for checking syntax
+  * `webui.py` is the engine for Web-based interaction with REDbot
 * `src/` contains the source files for the JavaScript and CSS files
 * `test/` guess what's here?
 
