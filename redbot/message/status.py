@@ -129,6 +129,8 @@ class StatusChecker(object):
         pass # TODO: test to see if it's true, alter if not
     def status417(self) -> None:        # Expectation Failed
         pass # TODO: explain, alert if it's 100-continue
+    def status418(self) -> None:
+        self.add_note('', STATUS_IM_A_TEAPOT)
     def status422(self) -> None:        # Unprocessable Entity
         pass
     def status423(self) -> None:        # Locked
@@ -339,6 +341,13 @@ class STATUS_UNSUPPORTED_MEDIA_TYPE(Note):
     summary = "The resource doesn't support this media type in requests."
     text = """\
  """
+
+class STATUS_IM_A_TEAPOT(Note):
+    category = categories.GENERAL
+    level = levels.INFO
+    summary = "Teapot is requested to brew coffee."
+    text = """\
+    """
 
 class STATUS_INTERNAL_SERVICE_ERROR(Note):
     category = categories.GENERAL
