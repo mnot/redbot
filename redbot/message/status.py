@@ -100,7 +100,7 @@ class StatusChecker(object):
     def status404(self) -> None:        # Not Found
         self.add_note('', STATUS_NOT_FOUND)
     def status405(self) -> None:        # Method Not Allowed
-        pass # TODO: show allowed methods?
+        pass
     def status406(self) -> None:        # Not Acceptable
         self.add_note('', STATUS_NOT_ACCEPTABLE)
     def status407(self) -> None:        # Proxy Authentication Required

@@ -31,15 +31,13 @@ statement of the form "[context IRI] has a [relation type] resource at [target I
         param_dict = headers.parse_params(param_str, add_note,
                                           ['rel', 'rev', 'anchor', 'hreflang', 'type', 'media'])
         if 'rel' in param_dict: # relation_types
-            pass # TODO: check relation type
+            pass
         if 'rev' in param_dict:
             add_note(LINK_REV, link=link_value, rev=param_dict['rev'])
         if 'anchor' in param_dict: # URI-Reference
             if not re.match(r"^\s*%s\s*$" % rfc3986.URI_reference,
                             param_dict['anchor'], re.VERBOSE):
                 add_note(LINK_BAD_ANCHOR, link=link_value, anchor=param_dict['anchor'])
-        # TODO: check media-type in 'type'
-        # TODO: check language tag in 'hreflang'
         return link_value, param_dict
 
 

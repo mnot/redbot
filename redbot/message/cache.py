@@ -116,7 +116,6 @@ def checkCaching(response: HttpResponse, request: HttpRequest=None) -> None:
             response.add_note('header-vary', VARY_USER_AGENT)
         if "host" in vary:
             response.add_note('header-vary', VARY_HOST)
-        # TODO: enumerate the axes in a message
 
     # calculate age
     response.age = age_hdr or 0

@@ -374,8 +374,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     try:
                         link = urljoin(resource.response.base_uri, link)
                     except ValueError:
-                        pass # TODO: pass link problem upstream?
-                             # e.g., ValueError("Invalid IPv6 URL")
+                        pass # we're not interested in raising these upstream
                     def link_to(matchobj: Match) -> str:
                         return r"%s<a href='?%s' class='nocode'>%s</a>%s" % (
                             matchobj.group(1),

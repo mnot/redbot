@@ -85,7 +85,7 @@ class ConnegCheck(SubRequest):
                 savings = int(100 * (
                     (float(bare.payload_len) - negotiated.payload_len) / bare.payload_len))
             elif negotiated.payload_len > 0 and bare.payload_len == 0:
-                # weird. # TODO: figure out if we need to say something else.
+                # weird.
                 return
             else:
                 savings = 0

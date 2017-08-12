@@ -27,7 +27,6 @@ a GET."""
             media_type, param_str = field_value, ''
         media_type = media_type.lower()
         param_dict = headers.parse_params(param_str, add_note, ['charset'])
-        # TODO: check charset to see if it's known
         return media_type, param_dict
 
 class BasicCTTest(headers.HeaderTest):
