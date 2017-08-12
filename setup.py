@@ -12,7 +12,7 @@ setup(name='redbot',
       package_dir={'redbot': 'redbot'},
       scripts=['bin/redbot', 'bin/webui.py'],
       package_data={
-              'redbot': ['assets/*', 'assets/icon/*', 'assets/logo/*']
+        'redbot': ['assets/*.css', 'assets/*.js', 'assets/*.map', 'assets/icon/*', 'assets/logo/*']
       },
       install_requires=[
           'thor >= 0.3.4',
