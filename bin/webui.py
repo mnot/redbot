@@ -17,7 +17,7 @@ from redbot.webui import RedWebUi, except_handler_factory
 
 import thor
 from thor.loop import _loop
-_loop.precision = .1 # FIXME
+_loop.precision = .1
 
 ### Configuration ##########################################################
 

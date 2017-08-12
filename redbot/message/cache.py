@@ -177,7 +177,6 @@ def checkCaching(response: HttpResponse, request: HttpRequest=None) -> None:
                               freshness_lifetime=freshness_lifetime_str,
                               freshness_left=freshness_left_str,
                               current_age=current_age_str)
-        # FIXME: response.age = None
         elif has_cc_freshness and response.age > freshness_lifetime:
             response.add_note(" ".join(freshness_hdrs), FRESHNESS_STALE_CACHE,
                               freshness_lifetime=freshness_lifetime_str,
