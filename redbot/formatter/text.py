@@ -13,6 +13,7 @@ from typing import Any, List
 import thor.http.error as httperr
 
 from redbot.formatter import Formatter
+from redbot.message import HttpResponse
 from redbot.resource import HttpResource
 from redbot.speak import Note, levels, categories
 
@@ -60,7 +61,9 @@ class BaseTextFormatter(Formatter):
     def finish_output(self) -> None:
         "Fill in the template with RED's results."
         if self.resource.response.complete:
-            self.output(self.format_headers(self.resource) + nl + nl)
+            self.output(nl.join(
+                [self.format_headers(r) for r in self.resource.nonfinal_responses]) + nl + nl)
+            self.output(self.format_headers(self.resource.response) + nl + nl)
             self.output(self.format_recommendations(self.resource) + nl)
         else:
             if self.resource.response.http_error is None:
@@ -70,13 +73,13 @@ class BaseTextFormatter(Formatter):
             else:
                 raise AssertionError("Unknown incomplete response error.")
 
-    def format_headers(self, resource: HttpResource) -> str:
+    def format_headers(self, response: HttpResponse) -> str:
         out = ["HTTP/%s %s %s" % (
-            resource.response.version,
-            resource.response.status_code,
-            resource.response.status_phrase
+            response.version,
+            response.status_code,
+            response.status_phrase
         )]
-        return nl.join(out + ["%s:%s" % h for h in resource.response.headers])
+        return nl.join(out + ["%s:%s" % h for h in response.headers])
 
     def format_recommendations(self, resource: HttpResource) -> str:
         return "".join([self.format_recommendation(resource, category) \
@@ -170,7 +173,7 @@ class TextListFormatter(BaseTextFormatter):
                 subresources.sort(key=operator.attrgetter('request.uri'))
                 for subresource in subresources:
                     self.output(self.format_uri(subresource) + nl + nl)
-                    self.output(self.format_headers(subresource) + nl + nl)
+                    self.output(self.format_headers(subresource.response) + nl + nl)
                     self.output(self.format_recommendations(subresource) + nl + nl)
 
     def format_uri(self, resource: HttpResource) -> str:
