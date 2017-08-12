@@ -33,6 +33,6 @@ def checkSubClasses(cls, check):
     """
     Run a check(subclass) function on all subclasses of cls.
     """
-    loadAllModules('../')
+    loadAllModules('./')
     for subcls in cls.__subclasses__():
         check(subcls)
