@@ -281,7 +281,7 @@ class HeaderTest(unittest.TestCase):
     Testing machinery for headers.
     """
     name = None # type: str
-    inputs = [] # type: list[bytes]
+    inputs = [] # type: List[bytes]
     expected_out = None # type: Any
     expected_err = [] # type: List[Type[Note]]
 

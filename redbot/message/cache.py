@@ -163,7 +163,7 @@ def checkCaching(response: HttpResponse, request: HttpRequest=None) -> None:
         # An invalid Expires header means it's automatically stale
         has_explicit_freshness = True
         freshness_hdrs.append('header-expires')
-        freshness_lifetime = (expires_hdr or 0) - (date_hdr or response.start_time)
+        freshness_lifetime = (expires_hdr or 0) - (date_hdr or int(response.start_time))
 
     freshness_left = freshness_lifetime - current_age
     freshness_left_str = relative_time(abs(int(freshness_left)), 0, 0)
