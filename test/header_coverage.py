@@ -70,11 +70,11 @@ def checkHeader(header_cls):
     if canonical_name != header_name:
         sys.stderr.write("* %s has mismatching canonical name %s\n" % (header_name, canonical_name))
 
-# FIXME: check tests.
-#    loader = unittest.TestLoader()
-#    tests = loader.loadTestsFromModule(header_mod)
-#    if tests.countTestCases() == 0 and getattr(header_obj, "no_coverage") == False:
-#        sys.stderr.write("* %s doesn't have any tests\n" % header_name)
+    loader = unittest.TestLoader()
+    header_mod = HeaderProcessor.find_header_module(header_name)
+    tests = loader.loadTestsFromModule(header_mod)
+    if tests.countTestCases() == 0 and getattr(header_cls, "no_coverage") == False:
+        sys.stderr.write("* %s doesn't have any tests\n" % header_name)
 
 
 
