@@ -114,6 +114,7 @@ def mod_python_handler(r):
         415: apache.HTTP_UNSUPPORTED_MEDIA_TYPE,
         416: apache.HTTP_RANGE_NOT_SATISFIABLE,
         417: apache.HTTP_EXPECTATION_FAILED,
+        418: apache.HTTP_IM_A_TEAPOT,
         422: apache.HTTP_UNPROCESSABLE_ENTITY,
         423: apache.HTTP_LOCKED,
         424: apache.HTTP_FAILED_DEPENDENCY,
