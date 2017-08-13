@@ -148,11 +148,11 @@ def cgi_main():
     """Run REDbot as a CGI Script."""
     def out(inbytes):
         try:
-            sys.stdout.buffer.write(inbytes)             
+            sys.stdout.buffer.write(inbytes)
             sys.stdout.flush()
-        except IOError: 
+        except IOError:
             pass
-            
+
     ui_uri = "%s://%s%s%s" % (
         'HTTPS' in os.environ and "https" or "http",
         os.environ.get('HTTP_HOST'),

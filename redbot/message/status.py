@@ -129,6 +129,8 @@ class StatusChecker(object):
         pass # TODO: test to see if it's true, alter if not
     def status417(self) -> None:        # Expectation Failed
         pass # TODO: explain, alert if it's 100-continue
+    def status418(self) -> None:
+        self.add_note('', STATUS_IM_A_TEAPOT)
     def status422(self) -> None:        # Unprocessable Entity
         pass
     def status423(self) -> None:        # Locked
@@ -339,6 +341,19 @@ class STATUS_UNSUPPORTED_MEDIA_TYPE(Note):
     summary = "The resource doesn't support this media type in requests."
     text = """\
  """
+
+class STATUS_IM_A_TEAPOT(Note):
+    category = categories.GENERAL
+    level = levels.WARN
+    summary = "The server returned 418 I'm a Teapot, an easter egg defined in RFC 2324."
+    text = """\
+RFC 2324 was an April 1 RFC that lampooned the various ways HTTP was abused; one such abuse
+was the definition of the application-specific 418 (I'm a Teapot) status code. In the
+intervening years, this status code has been widely implemented as an "easter egg".
+
+This status code is not a part of HTTP and hence it might not be supported by some strict
+standards-compliant clients.
+"""
 
 class STATUS_INTERNAL_SERVICE_ERROR(Note):
     category = categories.GENERAL
