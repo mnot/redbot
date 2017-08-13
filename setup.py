@@ -18,6 +18,12 @@ setup(name='redbot',
           'thor >= 0.3.4',
           'markdown >= 2.6.5'
       ],
+      extras_require={
+          'dev': [
+              'mypy',
+              'selenium'
+          ]
+      },
       classifiers=[
         'Programming Language :: Python :: 3.5',
         'Development Status :: 4 - Beta',
