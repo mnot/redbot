@@ -2,7 +2,7 @@ PYTHON=python3
 PYTHONPATH=./
 
 BOWER = src/bower_components
-JSFILES = $(BOWER)/jquery/dist/jquery.js $(BOWER)/jquery-hoverIntent/jquery.hoverIntent.js $(BOWER)/google-code-prettify/src/prettify.js src/red_script.js src/red_popup.js src/red_req_headers.js 
+JSFILES = $(BOWER)/jquery/dist/jquery.js $(BOWER)/jquery-hoverIntent/jquery.hoverIntent.js $(BOWER)/google-code-prettify/src/prettify.js src/red_script.js src/red_popup.js src/red_req_headers.js
 CSSFILES = redbot/assets/red_style.css $(BOWER)/google-code-prettify/src/prettify.css
 
 
@@ -17,6 +17,7 @@ clean: clean-deploy
 .PHONY: lint
 lint:
 	PYTHONPATH=$(PYTHONPATH) pylint --rcfile=test/pylintrc redbot
+	standard src/*.js
 
 .PHONY: typecheck
 typecheck:
