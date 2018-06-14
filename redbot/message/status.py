@@ -7,12 +7,27 @@ The Resource Expert Droid Status Code Checker.
 """
 
 from functools import partial
+from typing import List
 
-from thor.http import header_dict, get_header, safe_methods
+from thor.http import header_names, safe_methods
 
 from redbot.message import HttpRequest, HttpResponse
 from redbot.speak import Note, levels, categories
+from redbot.type import StrHeaderListType
 
+def get_header(hdr_tuples: StrHeaderListType, name: str) -> List[str]:
+    """
+    Given a list of (name, value) header tuples and a header name (lowercase),
+    return a list of all values for that header.
+
+    This includes header lines with multiple values separated by a comma;
+    such headers will be split into separate values. As a result, it is NOT
+    safe to use this on headers whose values may include a comma (e.g.,
+    Set-Cookie, or any value with a quoted string).
+    """
+    # TODO: support quoted strings
+    return [v.strip() for v in sum(
+        [l.split(",") for l in [i[1] for i in hdr_tuples if i[0].lower() == name]], [])]
 
 class StatusChecker(object):
     """
@@ -37,7 +52,7 @@ class StatusChecker(object):
         if self.request and not "100-continue" in get_header(self.request.headers, 'expect'):
             self.add_note('status', UNEXPECTED_CONTINUE)
     def status101(self) -> None:        # Switching Protocols
-        if self.request and 'upgrade' not in list(header_dict(self.request.headers).keys()):
+        if self.request and 'upgrade' not in header_names(self.request.headers):
             self.add_note('status', UPGRADE_NOT_REQUESTED)
     def status102(self) -> None:        # Processing
         pass
@@ -57,7 +72,7 @@ class StatusChecker(object):
     def status205(self) -> None:        # Reset Content
         pass
     def status206(self) -> None:        # Partial Content
-        if self.request and "range" not in list(header_dict(self.request.headers).keys()):
+        if self.request and "range" not in header_names(self.request.headers):
             self.add_note('', PARTIAL_NOT_REQUESTED)
         if 'content-range' not in self.response.parsed_headers:
             self.add_note('header-location', PARTIAL_WITHOUT_RANGE)

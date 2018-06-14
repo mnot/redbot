@@ -9,7 +9,6 @@ import datetime
 import json
 from typing import Any, Dict, List
 
-from thor.http import get_header
 from redbot import __version__
 from redbot.formatter import Formatter
 from redbot.message.headers import StrHeaderListType
@@ -92,10 +91,9 @@ class HarFormatter(Formatter):
             'content': {
                 'size': resource.response.decoded_len,
                 'compression': resource.response.decoded_len - resource.response.payload_len,
-                'mimeType': (get_header(resource.response.headers, 'content-type') or [""])[0],
+                'mimeType': resource.response.parsed_headers.get('content-type', ''),
             },
-            'redirectURL': (
-                get_header(resource.response.headers, 'location') or [""])[0],
+            'redirectURL': resource.response.parsed_headers.get('location', ''),
             'headersSize': resource.response.header_length,
             'bodySize': resource.response.payload_len,
         }
