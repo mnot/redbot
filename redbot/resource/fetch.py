@@ -211,6 +211,7 @@ class RedFetcher(thor.events.EventEmitter):
     def _fetch_done(self) -> None:
         if not self.fetch_done:
             self.fetch_done = True
+            self.exchange = None
             self.emit("fetch_done")
 
 
