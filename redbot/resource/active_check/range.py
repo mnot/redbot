@@ -192,7 +192,7 @@ class MISSING_HDRS_206(Note):
     level = levels.WARN
     summary = "%(response)s is missing required headers."
     text = """\
-HTTP requires `206 Parital Content` responses to have certain headers, if they are also present in
+HTTP requires `206 Partial Content` responses to have certain headers, if they are also present in
 a normal (e.g., `200 OK` response).
 
 %(response)s is missing the following headers: `%(missing_hdrs)s`.
