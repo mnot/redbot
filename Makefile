@@ -16,14 +16,16 @@ clean: clean-deploy
 
 .PHONY: lint
 lint:
-	PYTHONPATH=$(PYTHONPATH) pylint --rcfile=test/pylintrc redbot bin/redbot_daemon.py
+	PYTHONPATH=$(PYTHONPATH) pylint --rcfile=test/pylintrc \
+	  redbot bin/redbot_daemon.py bin/redbot_cgi.py
 	standard src/*.js
 
 .PHONY: typecheck
 typecheck:
 	PYTHONPATH=$(PYTHONPATH) $(PYTHON) -m mypy --config-file=test/mypy.ini \
 	  redbot \
-	  bin/redbot_daemon.py
+	  bin/redbot_daemon.py \
+	  bin/redbot_cgi.py
 
 .PHONY: syntax
 syntax:
@@ -51,14 +53,13 @@ unit_test:
 
 .PHONY: server
 server: clean-deploy deploy
-	PYTHONPATH=$(PYTHONPATH) $(PYTHON) deploy/webui.py 8080 redbot/assets/
+	PYTHONPATH=$(PYTHONPATH) $(PYTHON) deploy/redbot_daemon.py redbot/assets/
 
 .PHONY: deploy
 deploy: clean-deploy
 	mkdir deploy
-	cp -p bin/webui.py deploy/
-	sed -i=.old '/DEBUG_CONTROL/s/False/True/g' deploy/webui.py
-	chmod a+x deploy/webui.py
+	cp -p bin/redbot_daemon.py deploy/
+	chmod a+x deploy/redbot_daemon.py
 
 .PHONY: clean-deploy
 clean-deploy:
