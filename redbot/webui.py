@@ -11,7 +11,7 @@ import pickle
 import sys
 import tempfile
 import time
-from typing import Any, Callable, Tuple, Union # pylint: disable=unused-import
+from typing import Any, Callable, List, Tuple, Union # pylint: disable=unused-import
 from urllib.parse import parse_qs, urlsplit
 import zlib
 
@@ -52,6 +52,10 @@ class RedWebUi:
         self.descend = None    # type: bool
         self.save = None       # type: bool
         self.timeout = None    # type: Any
+        self.referer_spam_domains = [] # type: List[str]
+        if config.get("referer_spam_domains", ""):
+            self.referer_spam_domains = [i.strip() for i in \
+                config["referer_spam_domains"].split(",")]
         self.run(query_string)
 
     def run(self, query_string: bytes) -> None:
@@ -172,7 +176,7 @@ class RedWebUi:
         referer_error = None
         if len(referers) > 1:
             referer_error = "Multiple referers not allowed."
-        if referers and urlsplit(referers[0]).hostname in self.config['referer_spam_domains']:
+        if referers and urlsplit(referers[0]).hostname in self.referer_spam_domains:
             referer_error = "Referer not allowed."
         if referer_error:
             self.response_start(b"403", b"Forbidden", [
@@ -287,7 +291,7 @@ def except_handler_factory(config: SectionProxy, out: Callable[[str], None] = No
             etype, evalue, etb = sys.exc_info()
         import cgitb
         out(cgitb.reset())
-        if config['exception_dir'] is None:
+        if not config.get("exception_dir", ""):
             out(error_template % """
     A problem has occurred, but it probably isn't your fault.
     """)

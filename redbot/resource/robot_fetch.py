@@ -31,7 +31,6 @@ class RobotFetcher(thor.events.EventEmitter):
     freshness_lifetime = 30 * 60
     client = thor.http.HttpClient()
     robot_checkers = {} # type: Dict[str, RobotChecker]  # cache of robots.txt checkers
-    robot_cache_dir = None # type: str
     robot_lookups = {} # type: Dict[str, set]
 
     def __init__(self, config: SectionProxy) -> None:

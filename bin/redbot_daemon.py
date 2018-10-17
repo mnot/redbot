@@ -73,7 +73,7 @@ in standalone server mode. Details follow.
                 x.response_start(b"404", b"Not Found", [])
                 x.response_done([])
 
-    server = thor.http.HttpServer(config['host'], int(config['port']))
+    server = thor.http.HttpServer(config.get('host', ''), int(config['port']))
     server.on('exchange', red_handler)
 
     try:
