@@ -6,6 +6,7 @@ problems and other interesting characteristics. It only makes one request,
 based upon the provided headers.
 """
 
+from configparser import SectionProxy
 from typing import Any, Dict, List, Tuple, Type, Union
 
 import thor
@@ -47,10 +48,11 @@ class RedFetcher(thor.events.EventEmitter):
     check_name = "undefined"
     response_phrase = "undefined"
     client = RedHttpClient()
-    robot_fetcher = RobotFetcher()
 
-    def __init__(self) -> None:
+    def __init__(self, config: SectionProxy) -> None:
         thor.events.EventEmitter.__init__(self)
+        self.config = config
+        self.robot_fetcher = RobotFetcher(self.config)
         self.notes = [] # type: List[Note]
         self.transfer_in = 0
         self.transfer_out = 0

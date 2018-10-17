@@ -31,10 +31,6 @@ from redbot.speak import Note, levels, categories # pylint: disable=unused-impor
 nl = "\n"
 e_html = partial(cgi_escape, quote=True)
 
-# Configuration; override to change.
-static_root = 'static' # where status resources are located
-extra_dir = 'extra' # where extra resources are located
-
 
 class BaseHtmlFormatter(Formatter):
     """
@@ -71,7 +67,7 @@ class BaseHtmlFormatter(Formatter):
         else:
             descend = ''
         self.output(html_header.__doc__ % {
-            'static': static_root,
+            'static': self.config["static_root"],
             'version': __version__,
             'html_uri': e_html(uri),
             'js_uri': e_js(uri),
@@ -131,10 +127,10 @@ $('#red_status').text("%s");
             included on every page view.
         """
         o = []
-        if extra_dir and os.path.isdir(extra_dir):
-            extra_files = [p for p in os.listdir(extra_dir) if os.path.splitext(p)[1] == etype]
+        if self.config.get("extra_dir", "") and os.path.isdir(self.config["extra_dir"]):
+            extra_files = [p for p in os.listdir(self.config["extra_dir"]) if os.path.splitext(p)[1] == etype]
             for extra_file in extra_files:
-                extra_path = os.path.join(extra_dir, extra_file)
+                extra_path = os.path.join(self.config["extra_dir"], extra_file)
                 try:
                     o.append(codecs.open(extra_path, mode='r', encoding='utf-8', # type: ignore
                                          errors='replace').read())
@@ -165,7 +161,7 @@ title="drag me to your toolbar to use REDbot any time.">REDbot</a> bookmarklet
 </p>
 </div>
 
-""" % {'baseuri': e_html(self.ui_uri), 'static_root': static_root}
+""" % {'baseuri': e_html(self.config['ui_uri']), 'static_root': self.config["static_root"]}
 
     def req_qs(self, link: str=None, check_name: str=None, res_format: str=None,
                use_stored: bool=True, referer: bool=True) -> str:
@@ -258,7 +254,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     template = """\
     <div id="left_column">
     %(nonfinal_responses)s
-    
+
     <span class="help">These are the response headers; hover over each one
     for an explanation of what it does.</span>
     <pre id='response'>%(response)s</pre>
@@ -690,10 +686,9 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         else:
             return '<td>%s</td>' % f_num(value, by1024=True)
 
-    @staticmethod
-    def format_yes_no(value: Union[bool, None]) -> str:
+    def format_yes_no(self, value: Union[bool, None]) -> str:
         icon_tpl = '<td><img src="%s/icon/%%s" alt="%%s"/></td>' % \
-            static_root
+            self.config["static_root"]
         if value is True:
             return icon_tpl % ("accept1.png", "yes")
         elif value is False:

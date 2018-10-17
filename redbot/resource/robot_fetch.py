@@ -6,6 +6,7 @@ REDbot Robot Fetcher.
 Fetches robots.txt for a given URL.
 """
 
+from configparser import SectionProxy
 import hashlib
 from os import path
 from typing import Union, Dict
@@ -33,6 +34,10 @@ class RobotFetcher(thor.events.EventEmitter):
     robot_cache_dir = None # type: str
     robot_lookups = {} # type: Dict[str, set]
 
+    def __init__(self, config: SectionProxy) -> None:
+        thor.events.EventEmitter.__init__(self)
+        self.config = config
+
     def check_robots(self, url: str, sync: bool=False) -> Union[bool, None]:
         """
         Fetch the robots.txt for URL.
@@ -57,8 +62,8 @@ class RobotFetcher(thor.events.EventEmitter):
         if origin in self.robot_checkers:
             return self._robot_check(url, self.robot_checkers[origin], sync)
 
-        if self.robot_cache_dir:
-            robot_fd = CacheFile(path.join(self.robot_cache_dir, origin_hash))
+        if self.config.get('robot_cache_dir', ''):
+            robot_fd = CacheFile(path.join(self.config['robot_cache_dir'], origin_hash))
             cached_robots_txt = robot_fd.read()
             if cached_robots_txt != None:
                 self._load_checker(origin, cached_robots_txt)
@@ -89,8 +94,8 @@ class RobotFetcher(thor.events.EventEmitter):
                     robots_txt = exchange.res_body
 
                 self._load_checker(origin, robots_txt)
-                if self.robot_cache_dir:
-                    robot_fd = CacheFile(path.join(self.robot_cache_dir, origin_hash))
+                if self.config.get('robot_cache_dir', ''):
+                    robot_fd = CacheFile(path.join(self.config['robot_cache_dir'], origin_hash))
                     robot_fd.write(robots_txt, self.freshness_lifetime)
 
                 while True:

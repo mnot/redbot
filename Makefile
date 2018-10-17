@@ -16,12 +16,14 @@ clean: clean-deploy
 
 .PHONY: lint
 lint:
-	PYTHONPATH=$(PYTHONPATH) pylint --rcfile=test/pylintrc redbot
+	PYTHONPATH=$(PYTHONPATH) pylint --rcfile=test/pylintrc redbot bin/redbot_daemon.py
 	standard src/*.js
 
 .PHONY: typecheck
 typecheck:
-	PYTHONPATH=$(PYTHONPATH) $(PYTHON) -m mypy --config-file=test/mypy.ini redbot
+	PYTHONPATH=$(PYTHONPATH) $(PYTHON) -m mypy --config-file=test/mypy.ini \
+	  redbot \
+	  bin/redbot_daemon.py
 
 .PHONY: syntax
 syntax:

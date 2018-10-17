@@ -8,6 +8,7 @@ This is the base class for all subrequests.
 """
 
 from abc import ABCMeta, abstractmethod
+from configparser import SectionProxy
 from typing import List, Tuple, Type, Union, TYPE_CHECKING
 
 from redbot.resource.fetch import RedFetcher
@@ -27,9 +28,10 @@ class SubRequest(RedFetcher, metaclass=ABCMeta):
     check_name = "undefined"
     response_phrase = "undefined"
 
-    def __init__(self, base_resource: 'HttpResource') -> None:
+    def __init__(self, config: SectionProxy, base_resource: 'HttpResource') -> None:
+        self.config = config
         self.base = base_resource  # type: HttpResource
-        RedFetcher.__init__(self)
+        RedFetcher.__init__(self, config)
         self.check_done = False
         self.on('fetch_done', self._check_done)
 

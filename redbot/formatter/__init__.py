@@ -6,11 +6,12 @@ Formatters for REDbot output.
 
 
 from collections import defaultdict
+from configparser import SectionProxy
 import inspect
 import locale
 import sys
 import time
-from typing import Any, Callable, List, Type, TYPE_CHECKING
+from typing import Any, Callable, List, Dict, Type, TYPE_CHECKING
 import unittest
 
 import thor
@@ -69,15 +70,15 @@ class Formatter(EventEmitter):
     name = None # type: str         # the name of the format.
     can_multiple = False            # formatter can represent multiple responses.
 
-    def __init__(self, ui_uri: str, lang: str, output: Callable[[str], None], **kw: Any) -> None:
+    def __init__(self, config: SectionProxy, output: Callable[[str], None], **kw: Any) -> None:
         """
         Formatter for the given URI, writing
         to the callable output(uni_str). Output is Unicode; callee
         is responsible for encoding correctly.
         """
         EventEmitter.__init__(self)
-        self.ui_uri = ui_uri         # the URI of the UI itself
-        self.lang = lang
+        self.config = config
+        self.lang = config['lang']
         self.output = output         # output file object
         self.kw = kw                 # extra keyword arguments
         self.resource = None         # type: HttpResource

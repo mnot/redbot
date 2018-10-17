@@ -126,10 +126,11 @@ class BadErrorIReallyMeanIt(Exception):
 
 if __name__ == "__main__":
     import sys
+    from configparser import ConfigParser
     import thor
     from redbot.resource.fetch import RedFetcher  # pylint: disable=ungrouped-imports
 
-    T = RedFetcher()
+    T = RedFetcher(ConfigParser()['DEFAULT'])
     T.set_request(sys.argv[1], req_hdrs=[('Accept-Encoding', "gzip")])
     def show_link(base: str, link: str, tag: str, title: str) -> None:
         print("* [%s] %s -- %s" % (tag, base, link))

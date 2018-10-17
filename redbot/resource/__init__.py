@@ -10,6 +10,7 @@ of requests to probe the resource's behaviour.
 See webui.py for the Web front-end.
 """
 
+from configparser import SectionProxy
 import sys
 from typing import List, Dict, Set, Tuple, Union
 from urllib.parse import urljoin
@@ -39,8 +40,9 @@ class HttpResource(RedFetcher):
     check_name = "default"
     response_phrase = "This response"
 
-    def __init__(self, descend: bool=False) -> None:
-        RedFetcher.__init__(self)
+    def __init__(self, config: SectionProxy, descend: bool=False) -> None:
+        RedFetcher.__init__(self, config)
+        self.config = config
         self.descend = descend       # type: bool
         self.check_done = False      # type: bool
         self.partial_support = None  # type: bool
@@ -49,7 +51,7 @@ class HttpResource(RedFetcher):
         self.gzip_support = None     # type: bool
         self.gzip_savings = 0        # type: int
         self._task_map = set([None]) # type: Set[RedFetcher]   # None is the original request
-        self.subreqs = {ac.check_name:ac(self) for ac in active_checks}  # type: ignore
+        self.subreqs = {ac.check_name:ac(config, self) for ac in active_checks}  # type: ignore
         self.response.once("content_available", self.run_active_checks)
         def finish_check() -> None:
             self.finish_check(None)
@@ -110,7 +112,7 @@ class HttpResource(RedFetcher):
         if tag not in self.links:
             self.links[tag] = set()
         if self.descend and tag not in ['a'] and link not in self.links[tag]:
-            linked = HttpResource()
+            linked = HttpResource(self.config)
             linked.set_request(urljoin(base, link), req_hdrs=self.request.headers)
             self.linked.append((linked, tag))
             self.add_check(linked)

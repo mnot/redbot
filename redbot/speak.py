@@ -44,7 +44,7 @@ class Note(object):
     level = None # type: levels
     summary = ""
     text = ""
-    def __init__(self, subject: str, vrs: Dict[str, Union[str, int]]=None) -> None:
+    def __init__(self, subject: str, vrs: Dict[str, Union[str, int]] = None) -> None:
         self.subject = subject
         self.vars = vrs or {}
 
@@ -73,7 +73,7 @@ class Note(object):
         ), output_format="html5")
 
 
-def display_bytes(inbytes: bytes, encoding: str='utf-8', truncate: int=40) -> str:
+def display_bytes(inbytes: bytes, encoding: str = 'utf-8', truncate: int = 40) -> str:
     """
     Format arbitrary input bytes for display.
 

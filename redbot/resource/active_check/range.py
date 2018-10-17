@@ -4,6 +4,7 @@
 Subrequest for partial content checks.
 """
 
+from configparser import SectionProxy
 import random
 from typing import TYPE_CHECKING
 
@@ -19,11 +20,11 @@ class RangeRequest(SubRequest):
     "Check for partial content support (if advertised)"
     check_name = "Partial Content"
     response_phrase = "The partial response"
-    def __init__(self, resource: 'HttpResource') -> None:
+    def __init__(self, config: SectionProxy, resource: 'HttpResource') -> None:
         self.range_start = None   # type: int
         self.range_end = None     # type: int
         self.range_target = None  # type: bytes
-        SubRequest.__init__(self, resource)
+        SubRequest.__init__(self, config, resource)
 
     def modify_request_headers(self, base_headers: StrHeaderListType) -> StrHeaderListType:
         if len(self.base.response.payload_sample) != 0:
