@@ -25,7 +25,8 @@ typecheck:
 	PYTHONPATH=$(PYTHONPATH) $(PYTHON) -m mypy --config-file=test/mypy.ini \
 	  redbot \
 	  bin/redbot_daemon.py \
-	  bin/redbot_cgi.py
+	  bin/redbot_cgi.py \
+	  bin/redbot
 
 .PHONY: syntax
 syntax:

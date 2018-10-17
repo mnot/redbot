@@ -17,7 +17,7 @@ from redbot.resource import HttpResource
 from redbot.formatter import *
 from redbot.formatter import find_formatter, available_formatters
 
-def main():
+def main() -> None:
     usage = """Usage: %prog [options] <url>"""
     version = """Redbot version %s, http://redbot.org/ """ % __version__
 
@@ -55,14 +55,14 @@ def main():
 
     formatter.bind_resource(resource)
     @thor.events.on(formatter)
-    def formatter_done():
+    def formatter_done() -> None:
         thor.stop()
 
     resource.check()
     thor.run()
 
 
-def output(out):
+def output(out: str) -> None:
     sys.stdout.write(out)
 
 
