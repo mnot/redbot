@@ -53,7 +53,7 @@ unit_test:
 
 .PHONY: server
 server: clean-deploy deploy
-	PYTHONPATH=$(PYTHONPATH) $(PYTHON) deploy/redbot_daemon.py redbot/assets/
+	PYTHONPATH=$(PYTHONPATH) $(PYTHON) deploy/redbot_daemon.py config.txt
 
 .PHONY: deploy
 deploy: clean-deploy
