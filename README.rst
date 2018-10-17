@@ -37,7 +37,7 @@ REDbot needs:
 Installing RED
 --------------
 
-Unpack the REDbot tarball. There are a number of interesting files:
+Unpack the REDbot tarball. The relevant files are:
 
 - bin/redbot_cgi.py - the Web CGI script for running REDbot
 - bin/redbot_cli - the command-line interface
