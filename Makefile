@@ -1,7 +1,5 @@
 PYTHON=python3
 PYTHONPATH=./
-GZIP = gzip
-BROTLI = brotli
 
 BOWER = src/bower_components
 JSFILES = $(BOWER)/jquery/dist/jquery.js $(BOWER)/jquery-hoverIntent/jquery.hoverIntent.js $(BOWER)/google-code-prettify/src/prettify.js src/red_script.js src/red_popup.js src/red_req_headers.js
@@ -83,12 +81,8 @@ redbot/message/headers/%.py:
 
 ## assets
 
-COMPRESS_TARGETS = redbot/assets/script.js redbot/assets/style.css
-COMPRESS_FILES  = $(addsuffix .gzip, $(COMPRESS_TARGETS))
-COMPRESS_FILES += $(addsuffix .brotli, $(COMPRESS_TARGETS))
-
 .PHONY: redbot/assets
-redbot/assets: $(COMPRESS_TARGETS) $(COMPRESS_FILES)
+redbot/assets: redbot/assets/script.js redbot/assets/style.css
 
 redbot/assets/script.js: $(JSFILES)
 	closure-compiler --create_source_map $@.map --js_output_file $@ $(JSFILES)
@@ -103,13 +97,3 @@ redbot/assets/style.css: $(CSSFILES)
 .PHONY: clean-assets
 clean-assets:
 	rm -f redbot/assets/script.js redbot/assets/script.js.map redbot/assets/style.css
-
-## compress
-
-%.gzip : %
-	$(GZIP) -cn9 $< > $@
-
-%.brotli : %
-	$(BROTLI) --force --output=$@ $<
-	chmod a+r $@
-
