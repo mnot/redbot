@@ -6,18 +6,16 @@ CLI interface to REDbot
 
 __author__ = "Jerome Renard <jerome.renard@gmail.com>"
 
+from configparser import ConfigParser
+from optparse import OptionParser
 import sys
 
-from optparse import OptionParser
-
 import thor
+
 from redbot import __version__
 from redbot.resource import HttpResource
 from redbot.formatter import *
 from redbot.formatter import find_formatter, available_formatters
-
-lang = "en"
-charset = "utf-8"
 
 def main():
     usage = """Usage: %prog [options] <url>"""
@@ -42,11 +40,18 @@ def main():
 
     url = args[0]
 
-    resource = HttpResource(descend=options.descend)
+    parser = ConfigParser()
+    parser.read_dict({'redbot': {
+        'lang': 'en',
+        'charset': 'utf-8'
+    }})
+    config = parser['redbot']
+
+    resource = HttpResource(config, descend=options.descend)
     resource.set_request(url)
 
     formatter = find_formatter(options.output_format, 'text', options.descend)(
-        sys.argv[0], lang, output, tty_out=sys.stdout.isatty(), descend=options.descend)
+        config, output, tty_out=sys.stdout.isatty(), descend=options.descend)
 
     formatter.bind_resource(resource)
     @thor.events.on(formatter)
