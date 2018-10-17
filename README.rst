@@ -39,7 +39,7 @@ Installing RED
 
 Unpack the REDbot tarball. There are a number of interesting files:
 
-- bin/webui.py - the Web CGI script for running REDbot
+- bin/redbot_cgi.py - the Web CGI script for running REDbot
 - bin/redbot - the command-line interface
 - redbot/ - REDbot's Python library files
 - redbot/assets/ - REDbot's CSS stylesheet and JavaScript library
@@ -53,23 +53,30 @@ installs REDbot's libraries as well as the command-line version as 'redbot'.
 Setting up your Web Server
 --------------------------
 
-To run REDbot from the Web, place webui.py where you wish it to be served from
-by the Web server. For example, with Apache you can put it in a directory and
+To run REDbot as a CGI script, place redbot_cgi.py where you wish it to be served from
+by the Web server, and place config.txt in the same directory.
+
+For example, with Apache you can put it in a directory and
 add these configuration directives (e.g., in .htaccess, if enabled)::
 
   AddHandler cgi-script .py
-  DirectoryIndex webui.py
+  DirectoryIndex redbot_cgi.py
 
 If the directory is the root directory for your server "example.com",
 this will configure REDbot to be at the URI "http://example.com/".
 
+You can also locate config.txt somewhere else, and indicate its path in an
+environment variable:
+
+  SetEnv REDBOT_CONFIG /path/to/config.txt
+
 The contents of the assets directory also need to be made available on the
 server; by default, they're in the 'static' subdirectory of the script's URI.
-This can be changed using the 'html.static_root' configuration variable in
-webui.py.
+This can be changed using the 'static_root' configuration variable in
+config.txt.
 
 You should also create the directory referenced by the 'save_dir'
-configuration variable in webui.py, and make sure that it's writable to the
+configuration variable, and make sure that it's writable to the
 Web server process. This is where RED stores state files, and you should
 configure a cron job to regularly clean it. For example::
 
@@ -77,17 +84,6 @@ configure a cron job to regularly clean it. For example::
 
 If you don't want to allow users to store responses, set save_dir to 'None'.
 
-Running under mod_python
-------------------------
-
-It's also possible to run REDbot as a mod_python handler. For example::
-
-  AddHandler mod_python .py
-  PythonHandler webui::mod_python_handler
-
-If you use mod_python, make sure your server has enough memory for the
-number of Apache children you configure; each child should use anywhere from
-20M-35M of RAM.
 
 Docker deployment
 -----------------
