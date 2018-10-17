@@ -1,12 +1,14 @@
 language: python
 python:
   - "3.6"
-
-env: "DISPLAY=:99.0"
+env:
+  - MOZ_HEADLESS=1
+addons:
+  firefox: latest
 
 before_script: sh -e /etc/init.d/xvfb start
 
-install: 
+install:
   - pip install mypy
   - pip install selenium
   - pip install thor

@@ -12,7 +12,7 @@ test: typecheck unit_test webui_test
 .PHONY: clean
 clean: clean-deploy
 	find . -d -type d -name __pycache__ -exec rm -rf {} \;
-	rm -rf build dist MANIFEST redbot.egg-info ghostdriver.log
+	rm -rf build dist MANIFEST redbot.egg-info ghostdriver.log geckodriver.log
 
 .PHONY: lint
 lint:

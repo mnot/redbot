@@ -6,6 +6,7 @@ dist
 build
 deploy
 ghostdriver.log
+geckodriver.log
 .sass-cache
 .coverage
 .mypy_cache
