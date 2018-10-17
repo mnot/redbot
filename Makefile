@@ -26,7 +26,7 @@ typecheck:
 	  redbot \
 	  bin/redbot_daemon.py \
 	  bin/redbot_cgi.py \
-	  bin/redbot
+	  bin/redbot_cli
 
 .PHONY: syntax
 syntax:
