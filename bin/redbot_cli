@@ -14,7 +14,6 @@ import thor
 
 from redbot import __version__
 from redbot.resource import HttpResource
-from redbot.formatter import *
 from redbot.formatter import find_formatter, available_formatters
 
 def main() -> None:

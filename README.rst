@@ -40,7 +40,7 @@ Installing RED
 Unpack the REDbot tarball. There are a number of interesting files:
 
 - bin/redbot_cgi.py - the Web CGI script for running REDbot
-- bin/redbot - the command-line interface
+- bin/redbot_cli - the command-line interface
 - redbot/ - REDbot's Python library files
 - redbot/assets/ - REDbot's CSS stylesheet and JavaScript library
 

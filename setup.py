@@ -10,7 +10,7 @@ setup(name='redbot',
       url='https://redbot.org/project/',
       packages=find_packages(),
       package_dir={'redbot': 'redbot'},
-      scripts=['bin/redbot', 'bin/redbot_daemon.py', 'bin/redbot_cgi.py'],
+      scripts=['bin/redbot_cli', 'bin/redbot_daemon.py', 'bin/redbot_cgi.py'],
       package_data={
         'redbot': ['assets/*.css', 'assets/*.js', 'assets/*.map', 'assets/icon/*', 'assets/logo/*']
       },

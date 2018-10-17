@@ -17,7 +17,7 @@ clean: clean-deploy
 .PHONY: lint
 lint:
 	PYTHONPATH=$(PYTHONPATH) pylint --rcfile=test/pylintrc \
-	  redbot bin/redbot_daemon.py bin/redbot_cgi.py
+	  redbot bin/redbot_daemon.py bin/redbot_cgi.py bin/redbot_cli
 	standard src/*.js
 
 .PHONY: typecheck
