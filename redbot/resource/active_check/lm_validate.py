@@ -42,9 +42,8 @@ class LmValidate(SubRequest):
             return False
         if self.base.response.parsed_headers.get('last-modified', None):
             return True
-        else:
-            self.base.ims_support = False
-            return False
+        self.base.ims_support = False
+        return False
 
     def done(self) -> None:
         if not self.response.complete:

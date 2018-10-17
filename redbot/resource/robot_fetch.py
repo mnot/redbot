@@ -9,7 +9,7 @@ Fetches robots.txt for a given URL.
 from configparser import SectionProxy
 import hashlib
 from os import path
-from typing import Union, Dict
+from typing import Union, Dict # pylint: disable=unused-import
 from urllib.robotparser import RobotFileParser
 from urllib.parse import urlsplit
 
@@ -38,7 +38,7 @@ class RobotFetcher(thor.events.EventEmitter):
         thor.events.EventEmitter.__init__(self)
         self.config = config
 
-    def check_robots(self, url: str, sync: bool=False) -> Union[bool, None]:
+    def check_robots(self, url: str, sync: bool = False) -> Union[bool, None]:
         """
         Fetch the robots.txt for URL.
 
@@ -54,9 +54,8 @@ class RobotFetcher(thor.events.EventEmitter):
         if origin is None:
             if sync:
                 return True
-            else:
-                self.emit("robot-%s" % url, True)
-                return None
+            self.emit("robot-%s" % url, True)
+            return None
         origin_hash = hashlib.sha1(origin.encode('ascii', 'replace')).hexdigest()
 
         if origin in self.robot_checkers:
@@ -65,7 +64,7 @@ class RobotFetcher(thor.events.EventEmitter):
         if self.config.get('robot_cache_dir', ''):
             robot_fd = CacheFile(path.join(self.config['robot_cache_dir'], origin_hash))
             cached_robots_txt = robot_fd.read()
-            if cached_robots_txt != None:
+            if cached_robots_txt is not None:
                 self._load_checker(origin, cached_robots_txt)
                 return self._robot_check(url, self.robot_checkers[origin], sync)
 
@@ -137,14 +136,13 @@ class RobotFetcher(thor.events.EventEmitter):
         thor.schedule(self.freshness_lifetime, del_checker)
 
     def _robot_check(self, url: str, robots_checker: RobotChecker,
-                     sync: bool=False) -> Union[bool, None]:
+                     sync: bool = False) -> Union[bool, None]:
         """Continue after getting the robots file."""
         result = robots_checker.can_fetch(UA_STRING, url)
         if sync:
             return result
-        else:
-            self.emit("robot-%s" % url, result)
-            return None
+        self.emit("robot-%s" % url, result)
+        return None
 
 
 
@@ -163,7 +161,7 @@ def url_to_origin(url: str) -> Union[str, None]:
     return origin
 
 
-class DummyChecker(object):
+class DummyChecker:
     """Dummy checker for non-200 or empty responses."""
     @staticmethod
     def can_fetch(ua_string: str, url: str) -> bool:

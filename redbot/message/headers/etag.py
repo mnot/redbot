@@ -21,8 +21,7 @@ The `ETag` header provides an opaque identifier for the representation."""
     def parse(self, field_value: str, add_note: AddNoteMethodType) -> Tuple[bool, str]:
         if field_value[:2] == 'W/':
             return (True, headers.unquote_string(field_value[2:]))
-        else:
-            return (False, headers.unquote_string(field_value))
+        return (False, headers.unquote_string(field_value))
 
 
 

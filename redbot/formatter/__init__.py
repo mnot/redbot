@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 _formatters = ['html', 'text', 'har']
 
-def find_formatter(name: str, default: str="html", multiple: bool=False) -> Type['Formatter']:
+def find_formatter(name: str, default: str = "html", multiple: bool = False) -> Type['Formatter']:
     """
     Find the formatter for name, and use default if it can't be found.
     If you need to represent more than one result, set multiple to True.
@@ -133,7 +133,7 @@ class Formatter(EventEmitter):
         raise NotImplementedError
 
 
-def f_num(i: int, by1024: bool=False) -> str:
+def f_num(i: int, by1024: bool = False) -> str:
     "Format a number according to the locale."
     if by1024:
         k = int(i / 1024)
@@ -141,14 +141,14 @@ def f_num(i: int, by1024: bool=False) -> str:
         g = int(m / 1024)
         if g:
             return locale.format("%d", g, grouping=True) + "g"
-        elif m:
+        if m:
             return locale.format("%d", m, grouping=True) + "m"
-        elif k:
+        if k:
             return locale.format("%d", k, grouping=True) + "k"
     return locale.format("%d", i, grouping=True)
 
 
-def relative_time(utime: float, now: float=None, show_sign: int=1) -> str:
+def relative_time(utime: float, now: float = None, show_sign: int = 1) -> str:
     '''
     Given two times, return a string that explains how far apart they are.
     show_sign can be:

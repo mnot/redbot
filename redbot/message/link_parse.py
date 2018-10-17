@@ -32,7 +32,7 @@ class HTMLLinkParser(HTMLParser):
 
     def __init__(self, message: HttpMessage,
                  link_procs: List[Callable[[str, str, str, str], None]],
-                 err: Callable[[str], int]=None) -> None:
+                 err: Callable[[str], int] = None) -> None:
         self.message = message
         self.link_procs = link_procs
         self.err = err

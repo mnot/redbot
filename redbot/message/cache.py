@@ -14,7 +14,7 @@ heuristic_cacheable_status = ['200', '203', '206', '300', '301', '410']
 max_clock_skew = 5  # seconds
 
 
-def checkCaching(response: HttpResponse, request: HttpRequest=None) -> None:
+def checkCaching(response: HttpResponse, request: HttpRequest = None) -> None:
     "Examine HTTP caching characteristics."
 
     # get header values
@@ -56,11 +56,11 @@ def checkCaching(response: HttpResponse, request: HttpRequest=None) -> None:
         response.store_shared = response.store_private = False
         request.add_note('method', METHOD_UNCACHEABLE, method=request.method)
         return # bail; nothing else to see here
-    elif 'no-store' in cc_keys:
+    if 'no-store' in cc_keys:
         response.store_shared = response.store_private = False
         response.add_note('header-cache-control', NO_STORE)
         return # bail; nothing else to see here
-    elif 'private' in cc_keys:
+    if 'private' in cc_keys:
         response.store_shared = False
         response.store_private = True
         response.add_note('header-cache-control', PRIVATE_CC)
@@ -109,7 +109,7 @@ def checkCaching(response: HttpResponse, request: HttpRequest=None) -> None:
     if "*" in vary:
         response.add_note('header-vary', VARY_ASTERISK)
         return # bail; nothing else to see here
-    elif len(vary) > 3:
+    if len(vary) > 3:
         response.add_note('header-vary', VARY_COMPLEX, vary_count=f_num(len(vary)))
     else:
         if "user-agent" in vary:

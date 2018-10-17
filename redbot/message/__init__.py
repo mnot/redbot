@@ -13,13 +13,14 @@ from typing import Any, Callable, List, Dict, Tuple, Type, Union
 from urllib.parse import urlsplit, urlunsplit, quote as urlquote
 import zlib
 
+import thor
+
 from redbot.formatter import f_num
 from redbot.message.headers import HeaderProcessor
 from redbot.speak import Note, levels, categories, display_bytes
 from redbot.syntax import rfc3986
 from redbot.type import StrHeaderListType, RawHeaderListType, HeaderDictType, AddNoteMethodType
 
-import thor
 
 ### configuration
 MAX_URI = 8000
@@ -132,7 +133,7 @@ class HttpMessage(thor.events.EventEmitter):
                 self.decoded_sample_complete = False
         self.payload_len += len(chunk)
 
-    def body_done(self, complete: bool, trailers: RawHeaderListType=None) -> None:
+    def body_done(self, complete: bool, trailers: RawHeaderListType = None) -> None:
         """
         Signal that the body is done. Complete should be True if we
         know it's complete (e.g., final chunk, Content-Length).
@@ -273,7 +274,6 @@ class HttpRequest(HttpMessage):
             self.uri = self.iri_to_uri(iri)
         except (ValueError, UnicodeError) as why:
             raise thor.http.error.UrlError(why.args[0])
-            return
         if not re.match(r"^\s*%s\s*$" % rfc3986.URI, self.uri, re.VERBOSE):
             self.add_note('uri', URI_BAD_SYNTAX)
         if '#' in self.uri:
@@ -329,7 +329,7 @@ class DummyMsg(HttpResponse):
     """
     A dummy HTTP message, for testing.
     """
-    def __init__(self, add_note: AddNoteMethodType=None) -> None:
+    def __init__(self, add_note: AddNoteMethodType = None) -> None:
         HttpResponse.__init__(self, self.dummy_add_note)
         self.base_uri = "http://www.example.com/foo/bar/baz.html?bat=bam"
         self.start_time = time.time()

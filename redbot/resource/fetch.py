@@ -26,7 +26,7 @@ UA_STRING = "RED/%s (https://redbot.org/)" % __version__
 class RedHttpClient(thor.http.HttpClient):
     "Thor HttpClient for RedFetcher"
 
-    def __init__(self, loop: thor.loop.LoopBase=None) -> None:
+    def __init__(self, loop: thor.loop.LoopBase = None) -> None:
         thor.http.HttpClient.__init__(self, loop)
         self.connect_timeout = 10
         self.read_timeout = 15
@@ -96,8 +96,8 @@ class RedFetcher(thor.events.EventEmitter):
         """
         return True
 
-    def set_request(self, iri: str, method: str="GET",
-                    req_hdrs: StrHeaderListType=None, req_body: bytes=None) -> None:
+    def set_request(self, iri: str, method: str = "GET",
+                    req_hdrs: StrHeaderListType = None, req_body: bytes = None) -> None:
         """
         Set the resource's request. All values are strings.
         """
@@ -155,7 +155,7 @@ class RedFetcher(thor.events.EventEmitter):
         self.exchange.request_start(
             self.request.method.encode('ascii'), self.request.uri.encode('ascii'), req_hdrs)
         self.request.start_time = thor.time()
-        if self.request.payload != None:
+        if self.request.payload is not None:
             self.exchange.request_body(self.request.payload)
             self.transfer_out += len(self.request.payload)
         self.exchange.request_done([])

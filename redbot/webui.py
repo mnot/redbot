@@ -7,7 +7,7 @@ A Web UI for RED, the Resource Expert Droid.
 from configparser import SectionProxy
 import gzip
 import os
-import pickle as pickle
+import pickle
 import sys
 import tempfile
 import time
@@ -25,7 +25,7 @@ from redbot.formatter.html import e_url
 from redbot.type import RawHeaderListType, StrHeaderListType # pylint: disable=unused-import
 
 
-class RedWebUi(object):
+class RedWebUi:
     """
     A Web UI for RED.
 
@@ -36,7 +36,7 @@ class RedWebUi(object):
                  response_start: Callable[..., None],
                  response_body: Callable[..., None],
                  response_done: Callable[..., None],
-                 error_log: Callable[[str], int]=sys.stderr.write) -> None:
+                 error_log: Callable[[str], int] = sys.stderr.write) -> None:
         self.config = config  # type: SectionProxy
         self.charset_bytes = self.config['charset'].encode('ascii')
         self.method = method   # Request method to the UX; bytes
@@ -89,7 +89,8 @@ class RedWebUi(object):
             if self.descend:
                 location = "%s&descend=True" % location
             self.response_start("303", "See Other", [("Location", location)])
-            self.response_body("Redirecting to the saved test page...".encode(self.config['charset']))
+            self.response_body(
+                "Redirecting to the saved test page...".encode(self.config['charset']))
         except (OSError, IOError):
             self.response_start(b"500", b"Internal Server Error",
                                 [(b"Content-Type", b"text/html; charset=%s" % self.charset_bytes),])
@@ -224,7 +225,7 @@ class RedWebUi(object):
         formatter.finish_output()
         self.response_done([])
 
-    def show_error(self, message: str, to_output: bool=False) -> Union[None, bytes]:
+    def show_error(self, message: str, to_output: bool = False) -> Union[None, bytes]:
         """
         Display a message. If to_output is True, send it to self.output(); otherwise
         return it as binary
@@ -233,8 +234,7 @@ class RedWebUi(object):
         if to_output:
             self.output(out)
             return None
-        else:
-            return out.encode(self.config['charset'], 'replace')
+        return out.encode(self.config['charset'], 'replace')
 
     def output(self, chunk: str) -> None:
         self.response_body(chunk.encode(self.config['charset'], 'replace'))
@@ -268,8 +268,8 @@ class RedWebUi(object):
 
 
 # adapted from cgitb.Hook
-def except_handler_factory(config: SectionProxy, out: Callable[[str], None]=None,
-                           qs: str=None) -> Callable[..., None]:
+def except_handler_factory(config: SectionProxy, out: Callable[[str], None] = None,
+                           qs: str = None) -> Callable[..., None]:
     """
     Log an exception gracefully.
 
@@ -304,7 +304,7 @@ def except_handler_factory(config: SectionProxy, out: Callable[[str], None]=None
                 out(doc)
                 return
             try:
-                while etb.tb_next != None:
+                while etb.tb_next is not None:
                     etb = etb.tb_next
                 e_file = etb.tb_frame.f_code.co_filename
                 e_line = etb.tb_frame.f_lineno

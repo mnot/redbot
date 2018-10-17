@@ -27,7 +27,7 @@ class RangeRequest(SubRequest):
         SubRequest.__init__(self, config, resource)
 
     def modify_request_headers(self, base_headers: StrHeaderListType) -> StrHeaderListType:
-        if len(self.base.response.payload_sample) != 0:
+        if self.base.response.payload_sample:
             sample_num = random.randint(0, len(self.base.response.payload_sample) - 1)
             sample_len = min(96, len(self.base.response.payload_sample[sample_num][1]))
             self.range_start = self.base.response.payload_sample[sample_num][0]
@@ -42,15 +42,14 @@ class RangeRequest(SubRequest):
         if self.base.response.status_code == '206':
             return False
         if 'bytes' in self.base.response.parsed_headers.get('accept-ranges', []):
-            if len(self.base.response.payload_sample) == 0:
+            if not self.base.response.payload_sample:
                 return False
             if self.range_start == self.range_end:
                 # wow, that's a small body.
                 return False
             return True
-        else:
-            self.base.partial_support = False
-            return False
+        self.base.partial_support = False
+        return False
 
     def done(self) -> None:
         if not self.response.complete:

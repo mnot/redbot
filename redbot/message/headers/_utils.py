@@ -63,8 +63,8 @@ def split_string(instr: str, item: str, split: str) -> List[str]:
         r'%s(?=%s|\s*$)' % (item, split), instr, re.VERBOSE
     )]
 
-def parse_params(instr: str, add_note: AddNoteMethodType, nostar: Union[List[str], bool]=None,
-                 delim: str=";") -> Dict[str, str]:
+def parse_params(instr: str, add_note: AddNoteMethodType, nostar: Union[List[str], bool] = None,
+                 delim: str = ";") -> Dict[str, str]:
     """
     Parse parameters into a dictionary.
     """

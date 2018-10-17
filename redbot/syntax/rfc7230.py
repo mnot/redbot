@@ -63,7 +63,7 @@ quoted_string = r"(?: \" (?: {qdtext} | {quoted_pair} )* \" )".format(**locals()
 
 
 
-class list_rule(object):
+class list_rule:
     """
     Given a piece of ABNF, wrap it in the "list rule"
     as per RFC7230, Section 7.
@@ -73,7 +73,7 @@ class list_rule(object):
     Uses the sender syntax, not the more lenient recipient syntax.
     """
 
-    def __init__(self, element: str, minimum: int=None) -> None:
+    def __init__(self, element: str, minimum: int = None) -> None:
         self.element = element
         self.minimum = minimum
 
@@ -82,15 +82,14 @@ class list_rule(object):
             # 1#element => element *( OWS "," OWS element )
             return r"(?: {element} (?: {OWS} , {OWS} {element} )* )".format(
                 element=self.element, OWS=OWS)
-        elif self.minimum > 1:
+        if self.minimum > 1:
             # <n>#<m>element => element <n-1>*<m-1>( OWS "," OWS element )
             adj_min = self.minimum - 1
             return r"(?: {element} (?: {OWS} , {OWS} {element} ){{{adj_min},}} )".format(
                 element=self.element, OWS=OWS, adj_min=adj_min)
-        else:
-            # element => [ 1#element ]
-            return r"(?: {element} (?: {OWS} , {OWS} {element} )* )?".format(
-                element=self.element, OWS=OWS)
+        # element => [ 1#element ]
+        return r"(?: {element} (?: {OWS} , {OWS} {element} )* )?".format(
+            element=self.element, OWS=OWS)
 
 
 

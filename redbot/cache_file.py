@@ -7,7 +7,7 @@ import zlib
 
 import thor
 
-class CacheFile(object):
+class CacheFile:
     """
     A gzipped cache file whose unix modification time indicates how long it
     is fresh for. No locking, so errors are discarded.

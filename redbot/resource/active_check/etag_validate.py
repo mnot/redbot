@@ -33,9 +33,8 @@ class ETagValidate(SubRequest):
         etag = self.base.response.parsed_headers.get("etag", None)
         if etag:
             return True
-        else:
-            self.base.inm_support = False
-            return False
+        self.base.inm_support = False
+        return False
 
     def done(self) -> None:
         if not self.response.complete:

@@ -59,16 +59,16 @@ def cgi_main(config: SectionProxy) -> None:
 
     try:
         RedWebUi(config, method.decode(config['charset']), query_string,
-          response_start, response_body, response_done)
+                 response_start, response_body, response_done)
         thor.run()
     except Exception:
         except_handler_factory(config, qs=query_string.decode(config['charset']))()
 
 
 if __name__ == "__main__":
-    config = ConfigParser()
-    config.read(os.environ.get('REDBOT_CONFIG', "config.txt"))
-    redconf = config['redbot']
+    conf = ConfigParser()
+    conf.read(os.environ.get('REDBOT_CONFIG', "config.txt"))
+    redconf = conf['redbot']
 
     try:
         locale.setlocale(locale.LC_ALL, locale.normalize(redconf['lang']))

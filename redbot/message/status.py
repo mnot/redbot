@@ -29,14 +29,14 @@ def get_header(hdr_tuples: StrHeaderListType, name: str) -> List[str]:
     return [v.strip() for v in sum(
         [l.split(",") for l in [i[1] for i in hdr_tuples if i[0].lower() == name]], [])]
 
-class StatusChecker(object):
+class StatusChecker:
     """
     Given a response, check out the status code and perform
     appropriate tests on it.
 
     Additional tests will be performed if the request is available.
     """
-    def __init__(self, response: HttpResponse, request: HttpRequest=None) -> None:
+    def __init__(self, response: HttpResponse, request: HttpRequest = None) -> None:
         assert response.is_request is False
         self.request = request
         self.response = response

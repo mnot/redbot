@@ -9,14 +9,11 @@ it need to be escaped to be safe for use in HTML.
 """
 
 from binascii import b2a_hex
-from cgi import escape as cgi_escape
 from enum import Enum
-from functools import partial
+from html import escape as e_html
 from typing import Any, Dict, Union
 
 from markdown import markdown
-
-e_html = partial(cgi_escape, quote=True)
 
 class categories(Enum):
     "Note classifications."
@@ -35,7 +32,7 @@ class levels(Enum):
     BAD = 'bad'
     INFO = 'info'
 
-class Note(object):
+class Note:
     """
     A note about an HTTP resource, representation, or other component
     related to the URI under test.

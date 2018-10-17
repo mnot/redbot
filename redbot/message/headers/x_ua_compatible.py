@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from typing import Tuple, Dict
+from typing import Tuple, Dict # pylint: disable=unused-import
 
 from redbot.message import headers
 from redbot.speak import Note, categories, levels

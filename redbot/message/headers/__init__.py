@@ -33,7 +33,7 @@ MAX_HDR_SIZE = 4 * 1024
 MAX_TTL_HDR = 8 * 1000
 
 
-class HttpHeader(object):
+class HttpHeader:
     """A HTTP Header handler."""
     canonical_name = None # type: str
     description = None # type: str
@@ -111,7 +111,7 @@ class HttpHeader(object):
             deprecation_ref = getattr(self, 'deprecation_ref', self.reference)
             add_note(HEADER_DEPRECATED, deprecation_ref=deprecation_ref)
         if not self.list_header and not self.nonstandard_syntax:
-            if len(self.value) == 0:
+            if not self.value:
                 self.value = None
             elif len(self.value) == 1:
                 self.value = self.value[-1]
@@ -141,7 +141,7 @@ class UnknownHttpHeader(HttpHeader):
         return
 
 
-class HeaderProcessor(object):
+class HeaderProcessor:
     """
     Parses and runs checks on a set of headers.
     """
@@ -236,7 +236,7 @@ class HeaderProcessor(object):
             return handler
 
     @staticmethod
-    def find_header_handler(header_name: str, default: bool=True) -> Optional[Type[HttpHeader]]:
+    def find_header_handler(header_name: str, default: bool = True) -> Optional[Type[HttpHeader]]:
         """
         Return a header handler class for the given field name.
 
@@ -258,7 +258,7 @@ class HeaderProcessor(object):
         """
         name_token = HeaderProcessor.name_token(header_name)
         if name_token[0] == '_':  # these are special
-            return
+            return None
         if name_token in HeaderProcessor.header_aliases:
             name_token = HeaderProcessor.header_aliases[name_token]
         try:
@@ -266,7 +266,7 @@ class HeaderProcessor(object):
             __import__(module_name)
             return sys.modules[module_name]
         except (ImportError, KeyError, TypeError):
-            return
+            return None
 
     @staticmethod
     def name_token(header_name: str) -> str:
@@ -317,6 +317,7 @@ class HeaderTest(unittest.TestCase):
             self.assertTrue(message.text % message.vars)
             self.assertTrue(message.summary % message.vars)
         self.assertEqual(len(diff), 0, "Mismatched notes: %s" % diff)
+        return None
 
     def set_context(self, message: 'HttpMessage') -> None:
         pass

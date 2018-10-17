@@ -40,7 +40,7 @@ class HttpResource(RedFetcher):
     check_name = "default"
     response_phrase = "This response"
 
-    def __init__(self, config: SectionProxy, descend: bool=False) -> None:
+    def __init__(self, config: SectionProxy, descend: bool = False) -> None:
         RedFetcher.__init__(self, config)
         self.config = config
         self.descend = descend       # type: bool
@@ -95,7 +95,7 @@ class HttpResource(RedFetcher):
             self.check_done = True
             self.emit('check_done')
 
-    def show_task_map(self, watch: bool=False) -> Union[str, None]:
+    def show_task_map(self, watch: bool = False) -> Union[str, None]:
         """
         Show the task map for debugging.
         """
@@ -103,8 +103,7 @@ class HttpResource(RedFetcher):
             sys.stderr.write("* %s - %s\n" % (self, self._task_map))
             thor.schedule(5, self.show_task_map)
             return None
-        else:
-            return repr(self._task_map)
+        return repr(self._task_map)
 
     def process_link(self, base: str, link: str, tag: str, title: str) -> None:
         "Handle a link from content."

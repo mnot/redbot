@@ -10,13 +10,14 @@ import os
 import sys
 from urllib.parse import urlsplit
 
-from redbot import __version__
-from redbot.type import RawHeaderListType
-from redbot.webui import RedWebUi, except_handler_factory
-
 import thor
 from thor.events import EventEmitter
 from thor.loop import _loop
+
+from redbot import __version__
+from redbot.type import RawHeaderListType
+from redbot.webui import RedWebUi
+
 _loop.precision = .1
 
 
@@ -30,11 +31,8 @@ def standalone_main(config: SectionProxy) -> None:
         b'.png': b'image/png',
     }
     static_files = {}
-    print ("ADDING STATIC")
     for root, dirs, files in os.walk(config['static_dir']):
-        print("ROOT %s" % root)
         for name in files:
-            print("adding %s" % name)
             try:
                 path = os.path.join(root, name)
                 uri = os.path.relpath(path, config['static_dir'])
@@ -95,9 +93,14 @@ if __name__ == "__main__":
     if len(args) < 1:
         option_parser.error("Please specify a config file.")
 
-    config = ConfigParser()
-    config.read(args[0])
-    redconf = config['redbot']
+    conf = ConfigParser()
+    conf.read(args[0])
+    redconf = conf['redbot']
+
+    try:
+        locale.setlocale(locale.LC_ALL, locale.normalize(redconf['lang']))
+    except ValueError:
+        locale.setlocale(locale.LC_ALL, '')
 
     sys.stderr.write(
         "Starting on PID %s...\n" % os.getpid() + \

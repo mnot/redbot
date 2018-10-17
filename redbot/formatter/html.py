@@ -5,9 +5,9 @@ HTML Formatter for REDbot.
 """
 
 
-from cgi import escape as cgi_escape
 import codecs
 from functools import partial
+from html import escape as e_html
 import json
 import operator
 import os
@@ -29,7 +29,6 @@ from redbot.message.headers import HeaderProcessor
 from redbot.speak import Note, levels, categories # pylint: disable=unused-import
 
 nl = "\n"
-e_html = partial(cgi_escape, quote=True)
 
 
 class BaseHtmlFormatter(Formatter):
@@ -118,7 +117,7 @@ $('#red_status').text("%s");
 <div id="final_status">%(elapse)2.2f seconds</div>
 """ % {'elapse': thor.time() - self.start})
 
-    def format_extra(self, etype: str='.html') -> str:
+    def format_extra(self, etype: str = '.html') -> str:
         """
         Show extra content from the extra_dir, if any. MUST be UTF-8.
         Type controls the extension included; currently supported:
@@ -128,7 +127,8 @@ $('#red_status').text("%s");
         """
         o = []
         if self.config.get("extra_dir", "") and os.path.isdir(self.config["extra_dir"]):
-            extra_files = [p for p in os.listdir(self.config["extra_dir"]) if os.path.splitext(p)[1] == etype]
+            extra_files = [p for p in os.listdir(self.config["extra_dir"]) if \
+                os.path.splitext(p)[1] == etype]
             for extra_file in extra_files:
                 extra_path = os.path.join(self.config["extra_dir"], extra_file)
                 try:
@@ -163,8 +163,8 @@ title="drag me to your toolbar to use REDbot any time.">REDbot</a> bookmarklet
 
 """ % {'baseuri': e_html(self.config['ui_uri']), 'static_root': self.config["static_root"]}
 
-    def req_qs(self, link: str=None, check_name: str=None, res_format: str=None,
-               use_stored: bool=True, referer: bool=True) -> str:
+    def req_qs(self, link: str = None, check_name: str = None, res_format: str = None,
+               use_stored: bool = True, referer: bool = True) -> str:
         """
         Format a query string to refer to another REDbot resource.
 
@@ -198,7 +198,7 @@ title="drag me to your toolbar to use REDbot any time.">REDbot</a> bookmarklet
             out.append("req_hdr=Referer%%3A%s" % e_query_arg(uri))
         if check_name:
             out.append("check_name=%s" % e_query_arg(check_name))
-        elif self.resource.check_name != None:
+        elif self.resource.check_name is not None:
             out.append("check_name=%s" % e_query_arg(self.resource.check_name))
         if res_format:
             out.append("format=%s" % e_query_arg(res_format))
@@ -466,7 +466,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
              or "<br>" for o in options])
 
 
-class HeaderPresenter(object):
+class HeaderPresenter:
     """
     Present a HTTP header in the Web UI. By default, it will:
        - Escape HTML sequences to avoid XSS attacks
@@ -487,8 +487,7 @@ class HeaderPresenter(object):
         name_token = name.replace('-', '_')
         if name_token[0] != "_" and hasattr(self, name_token):
             return getattr(self, name_token)(name, value)
-        else:
-            return self.I(e_html(value), len(name))
+        return self.I(e_html(value), len(name))
 
     def BARE_URI(self, name: str, value: str) -> str:
         "Present a bare URI header value"
@@ -647,7 +646,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         return nl.join(out)
 
     @staticmethod
-    def format_table_header(heading: str=None) -> str:
+    def format_table_header(heading: str = None) -> str:
         return """
         <tr>
         <th title="The URI tested. Click to run a detailed analysis.">%s</th>
@@ -676,27 +675,24 @@ class TableHtmlFormatter(BaseHtmlFormatter):
     def format_time(value: float) -> str:
         if value is None:
             return '<td>-</td>'
-        else:
-            return '<td>%s</td>' % relative_time(value, 0, 0)
+        return '<td>%s</td>' % relative_time(value, 0, 0)
 
     @staticmethod
     def format_size(value: int) -> str:
         if value is None:
             return '<td>-</td>'
-        else:
-            return '<td>%s</td>' % f_num(value, by1024=True)
+        return '<td>%s</td>' % f_num(value, by1024=True)
 
     def format_yes_no(self, value: Union[bool, None]) -> str:
         icon_tpl = '<td><img src="%s/icon/%%s" alt="%%s"/></td>' % \
             self.config["static_root"]
         if value is True:
             return icon_tpl % ("accept1.png", "yes")
-        elif value is False:
+        if value is False:
             return icon_tpl % ("remove-16.png", "no")
-        elif value is None:
+        if value is None:
             return icon_tpl % ("help1.png", "unknown")
-        else:
-            raise AssertionError('unknown value')
+        raise AssertionError('unknown value')
 
     def format_options(self, resource: HttpResource) -> str:
         "Return things that the user can do with the URI as HTML links"
