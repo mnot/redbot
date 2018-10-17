@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(name='redbot',
-      version='1.1',
+      version='1.2',
       description='Resource Expert Droid',
       author='Mark Nottingham',
       author_email='mnot@mnot.net',
