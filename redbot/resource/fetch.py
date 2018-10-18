@@ -48,6 +48,7 @@ class RedFetcher(thor.events.EventEmitter):
     check_name = "undefined"
     response_phrase = "undefined"
     client = RedHttpClient()
+    client.idle_timeout = 5
 
     def __init__(self, config: SectionProxy) -> None:
         thor.events.EventEmitter.__init__(self)
