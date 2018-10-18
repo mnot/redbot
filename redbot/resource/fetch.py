@@ -156,10 +156,12 @@ class RedFetcher(thor.events.EventEmitter):
         self.exchange.request_start(
             self.request.method.encode('ascii'), self.request.uri.encode('ascii'), req_hdrs)
         self.request.start_time = thor.time()
-        if self.request.payload is not None:
-            self.exchange.request_body(self.request.payload)
-            self.transfer_out += len(self.request.payload)
-        self.exchange.request_done([])
+        if not self.fetch_done: # the request could have immediately failed.
+            if self.request.payload is not None:
+                self.exchange.request_body(self.request.payload)
+                self.transfer_out += len(self.request.payload)
+        if not self.fetch_done: # the request could have immediately failed.
+            self.exchange.request_done([])
 
     def _response_nonfinal(self, status: bytes, phrase: bytes,
                            res_headers: RawHeaderListType) -> None:
