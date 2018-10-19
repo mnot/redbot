@@ -47,7 +47,11 @@ class LmValidate(SubRequest):
 
     def done(self) -> None:
         if not self.response.complete:
-            self.add_base_note('', LM_SUBREQ_PROBLEM, problem=self.response.http_error.desc)
+            if self.response.http_error:
+                problem = self.response.http_error.desc
+            else:
+                problem = ""
+            self.add_base_note('', ETAG_SUBREQ_PROBLEM, problem=problem)
             return
 
         if self.response.status_code == '304':
