@@ -39,7 +39,7 @@ class RedFetcher(thor.events.EventEmitter):
     Abstract class for a fetcher.
 
     Fetches the given URI (with the provided method, headers and body) and:
-      - emits 'status' as it progresses
+      - emits 'status' and 'debug' as it progresses
       - emits 'fetch_done' when the fetch is finished.
 
     If provided, 'name' indicates the type of the request, and is used to
@@ -151,6 +151,7 @@ class RedFetcher(thor.events.EventEmitter):
         self.exchange.once('response_done', self._response_done)
         self.exchange.on('error', self._response_error)
         self.emit("status", "fetching %s (%s)" % (self.request.uri, self.check_name))
+        self.emit("debug", "fetching %s (%s)" % (self.request.uri, self.check_name))
         req_hdrs = [(k.encode('ascii', 'replace'), v.encode('ascii', 'replace'))
                     for (k, v) in self.request.headers] # FIXME: should complain
         self.exchange.request_start(
@@ -188,7 +189,7 @@ class RedFetcher(thor.events.EventEmitter):
 
     def _response_done(self, trailers: List[Tuple[bytes, bytes]]) -> None:
         "Finish analysing the response, handling any parse errors."
-        self.emit("status", "fetched %s (%s)" % (self.request.uri, self.check_name))
+        self.emit("debug", "fetched %s (%s)" % (self.request.uri, self.check_name))
         self.response.transfer_length = self.exchange.input_transfer_length
         self.response.header_length = self.exchange.input_header_length
         self.response.body_done(True, trailers)
@@ -196,7 +197,7 @@ class RedFetcher(thor.events.EventEmitter):
 
     def _response_error(self, error: httperr.HttpError) -> None:
         "Handle an error encountered while fetching the response."
-        self.emit("status", "fetch error %s (%s) - %s" % (
+        self.emit("debug", "fetch error %s (%s) - %s" % (
             self.request.uri, self.check_name, error.desc))
         err_sample = error.detail[:40] or ""
         if isinstance(error, httperr.ExtraDataError):

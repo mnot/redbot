@@ -108,6 +108,16 @@ $('#red_status').text("%s");
 </script>
 """ % (thor.time() - self.start, e_html(message)))
 
+    def debug(self, message: str) -> None:
+        "Debug to console."
+        self.output("""
+<script>
+<!--
+console.log("%3.3f %s");
+-->
+</script>
+""" % (thor.time() - self.start, e_js(message)))
+
     def final_status(self) -> None:
 #        See issue #51
 #        self.status("REDbot made %(reqs)s requests in %(elapse)2.3f seconds." % {

@@ -99,6 +99,7 @@ class Formatter(EventEmitter):
                 display_resource.request.on('headers_available', self.start_output)
             display_resource.response.on('chunk', self.feed)
             display_resource.on('status', self.status)
+            display_resource.on('debug', self.debug)
             # we want to wait just a little bit, for extra data.
             @thor.events.on(display_resource)
             def check_done() -> None:
@@ -125,6 +126,12 @@ class Formatter(EventEmitter):
         Output a status message.
         """
         raise NotImplementedError
+
+    def debug(self, message: str) -> None:
+        """
+        Debug output.
+        """
+        return
 
     def finish_output(self) -> None:
         """
