@@ -13,11 +13,9 @@ from typing import List, Tuple, Type, Union, TYPE_CHECKING
 
 from redbot.resource.fetch import RedFetcher
 from redbot.speak import Note, levels, categories
+from redbot.type import StrHeaderListType
 if TYPE_CHECKING:
     from redbot.resource import HttpResource # pylint: disable=cyclic-import,unused-import
-
-# Avoiding an import loop here
-StrHeaderListType = List[Tuple[str, str]]
 
 
 class SubRequest(RedFetcher, metaclass=ABCMeta):
