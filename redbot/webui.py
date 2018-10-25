@@ -55,7 +55,7 @@ class RedWebUi:
         self.referer_spam_domains = [] # type: List[str]
         if config.get("referer_spam_domains", ""):
             self.referer_spam_domains = [i.strip() for i in \
-                config["referer_spam_domains"].split(",")]
+                config["referer_spam_domains"].split()]
         self.run(query_string)
 
     def run(self, query_string: bytes) -> None:

@@ -21,7 +21,7 @@ save_days = 30
 # show errors in the browser; boolean.
 debug = False
 
-# domains which we reject requests for when they're in the referer. Comma-separated.
+# domains which we reject requests for when they're in the referer. Whitespace-separated.
 referer_spam_domains = www.youtube.com
 
 # log when total traffic is bigger than this (in kbytes), so we can catch abuse
