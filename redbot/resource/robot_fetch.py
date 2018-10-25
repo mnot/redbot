@@ -22,7 +22,7 @@ from redbot.type import RawHeaderListType
 UA_STRING = "RED/%s (https://redbot.org/)" % __version__
 RobotChecker = Union[RobotFileParser, 'DummyChecker']
 
-class RobotFetcher(thor.events.EventEmitter):
+class RobotFetcher:
     """
     Fetch robots.txt and check to see if we're allowed.
     """
@@ -33,9 +33,9 @@ class RobotFetcher(thor.events.EventEmitter):
     client.idle_timeout = 5
     robot_checkers = {} # type: Dict[str, RobotChecker]  # cache of robots.txt checkers
     robot_lookups = {} # type: Dict[str, set]
+    emitter = thor.events.EventEmitter()
 
     def __init__(self, config: SectionProxy) -> None:
-        thor.events.EventEmitter.__init__(self)
         self.config = config
 
     def check_robots(self, url: str, sync: bool = False) -> Union[bool, None]:
@@ -54,7 +54,7 @@ class RobotFetcher(thor.events.EventEmitter):
         if origin is None:
             if sync:
                 return True
-            self.emit("robot-%s" % url, True)
+            self.emitter.emit("robot-%s" % url, True)
             return None
         origin_hash = hashlib.sha1(origin.encode('ascii', 'replace')).hexdigest()
 
@@ -141,7 +141,7 @@ class RobotFetcher(thor.events.EventEmitter):
         result = robots_checker.can_fetch(UA_STRING, url)
         if sync:
             return result
-        self.emit("robot-%s" % url, result)
+        self.emitter.emit("robot-%s" % url, result)
         return None
 
 

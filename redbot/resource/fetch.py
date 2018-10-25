@@ -49,6 +49,7 @@ class RedFetcher(thor.events.EventEmitter):
     response_phrase = "undefined"
     client = RedHttpClient()
     client.idle_timeout = 5
+    robot_emitter = thor.events.EventEmitter()
 
     def __init__(self, config: SectionProxy) -> None:
         thor.events.EventEmitter.__init__(self)
@@ -126,7 +127,7 @@ class RedFetcher(thor.events.EventEmitter):
             return
 
         if self.follow_robots_txt:
-            self.robot_fetcher.once("robot-%s" % self.request.uri, self.run_continue)
+            self.robot_fetcher.emitter.once("robot-%s" % self.request.uri, self.run_continue)
             self.robot_fetcher.check_robots(self.request.uri)
         else:
             self.run_continue(True)
