@@ -52,9 +52,9 @@ class HttpResource(RedFetcher):
         self._task_map = set([None]) # type: Set[RedFetcher]   # None is the original request
         self.subreqs = {ac.check_name:ac(config, self) for ac in active_checks}  # type: ignore
         self.response.once("content_available", self.run_active_checks)
-        def finish_check() -> None:
+        def _finish_check() -> None:
             self.finish_check(None)
-        self.on("fetch_done", finish_check)
+        self.on("fetch_done", _finish_check)
         self.links = {}              # type: Dict[str, Set[str]]
         self.link_count = 0          # type: int
         self.linked = []             # type: List[Tuple[HttpResource, str]]  # linked HttpResources
