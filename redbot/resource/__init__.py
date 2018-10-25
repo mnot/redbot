@@ -42,7 +42,6 @@ class HttpResource(RedFetcher):
 
     def __init__(self, config: SectionProxy, descend: bool = False) -> None:
         RedFetcher.__init__(self, config)
-        self.config = config
         self.descend = descend       # type: bool
         self.check_done = False      # type: bool
         self.partial_support = None  # type: bool
