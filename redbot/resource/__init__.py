@@ -92,7 +92,7 @@ class HttpResource(RedFetcher):
         except KeyError:
             raise KeyError("* Can't find %s in task map: %s" % (resource, self._task_map))
         tasks_left = len(self._task_map)
-        self.emit("debug", "%s checks remaining: %i" % (repr(self), tasks_left))
+#        self.emit("debug", "%s checks remaining: %i" % (repr(self), tasks_left))
         if tasks_left == 0:
             self.check_done = True
             self.emit('check_done')
