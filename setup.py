@@ -6,6 +6,8 @@ import redbot
 setup(name='redbot',
       version=redbot.__version__,
       description='REDbot is lint for HTTP.',
+      long_description=open("README.md").read(),
+      long_description_content_type="text/markdown",
       author='Mark Nottingham',
       author_email='mnot@mnot.net',
       url='https://redbot.org/project/',
