@@ -21,7 +21,7 @@ class BasicWebUiTest(unittest.TestCase):
         self.uri = self.browser.find_element_by_id("uri")
         self.uri.send_keys(self.test_uri)
         self.uri.submit()
-        time.sleep(2.0)
+        time.sleep(3.0)
         self.check_complete()
 
     def test_multi(self):
