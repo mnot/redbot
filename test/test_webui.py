@@ -27,7 +27,8 @@ class BasicWebUiTest(unittest.TestCase):
     def test_multi(self):
         check = self.browser.find_element_by_css_selector('a[accesskey="a"]')
         check.click()
-        time.sleep(0.5)
+        time.sleep(10.0)
+        self.check_complete()
 
     def check_complete(self):
         try:
