@@ -1,21 +1,24 @@
 #!/usr/bin/env python
 
 from setuptools import setup, find_packages
+import redbot
 
 setup(name='redbot',
-      version='1.2',
-      description='Resource Expert Droid',
+      version=redbot.__version__,
+      description='REDbot is lint for HTTP.',
       author='Mark Nottingham',
       author_email='mnot@mnot.net',
       url='https://redbot.org/project/',
+      download_url='http://github.com/mnot/redbot/tarball/redbot-%s' % redbot.__version__,
       packages=find_packages(),
       package_dir={'redbot': 'redbot'},
       scripts=['bin/redbot_cli', 'bin/redbot_daemon.py', 'bin/redbot_cgi.py'],
       package_data={
         'redbot': ['assets/*.css', 'assets/*.js', 'assets/*.map', 'assets/icon/*', 'assets/logo/*']
       },
+      python_requires=">=3.5",
       install_requires=[
-          'thor >= 0.5.0',
+          'thor >= 0.6.0',
           'markdown >= 2.6.5'
       ],
       extras_require={

@@ -66,12 +66,15 @@ deploy: clean-deploy
 clean-deploy:
 	rm -rf deploy
 
-## Snapshot
+## Distribution
 
-.PHONY: snapshot
-snapshot:
+.PHONY: dist
+dist: clean typecheck test
+	git tag redbot-$(version)
 	git push
-	$(PYTHON) setup.py egg_info -b .dev`git log -1 --pretty=format:%h` sdist upload
+	git push --tags origin
+	$(PYTHON) setup.py sdist
+	$(PYTHON) -m twine upload dist/*
 
 ## New headers
 
