@@ -3,7 +3,6 @@
 
 import os
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options
 
@@ -33,9 +32,9 @@ class BasicWebUiTest(unittest.TestCase):
     def check_complete(self):
         try:
             self.browser.find_element_by_css_selector("div.footer")
-        except NoSuchElementException:
-            raise Exception("Page not complete.")
+        except:
             self.browser.save_screenshot('dump.png')
+            raise
 
     def tearDown(self):
         self.check_complete()
