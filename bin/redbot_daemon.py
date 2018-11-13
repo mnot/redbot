@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Run REDbot as a systemd service.
+Run REDbot as a daemon.
 """
 
 from configparser import ConfigParser, SectionProxy
@@ -104,6 +104,6 @@ if __name__ == "__main__":
 
     sys.stderr.write(
         "Starting on PID %s...\n" % os.getpid() + \
-        "http://%s:%s/\n" % (redconf['host'], redconf['port']))
+        "http://%s:%s/\n" % (redconf.get('host', ''), redconf['port']))
 
     standalone_main(redconf)
