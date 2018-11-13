@@ -80,19 +80,15 @@ should configure a cron job to regularly clean it. For example:
 > 0 * * * * find /var/state/redbot/ -mmin +360 -exec rm {} \;
 
 
-### Docker deployment
+### Docker Deployment
 
-You can also build the project through docker, clone from GitHub then:
+If you wish to run REDbot using Docker, get a local copy of the repository, then:
 
-> docker build -t redbot ./contrib
+> docker build -t redbot .
 
 Start the webserver:
 
-> docker run -p 8080:80 redbot
-
-Use the command line:
-
-> docker run --entrypoint=/redbot/bin/redbot redbot https://url.to.test.example/
+> docker run -p 8000:80 redbot
 
 
 

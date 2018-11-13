@@ -1,0 +1,54 @@
+[redbot]
+
+# Output language (not working yet; see #169).
+lang = en
+
+# Output character set. No real reason to change from UTF-8.
+charset = utf-8
+
+# Where to store exceptions; Comment out to disable traceback logging.
+# exception_dir = exceptions
+
+# how many seconds to allow a check to run for.
+max_runtime = 60
+
+# Where to keep files for future reference, when users save them. Comment out to disable.
+# save_dir = /tmp/
+
+# how long to store things when users save them, in days.
+save_days = 30
+
+# show errors in the browser; boolean.
+debug = False
+
+# domains which we reject requests for when they're in the referer. Whitespace-separated.
+referer_spam_domains = www.youtube.com
+
+# log when total traffic is bigger than this (in kbytes), so we can catch abuse
+# Comment out to disable; 0 to log all.
+log_traffic = 8192
+
+# Where the User Interface is rooted. Will be overwritten by redbot_cgi.
+ui_uri = /
+
+# Where to cache robots.txt. Comment out to disable.
+# robot_cache_dir = /var/state/robots-txt/
+
+# directory containing files to append to the front page; Comment out to disable.
+extra_dir = extra
+
+# URI root for static assets (absolute or relative, but no trailing '/').
+static_root = static
+
+###
+### Options for running REDbot as a standalone server
+###
+
+# Hostname to listen on. Comment out to listen on all interfaces.
+# host = localhost
+
+# Port to listen on.
+port = 8000
+
+# Directory in the filesystem where static assets are located.
+static_dir = redbot/assets
