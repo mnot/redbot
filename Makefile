@@ -66,6 +66,16 @@ deploy: clean-deploy
 clean-deploy:
 	rm -rf deploy
 
+## Docker
+
+.PHONY: docker-image
+docker-image:
+	docker build -t redbot .
+
+.PHONY: docker
+docker: docker-image
+	docker run -p 8000:8000 redbot
+
 ## Distribution
 
 .PHONY: dist

@@ -90,6 +90,11 @@ Start the webserver:
 
 > docker run -p 8000:80 redbot
 
+Or, just:
+
+> make docker
+
+to run REDbot on port 8000.
 
 
 ## Credits
