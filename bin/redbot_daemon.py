@@ -78,7 +78,7 @@ in standalone server mode. Details follow.
                 x.response_done([])
 
     def watchdog_ping() -> None:
-        notify(Notification.STATUS, "I'm fine.")
+        notify(Notification.WATCHDOG)
         thor.schedule(watchdog_freq, watchdog_ping)
 
     if os.environ.get("SYSTEMD"):
