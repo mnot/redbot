@@ -1,0 +1,46 @@
+[Unit]
+Description="REDbot"
+After=network.target
+
+[Service]
+Type=simple
+User=redbot
+Group=redbot
+DynamicUser=true
+
+# Process
+Environment=PYTHONPATH='/redbot' PYTHONUNBUFFERED='true' SYSTEMD_WATCHDOG='true'
+WorkingDirectory=/redbot
+ExecStart=/redbot/bin/redbot_daemon.py /redbot/config.txt
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=redbot
+Restart=always
+
+# Watchdog
+WatchdogSec=10
+
+# Sandbox
+NotifyAccess=main
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=tmpfs
+BindReadOnlyPaths=/path/to/redbot/change/me:/redbot
+# TODO: exceptions/ directory
+DevicePolicy=closed
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+StateDirectory=redbot
+CacheDirectory=redbot/robots-txt
+LogsDirectory=redbot
+
+# Resource Limits
+CPUQuota=60%
+MemoryLow=40M
+MemoryHigh=50M
+MemoryMax=60M
+MemorySwapMax=60M
+
+[Install]
+WantedBy=multi-user.target

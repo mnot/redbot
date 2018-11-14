@@ -80,9 +80,27 @@ should configure a cron job to regularly clean it. For example:
 > 0 * * * * find /var/state/redbot/ -mmin +360 -exec rm {} \;
 
 
-### Docker Deployment
+### Running REDbot as a systemd Service
 
-If you wish to run REDbot using Docker, get a local copy of the repository, then:
+REDbot can run as a standalone service, managed by [systemd](https://freedesktop.org/wiki/Software/systemd/). This offers a degree of sandboxing and resource management, as well as process monitoring (including a watchdog function).
+
+To do this, clone the repo to your system and copy `extra/redbot.service` into the appropriate directory (on most systems, `/etc/systemd/system/`.)
+
+Modify the file appropriately; this is only a sample. In particular, you will need to adjust the first part of `BindReadOnlyPaths` to suit the location of the REDbot directory for you.
+
+Then, as root:
+
+> systemctl reload-daemon
+> systemctl enable redbot
+> systemctl start redbot
+
+By default, REDbot will listen on localhost port 8000. This can be adjusted in `config.txt`. Running REDbot behind a reverse proxy is recommended, if it is to be exposed to the Internet.
+
+
+
+### Running REDbot with Docker
+
+If you wish to run REDbot using [Docker](https://www.docker.com), get a local copy of the repository, then:
 
 > docker build -t redbot .
 
