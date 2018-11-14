@@ -53,7 +53,7 @@ def standalone_main(config: SectionProxy) -> None:
                 file_ext = os.path.splitext(p_uri.path)[1].lower()
                 content_encoding = static_types.get(file_ext, b'application/octet-stream')
                 headers.append((b'Content-Encoding', content_encoding))
-                headers.append((b'Cache-Control', b'max-age=300'))
+                headers.append((b'Cache-Control', b'max-age=3600'))
                 x.response_start(b"200", b"OK", headers)
                 x.response_body(static_files[p_uri.path])
                 x.response_done([])
