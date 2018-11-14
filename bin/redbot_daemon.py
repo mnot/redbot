@@ -14,11 +14,15 @@ import thor
 from thor.events import EventEmitter
 from thor.loop import _loop
 
+if os.environ.get("SYSTEMD_WATCHDOG"):
+    from systemd.daemon import notify, Notification
+
 from redbot import __version__
 from redbot.type import RawHeaderListType
 from redbot.webui import RedWebUi
 
 _loop.precision = .1
+watchdog_freq = 5
 
 
 def standalone_main(config: SectionProxy) -> None:
@@ -72,6 +76,13 @@ in standalone server mode. Details follow.
             else:
                 x.response_start(b"404", b"Not Found", [])
                 x.response_done([])
+
+    def watchdog_ping() -> None:
+        notify(Notification.STATUS, "I'm fine.")
+        thor.schedule(watchdog_freq, watchdog_ping)
+
+    if os.environ.get("SYSTEMD"):
+        thor.schedule(watchdog_freq, watchdog_ping)
 
     server = thor.http.HttpServer(config.get('host', ''), int(config['port']))
     server.on('exchange', red_handler)
