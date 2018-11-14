@@ -61,6 +61,8 @@ class RedBotServer:
                     path = os.path.join(root, name)
                     uri = os.path.relpath(path, dir_name).encode('utf-8')
                     self.static_files[b"/%s%s" % (base, uri)] = open(path, 'rb').read()
+                    if uri.endswith(b"/index.html"):
+                        self.static_files[b"/%s%s" % (base, uri[:-10])] = open(path, 'rb').read()
                 except IOError:
                     sys.stderr.write("* Problem loading %s\n" % path)
 
