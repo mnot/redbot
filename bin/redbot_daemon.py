@@ -95,6 +95,7 @@ in standalone server mode. Details follow.
                     sys.exit(1)
             else:
                 x.response_start(b"404", b"Not Found", [])
+                x.response_body(b"'%s' not found." % p_uri.path)
                 x.response_done([])
 
     def watchdog_ping(self) -> None:
