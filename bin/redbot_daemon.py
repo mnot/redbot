@@ -36,18 +36,18 @@ def standalone_main(config: SectionProxy) -> None:
     }
     static_files = {}
 
-    def walk_files(dir_name: str, base: str = "/") -> None:
+    def walk_files(dir_name: str, base: str = "") -> None:
         for root, dirs, files in os.walk(dir_name):
             for name in files:
                 try:
                     path = os.path.join(root, name)
-                    uri = os.path.relpath(path, base)
-                    static_files[b"/static/%s" % uri.encode('utf-8')] = open(path, 'rb').read()
+                    uri = os.path.relpath(path, dir_name)
+                    static_files[b"/%s%s" % (base, uri.encode('utf-8'))] = open(path, 'rb').read()
                 except IOError:
                     sys.stderr.write("* Problem loading %s\n" % path)
-    walk_files(config['static_dir'], config['static_dir'])
-    if config.get('extra_static_dir'):
-        walk_files(config['extra_static_dir'])
+    walk_files(config['asset_dir'], "static/")
+    if config.get('extra_base_dir'):
+        walk_files(config['extra_base_dir'])
 
     def red_handler(x: EventEmitter) -> None:
         @thor.events.on(x)
