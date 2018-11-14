@@ -71,10 +71,10 @@ class RedBotServer:
         def request_start(method: bytes, uri: bytes, req_hdrs: RawHeaderListType) -> None:
             p_uri = urlsplit(uri)
             if p_uri.path in self.static_files:
-                headers = []
                 file_ext = os.path.splitext(p_uri.path)[1].lower()
-                content_encoding = self.static_types.get(file_ext, b'application/octet-stream')
-                headers.append((b'Content-Encoding', content_encoding))
+                content_type = self.static_types.get(file_ext, b'application/octet-stream')
+                headers = []
+                headers.append((b'Content-Type', content_type))
                 headers.append((b'Cache-Control', b'max-age=3600'))
                 x.response_start(b"200", b"OK", headers)
                 x.response_body(self.static_files[p_uri.path])
@@ -96,7 +96,10 @@ in standalone server mode. Details follow.
                     thor.stop()
                     sys.exit(1)
             else:
-                x.response_start(b"404", b"Not Found", [])
+                headers = []
+                headers.append((b'Content-Type', b'text/plain'))
+                headers.append((b'Cache-Control', b'max-age=3600'))
+                x.response_start(b"404", b"Not Found", headers)
                 x.response_body(b"'%s' not found." % p_uri.path)
                 x.response_done([])
 
