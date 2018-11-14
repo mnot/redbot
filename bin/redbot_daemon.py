@@ -81,7 +81,7 @@ in standalone server mode. Details follow.
         notify(Notification.WATCHDOG)
         thor.schedule(watchdog_freq, watchdog_ping)
 
-    if os.environ.get("SYSTEMD"):
+    if os.environ.get("SYSTEMD_WATCHDOG"):
         thor.schedule(watchdog_freq, watchdog_ping)
 
     server = thor.http.HttpServer(config.get('host', ''), int(config['port']))
