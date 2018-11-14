@@ -32,7 +32,7 @@ log_traffic = 8192
 ui_uri = /
 
 # Where to cache robots.txt. Comment out to disable.
-robot_cache_dir = /var/state/robots-txt/
+robot_cache_dir = /var/cache/redbot/robots-txt/
 
 # directory containing files to append to the front page; Comment out to disable.
 extra_dir = extra
