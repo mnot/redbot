@@ -251,7 +251,7 @@ class RedWebUi:
 
     def timeoutError(self, detail: Callable[[], str]) -> None:
         """ Max runtime reached."""
-        self.error_log("REDbot TIMEOUT: <%s> descend=%s; %s" % (
+        self.error_log("timeout: <%s> descend=%s; %s" % (
             self.test_uri, self.descend, detail()))
         self.show_error("REDbot timeout.", to_output=True)
         self.response_done([])
