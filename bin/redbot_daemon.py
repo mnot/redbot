@@ -82,7 +82,7 @@ class RedBotServer:
             elif p_uri.path == b"/":
                 try:
                     RedWebUi(self.config, method.decode(self.config['charset']), p_uri.query,
-                             x.response_start, x.response_body, x.response_done)
+                             x.response_start, x.response_body, x.response_done, self.error_log)
                 except Exception:
                     sys.stderr.write("""
 
@@ -102,6 +102,9 @@ in standalone server mode. Details follow.
                 x.response_start(b"404", b"Not Found", headers)
                 x.response_body(b"'%s' not found." % p_uri.path)
                 x.response_done([])
+
+    def error_log(self, message: str) -> None:
+        sys.stderr.write("%s\n" % message)
 
     def watchdog_ping(self) -> None:
         notify(Notification.WATCHDOG)
