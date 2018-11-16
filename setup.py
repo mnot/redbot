@@ -21,7 +21,7 @@ setup(name='redbot',
       },
       python_requires=">=3.5",
       install_requires=[
-          'thor >= 0.7.1',
+          'thor >= 0.7.2',
           'markdown >= 2.6.5'
       ],
       extras_require={
