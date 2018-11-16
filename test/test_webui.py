@@ -57,7 +57,7 @@ if __name__ == "__main__":
         conf = ConfigParser()
         conf.read("config.txt")
         redconf = conf['redbot']
-        redbot_daemon.standalone_main(redconf)
+        redbot_daemon.RedBotServer(redconf)
     from multiprocessing import Process
     p = Process(target=redbot_run)
     p.start()
