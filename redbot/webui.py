@@ -4,6 +4,7 @@
 A Web UI for RED, the Resource Expert Droid.
 """
 
+from collections import defaultdict
 from configparser import SectionProxy
 import gzip
 import os
@@ -11,7 +12,7 @@ import pickle
 import sys
 import tempfile
 import time
-from typing import Any, Callable, List, Tuple, Union # pylint: disable=unused-import
+from typing import Any, Callable, Dict, List, Tuple, Union # pylint: disable=unused-import
 from urllib.parse import parse_qs, urlsplit
 import zlib
 
@@ -32,6 +33,10 @@ class RedWebUi:
     Given a URI, run REDbot on it and present the results to output as HTML.
     If descend is true, spider the links and present a summary.
     """
+
+    _origin_counts = defaultdict(int)   # type: Dict[str, int]
+    _origin_period = None               # type: float
+
     def __init__(self, config: SectionProxy, method: str, query_string: bytes,
                  response_start: Callable[..., None],
                  response_body: Callable[..., None],
@@ -53,6 +58,11 @@ class RedWebUi:
         self.save = None       # type: bool
         self.timeout = None    # type: Any
         self.referer_spam_domains = [] # type: List[str]
+        if config.get("limit_origin_tests", ""):
+            if self._origin_period == None:
+                self._origin_period = config.getfloat("limit_origin_period", fallback=1) * 3600
+                thor.schedule(self._origin_period, self.ratelimit_cleanup)
+
         if config.get("referer_spam_domains", ""):
             self.referer_spam_domains = [i.strip() for i in \
                 config["referer_spam_domains"].split()]
@@ -212,6 +222,23 @@ class RedWebUi:
                 self.error_log("%iK in %iK out for <%s> (descend %s)" % (
                     ti / 1024, to / 1024, e_url(self.test_uri), str(self.descend)))
 
+        if self.config.getint('limit_origin_tests', fallback=0):
+            testUri = urlsplit(self.test_uri)
+            scheme = testUri.scheme.lower()
+            authority = testUri.netloc.lower().rsplit("@", 1)[-1]
+            origin = "%s://%s" % (scheme, authority)
+
+            if self._origin_counts.get(origin, 0) > self.config.getint('limit_origin_tests'):
+                self.response_start(b"429", b"Too Many Requests", [
+                    (b"Content-Type", content_type.encode('ascii')),
+                    (b"Cache-Control", b"max-age=60, must-revalidate")])
+                formatter.start_output()
+                formatter.error_output("Origin is over limit. Please try later.")
+                self.response_done([])
+                self.error_log("origin over limit: %s" % origin)
+                return
+            self._origin_counts[origin] += 1
+
         self.response_start(b"200", b"OK", [
             (b"Content-Type", content_type.encode('ascii')),
             (b"Cache-Control", b"max-age=60, must-revalidate")])
@@ -269,6 +296,12 @@ class RedWebUi:
         except (UnicodeError, ValueError):
             return True
 
+    def ratelimit_cleanup(self) -> None:
+        """
+        Clean up ratelimit counters.
+        """
+        self._origin_counts.clear()
+        thor.schedule(self._origin_period, self.ratelimit_cleanup)
 
 
 # adapted from cgitb.Hook

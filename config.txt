@@ -62,3 +62,13 @@ asset_dir = redbot/assets
 # Directory in the filesystem where other assets should be layered into the URI root.
 # Comment out to disable.
 # extra_base_dir = files
+
+##
+## Rate limiting requests per tested origin; only useful when running as a standalone server.
+##
+
+# Number of tests to allow per period, per origin. Comment out to disable.
+# limit_origin_tests = 5
+
+# Period of time those requests are allowed within, in hours.
+limit_origin_period = 1
