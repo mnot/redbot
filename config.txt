@@ -68,7 +68,7 @@ asset_dir = redbot/assets
 ##
 
 # Number of tests to allow per period, per origin. Comment out to disable.
-# limit_origin_tests = 5
+# limit_origin_tests = 25
 
 # Period of time those requests are allowed within, in hours.
 limit_origin_period = 1
