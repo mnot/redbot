@@ -72,7 +72,7 @@ class ConnegCheck(SubRequest):
                                    no_conneg_vary=", ".join(no_conneg_vary_headers))
 
             # check body
-            if bare.decoded_md5 != negotiated.payload_md5:
+            if bare.payload_md5 != negotiated.decoded_md5:
                 self.add_base_note('body', VARY_BODY_MISMATCH)
 
             # check ETag
