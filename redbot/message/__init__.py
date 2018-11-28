@@ -241,13 +241,13 @@ class HttpMessage(thor.events.EventEmitter):
             # containing the filename
             while True:
                 st1 = content_l.pop(0)
-                if not content_l or st1 == b'\000':
+                if not content_l or st1 == 0:
                     break
         if flag & gz_flags['FCOMMENT']:
             # Read and discard a null-terminated string containing a comment
             while True:
                 st2 = content_l.pop(0)
-                if not content_l or st2 == b'\000':
+                if not content_l or st2 == 0:
                     break
         if flag & gz_flags['FHCRC']:
             content_l = content_l[2:]   # Read & discard the 16-bit header CRC
