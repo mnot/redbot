@@ -380,7 +380,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     try:
                         link = urljoin(resource.response.base_uri, link)
                     except ValueError:
-                        pass # we're not interested in raising these upstream
+                        continue # we're not interested in raising these upstream
                     def link_to(matchobj: Match) -> str:
                         return r"%s<a href='?%s' class='nocode'>%s</a>%s" % (
                             matchobj.group(1),
