@@ -29,6 +29,7 @@ class RedBotServer:
     """Run REDbot as a standalone Web server."""
 
     static_types = {
+        b'.html': b'text/html',
         b'.js': b'text/javascript',
         b'.css': b'text/css',
         b'.png': b'image/png',
