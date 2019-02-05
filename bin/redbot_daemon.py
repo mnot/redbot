@@ -72,8 +72,11 @@ class RedBotServer:
         def request_start(method: bytes, uri: bytes, req_hdrs: RawHeaderListType) -> None:
             p_uri = urlsplit(uri)
             if p_uri.path in self.static_files:
-                file_ext = os.path.splitext(p_uri.path)[1].lower()
-                content_type = self.static_types.get(file_ext, b'application/octet-stream')
+                if p_uri.path[-1] == b'/':
+                    content_type = b'text/html'
+                else:
+                    file_ext = os.path.splitext(p_uri.path)[1].lower()
+                    content_type = self.static_types.get(file_ext, b'application/octet-stream')
                 headers = []
                 headers.append((b'Content-Type', content_type))
                 headers.append((b'Cache-Control', b'max-age=3600'))
