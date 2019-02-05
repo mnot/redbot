@@ -35,7 +35,7 @@ referer_spam_domains = www.youtube.com
 log_traffic = 8192
 
 # Where the User Interface is rooted. Will be overwritten by redbot_cgi.
-ui_uri = /
+ui_uri = https://redbot.org/
 
 # Where to cache robots.txt. Comment out to disable.
 robot_cache_dir = /var/cache/redbot/robots-txt/
