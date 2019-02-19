@@ -33,6 +33,7 @@ class RedBotServer:
         b'.js': b'text/javascript',
         b'.css': b'text/css',
         b'.png': b'image/png',
+        b'.txt': b'text/plain'
     }
     watchdog_freq = 5
 
