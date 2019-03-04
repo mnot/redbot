@@ -139,6 +139,12 @@ class Formatter(EventEmitter):
         """
         raise NotImplementedError
 
+    def error_output(self, message: str) -> None:
+        """
+        Output an error.
+        """
+        raise NotImplementedError
+
 
 def f_num(i: int, by1024: bool = False) -> str:
     "Format a number according to the locale."

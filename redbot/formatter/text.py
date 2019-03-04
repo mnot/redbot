@@ -73,6 +73,9 @@ class BaseTextFormatter(Formatter):
             else:
                 raise AssertionError("Unknown incomplete response error.")
 
+    def error_output(self, message: str) -> None:
+        self.output(self.error_template % message)
+
     def format_headers(self, response: HttpResponse) -> str:
         out = ["HTTP/%s %s %s" % (
             response.version,

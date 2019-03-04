@@ -62,6 +62,9 @@ class HarFormatter(Formatter):
                     self.add_entry(linked_resource, page_id)
         self.output(json.dumps(self.har, indent=4))
 
+    def error_output(self, message: str) -> None:
+        self.output(message)
+
     def add_entry(self, resource: HttpResource, page_ref: int = None) -> None:
         entry = {
             "startedDateTime": isoformat(resource.request.start_time),
