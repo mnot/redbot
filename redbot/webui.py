@@ -226,18 +226,18 @@ class RedWebUi:
             testUri = urlsplit(self.test_uri)
             scheme = testUri.scheme.lower()
             authority = testUri.netloc.lower().rsplit("@", 1)[-1]
-            origin = "%s://%s" % (scheme, authority)
-
-            if self._origin_counts.get(origin, 0) > self.config.getint('limit_origin_tests'):
-                self.response_start(b"429", b"Too Many Requests", [
-                    (b"Content-Type", content_type.encode('ascii')),
-                    (b"Cache-Control", b"max-age=60, must-revalidate")])
-                formatter.start_output()
-                formatter.error_output("Origin is over limit. Please try later.")
-                self.response_done([])
-                self.error_log("origin over limit: %s" % origin)
-                return
-            self._origin_counts[origin] += 1
+            if (authority != ""):
+                origin = "%s://%s" % (scheme, authority)
+                if self._origin_counts.get(origin, 0) > self.config.getint('limit_origin_tests'):
+                    self.response_start(b"429", b"Too Many Requests", [
+                        (b"Content-Type", content_type.encode('ascii')),
+                        (b"Cache-Control", b"max-age=60, must-revalidate")])
+                    formatter.start_output()
+                    formatter.error_output("Origin is over limit. Please try later.")
+                    self.response_done([])
+                    self.error_log("origin over limit: %s" % origin)
+                    return
+                self._origin_counts[origin] += 1
 
         self.response_start(b"200", b"OK", [
             (b"Content-Type", content_type.encode('ascii')),
