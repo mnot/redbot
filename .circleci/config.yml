@@ -1,0 +1,16 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/redbot
+    docker:
+      - image: circleci/python:latest-browsers
+    environment:
+      MOZ_HEADLESS: 1
+    steps:
+      - checkout
+      - run:
+          name: install-requirements
+          command: pip install -r mypy selenium thor markdown
+      - run:
+          name: test
+          command: make -e
