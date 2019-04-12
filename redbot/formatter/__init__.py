@@ -145,6 +145,12 @@ class Formatter(EventEmitter):
         """
         raise NotImplementedError
 
+    def content_type(self) -> bytes:
+        """
+        Return binary suitable for the value of a Content-Type header field.
+        """
+        return ("%s; charset=%s" % (self.media_type, self.config['charset'])).encode('ascii')
+
 
 def f_num(i: int, by1024: bool = False) -> str:
     "Format a number according to the locale."

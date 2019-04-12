@@ -21,7 +21,7 @@ from redbot import __version__
 from redbot.message import HttpRequest
 from redbot.resource import HttpResource
 from redbot.resource.robot_fetch import RobotFetcher, url_to_origin
-from redbot.formatter import find_formatter, html
+from redbot.formatter import find_formatter, html, Formatter
 from redbot.formatter.html import e_url
 from redbot.type import RawHeaderListType, StrHeaderListType # pylint: disable=unused-import
 
@@ -56,6 +56,7 @@ class RedWebUi:
         self.check_name = None # type: str
         self.descend = None    # type: bool
         self.save = None       # type: bool
+        self.save_path = None  # type: str
         self.timeout = None    # type: Any
         self.referer_spam_domains = [] # type: List[str]
         if config.get("limit_origin_tests", ""):
@@ -144,10 +145,9 @@ class RedWebUi:
         formatter = find_formatter(self.format, 'html', top_resource.descend)(
             self.config, self.output,
             allow_save=(not is_saved), is_saved=True, test_id=self.test_id)
-        content_type = "%s; charset=%s" % (formatter.media_type, self.config['charset'])
 
         self.response_start(b"200", b"OK", [
-            (b"Content-Type", content_type.encode('ascii')),
+            (b"Content-Type", formatter.content_type()),
             (b"Cache-Control", b"max-age=3600, must-revalidate")])
         @thor.events.on(formatter)
         def formatter_done() -> None:
@@ -159,11 +159,11 @@ class RedWebUi:
         # try to initialise stored test results
         if self.config.get('save_dir', "") and os.path.exists(self.config['save_dir']):
             try:
-                fd, save_path = tempfile.mkstemp(prefix='', dir=self.config['save_dir'])
-                self.test_id = os.path.split(save_path)[1]
+                fd, self.save_path = tempfile.mkstemp(prefix='', dir=self.config['save_dir'])
+                self.test_id = os.path.split(self.save_path)[1]
             except (OSError, IOError):
                 # Don't try to store it.
-                test_id = None # should already be None, but make sure
+                self.test_id = None # should already be None, but make sure
 
         top_resource = HttpResource(self.config, descend=self.descend)
         self.timeout = thor.schedule(int(self.config['max_runtime']), self.timeoutError,
@@ -172,12 +172,8 @@ class RedWebUi:
         formatter = find_formatter(self.format, 'html', self.descend)(
             self.config, self.output, allow_save=self.test_id, is_saved=False,
             test_id=self.test_id, descend=self.descend)
-        content_type = "%s; charset=%s" % (formatter.media_type, self.config['charset'])
-        if self.check_name:
-            display_resource = top_resource.subreqs.get(self.check_name, top_resource)
-        else:
-            display_resource = top_resource
 
+        # referer limiting
         referers = []
         for hdr, value in self.req_hdrs:
             if hdr.lower() == 'referer':
@@ -189,77 +185,84 @@ class RedWebUi:
             referer_error = "Referer not allowed."
         if referer_error:
             self.response_start(b"403", b"Forbidden", [
-                (b"Content-Type", content_type.encode('ascii')),
+                (b"Content-Type", formatter.content_type()),
                 (b"Cache-Control", b"max-age=360, must-revalidate")])
             formatter.start_output()
             formatter.error_output(referer_error)
             self.response_done([])
             return
 
-        url = HttpRequest.iri_to_uri(self.test_uri)
+        # enforce origin limits
+        if self.config.getint('limit_origin_tests', fallback=0):
+            origin = url_to_origin(self.test_uri)
+            if origin:
+                if self._origin_counts.get(origin, 0) > \
+                  self.config.getint('limit_origin_tests'):
+                    self.response_start(b"429", b"Too Many Requests", [
+                        (b"Content-Type", formatter.content_type()),
+                        (b"Cache-Control", b"max-age=60, must-revalidate")])
+                    formatter.start_output()
+                    formatter.error_output("Origin is over limit. Please try later.")
+                    self.response_done([])
+                    self.error_log("origin over limit: %s" % origin)
+                    return
+                self._origin_counts[origin] += 1
+
+        # check robots.txt
         robot_fetcher = RobotFetcher(self.config)
         @thor.events.on(robot_fetcher)
         def robot(results: Tuple[str, bool]) -> None:
             url, robot_ok = results
             if robot_ok:
-                @thor.events.on(formatter)
-                def formatter_done() -> None:
-                    self.response_done([])
-                    if self.test_id:
-                        try:
-                            tmp_file = gzip.open(save_path, 'w')
-                            pickle.dump(top_resource, tmp_file)
-                            tmp_file.close()
-                        except (IOError, zlib.error, pickle.PickleError):
-                            pass # we don't cry if we can't store it.
-
-                    # log excessive traffic
-                    ti = sum([i.transfer_in for i, t in top_resource.linked],
-                             top_resource.transfer_in)
-                    to = sum([i.transfer_out for i, t in top_resource.linked],
-                             top_resource.transfer_out)
-                    if ti + to > int(self.config['log_traffic']) * 1024:
-                        self.error_log("%iK in %iK out for <%s> (descend %s)" % (
-                            ti / 1024, to / 1024, e_url(self.test_uri), str(self.descend)))
-
-                # enforce origin limits
-                if self.config.getint('limit_origin_tests', fallback=0):
-                    origin = url_to_origin(self.test_uri)
-                    if origin:
-                        if self._origin_counts.get(origin, 0) > \
-                          self.config.getint('limit_origin_tests'):
-                            self.response_start(b"429", b"Too Many Requests", [
-                                (b"Content-Type", content_type.encode('ascii')),
-                                (b"Cache-Control", b"max-age=60, must-revalidate")])
-                            formatter.start_output()
-                            formatter.error_output("Origin is over limit. Please try later.")
-                            self.response_done([])
-                            self.error_log("origin over limit: %s" % origin)
-                            return
-                        self._origin_counts[origin] += 1
-
-                self.response_start(b"200", b"OK", [
-                    (b"Content-Type", content_type.encode('ascii')),
-                    (b"Cache-Control", b"max-age=60, must-revalidate")])
-                formatter.bind_resource(display_resource)
-                top_resource.check()
+                self.continue_test(top_resource, formatter)
             else:
                 self.response_start(b"403", b"Forbidden", [
-                    (b"Content-Type", content_type.encode('ascii')),
+                    (b"Content-Type", formatter.content_type()),
                     (b"Cache-Control", b"max-age=60, must-revalidate")])
                 formatter.start_output()
                 formatter.error_output("Forbidden by robots.txt.")
                 self.response_done([])
+        robot_fetcher.check_robots(HttpRequest.iri_to_uri(self.test_uri))
 
-        robot_fetcher.check_robots(url)
+
+    def continue_test(self, top_resource: HttpResource, formatter: Formatter) -> None:
+        "Preliminary checks are done; actually run the test."
+        @thor.events.on(formatter)
+        def formatter_done() -> None:
+            self.response_done([])
+            if self.test_id:
+                try:
+                    tmp_file = gzip.open(self.save_path, 'w')
+                    pickle.dump(top_resource, tmp_file)
+                    tmp_file.close()
+                except (IOError, zlib.error, pickle.PickleError):
+                    pass # we don't cry if we can't store it.
+
+            # log excessive traffic
+            ti = sum([i.transfer_in for i, t in top_resource.linked],
+                     top_resource.transfer_in)
+            to = sum([i.transfer_out for i, t in top_resource.linked],
+                     top_resource.transfer_out)
+            if ti + to > int(self.config['log_traffic']) * 1024:
+                self.error_log("%iK in %iK out for <%s> (descend %s)" % (
+                    ti / 1024, to / 1024, e_url(self.test_uri), str(self.descend)))
+
+        self.response_start(b"200", b"OK", [
+            (b"Content-Type", formatter.content_type()),
+            (b"Cache-Control", b"max-age=60, must-revalidate")])
+        if self.check_name:
+            display_resource = top_resource.subreqs.get(self.check_name, top_resource)
+        else:
+            display_resource = top_resource
+        formatter.bind_resource(display_resource)
+        top_resource.check()
 
 
     def show_default(self) -> None:
         """Show the default page."""
         formatter = html.BaseHtmlFormatter(self.config, self.output, is_blank=True)
-        content_type = "%s; charset=%s" % (formatter.media_type, self.config['charset'])
         self.response_start(b"200", b"OK", [
-            (b"Content-Type", content_type.encode('ascii')),
+            (b"Content-Type", formatter.content_type()),
             (b"Cache-Control", b"max-age=300")])
         formatter.start_output()
         formatter.finish_output()
