@@ -198,7 +198,7 @@ class RedWebUi:
             return
 
         if not self.robots_precheck(self.test_uri):
-            self.response_start(b"502", b"Gateway Error", [
+            self.response_start(b"403", b"Forbidden", [
                 (b"Content-Type", content_type.encode('ascii')),
                 (b"Cache-Control", b"max-age=60, must-revalidate")])
             formatter.start_output()
