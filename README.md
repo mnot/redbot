@@ -21,7 +21,7 @@ Your ideas, questions and other contributions are most welcome. See
 
 REDbot needs:
 
-1. [Python 3.5](https://python.org/) or greater
+1. [Python 3.6](https://python.org/) or greater
 2. [thor](http://github.com/mnot/thor/)
 3. [markdown](https://pythonhosted.org/Markdown/)
 4. To use REDbot on the Web, you'll need a Web server that implements the CGI interface; e.g., [Apache](https://httpd.apache.org/)

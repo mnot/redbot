@@ -19,7 +19,7 @@ setup(name='redbot',
       package_data={
         'redbot': ['assets/*.css', 'assets/*.js', 'assets/*.map', 'assets/icon/*', 'assets/logo/*']
       },
-      python_requires=">=3.5",
+      python_requires=">=3.6",
       install_requires=[
           'thor >= 0.7.2',
           'markdown >= 2.6.5'
