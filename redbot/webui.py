@@ -59,7 +59,7 @@ class RedWebUi:
         self.timeout = None    # type: Any
         self.referer_spam_domains = [] # type: List[str]
         if config.get("limit_origin_tests", ""):
-            if self._origin_period == None:
+            if self._origin_period is None:
                 self._origin_period = config.getfloat("limit_origin_period", fallback=1) * 3600
                 thor.schedule(self._origin_period, self.ratelimit_cleanup)
 
@@ -197,53 +197,66 @@ class RedWebUi:
             self.response_done([])
             return
 
-        if not self.robots_precheck(self.test_uri):
-            self.response_start(b"403", b"Forbidden", [
-                (b"Content-Type", content_type.encode('ascii')),
-                (b"Cache-Control", b"max-age=60, must-revalidate")])
-            formatter.start_output()
-            formatter.error_output("Forbidden by robots.txt.")
-            self.response_done([])
-            return
-
-        @thor.events.on(formatter)
-        def formatter_done() -> None:
-            self.response_done([])
-            if test_id:
-                try:
-                    tmp_file = gzip.open(path, 'w')
-                    pickle.dump(top_resource, tmp_file)
-                    tmp_file.close()
-                except (IOError, zlib.error, pickle.PickleError):
-                    pass # we don't cry if we can't store it.
-            ti = sum([i.transfer_in for i, t in top_resource.linked], top_resource.transfer_in)
-            to = sum([i.transfer_out for i, t in top_resource.linked], top_resource.transfer_out)
-            if ti + to > int(self.config['log_traffic']) * 1024:
-                self.error_log("%iK in %iK out for <%s> (descend %s)" % (
-                    ti / 1024, to / 1024, e_url(self.test_uri), str(self.descend)))
-
-        if self.config.getint('limit_origin_tests', fallback=0):
-            testUri = urlsplit(self.test_uri)
-            scheme = testUri.scheme.lower()
-            authority = testUri.netloc.lower().rsplit("@", 1)[-1]
-            if (authority != ""):
-                origin = "%s://%s" % (scheme, authority)
-                if self._origin_counts.get(origin, 0) > self.config.getint('limit_origin_tests'):
-                    self.response_start(b"429", b"Too Many Requests", [
-                        (b"Content-Type", content_type.encode('ascii')),
-                        (b"Cache-Control", b"max-age=60, must-revalidate")])
-                    formatter.start_output()
-                    formatter.error_output("Origin is over limit. Please try later.")
+        url = HttpRequest.iri_to_uri(self.test_uri)
+        robot_fetcher = RobotFetcher(self.config)
+        @thor.events.on(robot_fetcher)
+        def robot(results: Tuple[str, bool]) -> None:
+            url, robot_ok = results
+            if robot_ok:
+                @thor.events.on(formatter)
+                def formatter_done() -> None:
                     self.response_done([])
-                    self.error_log("origin over limit: %s" % origin)
-                    return
-                self._origin_counts[origin] += 1
+                    if test_id:
+                        try:
+                            tmp_file = gzip.open(path, 'w')
+                            pickle.dump(top_resource, tmp_file)
+                            tmp_file.close()
+                        except (IOError, zlib.error, pickle.PickleError):
+                            pass # we don't cry if we can't store it.
 
-        self.response_start(b"200", b"OK", [
-            (b"Content-Type", content_type.encode('ascii')),
-            (b"Cache-Control", b"max-age=60, must-revalidate")])
-        formatter.bind_resource(display_resource)
-        top_resource.check()
+                    # log excessive traffic
+                    ti = sum([i.transfer_in for i, t in top_resource.linked],
+                             top_resource.transfer_in)
+                    to = sum([i.transfer_out for i, t in top_resource.linked],
+                             top_resource.transfer_out)
+                    if ti + to > int(self.config['log_traffic']) * 1024:
+                        self.error_log("%iK in %iK out for <%s> (descend %s)" % (
+                            ti / 1024, to / 1024, e_url(self.test_uri), str(self.descend)))
+
+                # enforce origin limits
+                if self.config.getint('limit_origin_tests', fallback=0):
+                    testUri = urlsplit(self.test_uri)
+                    scheme = testUri.scheme.lower()
+                    authority = testUri.netloc.lower().rsplit("@", 1)[-1]
+                    if authority != "":
+                        origin = "%s://%s" % (scheme, authority)
+                        if self._origin_counts.get(origin, 0) > \
+                          self.config.getint('limit_origin_tests'):
+                            self.response_start(b"429", b"Too Many Requests", [
+                                (b"Content-Type", content_type.encode('ascii')),
+                                (b"Cache-Control", b"max-age=60, must-revalidate")])
+                            formatter.start_output()
+                            formatter.error_output("Origin is over limit. Please try later.")
+                            self.response_done([])
+                            self.error_log("origin over limit: %s" % origin)
+                            return
+                        self._origin_counts[origin] += 1
+
+                self.response_start(b"200", b"OK", [
+                    (b"Content-Type", content_type.encode('ascii')),
+                    (b"Cache-Control", b"max-age=60, must-revalidate")])
+                formatter.bind_resource(display_resource)
+                top_resource.check()
+            else:
+                self.response_start(b"403", b"Forbidden", [
+                    (b"Content-Type", content_type.encode('ascii')),
+                    (b"Cache-Control", b"max-age=60, must-revalidate")])
+                formatter.start_output()
+                formatter.error_output("Forbidden by robots.txt.")
+                self.response_done([])
+
+        robot_fetcher.check_robots(url)
+
 
     def show_default(self) -> None:
         """Show the default page."""
@@ -282,19 +295,6 @@ class RedWebUi:
             self.test_uri, self.descend, detail()))
         self.show_error("REDbot timeout.", to_output=True)
         self.response_done([])
-
-    def robots_precheck(self, iri: str) -> bool:
-        """
-        If we have the robots.txt file available, check it to see if the
-        request is permissible.
-
-        This does not fetch robots.txt.
-        """
-        robot_fetcher = RobotFetcher(self.config)
-        try:
-            return robot_fetcher.check_robots(HttpRequest.iri_to_uri(iri), sync=True)
-        except (UnicodeError, ValueError):
-            return True
 
     def ratelimit_cleanup(self) -> None:
         """

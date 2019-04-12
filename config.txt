@@ -37,7 +37,7 @@ log_traffic = 8192
 # Where the User Interface is rooted. Will be overwritten by redbot_cgi.
 ui_uri = https://redbot.org/
 
-# Where to cache robots.txt. Comment out to disable.
+# Where to cache robots.txt. Comment out to disable caching of robots.txt.
 robot_cache_dir = /var/cache/redbot/robots-txt/
 
 # directory whose contents will be append to the front page; Comment out to disable.

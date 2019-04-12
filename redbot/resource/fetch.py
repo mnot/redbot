@@ -17,7 +17,6 @@ from redbot.speak import Note, levels, categories
 from redbot.message import HttpRequest, HttpResponse
 from redbot.message.status import StatusChecker
 from redbot.message.cache import checkCaching
-from redbot.resource.robot_fetch import RobotFetcher
 from redbot.type import StrHeaderListType, RawHeaderListType
 
 
@@ -54,7 +53,6 @@ class RedFetcher(thor.events.EventEmitter):
     def __init__(self, config: SectionProxy) -> None:
         thor.events.EventEmitter.__init__(self)
         self.config = config
-        self.robot_fetcher = RobotFetcher(self.config)
         self.notes = [] # type: List[Note]
         self.transfer_in = 0
         self.transfer_out = 0
@@ -62,7 +60,6 @@ class RedFetcher(thor.events.EventEmitter):
         self.nonfinal_responses = []                  # type: List[HttpResponse]
         self.response = HttpResponse(self.add_note)   # type: HttpResponse
         self.exchange = None                          # type: thor.http.ClientExchange
-        self.follow_robots_txt = True # Should we pay attention to robots file?
         self.fetch_started = False
         self.fetch_done = False
 
@@ -125,12 +122,7 @@ class RedFetcher(thor.events.EventEmitter):
             # generally a good sign that we're not going much further.
             self._fetch_done()
             return
-
-        if self.follow_robots_txt:
-            self.robot_fetcher.emitter.once("robot-%s" % self.request.uri, self.run_continue)
-            self.robot_fetcher.check_robots(self.request.uri)
-        else:
-            self.run_continue(True)
+        self.run_continue(True)
 
     def run_continue(self, allowed: bool) -> None:
         """

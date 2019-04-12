@@ -22,7 +22,7 @@ from redbot.type import RawHeaderListType
 UA_STRING = "RED/%s (https://redbot.org/)" % __version__
 RobotChecker = Union[RobotFileParser, 'DummyChecker']
 
-class RobotFetcher:
+class RobotFetcher(thor.events.EventEmitter):
     """
     Fetch robots.txt and check to see if we're allowed.
     """
@@ -33,43 +33,33 @@ class RobotFetcher:
     client.idle_timeout = 5
     robot_checkers = {} # type: Dict[str, RobotChecker]  # cache of robots.txt checkers
     robot_lookups = {} # type: Dict[str, set]
-    emitter = thor.events.EventEmitter()
 
     def __init__(self, config: SectionProxy) -> None:
+        thor.events.EventEmitter.__init__(self)
         self.config = config
 
-    def check_robots(self, url: str, sync: bool = False) -> Union[bool, None]:
+    def check_robots(self, url: str) -> None:
         """
         Fetch the robots.txt for URL.
 
-        When sync is true, the result is returned. Sync does not go to network; if
-        there is not a local (memory or cache) robots.txt, it will return True.
-
-        When it's false, the "robot" event will be emitted, with two arguments:
-          - the URL
-          - True if it's allowed, False if not
+        The 'robot' event will be emitted, with a (url, robot_ok) payload.
         """
 
         origin = url_to_origin(url)
         if origin is None:
-            if sync:
-                return True
-            self.emitter.emit("robot-%s" % url, True)
+            self.emit('robot', (url, True))
             return None
         origin_hash = hashlib.sha1(origin.encode('ascii', 'replace')).hexdigest()
 
         if origin in self.robot_checkers:
-            return self._robot_check(url, self.robot_checkers[origin], sync)
+            return self._robot_check(url, self.robot_checkers[origin])
 
         if self.config.get('robot_cache_dir', ''):
             robot_fd = CacheFile(path.join(self.config['robot_cache_dir'], origin_hash))
             cached_robots_txt = robot_fd.read()
             if cached_robots_txt is not None:
                 self._load_checker(origin, cached_robots_txt)
-                return self._robot_check(url, self.robot_checkers[origin], sync)
-
-        if sync:
-            return True
+                return self._robot_check(url, self.robot_checkers[origin])
 
         if origin in self.robot_lookups:
             self.robot_lookups[origin].add(url)
@@ -135,13 +125,10 @@ class RobotFetcher:
                 pass
         thor.schedule(self.freshness_lifetime, del_checker)
 
-    def _robot_check(self, url: str, robots_checker: RobotChecker,
-                     sync: bool = False) -> Union[bool, None]:
+    def _robot_check(self, url: str, robots_checker: RobotChecker) -> None:
         """Continue after getting the robots file."""
-        result = robots_checker.can_fetch(UA_STRING, url)
-        if sync:
-            return result
-        self.emitter.emit("robot-%s" % url, result)
+        robot_ok = robots_checker.can_fetch(UA_STRING, url)
+        self.emit('robot', (url, robot_ok))
         return None
 
 
