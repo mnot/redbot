@@ -112,7 +112,8 @@ class HttpResource(RedFetcher):
         self.link_count += 1
         if tag not in self.links:
             self.links[tag] = set()
-        if self.descend and tag not in ['a'] and link not in self.links[tag]:
+        if self.descend and tag not in ['a'] and link not in self.links[tag] and \
+          self.link_count <= (self.config.getint('max_links') or 100):
             linked = HttpResource(self.config)
             linked.set_request(urljoin(base, link), req_hdrs=self.request.headers)
             self.linked.append((linked, tag))

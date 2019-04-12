@@ -18,6 +18,9 @@ exception_dir = exceptions
 # how many seconds to allow a check to run for.
 max_runtime = 60
 
+# limit on how many links to check in a page when descending
+max_links = 100
+
 # Where to keep files for future reference, when users save them. Comment out to disable.
 save_dir = /var/state/redbot/
 
