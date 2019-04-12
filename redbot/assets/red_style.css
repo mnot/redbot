@@ -318,6 +318,9 @@ body.blank > .footer {
   font-size: 1.1em;
   max-width: 650px; }
 
+.error a {
+  color: white; }
+
 /* help bubbles */
 /* http://konigi.com/tools/css-sticky-notes */
 .help {

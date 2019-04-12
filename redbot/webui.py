@@ -7,8 +7,10 @@ A Web UI for RED, the Resource Expert Droid.
 from collections import defaultdict
 from configparser import SectionProxy
 import gzip
+import hmac
 import os
 import pickle
+import secrets
 import sys
 import tempfile
 import time
@@ -34,8 +36,11 @@ class RedWebUi:
     If descend is true, spider the links and present a summary.
     """
 
-    _origin_counts = defaultdict(int)   # type: Dict[str, int]
-    _origin_period = None               # type: float
+    _origin_counts = defaultdict(int)       # type: Dict[str, int]
+    _origin_period = None                   # type: float
+    _robot_secret = secrets.token_bytes(16) # type: bytes
+    # TODO: make it work for CGI; persist?
+
 
     def __init__(self, config: SectionProxy, method: str, query_string: bytes,
                  response_start: Callable[..., None],
@@ -51,6 +56,8 @@ class RedWebUi:
         self.error_log = error_log  # function to log errors to
         self.test_uri = None   # type: str
         self.test_id = None    # type: str
+        self.robot_time = None # type: str
+        self.robot_hmac = None # type: str
         self.req_hdrs = None   # type: StrHeaderListType
         self.format = None     # type: str
         self.check_name = None # type: str
@@ -67,6 +74,7 @@ class RedWebUi:
         if config.get("referer_spam_domains", ""):
             self.referer_spam_domains = [i.strip() for i in \
                 config["referer_spam_domains"].split()]
+
         self.run(query_string)
 
     def run(self, query_string: bytes) -> None:
@@ -80,6 +88,8 @@ class RedWebUi:
         if not self.descend:
             self.check_name = qs.get('check_name', [None])[0]
         self.test_id = qs.get('id', [None])[0]
+        self.robot_time = qs.get('robot_time', [None])[0]
+        self.robot_hmac = qs.get('robot_hmac', [None])[0]
         if self.method == "POST":
             self.save = 'save' in qs
         else:
@@ -192,6 +202,23 @@ class RedWebUi:
             self.response_done([])
             return
 
+        # robot human check
+        if self.robot_time and self.robot_time.isdigit() and self.robot_hmac:
+            valid_till = int(self.robot_time)
+            computed_hmac = hmac.new(self._robot_secret, bytes(self.robot_time, 'ascii'))
+            is_valid = self.robot_hmac == computed_hmac.hexdigest()
+            if is_valid and valid_till >= thor.time():
+                self.continue_test(top_resource, formatter)
+                return
+            else:
+                self.response_start(b"403", b"Forbidden", [
+                    (b"Content-Type", formatter.content_type()),
+                    (b"Cache-Control", b"max-age=60, must-revalidate")])
+                formatter.start_output()
+                formatter.error_output("Naughty.")
+                self.response_done([])
+                self.error_log("Naughty robot key.")
+
         # enforce origin limits
         if self.config.getint('limit_origin_tests', fallback=0):
             origin = url_to_origin(self.test_uri)
@@ -216,12 +243,15 @@ class RedWebUi:
             if robot_ok:
                 self.continue_test(top_resource, formatter)
             else:
+                valid_till = str(int(thor.time()) + 60)
+                robot_hmac = hmac.new(self._robot_secret, bytes(valid_till, 'ascii'))
                 self.response_start(b"403", b"Forbidden", [
                     (b"Content-Type", formatter.content_type()),
-                    (b"Cache-Control", b"max-age=60, must-revalidate")])
+                    (b"Cache-Control", b"no-cache")])
                 formatter.start_output()
-                formatter.error_output("Forbidden by robots.txt.")
+                formatter.error_output("This site doesn't allow robots. If you are human, please <a href='?uri=%s&robot_time=%s&robot_hmac=%s'>click here</a>." % (self.test_uri, valid_till, robot_hmac.hexdigest()) )
                 self.response_done([])
+
         robot_fetcher.check_robots(HttpRequest.iri_to_uri(self.test_uri))
 
 

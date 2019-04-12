@@ -20,7 +20,7 @@ body {
   color: $text_colour;
   font: 12pt/14pt "Helvetica Neue", Helvetica, Arial, sans-serif;
   margin: 1em 50px;
-  max-width: $max_width; 
+  max-width: $max_width;
   &.blank {
     margin: $vertical_space * 2 auto $vertical_space auto;
     width: $left_width;
@@ -104,7 +104,7 @@ h3 {
 
 #final_status {
   color: $detail_text_colour;
-  font-size: $detail_font_size;  
+  font-size: $detail_font_size;
   position: absolute;
   top: 2em;
   right: 2em;
@@ -372,6 +372,10 @@ body.blank > .footer {
   font-weight: bold;
   font-size: 1.1em;
   max-width: $left_width;
+}
+
+.error a {
+  color: white;
 }
 
 /* help bubbles */
