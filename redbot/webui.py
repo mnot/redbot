@@ -20,7 +20,7 @@ import thor
 from redbot import __version__
 from redbot.message import HttpRequest
 from redbot.resource import HttpResource
-from redbot.resource.robot_fetch import RobotFetcher
+from redbot.resource.robot_fetch import RobotFetcher, url_to_origin
 from redbot.formatter import find_formatter, html
 from redbot.formatter.html import e_url
 from redbot.type import RawHeaderListType, StrHeaderListType # pylint: disable=unused-import
@@ -50,9 +50,9 @@ class RedWebUi:
         self._response_done = response_done
         self.error_log = error_log  # function to log errors to
         self.test_uri = None   # type: str
+        self.test_id = None    # type: str
         self.req_hdrs = None   # type: StrHeaderListType
         self.format = None     # type: str
-        self.test_id = None    # type: str
         self.check_name = None # type: str
         self.descend = None    # type: bool
         self.save = None       # type: bool
@@ -156,23 +156,22 @@ class RedWebUi:
 
     def run_test(self) -> None:
         """Test a URI."""
+        # try to initialise stored test results
         if self.config.get('save_dir', "") and os.path.exists(self.config['save_dir']):
             try:
-                fd, path = tempfile.mkstemp(prefix='', dir=self.config['save_dir'])
-                test_id = os.path.split(path)[1]
+                fd, save_path = tempfile.mkstemp(prefix='', dir=self.config['save_dir'])
+                self.test_id = os.path.split(save_path)[1]
             except (OSError, IOError):
                 # Don't try to store it.
-                test_id = None
-        else:
-            test_id = None
+                test_id = None # should already be None, but make sure
 
         top_resource = HttpResource(self.config, descend=self.descend)
         self.timeout = thor.schedule(int(self.config['max_runtime']), self.timeoutError,
                                      top_resource.show_task_map)
         top_resource.set_request(self.test_uri, req_hdrs=self.req_hdrs)
         formatter = find_formatter(self.format, 'html', self.descend)(
-            self.config, self.output,
-            allow_save=test_id, is_saved=False, test_id=test_id, descend=self.descend)
+            self.config, self.output, allow_save=self.test_id, is_saved=False,
+            test_id=self.test_id, descend=self.descend)
         content_type = "%s; charset=%s" % (formatter.media_type, self.config['charset'])
         if self.check_name:
             display_resource = top_resource.subreqs.get(self.check_name, top_resource)
@@ -206,9 +205,9 @@ class RedWebUi:
                 @thor.events.on(formatter)
                 def formatter_done() -> None:
                     self.response_done([])
-                    if test_id:
+                    if self.test_id:
                         try:
-                            tmp_file = gzip.open(path, 'w')
+                            tmp_file = gzip.open(save_path, 'w')
                             pickle.dump(top_resource, tmp_file)
                             tmp_file.close()
                         except (IOError, zlib.error, pickle.PickleError):
@@ -225,11 +224,8 @@ class RedWebUi:
 
                 # enforce origin limits
                 if self.config.getint('limit_origin_tests', fallback=0):
-                    testUri = urlsplit(self.test_uri)
-                    scheme = testUri.scheme.lower()
-                    authority = testUri.netloc.lower().rsplit("@", 1)[-1]
-                    if authority != "":
-                        origin = "%s://%s" % (scheme, authority)
+                    origin = url_to_origin(self.test_uri)
+                    if origin:
                         if self._origin_counts.get(origin, 0) > \
                           self.config.getint('limit_origin_tests'):
                             self.response_start(b"429", b"Too Many Requests", [

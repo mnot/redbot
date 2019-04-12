@@ -132,7 +132,6 @@ class RobotFetcher(thor.events.EventEmitter):
         return None
 
 
-
 def url_to_origin(url: str) -> Union[str, None]:
     "Convert an URL to an RFC6454 Origin."
     default_port = {
