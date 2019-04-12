@@ -94,7 +94,7 @@ class BaseHtmlFormatter(Formatter):
 
     def error_output(self, message: str) -> None:
         """
-        Something bad happend.
+        Something bad happened.
         """
         self.output("<p class='error'>%s</p>" % message)
 
