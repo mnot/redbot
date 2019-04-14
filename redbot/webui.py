@@ -110,9 +110,9 @@ class RedWebUi:
             # touch the save file so it isn't deleted.
             os.utime(os.path.join(self.config['save_dir'], self.test_id), (
                 thor.time(), thor.time() + (int(self.config['save_days']) * 24 * 60 * 60)))
-            location = "?id=%s" % self.test_id
+            location = b"?id=%s" % self.test_id.encode('ascii')
             if self.descend:
-                location = "%s&descend=True" % location
+                location = b"%s&descend=True" % location
             self.response_start(b"303", b"See Other", [(b"Location", location)])
             self.response_body(
                 "Redirecting to the saved test page...".encode(self.config['charset']))
