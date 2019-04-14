@@ -42,14 +42,19 @@ class RedWebUi:
     # TODO: make it work for CGI; persist?
 
 
-    def __init__(self, config: SectionProxy, method: str, query_string: bytes,
+    def __init__(self,
+                 config: SectionProxy,
+                 method: str,
+                 query_string: bytes,
+                 req_headers: RawHeaderListType,
                  response_start: Callable[..., None],
                  response_body: Callable[..., None],
                  response_done: Callable[..., None],
                  error_log: Callable[[str], int] = sys.stderr.write) -> None:
         self.config = config  # type: SectionProxy
         self.charset_bytes = self.config['charset'].encode('ascii')
-        self.method = method   # Request method to the UX; bytes
+        self.method = method
+        self.req_headers = req_headers
         self.response_start = response_start
         self.response_body = response_body
         self._response_done = response_done

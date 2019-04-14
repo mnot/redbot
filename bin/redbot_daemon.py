@@ -83,7 +83,8 @@ class RedBotServer:
                 x.response_done([])
             elif p_uri.path == b"/":
                 try:
-                    RedWebUi(self.config, method.decode(self.config['charset']), p_uri.query,
+                    RedWebUi(self.config,
+                             method.decode(self.config['charset']), p_uri.query, req_hdrs,
                              x.response_start, x.response_body, x.response_done, self.error_log)
                 except Exception:
                     self.error_log("""

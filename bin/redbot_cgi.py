@@ -36,6 +36,10 @@ def cgi_main(config: SectionProxy) -> None:
         os.environ.get('PATH_INFO', ''))
     method = os.environ.get('REQUEST_METHOD').encode(config['charset'])
     query_string = os.environ.get('QUERY_STRING', "").encode(config['charset'])
+    req_hdrs = [] # type: RawHeaderListType
+    for (k,v) in os.environ:
+        if k[:5] == 'HTTP_':
+            req_hdrs.append((k[:5].lower().encode('ascii'), v.encode('ascii')))
 
     def response_start(code: bytes, phrase: bytes, res_hdrs: RawHeaderListType) -> None:
         out_v = [b"Status: %s %s" % (code, phrase)]
@@ -59,7 +63,7 @@ def cgi_main(config: SectionProxy) -> None:
         thor.schedule(0, thor.stop)
 
     try:
-        RedWebUi(config, method.decode(config['charset']), query_string,
+        RedWebUi(config, method.decode(config['charset']), query_string, req_hdrs,
                  response_start, response_body, response_done)
         thor.run()
     except Exception:
