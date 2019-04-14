@@ -86,16 +86,16 @@ class RedBotServer:
                     RedWebUi(self.config, method.decode(self.config['charset']), p_uri.query,
                              x.response_start, x.response_body, x.response_done, self.error_log)
                 except Exception:
-                    sys.stderr.write("""
+                    self.error_log("""
 
 *** FATAL ERROR
 REDbot has encountered a fatal error which it really, really can't recover from
 in standalone server mode. Details follow.
-
 """)
                     import traceback
-                    traceback.print_exc()
+                    dump = traceback.format_exc()
                     thor.stop()
+                    self.error_log(dump)
                     sys.exit(1)
             else:
                 headers = []
