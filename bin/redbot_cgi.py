@@ -8,6 +8,7 @@ from configparser import ConfigParser, SectionProxy
 import locale
 import os
 import sys
+from typing import Callable
 
 import thor
 from thor.loop import _loop
