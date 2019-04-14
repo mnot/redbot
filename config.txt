@@ -12,7 +12,7 @@ lang = en
 # Output character set. No real reason to change from UTF-8.
 charset = utf-8
 
-# Where to store exceptions; Comment out to disable traceback logging.
+# Where to store exceptions; Comment out to disable traceback logging. Only for CGI.
 exception_dir = exceptions
 
 # how many seconds to allow a check to run for.
