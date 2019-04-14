@@ -113,7 +113,7 @@ class RedWebUi:
             location = "?id=%s" % self.test_id
             if self.descend:
                 location = "%s&descend=True" % location
-            self.response_start("303", "See Other", [("Location", location)])
+            self.response_start(b"303", b"See Other", [(b"Location", location)])
             self.response_body(
                 "Redirecting to the saved test page...".encode(self.config['charset']))
         except (OSError, IOError):
