@@ -19,6 +19,7 @@ from urllib.parse import parse_qs, urlsplit
 import zlib
 
 import thor
+import thor.http.common
 from redbot import __version__
 from redbot.message import HttpRequest
 from redbot.resource import HttpResource
@@ -38,6 +39,8 @@ class RedWebUi:
 
     _origin_counts = defaultdict(int)       # type: Dict[str, int]
     _origin_period = None                   # type: float
+    _client_counts = defaultdict(int)       # type: Dict[bytes, int]
+    _client_period = None                   # type: float
     _robot_secret = secrets.token_bytes(16) # type: bytes
     # TODO: make it work for CGI; persist?
 
@@ -71,12 +74,18 @@ class RedWebUi:
         self.save_path = None  # type: str
         self.timeout = None    # type: Any
         self.referer_spam_domains = [] # type: List[str]
-        if config.get("limit_origin_tests", ""):
+
+        if config.get("limit_client_tests", fallback=""):
+            if self._client_period is None:
+                self._client_period = config.getfloat("limit_client_period", fallback=1) * 3600
+                thor.schedule(self._client_period, self.client_ratelimit_cleanup)
+
+        if config.get("limit_origin_tests", fallback=""):
             if self._origin_period is None:
                 self._origin_period = config.getfloat("limit_origin_period", fallback=1) * 3600
-                thor.schedule(self._origin_period, self.ratelimit_cleanup)
+                thor.schedule(self._origin_period, self.origin_ratelimit_cleanup)
 
-        if config.get("referer_spam_domains", ""):
+        if config.get("referer_spam_domains", fallback=""):
             self.referer_spam_domains = [i.strip() for i in \
                 config["referer_spam_domains"].split()]
 
@@ -224,6 +233,22 @@ class RedWebUi:
                 self.response_done([])
                 self.error_log("Naughty robot key.")
 
+        # enforce client limits
+        if self.config.getint('limit_client_tests', fallback=0):
+            client_id = self.get_client_id()
+            if client_id:
+                if self._client_counts.get(client_id, 0) > \
+                  self.config.getint('limit_client_tests'):
+                    self.response_start(b"429", b"Too Many Requests", [
+                        (b"Content-Type", formatter.content_type()),
+                        (b"Cache-Control", b"max-age=60, must-revalidate")])
+                    formatter.start_output()
+                    formatter.error_output("Your client is over limit. Please try later.")
+                    self.response_done([])
+                    self.error_log("client over limit: %s" % client_id.decode('idna'))
+                    return
+                self._client_counts[client_id] += 1
+
         # enforce origin limits
         if self.config.getint('limit_origin_tests', fallback=0):
             origin = url_to_origin(self.test_uri)
@@ -330,12 +355,29 @@ class RedWebUi:
         self.show_error("REDbot timeout.", to_output=True)
         self.response_done([])
 
-    def ratelimit_cleanup(self) -> None:
+    def client_ratelimit_cleanup(self) -> None:
         """
-        Clean up ratelimit counters.
+        Clean up client ratelimit counters.
+        """
+        self._client_counts.clear()
+        thor.schedule(self._origin_period, self.client_ratelimit_cleanup)
+
+    def origin_ratelimit_cleanup(self) -> None:
+        """
+        Clean up origin ratelimit counters.
         """
         self._origin_counts.clear()
-        thor.schedule(self._origin_period, self.ratelimit_cleanup)
+        thor.schedule(self._client_period, self.origin_ratelimit_cleanup)
 
+    def get_client_id(self) -> bytes:
+        """
+        Figure out an identifer for the client.
+        """
+        xff = thor.http.common.get_header(self.req_headers, b'x-forwarded-for')
+        if xff:
+            return xff[-1]
+        else:
+            return thor.http.common.get_header(self.req_headers, b'client-ip')[-1]
+        return None
 
 

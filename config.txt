@@ -67,11 +67,17 @@ asset_dir = redbot/assets
 # extra_base_dir = files
 
 ##
-## Rate limiting requests per tested origin; only useful when running as a standalone server.
+## Rate limiting requests; only useful when running as a standalone server.
 ##
 
+# Number of tests to allow per period, per client. Comment out to disable.
+limit_client_tests = 200
+
+# Period of time those requests are allowed within, in hours.
+limit_client_period = 1
+
 # Number of tests to allow per period, per origin. Comment out to disable.
-# limit_origin_tests = 25
+limit_origin_tests = 200
 
 # Period of time those requests are allowed within, in hours.
 limit_origin_period = 1
