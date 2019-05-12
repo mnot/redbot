@@ -25,6 +25,12 @@
     <meta name="application-name" content="REDbot"/>
     <meta name="msapplication-TileColor" content="#FFFFFF" />
     <meta name="msapplication-TileImage" content="%(static)s/logo/mstile-144x144.png" />
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="REDbot">
+    <meta property="og:description" content="Lint for your HTTP resources">
+    <meta property="og:url" content="https://redbot.org/">
+    <meta property="og:site_name" content="REDbot">
+    <meta property="og:image" content="https://redbot.org/static/logo/redbot-sq.png">
     %(extra_js)s
 </head>
 
