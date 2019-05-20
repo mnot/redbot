@@ -52,8 +52,8 @@ class HttpResource(RedFetcher):
             [None]
         )  # type: Set[RedFetcher]   # None is the original request
         self.subreqs = {
-            ac.check_name: ac(config, self) for ac in active_checks
-        }  # type: ignore
+            ac.check_name: ac(config, self) for ac in active_checks  # type: ignore
+        }
         self.response.once("content_available", self.run_active_checks)
 
         def _finish_check() -> None:
