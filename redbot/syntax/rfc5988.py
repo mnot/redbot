@@ -42,7 +42,9 @@ ptokenchar = r"""(?:
                    | :  | <  | =  | >  | \? | @  | {ALPHA}
                    | \[ | \] | \^ | _  | `  | \{{ | \|
                    | \}} | ~
-)""".format(**locals())
+)""".format(
+    **locals()
+)
 
 #  ptoken         = 1*ptokenchar
 
@@ -52,7 +54,9 @@ ptoken = r"(?: {ptokenchar}+ )".format(**locals())
 #                 | ( ext-name-star "=" ext-value )
 
 link_extension = r"""(?: (?: {parmname} (?: = (?: {ptoken} | {quoted_string} ) )? )
-                       | (?: {ext_name_star} = {ext_value} ) )""".format(**locals())
+                       | (?: {ext_name_star} = {ext_value} ) )""".format(
+    **locals()
+)
 
 #  media-type     = type-name "/" subtype-name
 
@@ -79,7 +83,9 @@ relation_type = r"(?: {reg_rel_type} | {ext_rel_type} )".format(**locals())
 
 relation_types = r"""(?: {relation_type}
                       |  " {relation_type} (?: {SP}+ {relation_type} )* " 
-)""".format(**locals())
+)""".format(
+    **locals()
+)
 
 #  link-param     = ( ( "rel" "=" relation-types )
 #                 | ( "anchor" "=" <"> URI-Reference <"> )
@@ -99,11 +105,15 @@ link_param = r"""(?: (?: rel = {relation_types} )
                    | (?: title = {quoted_string} )
                    | (?: title\* = {ext_value} )
                    | (?: type = (?: {media_type} | {quoted_mt} ) )
-                   | (?: {link_extension} ) )""".format(**locals())
+                   | (?: {link_extension} ) )""".format(
+    **locals()
+)
 
 #  link-value     = "<" URI-Reference ">" *( ";" link-param )
 
-link_value = r"(?: < {URI_reference} > (?: {OWS} ; {OWS} {link_param} )* )".format(**locals())
+link_value = r"(?: < {URI_reference} > (?: {OWS} ; {OWS} {link_param} )* )".format(
+    **locals()
+)
 
 #  Link           = "Link" ":" #link-value
 

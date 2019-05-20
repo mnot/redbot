@@ -3,6 +3,7 @@
 from redbot.message import headers
 from redbot.syntax import rfc7235
 
+
 class proxy_authenticate(headers.HttpHeader):
     canonical_name = "Proxy-Authenticate"
     description = """\

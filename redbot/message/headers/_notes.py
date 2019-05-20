@@ -19,6 +19,7 @@ implementations may make different choices.
 For the purposes of its tests, REDbot uses the last instance of the header that is present; other
 implementations may behave differently."""
 
+
 class FIELD_NAME_BAD_SYNTAX(Note):
     category = categories.GENERAL
     level = levels.BAD
@@ -29,6 +30,7 @@ angle brackes (<>), ampersands (@), commas, semicolons, colons, backslashes (\\)
 slashes (/), quotes, square brackets ([]), question marks, equals signs (=), curly brackets ({})
 spaces or tabs."""
 
+
 class BAD_SYNTAX(Note):
     category = categories.GENERAL
     level = levels.BAD
@@ -36,6 +38,7 @@ class BAD_SYNTAX(Note):
     text = """\
 The value for this header doesn't conform to its specified syntax; see [its
 definition](%(ref_uri)s) for more information."""
+
 
 class PARAM_STAR_QUOTED(Note):
     category = categories.GENERAL
@@ -48,6 +51,7 @@ Parameter values that end in '*' have a specific format, defined in
 The `%(param)s` parameter on the `%(field_name)s` header has double-quotes around it, which is not
 valid."""
 
+
 class PARAM_STAR_ERROR(Note):
     category = categories.GENERAL
     level = levels.BAD
@@ -58,6 +62,7 @@ Parameter values that end in '*' have a specific format, defined in
 
  The `%(param)s` parameter on the `%(field_name)s` header is not valid; it needs to have three
 parts, separated by single quotes (')."""
+
 
 class PARAM_STAR_BAD(Note):
     category = categories.GENERAL
@@ -73,6 +78,7 @@ without the "*" on the end (and without the associated encoding).
 REDbot ignores the content of this parameter.
      """
 
+
 class PARAM_STAR_NOCHARSET(Note):
     category = categories.GENERAL
     level = levels.WARN
@@ -83,6 +89,7 @@ Parameter values that end in '*' have a specific format, defined in
 
 The `%(param)s` parameter on the `%(field_name)s` header doesn't declare its character encoding,
 which means that recipients can't understand it. It should be `UTF-8`."""
+
 
 class PARAM_STAR_CHARSET(Note):
     category = categories.GENERAL
@@ -95,6 +102,7 @@ Parameter values that end in '*' have a specific format, defined in
 The `%(param)s` parameter on the `%(field_name)s` header uses the `'%(enc)s` encoding, which has
 interoperability issues on some browsers. It should be `UTF-8`."""
 
+
 class PARAM_REPEATS(Note):
     category = categories.GENERAL
     level = levels.WARN
@@ -102,6 +110,7 @@ class PARAM_REPEATS(Note):
     text = """\
 Parameters on the %(field_name)s header should not repeat; implementations may handle them
 differently."""
+
 
 class PARAM_SINGLE_QUOTED(Note):
     category = categories.GENERAL
@@ -114,6 +123,7 @@ However, single quotes don't mean anything there.
 This means that the value will be interpreted as `%(param_val)s`, **not**
 `%(param_val_unquoted)s`. If you intend the latter, drop the single quotes."""
 
+
 class BAD_DATE_SYNTAX(Note):
     category = categories.GENERAL
     level = levels.BAD
@@ -125,6 +135,7 @@ is a fixed-width field), and sending a date in a timezone other than GMT. See [t
 specification](http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3) for more
 information."""
 
+
 class DATE_OBSOLETE(Note):
     category = categories.GENERAL
     level = levels.WARN
@@ -135,12 +146,14 @@ format that are now obsolete. See [the
 specification](http://httpwg.org/specs/rfc7231.html#http.date) for more information.
 """
 
+
 class HEADER_TOO_LARGE(Note):
     category = categories.GENERAL
     level = levels.WARN
     summary = "The %(field_name)s header is very large (%(header_size)s bytes)."
     text = """\
 Some implementations limit the size of any single header line."""
+
 
 class HEADER_NAME_ENCODING(Note):
     category = categories.GENERAL
@@ -149,6 +162,7 @@ class HEADER_NAME_ENCODING(Note):
     text = """\
 HTTP header field-names can only contain ASCII characters. REDbot has detected (and possibly
 removed) non-ASCII characters in this header name."""
+
 
 class HEADER_VALUE_ENCODING(Note):
     category = categories.GENERAL
@@ -161,6 +175,7 @@ encoding).
 This header has non-ASCII characters, which REDbot has interpreted as being encoded in
 ISO-8859-1. If another encoding is used (e.g., UTF-8), the results may be unpredictable."""
 
+
 class REQUEST_HDR_IN_RESPONSE(Note):
     category = categories.GENERAL
     level = levels.BAD
@@ -168,12 +183,14 @@ class REQUEST_HDR_IN_RESPONSE(Note):
     text = """\
 %(field_name)s isn't defined to have any meaning in responses, so REDbot has ignored it."""
 
+
 class RESPONSE_HDR_IN_REQUEST(Note):
     category = categories.GENERAL
     level = levels.BAD
     summary = '"%(field_name)s" is a request header.'
     text = """\
 %(field_name)s isn't defined to have any meaning in reqeusts, so REDbot has ignored it."""
+
 
 class HEADER_DEPRECATED(Note):
     category = categories.GENERAL

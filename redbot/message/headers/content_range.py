@@ -36,11 +36,11 @@ or `416 Requested Range Not Satisfiable` status code.
 Putting a `Content-Range` header in this response may confuse caches and clients."""
 
 
-
 class ContentRangeTest(headers.HeaderTest):
-    name = 'Content-Range'
-    inputs = [b'bytes 1-100/200']
-    expected_out = 'bytes 1-100/200'
-    expected_err = [] # type: ignore
+    name = "Content-Range"
+    inputs = [b"bytes 1-100/200"]
+    expected_out = "bytes 1-100/200"
+    expected_err = []  # type: ignore
+
     def set_context(self, message: HttpMessage) -> None:
         message.status_code = "206"

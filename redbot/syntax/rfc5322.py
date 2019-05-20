@@ -46,7 +46,9 @@ CFWS = r"(?: (?: {FWS}? {comment} {FWS}? ){{1,}} | {FWS} )".format(**locals())
 #                    DQUOTE *([FWS] qcontent) [FWS] DQUOTE
 #                    [CFWS]
 
-quoted_string = r"(?: {CFWS}? \" (?: {FWS}? {qcontent} )* \" {CFWS}? )".format(**locals())
+quoted_string = r"(?: {CFWS}? \" (?: {FWS}? {qcontent} )* \" {CFWS}? )".format(
+    **locals()
+)
 
 # atext           =   ALPHA / DIGIT /    ; Printable US-ASCII
 #                    "!" / "#" /        ;  characters not including
@@ -98,7 +100,9 @@ dtext = r"[\x21-\x5a\x5e-\x7e]".format(**locals())
 
 # domain-literal  =   [CFWS] "[" *([FWS] dtext) [FWS] "]" [CFWS]
 
-domain_literal = r"(?: {CFWS}? \[ (?: {FWS}? {dtext} )* {FWS}? \] {CFWS}? )".format(**locals())
+domain_literal = r"(?: {CFWS}? \[ (?: {FWS}? {dtext} )* {FWS}? \] {CFWS}? )".format(
+    **locals()
+)
 
 # domain          =   dot-atom / domain-literal / obs-domain
 

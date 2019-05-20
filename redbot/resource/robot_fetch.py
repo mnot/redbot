@@ -9,7 +9,7 @@ Fetches robots.txt for a given URL.
 from configparser import SectionProxy
 import hashlib
 from os import path
-from typing import Union, Dict # pylint: disable=unused-import
+from typing import Union, Dict  # pylint: disable=unused-import
 from urllib.robotparser import RobotFileParser
 from urllib.parse import urlsplit
 
@@ -20,19 +20,21 @@ from redbot.cache_file import CacheFile
 from redbot.type import RawHeaderListType
 
 UA_STRING = "RED/%s (https://redbot.org/)" % __version__
-RobotChecker = Union[RobotFileParser, 'DummyChecker']
+RobotChecker = Union[RobotFileParser, "DummyChecker"]
+
 
 class RobotFetcher(thor.events.EventEmitter):
     """
     Fetch robots.txt and check to see if we're allowed.
     """
+
     check_name = "robot"
     response_phrase = "The robots.txt response"
     freshness_lifetime = 30 * 60
     client = thor.http.HttpClient()
     client.idle_timeout = 5
-    robot_checkers = {} # type: Dict[str, RobotChecker]  # cache of robots.txt checkers
-    robot_lookups = {} # type: Dict[str, set]
+    robot_checkers = {}  # type: Dict[str, RobotChecker]  # cache of robots.txt checkers
+    robot_lookups = {}  # type: Dict[str, set]
 
     def __init__(self, config: SectionProxy) -> None:
         thor.events.EventEmitter.__init__(self)
@@ -47,15 +49,15 @@ class RobotFetcher(thor.events.EventEmitter):
 
         origin = url_to_origin(url)
         if origin is None:
-            self.emit('robot', (url, True))
+            self.emit("robot", (url, True))
             return None
-        origin_hash = hashlib.sha1(origin.encode('ascii', 'replace')).hexdigest()
+        origin_hash = hashlib.sha1(origin.encode("ascii", "replace")).hexdigest()
 
         if origin in self.robot_checkers:
             return self._robot_check(url, self.robot_checkers[origin])
 
-        if self.config.get('robot_cache_dir', ''):
-            robot_fd = CacheFile(path.join(self.config['robot_cache_dir'], origin_hash))
+        if self.config.get("robot_cache_dir", ""):
+            robot_fd = CacheFile(path.join(self.config["robot_cache_dir"], origin_hash))
             cached_robots_txt = robot_fd.read()
             if cached_robots_txt is not None:
                 self._load_checker(origin, cached_robots_txt)
@@ -66,11 +68,15 @@ class RobotFetcher(thor.events.EventEmitter):
         else:
             self.robot_lookups[origin] = set([url])
             exchange = self.client.exchange()
+
             @thor.on(exchange)
-            def response_start(status: bytes, phrase: bytes, headers: RawHeaderListType) -> None:
+            def response_start(
+                status: bytes, phrase: bytes, headers: RawHeaderListType
+            ) -> None:
                 exchange.status = status
 
             exchange.res_body = b""
+
             @thor.on(exchange)
             def response_body(chunk: bytes) -> None:
                 exchange.res_body += chunk
@@ -83,8 +89,10 @@ class RobotFetcher(thor.events.EventEmitter):
                     robots_txt = exchange.res_body
 
                 self._load_checker(origin, robots_txt)
-                if self.config.get('robot_cache_dir', ''):
-                    robot_fd = CacheFile(path.join(self.config['robot_cache_dir'], origin_hash))
+                if self.config.get("robot_cache_dir", ""):
+                    robot_fd = CacheFile(
+                        path.join(self.config["robot_cache_dir"], origin_hash)
+                    )
                     robot_fd.write(robots_txt, self.freshness_lifetime)
 
                 while True:
@@ -105,43 +113,48 @@ class RobotFetcher(thor.events.EventEmitter):
 
             p_url = urlsplit(url)
             robots_url = "%s://%s/robots.txt" % (p_url.scheme, p_url.netloc)
-            exchange.request_start(b"GET", robots_url.encode('ascii'),
-                                   [(b'User-Agent', UA_STRING.encode('ascii'))])
+            exchange.request_start(
+                b"GET",
+                robots_url.encode("ascii"),
+                [(b"User-Agent", UA_STRING.encode("ascii"))],
+            )
             exchange.request_done([])
         return None
 
     def _load_checker(self, origin: str, robots_txt: bytes) -> None:
         """Load a checker for an origin, given its robots.txt file."""
-        if robots_txt == "": # empty or non-200
-            checker = DummyChecker() # type: RobotChecker
+        if robots_txt == "":  # empty or non-200
+            checker = DummyChecker()  # type: RobotChecker
         else:
             checker = RobotFileParser()
-            checker.parse(robots_txt.decode('ascii', 'replace').splitlines())
+            checker.parse(robots_txt.decode("ascii", "replace").splitlines())
         self.robot_checkers[origin] = checker
+
         def del_checker() -> None:
             try:
                 del self.robot_checkers[origin]
             except:
                 pass
+
         thor.schedule(self.freshness_lifetime, del_checker)
 
     def _robot_check(self, url: str, robots_checker: RobotChecker) -> None:
         """Continue after getting the robots file."""
         robot_ok = robots_checker.can_fetch(UA_STRING, url)
-        self.emit('robot', (url, robot_ok))
+        self.emit("robot", (url, robot_ok))
         return None
 
 
 def url_to_origin(url: str) -> Union[str, None]:
     "Convert an URL to an RFC6454 Origin."
-    default_port = {
-        'http': 80,
-        'https': 443}
+    default_port = {"http": 80, "https": 443}
     try:
         p_url = urlsplit(url)
-        origin = "%s://%s:%s" % (p_url.scheme.lower(),
-                                 p_url.hostname.lower(),
-                                 p_url.port or default_port.get(p_url.scheme, 0))
+        origin = "%s://%s:%s" % (
+            p_url.scheme.lower(),
+            p_url.hostname.lower(),
+            p_url.port or default_port.get(p_url.scheme, 0),
+        )
     except (AttributeError, ValueError):
         origin = None
     return origin
@@ -149,6 +162,7 @@ def url_to_origin(url: str) -> Union[str, None]:
 
 class DummyChecker:
     """Dummy checker for non-200 or empty responses."""
+
     @staticmethod
     def can_fetch(ua_string: str, url: str) -> bool:
         return True

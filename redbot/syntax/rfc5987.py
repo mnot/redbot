@@ -37,7 +37,9 @@ attr_char = r"""(?:
                   {ALPHA} | {DIGIT} 
                 | !  | #  | \$ | &  | \+ | -  | .
                 | \^ | _  | `  | \| | ~
-)""".format(**locals())
+)""".format(
+    **locals()
+)
 
 #  value-chars   = *( pct-encoded / attr-char )
 
@@ -56,7 +58,9 @@ mime_charsetc = r"""(?:
                 | !  | #  | \$ | %  | &
                 | \+ | -  | \^ | _  | `
                 | \{{ | \}} | ~
-)""".format(**locals())
+)""".format(
+    **locals()
+)
 
 #  mime-charset  = 1*mime-charsetc
 

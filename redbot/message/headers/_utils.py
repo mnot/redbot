@@ -1,17 +1,25 @@
-
 import calendar
 from email.utils import parsedate as lib_parsedate
 import re
-from typing import Callable, Dict, List, Tuple, Union # pylint: disable=unused-import
+from typing import Callable, Dict, List, Tuple, Union  # pylint: disable=unused-import
 from urllib.parse import unquote as urlunquote
 
 from redbot.syntax import rfc7231
 from redbot.type import AddNoteMethodType
-from ._notes import PARAM_REPEATS, PARAM_SINGLE_QUOTED, PARAM_STAR_BAD, PARAM_STAR_QUOTED, \
-                    PARAM_STAR_ERROR, PARAM_STAR_NOCHARSET, PARAM_STAR_CHARSET, \
-                    BAD_DATE_SYNTAX, DATE_OBSOLETE
+from ._notes import (
+    PARAM_REPEATS,
+    PARAM_SINGLE_QUOTED,
+    PARAM_STAR_BAD,
+    PARAM_STAR_QUOTED,
+    PARAM_STAR_ERROR,
+    PARAM_STAR_NOCHARSET,
+    PARAM_STAR_CHARSET,
+    BAD_DATE_SYNTAX,
+    DATE_OBSOLETE,
+)
 
 RE_FLAGS = re.VERBOSE | re.IGNORECASE
+
 
 def parse_date(value: str, add_note: AddNoteMethodType) -> int:
     """Parse a HTTP date. Raises ValueError if it's bad."""
@@ -26,10 +34,11 @@ def parse_date(value: str, add_note: AddNoteMethodType) -> int:
     # http://sourceforge.net/tracker/index.php?func=detail&aid=1194222&group_id=5470&atid=105470
     if date_tuple[0] < 100:
         if date_tuple[0] > 68:
-            date_tuple = (date_tuple[0]+1900,) + date_tuple[1:] # type: ignore
+            date_tuple = (date_tuple[0] + 1900,) + date_tuple[1:]  # type: ignore
         else:
-            date_tuple = (date_tuple[0]+2000,) + date_tuple[1:] # type: ignore
+            date_tuple = (date_tuple[0] + 2000,) + date_tuple[1:]  # type: ignore
     return calendar.timegm(date_tuple)
+
 
 def unquote_string(instr: str) -> str:
     """
@@ -41,12 +50,13 @@ def unquote_string(instr: str) -> str:
     @rtype: unicode
     """
     instr = str(instr).strip()
-    if not instr or instr == '*':
+    if not instr or instr == "*":
         return instr
     if instr[0] == instr[-1] == '"':
         ninstr = instr[1:-1]
-        instr = re.sub(r'\\(.)', r'\1', ninstr)
+        instr = re.sub(r"\\(.)", r"\1", ninstr)
     return instr
+
 
 def split_string(instr: str, item: str, split: str) -> List[str]:
     """
@@ -59,29 +69,40 @@ def split_string(instr: str, item: str, split: str) -> List[str]:
     """
     if not instr:
         return []
-    return [h.strip() for h in re.findall(
-        r'%s(?=%s|\s*$)' % (item, split), instr, re.VERBOSE
-    )]
+    return [
+        h.strip()
+        for h in re.findall(r"%s(?=%s|\s*$)" % (item, split), instr, re.VERBOSE)
+    ]
 
-def parse_params(instr: str, add_note: AddNoteMethodType, nostar: Union[List[str], bool] = None,
-                 delim: str = ";") -> Dict[str, str]:
+
+def parse_params(
+    instr: str,
+    add_note: AddNoteMethodType,
+    nostar: Union[List[str], bool] = None,
+    delim: str = ";",
+) -> Dict[str, str]:
     """
     Parse parameters into a dictionary.
     """
-    param_dict = {} # type: Dict[str, str]
+    param_dict = {}  # type: Dict[str, str]
     for param in split_string(instr, rfc7231.parameter, r"\s*%s\s*" % delim):
         try:
             key, val = param.split("=", 1)
         except ValueError:
             param_dict[param.lower()] = None
             continue
-        k_norm = key.lower() # TODO: warn on upper-case in param?
+        k_norm = key.lower()  # TODO: warn on upper-case in param?
         if k_norm in param_dict:
             add_note(PARAM_REPEATS, param=k_norm)
         if val[0] == val[-1] == "'":
-            add_note(PARAM_SINGLE_QUOTED, param=k_norm, param_val=val, param_val_unquoted=val[1:-1])
-        if key[-1] == '*':
-            if nostar is True or (nostar and k_norm[:-1] in nostar): # type: ignore
+            add_note(
+                PARAM_SINGLE_QUOTED,
+                param=k_norm,
+                param_val=val,
+                param_val_unquoted=val[1:-1],
+            )
+        if key[-1] == "*":
+            if nostar is True or (nostar and k_norm[:-1] in nostar):  # type: ignore
                 add_note(PARAM_STAR_BAD, param=k_norm[:-1])
             else:
                 if val[0] == '"' and val[-1] == '"':
@@ -94,10 +115,10 @@ def parse_params(instr: str, add_note: AddNoteMethodType, nostar: Union[List[str
                     continue
                 enc = enc.lower()
                 lang = lang.lower()
-                if enc == '':
+                if enc == "":
                     add_note(PARAM_STAR_NOCHARSET, param=k_norm)
                     continue
-                elif enc not in ['utf-8']:
+                elif enc not in ["utf-8"]:
                     add_note(PARAM_STAR_CHARSET, param=k_norm, enc=enc)
                     continue
                 # TODO: catch unquoting errors, range of chars, charset

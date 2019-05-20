@@ -26,7 +26,7 @@ of its underlying media type; e.g., `gzip` and `deflate`."""
     def parse(self, field_value: str, add_note: AddNoteMethodType) -> str:
         # check to see if there are any non-gzip encodings, because
         # that's the only one we ask for.
-        if field_value.lower() != 'gzip':
+        if field_value.lower() != "gzip":
             add_note(ENCODING_UNWANTED, unwanted_codings=field_value)
         return field_value.lower()
 
@@ -44,19 +44,21 @@ encodings that the client doesn't explicitly request can lead to interoperabilit
 
 
 class ContentEncodingTest(headers.HeaderTest):
-    name = 'Content-Encoding'
-    inputs = [b'gzip']
-    expected_out = ['gzip']
-    expected_err = [] # type: ignore
+    name = "Content-Encoding"
+    inputs = [b"gzip"]
+    expected_out = ["gzip"]
+    expected_err = []  # type: ignore
+
 
 class ContentEncodingCaseTest(headers.HeaderTest):
-    name = 'Content-Encoding'
-    inputs = [b'GZip']
-    expected_out = ['gzip']
-    expected_err = [] # type: ignore
+    name = "Content-Encoding"
+    inputs = [b"GZip"]
+    expected_out = ["gzip"]
+    expected_err = []  # type: ignore
+
 
 class UnwantedContentEncodingTest(headers.HeaderTest):
-    name = 'Content-Encoding'
-    inputs = [b'gzip', b'foo']
-    expected_out = ['gzip', 'foo']
+    name = "Content-Encoding"
+    inputs = [b"gzip", b"foo"]
+    expected_out = ["gzip", "foo"]
     expected_err = [ENCODING_UNWANTED]

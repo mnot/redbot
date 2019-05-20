@@ -13,7 +13,7 @@ happened since.
 
 It is used by caches as input to expiration calculations, and to detect clock drift."""
     reference = "%s#header.date" % rfc7231.SPEC_URL
-    syntax = False # rfc7231.Date
+    syntax = False  # rfc7231.Date
     list_header = False
     deprecated = False
     valid_in_requests = True
@@ -28,19 +28,21 @@ It is used by caches as input to expiration calculations, and to detect clock dr
 
 
 class BasicDateTest(headers.HeaderTest):
-    name = 'Date'
-    inputs = [b'Mon, 04 Jul 2011 09:08:06 GMT']
+    name = "Date"
+    inputs = [b"Mon, 04 Jul 2011 09:08:06 GMT"]
     expected_out = 1309770486
-    expected_err = [] # type: ignore
+    expected_err = []  # type: ignore
+
 
 class BadDateTest(headers.HeaderTest):
-    name = 'Date'
-    inputs = [b'0']
-    expected_out = None # type: ignore
+    name = "Date"
+    inputs = [b"0"]
+    expected_out = None  # type: ignore
     expected_err = [headers.BAD_DATE_SYNTAX]
 
+
 class BlankDateTest(headers.HeaderTest):
-    name = 'Date'
-    inputs = [b'']
-    expected_out = None # type: ignore
+    name = "Date"
+    inputs = [b""]
+    expected_out = None  # type: ignore
     expected_err = [headers.BAD_DATE_SYNTAX]

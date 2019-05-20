@@ -37,13 +37,17 @@ requests to the server."""
 
 
 # TODO: properly escape notes
-def loose_parse(set_cookie_string: str, uri_path: str, current_time: float,
-                add_note: AddNoteMethodType) -> CookieType:
+def loose_parse(
+    set_cookie_string: str,
+    uri_path: str,
+    current_time: float,
+    add_note: AddNoteMethodType,
+) -> CookieType:
     """
     Parse a Set-Cookie string, as per RFC6265, Section 5.2.
     """
     name = "Set-Cookie"
-    if ';' in set_cookie_string:
+    if ";" in set_cookie_string:
         name_value_pair, unparsed_attributes = set_cookie_string.split(";", 1)
     else:
         name_value_pair, unparsed_attributes = set_cookie_string, ""
@@ -57,7 +61,7 @@ def loose_parse(set_cookie_string: str, uri_path: str, current_time: float,
         add_note(SET_COOKIE_NO_NAME)
         raise ValueError("Cookie doesn't have a name")
     cookie_name, cookie_value = name, value
-    cookie_attribute_list = [] # type: List[Tuple[str, Union[str, int]]]
+    cookie_attribute_list = []  # type: List[Tuple[str, Union[str, int]]]
     while unparsed_attributes != "":
         if ";" in unparsed_attributes:
             cookie_av, unparsed_attributes = unparsed_attributes.split(";", 1)
@@ -106,7 +110,7 @@ def loose_parse(set_cookie_string: str, uri_path: str, current_time: float,
                 if uri_path.count("/") < 2:
                     cookie_path = "/"
                 else:
-                    cookie_path = uri_path[:uri_path.rindex("/")]
+                    cookie_path = uri_path[: uri_path.rindex("/")]
             else:
                 cookie_path = attribute_value
             cookie_attribute_list.append(("Path", cookie_path))
@@ -115,28 +119,32 @@ def loose_parse(set_cookie_string: str, uri_path: str, current_time: float,
         elif case_norm_attribute_name == "httponly":
             cookie_attribute_list.append(("HttpOnly", ""))
         else:
-            add_note(SET_COOKIE_UNKNOWN_ATTRIBUTE,
-                     cookie_name=cookie_name,
-                     attribute=attribute_name)
+            add_note(
+                SET_COOKIE_UNKNOWN_ATTRIBUTE,
+                cookie_name=cookie_name,
+                attribute=attribute_name,
+            )
     return (cookie_name, cookie_value, cookie_attribute_list)
 
 
-DELIMITER = r'(?:[\x09\x20-\x2F\x3B-\x40\x5B-\x60\x7B-\x7E])'
-NON_DELIMITER = r'(?:[\x00-\x08\x0A-\x1F0-0\:a-zA-Z\x7F-\xFF])'
+DELIMITER = r"(?:[\x09\x20-\x2F\x3B-\x40\x5B-\x60\x7B-\x7E])"
+NON_DELIMITER = r"(?:[\x00-\x08\x0A-\x1F0-0\:a-zA-Z\x7F-\xFF])"
 MONTHS = {
-    'jan': 1,
-    'feb': 2,
-    'mar': 3,
-    'apr': 4,
-    'may': 5,
-    'jun': 6,
-    'jul': 7,
-    'aug': 8,
-    'sep': 9,
-    'oct': 10,
-    'nov': 11,
-    'dec': 12
+    "jan": 1,
+    "feb": 2,
+    "mar": 3,
+    "apr": 4,
+    "may": 5,
+    "jun": 6,
+    "jul": 7,
+    "aug": 8,
+    "sep": 9,
+    "oct": 10,
+    "nov": 11,
+    "dec": 12,
 }
+
+
 def loose_date_parse(cookie_date: str) -> int:
     """
     Parse a date, as per RFC 6265, Section 5.1.1.
@@ -148,7 +156,7 @@ def loose_date_parse(cookie_date: str) -> int:
     for date_token in date_tokens:
         re_match = None
         if not found_time:
-            re_match = match(r'^(\d{2}:\d{2}:\d{2})(?:\D)?', date_token)
+            re_match = match(r"^(\d{2}:\d{2}:\d{2})(?:\D)?", date_token)
             if re_match:
                 found_time = True
                 hour_value, minute_value, second_value = [
@@ -156,7 +164,7 @@ def loose_date_parse(cookie_date: str) -> int:
                 ]
                 continue
         if not found_day_of_month:
-            re_match = match(r'^(\d\d?)(?:\D)?', date_token)
+            re_match = match(r"^(\d\d?)(?:\D)?", date_token)
             if re_match:
                 found_day_of_month = True
                 day_of_month_value = int(re_match.group(1))
@@ -166,7 +174,7 @@ def loose_date_parse(cookie_date: str) -> int:
             month_value = MONTHS[date_token[:3].lower()]
             continue
         if not found_year:
-            re_match = match(r'^(\d{2,4})(?:\D)?', date_token)
+            re_match = match(r"^(\d{2,4})(?:\D)?", date_token)
             if re_match:
                 found_year = True
                 year_value = int(re_match.group(1))
@@ -187,8 +195,7 @@ def loose_date_parse(cookie_date: str) -> int:
     if 69 >= year_value >= 0:
         year_value += 2000
     if day_of_month_value < 1 or day_of_month_value > 31:
-        raise ValueError("%s is out of range for day_of_month" % \
-            day_of_month_value)
+        raise ValueError("%s is out of range for day_of_month" % day_of_month_value)
     if year_value < 1601:
         raise ValueError("%s is out of range for year" % year_value)
     if hour_value > 23:
@@ -197,17 +204,17 @@ def loose_date_parse(cookie_date: str) -> int:
         raise ValueError("%s is out of range for minute" % minute_value)
     if second_value > 59:
         raise ValueError("%s is out of range for second" % second_value)
-    parsed_cookie_date = timegm((
-        year_value,
-        month_value,
-        day_of_month_value,
-        hour_value,
-        minute_value,
-        second_value
-    ))
+    parsed_cookie_date = timegm(
+        (
+            year_value,
+            month_value,
+            day_of_month_value,
+            hour_value,
+            minute_value,
+            second_value,
+        )
+    )
     return parsed_cookie_date
-
-
 
 
 class SET_COOKIE_NO_VAL(Note):
@@ -220,6 +227,7 @@ class SET_COOKIE_NO_VAL(Note):
 
   Browsers will ignore this cookie."""
 
+
 class SET_COOKIE_NO_NAME(Note):
     category = categories.GENERAL
     level = levels.BAD
@@ -229,6 +237,7 @@ class SET_COOKIE_NO_NAME(Note):
 
   Browsers will ignore this cookie."""
 
+
 class SET_COOKIE_BAD_DATE(Note):
     category = categories.GENERAL
     level = levels.WARN
@@ -236,6 +245,7 @@ class SET_COOKIE_BAD_DATE(Note):
     text = """\
   The `expires` date on this `Set-Cookie` header isn't valid; see
   [RFC6265](http://tools.ietf.org/html/rfc6265) for details of the correct format."""
+
 
 class SET_COOKIE_EMPTY_MAX_AGE(Note):
     category = categories.GENERAL
@@ -246,6 +256,7 @@ class SET_COOKIE_EMPTY_MAX_AGE(Note):
 
   Browsers will ignore the `max-age` value as a result."""
 
+
 class SET_COOKIE_LEADING_ZERO_MAX_AGE(Note):
     category = categories.GENERAL
     level = levels.WARN
@@ -254,6 +265,7 @@ class SET_COOKIE_LEADING_ZERO_MAX_AGE(Note):
   The `max-age` parameter on this `Set-Cookie` header has a leading zero.
 
   Browsers will ignore the `max-age` value as a result."""
+
 
 class SET_COOKIE_NON_DIGIT_MAX_AGE(Note):
     category = categories.GENERAL
@@ -265,6 +277,7 @@ class SET_COOKIE_NON_DIGIT_MAX_AGE(Note):
 
   Browsers will ignore the `max-age` value as a result."""
 
+
 class SET_COOKIE_EMPTY_DOMAIN(Note):
     category = categories.GENERAL
     level = levels.WARN
@@ -273,6 +286,7 @@ class SET_COOKIE_EMPTY_DOMAIN(Note):
   The `domain` parameter on this `Set-Cookie` header is empty.
 
   Browsers will probably ignore it as a result."""
+
 
 class SET_COOKIE_UNKNOWN_ATTRIBUTE(Note):
     category = categories.GENERAL
@@ -284,63 +298,80 @@ class SET_COOKIE_UNKNOWN_ATTRIBUTE(Note):
   Browsers will ignore it."""
 
 
-
 class BasicSCTest(headers.HeaderTest):
-    name = 'Set-Cookie'
-    inputs = [b'SID=31d4d96e407aad42']
-    expected_out = [("SID", "31d4d96e407aad42", [])] # type: ignore
-    expected_err = [] # type: ignore
+    name = "Set-Cookie"
+    inputs = [b"SID=31d4d96e407aad42"]
+    expected_out = [("SID", "31d4d96e407aad42", [])]  # type: ignore
+    expected_err = []  # type: ignore
+
 
 class ParameterSCTest(headers.HeaderTest):
-    name = 'Set-Cookie'
-    inputs = [b'SID=31d4d96e407aad42; Path=/; Domain=example.com']
-    expected_out = [("SID", "31d4d96e407aad42",
-                     [("Path", "/"), ("Domain", "example.com")])]
-    expected_err = [] # type: ignore
+    name = "Set-Cookie"
+    inputs = [b"SID=31d4d96e407aad42; Path=/; Domain=example.com"]
+    expected_out = [
+        ("SID", "31d4d96e407aad42", [("Path", "/"), ("Domain", "example.com")])
+    ]
+    expected_err = []  # type: ignore
+
 
 class TwoSCTest(headers.HeaderTest):
-    name = 'Set-Cookie'
+    name = "Set-Cookie"
     inputs = [
         b"SID=31d4d96e407aad42; Path=/; Secure; HttpOnly",
-        b"lang=en-US; Path=/; Domain=example.com"]
+        b"lang=en-US; Path=/; Domain=example.com",
+    ]
     expected_out = [
         ("SID", "31d4d96e407aad42", [("Path", "/"), ("Secure", ""), ("HttpOnly", "")]),
-        ("lang", "en-US", [("Path", "/"), ("Domain", "example.com")])]
-    expected_err = [] # type: ignore
+        ("lang", "en-US", [("Path", "/"), ("Domain", "example.com")]),
+    ]
+    expected_err = []  # type: ignore
+
 
 class ExpiresScTest(headers.HeaderTest):
     name = "Set-Cookie"
     inputs = [b"lang=en-US; Expires=Wed, 09 Jun 2021 10:18:14 GMT"]
     expected_out = [("lang", "en-US", [("Expires", 1623233894)])]
-    expected_err = [] # type: ignore
+    expected_err = []  # type: ignore
+
 
 class ExpiresSingleScTest(headers.HeaderTest):
     name = "Set-Cookie"
     inputs = [b"lang=en-US; Expires=Wed, 9 Jun 2021 10:18:14 GMT"]
     expected_out = [("lang", "en-US", [("Expires", 1623233894)])]
-    expected_err = [] # type: ignore
+    expected_err = []  # type: ignore
+
 
 class MaxAgeScTest(headers.HeaderTest):
     name = "Set-Cookie"
     inputs = [b"lang=en-US; Max-Age=123"]
     expected_out = [("lang", "en-US", [("Max-Age", 123)])]
-    expected_err = [] # type: ignore
+    expected_err = []  # type: ignore
+
 
 class MaxAgeLeadingZeroScTest(headers.HeaderTest):
     name = "Set-Cookie"
     inputs = [b"lang=en-US; Max-Age=0123"]
-    expected_out = [("lang", "en-US", [])] # type: ignore
+    expected_out = [("lang", "en-US", [])]  # type: ignore
     expected_err = [SET_COOKIE_LEADING_ZERO_MAX_AGE]
+
 
 class RemoveSCTest(headers.HeaderTest):
     name = "Set-Cookie"
     inputs = [b"lang=; Expires=Sun, 06 Nov 1994 08:49:37 GMT"]
     expected_out = [("lang", "", [("Expires", 784111777)])]
-    expected_err = [] # type: ignore
+    expected_err = []  # type: ignore
+
 
 class WolframSCTest(headers.HeaderTest):
     name = "Set-Cookie"
-    inputs = [b"WR_SID=50.56.234.188.1398; path=/; max-age=315360000; domain=.wolframalpha.com"]
-    expected_out = [("WR_SID", "50.56.234.188.1398",
-                     [('Path', '/'), ('Max-Age', 315360000), ('Domain', 'wolframalpha.com')])]
-    expected_err = [] # type: ignore
+    inputs = [
+        b"WR_SID=50.56.234.188.1398; path=/; max-age=315360000; domain=.wolframalpha.com"
+    ]
+    expected_out = [
+        (
+            "WR_SID",
+            "50.56.234.188.1398",
+            [("Path", "/"), ("Max-Age", 315360000), ("Domain", "wolframalpha.com")],
+        )
+    ]
+    expected_err = []  # type: ignore

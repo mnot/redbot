@@ -3,6 +3,7 @@
 from redbot.message import headers
 from redbot.syntax import rfc7234
 
+
 class warning(headers.HttpHeader):
     canonical_name = "Warning"
     description = """\

@@ -14,6 +14,10 @@ clean: clean-deploy
 	find . -d -type d -name __pycache__ -exec rm -rf {} \;
 	rm -rf build dist MANIFEST redbot.egg-info ghostdriver.log geckodriver.log
 
+.PHONY: tidy
+tidy:
+	black redbot
+
 .PHONY: lint
 lint:
 	PYTHONPATH=$(PYTHONPATH) pylint --rcfile=test/pylintrc \

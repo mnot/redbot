@@ -29,9 +29,9 @@ in a request does not imply that the same directive is in effect in the response
             directive_name = field_value
             directive_val = None
         directive_name = directive_name.lower()
-        if directive_name in ['max-age', 's-maxage']:
+        if directive_name in ["max-age", "s-maxage"]:
             try:
-                directive_val = int(directive_val) # type: ignore
+                directive_val = int(directive_val)  # type: ignore
             except (ValueError, TypeError):
                 add_note(BAD_CC_SYNTAX, bad_cc_attr=directive_name)
                 raise ValueError
@@ -46,31 +46,35 @@ class BAD_CC_SYNTAX(Note):
 
 
 class CacheControlTest(headers.HeaderTest):
-    name = 'Cache-Control'
-    inputs = [b'a=b, c=d', b'e=f', b'g']
-    expected_out = [('a', 'b'), ('c', 'd'), ('e', 'f'), ('g', None)]
-    expected_err = [] # type: ignore
+    name = "Cache-Control"
+    inputs = [b"a=b, c=d", b"e=f", b"g"]
+    expected_out = [("a", "b"), ("c", "d"), ("e", "f"), ("g", None)]
+    expected_err = []  # type: ignore
+
 
 class CacheControlCaseTest(headers.HeaderTest):
-    name = 'Cache-Control'
-    inputs = [b'A=b, c=D']
-    expected_out = [('a', 'b'), ('c', 'D')]
-    expected_err = [] # type: ignore
+    name = "Cache-Control"
+    inputs = [b"A=b, c=D"]
+    expected_out = [("a", "b"), ("c", "D")]
+    expected_err = []  # type: ignore
+
 
 class CacheControlQuotedTest(headers.HeaderTest):
-    name = 'Cache-Control'
+    name = "Cache-Control"
     inputs = [b'a="b,c", c=d']
-    expected_out = [('a', 'b,c'), ('c', 'd')]
-    expected_err = [] # type: ignore
+    expected_out = [("a", "b,c"), ("c", "d")]
+    expected_err = []  # type: ignore
+
 
 class CacheControlMaxAgeTest(headers.HeaderTest):
-    name = 'Cache-Control'
-    inputs = [b'max-age=5']
-    expected_out = [('max-age', 5)]
-    expected_err = [] # type: ignore
+    name = "Cache-Control"
+    inputs = [b"max-age=5"]
+    expected_out = [("max-age", 5)]
+    expected_err = []  # type: ignore
+
 
 class CacheControlBadMaxAgeTest(headers.HeaderTest):
-    name = 'Cache-Control'
-    inputs = [b'max-age=foo']
-    expected_out = [] # type: ignore
+    name = "Cache-Control"
+    inputs = [b"max-age=foo"]
+    expected_out = []  # type: ignore
     expected_err = [BAD_CC_SYNTAX]

@@ -40,6 +40,7 @@ class PRAGMA_NO_CACHE(Note):
 `Pragma` is a very old request header that is sometimes used as a response header, even though
 this is not specified behaviour. `Cache-Control: no-cache` is more appropriate."""
 
+
 class PRAGMA_OTHER(Note):
     category = categories.GENERAL
     level = levels.WARN
@@ -48,7 +49,7 @@ class PRAGMA_OTHER(Note):
 
 
 class PragmaTest(headers.HeaderTest):
-    name = 'Pragma'
-    inputs = [b'no-cache']
-    expected_out = ['no-cache']
+    name = "Pragma"
+    inputs = [b"no-cache"]
+    expected_out = ["no-cache"]
     expected_err = [PRAGMA_NO_CACHE, headers.HEADER_DEPRECATED]

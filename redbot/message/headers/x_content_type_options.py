@@ -13,7 +13,7 @@ class x_content_type_options(headers.HttpHeader):
     valid_in_responses = True
 
     def evaluate(self, add_note: AddNoteMethodType) -> None:
-        if 'nosniff' in self.value:
+        if "nosniff" in self.value:
             add_note(CONTENT_TYPE_OPTIONS)
         else:
             add_note(CONTENT_TYPE_OPTIONS_UNKNOWN)
@@ -32,10 +32,13 @@ Content-Type header. It probably won't have any effect in other clients.
 
 See [this blog entry](http://bit.ly/t1UHW2) for more information about this header."""
 
+
 class CONTENT_TYPE_OPTIONS_UNKNOWN(Note):
     category = categories.SECURITY
     level = levels.WARN
-    summary = "%(response)s contains an X-Content-Type-Options header with an unknown value."
+    summary = (
+        "%(response)s contains an X-Content-Type-Options header with an unknown value."
+    )
     text = """\
 Only one value is currently defined for this header, `nosniff`. Using other values here won't
 necessarily cause problems, but they probably won't have any effect either.

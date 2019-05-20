@@ -19,6 +19,7 @@ class HarFormatter(Formatter):
     """
     Format a HttpResource object (and any descendants) as HAR.
     """
+
     can_multiple = True
     name = "har"
     media_type = "application/json"
@@ -26,19 +27,13 @@ class HarFormatter(Formatter):
     def __init__(self, *args: Any, **kw: Any) -> None:
         Formatter.__init__(self, *args, **kw)
         self.har = {
-            'log': {
+            "log": {
                 "version": "1.1",
-                "creator": {
-                    "name": "REDbot",
-                    "version": __version__,
-                },
-                "browser": {
-                    "name": "REDbot",
-                    "version": __version__,
-                },
+                "creator": {"name": "REDbot", "version": __version__},
+                "browser": {"name": "REDbot", "version": __version__},
                 "pages": [],
                 "entries": [],
-            },
+            }
         }
         self.last_id = 0
 
@@ -68,57 +63,65 @@ class HarFormatter(Formatter):
     def add_entry(self, resource: HttpResource, page_ref: int = None) -> None:
         entry = {
             "startedDateTime": isoformat(resource.request.start_time),
-            "time": int((resource.response.complete_time - resource.request.start_time) * 1000),
-            "_red_messages": self.format_notes(resource)
+            "time": int(
+                (resource.response.complete_time - resource.request.start_time) * 1000
+            ),
+            "_red_messages": self.format_notes(resource),
         }
         if page_ref:
-            entry['pageref'] = "page%s" % page_ref
+            entry["pageref"] = "page%s" % page_ref
 
         request = {
-            'method': resource.request.method,
-            'url': resource.request.uri,
-            'httpVersion': "HTTP/1.1",
-            'cookies': [],
-            'headers': self.format_headers(resource.request.headers),
-            'queryString': [],
-            'headersSize': -1,
-            'bodySize': -1,
+            "method": resource.request.method,
+            "url": resource.request.uri,
+            "httpVersion": "HTTP/1.1",
+            "cookies": [],
+            "headers": self.format_headers(resource.request.headers),
+            "queryString": [],
+            "headersSize": -1,
+            "bodySize": -1,
         }
 
         response = {
-            'status': resource.response.status_code,
-            'statusText': resource.response.status_phrase,
-            'httpVersion': "HTTP/%s" % resource.response.version,
-            'cookies': [],
-            'headers': self.format_headers(resource.response.headers),
-            'content': {
-                'size': resource.response.decoded_len,
-                'compression': resource.response.decoded_len - resource.response.payload_len,
-                'mimeType': resource.response.parsed_headers.get('content-type', ''),
+            "status": resource.response.status_code,
+            "statusText": resource.response.status_phrase,
+            "httpVersion": "HTTP/%s" % resource.response.version,
+            "cookies": [],
+            "headers": self.format_headers(resource.response.headers),
+            "content": {
+                "size": resource.response.decoded_len,
+                "compression": resource.response.decoded_len
+                - resource.response.payload_len,
+                "mimeType": resource.response.parsed_headers.get("content-type", ""),
             },
-            'redirectURL': resource.response.parsed_headers.get('location', ''),
-            'headersSize': resource.response.header_length,
-            'bodySize': resource.response.payload_len,
+            "redirectURL": resource.response.parsed_headers.get("location", ""),
+            "headersSize": resource.response.header_length,
+            "bodySize": resource.response.payload_len,
         }
 
         cache = {}  # type: Dict[None, None]
         timings = {
-            'dns': -1,
-            'connect': -1,
-            'blocked': 0,
-            'send': 0,
-            'wait': int((resource.response.start_time - resource.request.start_time) * 1000),
-            'receive': int((resource.response.complete_time - resource.response.start_time) * 1000),
+            "dns": -1,
+            "connect": -1,
+            "blocked": 0,
+            "send": 0,
+            "wait": int(
+                (resource.response.start_time - resource.request.start_time) * 1000
+            ),
+            "receive": int(
+                (resource.response.complete_time - resource.response.start_time) * 1000
+            ),
         }
 
-        entry.update({
-            'request': request,
-            'response': response,
-            'cache': cache,
-            'timings': timings,
-        })
-        self.har['log']['entries'].append(entry) # type: ignore
-
+        entry.update(
+            {
+                "request": request,
+                "response": response,
+                "cache": cache,
+                "timings": timings,
+            }
+        )
+        self.har["log"]["entries"].append(entry)  # type: ignore
 
     def add_page(self, resource: HttpResource) -> int:
         page_id = self.last_id + 1
@@ -126,16 +129,13 @@ class HarFormatter(Formatter):
             "startedDateTime": isoformat(resource.request.start_time),
             "id": "page%s" % page_id,
             "title": "",
-            "pageTimings": {
-                "onContentLoad": -1,
-                "onLoad": -1,
-            },
+            "pageTimings": {"onContentLoad": -1, "onLoad": -1},
         }
-        self.har['log']['pages'].append(page) # type: ignore
+        self.har["log"]["pages"].append(page)  # type: ignore
         return page_id
 
     def format_headers(self, hdrs: StrHeaderListType) -> List[Dict[str, str]]:
-        return [{'name': n, 'value': v} for n, v in hdrs]
+        return [{"name": n, "value": v} for n, v in hdrs]
 
     def format_notes(self, resource: HttpResource) -> List[Dict[str, str]]:
         out = []
@@ -144,10 +144,11 @@ class HarFormatter(Formatter):
                 "subject": m.subject,
                 "category": m.category.name,
                 "level": m.level.name,
-                "summary": m.show_summary(self.lang)
+                "summary": m.show_summary(self.lang),
             }
             out.append(msg)
         return out
+
 
 def isoformat(timestamp: float) -> str:
     return "%sZ" % datetime.datetime.utcfromtimestamp(timestamp).isoformat()

@@ -1,4 +1,3 @@
-
 """
 The Resource Expert Droid.
 
@@ -23,7 +22,6 @@ from redbot.resource.fetch import RedFetcher
 from redbot.resource.active_check import active_checks
 
 
-
 class HttpResource(RedFetcher):
     """
     Given a URI (optionally with method, request headers and body), examine the URI for issues and
@@ -37,30 +35,40 @@ class HttpResource(RedFetcher):
 
     Emits "check_done" when everything has finished.
     """
+
     check_name = "default"
     response_phrase = "This response"
 
     def __init__(self, config: SectionProxy, descend: bool = False) -> None:
         RedFetcher.__init__(self, config)
-        self.descend = descend       # type: bool
-        self.check_done = False      # type: bool
+        self.descend = descend  # type: bool
+        self.check_done = False  # type: bool
         self.partial_support = None  # type: bool
-        self.inm_support = None      # type: bool
-        self.ims_support = None      # type: bool
-        self.gzip_support = None     # type: bool
-        self.gzip_savings = 0        # type: int
-        self._task_map = set([None]) # type: Set[RedFetcher]   # None is the original request
-        self.subreqs = {ac.check_name:ac(config, self) for ac in active_checks}  # type: ignore
+        self.inm_support = None  # type: bool
+        self.ims_support = None  # type: bool
+        self.gzip_support = None  # type: bool
+        self.gzip_savings = 0  # type: int
+        self._task_map = set(
+            [None]
+        )  # type: Set[RedFetcher]   # None is the original request
+        self.subreqs = {
+            ac.check_name: ac(config, self) for ac in active_checks
+        }  # type: ignore
         self.response.once("content_available", self.run_active_checks)
+
         def _finish_check() -> None:
             self.finish_check(None)
+
         self.on("fetch_done", _finish_check)
-        self.links = {}              # type: Dict[str, Set[str]]
-        self.link_count = 0          # type: int
-        self.linked = []             # type: List[Tuple[HttpResource, str]]  # linked HttpResources
-        self._link_parser = link_parse.HTMLLinkParser(self.response, [self.process_link])
+        self.links = {}  # type: Dict[str, Set[str]]
+        self.link_count = 0  # type: int
+        self.linked = []  # type: List[Tuple[HttpResource, str]]  # linked HttpResources
+        self._link_parser = link_parse.HTMLLinkParser(
+            self.response, [self.process_link]
+        )
         self.response.on("chunk", self._link_parser.feed)
-#        self.show_task_map(True) # for debugging
+
+    #        self.show_task_map(True) # for debugging
 
     def run_active_checks(self) -> None:
         """
@@ -75,12 +83,15 @@ class HttpResource(RedFetcher):
         "Remember a subordinate check on one or more HttpResource instance."
         for resource in resources:
             self._task_map.add(resource)
+
             @thor.events.on(resource)
             def status(message: str) -> None:
-                self.emit('status', message)
+                self.emit("status", message)
+
             @thor.events.on(resource)
             def debug(message: str) -> None:
-                self.emit('debug', message)
+                self.emit("debug", message)
+
             @thor.events.on(resource)
             def check_done() -> None:
                 self.finish_check(resource)
@@ -90,12 +101,14 @@ class HttpResource(RedFetcher):
         try:
             self._task_map.remove(resource)
         except KeyError:
-            raise KeyError("* Can't find %s in task map: %s" % (resource, self._task_map))
+            raise KeyError(
+                "* Can't find %s in task map: %s" % (resource, self._task_map)
+            )
         tasks_left = len(self._task_map)
-#        self.emit("debug", "%s checks remaining: %i" % (repr(self), tasks_left))
+        #        self.emit("debug", "%s checks remaining: %i" % (repr(self), tasks_left))
         if tasks_left == 0:
             self.check_done = True
-            self.emit('check_done')
+            self.emit("check_done")
 
     def show_task_map(self, watch: bool = False) -> Union[str, None]:
         """
@@ -112,8 +125,12 @@ class HttpResource(RedFetcher):
         self.link_count += 1
         if tag not in self.links:
             self.links[tag] = set()
-        if self.descend and tag not in ['a'] and link not in self.links[tag] and \
-          self.link_count <= (self.config.getint('max_links', fallback=100)):
+        if (
+            self.descend
+            and tag not in ["a"]
+            and link not in self.links[tag]
+            and self.link_count <= (self.config.getint("max_links", fallback=100))
+        ):
             linked = HttpResource(self.config)
             linked.set_request(urljoin(base, link), req_hdrs=self.request.headers)
             self.linked.append((linked, tag))

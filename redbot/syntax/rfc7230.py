@@ -10,8 +10,33 @@ These regex are directly derived from the collected ABNF in RFC7230:
 They should be processed with re.VERBOSE.
 """
 
-from .rfc5234 import ALPHA, CR, LF, CRLF, CTL, DIGIT, DQUOTE, HEXDIG, HTAB, OCTET, SP, VCHAR
-from .rfc3986 import URI_reference, absolute_URI, authority, fragment, path_abempty, port, query, relative_part, scheme, segment, host as uri_host
+from .rfc5234 import (
+    ALPHA,
+    CR,
+    LF,
+    CRLF,
+    CTL,
+    DIGIT,
+    DQUOTE,
+    HEXDIG,
+    HTAB,
+    OCTET,
+    SP,
+    VCHAR,
+)
+from .rfc3986 import (
+    URI_reference,
+    absolute_URI,
+    authority,
+    fragment,
+    path_abempty,
+    port,
+    query,
+    relative_part,
+    scheme,
+    segment,
+    host as uri_host,
+)
 
 SPEC_URL = "http://httpwg.org/specs/rfc7230"
 
@@ -40,7 +65,9 @@ obs_text = r"[\x80-\xff]"
 
 # tchar = "!" / "#" / "$" / "%" / "&" / "'" / "*" / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~" / DIGIT / ALPHA
 
-tchar = r"(?: ! | \# | \$ | % | & | ' | \* | \+ | \- | \. | \^ | _ | ` | \| | \~ | {DIGIT} | {ALPHA} )".format(**locals())
+tchar = r"(?: ! | \# | \$ | % | & | ' | \* | \+ | \- | \. | \^ | _ | ` | \| | \~ | {DIGIT} | {ALPHA} )".format(
+    **locals()
+)
 
 # token = 1*tchar
 
@@ -61,8 +88,6 @@ quoted_pair = r"(?: \\ (?: {HTAB} | {SP} | {VCHAR} | {obs_text} ) )".format(**lo
 quoted_string = r"(?: \" (?: {qdtext} | {quoted_pair} )* \" )".format(**locals())
 
 
-
-
 class list_rule:
     """
     Given a piece of ABNF, wrap it in the "list rule"
@@ -81,17 +106,18 @@ class list_rule:
         if self.minimum == 1:
             # 1#element => element *( OWS "," OWS element )
             return r"(?: {element} (?: {OWS} , {OWS} {element} )* )".format(
-                element=self.element, OWS=OWS)
+                element=self.element, OWS=OWS
+            )
         if self.minimum > 1:
             # <n>#<m>element => element <n-1>*<m-1>( OWS "," OWS element )
             adj_min = self.minimum - 1
             return r"(?: {element} (?: {OWS} , {OWS} {element} ){{{adj_min},}} )".format(
-                element=self.element, OWS=OWS, adj_min=adj_min)
+                element=self.element, OWS=OWS, adj_min=adj_min
+            )
         # element => [ 1#element ]
         return r"(?: {element} (?: {OWS} , {OWS} {element} )* )?".format(
-            element=self.element, OWS=OWS)
-
-
+            element=self.element, OWS=OWS
+        )
 
 
 ## Header Definitions
@@ -114,11 +140,15 @@ Host = r"{uri_host} (?: : {port} )?".format(**locals())
 
 # transfer-parameter = token BWS "=" BWS ( token / quoted-string )
 
-transfer_parameter = r"(?: {token} {BWS} = {BWS} (?: {token} | {quoted_string} ) )".format(**locals())
+transfer_parameter = r"(?: {token} {BWS} = {BWS} (?: {token} | {quoted_string} ) )".format(
+    **locals()
+)
 
 # transfer-extension = token *( OWS ";" OWS transfer-parameter )
 
-transfer_extension = r"(?: {token} (?: {OWS} ; {OWS} {transfer_parameter} )* )".format(**locals())
+transfer_extension = r"(?: {token} (?: {OWS} ; {OWS} {transfer_parameter} )* )".format(
+    **locals()
+)
 
 # rank = ( "0" [ "." *3DIGIT ] ) / ( "1" [ "." *3"0" ] )
 
@@ -130,11 +160,15 @@ t_ranking = r"(?: {OWS} \; {OWS} q\= {rank} )".format(**locals())
 
 # transfer-coding = "chunked" / "compress" / "deflate" / "gzip" / transfer-extension
 
-transfer_coding = r"(?: chunked | compress | deflate | gzip | {transfer_extension} )".format(**locals())
+transfer_coding = r"(?: chunked | compress | deflate | gzip | {transfer_extension} )".format(
+    **locals()
+)
 
 # t-codings = "trailers" / ( transfer-coding [ t-ranking ] )
 
-t_codings = r"(?: trailers | (?: {transfer_coding} (?: {t_ranking}? ) ) )".format(**locals())
+t_codings = r"(?: trailers | (?: {transfer_coding} (?: {t_ranking}? ) ) )".format(
+    **locals()
+)
 
 # TE = #t-codings
 
@@ -178,14 +212,18 @@ received_by = r"(?: (?: {uri_host} (?: : {port} )? ) | {pseudonym} )".format(**l
 
 # received-protocol = [ protocol-name "/" ] protocol-version
 
-received_protocol = r"(?: (?: {protocol_name} / )? {protocol_version} )".format(**locals())
+received_protocol = r"(?: (?: {protocol_name} / )? {protocol_version} )".format(
+    **locals()
+)
 
 # ctext = HTAB / SP / %x21-27 ; '!'-'''
 #  / %x2A-5B ; '*'-'['
 #  / %x5D-7E ; ']'-'~'
 #  / obs-text
 
-ctext = r"(?: {HTAB} | {SP} | [\x21-\x27] | [\x2A-\x5b] | \x5D-\x7E | {obs_text} )".format(**locals())
+ctext = r"(?: {HTAB} | {SP} | [\x21-\x27] | [\x2A-\x5b] | \x5D-\x7E | {obs_text} )".format(
+    **locals()
+)
 
 # comment = "(" *( ctext / quoted-pair / comment ) ")"
 
@@ -194,9 +232,12 @@ comment = r"(?: \( (?: {ctext} | {quoted_pair} )* \) ) ".format(**locals())
 
 # Via = 1#( received-protocol RWS received-by [ RWS comment ] )
 
-Via = list_rule(r"(?: {received_protocol} {RWS} {received_by} (?: {RWS} {comment} )? )".format(**locals()), 1)
-
-
+Via = list_rule(
+    r"(?: {received_protocol} {RWS} {received_by} (?: {RWS} {comment} )? )".format(
+        **locals()
+    ),
+    1,
+)
 
 
 ## Headers (generic)
@@ -207,7 +248,9 @@ field_vchar = r"(?: {VCHAR} | {obs_text} )".format(**locals())
 
 # field-content = field-vchar [ 1*( SP / HTAB ) field-vchar ]
 
-field_content = r"(?: {field_vchar} (?: (?: {SP} | {HTAB} )+ {field_vchar} )? )".format(**locals())
+field_content = r"(?: {field_vchar} (?: (?: {SP} | {HTAB} )+ {field_vchar} )? )".format(
+    **locals()
+)
 
 # field-value = *( field-content / obs-fold )
 
@@ -216,8 +259,6 @@ field_value = r"(?: {field_content} | {obs_fold} )*".format(**locals())
 # header-field = field-name ":" OWS field-value OWS
 
 header_field = r"(?: {field_name} : {OWS} {field_value} {OWS} )".format(**locals())
-
-
 
 
 ## Chunked Encoding
@@ -244,7 +285,9 @@ chunk_data = r"{OCTET}+".format(**locals())
 
 # chunk = chunk-size [ chunk-ext ] CRLF chunk-data CRLF
 
-chunk = r"(?: {chunk_size} (?: {chunk_ext} )? {CRLF} {chunk_data} {CRLF} )".format(**locals())
+chunk = r"(?: {chunk_size} (?: {chunk_ext} )? {CRLF} {chunk_data} {CRLF} )".format(
+    **locals()
+)
 
 # last-chunk = 1*"0" [ chunk-ext ] CRLF
 
@@ -256,9 +299,9 @@ trailer_part = r"(?: {header_field} {CRLF} )*".format(**locals())
 
 # chunked-body = *chunk last-chunk trailer-part CRLF
 
-chunked_body = r"(?: (?: chunk )* {last_chunk} {trailer_part} {CRLF} )".format(**locals())
-
-
+chunked_body = r"(?: (?: chunk )* {last_chunk} {trailer_part} {CRLF} )".format(
+    **locals()
+)
 
 
 ## HTTP(S) URIs
@@ -281,11 +324,15 @@ authority_form = authority
 
 # http-URI = "http://" authority path-abempty [ "?" query ] [ "#" fragment ]
 
-http_URI = r"(?: http:// {authority} {path_abempty} (?: \? {query} )? (?: \# {fragment} )? )".format(**locals())
+http_URI = r"(?: http:// {authority} {path_abempty} (?: \? {query} )? (?: \# {fragment} )? )".format(
+    **locals()
+)
 
 # https-URI = "https://" authority path-abempty [ "?" query ] [ "#" fragment ]
 
-https_URI = r"(?: https:// {authority} {path_abempty} (?: \? {query} )? (?: \# {fragment} )? )".format(**locals())
+https_URI = r"(?: https:// {authority} {path_abempty} (?: \? {query} )? (?: \# {fragment} )? )".format(
+    **locals()
+)
 
 # origin-form = absolute-path [ "?" query ]
 
@@ -294,8 +341,6 @@ origin_form = r"(?: {absolute_path} (?: {query} )? )".format(**locals())
 # partial-URI = relative-part [ "?" query ]
 
 partial_URI = r"(?: {relative_part} (?: {query} )? )".format(**locals())
-
-
 
 
 ## Message
@@ -314,11 +359,15 @@ method = token
 
 # request-target = origin-form / absolute-form / authority-form / asterisk-form
 
-request_target = r"(?: {origin_form} | {absolute_form} | {authority_form} | {asterisk_form} )".format(**locals())
+request_target = r"(?: {origin_form} | {absolute_form} | {authority_form} | {asterisk_form} )".format(
+    **locals()
+)
 
 # request-line = method SP request-target SP HTTP-version CRLF
 
-request_line = r"(?: {method} [ ] {request_target} [ ] {HTTP_version} {CRLF} )".format(**locals())
+request_line = r"(?: {method} [ ] {request_target} [ ] {HTTP_version} {CRLF} )".format(
+    **locals()
+)
 
 # status-code = 3DIGIT
 
@@ -330,7 +379,9 @@ reason_phrase = r"(?: {HTAB} | {SP} | {VCHAR} | {obs_text} )*".format(**locals()
 
 # status-line = HTTP-version SP status-code SP reason-phrase CRLF
 
-status_line = r"(?: {HTTP_version} [ ] {status_code} [ ] {reason_phrase} {CRLF} )".format(**locals())
+status_line = r"(?: {HTTP_version} [ ] {status_code} [ ] {reason_phrase} {CRLF} )".format(
+    **locals()
+)
 
 # start-line = request-line / status-line
 
@@ -342,4 +393,6 @@ message_body = r"(?: {OCTET}* )".format(**locals())
 
 # HTTP-message = start-line *( header-field CRLF ) CRLF [ message-body ]
 
-HTTP_message = r"(?: {start_line} (?: {header_field} {CRLF} )* {CRLF} (?: {message_body} )? )".format(**locals())
+HTTP_message = r"(?: {start_line} (?: {header_field} {CRLF} )* {CRLF} (?: {message_body} )? )".format(
+    **locals()
+)

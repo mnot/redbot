@@ -4,6 +4,7 @@ from redbot.message import headers
 from redbot.syntax import rfc7231
 from redbot.type import AddNoteMethodType
 
+
 class vary(headers.HttpHeader):
     canonical_name = "Vary"
     description = """\

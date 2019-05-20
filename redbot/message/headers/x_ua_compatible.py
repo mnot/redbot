@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from typing import Tuple, Dict # pylint: disable=unused-import
+from typing import Tuple, Dict  # pylint: disable=unused-import
 
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
@@ -26,7 +26,7 @@ class x_ua_compatible(headers.HttpHeader):
         return attr, attr_value
 
     def evaluate(self, add_note: AddNoteMethodType) -> None:
-        directives = {} # type: Dict[str, str]
+        directives = {}  # type: Dict[str, str]
         warned = False
         attr, attr_value = self.value
         if attr in directives and not warned:
@@ -34,7 +34,6 @@ class x_ua_compatible(headers.HttpHeader):
             warned = True
         directives[attr] = attr_value
         add_note(UA_COMPATIBLE)
-
 
 
 class UA_COMPATIBLE(Note):
@@ -48,10 +47,13 @@ Internet Explorer 8 allows responses to explicitly set the rendering mode used f
 See [Microsoft's documentation](http://msdn.microsoft.com/en-us/library/cc288325(VS.85).aspx) for
 more information."""
 
+
 class UA_COMPATIBLE_REPEAT(Note):
     category = categories.GENERAL
     level = levels.BAD
-    summary = "%(response)s has multiple X-UA-Compatible directives targeted at the same UA."
+    summary = (
+        "%(response)s has multiple X-UA-Compatible directives targeted at the same UA."
+    )
     text = """\
 Internet Explorer 8 allows responses to explicitly set the rendering mode used for a page.
 
@@ -62,9 +64,8 @@ See [this blog entry](http://msdn.microsoft.com/en-us/library/cc288325(VS.85).as
 information."""
 
 
-
 class BasicUACTest(headers.HeaderTest):
-    name = 'X-UA-Compatible'
-    inputs = [b'foo=bar']
+    name = "X-UA-Compatible"
+    inputs = [b"foo=bar"]
     expected_out = ("foo", "bar")
     expected_err = [UA_COMPATIBLE]

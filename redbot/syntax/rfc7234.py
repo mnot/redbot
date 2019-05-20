@@ -28,7 +28,9 @@ Age = delta_seconds
 
 # cache-directive = token [ "=" ( token / quoted-string ) ]
 
-cache_directive = r"(?: {token} (?: = (?: {token} | {quoted_string} ) )? )".format(**locals())
+cache_directive = r"(?: {token} (?: = (?: {token} | {quoted_string} ) )? )".format(
+    **locals()
+)
 
 # Cache-Control = 1#cache-directive
 
@@ -40,7 +42,9 @@ Expires = HTTP_date
 
 # extension-pragma = token [ "=" ( token / quoted-string ) ]
 
-extension_pragma = r"(?: {token} (?: = (?: {token} | {quoted_string} ) )? )".format(**locals())
+extension_pragma = r"(?: {token} (?: = (?: {token} | {quoted_string} ) )? )".format(
+    **locals()
+)
 
 # pragma-directive = "no-cache" / extension-pragma
 
@@ -68,7 +72,9 @@ warn_text = quoted_string
 
 # warning-value = warn-code SP warn-agent SP warn-text [ SP warn-date ]
 
-warning_value = r"(?: {warn_code} {SP} {warn_agent} {SP} {warn_text} (?: {SP} {warn_date} )? )".format(**locals())
+warning_value = r"(?: {warn_code} {SP} {warn_agent} {SP} {warn_text} (?: {SP} {warn_date} )? )".format(
+    **locals()
+)
 
 # Warning = 1#warning-value
 

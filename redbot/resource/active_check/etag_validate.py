@@ -9,12 +9,15 @@ from redbot.resource.active_check.base import SubRequest, MISSING_HDRS_304
 from redbot.speak import Note, categories, levels
 from redbot.type import StrHeaderListType
 
+
 class ETagValidate(SubRequest):
     "If an ETag is present, see if it will validate."
     check_name = "ETag Validation"
     response_phrase = "The 304 response"
 
-    def modify_request_headers(self, base_headers: StrHeaderListType) -> StrHeaderListType:
+    def modify_request_headers(
+        self, base_headers: StrHeaderListType
+    ) -> StrHeaderListType:
         etag_value = self.base.response.parsed_headers.get("etag", None)
         if etag_value:
             weak, etag = etag_value
@@ -24,11 +27,11 @@ class ETagValidate(SubRequest):
             else:
                 weak_str = ""
             etag_str = '%s"%s"' % (weak_str, etag)
-            base_headers.append(('If-None-Match', etag_str))
+            base_headers.append(("If-None-Match", etag_str))
         return base_headers
 
     def preflight(self) -> bool:
-        if self.base.response.status_code[0] == '3':
+        if self.base.response.status_code[0] == "3":
             return False
         etag = self.base.response.parsed_headers.get("etag", None)
         if etag:
@@ -42,32 +45,41 @@ class ETagValidate(SubRequest):
                 problem = self.response.http_error.desc
             else:
                 problem = ""
-            self.add_base_note('', ETAG_SUBREQ_PROBLEM, problem=problem)
+            self.add_base_note("", ETAG_SUBREQ_PROBLEM, problem=problem)
             return
 
-        if self.response.status_code == '304':
+        if self.response.status_code == "304":
             self.base.inm_support = True
-            self.add_base_note('header-etag', INM_304)
-            self.check_missing_hdrs([
-                'cache-control', 'content-location', 'etag', 'expires', 'vary'], MISSING_HDRS_304)
+            self.add_base_note("header-etag", INM_304)
+            self.check_missing_hdrs(
+                ["cache-control", "content-location", "etag", "expires", "vary"],
+                MISSING_HDRS_304,
+            )
         elif self.response.status_code == self.base.response.status_code:
             if self.response.payload_md5 == self.base.response.payload_md5:
                 self.base.inm_support = False
-                self.add_base_note('header-etag', INM_FULL)
-            else: # bodies are different
-                if self.base.response.parsed_headers['etag'] == \
-                  self.response.parsed_headers.get('etag', 1):
-                    if self.base.response.parsed_headers['etag'][0]: # weak
-                        self.add_base_note('header-etag', INM_DUP_ETAG_WEAK)
-                    else: # strong
-                        self.add_base_note('header-etag', INM_DUP_ETAG_STRONG,
-                                           etag=self.base.response.parsed_headers['etag'])
+                self.add_base_note("header-etag", INM_FULL)
+            else:  # bodies are different
+                if self.base.response.parsed_headers[
+                    "etag"
+                ] == self.response.parsed_headers.get("etag", 1):
+                    if self.base.response.parsed_headers["etag"][0]:  # weak
+                        self.add_base_note("header-etag", INM_DUP_ETAG_WEAK)
+                    else:  # strong
+                        self.add_base_note(
+                            "header-etag",
+                            INM_DUP_ETAG_STRONG,
+                            etag=self.base.response.parsed_headers["etag"],
+                        )
                 else:
-                    self.add_base_note('header-etag', INM_UNKNOWN)
+                    self.add_base_note("header-etag", INM_UNKNOWN)
         else:
-            self.add_base_note('header-etag', INM_STATUS,
-                               inm_status=self.response.status_code,
-                               enc_inm_status=self.response.status_code or '(unknown)')
+            self.add_base_note(
+                "header-etag",
+                INM_STATUS,
+                inm_status=self.response.status_code,
+                enc_inm_status=self.response.status_code or "(unknown)",
+            )
 
 
 class ETAG_SUBREQ_PROBLEM(Note):
@@ -81,6 +93,7 @@ When REDbot tried to check the resource for ETag validation support, there was a
 
 Trying again might fix it."""
 
+
 class INM_304(Note):
     category = categories.VALIDATION
     level = levels.GOOD
@@ -90,6 +103,7 @@ HTTP allows clients to make conditional requests to see if a copy that they hold
 Since this response has an `ETag`, clients should be able to use an `If-None-Match` request header
 for validation. REDbot has done this and found that the resource sends a `304 Not Modified`
 response, indicating that it supports `ETag` validation."""
+
 
 class INM_FULL(Note):
     category = categories.VALIDATION
@@ -104,10 +118,13 @@ for validation.
 REDbot has done this and found that the resource sends the same, full response even though it hadn't
 changed, indicating that it doesn't support `ETag` validation."""
 
+
 class INM_DUP_ETAG_WEAK(Note):
     category = categories.VALIDATION
     level = levels.INFO
-    summary = "During validation, the ETag didn't change, even though the response body did."
+    summary = (
+        "During validation, the ETag didn't change, even though the response body did."
+    )
     text = """\
 `ETag`s are supposed to uniquely identify the response representation; if the content changes, so
 should the ETag.
@@ -120,10 +137,13 @@ the page, you can use the same weak `ETag` to identify both versions.
 
 If the changes are important, a different `ETag` should be used."""
 
+
 class INM_DUP_ETAG_STRONG(Note):
     category = categories.VALIDATION
     level = levels.BAD
-    summary = "During validation, the ETag didn't change, even though the response body did."
+    summary = (
+        "During validation, the ETag didn't change, even though the response body did."
+    )
     text = """\
 `ETag`s are supposed to uniquely identify the response representation; if the content changes, so
 should the ETag.
@@ -134,6 +154,7 @@ downstream clients and caches might confuse them.
 If the changes between the two representations aren't important (i.e., they can be used
 interchangeably), they can share a "weak" ETag; to do that, just prepend `W/`, to make its value
 `W/%(etag)s`. Otherwise, they need to use different `ETag`s."""
+
 
 class INM_UNKNOWN(Note):
     category = categories.VALIDATION
@@ -146,6 +167,7 @@ for validation.
 
 REDbot has done this, but the response changed between the original request and the validating
 request, so REDbot can't tell whether or not `ETag` validation is supported."""
+
 
 class INM_STATUS(Note):
     category = categories.VALIDATION

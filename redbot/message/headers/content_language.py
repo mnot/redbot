@@ -4,6 +4,7 @@
 from redbot.message import headers
 from redbot.syntax import rfc7231
 
+
 class content_language(headers.HttpHeader):
     canonical_name = "Content-Language"
     description = """\
@@ -17,10 +18,8 @@ this might not convey all of the languages used within the body."""
     valid_in_responses = True
 
 
-
-
 class ContentLanguageTest(headers.HeaderTest):
-    name = 'Content-Language'
-    inputs = [b'en-US']
-    expected_out = 'en-US'
-    expected_err = [] # type: ignore
+    name = "Content-Language"
+    inputs = [b"en-US"]
+    expected_out = "en-US"
+    expected_err = []  # type: ignore

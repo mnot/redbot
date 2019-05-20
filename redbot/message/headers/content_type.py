@@ -20,17 +20,20 @@ a GET."""
     valid_in_requests = True
     valid_in_responses = True
 
-    def parse(self, field_value: str, add_note: AddNoteMethodType) -> Tuple[str, ParamDictType]:
+    def parse(
+        self, field_value: str, add_note: AddNoteMethodType
+    ) -> Tuple[str, ParamDictType]:
         try:
             media_type, param_str = field_value.split(";", 1)
         except ValueError:
-            media_type, param_str = field_value, ''
+            media_type, param_str = field_value, ""
         media_type = media_type.lower()
-        param_dict = headers.parse_params(param_str, add_note, ['charset'])
+        param_dict = headers.parse_params(param_str, add_note, ["charset"])
         return media_type, param_dict
 
+
 class BasicCTTest(headers.HeaderTest):
-    name = 'Content-Type'
-    inputs = [b'text/plain; charset=utf-8']
+    name = "Content-Type"
+    inputs = [b"text/plain; charset=utf-8"]
     expected_out = ("text/plain", {"charset": "utf-8"})
-    expected_err = [] # type: ignore
+    expected_err = []  # type: ignore

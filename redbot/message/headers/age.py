@@ -5,13 +5,14 @@ from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7234
 from redbot.type import AddNoteMethodType
 
+
 class age(headers.HttpHeader):
     canonical_name = "Age"
     description = """\
 The `Age` header conveys the sender's estimate of the amount of time since the response (or its
 validation) was generated at the origin server."""
     reference = "%s#header.age" % rfc7234.SPEC_URL
-    syntax = False # rfc7234.Age
+    syntax = False  # rfc7234.Age
     list_header = False
     deprecated = False
     valid_in_requests = False
@@ -29,7 +30,6 @@ validation) was generated at the origin server."""
         return age_value
 
 
-
 class AGE_NOT_INT(Note):
     category = categories.CACHING
     level = levels.BAD
@@ -37,6 +37,7 @@ class AGE_NOT_INT(Note):
     text = """\
 The `Age` header indicates the age of the response; i.e., how long it has been cached
 since it was generated. The value given was not an integer, so it is not a valid age."""
+
 
 class AGE_NEGATIVE(Note):
     category = categories.CACHING
@@ -47,27 +48,29 @@ The `Age` header indicates the age of the response; i.e., how long it has been c
 since it was generated. The value given was negative, so it is not a valid age."""
 
 
-
 class AgeTest(headers.HeaderTest):
-    name = 'Age'
-    inputs = [b'10']
+    name = "Age"
+    inputs = [b"10"]
     expected_out = 10
-    expected_err = [] # type: ignore
+    expected_err = []  # type: ignore
+
 
 class MultipleAgeTest(headers.HeaderTest):
-    name = 'Age'
-    inputs = [b'20', b'10']
+    name = "Age"
+    inputs = [b"20", b"10"]
     expected_out = 10
     expected_err = [headers.SINGLE_HEADER_REPEAT]
 
+
 class CharAgeTest(headers.HeaderTest):
-    name = 'Age'
-    inputs = [b'foo']
-    expected_out = None # type: ignore
+    name = "Age"
+    inputs = [b"foo"]
+    expected_out = None  # type: ignore
     expected_err = [AGE_NOT_INT]
+
 
 class NegAgeTest(headers.HeaderTest):
     name = "Age"
     inputs = [b"-20"]
-    expected_out = None # type: ignore
+    expected_out = None  # type: ignore
     expected_err = [AGE_NEGATIVE]

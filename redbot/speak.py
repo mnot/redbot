@@ -15,6 +15,7 @@ from typing import Any, Dict, Union
 
 from markdown import markdown
 
+
 class categories(Enum):
     "Note classifications."
     GENERAL = "General"
@@ -25,30 +26,36 @@ class categories(Enum):
     CONNECTION = "Connection"
     RANGE = "Partial Content"
 
+
 class levels(Enum):
     "Note levels."
-    GOOD = 'good'
-    WARN = 'warning'
-    BAD = 'bad'
-    INFO = 'info'
+    GOOD = "good"
+    WARN = "warning"
+    BAD = "bad"
+    INFO = "info"
+
 
 class Note:
     """
     A note about an HTTP resource, representation, or other component
     related to the URI under test.
     """
-    category = None # type: categories
-    level = None # type: levels
+
+    category = None  # type: categories
+    level = None  # type: levels
     summary = ""
     text = ""
+
     def __init__(self, subject: str, vrs: Dict[str, Union[str, int]] = None) -> None:
         self.subject = subject
         self.vars = vrs or {}
 
     def __eq__(self, other: Any) -> bool:
-        return bool(self.__class__ == other.__class__ \
-           and self.vars == other.vars \
-           and self.subject == other.subject)
+        return bool(
+            self.__class__ == other.__class__
+            and self.vars == other.vars
+            and self.subject == other.subject
+        )
 
     def show_summary(self, lang: str) -> str:
         """
@@ -65,22 +72,23 @@ class Note:
 
         The resulting string is already HTML-encoded.
         """
-        return markdown(self.text % dict(
-            [(k, e_html(str(v))) for k, v in list(self.vars.items())]
-        ), output_format="html5")
+        return markdown(
+            self.text % dict([(k, e_html(str(v))) for k, v in list(self.vars.items())]),
+            output_format="html5",
+        )
 
 
-def display_bytes(inbytes: bytes, encoding: str = 'utf-8', truncate: int = 40) -> str:
+def display_bytes(inbytes: bytes, encoding: str = "utf-8", truncate: int = 40) -> str:
     """
     Format arbitrary input bytes for display.
 
     Printable Unicode characters are displayed without modification;
     everything else is shown as escaped hex.
     """
-    instr = inbytes.decode(encoding, 'backslashreplace')
+    instr = inbytes.decode(encoding, "backslashreplace")
     out = []
     for char in instr[:truncate]:
         if not char.isprintable():
-            char = r"\x%s" % b2a_hex(char.encode(encoding)).decode('ascii')
+            char = r"\x%s" % b2a_hex(char.encode(encoding)).decode("ascii")
         out.append(char)
     return "".join(out)

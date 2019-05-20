@@ -12,7 +12,7 @@ class last_modified(headers.HttpHeader):
 The `Last-Modified` header indicates the time that the origin server believes the
 representation was last modified."""
     reference = "%s#header.last_modified" % rfc7232.SPEC_URL
-    syntax = False # rfc7232.Last_Modified
+    syntax = False  # rfc7232.Last_Modified
     list_header = False
     deprecated = False
     valid_in_requests = False
@@ -27,19 +27,21 @@ representation was last modified."""
 
 
 class BasicLMTest(headers.HeaderTest):
-    name = 'Last-Modified'
-    inputs = [b'Mon, 04 Jul 2011 09:08:06 GMT']
+    name = "Last-Modified"
+    inputs = [b"Mon, 04 Jul 2011 09:08:06 GMT"]
     expected_out = 1309770486
-    expected_err = [] # type: ignore
+    expected_err = []  # type: ignore
+
 
 class BadLMTest(headers.HeaderTest):
-    name = 'Last-Modified'
-    inputs = [b'0']
-    expected_out = None # type: ignore
+    name = "Last-Modified"
+    inputs = [b"0"]
+    expected_out = None  # type: ignore
     expected_err = [headers.BAD_DATE_SYNTAX]
 
+
 class BlankLMTest(headers.HeaderTest):
-    name = 'Last-Modified'
-    inputs = [b'']
-    expected_out = None # type: ignore
+    name = "Last-Modified"
+    inputs = [b""]
+    expected_out = None  # type: ignore
     expected_err = [headers.BAD_DATE_SYNTAX]

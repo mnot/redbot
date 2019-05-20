@@ -96,7 +96,9 @@ language = r"""(?:
   (?: \- {extlang} )?
 | {ALPHA}{{4}}
 | {ALPHA}{{5,8}}
-)""".format(**locals())
+)""".format(
+    **locals()
+)
 
 # script        = 4ALPHA              ; ISO 15924 code
 
@@ -142,7 +144,9 @@ langtag = r"""(?:
   (?: \- {variant} )*
   (?: \- {extension} )*
   (?: \- {privateuse} )?
-)""".format(**locals())
+)""".format(
+    **locals()
+)
 
 # Language-Tag  = langtag             ; normal language tags
 #               / privateuse          ; private use tag

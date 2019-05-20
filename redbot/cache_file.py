@@ -7,6 +7,7 @@ import zlib
 
 import thor
 
+
 class CacheFile:
     """
     A gzipped cache file whose unix modification time indicates how long it
@@ -41,10 +42,9 @@ class CacheFile:
             self.delete()
             return None
         finally:
-            if 'fd' in locals():
+            if "fd" in locals():
                 fd.close()
         return content
-
 
     def write(self, content: bytes, lifetime: int) -> None:
         """
@@ -52,13 +52,13 @@ class CacheFile:
         Discard errors silently.
         """
         try:
-            fd = gzip.open(self.path, 'w')
+            fd = gzip.open(self.path, "w")
             fd.write(content)
             os.utime(self.path, (thor.time(), thor.time() + lifetime))
         except (OSError, IOError, zlib.error):
             return
         finally:
-            if 'fd' in locals():
+            if "fd" in locals():
                 fd.close()
 
     def delete(self) -> None:

@@ -3,6 +3,7 @@
 from redbot.message import headers
 from redbot.syntax import rfc7235
 
+
 class www_authenticate(headers.HttpHeader):
     canonical_name = "WWW-Authenticate"
     description = """\

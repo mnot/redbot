@@ -24,12 +24,23 @@ In `201 Created` responses, it identifies a newly created resource."""
     valid_in_responses = True
 
     def parse(self, field_value: str, add_note: AddNoteMethodType) -> str:
-        if self.message.status_code not in ["201", "300", "301", "302", "303", "305", "307", "308"]:
+        if self.message.status_code not in [
+            "201",
+            "300",
+            "301",
+            "302",
+            "303",
+            "305",
+            "307",
+            "308",
+        ]:
             add_note(LOCATION_UNDEFINED)
         if not re.match(r"^\s*%s\s*$" % rfc3986.URI, field_value, re.VERBOSE):
-            add_note(LOCATION_NOT_ABSOLUTE, full_uri=urljoin(self.message.base_uri, field_value))
+            add_note(
+                LOCATION_NOT_ABSOLUTE,
+                full_uri=urljoin(self.message.base_uri, field_value),
+            )
         return field_value
-
 
 
 class LOCATION_UNDEFINED(Note):
@@ -46,6 +57,7 @@ be interoperable.
 Sometimes `Location` is confused with `Content-Location`, which indicates a URI for the payload of
 the message that it appears in."""
 
+
 class LOCATION_NOT_ABSOLUTE(Note):
     category = categories.GENERAL
     level = levels.INFO
@@ -59,9 +71,10 @@ The correct absolute URI is (probably): `%(full_uri)s`"""
 
 
 class LocationTest(headers.HeaderTest):
-    name = 'Location'
-    inputs = [b'http://other.example.com/foo']
-    expected_out = 'http://other.example.com/foo'
-    expected_err = [] # type: ignore
+    name = "Location"
+    inputs = [b"http://other.example.com/foo"]
+    expected_out = "http://other.example.com/foo"
+    expected_err = []  # type: ignore
+
     def set_context(self, message: HttpMessage) -> None:
         message.status_code = "300"

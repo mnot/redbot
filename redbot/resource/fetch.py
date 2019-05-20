@@ -22,6 +22,7 @@ from redbot.type import StrHeaderListType, RawHeaderListType
 
 UA_STRING = "RED/%s (https://redbot.org/)" % __version__
 
+
 class RedHttpClient(thor.http.HttpClient):
     "Thor HttpClient for RedFetcher"
 
@@ -44,6 +45,7 @@ class RedFetcher(thor.events.EventEmitter):
     If provided, 'name' indicates the type of the request, and is used to
     help set notes and status events appropriately.
     """
+
     check_name = "undefined"
     response_phrase = "undefined"
     client = RedHttpClient()
@@ -53,19 +55,19 @@ class RedFetcher(thor.events.EventEmitter):
     def __init__(self, config: SectionProxy) -> None:
         thor.events.EventEmitter.__init__(self)
         self.config = config
-        self.notes = [] # type: List[Note]
+        self.notes = []  # type: List[Note]
         self.transfer_in = 0
         self.transfer_out = 0
         self.request = HttpRequest(self.ignore_note)  # type: HttpRequest
-        self.nonfinal_responses = []                  # type: List[HttpResponse]
-        self.response = HttpResponse(self.add_note)   # type: HttpResponse
-        self.exchange = None                          # type: thor.http.ClientExchange
+        self.nonfinal_responses = []  # type: List[HttpResponse]
+        self.response = HttpResponse(self.add_note)  # type: HttpResponse
+        self.exchange = None  # type: thor.http.ClientExchange
         self.fetch_started = False
         self.fetch_done = False
 
     def __getstate__(self) -> Dict[str, Any]:
         state = thor.events.EventEmitter.__getstate__(self)
-        del state['exchange']
+        del state["exchange"]
         return state
 
     def __repr__(self) -> str:
@@ -80,8 +82,8 @@ class RedFetcher(thor.events.EventEmitter):
 
     def add_note(self, subject: str, note: Type[Note], **kw: Union[str, int]) -> None:
         "Set a note."
-        if 'response' not in kw:
-            kw['response'] = self.response_phrase
+        if "response" not in kw:
+            kw["response"] = self.response_phrase
         self.notes.append(note(subject, kw))
 
     def ignore_note(self, subject: str, note: Type[Note], **kw: str) -> None:
@@ -95,21 +97,26 @@ class RedFetcher(thor.events.EventEmitter):
         """
         return True
 
-    def set_request(self, iri: str, method: str = "GET",
-                    req_hdrs: StrHeaderListType = None, req_body: bytes = None) -> None:
+    def set_request(
+        self,
+        iri: str,
+        method: str = "GET",
+        req_hdrs: StrHeaderListType = None,
+        req_body: bytes = None,
+    ) -> None:
         """
         Set the resource's request. All values are strings.
         """
         self.request.method = method
-        self.response.is_head_response = (method == "HEAD")   # type: ignore
+        self.response.is_head_response = method == "HEAD"  # type: ignore
         try:
             self.request.set_iri(iri)
         except httperr.UrlError as why:
             self.response.http_error = why
-        self.response.base_uri = self.request.uri             # type: ignore
+        self.response.base_uri = self.request.uri  # type: ignore
         if req_hdrs:
             self.request.set_headers(req_hdrs)
-        self.request.payload = req_body # type: ignore    # FIXME: encoding
+        self.request.payload = req_body  # type: ignore    # FIXME: encoding
         self.request.complete = True  # cheating a bit
 
     def check(self) -> None:
@@ -135,30 +142,36 @@ class RedFetcher(thor.events.EventEmitter):
 
         self.fetch_started = True
 
-        if 'user-agent' not in [i[0].lower() for i in self.request.headers]:
+        if "user-agent" not in [i[0].lower() for i in self.request.headers]:
             self.request.headers.append(("User-Agent", UA_STRING))
         self.exchange = self.client.exchange()
-        self.exchange.on('response_nonfinal', self._response_nonfinal)
-        self.exchange.once('response_start', self._response_start)
-        self.exchange.on('response_body', self._response_body)
-        self.exchange.once('response_done', self._response_done)
-        self.exchange.on('error', self._response_error)
+        self.exchange.on("response_nonfinal", self._response_nonfinal)
+        self.exchange.once("response_start", self._response_start)
+        self.exchange.on("response_body", self._response_body)
+        self.exchange.once("response_done", self._response_done)
+        self.exchange.on("error", self._response_error)
         self.emit("status", "fetching %s (%s)" % (self.request.uri, self.check_name))
         self.emit("debug", "fetching %s (%s)" % (self.request.uri, self.check_name))
-        req_hdrs = [(k.encode('ascii', 'replace'), v.encode('ascii', 'replace'))
-                    for (k, v) in self.request.headers] # FIXME: should complain
+        req_hdrs = [
+            (k.encode("ascii", "replace"), v.encode("ascii", "replace"))
+            for (k, v) in self.request.headers
+        ]  # FIXME: should complain
         self.exchange.request_start(
-            self.request.method.encode('ascii'), self.request.uri.encode('ascii'), req_hdrs)
+            self.request.method.encode("ascii"),
+            self.request.uri.encode("ascii"),
+            req_hdrs,
+        )
         self.request.start_time = thor.time()
-        if not self.fetch_done: # the request could have immediately failed.
+        if not self.fetch_done:  # the request could have immediately failed.
             if self.request.payload is not None:
                 self.exchange.request_body(self.request.payload)
                 self.transfer_out += len(self.request.payload)
-        if not self.fetch_done: # the request could have immediately failed.
+        if not self.fetch_done:  # the request could have immediately failed.
             self.exchange.request_done([])
 
-    def _response_nonfinal(self, status: bytes, phrase: bytes,
-                           res_headers: RawHeaderListType) -> None:
+    def _response_nonfinal(
+        self, status: bytes, phrase: bytes, res_headers: RawHeaderListType
+    ) -> None:
         "Got a non-final response."
         nfres = HttpResponse(self.add_note)
         nfres.process_top_line(self.exchange.res_version, status, phrase)
@@ -166,8 +179,9 @@ class RedFetcher(thor.events.EventEmitter):
         StatusChecker(nfres, self.request)
         self.nonfinal_responses.append(nfres)
 
-    def _response_start(self, status: bytes, phrase: bytes,
-                        res_headers: RawHeaderListType) -> None:
+    def _response_start(
+        self, status: bytes, phrase: bytes, res_headers: RawHeaderListType
+    ) -> None:
         "Process the response start-line and headers."
         self.response.start_time = thor.time()
         self.response.process_top_line(self.exchange.res_version, status, phrase)
@@ -190,18 +204,23 @@ class RedFetcher(thor.events.EventEmitter):
 
     def _response_error(self, error: httperr.HttpError) -> None:
         "Handle an error encountered while fetching the response."
-        self.emit("debug", "fetch error %s (%s) - %s" % (
-            self.request.uri, self.check_name, error.desc))
+        self.emit(
+            "debug",
+            "fetch error %s (%s) - %s"
+            % (self.request.uri, self.check_name, error.desc),
+        )
         err_sample = error.detail[:40] or ""
         if isinstance(error, httperr.ExtraDataError):
             if self.response.status_code == "304":
-                self.add_note('body', BODY_NOT_ALLOWED, sample=err_sample)
+                self.add_note("body", BODY_NOT_ALLOWED, sample=err_sample)
             else:
-                self.add_note('body', EXTRA_DATA, sample=err_sample)
+                self.add_note("body", EXTRA_DATA, sample=err_sample)
         elif isinstance(error, httperr.ChunkError):
-            self.add_note('header-transfer-encoding', BAD_CHUNK, chunk_sample=err_sample)
+            self.add_note(
+                "header-transfer-encoding", BAD_CHUNK, chunk_sample=err_sample
+            )
         elif isinstance(error, httperr.HeaderSpaceError):
-            subject = 'header-%s' % (error.detail.lower().strip())
+            subject = "header-%s" % (error.detail.lower().strip())
             self.add_note(subject, HEADER_NAME_SPACE, header_name=error.detail)
         else:
             self.response.http_error = error
@@ -236,6 +255,7 @@ The extra data started with:
     %(sample)s
 """
 
+
 class EXTRA_DATA(Note):
     category = categories.CONNECTION
     level = levels.BAD
@@ -248,6 +268,7 @@ The extra data started with:
 
     %(sample)s
 """
+
 
 class BAD_CHUNK(Note):
     category = categories.CONNECTION
@@ -270,6 +291,7 @@ incorrect chunking can lead to interoperability and security problems.
 
 This issue is often caused by sending an integer chunk size instead of one in hex, or by sending
 `Transfer-Encoding: chunked` without actually chunking the response body."""
+
 
 class HEADER_NAME_SPACE(Note):
     category = categories.CONNECTION

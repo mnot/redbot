@@ -3,6 +3,7 @@
 from redbot.message import headers
 from redbot.syntax import rfc7230
 
+
 class te(headers.HttpHeader):
     canonical_name = "TE"
     description = """\

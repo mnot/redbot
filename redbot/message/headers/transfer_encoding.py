@@ -38,10 +38,10 @@ without knowing the entire body's length."""
         return coding
 
     def evaluate(self, add_note: AddNoteMethodType) -> None:
-        unwanted = set([c for c in self.value if c not in ['chunked', 'identity']])
+        unwanted = set([c for c in self.value if c not in ["chunked", "identity"]])
         if unwanted:
             add_note(TRANSFER_CODING_UNWANTED, unwanted_codings=", ".join(unwanted))
-        if 'identity' in self.value:
+        if "identity" in self.value:
             add_note(TRANSFER_CODING_IDENTITY)
 
 
@@ -54,6 +54,7 @@ HTTP defines _transfer-codings_ as a hop-by-hop encoding of the message body. Th
 tranfer-coding was defined as the absence of encoding; it doesn't do anything, so it's necessary.
 
 You can remove this token to save a few bytes."""
+
 
 class TRANSFER_CODING_UNWANTED(Note):
     category = categories.CONNECTION
@@ -68,6 +69,7 @@ They are: `%(unwanted_codings)s`
 Normally, clients ask for the encodings they want in the `TE` request header. Using codings that
 the client doesn't explicitly request can lead to interoperability problems."""
 
+
 class TRANSFER_CODING_PARAM(Note):
     category = categories.CONNECTION
     level = levels.WARN
@@ -80,51 +82,57 @@ doesn't define what they mean.
 cause interoperability problems. They should be removed."""
 
 
-
 class TransferEncodingTest(headers.HeaderTest):
-    name = 'Transfer-Encoding'
-    inputs = [b'chunked']
-    expected_out = (['chunked'])
-    expected_err = [] # type: ignore
+    name = "Transfer-Encoding"
+    inputs = [b"chunked"]
+    expected_out = ["chunked"]
+    expected_err = []  # type: ignore
+
 
 class TransferEncodingParamTest(headers.HeaderTest):
-    name = 'Transfer-Encoding'
-    inputs = [b'chunked; foo=bar']
-    expected_out = (['chunked'])
+    name = "Transfer-Encoding"
+    inputs = [b"chunked; foo=bar"]
+    expected_out = ["chunked"]
     expected_err = [TRANSFER_CODING_PARAM]
 
+
 class BadTransferEncodingTest(headers.HeaderTest):
-    name = 'Transfer-Encoding'
-    inputs = [b'chunked=foo']
-    expected_out = ['chunked=foo']
+    name = "Transfer-Encoding"
+    inputs = [b"chunked=foo"]
+    expected_out = ["chunked=foo"]
     expected_err = [headers.BAD_SYNTAX, TRANSFER_CODING_UNWANTED]
 
+
 class TransferEncodingCaseTest(headers.HeaderTest):
-    name = 'Transfer-Encoding'
-    inputs = [b'chUNked']
-    expected_out = (['chunked'])
-    expected_err = [] # type: ignore
+    name = "Transfer-Encoding"
+    inputs = [b"chUNked"]
+    expected_out = ["chunked"]
+    expected_err = []  # type: ignore
+
 
 class TransferEncodingIdentityTest(headers.HeaderTest):
-    name = 'Transfer-Encoding'
-    inputs = [b'identity']
-    expected_out = (['identity'])
+    name = "Transfer-Encoding"
+    inputs = [b"identity"]
+    expected_out = ["identity"]
     expected_err = [TRANSFER_CODING_IDENTITY]
+
 
 class TransferEncodingUnwantedTest(headers.HeaderTest):
-    name = 'Transfer-Encoding'
-    inputs = [b'foo']
-    expected_out = (['foo'])
+    name = "Transfer-Encoding"
+    inputs = [b"foo"]
+    expected_out = ["foo"]
     expected_err = [TRANSFER_CODING_UNWANTED]
 
+
 class TransferEncodingMultTest(headers.HeaderTest):
-    name = 'Transfer-Encoding'
-    inputs = [b'chunked', b'identity']
-    expected_out = (['chunked', 'identity'])
+    name = "Transfer-Encoding"
+    inputs = [b"chunked", b"identity"]
+    expected_out = ["chunked", "identity"]
     expected_err = [TRANSFER_CODING_IDENTITY]
 
+
 class TransferEncodingMultUnwantedTest(headers.HeaderTest):
-    name = 'Transfer-Encoding'
-    inputs = [b'chunked', b'foo', b'bar']
-    expected_out = (['chunked', 'foo', 'bar'])
+    name = "Transfer-Encoding"
+    inputs = [b"chunked", b"foo", b"bar"]
+    expected_out = ["chunked", "foo", "bar"]
     expected_err = [TRANSFER_CODING_UNWANTED]

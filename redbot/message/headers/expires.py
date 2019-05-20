@@ -11,7 +11,7 @@ class expires(headers.HttpHeader):
     description = """\
 The `Expires` header gives a time after which the response is considered stale."""
     reference = "%s#header.expires" % rfc7234.SPEC_URL
-    syntax = False # rfc7234.Expires
+    syntax = False  # rfc7234.Expires
     list_header = False
     deprecated = False
     valid_in_requests = False
@@ -26,19 +26,21 @@ The `Expires` header gives a time after which the response is considered stale."
 
 
 class BasicExpiresTest(headers.HeaderTest):
-    name = 'Expires'
-    inputs = [b'Mon, 04 Jul 2011 09:08:06 GMT']
+    name = "Expires"
+    inputs = [b"Mon, 04 Jul 2011 09:08:06 GMT"]
     expected_out = 1309770486
-    expected_err = [] # type: ignore
+    expected_err = []  # type: ignore
+
 
 class BadExpiresTest(headers.HeaderTest):
-    name = 'Expires'
-    inputs = [b'0']
-    expected_out = None # type: ignore
+    name = "Expires"
+    inputs = [b"0"]
+    expected_out = None  # type: ignore
     expected_err = [headers.BAD_DATE_SYNTAX]
 
+
 class BlankExpiresTest(headers.HeaderTest):
-    name = 'Expires'
-    inputs = [b'']
-    expected_out = None # type: ignore
+    name = "Expires"
+    inputs = [b""]
+    expected_out = None  # type: ignore
     expected_err = [headers.BAD_DATE_SYNTAX]

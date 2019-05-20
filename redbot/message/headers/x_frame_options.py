@@ -12,12 +12,17 @@ from redbot.type import AddNoteMethodType
 serialized_origin = r"""(?:
 {rfc3986.scheme} :// {rfc3986.host} (?: : {rfc3986.port} )?
 )
-""".format(**locals())
+""".format(
+    **locals()
+)
 X_Frame_Options = r"""(?:
     DENY
   | SAMEORIGIN
   | (?: ALLOW-FROM {rfc7230.RWS} {serialized_origin} )
-)""".format(**locals())
+)""".format(
+    **locals()
+)
+
 
 class x_frame_options(headers.HttpHeader):
     canonical_name = "X-Frame-Options"
@@ -36,9 +41,9 @@ the transmitted content in frames that are part of other web pages.
         return field_value.upper()
 
     def evaluate(self, add_note: AddNoteMethodType) -> None:
-        if 'DENY' in self.value:
+        if "DENY" in self.value:
             add_note(FRAME_OPTIONS_DENY)
-        elif 'SAMEORIGIN' in self.value:
+        elif "SAMEORIGIN" in self.value:
             add_note(FRAME_OPTIONS_SAMEORIGIN)
         else:
             add_note(FRAME_OPTIONS_UNKNOWN)
@@ -56,11 +61,11 @@ attacks.
 See [this blog entry](http://bit.ly/v5Bh5Q) for more information.
      """
 
+
 class FRAME_OPTIONS_SAMEORIGIN(Note):
     category = categories.SECURITY
     level = levels.INFO
-    summary = \
-        "%(response)s prevents some browsers from rendering it within a frame on another site."
+    summary = "%(response)s prevents some browsers from rendering it within a frame on another site."
     text = """\
 The `X-Frame-Options` response header controls how IE8 handles HTML frames; the `DENY` value
 prevents this content from being rendered within a frame on another site, which defends against
@@ -70,6 +75,7 @@ Currently this is supported by IE8 and Safari 4.
 
 See [this blog entry](http://bit.ly/v5Bh5Q) for more information.
      """
+
 
 class FRAME_OPTIONS_UNKNOWN(Note):
     category = categories.SECURITY
@@ -84,25 +90,28 @@ See [this blog entry](http://bit.ly/v5Bh5Q) for more information.
 
 
 class DenyXFOTest(headers.HeaderTest):
-    name = 'X-Frame-Options'
-    inputs = [b'DENY']
-    expected_out = 'DENY'
+    name = "X-Frame-Options"
+    inputs = [b"DENY"]
+    expected_out = "DENY"
     expected_err = [FRAME_OPTIONS_DENY]
+
 
 class DenyXFOCaseTest(headers.HeaderTest):
-    name = 'X-Frame-Options'
-    inputs = [b'deny']
-    expected_out = 'DENY'
+    name = "X-Frame-Options"
+    inputs = [b"deny"]
+    expected_out = "DENY"
     expected_err = [FRAME_OPTIONS_DENY]
 
+
 class SameOriginXFOTest(headers.HeaderTest):
-    name = 'X-Frame-Options'
-    inputs = [b'SAMEORIGIN']
-    expected_out = 'SAMEORIGIN'
+    name = "X-Frame-Options"
+    inputs = [b"SAMEORIGIN"]
+    expected_out = "SAMEORIGIN"
     expected_err = [FRAME_OPTIONS_SAMEORIGIN]
 
+
 class UnknownXFOTest(headers.HeaderTest):
-    name = 'X-Frame-Options'
-    inputs = [b'foO']
-    expected_out = 'FOO'
+    name = "X-Frame-Options"
+    inputs = [b"foO"]
+    expected_out = "FOO"
     expected_err = [headers.BAD_SYNTAX, FRAME_OPTIONS_UNKNOWN]

@@ -1,4 +1,3 @@
-
 """
 This is the Resource Expert Droid.
 """

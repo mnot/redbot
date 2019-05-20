@@ -14,7 +14,17 @@ from .rfc3986 import URI_reference, absolute_URI
 from .rfc5322 import mailbox
 from .rfc5234 import DIGIT, SP, ALPHA
 from .rfc5646 import Language_Tag as language_tag
-from .rfc7230 import list_rule, BWS, OWS, RWS, field_name, quoted_string, partial_URI, comment, token
+from .rfc7230 import (
+    list_rule,
+    BWS,
+    OWS,
+    RWS,
+    field_name,
+    quoted_string,
+    partial_URI,
+    comment,
+    token,
+)
 
 SPEC_URL = "http://httpwg.org/specs/rfc7231"
 
@@ -26,8 +36,9 @@ parameter = r"(?: {token} = (?: {token} | {quoted_string} ) )".format(**locals()
 
 # qvalue = ( "0" [ "." *3DIGIT ] ) / ( "1" [ "." *3"0" ] )
 
-qvalue = r"(?: (?: 0 (: \. {DIGIT}{{,3}} ) ) | (?: 1 (: \. [0]{{,3}} ) ) )".format(**locals())
-
+qvalue = r"(?: (?: 0 (: \. {DIGIT}{{,3}} ) ) | (?: 1 (: \. [0]{{,3}} ) ) )".format(
+    **locals()
+)
 
 
 ## Dates
@@ -70,7 +81,9 @@ day_name = r"(?: Mon | Tue | Wed | Thu | Fri | Sat | Sun )"
 #  / %x53.61.74.75.72.64.61.79 ; Saturday
 #  / %x53.75.6E.64.61.79 ; Sunday
 
-day_name_l = r"(?: Monday | Tuesday | Wednesday | Thursday | Friday | Saturday | Sunday )"
+day_name_l = (
+    r"(?: Monday | Tuesday | Wednesday | Thursday | Friday | Saturday | Sunday )"
+)
 
 # month = %x4A.61.6E ; Jan
 #  / %x46.65.62 ; Feb
@@ -109,15 +122,21 @@ date3 = r"(?: {month} {SP} (?: {DIGIT}{{2}} | (?: {SP} {DIGIT} ) ) )".format(**l
 
 # IMF-fixdate = day-name "," SP date1 SP time-of-day SP GMT
 
-IMF_fixdate = r"(?: {day_name} , {SP} {date1} {SP} {time_of_day} {SP} {GMT} )".format(**locals())
+IMF_fixdate = r"(?: {day_name} , {SP} {date1} {SP} {time_of_day} {SP} {GMT} )".format(
+    **locals()
+)
 
 # asctime-date = day-name SP date3 SP time-of-day SP year
 
-asctime_date = r"(?: {day_name} {SP} {date3} {SP} {time_of_day} {SP} {year} )".format(**locals())
+asctime_date = r"(?: {day_name} {SP} {date3} {SP} {time_of_day} {SP} {year} )".format(
+    **locals()
+)
 
 # rfc850-date = day-name-l "," SP date2 SP time-of-day SP GMT
 
-rfc850_date = r"(?: {day_name_l} \, {SP} {date2} {SP} {time_of_day} {SP} {GMT} )".format(**locals())
+rfc850_date = r"(?: {day_name_l} \, {SP} {date2} {SP} {time_of_day} {SP} {GMT} )".format(
+    **locals()
+)
 
 # obs-date = rfc850-date / asctime-date
 
@@ -128,7 +147,6 @@ obs_date = r"(?: {rfc850_date} | {asctime_date} )".format(**locals())
 HTTP_date = r"(?: {IMF_fixdate} | {obs_date} )".format(**locals())
 
 
-
 ## Headers
 
 # weight = OWS ";" OWS "q=" qvalue
@@ -137,7 +155,9 @@ weight = r"(?: {OWS} \; {OWS} q\= {qvalue} )".format(**locals())
 
 # accept-ext = OWS ";" OWS token [ "=" ( token / quoted-string ) ]
 
-accept_ext = r"(?: {OWS} ; {OWS} {token} (?: \= (?: {token} | {quoted_string} ) )? )".format(**locals())
+accept_ext = r"(?: {OWS} ; {OWS} {token} (?: \= (?: {token} | {quoted_string} ) )? )".format(
+    **locals()
+)
 
 # accept-params = weight *accept-ext
 
@@ -153,7 +173,9 @@ subtype = token
 
 # media-range = ( "*/*" / ( type "/*" ) / ( type "/" subtype ) ) *( OWS ";" OWS parameter )
 
-media_range = r"(?: (?: \*/\* | (?: {_type} /\* ) | (?: {_type} / {subtype} ) ) ( {OWS} ; {OWS} {parameter} )* )".format(**locals())
+media_range = r"(?: (?: \*/\* | (?: {_type} /\* ) | (?: {_type} / {subtype} ) ) ( {OWS} ; {OWS} {parameter} )* )".format(
+    **locals()
+)
 
 # Accept = #( media-range [ accept-params ] )
 
@@ -165,7 +187,9 @@ charset = token
 
 # Accept-Charset = 1#( ( charset / "*" ) [ weight ] )
 
-Accept_Charset = list_rule(r"(?: (?: {charset} | \* ) {weight}? )".format(**locals()), 1)
+Accept_Charset = list_rule(
+    r"(?: (?: {charset} | \* ) {weight}? )".format(**locals()), 1
+)
 
 # content-coding = token
 
@@ -183,7 +207,9 @@ Accept_Encoding = list_rule(r"(?: {codings} {weight}? )".format(**locals()))
 # language-range   = (1*8ALPHA *("-" 1*8alphanum)) / "*"
 # alphanum         = ALPHA / DIGIT
 
-language_range = r"(?: (?: {ALPHA}{{1,8}} (?: \- (?: {ALPHA} {DIGIT} ){{1,8}} )* ) | \* )".format(**locals())
+language_range = r"(?: (?: {ALPHA}{{1,8}} (?: \- (?: {ALPHA} {DIGIT} ){{1,8}} )* ) | \* )".format(
+    **locals()
+)
 
 # Accept-Language = 1#( language-range [ weight ] )
 
@@ -213,7 +239,9 @@ Content_Location = r"(?: {absolute_URI} | {partial_URI} )".format(**locals())
 
 # media-type = type "/" subtype *( OWS ";" OWS parameter )
 
-media_type = r"(?: {_type} / {subtype} (?: {OWS} ; {OWS} {parameter} )* )".format(**locals())
+media_type = r"(?: {_type} / {subtype} (?: {OWS} ; {OWS} {parameter} )* )".format(
+    **locals()
+)
 
 # Content-Type = media-type
 
@@ -265,7 +293,9 @@ Server = r"(?: {product} (?: {RWS} (?: {product} | {comment} ) )* )".format(**lo
 
 # User-Agent = product *( RWS ( product / comment ) )
 
-User_Agent = r"(?: {product} (?: {RWS} (?: {product} | {comment} ) )* )".format(**locals())
+User_Agent = r"(?: {product} (?: {RWS} (?: {product} | {comment} ) )* )".format(
+    **locals()
+)
 
 # Vary = "*" / 1#field-name
 

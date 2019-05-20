@@ -5,6 +5,7 @@ from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7230
 from redbot.type import AddNoteMethodType
 
+
 class via(headers.HttpHeader):
     canonical_name = "Via"
     description = """\
@@ -19,9 +20,11 @@ the request/response chain."""
     valid_in_responses = True
 
     def evaluate(self, add_note: AddNoteMethodType) -> None:
-        via_list = "<ul>" + "\n".join(
-            ["<li><code>%s</code></li>" % v for v in self.value]
-        ) + "</ul>"
+        via_list = (
+            "<ul>"
+            + "\n".join(["<li><code>%s</code></li>" % v for v in self.value])
+            + "</ul>"
+        )
         add_note(VIA_PRESENT, via_list=via_list)
 
 
@@ -43,7 +46,7 @@ used)."""
 
 
 class ViaTest(headers.HeaderTest):
-    name = 'Via'
-    inputs = [b'1.1 test']
-    expected_out = ['1.1 test']
+    name = "Via"
+    inputs = [b"1.1 test"]
+    expected_out = ["1.1 test"]
     expected_err = [VIA_PRESENT]

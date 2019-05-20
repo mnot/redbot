@@ -4,6 +4,7 @@
 from redbot.message import headers
 from redbot.syntax import rfc7231
 
+
 class server(headers.HttpHeader):
     canonical_name = "Server"
     description = """\

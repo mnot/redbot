@@ -35,15 +35,15 @@ It's safe to remove this header if you wish to save a few bytes in the response.
         return (attr.lower(), attr_val)
 
 
-
 class KeepAliveTest(headers.HeaderTest):
-    name = 'Keep-Alive'
-    inputs = [b'timeout=30']
+    name = "Keep-Alive"
+    inputs = [b"timeout=30"]
     expected_out = [("timeout", "30")]
     expected_err = [headers.HEADER_DEPRECATED]
 
+
 class EmptyKeepAliveTest(headers.HeaderTest):
-    name = 'Keep-Alive'
-    inputs = [b'']
-    expected_out = [] # type: ignore
+    name = "Keep-Alive"
+    inputs = [b""]
+    expected_out = []  # type: ignore
     expected_err = [headers.HEADER_DEPRECATED]

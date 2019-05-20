@@ -4,6 +4,7 @@
 from redbot.message import headers
 from redbot.syntax import rfc7230
 
+
 class trailer(headers.HttpHeader):
     canonical_name = "Trailer"
     description = """\

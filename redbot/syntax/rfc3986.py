@@ -57,10 +57,14 @@ dec_octet = r"""(?: {DIGIT} |
                     2 [\x30-\x34] {DIGIT} |
                     25 [\x30-\x35]
                 )
-""".format(**locals())
+""".format(
+    **locals()
+)
 
 #  IPv4address   = dec-octet "." dec-octet "." dec-octet "." dec-octet
-IPv4address = r"{dec_octet} \. {dec_octet} \. {dec_octet} \. {dec_octet}".format(**locals())
+IPv4address = r"{dec_octet} \. {dec_octet} \. {dec_octet} \. {dec_octet}".format(
+    **locals()
+)
 
 #  h16           = 1*4HEXDIG
 h16 = r"(?: {HEXDIG} ){{1,4}}".format(**locals())
@@ -87,7 +91,9 @@ IPv6address = r"""(?:                            (?: {h16} : ){{6}} {ls32} |
                      (?: {h16} : ){{5}} {h16} ::                    {h16}  |
                      (?: {h16} : ){{6}} {h16} ::
                   )
-""".format(**locals())
+""".format(
+    **locals()
+)
 
 #   IPvFuture     = "v" 1*HEXDIG "." 1*( unreserved / sub-delims / ":" )
 IPvFuture = r"v {HEXDIG}+ \. (?: {unreserved} | {sub_delims} | : )+".format(**locals())
@@ -111,7 +117,6 @@ port = r"(?: {DIGIT} )*".format(**locals())
 authority = r"(?: {userinfo} @)? {host} (?: : {port})?".format(**locals())
 
 
-
 ### Path
 
 #   segment       = *pchar
@@ -122,7 +127,9 @@ segment_nz = r"{pchar}+".format(**locals())
 
 #   segment-nz-nc = 1*( unreserved / pct-encoded / sub-delims / "@" )
 #                 ; non-zero-length segment without any colon ":"
-segment_nz_nc = r"(?: {unreserved} | {pct_encoded} | {sub_delims} | @ )+".format(**locals())
+segment_nz_nc = r"(?: {unreserved} | {pct_encoded} | {sub_delims} | @ )+".format(
+    **locals()
+)
 
 #   path-abempty  = *( "/" segment )
 path_abempty = r"(?: / {segment} )*".format(**locals())
@@ -150,8 +157,9 @@ path = r"""(?: {path_abempty} |
                {path_rootless} |
                {path_empty}
             )
-""".format(**locals())
-
+""".format(
+    **locals()
+)
 
 
 ### Query and Fragment
@@ -161,7 +169,6 @@ query = r"(?: {pchar} | / | \? )*".format(**locals())
 
 #   fragment      = *( pchar / "/" / "?" )
 fragment = r"(?: {pchar} | / | \? )*".format(**locals())
-
 
 
 ### URIs
@@ -175,7 +182,9 @@ hier_part = r"""(?: (?: // {authority} {path_abempty} ) |
                     {path_rootless} |
                     {path_empty}
                 )
-""".format(**locals())
+""".format(
+    **locals()
+)
 
 #   relative-part = "//" authority path-abempty
 #                 / path-absolute
@@ -186,13 +195,19 @@ relative_part = r"""(?: (?: // {authority} {path_abempty} ) |
                         {path_noscheme} |
                         {path_empty}
                     )
-""".format(**locals())
+""".format(
+    **locals()
+)
 
 #   relative-ref  = relative-part [ "?" query ] [ "#" fragment ]
-relative_ref = r"{relative_part} (?: \? {query})? (?: \# {fragment})?".format(**locals())
+relative_ref = r"{relative_part} (?: \? {query})? (?: \# {fragment})?".format(
+    **locals()
+)
 
 #   URI           = scheme ":" hier-part [ "?" query ] [ "#" fragment ]
-URI = r"(?: {scheme} : {hier_part} (?: \? {query} )? (?: \# {fragment} )? )".format(**locals())
+URI = r"(?: {scheme} : {hier_part} (?: \? {query} )? (?: \# {fragment} )? )".format(
+    **locals()
+)
 
 #   URI-reference = URI / relative-ref
 URI_reference = r"(?: {URI} | {relative_ref} )".format(**locals())
@@ -204,6 +219,7 @@ absolute_URI = r"(?: {scheme} : {hier_part} (?: \? {query} )? )".format(**locals
 if __name__ == "__main__":
     import re
     import sys
+
     try:
         instr = sys.argv[1]
     except IndexError:
@@ -212,19 +228,19 @@ if __name__ == "__main__":
 
     print('testing: "%s"' % instr)
 
-    print("URI:", end=' ')
+    print("URI:", end=" ")
     if re.match("^%s$" % URI, instr, re.VERBOSE):
         print("yes")
     else:
         print("no")
 
-    print("URI reference:", end=' ')
+    print("URI reference:", end=" ")
     if re.match("^%s$" % URI_reference, instr, re.VERBOSE):
         print("yes")
     else:
         print("no")
 
-    print("Absolute URI:", end=' ')
+    print("Absolute URI:", end=" ")
     if re.match("^%s$" % absolute_URI, instr, re.VERBOSE):
         print("yes")
     else:
