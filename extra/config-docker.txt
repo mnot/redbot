@@ -22,7 +22,7 @@ save_days = 30
 debug = False
 
 # domains which we reject requests for when they're in the referer. Whitespace-separated.
-referer_spam_domains = www.youtube.com
+# referer_spam_domains = www.youtube.com
 
 # log when total traffic is bigger than this (in kbytes), so we can catch abuse
 # Comment out to disable; 0 to log all.
@@ -50,5 +50,6 @@ static_root = static
 # Port to listen on.
 port = 8000
 
-# Directory in the filesystem where static assets are located.
-static_dir = redbot/assets
+# Directory in the filesystem where REDbot's static assets are located.
+asset_dir = redbot/assets
+
