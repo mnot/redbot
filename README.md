@@ -6,7 +6,7 @@ It checks HTTP resources for feature support and common protocol problems. You c
 instance on <https://redbot.org/>, or you can install it locally and use it on the command line, or
 even self-host your own Web checker.
 
-[![Build Status](https://travis-ci.org/mnot/redbot.svg?branch=master)](https://travis-ci.org/mnot/redbot)
+[![CircleCI](https://circleci.com/gh/mnot/redbot.svg?style=svg)](https://circleci.com/gh/mnot/redbot)
 
 
 ## Contributing to REDbot
