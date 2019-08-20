@@ -71,7 +71,7 @@ def cgi_main(config: SectionProxy) -> None:
 
 
 # adapted from cgitb.Hook
-def except_handler_factory(config: SectionProxy, out: Callable[[str], None] = None,
+def except_handler_factory(config: SectionProxy, out: Callable[[str], int] = None,
                            qs: str = None) -> Callable[..., None]:
     """
     Log an exception gracefully.
