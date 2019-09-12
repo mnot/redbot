@@ -245,7 +245,7 @@ def checkCaching(response: HttpResponse, request: HttpRequest = None) -> None:
             response.add_note("header-cache-control", STALE_SERVABLE)
 
     # public?
-    if "public" in cc_keys:  # TODO: check for authentication in request
+    if "public" in cc_keys:
         response.add_note("header-cache-control", PUBLIC)
 
 
