@@ -91,7 +91,7 @@ def parse_params(
         except ValueError:
             param_dict[param.lower()] = None
             continue
-        k_norm = key.lower()  # TODO: warn on upper-case in param?
+        k_norm = key.lower()
         if k_norm in param_dict:
             add_note(PARAM_REPEATS, param=k_norm)
         if val[0] == val[-1] == "'":
