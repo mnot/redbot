@@ -20,7 +20,7 @@ tidy:
 
 .PHONY: lint
 lint:
-	PYTHONPATH=$(PYTHONPATH) pylint --rcfile=test/pylintrc \
+	PYTHONPATH=$(PYTHONPATH) pylint --output-format=colorized --rcfile=test/pylintrc \
 	  redbot bin/redbot_daemon.py bin/redbot_cgi.py bin/redbot_cli
 	standard src/*.js
 
