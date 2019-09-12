@@ -86,7 +86,7 @@ class ConnegCheck(SubRequest):
                     "header-vary",
                     VARY_INCONSISTENT,
                     conneg_vary=", ".join(vary_headers),
-                    no_conneg_vary=", ".join(no_conneg_vary_headers),
+                    no_conneg_vary=", ".join(no_conneg_vary_headers) or "-",
                 )
 
             # check body
