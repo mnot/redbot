@@ -171,7 +171,7 @@ class StatusChecker:
         pass
 
     def status412(self) -> None:  # Precondition Failed
-        pass  # TODO: test to see if it's true, alert if not
+        pass
 
     def status413(self) -> None:  # Request Entity Too Large
         self.add_note("", STATUS_REQUEST_ENTITY_TOO_LARGE)
@@ -187,10 +187,10 @@ class StatusChecker:
         self.add_note("", STATUS_UNSUPPORTED_MEDIA_TYPE)
 
     def status416(self) -> None:  # Requested Range Not Satisfiable
-        pass  # TODO: test to see if it's true, alter if not
+        pass
 
     def status417(self) -> None:  # Expectation Failed
-        pass  # TODO: explain, alert if it's 100-continue
+        pass
 
     def status418(self) -> None:
         self.add_note("", STATUS_IM_A_TEAPOT)
