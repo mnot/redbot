@@ -10,7 +10,7 @@ jobs:
       - checkout
       - run:
           name: install-requirements
-          command: pip install --user mypy selenium thor markdown
+          command: pip install --user mypy selenium thor markdown netaddr
       - run:
           name: test
           command: make -e
