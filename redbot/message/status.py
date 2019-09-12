@@ -26,7 +26,6 @@ def get_header(hdr_tuples: StrHeaderListType, name: str) -> List[str]:
     safe to use this on headers whose values may include a comma (e.g.,
     Set-Cookie, or any value with a quoted string).
     """
-    # TODO: support quoted strings
     return [
         v.strip()
         for v in sum(
