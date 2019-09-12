@@ -121,7 +121,6 @@ def parse_params(
                 elif enc not in ["utf-8"]:
                     add_note(PARAM_STAR_CHARSET, param=k_norm, enc=enc)
                     continue
-                # TODO: catch unquoting errors, range of chars, charset
                 unq_v = urlunquote(esc_v)
                 param_dict[k_norm] = unq_v
         else:
