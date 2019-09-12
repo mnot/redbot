@@ -36,7 +36,6 @@ requests to the server."""
         return set_cookie_value
 
 
-# TODO: properly escape notes
 def loose_parse(
     set_cookie_string: str,
     uri_path: str,
