@@ -27,7 +27,6 @@ ctext = r"[\x21-\x27\x2a-\x5b\x5d\x7e]"
 
 # ccontent        =   ctext / quoted-pair / comment
 
-# TODO: nested comments
 ccontent = r"(?: {ctext} | {quoted_pair} |)".format(**locals())
 
 # FWS             =   ([*WSP CRLF] 1*WSP) /  obs-FWS
