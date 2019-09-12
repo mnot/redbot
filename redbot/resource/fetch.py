@@ -116,7 +116,7 @@ class RedFetcher(thor.events.EventEmitter):
         self.response.base_uri = self.request.uri  # type: ignore
         if req_hdrs:
             self.request.set_headers(req_hdrs)
-        self.request.payload = req_body  # type: ignore    # FIXME: encoding
+        self.request.payload = req_body  # type: ignore
         self.request.complete = True  # cheating a bit
 
     def check(self) -> None:
