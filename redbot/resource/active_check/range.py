@@ -114,7 +114,6 @@ class RangeRequest(SubRequest):
             else:
                 self.add_base_note("header-accept-ranges", RANGE_CHANGED)
 
-        # TODO: address 416 directly
         elif self.response.status_code == self.base.response.status_code:
             self.base.partial_support = False
             self.add_base_note("header-accept-ranges", RANGE_FULL)
