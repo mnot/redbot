@@ -155,7 +155,7 @@ class RedFetcher(thor.events.EventEmitter):
         req_hdrs = [
             (k.encode("ascii", "replace"), v.encode("ascii", "replace"))
             for (k, v) in self.request.headers
-        ]  # FIXME: should complain
+        ]
         self.exchange.request_start(
             self.request.method.encode("ascii"),
             self.request.uri.encode("ascii"),
