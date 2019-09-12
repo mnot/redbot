@@ -33,6 +33,10 @@ debug = False
 # domains which we reject requests for when they're in the referer. Whitespace-separated.
 referer_spam_domains = www.youtube.com
 
+# Whether to allow access to localhost, RFC1918 and other "local" services. Note that enabling
+# this can be a security risk.
+enable_local_access = no
+
 # log when total traffic is bigger than this (in kbytes), so we can catch abuse
 # Comment out to disable; 0 to log all.
 log_traffic = 8192

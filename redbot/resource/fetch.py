@@ -12,6 +12,8 @@ from typing import Any, Dict, List, Tuple, Type, Union
 import thor
 import thor.http.error as httperr
 
+from netaddr import IPAddress
+
 from redbot import __version__
 from redbot.speak import Note, levels, categories
 from redbot.message import HttpRequest, HttpResponse
@@ -64,6 +66,7 @@ class RedFetcher(thor.events.EventEmitter):
         self.exchange = None  # type: thor.http.ClientExchange
         self.fetch_started = False
         self.fetch_done = False
+        self.setup_check_ip()
 
     def __getstate__(self) -> Dict[str, Any]:
         state = thor.events.EventEmitter.__getstate__(self)
@@ -96,6 +99,27 @@ class RedFetcher(thor.events.EventEmitter):
         if so; False if not. Can be overridden.
         """
         return True
+
+    def setup_check_ip(self) -> None:
+        """
+        Check to see if access to this IP is allowed.
+        """
+        if (
+            not self.config.getboolean("enable_local_access", fallback=False)
+        ) and self.client.check_ip is None:
+
+            def check_ip(dns_result: str) -> bool:
+                addr = IPAddress(dns_result)
+                if (
+                    (not addr.is_unicast())
+                    or addr.is_private()
+                    or addr.is_loopback()
+                    or addr.is_link_local()
+                ):
+                    return False
+                return True
+
+            self.client.check_ip = check_ip
 
     def set_request(
         self,

@@ -24,11 +24,11 @@ REDbot needs:
 1. [Python 3.6](https://python.org/) or greater
 2. [thor](http://github.com/mnot/thor/)
 3. [markdown](https://pythonhosted.org/Markdown/)
-4. To use REDbot on the Web, you'll need a Web server that implements the CGI interface; e.g., [Apache](https://httpd.apache.org/)
+4. [netaddr](https://netaddr.readthedocs.io/en/latest/)
 
 Once you have Python, you can install the required libraries with:
 
-> pip install thor markdown
+> pip install thor markdown netaddr
 
 
 ### Installing RED
