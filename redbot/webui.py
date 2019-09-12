@@ -52,7 +52,6 @@ class RedWebUi:
     _client_counts = defaultdict(int)  # type: Dict[bytes, int]
     _client_period = None  # type: float
     _robot_secret = secrets.token_bytes(16)  # type: bytes
-    # TODO: make it work for CGI; persist?
 
     def __init__(
         self,
