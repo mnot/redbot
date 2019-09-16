@@ -2,7 +2,7 @@ FROM python:3-alpine
 WORKDIR /redbot
 COPY . /redbot
 
-RUN pip install --trusted-host pypi.python.org thor markdown
+RUN pip install --trusted-host pypi.python.org thor markdown netaddr
 
 EXPOSE 8000
 
