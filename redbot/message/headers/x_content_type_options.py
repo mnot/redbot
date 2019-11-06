@@ -22,12 +22,12 @@ class x_content_type_options(headers.HttpHeader):
 class CONTENT_TYPE_OPTIONS(Note):
     category = categories.SECURITY
     level = levels.INFO
-    summary = "%(response)s instructs Internet Explorer not to 'sniff' its media type."
+    summary = "%(response)s instructs browsers not to 'sniff' its media type."
     text = """\
 Many Web browers "sniff" the media type of responses to figure out whether they're HTML, RSS or
 another format, no matter what the `Content-Type` header says.
 
-This header instructs Microsoft's Internet Explorer not to do this, but to always respect the
+This header instructs browsers not to do this, but to always respect the
 Content-Type header. It probably won't have any effect in other clients.
 
 See [this blog entry](http://bit.ly/t1UHW2) for more information about this header."""
