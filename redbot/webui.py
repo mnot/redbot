@@ -289,7 +289,7 @@ class RedWebUi:
         if self.robot_time and self.robot_time.isdigit() and self.robot_hmac:
             valid_till = int(self.robot_time)
             computed_hmac = hmac.new(
-                self._robot_secret, bytes(self.robot_time, "ascii")
+                self._robot_secret, bytes(self.robot_time, "ascii", 'sha512')
             )
             is_valid = self.robot_hmac == computed_hmac.hexdigest()
             if is_valid and valid_till >= thor.time():
@@ -365,7 +365,7 @@ class RedWebUi:
                 self.continue_test(top_resource, formatter)
             else:
                 valid_till = str(int(thor.time()) + 60)
-                robot_hmac = hmac.new(self._robot_secret, bytes(valid_till, "ascii"))
+                robot_hmac = hmac.new(self._robot_secret, bytes(valid_till, "ascii"), 'sha512')
                 self.response_start(
                     b"403",
                     b"Forbidden",
