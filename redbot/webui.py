@@ -31,7 +31,7 @@ from redbot import __version__
 from redbot.message import HttpRequest
 from redbot.resource import HttpResource
 from redbot.resource.robot_fetch import RobotFetcher, url_to_origin
-from redbot.formatter import find_formatter, html, Formatter
+from redbot.formatter import find_formatter, html, slack, Formatter
 from redbot.formatter.html import e_url
 from redbot.type import (
     RawHeaderListType,
@@ -59,6 +59,7 @@ class RedWebUi:
         method: str,
         query_string: bytes,
         req_headers: RawHeaderListType,
+        req_body: bytes,
         response_start: Callable[..., None],
         response_body: Callable[..., None],
         response_done: Callable[..., None],
@@ -68,6 +69,7 @@ class RedWebUi:
         self.charset_bytes = self.config["charset"].encode("ascii")
         self.method = method
         self.req_headers = req_headers
+        self.req_body = req_body
         self.response_start = response_start
         self.response_body = response_body
         self._response_done = response_done
@@ -124,10 +126,14 @@ class RedWebUi:
         self.robot_hmac = qs.get("robot_hmac", [None])[0]
         if self.method == "POST":
             self.save = "save" in qs
+            self.slack = "slack" in qs
         else:
             self.save = False
+            self.slack = False
         self.start = time.time()
-        if self.save and self.config.get("save_dir", "") and self.test_id:
+        if self.slack:
+            self.run_slack()
+        elif self.save and self.config.get("save_dir", "") and self.test_id:
             self.save_test()
         elif self.test_id:
             self.load_saved_test()
@@ -289,7 +295,7 @@ class RedWebUi:
         if self.robot_time and self.robot_time.isdigit() and self.robot_hmac:
             valid_till = int(self.robot_time)
             computed_hmac = hmac.new(
-                self._robot_secret, bytes(self.robot_time, "ascii"), 'sha512'
+                self._robot_secret, bytes(self.robot_time, "ascii"), "sha512"
             )
             is_valid = self.robot_hmac == computed_hmac.hexdigest()
             if is_valid and valid_till >= thor.time():
@@ -365,7 +371,9 @@ class RedWebUi:
                 self.continue_test(top_resource, formatter)
             else:
                 valid_till = str(int(thor.time()) + 60)
-                robot_hmac = hmac.new(self._robot_secret, bytes(valid_till, "ascii"), 'sha512')
+                robot_hmac = hmac.new(
+                    self._robot_secret, bytes(valid_till, "ascii"), "sha512"
+                )
                 self.response_start(
                     b"403",
                     b"Forbidden",
@@ -425,6 +433,40 @@ class RedWebUi:
         else:
             display_resource = top_resource
         formatter.bind_resource(display_resource)
+        top_resource.check()
+
+    def run_slack(self) -> None:
+        """Handle a slack request."""
+        body = parse_qs(self.req_body.decode("utf-8"))
+        self.test_uri = body.get("text", [""])[0].strip()
+        slack_response_uri = body.get("response_url", [""])[0].strip()
+        self.timeout = thor.schedule(int(self.config["max_runtime"]), self.timeoutError)
+        top_resource = HttpResource(self.config)
+        formatter = slack.SlackFormatter(
+            self.config, self.output, slack_uri=slack_response_uri
+        )
+        top_resource.set_request(self.test_uri, req_hdrs=self.req_hdrs)
+
+        @thor.events.on(formatter)
+        def formatter_done() -> None:
+            self.response_done([])
+            if self.test_id:
+                try:
+                    tmp_file = gzip.open(self.save_path, "w")
+                    pickle.dump(top_resource, tmp_file)
+                    tmp_file.close()
+                except (IOError, zlib.error, pickle.PickleError):
+                    pass  # we don't cry if we can't store it.
+
+        self.response_start(
+            b"200",
+            b"OK",
+            [
+                (b"Content-Type", formatter.content_type()),
+                (b"Cache-Control", b"max-age=300"),
+            ],
+        )
+        formatter.bind_resource(top_resource)
         top_resource.check()
 
     def show_default(self) -> None:
