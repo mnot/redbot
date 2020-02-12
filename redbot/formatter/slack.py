@@ -51,7 +51,7 @@ class SlackFormatter(Formatter):
             # success
             blocks = [
                 self.format_headers(self.resource.response)
-            ] + self.format_recommendations(self.resource.response)
+            ] + self.format_recommendations(self.resource)
         else:
             blocks = [{"type": "section", "text": {"type": "mrkdwn", "text": ""}}]
             if self.resource.response.http_error is None:
@@ -62,12 +62,14 @@ class SlackFormatter(Formatter):
                 blocks[0]["text"]["text"] = "Unknown incomplete response error."
         payload = json.dumps({"blocks": blocks})
 
-        client = RedHttpClient()
+        client = RedHttpClient().exchange()
         client.request_start(
-            b"POST", self.kw["slack_uri"], [("content-type", "application/json")]
+            b"POST",
+            self.kw["slack_uri"].encode("utf-8"),
+            [(b"content-type", b"application/json")],
         )
-        client.request_body(payload)
-        client.request_done()
+        client.request_body(payload.encode("utf-8"))
+        client.request_done([])
 
     def error_output(self, message: str) -> None:
         self.output(message)
@@ -83,17 +85,19 @@ class SlackFormatter(Formatter):
         }
 
     def format_recommendations(self, resource: HttpResource) -> List:
-        return [
-            self.format_recommendation(resource, category)
-            for category in self.note_categories
-        ]
+        out = []
+        for category in self.note_categories:
+            rec = self.format_recommendation(resource, category)
+            if rec:
+                out.append(rec)
+        return out
 
     def format_recommendation(
         self, resource: HttpResource, category: categories
     ) -> Dict:
         notes = [note for note in resource.notes if note.category == category]
         if not notes:
-            return {}
+            return
         out = []
         if [note for note in notes]:
             out.append(f"*{category.value}*")
