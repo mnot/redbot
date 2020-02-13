@@ -13,7 +13,7 @@ from redbot.formatter import Formatter
 from redbot.message import HttpResponse
 from redbot.resource import HttpResource
 from redbot.resource.fetch import RedHttpClient
-from redbot.speak import categories
+from redbot.speak import categories, levels
 
 NL = "\n"
 
@@ -22,7 +22,7 @@ class SlackFormatter(Formatter):
     """
     Slack formatter."""
 
-    media_type = "text/plain"
+    media_type = "application/json"
 
     note_categories = [
         categories.GENERAL,
@@ -33,12 +33,21 @@ class SlackFormatter(Formatter):
         categories.VALIDATION,
         categories.RANGE,
     ]
+    emoji = {
+        levels.GOOD: ":small_blue_diamond:",
+        levels.WARN: ":small_orange_diamond:",
+        levels.BAD: ":small_red_triangle:",
+        levels.INFO: ":black_small_square:"
+    }
 
     def __init__(self, *args: Any, **kw: Any) -> None:
         Formatter.__init__(self, *args, **kw)
 
     def start_output(self) -> None:
-        self.output("starting...")
+        self.output(json.dumps({
+            "response_type": "ephemeral",
+            "text": f"_Checking_ {self.resource.request.uri} _..._"
+        }))
 
     def feed(self, sample: bytes) -> None:
         pass
@@ -55,11 +64,11 @@ class SlackFormatter(Formatter):
         else:
             blocks = [{"type": "section", "text": {"type": "mrkdwn", "text": ""}}]
             if self.resource.response.http_error is None:
-                blocks[0]["text"]["text"] = "no response error."
+                blocks[0]["text"]["text"] = "_No response error._"
             elif isinstance(self.resource.response.http_error, httperr.HttpError):
-                blocks[0]["text"]["text"] = "HTTP error."
+                blocks[0]["text"]["text"] = f"_Sorry, I can't do that; {self.resource.response.http_error.desc}_"
             else:
-                blocks[0]["text"]["text"] = "Unknown incomplete response error."
+                blocks[0]["text"]["text"] = "_Unknown incomplete response error._"
         payload = json.dumps({"blocks": blocks})
 
         client = RedHttpClient().exchange()
@@ -102,6 +111,7 @@ class SlackFormatter(Formatter):
         if [note for note in notes]:
             out.append(f"*{category.value}*")
         for thing in notes:
-            out.append(f" • {thing.show_summary('en')}")
+            out.append(f" {self.emoji.get(thing.level, '•')} {thing.show_summary('en')}")
         out.append(NL)
         return {"type": "section", "text": {"type": "mrkdwn", "text": NL.join(out)}}
+
