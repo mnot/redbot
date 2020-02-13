@@ -5,15 +5,16 @@ Rate Limiting for RED, the Resource Expert Droid.
 """
 
 from collections import defaultdict
+from typing import Dict, Set
 
 import thor.loop
 
 
 class RateLimiter:
-    limits = {}
-    counts = {}
-    periods = {}
-    watching = set()
+    limits = {}  # type: Dict[str, int]
+    counts = {}  # type: Dict[str, Dict[str, int]]
+    periods = {} # type: Dict[str, int]
+    watching = set() # type: Set[str]
 
     def __init__(self) -> None:
         self.loop = thor.loop
@@ -30,7 +31,7 @@ class RateLimiter:
             self.loop.schedule(period, self.clear, metric_name)
             self.watching.add(metric_name)
 
-    def increment(self, metric_name, discriminator) -> None:
+    def increment(self, metric_name: str, discriminator: str) -> None:
         """
         Increment a metric for a discriminator.
         If the metric isn't set up, it will be ignored.
@@ -42,7 +43,7 @@ class RateLimiter:
         if self.counts[metric_name][discriminator] > self.limits[metric_name]:
             raise RateLimitViolation
 
-    def clear(self, metric_name):
+    def clear(self, metric_name: str) -> None:
         """
         Clear a metric's counters.
         """
