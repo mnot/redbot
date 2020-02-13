@@ -15,8 +15,8 @@ class RateLimiter:
     periods = {}
     watching = set()
 
-    def __init__(self, loop: thor.loop.LoopBase) -> None:
-        self.loop = loop
+    def __init__(self) -> None:
+        self.loop = thor.loop
 
     def setup(self, metric_name: str, limit: int, period: int) -> None:
         if not metric_name in self.watching:
@@ -31,7 +31,7 @@ class RateLimiter:
             return
         self.counts[metric_name][discriminator] += 1
         if self.counts[metric_name][discriminator] > self.limits[metric_name]:
-            raise RateLimitError
+            raise RateLimitViolation
 
     def clear(self, metric_name):
         self.counts[metric_name] = defaultdict(int)
