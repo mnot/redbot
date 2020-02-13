@@ -27,12 +27,13 @@ import zlib
 
 import thor
 import thor.http.common
+from thor.http import get_header
 from redbot import __version__
 from redbot.message import HttpRequest
 from redbot.ratelimit import ratelimiter, RateLimitViolation
 from redbot.resource import HttpResource
 from redbot.resource.robot_fetch import RobotFetcher, url_to_origin
-from redbot.formatter import find_formatter, html, Formatter
+from redbot.formatter import find_formatter, html, slack, Formatter
 from redbot.formatter.html import e_url
 from redbot.type import (
     RawHeaderListType,
@@ -57,6 +58,7 @@ class RedWebUi:
         method: str,
         query_string: bytes,
         req_headers: RawHeaderListType,
+        req_body: bytes,
         exchange: HttpResponseExchange,
         error_log: Callable[[str], int] = sys.stderr.write,
     ) -> None:
@@ -64,6 +66,7 @@ class RedWebUi:
         self.charset_bytes = self.config["charset"].encode("ascii")
         self.method = method
         self.req_headers = req_headers
+        self.req_body = req_body
         self.response_start = exchange.response_start
         self.response_body = exchange.response_body
         self._response_done = exchange.response_done
@@ -116,10 +119,14 @@ class RedWebUi:
         self.robot_hmac = qs.get("robot_hmac", [None])[0]
         if self.method == "POST":
             self.save = "save" in qs
+            self.slack = "slack" in qs
         else:
             self.save = False
+            self.slack = False
         self.start = time.time()
-        if self.save and self.config.get("save_dir", "") and self.test_id:
+        if self.slack:
+            self.run_slack()
+        elif self.save and self.config.get("save_dir", "") and self.test_id:
             self.save_test()
         elif self.test_id:
             self.load_saved_test()
@@ -397,6 +404,69 @@ class RedWebUi:
             display_resource = top_resource
         formatter.bind_resource(display_resource)
         top_resource.check()
+
+    def run_slack(self) -> None:
+        """Handle a slack request."""
+        body = parse_qs(self.req_body.decode("utf-8"))
+        slack_response_uri = body.get("response_url", [""])[0].strip()
+        formatter = slack.SlackFormatter(
+            self.config, self.output, slack_uri=slack_response_uri
+        )
+        self.test_uri = body.get("text", [""])[0].strip()
+        top_resource = HttpResource(self.config)
+        top_resource.set_request(self.test_uri, req_hdrs=self.req_hdrs)
+        formatter.bind_resource(top_resource)
+        if not self.verify_slack_secret():
+            return self.error_response(
+                formatter,
+                b"403",
+                b"Forbidden",
+                "Incorrect Slack Authentication.",
+                "Bad slack token.",
+            )
+        self.timeout = thor.schedule(int(self.config["max_runtime"]), self.timeoutError)
+
+        @thor.events.on(formatter)
+        def formatter_done() -> None:
+            self.response_done([])
+            if self.test_id:
+                try:
+                    tmp_file = gzip.open(self.save_path, "w")
+                    pickle.dump(top_resource, tmp_file)
+                    tmp_file.close()
+                except (IOError, zlib.error, pickle.PickleError):
+                    pass  # we don't cry if we can't store it.
+
+        self.response_start(
+            b"200",
+            b"OK",
+            [
+                (b"Content-Type", formatter.content_type()),
+                (b"Cache-Control", b"max-age=300"),
+            ],
+        )
+        top_resource.check()
+
+    def verify_slack_secret(self) -> bool:
+        """Verify the slack secret."""
+        slack_signing_secret = self.config.get(
+            "slack_signing_secret", fallback=""
+        ).encode("utf-8")
+        timestamp = get_header(self.req_headers, b"x-slack-request-timestamp")
+        if not timestamp or not timestamp[0].isdigit():
+            return False
+        timestamp = timestamp[0]
+        if abs(thor.time() - int(timestamp)) > 60 * 5:
+            return False
+        sig_basestring = b"v0:" + timestamp + b":" + self.req_body
+        signature = (
+            "v0=" + hmac.new(slack_signing_secret, sig_basestring, "sha256").hexdigest()
+        )
+        presented_signature = get_header(self.req_headers, b"x-slack-signature")
+        if not presented_signature:
+            return False
+        presented_sig = presented_signature[0].decode("utf-8")
+        return hmac.compare_digest(signature, presented_sig)
 
     def show_default(self) -> None:
         """Show the default page."""
