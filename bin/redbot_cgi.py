@@ -42,6 +42,7 @@ def cgi_main(config: SectionProxy) -> None:
     for (k, v) in os.environ:
         if k[:5] == "HTTP_":
             req_hdrs.append((k[:5].lower().encode("ascii"), v.encode("ascii")))
+    req_body = sys.stdin.read().encode("utf-8")
 
     class Exchange(HttpResponseExchange):
         @staticmethod
@@ -72,7 +73,12 @@ def cgi_main(config: SectionProxy) -> None:
 
     try:
         RedWebUi(
-            config, method.decode(config["charset"]), query_string, req_hdrs, Exchange()
+            config,
+            method.decode(config["charset"]),
+            query_string,
+            req_hdrs,
+            req_body,
+            Exchange(),
         )
         thor.run()
     except Exception:
