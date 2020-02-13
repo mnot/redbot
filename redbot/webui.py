@@ -265,18 +265,7 @@ class RedWebUi:
         if referers and urlsplit(referers[0]).hostname in self.referer_spam_domains:
             referer_error = "Referer not allowed."
         if referer_error:
-            self.response_start(
-                b"403",
-                b"Forbidden",
-                [
-                    (b"Content-Type", formatter.content_type()),
-                    (b"Cache-Control", b"max-age=360, must-revalidate"),
-                ],
-            )
-            formatter.start_output()
-            formatter.error_output(referer_error)
-            self.response_done([])
-            return
+            return self.error_response(formatter, b"403", b"Forbidden", referer_error)
 
         # robot human check
         if self.robot_time and self.robot_time.isdigit() and self.robot_hmac:
@@ -289,18 +278,9 @@ class RedWebUi:
                 self.continue_test(top_resource, formatter)
                 return
             else:
-                self.response_start(
-                    b"403",
-                    b"Forbidden",
-                    [
-                        (b"Content-Type", formatter.content_type()),
-                        (b"Cache-Control", b"max-age=60, must-revalidate"),
-                    ],
+                return self.error_response(
+                    formatter, b"403", b"Forbidden", "Naughty.", "Naughty robot key."
                 )
-                formatter.start_output()
-                formatter.error_output("Naughty.")
-                self.response_done([])
-                self.error_log("Naughty robot key.")
 
         # enforce client limits
         client_id = self.get_client_id()
@@ -308,19 +288,13 @@ class RedWebUi:
             try:
                 ratelimiter.increment("client_id", client_id)
             except RateLimitViolation:
-                self.response_start(
+                return self.error_response(
+                    formatter,
                     b"429",
                     b"Too Many Requests",
-                    [
-                        (b"Content-Type", formatter.content_type()),
-                        (b"Cache-Control", b"max-age=60, must-revalidate"),
-                    ],
+                    "Your client is over limit. Please try later.",
+                    "client over limit: %s" % client_id.decode("idna"),
                 )
-                formatter.start_output()
-                formatter.error_output("Your client is over limit. Please try later.")
-                self.response_done([])
-                self.error_log("client over limit: %s" % client_id.decode("idna"))
-                return
 
         # enforce origin limits
         origin = url_to_origin(self.test_uri)
@@ -328,19 +302,13 @@ class RedWebUi:
             try:
                 ratelimiter.increment("origin", origin)
             except RateLimitViolation:
-                self.response_start(
+                return self.error_response(
+                    formatter,
                     b"429",
                     b"Too Many Requests",
-                    [
-                        (b"Content-Type", formatter.content_type()),
-                        (b"Cache-Control", b"max-age=60, must-revalidate"),
-                    ],
+                    "Origin is over limit. Please try later.",
+                    "origin over limit: %s" % origin,
                 )
-                formatter.start_output()
-                formatter.error_output("Origin is over limit. Please try later.")
-                self.response_done([])
-                self.error_log("origin over limit: %s" % origin)
-                return
 
         # check robots.txt
         robot_fetcher = RobotFetcher(self.config)
@@ -355,22 +323,37 @@ class RedWebUi:
                 robot_hmac = hmac.new(
                     self._robot_secret, bytes(valid_till, "ascii"), "sha512"
                 )
-                self.response_start(
+                self.error_response(
+                    formatter,
                     b"403",
                     b"Forbidden",
-                    [
-                        (b"Content-Type", formatter.content_type()),
-                        (b"Cache-Control", b"no-cache"),
-                    ],
+                    "This site doesn't allow robots. If you are human, please <a href='?uri=%s&robot_time=%s&robot_hmac=%s'>click here</a>.",
                 )
-                formatter.start_output()
-                formatter.error_output(
-                    "This site doesn't allow robots. If you are human, please <a href='?uri=%s&robot_time=%s&robot_hmac=%s'>click here</a>."
-                    % (self.test_uri, valid_till, robot_hmac.hexdigest())
-                )
-                self.response_done([])
 
         robot_fetcher.check_robots(HttpRequest.iri_to_uri(self.test_uri))
+
+    def error_response(
+        self,
+        formatter: Formatter,
+        status_code: bytes,
+        status_phrase: bytes,
+        message: str,
+        log_message: str = None,
+    ):
+        """Send an error response."""
+        self.response_start(
+            status_code,
+            status_phrase,
+            [
+                (b"Content-Type", formatter.content_type()),
+                (b"Cache-Control", b"max-age=60, must-revalidate"),
+            ],
+        )
+        formatter.start_output()
+        formatter.error_output(message)
+        self.response_done([])
+        if log_message:
+            self.error_log(log_message)
 
     def continue_test(self, top_resource: HttpResource, formatter: Formatter) -> None:
         "Preliminary checks are done; actually run the test."
