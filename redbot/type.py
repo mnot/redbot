@@ -1,5 +1,8 @@
 from typing import Any, Callable, Dict, List, Tuple
-from typing_extensions import Protocol
+try:
+    from typing_extensions import Protocol
+except ImportError:
+    from typing import Protocol
 
 StrHeaderListType = List[Tuple[str, str]]
 RawHeaderListType = List[Tuple[bytes, bytes]]
