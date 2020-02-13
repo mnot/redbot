@@ -2,7 +2,7 @@ from typing import Any, Callable, Dict, List, Tuple
 try:
     from typing_extensions import Protocol
 except ImportError:
-    from typing import Protocol
+    from typing import Protocol # type: ignore
 
 StrHeaderListType = List[Tuple[str, str]]
 RawHeaderListType = List[Tuple[bytes, bytes]]
