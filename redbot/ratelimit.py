@@ -13,15 +13,15 @@ import thor.loop
 class RateLimiter:
     limits = {}  # type: Dict[str, int]
     counts = {}  # type: Dict[str, Dict[str, int]]
-    periods = {} # type: Dict[str, int]
-    watching = set() # type: Set[str]
+    periods = {}  # type: Dict[str, float]
+    watching = set()  # type: Set[str]
 
     def __init__(self) -> None:
         self.loop = thor.loop
 
-    def setup(self, metric_name: str, limit: int, period: int) -> None:
+    def setup(self, metric_name: str, limit: int, period: float) -> None:
         """
-        Set up a metric with a limit and a period.
+        Set up a metric with a limit and a period (expressed in hours).
         Can be called multiple times.
         """
         if not metric_name in self.watching:

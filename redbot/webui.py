@@ -37,6 +37,7 @@ from redbot.formatter.html import e_url
 from redbot.type import (
     RawHeaderListType,
     StrHeaderListType,
+    HttpResponseExchange,
 )  # pylint: disable=unused-import
 
 
@@ -56,18 +57,16 @@ class RedWebUi:
         method: str,
         query_string: bytes,
         req_headers: RawHeaderListType,
-        response_start: Callable[..., None],
-        response_body: Callable[..., None],
-        response_done: Callable[..., None],
+        exchange: HttpResponseExchange,
         error_log: Callable[[str], int] = sys.stderr.write,
     ) -> None:
         self.config = config  # type: SectionProxy
         self.charset_bytes = self.config["charset"].encode("ascii")
         self.method = method
         self.req_headers = req_headers
-        self.response_start = response_start
-        self.response_body = response_body
-        self._response_done = response_done
+        self.response_start = exchange.response_start
+        self.response_body = exchange.response_body
+        self._response_done = exchange.response_done
         self.error_log = error_log  # function to log errors to
         self.test_uri = None  # type: str
         self.test_id = None  # type: str
@@ -293,7 +292,7 @@ class RedWebUi:
                     b"429",
                     b"Too Many Requests",
                     "Your client is over limit. Please try later.",
-                    "client over limit: %s" % client_id.decode("idna"),
+                    "client over limit: %s" % client_id,
                 )
 
         # enforce origin limits
@@ -339,7 +338,7 @@ class RedWebUi:
         status_phrase: bytes,
         message: str,
         log_message: str = None,
-    ):
+    ) -> None:
         """Send an error response."""
         self.response_start(
             status_code,
@@ -442,27 +441,15 @@ class RedWebUi:
         self.show_error("REDbot timeout.", to_output=True)
         self.response_done([])
 
-    def client_ratelimit_cleanup(self) -> None:
-        """
-        Clean up client ratelimit counters.
-        """
-        self._client_counts.clear()
-        thor.schedule(self._origin_period, self.client_ratelimit_cleanup)
-
-    def origin_ratelimit_cleanup(self) -> None:
-        """
-        Clean up origin ratelimit counters.
-        """
-        self._origin_counts.clear()
-        thor.schedule(self._client_period, self.origin_ratelimit_cleanup)
-
-    def get_client_id(self) -> bytes:
+    def get_client_id(self) -> str:
         """
         Figure out an identifer for the client.
         """
         xff = thor.http.common.get_header(self.req_headers, b"x-forwarded-for")
         if xff:
-            return xff[-1]
+            return xff[-1].decode("idna")
         else:
-            return thor.http.common.get_header(self.req_headers, b"client-ip")[-1]
+            return thor.http.common.get_header(self.req_headers, b"client-ip")[
+                -1
+            ].decode("idna")
         return None
