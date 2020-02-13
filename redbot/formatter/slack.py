@@ -44,14 +44,7 @@ class SlackFormatter(Formatter):
         Formatter.__init__(self, *args, **kw)
 
     def start_output(self) -> None:
-        self.output(
-            json.dumps(
-                {
-                    "response_type": "ephemeral",
-                    "text": f"_Checking_ {self.resource.request.uri} _..._",
-                }
-            )
-        )
+        pass
 
     def feed(self, sample: bytes) -> None:
         pass

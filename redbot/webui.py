@@ -8,6 +8,7 @@ from collections import defaultdict
 from configparser import SectionProxy
 import gzip
 import hmac
+import json
 import os
 import pickle
 import secrets
@@ -413,6 +414,25 @@ class RedWebUi:
             self.config, self.output, slack_uri=slack_response_uri
         )
         self.test_uri = body.get("text", [""])[0].strip()
+
+        self.response_start(
+            b"200",
+            b"OK",
+            [
+                (b"Content-Type", formatter.content_type()),
+                (b"Cache-Control", b"max-age=300"),
+            ],
+        )
+        self.output(
+            json.dumps(
+                {
+                    "response_type": "ephemeral",
+                    "text": f"_Checking_ {self.test_uri} _..._",
+                }
+            )
+        )
+        self.response_done([])
+
         top_resource = HttpResource(self.config)
         top_resource.set_request(self.test_uri, req_hdrs=self.req_hdrs)
         formatter.bind_resource(top_resource)
@@ -428,7 +448,6 @@ class RedWebUi:
 
         @thor.events.on(formatter)
         def formatter_done() -> None:
-            self.response_done([])
             if self.test_id:
                 try:
                     tmp_file = gzip.open(self.save_path, "w")
@@ -437,14 +456,6 @@ class RedWebUi:
                 except (IOError, zlib.error, pickle.PickleError):
                     pass  # we don't cry if we can't store it.
 
-        self.response_start(
-            b"200",
-            b"OK",
-            [
-                (b"Content-Type", formatter.content_type()),
-                (b"Cache-Control", b"max-age=300"),
-            ],
-        )
         top_resource.check()
 
     def verify_slack_secret(self) -> bool:
