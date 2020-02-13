@@ -19,6 +19,10 @@ class RateLimiter:
         self.loop = thor.loop
 
     def setup(self, metric_name: str, limit: int, period: int) -> None:
+        """
+        Set up a metric with a limit and a period.
+        Can be called multiple times.
+        """
         if not metric_name in self.watching:
             self.limits[metric_name] = limit
             self.counts[metric_name] = defaultdict(int)
@@ -27,6 +31,11 @@ class RateLimiter:
             self.watching.add(metric_name)
 
     def increment(self, metric_name, discriminator) -> None:
+        """
+        Increment a metric for a discriminator.
+        If the metric isn't set up, it will be ignored.
+        Raises RateLimitViolation if this discriminator is over the limit.
+        """
         if not metric_name in self.watching:
             return
         self.counts[metric_name][discriminator] += 1
@@ -34,6 +43,9 @@ class RateLimiter:
             raise RateLimitViolation
 
     def clear(self, metric_name):
+        """
+        Clear a metric's counters.
+        """
         self.counts[metric_name] = defaultdict(int)
         self.loop.schedule(self.periods[metric_name], self.clear, metric_name)
 
