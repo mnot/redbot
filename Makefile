@@ -16,7 +16,7 @@ clean: clean-deploy
 
 .PHONY: tidy
 tidy:
-	black redbot
+	black redbot bin/*
 
 .PHONY: lint
 lint:
