@@ -14,7 +14,7 @@ import thor
 from thor.loop import _loop
 
 from redbot import __version__
-from redbot.type import RawHeaderListType
+from redbot.type import RawHeaderListType, HttpResponseExchange
 from redbot.webui import RedWebUi
 
 _loop.precision = .1
@@ -41,30 +41,34 @@ def cgi_main(config: SectionProxy) -> None:
         if k[:5] == 'HTTP_':
             req_hdrs.append((k[:5].lower().encode('ascii'), v.encode('ascii')))
 
-    def response_start(code: bytes, phrase: bytes, res_hdrs: RawHeaderListType) -> None:
-        out_v = [b"Status: %s %s" % (code, phrase)]
-        for name, value in res_hdrs:
-            out_v.append(b"%s: %s" % (name, value))
-        out_v.append(b"")
-        out_v.append(b"")
-        out(b"\n".join(out_v))
+    class Exchange(HttpResponseExchange):
+        @staticmethod
+        def response_start(code: bytes, phrase: bytes, res_hdrs: RawHeaderListType) -> None:
+            out_v = [b"Status: %s %s" % (code, phrase)]
+            for name, value in res_hdrs:
+                out_v.append(b"%s: %s" % (name, value))
+            out_v.append(b"")
+            out_v.append(b"")
+            out(b"\n".join(out_v))
 
-    freak_ceiling = 20000
-    def response_body(chunk: bytes) -> None:
-        rest = None
-        if len(chunk) > freak_ceiling:
-            rest = chunk[freak_ceiling:]
-            chunk = chunk[:freak_ceiling]
-        out(chunk)
-        if rest:
-            response_body(rest)
+        @staticmethod
+        def response_body(chunk: bytes) -> None:
+            freak_ceiling = 20000
+            rest = None
+            if len(chunk) > freak_ceiling:
+                rest = chunk[freak_ceiling:]
+                chunk = chunk[:freak_ceiling]
+            out(chunk)
+            if rest:
+                Exchange.response_body(rest)
 
-    def response_done(trailers: RawHeaderListType) -> None:
-        thor.schedule(0, thor.stop)
+        @staticmethod
+        def response_done(trailers: RawHeaderListType) -> None:
+            thor.schedule(0, thor.stop)
 
     try:
         RedWebUi(config, method.decode(config['charset']), query_string, req_hdrs,
-                 response_start, response_body, response_done)
+                 Exchange())
         thor.run()
     except Exception:
         except_handler_factory(config, qs=query_string.decode(config['charset']))()

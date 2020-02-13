@@ -29,6 +29,7 @@ import thor
 import thor.http.common
 from redbot import __version__
 from redbot.message import HttpRequest
+from redbot.ratelimit import ratelimiter, RateLimitViolation
 from redbot.resource import HttpResource
 from redbot.resource.robot_fetch import RobotFetcher, url_to_origin
 from redbot.formatter import find_formatter, html, slack, Formatter
@@ -36,6 +37,7 @@ from redbot.formatter.html import e_url
 from redbot.type import (
     RawHeaderListType,
     StrHeaderListType,
+    HttpResponseExchange,
 )  # pylint: disable=unused-import
 
 
@@ -47,10 +49,6 @@ class RedWebUi:
     If descend is true, spider the links and present a summary.
     """
 
-    _origin_counts = defaultdict(int)  # type: Dict[str, int]
-    _origin_period = None  # type: float
-    _client_counts = defaultdict(int)  # type: Dict[bytes, int]
-    _client_period = None  # type: float
     _robot_secret = secrets.token_bytes(16)  # type: bytes
 
     def __init__(
@@ -60,9 +58,7 @@ class RedWebUi:
         query_string: bytes,
         req_headers: RawHeaderListType,
         req_body: bytes,
-        response_start: Callable[..., None],
-        response_body: Callable[..., None],
-        response_done: Callable[..., None],
+        exchange: HttpResponseExchange,
         error_log: Callable[[str], int] = sys.stderr.write,
     ) -> None:
         self.config = config  # type: SectionProxy
@@ -70,9 +66,9 @@ class RedWebUi:
         self.method = method
         self.req_headers = req_headers
         self.req_body = req_body
-        self.response_start = response_start
-        self.response_body = response_body
-        self._response_done = response_done
+        self.response_start = exchange.response_start
+        self.response_body = exchange.response_body
+        self._response_done = exchange.response_done
         self.error_log = error_log  # function to log errors to
         self.test_uri = None  # type: str
         self.test_id = None  # type: str
@@ -88,18 +84,14 @@ class RedWebUi:
         self.referer_spam_domains = []  # type: List[str]
 
         if config.get("limit_client_tests", fallback=""):
-            if self._client_period is None:
-                self._client_period = (
-                    config.getfloat("limit_client_period", fallback=1) * 3600
-                )
-                thor.schedule(self._client_period, self.client_ratelimit_cleanup)
+            limit = self.config.getint("limit_client_tests")
+            period = config.getfloat("limit_client_period", fallback=1) * 3600
+            ratelimiter.setup("client_id", limit, period)
 
         if config.get("limit_origin_tests", fallback=""):
-            if self._origin_period is None:
-                self._origin_period = (
-                    config.getfloat("limit_origin_period", fallback=1) * 3600
-                )
-                thor.schedule(self._origin_period, self.origin_ratelimit_cleanup)
+            limit = self.config.getint("limit_origin_tests")
+            period = config.getfloat("limit_origin_period", fallback=1) * 3600
+            ratelimiter.setup("origin", limit, period)
 
         if config.get("referer_spam_domains", fallback=""):
             self.referer_spam_domains = [
@@ -278,18 +270,7 @@ class RedWebUi:
         if referers and urlsplit(referers[0]).hostname in self.referer_spam_domains:
             referer_error = "Referer not allowed."
         if referer_error:
-            self.response_start(
-                b"403",
-                b"Forbidden",
-                [
-                    (b"Content-Type", formatter.content_type()),
-                    (b"Cache-Control", b"max-age=360, must-revalidate"),
-                ],
-            )
-            formatter.start_output()
-            formatter.error_output(referer_error)
-            self.response_done([])
-            return
+            return self.error_response(formatter, b"403", b"Forbidden", referer_error)
 
         # robot human check
         if self.robot_time and self.robot_time.isdigit() and self.robot_hmac:
@@ -302,64 +283,37 @@ class RedWebUi:
                 self.continue_test(top_resource, formatter)
                 return
             else:
-                self.response_start(
-                    b"403",
-                    b"Forbidden",
-                    [
-                        (b"Content-Type", formatter.content_type()),
-                        (b"Cache-Control", b"max-age=60, must-revalidate"),
-                    ],
+                return self.error_response(
+                    formatter, b"403", b"Forbidden", "Naughty.", "Naughty robot key."
                 )
-                formatter.start_output()
-                formatter.error_output("Naughty.")
-                self.response_done([])
-                self.error_log("Naughty robot key.")
 
         # enforce client limits
-        if self.config.getint("limit_client_tests", fallback=0):
-            client_id = self.get_client_id()
-            if client_id:
-                if self._client_counts.get(client_id, 0) > self.config.getint(
-                    "limit_client_tests"
-                ):
-                    self.response_start(
-                        b"429",
-                        b"Too Many Requests",
-                        [
-                            (b"Content-Type", formatter.content_type()),
-                            (b"Cache-Control", b"max-age=60, must-revalidate"),
-                        ],
-                    )
-                    formatter.start_output()
-                    formatter.error_output(
-                        "Your client is over limit. Please try later."
-                    )
-                    self.response_done([])
-                    self.error_log("client over limit: %s" % client_id.decode("idna"))
-                    return
-                self._client_counts[client_id] += 1
+        client_id = self.get_client_id()
+        if client_id:
+            try:
+                ratelimiter.increment("client_id", client_id)
+            except RateLimitViolation:
+                return self.error_response(
+                    formatter,
+                    b"429",
+                    b"Too Many Requests",
+                    "Your client is over limit. Please try later.",
+                    "client over limit: %s" % client_id,
+                )
 
         # enforce origin limits
-        if self.config.getint("limit_origin_tests", fallback=0):
-            origin = url_to_origin(self.test_uri)
-            if origin:
-                if self._origin_counts.get(origin, 0) > self.config.getint(
-                    "limit_origin_tests"
-                ):
-                    self.response_start(
-                        b"429",
-                        b"Too Many Requests",
-                        [
-                            (b"Content-Type", formatter.content_type()),
-                            (b"Cache-Control", b"max-age=60, must-revalidate"),
-                        ],
-                    )
-                    formatter.start_output()
-                    formatter.error_output("Origin is over limit. Please try later.")
-                    self.response_done([])
-                    self.error_log("origin over limit: %s" % origin)
-                    return
-                self._origin_counts[origin] += 1
+        origin = url_to_origin(self.test_uri)
+        if origin:
+            try:
+                ratelimiter.increment("origin", origin)
+            except RateLimitViolation:
+                return self.error_response(
+                    formatter,
+                    b"429",
+                    b"Too Many Requests",
+                    "Origin is over limit. Please try later.",
+                    "origin over limit: %s" % origin,
+                )
 
         # check robots.txt
         robot_fetcher = RobotFetcher(self.config)
@@ -374,22 +328,37 @@ class RedWebUi:
                 robot_hmac = hmac.new(
                     self._robot_secret, bytes(valid_till, "ascii"), "sha512"
                 )
-                self.response_start(
+                self.error_response(
+                    formatter,
                     b"403",
                     b"Forbidden",
-                    [
-                        (b"Content-Type", formatter.content_type()),
-                        (b"Cache-Control", b"no-cache"),
-                    ],
+                    "This site doesn't allow robots. If you are human, please <a href='?uri=%s&robot_time=%s&robot_hmac=%s'>click here</a>.",
                 )
-                formatter.start_output()
-                formatter.error_output(
-                    "This site doesn't allow robots. If you are human, please <a href='?uri=%s&robot_time=%s&robot_hmac=%s'>click here</a>."
-                    % (self.test_uri, valid_till, robot_hmac.hexdigest())
-                )
-                self.response_done([])
 
         robot_fetcher.check_robots(HttpRequest.iri_to_uri(self.test_uri))
+
+    def error_response(
+        self,
+        formatter: Formatter,
+        status_code: bytes,
+        status_phrase: bytes,
+        message: str,
+        log_message: str = None,
+    ) -> None:
+        """Send an error response."""
+        self.response_start(
+            status_code,
+            status_phrase,
+            [
+                (b"Content-Type", formatter.content_type()),
+                (b"Cache-Control", b"max-age=60, must-revalidate"),
+            ],
+        )
+        formatter.start_output()
+        formatter.error_output(message)
+        self.response_done([])
+        if log_message:
+            self.error_log(log_message)
 
     def continue_test(self, top_resource: HttpResource, formatter: Formatter) -> None:
         "Preliminary checks are done; actually run the test."
@@ -512,27 +481,15 @@ class RedWebUi:
         self.show_error("REDbot timeout.", to_output=True)
         self.response_done([])
 
-    def client_ratelimit_cleanup(self) -> None:
-        """
-        Clean up client ratelimit counters.
-        """
-        self._client_counts.clear()
-        thor.schedule(self._origin_period, self.client_ratelimit_cleanup)
-
-    def origin_ratelimit_cleanup(self) -> None:
-        """
-        Clean up origin ratelimit counters.
-        """
-        self._origin_counts.clear()
-        thor.schedule(self._client_period, self.origin_ratelimit_cleanup)
-
-    def get_client_id(self) -> bytes:
+    def get_client_id(self) -> str:
         """
         Figure out an identifer for the client.
         """
         xff = thor.http.common.get_header(self.req_headers, b"x-forwarded-for")
         if xff:
-            return xff[-1]
+            return xff[-1].decode("idna")
         else:
-            return thor.http.common.get_header(self.req_headers, b"client-ip")[-1]
+            return thor.http.common.get_header(self.req_headers, b"client-ip")[
+                -1
+            ].decode("idna")
         return None

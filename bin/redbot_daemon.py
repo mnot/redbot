@@ -104,15 +104,12 @@ class RedHandler:
                     p_uri.query,
                     self.req_hdrs,
                     self.req_body,
-                    self.exchange.response_start,
-                    self.exchange.response_body,
-                    self.exchange.response_done,
+                    self.exchange,
                     self.error_log,
                 )
             except Exception:
                 self.error_log(
                     """
-
 *** FATAL ERROR
 REDbot has encountered a fatal error which it really, really can't recover from
 in standalone server mode. Details follow.
