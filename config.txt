@@ -7,7 +7,7 @@
 [redbot]
 
 # Output language (not working yet; see #169).
-lang = en
+lang = en_US.UTF-8
 
 # Output character set. No real reason to change from UTF-8.
 charset = utf-8
@@ -85,3 +85,11 @@ limit_origin_tests = 200
 
 # Period of time those requests are allowed within, in hours.
 limit_origin_period = 1
+
+
+###
+### Slack
+###
+
+# Signing secret from slack. Comment out to disable Slack integration.
+# slack_signing_secret =
