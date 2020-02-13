@@ -27,6 +27,7 @@ import zlib
 
 import thor
 import thor.http.common
+from thor.http import get_header
 from redbot import __version__
 from redbot.message import HttpRequest
 from redbot.ratelimit import ratelimiter, RateLimitViolation
@@ -407,14 +408,23 @@ class RedWebUi:
     def run_slack(self) -> None:
         """Handle a slack request."""
         body = parse_qs(self.req_body.decode("utf-8"))
-        self.test_uri = body.get("text", [""])[0].strip()
         slack_response_uri = body.get("response_url", [""])[0].strip()
-        self.timeout = thor.schedule(int(self.config["max_runtime"]), self.timeoutError)
-        top_resource = HttpResource(self.config)
         formatter = slack.SlackFormatter(
             self.config, self.output, slack_uri=slack_response_uri
         )
+        self.test_uri = body.get("text", [""])[0].strip()
+        top_resource = HttpResource(self.config)
         top_resource.set_request(self.test_uri, req_hdrs=self.req_hdrs)
+        formatter.bind_resource(top_resource)
+        if not self.verify_slack_secret():
+            return self.error_response(
+                formatter,
+                b"403",
+                b"Forbidden",
+                "Incorrect Slack Authentication.",
+                "Bad slack token.",
+            )
+        self.timeout = thor.schedule(int(self.config["max_runtime"]), self.timeoutError)
 
         @thor.events.on(formatter)
         def formatter_done() -> None:
@@ -435,8 +445,28 @@ class RedWebUi:
                 (b"Cache-Control", b"max-age=300"),
             ],
         )
-        formatter.bind_resource(top_resource)
         top_resource.check()
+
+    def verify_slack_secret(self) -> bool:
+        """Verify the slack secret."""
+        slack_signing_secret = self.config.get(
+            "slack_signing_secret", fallback=""
+        ).encode("utf-8")
+        timestamp = get_header(self.req_headers, b"x-slack-request-timestamp")
+        if not timestamp or not timestamp[0].isdigit():
+            return False
+        timestamp = timestamp[0]
+        if abs(thor.time() - int(timestamp)) > 60 * 5:
+            return False
+        sig_basestring = b"v0:" + timestamp + b":" + self.req_body
+        signature = (
+            "v0=" + hmac.new(slack_signing_secret, sig_basestring, "sha256").hexdigest()
+        )
+        presented_signature = get_header(self.req_headers, b"x-slack-signature")
+        if not presented_signature:
+            return False
+        presented_sig = presented_signature[0].decode("utf-8")
+        return hmac.compare_digest(signature, presented_sig)
 
     def show_default(self) -> None:
         """Show the default page."""

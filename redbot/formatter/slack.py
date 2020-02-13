@@ -5,7 +5,7 @@ Slack Formatter for REDbot.
 """
 
 import json
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Union
 
 import thor.http.error as httperr
 
@@ -37,17 +37,21 @@ class SlackFormatter(Formatter):
         levels.GOOD: ":small_blue_diamond:",
         levels.WARN: ":small_orange_diamond:",
         levels.BAD: ":small_red_triangle:",
-        levels.INFO: ":black_small_square:"
+        levels.INFO: ":black_small_square:",
     }
 
     def __init__(self, *args: Any, **kw: Any) -> None:
         Formatter.__init__(self, *args, **kw)
 
     def start_output(self) -> None:
-        self.output(json.dumps({
-            "response_type": "ephemeral",
-            "text": f"_Checking_ {self.resource.request.uri} _..._"
-        }))
+        self.output(
+            json.dumps(
+                {
+                    "response_type": "ephemeral",
+                    "text": f"_Checking_ {self.resource.request.uri} _..._",
+                }
+            )
+        )
 
     def feed(self, sample: bytes) -> None:
         pass
@@ -66,7 +70,9 @@ class SlackFormatter(Formatter):
             if self.resource.response.http_error is None:
                 blocks[0]["text"]["text"] = "_No response error._"
             elif isinstance(self.resource.response.http_error, httperr.HttpError):
-                blocks[0]["text"]["text"] = f"_Sorry, I can't do that; {self.resource.response.http_error.desc}_"
+                blocks[0]["text"][
+                    "text"
+                ] = f"_Sorry, I can't do that; {self.resource.response.http_error.desc}_"
             else:
                 blocks[0]["text"]["text"] = "_Unknown incomplete response error._"
         payload = json.dumps({"blocks": blocks})
@@ -103,15 +109,16 @@ class SlackFormatter(Formatter):
 
     def format_recommendation(
         self, resource: HttpResource, category: categories
-    ) -> Dict:
+    ) -> Union[Dict, None]:
         notes = [note for note in resource.notes if note.category == category]
         if not notes:
-            return
+            return None
         out = []
         if [note for note in notes]:
             out.append(f"*{category.value}*")
         for thing in notes:
-            out.append(f" {self.emoji.get(thing.level, '•')} {thing.show_summary('en')}")
+            out.append(
+                f" {self.emoji.get(thing.level, '•')} {thing.show_summary('en')}"
+            )
         out.append(NL)
         return {"type": "section", "text": {"type": "mrkdwn", "text": NL.join(out)}}
-
