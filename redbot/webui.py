@@ -334,7 +334,7 @@ class RedWebUi:
                     formatter,
                     b"403",
                     b"Forbidden",
-                    "This site doesn't allow robots. If you are human, please <a href='?uri=%s&robot_time=%s&robot_hmac=%s'>click here</a>.",
+                    f"This site doesn't allow robots. If you are human, please <a href='?uri={self.test_uri}&robot_time={valid_till}&robot_hmac={robot_hmac.hexdigest()}'>click here</a>.",
                 )
 
         robot_fetcher.check_robots(HttpRequest.iri_to_uri(self.test_uri))
