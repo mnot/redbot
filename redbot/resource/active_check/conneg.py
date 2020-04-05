@@ -273,6 +273,6 @@ different as well, to help caches and other receivers disambiguate them.
 This resource, however, sent the same strong ETag for both its compressed and uncompressed versions
 (negotiated by `Accept-Encoding`). This can cause interoperability problems, especially with caches.
 
-Please note that some versions of the Apache HTTP Server sometimes send the same ETag for both
-compressed and uncompressed versions of a ressource. This is a [known
+Note that some versions of the Apache HTTP Server sometimes send the same ETag for both
+compressed and uncompressed versions of a resource. This is a [known
 bug](https://issues.apache.org/bugzilla/show_bug.cgi?id=39727)."""
