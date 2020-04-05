@@ -52,6 +52,7 @@ class RedBotServer:
 
     def abrt_handler(self, signum: int, frame: FrameType) -> None:
         import traceback
+
         sys.stderr.write("* ABORT\n")
         traceback.print_stack(frame)
         sys.exit(0)
@@ -64,6 +65,10 @@ class RedHandler:
         b".css": b"text/css",
         b".png": b"image/png",
         b".txt": b"text/plain",
+        b".woff": b"font/woff",
+        b".ttf": b"font/ttf",
+        b".eot": b"application/vnd.ms-fontobject",
+        b".svg": b"image/svg+xml",
     }
 
     def __init__(self, exchange: EventEmitter) -> None:
