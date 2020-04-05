@@ -12,7 +12,7 @@ class x_pad(headers.HttpHeader):
   256 or 257 bytes long, the browser would consider the response (e.g., an image) invalid.
 
   Since the affected browsers (specifically, Netscape 2.x, 3.x and 4.0 up to beta 2) are no longer
-  widely used, it's probably safe to omit this header."""
+  widely used, it's safe to omit this header."""
     list_header = False
     deprecated = False
     valid_in_requests = False
