@@ -39,10 +39,10 @@ class x_ua_compatible(headers.HttpHeader):
 class UA_COMPATIBLE(Note):
     category = categories.GENERAL
     level = levels.INFO
-    summary = "%(response)s explicitly sets a rendering mode for Internet Explorer 8."
+    summary = "%(response)s explicitly sets a rendering mode for Internet Explorer."
     text = """\
-Internet Explorer 8 allows responses to explicitly set the rendering mode used for a given page
-(known a the "compatibility mode").
+Some versions ofInternet Explorer allow responses to explicitly set the rendering mode used for a
+given page (known a the "compatibility mode").
 
 See [Microsoft's documentation](http://msdn.microsoft.com/en-us/library/cc288325(VS.85).aspx) for
 more information."""
