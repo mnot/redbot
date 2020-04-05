@@ -59,7 +59,7 @@ class HttpMessage(thor.events.EventEmitter):
         self.decoded_len = 0  # type: int
         self.decoded_md5 = None  # type: bytes
         self.decoded_sample = b""  # type: bytes   # first decoded_sample_size bytes
-        self.decoded_sample_size = 128 * 1024  # type: int
+        self.decoded_sample_size = 24 * 1024  # type: int
         self._decoded_sample_seen = 0  # type: int
         self.decoded_sample_complete = True  # type: bool
         self._decode_ok = True  # type: bool    # turn False if we have a problem
