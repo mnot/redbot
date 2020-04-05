@@ -7,7 +7,9 @@ Run REDbot as a daemon.
 from configparser import ConfigParser
 import locale
 import os
+import signal
 import sys
+from types import FrameType
 from typing import Dict
 from urllib.parse import urlsplit
 
@@ -34,6 +36,7 @@ class RedBotServer:
         # Set up the watchdog
         if os.environ.get("SYSTEMD_WATCHDOG"):
             thor.schedule(self.watchdog_freq, self.watchdog_ping)
+            signal.signal(signal.SIGABRT, self.abrt_handler)
         # Set up the server
         server = thor.http.HttpServer(config.get("host", ""), int(config["port"]))
         server.on("exchange", RedHandler)
@@ -46,6 +49,12 @@ class RedBotServer:
     def watchdog_ping(self) -> None:
         notify(Notification.WATCHDOG)
         thor.schedule(self.watchdog_freq, self.watchdog_ping)
+
+    def abrt_handler(self, signum: int, frame: FrameType) -> None:
+        import traceback
+        sys.stderr.write("* ABORT\n")
+        traceback.print_stack(frame)
+        sys.exit(0)
 
 
 class RedHandler:
