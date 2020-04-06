@@ -12,6 +12,7 @@ import json
 import os
 import pickle
 import secrets
+import string
 import sys
 import tempfile
 import time
@@ -124,6 +125,8 @@ class RedWebUi:
                 self.save_test()
             elif "slack" in qs:
                 self.run_slack()
+            elif "client_error" in qs:
+                self.dump_client_error()
         else:
             if self.test_id:
                 self.load_saved_test()
@@ -227,6 +230,12 @@ class RedWebUi:
             self.response_done([])
 
         formatter.bind_resource(display_resource)
+
+    def dump_client_error(self) -> None:
+        """Dump a client error."""
+        body = self.req_body.decode("ascii", "replace")[:255].replace("\n", "")
+        body_safe = "".join([x for x in body if x in string.printable])
+        self.error_log(f"Client JS -> {body_safe}")
 
     def run_test(self) -> None:
         """Test a URI."""
