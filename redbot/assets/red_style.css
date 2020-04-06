@@ -3,7 +3,6 @@
    We do not use fontawesome.scss due to bloat; instead we
    use individual characters.
    See: http://astronautweb.co/snippet/font-awesome/
-
 */
 /*!
  * Font Awesome Free 5.13.0 by @fontawesome - https://fontawesome.com
@@ -69,6 +68,13 @@ body {
     float: left;
     clear: both; } }
 
+@media only screen and (max-device-width: 1024px) {
+  #left_column, #right_column {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    float: left; } }
+
 h1 {
   color: #111;
   padding: 0;
@@ -132,18 +138,63 @@ h3 {
 br {
   clear: both; }
 
-/* note lists */
-ul {
-  margin-top: 0.2em;
-  margin-left: 12pt; }
+/* popups */
+#popup {
+  position: absolute;
+  -webkit-border-radius: 0.5em;
+  -moz-border-radius: 0.5em;
+  -ms-border-radius: 0.5em;
+  border-radius: 0.5em;
+  background-color: #679;
+  opacity: 0.95;
+  padding: 9px;
+  color: white;
+  font-size: 0.85em;
+  z-index: 10;
+  display: none; }
+  #popup img {
+    max-width: 440px; }
 
-ul ul {
-  padding-left: 9pt;
-  margin-bottom: 0.4em; }
+/* footer */
+.footer {
+  max-width: 650px; }
 
-li {
-  padding-left: 4pt;
-  margin-bottom: 6px; }
+body.blank > .footer {
+  position: absolute;
+  margin: 0 auto;
+  bottom: 15%;
+  width: 650px; }
+
+.twitterlogo {
+  font-family: 'Font Awesome 5 Brands';
+  margin-bottom: -10px;
+  color: #1DA1F2; }
+
+/* news */
+.news {
+  text-align: center;
+  font-size: 1.0;
+  font-weight: normal;
+  width: 650px; }
+
+.news-banner {
+  color: #aaa; }
+
+/* errors */
+.error {
+  color: #eaeaea;
+  background-color: #a33;
+  -webkit-border-radius: 0.5em;
+  -moz-border-radius: 0.5em;
+  -ms-border-radius: 0.5em;
+  border-radius: 0.5em;
+  padding: 0.5em;
+  font-weight: bold;
+  font-size: 1.1em;
+  max-width: 650px; }
+
+.error a {
+  color: white; }
 
 /* request */
 input#uri {
@@ -187,6 +238,17 @@ option[value="other..."] {
   color: #aaa;
   font-style: italic; }
 
+.req_link {
+  font-size: 75%;
+  margin-left: 0.75em;
+  font-weight: normal; }
+
+@media only screen and (max-device-width: 1024px) {
+  .req_hdr, .add_req_hdr {
+    width: 100%; }
+  input#uri {
+    width: 98%; } }
+
 /* response detail */
 #response, .nonfinal_response {
   font-size: 10pt;
@@ -222,46 +284,6 @@ option[value="other..."] {
 .options > * {
   padding-right: 2em; }
 
-/* summary table */
-table#summary {
-  font-size: 0.8em;
-  width: 100%;
-  border-spacing: 0;
-  background-color: #111;
-  color: #ddd;
-  -webkit-border-radius: 1em;
-  -moz-border-radius: 1em;
-  -ms-border-radius: 1em;
-  border-radius: 1em;
-  border: 1px solid black;
-  padding: 1em;
-  margin-top: 1em; }
-  table#summary th {
-    text-align: left;
-    padding: 2em 0.5em 0.25em 0.5em;
-    border-bottom: 1px solid #666;
-    vertical-align: bottom; }
-  table#summary td {
-    text-align: center;
-    padding: 0.25em 0.4em;
-    white-space: nowrap; }
-  table#summary tr:hover td {
-    background-color: #333; }
-  table#summary td.uri {
-    text-align: left;
-    font-family: monospace; }
-  table#summary td a {
-    color: #ccf; }
-
-.fade1 {
-  opacity: 0.75; }
-
-.fade2 {
-  opacity: 0.5; }
-
-.fade3 {
-  opacity: 0.25; }
-
 /* response body */
 #body {
   display: none;
@@ -279,6 +301,19 @@ table#summary {
     border-radius: 1em;
     border: 1px solid #ccc;
     padding: 9px; }
+
+/* note lists */
+ul {
+  margin-top: 0.2em;
+  margin-left: 12pt; }
+
+ul ul {
+  padding-left: 9pt;
+  margin-bottom: 0.4em; }
+
+li {
+  padding-left: 4pt;
+  margin-bottom: 6px; }
 
 /* note levels */
 li.note {
@@ -327,64 +362,6 @@ li.info:before {
 .no {
   color: #D98080; }
 
-.req_link {
-  font-size: 75%;
-  margin-left: 0.75em;
-  font-weight: normal; }
-
-/* popups */
-#popup {
-  position: absolute;
-  -webkit-border-radius: 0.5em;
-  -moz-border-radius: 0.5em;
-  -ms-border-radius: 0.5em;
-  border-radius: 0.5em;
-  background-color: #679;
-  opacity: 0.95;
-  padding: 9px;
-  color: white;
-  font-size: 0.85em;
-  z-index: 10;
-  display: none; }
-  #popup img {
-    max-width: 440px; }
-
-/* footer */
-.footer {
-  max-width: 650px; }
-
-body.blank > .footer {
-  position: absolute;
-  margin: 0 auto;
-  bottom: 15%;
-  width: 650px; }
-
-/* news */
-.news {
-  text-align: center;
-  font-size: 1.0;
-  font-weight: normal;
-  width: 650px; }
-
-.news-banner {
-  color: #aaa; }
-
-/* errors */
-.error {
-  color: #eaeaea;
-  background-color: #a33;
-  -webkit-border-radius: 0.5em;
-  -moz-border-radius: 0.5em;
-  -ms-border-radius: 0.5em;
-  border-radius: 0.5em;
-  padding: 0.5em;
-  font-weight: bold;
-  font-size: 1.1em;
-  max-width: 650px; }
-
-.error a {
-  color: white; }
-
 /* help bubbles */
 /* http://konigi.com/tools/css-sticky-notes */
 .help {
@@ -421,19 +398,42 @@ body.blank > .footer {
   -moz-box-shadow: 0px 0 3px rgba(0, 0, 0, 0.1);
   box-shadow: 0px 0 3px rgba(0, 0, 0, 0.1); }
 
-.twitterlogo {
-  font-family: 'Font Awesome 5 Brands';
-  margin-bottom: -10px;
-  color: #1DA1F2; }
+/* summary table */
+table#summary {
+  font-size: 0.8em;
+  width: 100%;
+  border-spacing: 0;
+  background-color: #111;
+  color: #ddd;
+  -webkit-border-radius: 1em;
+  -moz-border-radius: 1em;
+  -ms-border-radius: 1em;
+  border-radius: 1em;
+  border: 1px solid black;
+  padding: 1em;
+  margin-top: 1em; }
+  table#summary th {
+    text-align: left;
+    padding: 2em 0.5em 0.25em 0.5em;
+    border-bottom: 1px solid #666;
+    vertical-align: bottom; }
+  table#summary td {
+    text-align: center;
+    padding: 0.25em 0.4em;
+    white-space: nowrap; }
+  table#summary tr:hover td {
+    background-color: #333; }
+  table#summary td.uri {
+    text-align: left;
+    font-family: monospace; }
+  table#summary td a {
+    color: #ccf; }
 
-/* iPad, iPhone, etc. -------------------- */
-@media only screen and (max-device-width: 1024px) {
-  #left_column, #right_column {
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    float: left; }
-  .req_hdr, .add_req_hdr {
-    width: 100%; }
-  input#uri {
-    width: 98%; } }
+.fade1 {
+  opacity: 0.75; }
+
+.fade2 {
+  opacity: 0.5; }
+
+.fade3 {
+  opacity: 0.25; }
