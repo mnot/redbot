@@ -197,7 +197,7 @@ console.log("%3.3f %s");
 <script type="text/javascript">
    document.write('<a href="#help" id="help"><strong>help</strong></a> |')
 </script>
-<a href="https://twitter.com/redbotorg"><img class="twitterlogo" src="%(static_root)s/icon/twitter.png"/></a> |
+<a href="https://twitter.com/redbotorg"><span class="twitterlogo"></span></a> |
 <span class="help">Drag the bookmarklet to your bookmark bar - it makes
 checking easy!</span>
 <a href="javascript:location%%20=%%20'%(baseuri)s?uri='+encodeURIComponent(location);%%20void%%200"
@@ -845,15 +845,12 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         return "<td>%s</td>" % f_num(value, by1024=True)
 
     def format_yes_no(self, value: Union[bool, None]) -> str:
-        icon_tpl = (
-            '<td><img src="%s/icon/%%s" alt="%%s"/></td>' % self.config["static_root"]
-        )
         if value is True:
-            return icon_tpl % ("accept1.png", "yes")
+            return '<td><span class="fas yes">\uf058</span></td>'
         if value is False:
-            return icon_tpl % ("remove-16.png", "no")
+            return '<td><span class="fas no">\uf057</span></td>'
         if value is None:
-            return icon_tpl % ("help1.png", "unknown")
+            return '<td><span class="fas info">\uf059</span></td>'
         raise AssertionError("unknown value")
 
     def format_options(self, resource: HttpResource) -> str:

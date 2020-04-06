@@ -11,6 +11,23 @@ $header_colour: #ddd;
 $detail_font_size: 0.8em;
 $vertical_space: 3em;
 
+
+// --------------------------------------------------------------
+
+/* font-awesome
+
+   We do not use fontawesome.scss due to bloat; instead we
+   use individual characters.
+   See: http://astronautweb.co/snippet/font-awesome/
+
+*/
+
+
+$fa-font-path: "/static/webfonts";
+@import '../bower_components/font-awesome/scss/solid.scss';
+@import '../bower_components/font-awesome/scss/brands.scss';
+
+
 // --------------------------------------------------------------
 
 /* layout, major elements */
@@ -132,6 +149,7 @@ ul ul {
 }
 li {
   padding-left: 4pt;
+  margin-bottom: 6px;
 }
 
 /* request */
@@ -289,30 +307,57 @@ table#summary {
 
 /* note levels */
 
+@mixin fontawesome-bullet {
+  font-family: 'Font Awesome 5 Free';
+  margin:0 6px 0 -28px;
+  font-weight: 400;
+}
+
+li.note {
+  list-style-type: none;
+}
+
 .good {
-  color: #060;
-  list-style-image: url(icon/accept1.png);
+  color: #659365;
 }
+li.good:before {
+  @include fontawesome-bullet;
+  content: '\f058';
+}
+
 .warning {
-  color: #660;
+  color: #AA8A22;
 }
-ul li.warning {
-  list-style-image: url(icon/yellowflag1.png);
+li.warning:before {
+  @include fontawesome-bullet;
+  content: '\f06a';
 }
+
 .bad {
-  color: #800;
+  color: #a64029;
 }
-td.bad {
-  color: #e66;
-  font-style: bold;
+li.bad:before {
+  @include fontawesome-bullet;
+  content: '\f057';
 }
-ul li.bad {
-    list-style-image: url(icon/remove-16.png);
-}
+
 .info {
   color: $text_colour;
-  list-style-image: url(icon/infomation-16.png);
 }
+li.info:before {
+  @include fontawesome-bullet;
+  content: '\f05a';
+  color: #1676b7;
+}
+
+
+.yes {
+  color: #94C594;
+}
+.no {
+  color: #D98080;
+}
+
 
 .req_link {
   font-size: 75%;
@@ -419,7 +464,9 @@ body.blank > .footer {
 }
 
 .twitterlogo {
+  font-family: 'Font Awesome 5 Brands';
   margin-bottom: -10px;
+  color: #1DA1F2;
 }
 
 /* iPad, iPhone, etc. -------------------- */
