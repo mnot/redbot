@@ -6,8 +6,8 @@
 var knownReqHdrs = {
   'Accept-Language': ['', 'en', 'en-us', 'en-uk', 'fr'],
   'Cache-Control': ['', 'no-cache', 'only-if-cached'],
-  'Cookie': null,
-  'Referer': null,
+  Cookie: null,
+  Referer: null,
   'User-Agent': [
     'RED/' + config.redbot_version + ' (http://redbot.org/about)',
     'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Win64; x64; Trident/4.0)',

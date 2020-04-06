@@ -1,15 +1,15 @@
 
 /* Configuration */
 
-/* global $, prettyPrint */
+/* global $, prettyPrint, XMLHttpRequest */
 
 window.onerror = function (message, url, line, col, errorObj) {
-    if (window.XMLHttpRequest) {
-        var xhr = new XMLHttpRequest();
-        var data = `${message} at ${url}, ${line}:${col}`
-        xhr.open("POST", "?client_error=1", true);
-        xhr.send(data);
-    }
+  if (window.XMLHttpRequest) {
+    var xhr = new XMLHttpRequest()
+    var data = `${message} at ${url}, ${line}:${col}`
+    xhr.open('POST', '?client_error=1', true)
+    xhr.send(data)
+  }
 }
 
 var config = JSON.parse($('#config').html()) // eslint-disable-line
