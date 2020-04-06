@@ -1,3 +1,43 @@
+/* font-awesome
+
+   We do not use fontawesome.scss due to bloat; instead we
+   use individual characters.
+   See: http://astronautweb.co/snippet/font-awesome/
+
+*/
+/*!
+ * Font Awesome Free 5.13.0 by @fontawesome - https://fontawesome.com
+ * License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
+ */
+@font-face {
+  font-family: 'Font Awesome 5 Free';
+  font-style: normal;
+  font-weight: 900;
+  font-display: block;
+  src: url("/static/webfonts/fa-solid-900.eot");
+  src: url("/static/webfonts/fa-solid-900.eot?#iefix") format("embedded-opentype"), url("/static/webfonts/fa-solid-900.woff2") format("woff2"), url("/static/webfonts/fa-solid-900.woff") format("woff"), url("/static/webfonts/fa-solid-900.ttf") format("truetype"), url("/static/webfonts/fa-solid-900.svg#fontawesome") format("svg"); }
+
+.fa,
+.fas {
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 900; }
+
+/*!
+ * Font Awesome Free 5.13.0 by @fontawesome - https://fontawesome.com
+ * License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
+ */
+@font-face {
+  font-family: 'Font Awesome 5 Brands';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/static/webfonts/fa-brands-400.eot");
+  src: url("/static/webfonts/fa-brands-400.eot?#iefix") format("embedded-opentype"), url("/static/webfonts/fa-brands-400.woff2") format("woff2"), url("/static/webfonts/fa-brands-400.woff") format("woff"), url("/static/webfonts/fa-brands-400.ttf") format("truetype"), url("/static/webfonts/fa-brands-400.svg#fontawesome") format("svg"); }
+
+.fab {
+  font-family: 'Font Awesome 5 Brands';
+  font-weight: 400; }
+
 /* layout, major elements */
 body {
   background-color: #f9f9f9;
@@ -28,6 +68,7 @@ body {
     padding: 0;
     float: left;
     clear: both; } }
+
 h1 {
   color: #111;
   padding: 0;
@@ -101,7 +142,8 @@ ul ul {
   margin-bottom: 0.4em; }
 
 li {
-  padding-left: 4pt; }
+  padding-left: 4pt;
+  margin-bottom: 6px; }
 
 /* request */
 input#uri {
@@ -239,29 +281,51 @@ table#summary {
     padding: 9px; }
 
 /* note levels */
+li.note {
+  list-style-type: none; }
+
 .good {
-  color: #060;
-  list-style-image: url(icon/accept1.png); }
+  color: #659365; }
+
+li.good:before {
+  font-family: 'Font Awesome 5 Free';
+  margin: 0 6px 0 -28px;
+  font-weight: 400;
+  content: '\f058'; }
 
 .warning {
-  color: #660; }
+  color: #AA8A22; }
 
-ul li.warning {
-  list-style-image: url(icon/yellowflag1.png); }
+li.warning:before {
+  font-family: 'Font Awesome 5 Free';
+  margin: 0 6px 0 -28px;
+  font-weight: 400;
+  content: '\f06a'; }
 
 .bad {
-  color: #800; }
+  color: #a64029; }
 
-td.bad {
-  color: #e66;
-  font-style: bold; }
-
-ul li.bad {
-  list-style-image: url(icon/remove-16.png); }
+li.bad:before {
+  font-family: 'Font Awesome 5 Free';
+  margin: 0 6px 0 -28px;
+  font-weight: 400;
+  content: '\f057'; }
 
 .info {
-  color: #111;
-  list-style-image: url(icon/infomation-16.png); }
+  color: #111; }
+
+li.info:before {
+  font-family: 'Font Awesome 5 Free';
+  margin: 0 6px 0 -28px;
+  font-weight: 400;
+  content: '\f05a';
+  color: #1676b7; }
+
+.yes {
+  color: #94C594; }
+
+.no {
+  color: #D98080; }
 
 .req_link {
   font-size: 75%;
@@ -358,7 +422,9 @@ body.blank > .footer {
   box-shadow: 0px 0 3px rgba(0, 0, 0, 0.1); }
 
 .twitterlogo {
-  margin-bottom: -10px; }
+  font-family: 'Font Awesome 5 Brands';
+  margin-bottom: -10px;
+  color: #1DA1F2; }
 
 /* iPad, iPhone, etc. -------------------- */
 @media only screen and (max-device-width: 1024px) {
@@ -367,11 +433,7 @@ body.blank > .footer {
     margin: 0;
     padding: 0;
     float: left; }
-
   .req_hdr, .add_req_hdr {
     width: 100%; }
-
   input#uri {
     width: 98%; } }
-
-/*# sourceMappingURL=red_style.css.map */
