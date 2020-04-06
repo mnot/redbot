@@ -118,23 +118,19 @@ class RedWebUi:
         self.test_id = qs.get("id", [None])[0]
         self.robot_time = qs.get("robot_time", [None])[0]
         self.robot_hmac = qs.get("robot_hmac", [None])[0]
-        if self.method == "POST":
-            self.save = "save" in qs
-            self.slack = "slack" in qs
-        else:
-            self.save = False
-            self.slack = False
         self.start = time.time()
-        if self.slack:
-            self.run_slack()
-        elif self.save and self.config.get("save_dir", "") and self.test_id:
-            self.save_test()
-        elif self.test_id:
-            self.load_saved_test()
-        elif self.test_uri:
-            self.run_test()
+        if self.method == "POST":
+            if "save" in qs and self.config.get("save_dir", "") and self.test_id:
+                self.save_test()
+            elif "slack" in qs:
+                self.run_slack()
         else:
-            self.show_default()
+            if self.test_id:
+                self.load_saved_test()
+            elif self.test_uri:
+                self.run_test()
+            else:
+                self.show_default()
 
     def save_test(self) -> None:
         """Save a previously run test_id."""
