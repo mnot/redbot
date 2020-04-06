@@ -119,5 +119,5 @@ to run REDbot on port 8000.
 
 ## Credits
 
-Icons by Momenticon. REDbot includes code from [jQuery](https://jquery.com) and [prettify.js](https://github.com/google/code-prettify).
+Icons by [Font Awesome](https://fontawesome.com/). REDbot includes code from [jQuery](https://jquery.com) and [prettify.js](https://github.com/google/code-prettify).
 

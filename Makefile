@@ -1,5 +1,6 @@
 PYTHON=python3
 PYTHONPATH=./
+SASS=sassc
 
 BOWER = src/bower_components
 JSFILES = $(BOWER)/jquery/dist/jquery.js $(BOWER)/jquery-hoverIntent/jquery.hoverIntent.js $(BOWER)/google-code-prettify/src/prettify.js src/red_script.js src/red_popup.js src/red_req_headers.js
@@ -99,18 +100,21 @@ redbot/message/headers/%.py:
 ## assets
 
 .PHONY: redbot/assets
-redbot/assets: redbot/assets/script.js redbot/assets/style.css
+redbot/assets: redbot/assets/script.js redbot/assets/style.css redbot/assets/webfonts
 
 redbot/assets/script.js: $(JSFILES)
 	closure-compiler --create_source_map $@.map --js_output_file $@ $(JSFILES)
 	echo "\n//# sourceMappingURL=script.js.map" >> $@
 
 redbot/assets/red_style.css: src/scss/*.scss
-	sass src/scss/red_style.scss:$@
+	$(SASS) src/scss/red_style.scss $@
 
 redbot/assets/style.css: $(CSSFILES)
 	cat $(CSSFILES) | cssmin > $@
 
+redbot/assets/webfonts:
+	cp -R $(BOWER)/font-awesome/webfonts $@
+
 .PHONY: clean-assets
 clean-assets:
-	rm -f redbot/assets/script.js redbot/assets/script.js.map redbot/assets/style.css
+	rm -rf redbot/assets/*.js redbot/assets/*.map redbot/assets/*.css redbot/assets/webfonts
