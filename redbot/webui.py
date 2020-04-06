@@ -127,7 +127,7 @@ class RedWebUi:
                 self.run_slack()
             elif "client_error" in qs:
                 self.dump_client_error()
-        else:
+        elif self.method in ["GET", "HEAD"]:
             if self.test_id:
                 self.load_saved_test()
             elif self.test_uri:
