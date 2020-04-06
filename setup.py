@@ -17,7 +17,7 @@ setup(name='redbot',
       package_dir={'redbot': 'redbot'},
       scripts=['bin/redbot_cli', 'bin/redbot_daemon.py', 'bin/redbot_cgi.py'],
       package_data={
-        'redbot': ['assets/*.css', 'assets/*.js', 'assets/*.map', 'assets/icon/*', 'assets/logo/*']
+        'redbot': ['assets/*.css', 'assets/*.js', 'assets/*.map', 'assets/webfonts/*', 'assets/logo/*']
       },
       python_requires=">=3.6",
       install_requires=[
