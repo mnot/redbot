@@ -1,0 +1,67 @@
+/* note lists */
+
+ul {
+  margin-top: 0.2em;
+  margin-left: 12pt;
+}
+ul ul {
+  padding-left: 9pt;
+  margin-bottom: 0.4em;
+}
+li {
+  padding-left: 4pt;
+  margin-bottom: 6px;
+}
+
+/* note levels */
+
+@mixin fontawesome-bullet {
+  font-family: 'Font Awesome 5 Free';
+  margin:0 6px 0 -28px;
+  font-weight: 400;
+}
+
+li.note {
+  list-style-type: none;
+}
+
+.good {
+  color: #659365;
+}
+li.good:before {
+  @include fontawesome-bullet;
+  content: '\f058';
+}
+
+.warning {
+  color: #AA8A22;
+}
+li.warning:before {
+  @include fontawesome-bullet;
+  content: '\f06a';
+}
+
+.bad {
+  color: #a64029;
+}
+li.bad:before {
+  @include fontawesome-bullet;
+  content: '\f057';
+}
+
+.info {
+  color: $text_colour;
+}
+li.info:before {
+  @include fontawesome-bullet;
+  content: '\f05a';
+  color: #1676b7;
+}
+
+
+.yes {
+  color: #94C594;
+}
+.no {
+  color: #D98080;
+}

@@ -1,0 +1,10 @@
+/* font-awesome
+
+   We do not use fontawesome.scss due to bloat; instead we
+   use individual characters.
+   See: http://astronautweb.co/snippet/font-awesome/
+*/
+
+$fa-font-path: "/static/webfonts";
+@import '../bower_components/font-awesome/scss/solid.scss';
+@import '../bower_components/font-awesome/scss/brands.scss';
