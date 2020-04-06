@@ -356,12 +356,6 @@ li.info:before {
   content: '\f05a';
   color: #1676b7; }
 
-.yes {
-  color: #94C594; }
-
-.no {
-  color: #D98080; }
-
 /* help bubbles */
 /* http://konigi.com/tools/css-sticky-notes */
 .help {
@@ -437,3 +431,9 @@ table#summary {
 
 .fade3 {
   opacity: 0.25; }
+
+.yes {
+  color: #94C594; }
+
+.no {
+  color: #D98080; }
