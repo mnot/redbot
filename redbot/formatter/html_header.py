@@ -5,7 +5,7 @@
 	<title>REDbot: &lt;%(html_uri)s&gt;</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta name="ROBOTS" content="INDEX, NOFOLLOW" />
-    <link rel="stylesheet" type="text/css" href="%(static)s/style.css">
+    <link rel="stylesheet" type="text/css" href="%(static)s/style.css?%(version)s">
 	<!--[if IE]>
     <style type="text/css">
         #right_column {
@@ -14,7 +14,7 @@
     </style>
     <![endif]-->
     <script id="config" type="application/json">%(config)s</script>
-    <script src="%(static)s/script.js" type="text/javascript"></script>
+    <script src="%(static)s/script.js?%(version)s" type="text/javascript"></script>
     <link rel="apple-touch-icon-precomposed" sizes="144x144"
      href="%(static)s/logo/apple-touch-icon-144x144.png" />
     <link rel="apple-touch-icon-precomposed" sizes="152x152"
