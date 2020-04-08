@@ -45,7 +45,6 @@ body {
   }
 }
 
-
 h1 {
   color: $text_colour;
   padding: 0;
@@ -56,14 +55,6 @@ h1 {
     color: #444;
     text-decoration: none;
   }
-}
-
-.hilight {
-  color: #d33;
-}
-
-.save {
-  color: $detail_text_colour;
 }
 
 h2 {
@@ -80,6 +71,14 @@ h3 {
   display: none;
 }
 
+.hilight {
+  color: #d33;
+}
+
+.save {
+  color: $detail_text_colour;
+}
+
 .version {
   @include centered-detail;
   padding-top: 5em;
@@ -87,6 +86,15 @@ h3 {
 
 .navigation {
   @include centered-detail;
+}
+
+.btw {
+  @include centered-detail;
+  font-style: italic;
+}
+
+br {
+  clear:both;
 }
 
 #red_status {
@@ -105,32 +113,6 @@ h3 {
   right: 2em;
 }
 
-.btw {
-  @include centered-detail;
-  font-style: italic;
-}
-
-br {
-  clear:both;
-}
-
-
-/* popups */
-
-#popup {
-  position: absolute;
-  @include rounded_corners(0.5em);
-  background-color: #679;
-  opacity: 0.95;
-  padding: 9px;
-  color: white;
-  font-size: 0.85em;
-  z-index: 10;
-  display: none;
-  img {
-    max-width: 440px;
-  }
-}
 
 
 /* footer */
@@ -147,7 +129,7 @@ body.blank > .footer {
 }
 
 .twitterlogo {
-  font-family: 'Font Awesome 5 Brands';
+  font-family: 'FontAwesome';
   margin-bottom: -10px;
   color: #1DA1F2;
 }

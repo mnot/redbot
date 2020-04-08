@@ -1,0 +1,60 @@
+
+/* request */
+
+input#uri {
+  width: $left_width - 7px;
+  font-size: 1.1em;
+  color: $text_colour;
+  &::placeholder {
+    color: lighten($text_colour, 70%);
+  }
+}
+
+.add_req_hdr {
+  -webkit-border-bottom-right-radius: 0.5em;
+  -webkit-border-bottom-left-radius: 0.5em;
+  -moz-border-radius-bottomleft: 0.5em;
+  -moz-border-radius-bottomright: 0.5em;
+  background-color: #898984;
+  width: $left_width;
+  margin: 0;
+}
+
+#add_req_hdr {
+  font-size: 0.65em;
+  margin-left: 2em;
+  color: white;
+  text-decoration: none;
+}
+
+.delete_req_hdr {
+  @extend #add_req_hdr;
+  margin-left: 0.5em;
+}
+
+.req_hdr {
+  background-color: #898984;
+  width: $left_width;
+  white-space: nowrap;
+}
+
+input.hdr_val {
+  width: 200px;
+  max-width: 200px;
+}
+
+option[value="other..."] {
+  color: $detail_text_colour;
+  font-style: italic;
+}
+
+.req_link {
+  font-size: 75%;
+  margin-left: 0.75em;
+  font-weight: normal;
+}
+
+@media only screen and (max-device-width : 1024px) {
+  .req_hdr, .add_req_hdr { width: 100%; }
+  input#uri { width: 98%; }
+}

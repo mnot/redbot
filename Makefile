@@ -2,9 +2,9 @@ PYTHON=python3
 PYTHONPATH=./
 SASS=sassc
 
-BOWER = src/bower_components
-JSFILES = $(BOWER)/jquery/dist/jquery.js $(BOWER)/jquery-hoverIntent/jquery.hoverIntent.js $(BOWER)/google-code-prettify/src/prettify.js src/red_script.js src/red_popup.js src/red_req_headers.js
-CSSFILES = redbot/assets/red_style.css $(BOWER)/google-code-prettify/src/prettify.css
+MODULES = src/node_modules
+JSFILES = $(MODULES)/google-code-prettify/src/prettify.js src/js/*.js $(MODULES)/@popperjs/core/dist/umd/popper.js $(MODULES)/tippy.js/dist/tippy.umd.js
+CSSFILES = redbot/assets/red_style.css $(MODULES)/google-code-prettify/src/prettify.css
 
 
 .PHONY: test
@@ -13,17 +13,18 @@ test: typecheck unit_test webui_test
 .PHONY: clean
 clean: clean-deploy
 	find . -d -type d -name __pycache__ -exec rm -rf {} \;
-	rm -rf build dist MANIFEST redbot.egg-info ghostdriver.log geckodriver.log
+	rm -rf build dist MANIFEST redbot.egg-info *.log
 
 .PHONY: tidy
 tidy:
 	black redbot bin/*
+	standard --fix src/js/*.js
 
 .PHONY: lint
 lint:
 	PYTHONPATH=$(PYTHONPATH) pylint --output-format=colorized --rcfile=test/pylintrc \
 	  redbot bin/redbot_daemon.py bin/redbot_cgi.py bin/redbot_cli
-	standard src/*.js
+	standard src/js/*.js
 
 .PHONY: typecheck
 typecheck:
@@ -113,7 +114,7 @@ redbot/assets/style.css: $(CSSFILES)
 	cat $(CSSFILES) | cssmin > $@
 
 redbot/assets/webfonts:
-	cp -R $(BOWER)/font-awesome/webfonts $@
+	cp -R $(MODULES)/font-awesome/fonts $@
 
 .PHONY: clean-assets
 clean-assets:

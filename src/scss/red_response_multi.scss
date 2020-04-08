@@ -1,0 +1,45 @@
+/* summary table for multiple responses */
+
+table#summary {
+  font-size: 0.8em;
+  width: 100%;
+  border-spacing: 0;
+  background-color: $console_colour;
+  color: #ddd;
+  @include rounded_corners(1em);
+  border: 1px solid black;
+  padding: 1em;
+  margin-top: 1em;
+  th {
+    text-align: left;
+    padding: 2em 0.5em 0.25em 0.5em;
+    border-bottom: 1px solid #666;
+    vertical-align: bottom;
+  }
+  td {
+    text-align: center;
+    padding: 0.25em 0.4em;
+    white-space: nowrap;
+  }
+  tr:hover td {
+    background-color: #333;
+  }
+  td.uri {
+    text-align: left;
+    font-family: monospace;
+  }
+  td a {
+    color: #ccf;
+  }
+}
+
+.fade1 { opacity: 0.75; }
+.fade2 { opacity: 0.5; }
+.fade3 { opacity: 0.25; }
+
+.yes {
+  color: #94C594;
+}
+.no {
+  color: #D98080;
+}

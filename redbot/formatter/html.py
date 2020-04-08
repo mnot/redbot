@@ -112,7 +112,7 @@ class BaseHtmlFormatter(Formatter):
             """
 <script>
 <!-- %3.3f
-$('#red_status').text("%s");
+qs('#red_status').textContent = "%s"
 -->
 </script>
 """
@@ -175,16 +175,9 @@ console.log("%3.3f %s");
         return nl.join(o)
 
     def format_hidden_list(self) -> str:
-        "return a list of hidden items to be used by the UI"
-        return (
-            "<ul>"
-            + "\n".join(
-                [
-                    "<li id='%s'>%s</li>" % (lid, text)
-                    for (lid, text) in self.hidden_text
-                ]
-            )
-            + "</ul>"
+        "return a set of hidden items to be used by the UI"
+        return "\n".join(
+            [f"<div id='{lid}'>{text}</div>" for (lid, text) in self.hidden_text]
         )
 
     def format_footer(self) -> str:
@@ -198,7 +191,7 @@ console.log("%3.3f %s");
    document.write('<a href="#help" id="help"><strong>help</strong></a> |')
 </script>
 <a href="https://twitter.com/redbotorg"><span class="twitterlogo"></span></a> |
-<span class="help">Drag the bookmarklet to your bookmark bar - it makes
+<span class="help hidden">Drag the bookmarklet to your bookmark bar - it makes
 checking easy!</span>
 <a href="javascript:location%%20=%%20'%(baseuri)s?uri='+encodeURIComponent(location);%%20void%%200"
 title="drag me to your toolbar to use REDbot any time.">REDbot</a> bookmarklet
@@ -315,31 +308,31 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     <div id="left_column">
     %(nonfinal_responses)s
 
-    <span class="help">These are the response headers; hover over each one
+    <span class="help hidden">These are the response headers; hover over each one
     for an explanation of what it does.</span>
     <pre id='response'>%(response)s</pre>
 
     <p class="options">
-        <span class='help'>Here, you can see the response body, a HAR document for the request, and
-        when appropriate, validate the response or check its assets (such as referenced images,
-        stylesheets and scripts).</span>
+        <span class='help hidden'>Here, you can see the response body, a HAR document for the
+        request, and when appropriate, validate the response or check its assets (such as
+        referenced images, stylesheets and scripts).</span>
         %(options)s
     </p>
     </div>
 
     <div id="right_column">
     <div id='details'>
-    <span class='help right'>These notes explain what REDbot has found
+    <span class='help right hidden'>These notes explain what REDbot has found
     about your URL; hover over each one for a detailed explanation.</span>
     %(notes)s
     </div>
-    <span class="help">If something doesn't seem right, feel free to <a
+    <span class="help hidden">If something doesn't seem right, feel free to <a
     href="https://github.com/mnot/redbot/issues/new">file an issue</a>!</span>
     </div>
 
     <br />
 
-    <div id='body'>
+    <div id='body' class="hidden">
     %(body)s
     </div>
 
@@ -791,7 +784,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                 n = self.problems[p]
                 out.append(
                     "<span class='prob_num'>"
-                    " %s <span class='hidden'>%s</span></span>"
+                    " %s <span class='hidden'><span class='tip'>%s</span></span></span>"
                     % (p + 1, e_html(n.show_summary(self.lang)))
                 )
         else:
@@ -846,11 +839,11 @@ class TableHtmlFormatter(BaseHtmlFormatter):
 
     def format_yes_no(self, value: Union[bool, None]) -> str:
         if value is True:
-            return '<td><span class="fas yes">\uf058</span></td>'
+            return '<td><span class="fa yes">\uf058</span></td>'
         if value is False:
-            return '<td><span class="fas no">\uf057</span></td>'
+            return '<td><span class="fa no">\uf057</span></td>'
         if value is None:
-            return '<td><span class="fas info">\uf059</span></td>'
+            return '<td><span class="fa info">\uf059</span></td>'
         raise AssertionError("unknown value")
 
     def format_options(self, resource: HttpResource) -> str:
@@ -883,18 +876,21 @@ class TableHtmlFormatter(BaseHtmlFormatter):
 
     def format_problems(self) -> str:
         out = ["<br /><h2>Notes</h2><ol>"]
+        counter = 0
         for m in self.problems:
             out.append(
                 """\
-    <li class='%s %s note' name='msgid-%s'><span>%s</span></li>"""
+    <li class='%s %s note' name='msgid-%s' data-offset='%s'><span>%s</span></li>"""
                 % (
                     m.level.value,
                     e_html(m.subject),
                     id(m),
+                    counter,
                     e_html(m.show_summary(self.lang)),
                 )
             )
             self.hidden_text.append(("msgid-%s" % id(m), m.show_text(self.lang)))
+            counter += 1
         out.append("</ol>\n")
         return nl.join(out)
 

@@ -1,0 +1,12 @@
+
+.tippy-box[data-theme~='redbot'] {
+  @include rounded_corners(0.5em);
+  background-color: #679;
+  opacity: 0.95;
+  padding: 9px;
+  color: white;
+  font-size: 0.85em;
+  img {
+    max-width: 440px;
+  }
+}

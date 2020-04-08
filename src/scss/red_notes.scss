@@ -16,13 +16,17 @@ li {
 /* note levels */
 
 @mixin fontawesome-bullet {
-  font-family: 'Font Awesome 5 Free';
+  font-family: 'FontAwesome';
   margin:0 6px 0 -28px;
   font-weight: 400;
 }
 
 li.note {
   list-style-type: none;
+}
+
+li.note.hilight {
+  font-weight: bold;
 }
 
 .good {

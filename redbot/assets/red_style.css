@@ -4,38 +4,22 @@
    use individual characters.
    See: http://astronautweb.co/snippet/font-awesome/
 */
-/*!
- * Font Awesome Free 5.13.0 by @fontawesome - https://fontawesome.com
- * License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
- */
+/* FONT PATH
+ * -------------------------- */
 @font-face {
-  font-family: 'Font Awesome 5 Free';
-  font-style: normal;
-  font-weight: 900;
-  font-display: block;
-  src: url("/static/webfonts/fa-solid-900.eot");
-  src: url("/static/webfonts/fa-solid-900.eot?#iefix") format("embedded-opentype"), url("/static/webfonts/fa-solid-900.woff2") format("woff2"), url("/static/webfonts/fa-solid-900.woff") format("woff"), url("/static/webfonts/fa-solid-900.ttf") format("truetype"), url("/static/webfonts/fa-solid-900.svg#fontawesome") format("svg"); }
+  font-family: 'FontAwesome';
+  src: url("/static/webfonts/fontawesome-webfont.eot?v=4.7.0");
+  src: url("/static/webfonts/fontawesome-webfont.eot?#iefix&v=4.7.0") format("embedded-opentype"), url("/static/webfonts/fontawesome-webfont.woff2?v=4.7.0") format("woff2"), url("/static/webfonts/fontawesome-webfont.woff?v=4.7.0") format("woff"), url("/static/webfonts/fontawesome-webfont.ttf?v=4.7.0") format("truetype"), url("/static/webfonts/fontawesome-webfont.svg?v=4.7.0#fontawesomeregular") format("svg");
+  font-weight: normal;
+  font-style: normal; }
 
-.fa,
-.fas {
-  font-family: 'Font Awesome 5 Free';
-  font-weight: 900; }
-
-/*!
- * Font Awesome Free 5.13.0 by @fontawesome - https://fontawesome.com
- * License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
- */
-@font-face {
-  font-family: 'Font Awesome 5 Brands';
-  font-style: normal;
-  font-weight: 400;
-  font-display: block;
-  src: url("/static/webfonts/fa-brands-400.eot");
-  src: url("/static/webfonts/fa-brands-400.eot?#iefix") format("embedded-opentype"), url("/static/webfonts/fa-brands-400.woff2") format("woff2"), url("/static/webfonts/fa-brands-400.woff") format("woff"), url("/static/webfonts/fa-brands-400.ttf") format("truetype"), url("/static/webfonts/fa-brands-400.svg#fontawesome") format("svg"); }
-
-.fab {
-  font-family: 'Font Awesome 5 Brands';
-  font-weight: 400; }
+.fa {
+  display: inline-block;
+  font: normal normal normal 14px/1 FontAwesome;
+  font-size: inherit;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale; }
 
 /* layout, major elements */
 body {
@@ -85,12 +69,6 @@ h1 {
     color: #444;
     text-decoration: none; }
 
-.hilight {
-  color: #d33; }
-
-.save {
-  color: #aaa; }
-
 h2 {
   font-size: 1.1em; }
 
@@ -102,6 +80,12 @@ h3 {
 .hidden {
   display: none; }
 
+.hilight {
+  color: #d33; }
+
+.save {
+  color: #aaa; }
+
 .version {
   text-align: center;
   color: #aaa;
@@ -112,6 +96,15 @@ h3 {
   text-align: center;
   color: #aaa;
   font-size: 0.8em; }
+
+.btw {
+  text-align: center;
+  color: #aaa;
+  font-size: 0.8em;
+  font-style: italic; }
+
+br {
+  clear: both; }
 
 #red_status {
   color: #aaa;
@@ -129,32 +122,6 @@ h3 {
   top: 2em;
   right: 2em; }
 
-.btw {
-  text-align: center;
-  color: #aaa;
-  font-size: 0.8em;
-  font-style: italic; }
-
-br {
-  clear: both; }
-
-/* popups */
-#popup {
-  position: absolute;
-  -webkit-border-radius: 0.5em;
-  -moz-border-radius: 0.5em;
-  -ms-border-radius: 0.5em;
-  border-radius: 0.5em;
-  background-color: #679;
-  opacity: 0.95;
-  padding: 9px;
-  color: white;
-  font-size: 0.85em;
-  z-index: 10;
-  display: none; }
-  #popup img {
-    max-width: 440px; }
-
 /* footer */
 .footer {
   max-width: 650px; }
@@ -166,7 +133,7 @@ body.blank > .footer {
   width: 650px; }
 
 .twitterlogo {
-  font-family: 'Font Awesome 5 Brands';
+  font-family: 'FontAwesome';
   margin-bottom: -10px;
   color: #1DA1F2; }
 
@@ -227,9 +194,6 @@ input#uri {
   width: 650px;
   white-space: nowrap; }
 
-.hdr_name, .hdr_val {
-  font-size: 0.7em; }
-
 input.hdr_val {
   width: 200px;
   max-width: 200px; }
@@ -286,7 +250,6 @@ option[value="other..."] {
 
 /* response body */
 #body {
-  display: none;
   position: absolute;
   right: 3em;
   left: 3em; }
@@ -302,97 +265,7 @@ option[value="other..."] {
     border: 1px solid #ccc;
     padding: 9px; }
 
-/* note lists */
-ul {
-  margin-top: 0.2em;
-  margin-left: 12pt; }
-
-ul ul {
-  padding-left: 9pt;
-  margin-bottom: 0.4em; }
-
-li {
-  padding-left: 4pt;
-  margin-bottom: 6px; }
-
-/* note levels */
-li.note {
-  list-style-type: none; }
-
-.good {
-  color: #659365; }
-
-li.good:before {
-  font-family: 'Font Awesome 5 Free';
-  margin: 0 6px 0 -28px;
-  font-weight: 400;
-  content: '\f058'; }
-
-.warning {
-  color: #AA8A22; }
-
-li.warning:before {
-  font-family: 'Font Awesome 5 Free';
-  margin: 0 6px 0 -28px;
-  font-weight: 400;
-  content: '\f06a'; }
-
-.bad {
-  color: #a64029; }
-
-li.bad:before {
-  font-family: 'Font Awesome 5 Free';
-  margin: 0 6px 0 -28px;
-  font-weight: 400;
-  content: '\f057'; }
-
-.info {
-  color: #111; }
-
-li.info:before {
-  font-family: 'Font Awesome 5 Free';
-  margin: 0 6px 0 -28px;
-  font-weight: 400;
-  content: '\f05a';
-  color: #1676b7; }
-
-/* help bubbles */
-/* http://konigi.com/tools/css-sticky-notes */
-.help {
-  display: none;
-  -webkit-box-shadow: #DDD 0px 1px 2px;
-  position: absolute;
-  background-color: #F4F39E;
-  border-color: #DEE184;
-  color: #333;
-  text-align: center;
-  margin: 3.5em 0 2.5em 0;
-  padding: 1.25em 1em;
-  -webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25);
-  -moz-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25);
-  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25);
-  font-family: Chalkboard, 'Comic Sans';
-  font-size: 14px;
-  width: 250px; }
-
-.help.right {
-  margin: 3em 0 2.5em 290px; }
-
-.help:after {
-  display: block;
-  content: "";
-  position: absolute;
-  width: 110px;
-  height: 30px;
-  top: -21px;
-  left: 30%;
-  border: 1px solid #fff;
-  background: rgba(254, 254, 254, 0.6);
-  -webkit-box-shadow: 0px 0 3px rgba(0, 0, 0, 0.1);
-  -moz-box-shadow: 0px 0 3px rgba(0, 0, 0, 0.1);
-  box-shadow: 0px 0 3px rgba(0, 0, 0, 0.1); }
-
-/* summary table */
+/* summary table for multiple responses */
 table#summary {
   font-size: 0.8em;
   width: 100%;
@@ -437,3 +310,108 @@ table#summary {
 
 .no {
   color: #D98080; }
+
+.tippy-box[data-theme~='redbot'] {
+  -webkit-border-radius: 0.5em;
+  -moz-border-radius: 0.5em;
+  -ms-border-radius: 0.5em;
+  border-radius: 0.5em;
+  background-color: #679;
+  opacity: 0.95;
+  padding: 9px;
+  color: white;
+  font-size: 0.85em; }
+  .tippy-box[data-theme~='redbot'] img {
+    max-width: 440px; }
+
+/* note lists */
+ul {
+  margin-top: 0.2em;
+  margin-left: 12pt; }
+
+ul ul {
+  padding-left: 9pt;
+  margin-bottom: 0.4em; }
+
+li {
+  padding-left: 4pt;
+  margin-bottom: 6px; }
+
+/* note levels */
+li.note {
+  list-style-type: none; }
+
+li.note.hilight {
+  font-weight: bold; }
+
+.good {
+  color: #659365; }
+
+li.good:before {
+  font-family: 'FontAwesome';
+  margin: 0 6px 0 -28px;
+  font-weight: 400;
+  content: '\f058'; }
+
+.warning {
+  color: #AA8A22; }
+
+li.warning:before {
+  font-family: 'FontAwesome';
+  margin: 0 6px 0 -28px;
+  font-weight: 400;
+  content: '\f06a'; }
+
+.bad {
+  color: #a64029; }
+
+li.bad:before {
+  font-family: 'FontAwesome';
+  margin: 0 6px 0 -28px;
+  font-weight: 400;
+  content: '\f057'; }
+
+.info {
+  color: #111; }
+
+li.info:before {
+  font-family: 'FontAwesome';
+  margin: 0 6px 0 -28px;
+  font-weight: 400;
+  content: '\f05a';
+  color: #1676b7; }
+
+/* help bubbles */
+/* http://konigi.com/tools/css-sticky-notes */
+.help {
+  -webkit-box-shadow: #DDD 0px 1px 2px;
+  position: absolute;
+  background-color: #F4F39E;
+  border-color: #DEE184;
+  color: #333;
+  text-align: center;
+  margin: 3.5em 0 2.5em 0;
+  padding: 1.25em 1em;
+  -webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25);
+  -moz-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25);
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25);
+  font-family: Chalkboard, 'Comic Sans';
+  font-size: 14px;
+  width: 250px; }
+
+.help.right {
+  margin: 3em 0 2.5em 290px; }
+
+.help:after {
+  display: block;
+  content: "";
+  position: absolute;
+  width: 110px;
+  height: 30px;
+  top: -21px;
+  left: 30%;
+  border: 1px solid #fff;
+  background: rgba(254, 254, 254, 0.6);
+  -webkit-box-shadow: 0px 0 3px rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: 0px 0 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 0 3px rgba(0, 0, 0, 0.1); }

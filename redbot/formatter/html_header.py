@@ -36,7 +36,6 @@
 
 <body class="%(extra_body_class)s">
 
-<div id="popup"></div>
 <form method="POST" id="save_form"
  action="?id=%(test_id)s&save=True%(descend)s">
 </form>
@@ -46,7 +45,7 @@
     Droid">RED</abbr></span>bot</a>%(extra_title)s</h1>
 
     <form method="GET" id="request_form">
-        <span class="help right">Type in a URI here and press 'return' to
+        <span class="help right hidden">Type in a URI here and press 'return' to
         check it. You can also specify request headers by clicking 'add a
         request header.'</span>
         <input type="url" name="uri" value="%(html_uri)s"

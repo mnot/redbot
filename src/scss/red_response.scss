@@ -1,0 +1,58 @@
+
+
+/* response detail */
+
+#response {
+  font-size: 10pt;
+  font-family: Courier, monospace;
+  background-color: $console_colour;
+  color: $header_colour;
+  @include rounded_corners(0.75em);
+  border: 1px solid black;
+  padding: 1em 0;
+  margin-bottom: 0;
+  overflow-x: auto;
+  a {
+    color: #ccf;
+  }
+}
+
+.nonfinal_response {
+  @extend #response;
+  background-color: transparentize($console_colour, 0.4);
+  border: none;
+}
+
+.hdr.hilight {
+  color: lighten($header_colour, 100%);
+  font-weight: bold;
+}
+
+.options {
+  margin-top: 0.2em;
+  margin-bottom: 2em;
+  padding-top: 0;
+  text-align: center;
+  font-size: 0.75em;
+}
+
+.options > * {
+  padding-right: 2em;
+}
+
+/* response body */
+
+#body {
+  position: absolute;
+  right: 3em;
+  left: 3em;
+  .prettyprint {
+    font: 0.80/1.00 Consolas, "Lucida Console", Monaco, monospace;
+    overflow-x: auto;
+    overflow-y: hidden;
+    background-color: #fff;
+    @include rounded_corners(1em);
+    border: 1px solid #ccc;
+    padding: 9px;
+  }
+}
