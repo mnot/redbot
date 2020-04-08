@@ -9,7 +9,7 @@ docReady(function () {
     tippy(element, {
       content: tooltip,
       theme: 'redbot',
-      delay: [100, 100],
+      delay: [10, 10],
       interactive: true,
       interactiveBorder: 5,
       placement: 'bottom-start',
@@ -26,7 +26,7 @@ docReady(function () {
     tippy(element, {
       content: tooltip,
       theme: 'redbot',
-      delay: [100, 100],
+      delay: [10, 10],
       interactive: true,
       interactiveBorder: 5,
       placement: 'bottom-start',
