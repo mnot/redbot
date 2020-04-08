@@ -56,16 +56,14 @@ class BaseHtmlFormatter(Formatter):
         if self.kw.get("is_saved", None):
             extra_title += " saved "
         if self.resource and self.resource.check_name != "default":
-            extra_title += "%s response" % e_html(self.resource.check_name)
+            extra_title += f"{e_html(self.resource.check_name)} response"
         extra_title += "</span>"
+        extra_body_class = ""
         if self.kw.get("is_blank", None):
             extra_body_class = "blank"
-        else:
-            extra_body_class = ""
+        descend = ""
         if self.kw.get("descend", False):
             descend = "&descend=True"
-        else:
-            descend = ""
         self.output(
             html_header.__doc__
             % {
@@ -74,7 +72,7 @@ class BaseHtmlFormatter(Formatter):
                 "html_uri": e_html(uri),
                 "js_uri": e_js(uri),
                 "js_req_hdrs": ", ".join(
-                    ['["%s", "%s"]' % (e_js(n), e_js(v)) for n, v in req_headers]
+                    [f'["{e_js(n)}", "{e_js(v)}"]' for n, v in req_headers]
                 ),
                 "config": json.dumps(
                     {
@@ -104,7 +102,7 @@ class BaseHtmlFormatter(Formatter):
         """
         Something bad happened.
         """
-        self.output("<p class='error'>%s</p>" % message)
+        self.output(f"<p class='error'>{message}</p>")
 
     def status(self, message: str) -> None:
         "Update the status bar of the browser"
@@ -171,7 +169,7 @@ console.log("%3.3f %s");
                         ).read()
                     )
                 except IOError as why:
-                    o.append("<!-- error opening %s: %s -->" % (extra_file, why))
+                    o.append(f"<!-- error opening {extra_file}: {why} -->")
         return nl.join(o)
 
     def format_hidden_list(self) -> str:
@@ -239,15 +237,15 @@ title="drag me to your toolbar to use REDbot any time.">REDbot</a> bookmarklet
             for k, v in self.resource.request.headers:
                 if referer and k.lower() == "referer":
                     continue
-                out.append("req_hdr=%s%%3A%s" % (e_query_arg(k), e_query_arg(v)))
+                out.append(f"req_hdr={e_query_arg(k)}%3A{e_query_arg(v)}")
         if referer:
-            out.append("req_hdr=Referer%%3A%s" % e_query_arg(uri))
+            out.append(f"req_hdr=Referer%3A{e_query_arg(uri)}")
         if check_name:
-            out.append("check_name=%s" % e_query_arg(check_name))
+            out.append(f"check_name={e_query_arg(check_name)}")
         elif self.resource.check_name is not None:
-            out.append("check_name=%s" % e_query_arg(self.resource.check_name))
+            out.append(f"check_name={e_query_arg(self.resource.check_name)}")
         if res_format:
-            out.append("format=%s" % e_query_arg(res_format))
+            out.append(f"format={e_query_arg(res_format)}")
         return "&".join(out)
 
 
@@ -374,24 +372,19 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             elif isinstance(self.resource.response.http_error, httperr.HttpError):
                 if self.resource.response.http_error.detail:
                     self.error_output(
-                        "%s (%s)"
-                        % (
-                            self.resource.response.http_error.desc,
-                            self.resource.response.http_error.detail,
-                        )
+                        f"{self.resource.response.http_error.desc} ({self.resource.response.http_error.detail})"
                     )
                 else:
                     self.error_output(self.resource.response.http_error.desc)
             else:
                 raise AssertionError(
-                    "Unknown incomplete response error %s"
-                    % (self.resource.response.http_error)
+                    f"Unknown incomplete response error {self.resource.response.http_error}"
                 )
 
     def format_nonfinal_responses(self, resource: HttpResource) -> str:
         return nl.join(
             [
-                "<pre class='nonfinal_response'>%s</pre>" % self.format_response(r)
+                f"<pre class='nonfinal_response'>{self.format_response(r)}</pre>"
                 for r in resource.nonfinal_responses
             ]
         )
@@ -419,13 +412,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 header_desc % {"field_name": name}, output_format="html5"
             )
             self.hidden_text.append((token_name, html_desc))
-        return """\
-    <span data-offset='%s' data-name='%s' class='hdr'>%s:%s</span>""" % (
-            offset,
-            e_html(name.lower()),
-            e_html(name),
-            self.header_presenter.Show(name, value),
-        )
+        return f"""\
+    <span data-offset='{offset}' data-name='{e_html(name.lower())}' class='hdr'>{e_html(name)}:{self.header_presenter.Show(name, value)}</span>"""
 
     def format_body_sample(self, resource: HttpResource) -> str:
         """show the stored body sample"""
@@ -488,9 +476,9 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 ]
                 #                notes.extend(smsgs)
                 if len(smsgs) == 1:
-                    out.append(" - %i problem\n" % len(smsgs))
+                    out.append(f" - {len(smsgs)} problem\n")
                 elif smsgs:
-                    out.append(" - %i problems\n" % len(smsgs))
+                    out.append(f" - {len(smsgs)} problems\n")
                 out.append(")</span>\n")
         out.append("</h3>\n")
         out.append("<ul>\n")
@@ -507,7 +495,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     e_html(note.show_summary(self.lang)),
                 )
             )
-            self.hidden_text.append(("noteid-%s" % id(note), note.show_text(self.lang)))
+            self.hidden_text.append((f"noteid-{id(note)}", note.show_text(self.lang)))
         out.append("</ul>\n")
         return nl.join(out)
 
@@ -517,13 +505,13 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         media_type = resource.response.parsed_headers.get("content-type", [""])[0]
         options.append(
             (
-                "response headers: %s bytes" % f_num(resource.response.header_length),
+                f"response headers: {f_num(resource.response.header_length)} bytes",
                 "how large the response headers are, including the status line",
             )
         )
         options.append(
             (
-                "body: %s bytes" % f_num(resource.response.payload_len),
+                f"body: {f_num(resource.response.payload_len)} bytes",
                 "how large the response body is",
             )
         )
@@ -533,7 +521,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         if transfer_overhead > 0:
             options.append(
                 (
-                    "transfer overhead: %s bytes" % f_num(transfer_overhead),
+                    f"transfer overhead: {f_num(transfer_overhead)} bytes",
                     "how much using chunked encoding adds to the response size",
                 )
             )
@@ -550,9 +538,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         if isinstance(resource, HttpResource):
             options.append(
                 (
-                    """\
-        <a href="?%s" accesskey="h">view har</a>"""
-                    % self.req_qs(res_format="har"),
+                    f"""<a href="?{self.req_qs(res_format='har')}" accesskey="h">view har</a>""",
                     "View a HAR (HTTP ARchive, a JSON format) file for this test",
                 )
             )
@@ -576,16 +562,13 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             if hasattr(resource, "link_count") and resource.link_count > 0:
                 options.append(
                     (
-                        "<a href=\"?descend=True&%s\" accesskey='a'>"
-                        "check embedded</a>" % self.req_qs(use_stored=False),
+                        f"<a href='?descend=True&{self.req_qs(use_stored=False)}' accesskey='a'>check embedded</a>",
                         "run REDbot on images, frames and embedded links",
                     )
                 )
         return nl.join(
             [
-                o
-                and "<span class='option' title='%s'>%s</span>" % (o[1], o[0])
-                or "<br>"
+                o and f"<span class='option' title='{o[1]}'>{o[0]}</span>" or "<br>"
                 for o in options
             ]
         )
@@ -697,7 +680,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             droids = [d[0] for d in resource.linked if d[1] == hdr_tag]
             if droids:
                 droids.sort(key=operator.attrgetter("response.base_uri"))
-                out.append(self.format_table_header(heading + " (%s)" % len(droids)))
+                out.append(self.format_table_header(f"{heading} ({len(droids)})"))
                 out += [self.format_droid(d) for d in droids]
         return nl.join(out)
 
@@ -717,7 +700,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         </a>
     </td>"""
                 % (
-                    "?%s" % self.req_qs(resource.request.uri, use_stored=False),
+                    f"?{self.req_qs(resource.request.uri, use_stored=False)}",
                     e_html(resource.request.uri),
                     cl,
                     e_html(resource.request.uri[: m - 2]),
@@ -752,9 +735,9 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                     )
                 )
             elif resource.response.status_code in ["400", "404", "410"]:
-                out.append('<td class="bad">%s</td>' % (resource.response.status_code))
+                out.append(f'<td class="bad">{resource.response.status_code}</td>')
             else:
-                out.append("<td>%s</td>" % resource.response.status_code)
+                out.append(f"<td>{resource.response.status_code}</td>")
             # pconn
             out.append(self.format_size(resource.response.payload_len))
             out.append(self.format_yes_no(resource.response.store_shared))
@@ -764,7 +747,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             out.append(self.format_yes_no(resource.ims_support))
             out.append(self.format_yes_no(resource.inm_support))
             if resource.gzip_support:
-                out.append("<td>%s%%</td>" % resource.gzip_savings)
+                out.append(f"<td>{resource.gzip_savings}%</td>")
             else:
                 out.append(self.format_yes_no(resource.gzip_support))
             out.append(self.format_yes_no(resource.partial_support))
@@ -792,16 +775,16 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                 err = "response incomplete"
             else:
                 err = resource.response.http_error.desc or "unknown problem"
-            out.append('<td colspan="11">%s' % err)
+            out.append(f'<td colspan="11">{err}')
         out.append("</td>")
         out.append("</tr>")
         return nl.join(out)
 
     @staticmethod
     def format_table_header(heading: str = None) -> str:
-        return """
+        return f"""
         <tr>
-        <th title="The URI tested. Click to run a detailed analysis.">%s</th>
+        <th title="The URI tested. Click to run a detailed analysis.">{heading or "URI"}</th>
         <th title="The HTTP status code returned.">status</th>
         <th title="The size of the response body, in bytes.">size</th>
         <th title="Whether a shared (e.g., proxy) cache can store the
@@ -821,21 +804,19 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         <th title="Whether partial responses are supported.">partial</th>
         <th title="Issues encountered.">notes</th>
         </tr>
-        """ % (
-            heading or "URI"
-        )
+        """
 
     @staticmethod
     def format_time(value: float) -> str:
         if value is None:
             return "<td>-</td>"
-        return "<td>%s</td>" % relative_time(value, 0, 0)
+        return f"<td>{relative_time(value, 0, 0)}</td>"
 
     @staticmethod
     def format_size(value: int) -> str:
         if value is None:
             return "<td>-</td>"
-        return "<td>%s</td>" % f_num(value, by1024=True)
+        return f"<td>{f_num(value, by1024=True)}</td>"
 
     def format_yes_no(self, value: Union[bool, None]) -> str:
         if value is True:
@@ -852,8 +833,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         media_type = resource.response.parsed_headers.get("content-type", [""])[0]
         options.append(
             (
-                "<a href='?descend=True&%s'>view har</a>"
-                % self.req_qs(res_format="har"),
+                f"<a href='?descend=True&{self.req_qs(res_format='har')}'>view har</a>",
                 "View a HAR (HTTP ARchive) file for this response",
             )
         )
@@ -867,9 +847,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                 )
         return nl.join(
             [
-                o
-                and "<span class='option' title='%s'>%s</span>" % (o[1], o[0])
-                or "<br>"
+                o and f"<span class='option' title='{o[1]}'>{o[0]}</span>" or "<br>"
                 for o in options
             ]
         )
@@ -889,7 +867,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                     e_html(m.show_summary(self.lang)),
                 )
             )
-            self.hidden_text.append(("msgid-%s" % id(m), m.show_text(self.lang)))
+            self.hidden_text.append((f"msgid-{id(m)}", m.show_text(self.lang)))
             counter += 1
         out.append("</ol>\n")
         return nl.join(out)

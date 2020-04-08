@@ -58,7 +58,7 @@ def find_formatter(
     for candidate in formatter_candidates:
         if candidate.can_multiple:
             return candidate
-    raise RuntimeError("Can't find a format in %s" % _formatters)
+    raise RuntimeError(f"Can't find a format in {_formatters}")
 
 
 def available_formatters() -> List[str]:
@@ -163,9 +163,7 @@ class Formatter(EventEmitter):
         """
         Return binary suitable for the value of a Content-Type header field.
         """
-        return ("%s; charset=%s" % (self.media_type, self.config["charset"])).encode(
-            "ascii"
-        )
+        return f"{self.media_type}; charset={self.config['charset']}".encode("ascii")
 
 
 def f_num(i: int, by1024: bool = False) -> str:

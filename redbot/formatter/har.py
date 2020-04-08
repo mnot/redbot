@@ -69,7 +69,7 @@ class HarFormatter(Formatter):
             "_red_messages": self.format_notes(resource),
         }
         if page_ref:
-            entry["pageref"] = "page%s" % page_ref
+            entry["pageref"] = f"page{page_ref}"
 
         request = {
             "method": resource.request.method,
@@ -85,7 +85,7 @@ class HarFormatter(Formatter):
         response = {
             "status": resource.response.status_code,
             "statusText": resource.response.status_phrase,
-            "httpVersion": "HTTP/%s" % resource.response.version,
+            "httpVersion": f"HTTP/{resource.response.version}",
             "cookies": [],
             "headers": self.format_headers(resource.response.headers),
             "content": {
@@ -127,7 +127,7 @@ class HarFormatter(Formatter):
         page_id = self.last_id + 1
         page = {
             "startedDateTime": isoformat(resource.request.start_time),
-            "id": "page%s" % page_id,
+            "id": f"page{page_id}",
             "title": "",
             "pageTimings": {"onContentLoad": -1, "onLoad": -1},
         }
@@ -151,4 +151,4 @@ class HarFormatter(Formatter):
 
 
 def isoformat(timestamp: float) -> str:
-    return "%sZ" % datetime.datetime.utcfromtimestamp(timestamp).isoformat()
+    return f"{datetime.datetime.utcfromtimestamp(timestamp).isoformat()}Z"

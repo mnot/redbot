@@ -86,10 +86,9 @@ class BaseTextFormatter(Formatter):
 
     def format_headers(self, response: HttpResponse) -> str:
         out = [
-            "HTTP/%s %s %s"
-            % (response.version, response.status_code, response.status_phrase)
+            f"HTTP/{response.version} {response.status_code} {response.status_phrase}"
         ]
-        return nl.join(out + ["%s:%s" % h for h in response.headers])
+        return nl.join(out + [f"{h[0]}:{h[1]}" for h in response.headers])
 
     def format_recommendations(self, resource: HttpResource) -> str:
         return "".join(
@@ -181,9 +180,10 @@ class TextListFormatter(BaseTextFormatter):
         "Fill in the template with RED's results."
         BaseTextFormatter.finish_output(self)
         sep = "=" * 78
+        nl = "\n"
         for hdr_tag, heading in self.link_order:
             subresources = [d[0] for d in self.resource.linked if d[1] == hdr_tag]
-            self.output("%s\n%s (%d)\n%s\n" % (sep, heading, len(subresources), sep))
+            self.output(f"{sep}{nl}{heading} ({len(subresources)}){nl}{sep}{nl}")
             if subresources:
                 subresources.sort(key=operator.attrgetter("request.uri"))
                 for subresource in subresources:
