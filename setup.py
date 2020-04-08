@@ -27,8 +27,8 @@ setup(name='redbot',
       ],
       extras_require={
           'dev': [
-              'mypy',
-              'selenium'
+          'mypy',
+          'selenium'
           ]
       },
       classifiers=[
