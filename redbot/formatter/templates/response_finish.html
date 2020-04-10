@@ -1,5 +1,5 @@
 {% macro format_response(r) %}
-  <span class='status'>HTTP/{{ r.version }} {{ r.status_code }} {{ r.status_phrase }}</span>
+  <span class='status'>  HTTP/{{ r.version }} {{ r.status_code }} {{ r.status_phrase }}</span>
 {% for hdr in r.headers %}
     <span data-offset='{{ loop.index0 }}' data-name='{{ hdr[0]|lower }}' class='hdr'>{{ hdr[0] }}:{{ hdr|header_present}}<span class="tip">{{ hdr[0]|header_description }}</span></span>
 {% endfor %}
@@ -91,5 +91,5 @@
 
   <br />
 
-  <div id='body' class="hidden">{{ body|safe }}</div>
+  <div id='body' class="hidden">{{ body }}</div>
 {% include 'footer.html' %}

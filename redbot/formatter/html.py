@@ -4,7 +4,6 @@
 HTML Formatter for REDbot.
 """
 
-from html import escape as e_html
 import operator
 import re
 import textwrap
@@ -17,7 +16,7 @@ import thor.http.error as httperr
 
 from redbot import __version__
 from redbot.formatter import Formatter
-from redbot.formatter.html_base import BaseHtmlFormatter, e_query_arg
+from redbot.formatter.html_base import BaseHtmlFormatter, e_query_arg, Markup, escape
 from redbot.resource import HttpResource, active_check
 from redbot.message.headers import HeaderProcessor
 from redbot.speak import Note, levels, categories  # pylint: disable=unused-import
@@ -133,7 +132,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             uni_sample = sample.decode(resource.response.character_encoding, "ignore")
         except (TypeError, LookupError):
             uni_sample = sample.decode("utf-8", "replace")
-        safe_sample = e_html(uni_sample)
+        safe_sample = escape(uni_sample)
         if hasattr(resource, "links"):
             for tag, link_set in list(resource.links.items()):
                 for link in link_set:
@@ -146,7 +145,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                         return r"%s<a href='?%s' class='nocode'>%s</a>%s" % (
                             matchobj.group(1),
                             self.req_qs(link, use_stored=False),
-                            e_html(link),
+                            escape(link),
                             matchobj.group(1),
                         )
 
@@ -156,17 +155,17 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         message = ""
         if not resource.response.decoded_sample_complete:
             message = "<p class='btw'>REDbot isn't showing the whole body, because it's so big!</p>"
-        return f"<pre class='prettyprint'>{safe_sample}</pre>\n{{ message }}"
+        return Markup(f"<pre class='prettyprint'>{safe_sample}</pre>\n{{ message }}")
 
     def format_header(self, header: Tuple[str, str]) -> str:
-        return self.header_presenter.Show(header[0], header[1])
+        return Markup(self.header_presenter.Show(header[0], header[1]))
 
     def format_header_description(self, header_name: str) -> str:
         description = HeaderProcessor.find_header_handler(header_name).description
         if description:
-            return markdown(
+            return Markup(markdown(
                 description % {"field_name": header_name}, output_format="html5"
-            )
+            ))
         return ""
 
 
@@ -191,7 +190,7 @@ class HeaderPresenter:
         name_token = name.replace("-", "_")
         if name_token[0] != "_" and hasattr(self, name_token):
             return getattr(self, name_token)(name, value)
-        return self.I(e_html(value), len(name))
+        return self.I(escape(value), len(name))
 
     def BARE_URI(self, name: str, value: str) -> str:
         "Present a bare URI header value"
@@ -201,7 +200,7 @@ class HeaderPresenter:
         return '%s<a href="?%s">%s</a>' % (
             " " * space,
             self.formatter.req_qs(svalue, use_stored=False),
-            self.I(e_html(svalue), len(name)),
+            self.I(escape(svalue), len(name)),
         )
 
     content_location = location = x_xrds_location = BARE_URI
@@ -276,7 +275,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
     def format_note_description(self, header_name: str) -> str:
         description = HeaderProcessor.find_header_handler(header_name).description
         if description:
-            return markdown(
+            return Markup(markdown(
                 description % {"field_name": header_name}, output_format="html5"
-            )
+            ))
         return ""

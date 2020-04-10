@@ -1,12 +1,11 @@
 import codecs
 from functools import partial
-from html import escape as e_html
 import json
 import os
 from typing import Any, List, Match, Tuple, Union  # pylint: disable=unused-import
 from urllib.parse import urljoin, quote as urlquote
 
-from jinja2 import Environment, PackageLoader
+from jinja2 import Environment, PackageLoader, select_autoescape, Markup, escape
 
 import thor
 
@@ -16,8 +15,6 @@ from redbot.resource import HttpResource
 from redbot.speak import Note, levels, categories  # pylint: disable=unused-import
 
 nl = "\n"
-uri_gen_delims = r":/?#[]@"
-uri_sub_delims = r"!$&'()*+,;="
 
 
 def unicode_url_escape(url: str, safe: str) -> str:
@@ -29,7 +26,8 @@ def unicode_url_escape(url: str, safe: str) -> str:
     # but Python does anyway :/
     return urlquote(url, safe + r"%~")
 
-
+uri_gen_delims = r":/?#[]@"
+uri_sub_delims = r"!$&'()*+,;="
 e_url = partial(unicode_url_escape, safe=uri_gen_delims + uri_sub_delims)
 e_authority = partial(unicode_url_escape, safe=uri_sub_delims + r"[]:@")
 e_path = partial(unicode_url_escape, safe=uri_sub_delims + r":@/")
@@ -49,7 +47,7 @@ def e_js(instr: str) -> str:
     instr = instr.replace("\\", "\\\\")
     instr = instr.replace('"', r"\"")
     instr = instr.replace("<", r"\x3c")
-    return instr
+    return Markup(instr)
 
 
 class BaseHtmlFormatter(Formatter):
@@ -62,7 +60,11 @@ class BaseHtmlFormatter(Formatter):
         Formatter.__init__(self, *args, **kw)
         self.hidden_text = []  # type: List[Tuple[str, str]]
         self.templates = Environment(
-            loader=PackageLoader("redbot.formatter"), trim_blocks=True
+            loader=PackageLoader("redbot.formatter"), trim_blocks=True,
+            autoescape=select_autoescape(
+                enabled_extensions=('html', 'xml'),
+                default_for_string=True,
+            )
         )
         self.templates.filters.update(
             {"f_num": f_num, "relative_time": relative_time, "req_qs": self.req_qs}
@@ -83,7 +85,7 @@ class BaseHtmlFormatter(Formatter):
         if self.kw.get("is_saved", None):
             extra_title += " saved "
         if self.resource and self.resource.check_name != "default":
-            extra_title += f"{e_html(self.resource.check_name)} response"
+            extra_title += f"{escape(self.resource.check_name)} response"
         extra_title += "</span>"
         extra_body_class = ""
         if self.kw.get("is_blank", None):
@@ -98,20 +100,20 @@ class BaseHtmlFormatter(Formatter):
                 version=__version__,
                 html_uri=uri,
                 js_uri=e_js(uri),
-                js_req_hdrs=", ".join(
+                js_req_hdrs=Markup(", ".join(
                     [f'["{e_js(n)}", "{e_js(v)}"]' for n, v in req_headers]
-                ),
-                config=json.dumps(
+                )),
+                config=Markup(json.dumps(
                     {
                         "redbot_uri": uri,
                         "redbot_req_hdrs": req_headers,
                         "redbot_version": __version__,
                     },
                     ensure_ascii=True,
-                ).replace("<", "\\u003c"),
+                ).replace("<", "\\u003c")),
                 extra_js=self.format_extra(".js"),
                 test_id=self.kw.get("test_id", ""),
-                extra_title=extra_title,
+                extra_title=Markup(extra_title),
                 extra_body_class=extra_body_class,
                 descend=descend,
             )
@@ -137,7 +139,7 @@ class BaseHtmlFormatter(Formatter):
             f"""
 <script>
 <!-- {thor.time() - self.start:3.3f}
-qs('#red_status').textContent = "{e_html(message)}"
+qs('#red_status').textContent = "{escape(message)}"
 -->
 </script>
 """
@@ -194,7 +196,7 @@ console.log("{thor.time() - self.start:3.3f} {e_js(message)}");
                     )
                 except IOError as why:
                     o.append(f"<!-- error opening {extra_file}: {why} -->")
-        return nl.join(o)
+        return Markup(nl.join(o))
 
     def req_qs(
         self,
@@ -241,4 +243,4 @@ console.log("{thor.time() - self.start:3.3f} {e_js(message)}");
             out.append(f"check_name={e_query_arg(self.resource.check_name)}")
         if res_format:
             out.append(f"format={e_query_arg(res_format)}")
-        return "&".join(out)
+        return escape("&".join(out))
