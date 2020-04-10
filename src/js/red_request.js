@@ -49,7 +49,7 @@ function addReqHdr (setName, setVal) {
     if (setName != null) {
       var knownHdrVals = knownReqHdrs[setName]
       if (knownHdrVals == null) {
-        setValue(reqHdr, `<input class="hdrVal" type="text" value="${setVal}"/>`)
+        setValue(reqHdr, `<input class="hdr_val" type="text" value="${setVal}"/>`)
       } else if (knownHdrVals.indexOf(setVal) > -1) {
         var valHtml = "<select class='hdr_val'><option />"
         knownHdrVals.forEach(val => {
@@ -62,7 +62,7 @@ function addReqHdr (setName, setVal) {
         valHtml += "<option value='other...'>other...</option></select>"
         setValue(reqHdr, valHtml)
       } else if (setVal != null) {
-        setValue(reqHdr, `<input class="hdrVal" type="text" value="${setVal}"/>`)
+        setValue(reqHdr, `<input class="hdr_val" type="text" value="${setVal}"/>`)
       }
     }
   }
