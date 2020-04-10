@@ -38,10 +38,10 @@ docReady(function () {
 
   qsa('tr.droid', function (element) {
     var noteNums = []
-    qsa('span.prob_num', function (td) {
-      var span = qs('span', td)
-      if (span) {
-        noteNums.push(span.firstChild.nodeValue)
+    qsa('span.prob_num', function (span) {
+      console.log(span)
+      if (span.textContent) {
+        noteNums.push(span.textContent)
       }
     }, qs('td:last-child', element))
     element.onmouseover = element.onmouseout = function () {
