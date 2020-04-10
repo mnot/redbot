@@ -28,7 +28,7 @@
       <span class='option' title='How large the response body is'>body: {{ resource.response.payload_len|f_num }} bytes</span>
 
       {% if resource.response.transfer_length - resource.response.payload_len > 0 -%}
-      <span class='option' title='How much using chunked encoding adds to the response size'>transfer overhead: {{ resource.response.transfer_length - resource.response.payload_len|f_num }} bytes</span>
+      <span class='option' title='How much using chunked encoding adds to the response size'>transfer overhead: {{ (resource.response.transfer_length - resource.response.payload_len)|f_num }} bytes</span>
       {%- endif %}
 
       <br/>
@@ -74,7 +74,7 @@
       {% for category in formatter.note_categories %}
       {% for note in resource.notes if note.category == category %}
       {% if loop.first %}
-      <h3>{{ category.value }}</h3> <!-- TODO: links to subrequests and error counts -->
+      <h3>{{ category.value }}{{ category|subrequest_messages }}</h3>
       <ul>
       {% endif %}
         <li class='{{ note.level.value }} note' data-subject='{{ note.subject }}'>

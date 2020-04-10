@@ -16,7 +16,7 @@ import thor.http.error as httperr
 
 from redbot import __version__
 from redbot.formatter import Formatter
-from redbot.formatter.html_base import BaseHtmlFormatter, e_query_arg, Markup, escape
+from redbot.formatter.html_base import BaseHtmlFormatter, e_query_arg, Markup, escape, nl
 from redbot.resource import HttpResource, active_check
 from redbot.message.headers import HeaderProcessor
 from redbot.speak import Note, levels, categories  # pylint: disable=unused-import
@@ -82,6 +82,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             {
                 "header_present": self.format_header,
                 "header_description": self.format_header_description,
+                "subrequest_messages": self.format_subrequest_messages
             }
         )
         self.header_presenter = HeaderPresenter(self)
@@ -158,6 +159,28 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         if not resource.response.decoded_sample_complete:
             message = "<p class='btw'>REDbot isn't showing the whole body, because it's so big!</p>"
         return Markup(f"<pre class='prettyprint'>{safe_sample}</pre>\n{{ message }}")
+
+    def format_subrequest_messages(self, category: categories) -> Markup:
+        out = []
+        if isinstance(self.resource, HttpResource) and category in self.note_responses:
+            for check_name in self.note_responses[category]:
+                if not self.resource.subreqs[check_name].fetch_started:
+                    continue
+                out.append(
+                    '<span class="req_link"> (<a href="?%s">%s response</a>'
+                    % (self.req_qs(check_name=check_name), check_name)
+                )
+                smsgs = [
+                    note
+                    for note in getattr(self.resource.subreqs[check_name], "notes", [])
+                    if note.level in [levels.BAD] and note not in self.resource.notes
+                ]
+                if len(smsgs) == 1:
+                    out.append(f" - {len(smsgs)} problem\n")
+                elif smsgs:
+                    out.append(f" - {len(smsgs)} problems\n")
+                out.append(")</span>")
+        return Markup(nl.join(out))
 
     def format_header(self, header: Tuple[str, str]) -> Markup:
         return Markup(self.header_presenter.Show(header[0], header[1]))
