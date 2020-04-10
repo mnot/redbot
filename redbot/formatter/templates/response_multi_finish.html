@@ -104,7 +104,7 @@
   <ol>
   {% for problem in problems %}
     <li class='{{ problem.level.value }} {{ problem.subject }} note' data-offset='{{ loop.index }}'>
-      <span>{{ problem.show_summary(lang) }}</span>
+      {{ loop.index }}. <span>{{ problem.show_summary(lang) }}</span>
     </li>
   {% endfor %}
   </ol>
