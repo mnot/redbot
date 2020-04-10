@@ -10,9 +10,9 @@ it need to be escaped to be safe for use in HTML.
 
 from binascii import b2a_hex
 from enum import Enum
-from html import escape as e_html
 from typing import Any, Dict, Union
 
+from jinja2 import Markup, escape
 from markdown import markdown
 
 
@@ -57,24 +57,27 @@ class Note:
             and self.subject == other.subject
         )
 
-    def show_summary(self, lang: str) -> str:
+    def show_summary(self, lang: str) -> Markup:
         """
         Output a textual summary of the message as a Unicode string.
 
         Note that if it is displayed in an environment that needs
         encoding (e.g., HTML), that is *NOT* done.
         """
-        return self.summary % self.vars
+        return Markup(self.summary % self.vars)
 
-    def show_text(self, lang: str) -> str:
+    def show_text(self, lang: str) -> Markup:
         """
         Show the HTML text for the message as a Unicode string.
 
         The resulting string is already HTML-encoded.
         """
-        return markdown(
-            self.text % dict([(k, e_html(str(v))) for k, v in list(self.vars.items())]),
-            output_format="html5",
+        return Markup(
+            markdown(
+                self.text
+                % dict([(k, escape(str(v))) for k, v in list(self.vars.items())]),
+                output_format="html5",
+            )
         )
 
 

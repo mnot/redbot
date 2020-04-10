@@ -26,6 +26,7 @@ def unicode_url_escape(url: str, safe: str) -> str:
     # but Python does anyway :/
     return urlquote(url, safe + r"%~")
 
+
 uri_gen_delims = r":/?#[]@"
 uri_sub_delims = r"!$&'()*+,;="
 e_url = partial(unicode_url_escape, safe=uri_gen_delims + uri_sub_delims)
@@ -37,13 +38,13 @@ e_query_arg = partial(unicode_url_escape, safe=r"!$'()*+,:@/?")
 e_fragment = partial(unicode_url_escape, safe=r"!$&'()*+,;:@=/?")
 
 
-def e_js(instr: str) -> str:
+def e_js(instr: str) -> Markup:
     """
     Make sure instr is safe for writing into a double-quoted
     JavaScript string.
     """
     if not instr:
-        return ""
+        return Markup("")
     instr = instr.replace("\\", "\\\\")
     instr = instr.replace('"', r"\"")
     instr = instr.replace("<", r"\x3c")
@@ -60,11 +61,11 @@ class BaseHtmlFormatter(Formatter):
         Formatter.__init__(self, *args, **kw)
         self.hidden_text = []  # type: List[Tuple[str, str]]
         self.templates = Environment(
-            loader=PackageLoader("redbot.formatter"), trim_blocks=True,
+            loader=PackageLoader("redbot.formatter"),
+            trim_blocks=True,
             autoescape=select_autoescape(
-                enabled_extensions=('html', 'xml'),
-                default_for_string=True,
-            )
+                enabled_extensions=("html", "xml"), default_for_string=True,
+            ),
         )
         self.templates.filters.update(
             {"f_num": f_num, "relative_time": relative_time, "req_qs": self.req_qs}
@@ -99,20 +100,18 @@ class BaseHtmlFormatter(Formatter):
                 static=self.config["static_root"],
                 version=__version__,
                 html_uri=uri,
-                js_uri=e_js(uri),
-                js_req_hdrs=Markup(", ".join(
-                    [f'["{e_js(n)}", "{e_js(v)}"]' for n, v in req_headers]
-                )),
-                config=Markup(json.dumps(
-                    {
-                        "redbot_uri": uri,
-                        "redbot_req_hdrs": req_headers,
-                        "redbot_version": __version__,
-                    },
-                    ensure_ascii=True,
-                ).replace("<", "\\u003c")),
-                extra_js=self.format_extra(".js"),
                 test_id=self.kw.get("test_id", ""),
+                config=Markup(
+                    json.dumps(
+                        {
+                            "redbot_uri": uri,
+                            "redbot_req_hdrs": req_headers,
+                            "redbot_version": __version__,
+                        },
+                        ensure_ascii=True,
+                    ).replace("<", "\\u003c")
+                ),
+                extra_js=self.format_extra(".js"),
                 extra_title=Markup(extra_title),
                 extra_body_class=extra_body_class,
                 descend=descend,
@@ -132,6 +131,8 @@ class BaseHtmlFormatter(Formatter):
         Something bad happened.
         """
         self.output(f"<p class='error'>{message}</p>")
+        tpl = self.templates.get_template("footer.html")
+        self.output(tpl.render(baseuri=self.config["ui_uri"]))
 
     def status(self, message: str) -> None:
         "Update the status bar of the browser"
@@ -168,7 +169,7 @@ console.log("{thor.time() - self.start:3.3f} {e_js(message)}");
 """
         )
 
-    def format_extra(self, etype: str = ".html") -> str:
+    def format_extra(self, etype: str = ".html") -> Markup:
         """
         Show extra content from the extra_dir, if any. MUST be UTF-8.
         Type controls the extension included; currently supported:
@@ -205,7 +206,7 @@ console.log("{thor.time() - self.start:3.3f} {e_js(message)}");
         res_format: str = None,
         use_stored: bool = True,
         referer: bool = True,
-    ) -> str:
+    ) -> Markup:
         """
         Format a query string to refer to another REDbot resource.
 

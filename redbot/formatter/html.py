@@ -122,7 +122,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     f"Unknown incomplete response error {self.resource.response.http_error}"
                 )
 
-    def format_body_sample(self, resource: HttpResource) -> str:
+    def format_body_sample(self, resource: HttpResource) -> Markup:
         """show the stored body sample"""
         if resource.response.status_code == "206":
             sample = resource.response.payload
@@ -149,24 +149,28 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                             matchobj.group(1),
                         )
 
-                    safe_sample = re.sub(
-                        r"('|&quot;)%s\1" % re.escape(link), link_to, safe_sample
+                    safe_sample = Markup(
+                        re.sub(
+                            r"('|&quot;)%s\1" % re.escape(link), link_to, safe_sample
+                        )
                     )
         message = ""
         if not resource.response.decoded_sample_complete:
             message = "<p class='btw'>REDbot isn't showing the whole body, because it's so big!</p>"
         return Markup(f"<pre class='prettyprint'>{safe_sample}</pre>\n{{ message }}")
 
-    def format_header(self, header: Tuple[str, str]) -> str:
+    def format_header(self, header: Tuple[str, str]) -> Markup:
         return Markup(self.header_presenter.Show(header[0], header[1]))
 
-    def format_header_description(self, header_name: str) -> str:
+    def format_header_description(self, header_name: str) -> Markup:
         description = HeaderProcessor.find_header_handler(header_name).description
         if description:
-            return Markup(markdown(
-                description % {"field_name": header_name}, output_format="html5"
-            ))
-        return ""
+            return Markup(
+                markdown(
+                    description % {"field_name": header_name}, output_format="html5"
+                )
+            )
+        return Markup("")
 
 
 class HeaderPresenter:
@@ -181,7 +185,7 @@ class HeaderPresenter:
     def __init__(self, formatter: Formatter) -> None:
         self.formatter = formatter
 
-    def Show(self, name: str, value: str) -> str:
+    def Show(self, name: str, value: str) -> Markup:
         """
         Return the given header name/value pair after
         presentation processing.
@@ -190,7 +194,7 @@ class HeaderPresenter:
         name_token = name.replace("-", "_")
         if name_token[0] != "_" and hasattr(self, name_token):
             return getattr(self, name_token)(name, value)
-        return self.I(escape(value), len(name))
+        return Markup(self.I(escape(value), len(name)))
 
     def BARE_URI(self, name: str, value: str) -> str:
         "Present a bare URI header value"
@@ -251,7 +255,9 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             )
         )
 
-    def make_droid_lists(self, resource: HttpResource) -> List[Tuple[str, List[HttpResource]]]:
+    def make_droid_lists(
+        self, resource: HttpResource
+    ) -> List[Tuple[str, List[HttpResource]]]:
         link_order = [
             ("link", "Head Links"),
             ("script", "Script Links"),
@@ -272,10 +278,12 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             self.problems.append(problem)
         return self.problems.index(problem) + 1
 
-    def format_note_description(self, header_name: str) -> str:
+    def format_note_description(self, header_name: str) -> Markup:
         description = HeaderProcessor.find_header_handler(header_name).description
         if description:
-            return Markup(markdown(
-                description % {"field_name": header_name}, output_format="html5"
-            ))
-        return ""
+            return Markup(
+                markdown(
+                    description % {"field_name": header_name}, output_format="html5"
+                )
+            )
+        return Markup("")
