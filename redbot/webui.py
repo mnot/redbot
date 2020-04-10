@@ -392,8 +392,7 @@ class RedWebUi:
             )
             if ti + to > int(self.config["log_traffic"]) * 1024:
                 self.error_log(
-                    "%iK in %iK out for <%s> (descend %s)"
-                    % (ti / 1024, to / 1024, e_url(self.test_uri), str(self.descend))
+                    f"{ti / 1024}K in {to / 1024}K out for <{e_url(self.test_uri)}> (descend {self.descend})"
                 )
 
         self.response_start(
@@ -476,7 +475,7 @@ class RedWebUi:
             return False
         sig_basestring = b"v0:" + timestamp + b":" + self.req_body
         signature = (
-            "v0=" + hmac.new(slack_signing_secret, sig_basestring, "sha256").hexdigest()
+            f"v0={hmac.new(slack_signing_secret, sig_basestring, 'sha256').hexdigest()}"
         )
         presented_signature = get_header(self.req_headers, b"x-slack-signature")
         if not presented_signature:
@@ -504,7 +503,7 @@ class RedWebUi:
         Display a message. If to_output is True, send it to self.output(); otherwise
         return it as binary
         """
-        out = "<p class='error'>%s</p>" % message
+        out = f"<p class='error'>{message}</p>"
         if to_output:
             self.output(out)
             return None
@@ -521,9 +520,7 @@ class RedWebUi:
 
     def timeoutError(self, detail: Callable[[], str]) -> None:
         """ Max runtime reached."""
-        self.error_log(
-            "timeout: <%s> descend=%s; %s" % (self.test_uri, self.descend, detail())
-        )
+        self.error_log(f"timeout: <{self.test_uri}> descend={self.descend}; {detail()}")
         self.show_error("REDbot timeout.", to_output=True)
         self.response_done([])
 
