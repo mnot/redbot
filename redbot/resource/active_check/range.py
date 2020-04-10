@@ -171,13 +171,16 @@ response retrieved at the same time. This could indicate that the range implemen
 working properly.
 
 REDbot sent:
-    `Range: %(range)s`
+
+> Range: %(range)s
 
 REDbot expected %(range_expected_bytes)s bytes:
-    `%(range_expected).100s`
+
+> %(range_expected).100s
 
 REDbot received %(range_received_bytes)s bytes:
-    `%(range_received).100s`
+
+> %(range_received).100s
 
 _(showing samples of up to 100 characters)_"""
 
