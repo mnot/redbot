@@ -166,9 +166,11 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         description = HeaderProcessor.find_header_handler(header_name).description
         if description:
             return Markup(
-                markdown(
+                '<span class="tip">'
+                + markdown(
                     description % {"field_name": header_name}, output_format="html5"
                 )
+                + "</span>"
             )
         return Markup("")
 
