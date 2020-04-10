@@ -52,7 +52,6 @@ docReady(function () {
   /* single response display - note hover */
 
   qsa('li.note span', function (element) {
-    var noteName = element.parentNode.getAttribute('data-name')
     var tooltip = qs('span.tip', element)
     if (tooltip === null) {
       return
