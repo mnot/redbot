@@ -104,7 +104,7 @@ class BaseHtmlFormatter(Formatter):
                 config=Markup(
                     json.dumps(
                         {
-                            "redbot_uri": uri,
+                            "redbot_uri": e_js(uri),
                             "redbot_req_hdrs": req_headers,
                             "redbot_version": __version__,
                         },
