@@ -16,7 +16,13 @@ import thor.http.error as httperr
 
 from redbot import __version__
 from redbot.formatter import Formatter
-from redbot.formatter.html_base import BaseHtmlFormatter, e_query_arg, Markup, escape, nl
+from redbot.formatter.html_base import (
+    BaseHtmlFormatter,
+    e_query_arg,
+    Markup,
+    escape,
+    nl,
+)
 from redbot.resource import HttpResource, active_check
 from redbot.message.headers import HeaderProcessor
 from redbot.speak import Note, levels, categories  # pylint: disable=unused-import
@@ -82,7 +88,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             {
                 "header_present": self.format_header,
                 "header_description": self.format_header_description,
-                "subrequest_messages": self.format_subrequest_messages
+                "subrequest_messages": self.format_subrequest_messages,
             }
         )
         self.header_presenter = HeaderPresenter(self)
