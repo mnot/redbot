@@ -37,7 +37,13 @@ docReady(function () {
   })
 
   qsa('tr.droid', function (element) {
-    var noteNums = element.className.split(' ').slice(1)
+    var noteNums = []
+    qsa('span.prob_num', function (td) {
+      var span = qs('span', td)
+      if (span) {
+        noteNums.push(span.firstChild.nodeValue)
+      }
+    }, qs('td:last-child', element))
     element.onmouseover = element.onmouseout = function () {
       qsa('li.note', function (noteElement) {
         var noteOffset = noteElement.getAttribute('data-offset')

@@ -33,9 +33,13 @@ table#summary {
   }
 }
 
-.fade1 { opacity: 0.75; }
-.fade2 { opacity: 0.5; }
-.fade3 { opacity: 0.25; }
+table#summary a.fade {
+  color: $console_colour;
+  background: linear-gradient(90deg, rgba(204,204,255,1) 0%, rgba(204,204,255,1) 93%, rgba(204,204,255,0) 100%);
+  color:transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
 
 .yes {
   color: #94C594;

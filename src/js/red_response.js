@@ -3,12 +3,10 @@
 docReady(function () {
   /* single response display - header hover */
 
-  var hiddenList = qs('#hidden_list')
-
   qsa('span.hdr', function (element) {
     var headerName = element.getAttribute('data-name')
     var offset = element.getAttribute('data-offset')
-    var tooltip = qs(`div#header-${headerName}`, hiddenList)
+    var tooltip = qs('span.tip', element)
     if (tooltip === null) {
       return
     }
@@ -55,7 +53,7 @@ docReady(function () {
 
   qsa('li.note span', function (element) {
     var noteName = element.parentNode.getAttribute('data-name')
-    var tooltip = qs(`div#${noteName}`, hiddenList)
+    var tooltip = qs('span.tip', element)
     if (tooltip === null) {
       return
     }

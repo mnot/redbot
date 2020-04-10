@@ -1,0 +1,95 @@
+{% macro format_response(r) %}
+  <span class='status'>HTTP/{{ r.version }} {{ r.status_code }} {{ r.status_phrase }}</span>
+{% for hdr in r.headers %}
+    <span data-offset='{{ loop.index0 }}' data-name='{{ hdr[0]|lower }}' class='hdr'>{{ hdr[0] }}:{{ hdr|header_present}}<span class="tip">{{ hdr[0]|header_description }}</span></span>
+{% endfor %}
+{%- endmacro %}
+
+<div id="left_column">
+  {% for nonfinal_response in resource.nonfinal_responses %}
+    <pre class='nonfinal_response'>{{ format_response(nonfinal_response) }}</pre>
+  {% endfor %}
+
+  <span class="help hidden">
+    These are the response headers; hover over each one for an explanation of what it does.
+  </span>
+
+  <pre id='response'>{{ format_response(resource.response) }}</pre>
+
+    <p class="options">
+      <span class='help hidden'>
+        Here, you can see the response body, a HAR document for the request, and when appropriate,
+        validate the response or check its assets (such as referenced images, stylesheets and scripts).
+      </span>
+
+      <span class='option' title='How large the response headers are, including the status line'>response headers: {{ resource.response.header_length|f_num }} bytes</span>
+
+      <span class='option' title='How large the response body is'>body: {{ resource.response.payload_len|f_num }} bytes</span>
+
+      {% if resource.response.transfer_length - resource.response.payload_len > 0 -%}
+      <span class='option' title='How much using chunked encoding adds to the response size'>transfer overhead: {{ resource.response.transfer_length - resource.response.payload_len|f_num }} bytes</span>
+      {%- endif %}
+
+      <br/>
+
+      <span class='option' title='View this response body (with any gzip compression removed'>
+        <script type="text/javascript">
+          document.write("<a href='#' id='body_view' accesskey='b'>view body</a>")
+        </script>
+      </span>
+
+      {% if is_resource %}
+      <span class='option' title='View a HAR (HTTP ARchive, a JSON format) file for this test'>
+        <a href="?{{ har_link }}" accesskey="h">view har</a>
+      </span>
+      {% endif %}
+
+      {% if not is_saved %}
+      {% if allow_save %}
+      <span class='option' title='Save these results for future reference'>
+        <a href='#' id='save' accesskey='s'>save</a>
+      </span>
+      {% endif %}
+
+      {% if validator_link %}
+      <span class='option' title='Validate the response body with a third party service'>
+        <a href='{{ validator_link }}' accesskey='v'>validate body</a>
+      </span>
+      {% endif %}
+
+      {% if resource.link_count > 0 %}
+      <span class='option' title='Run REDbot on images, frames and embedded links'>
+        <a href='?descend=True&{{ self_link }}' accesskey='a'>check embedded</a>
+      </span>
+      {% endif %}
+      {% endif %}
+    </p>
+  </div>
+
+  <div id="right_column">
+    <div id='details'>
+      <span class='help right hidden'>These notes explain what REDbot has found about your URL; hover over each one for a detailed explanation.</span>
+
+      {% for category in formatter.note_categories %}
+      {% for note in resource.notes if note.category == category %}
+      {% if loop.first %}
+      <h3>{{ category.value }}</h3> <!-- TODO: links to subrequests and error counts -->
+      <ul>
+      {% endif %}
+        <li class='{{ note.level.value }} note' data-subject='{{ note.subject }}'>
+            <span>{{ note.show_summary(formatter.lang) }}<span class='tip'>{{ note.show_text(formatter.lang) }}</span></span>
+        </li>
+      {% if loop.last %}
+      </ul>
+      {% endif %}
+    {% endfor %}
+    {% endfor %}
+    </div>
+
+    <span class="help hidden">If something doesn't seem right, feel free to <a href="https://github.com/mnot/redbot/issues/new">file an issue</a>!</span>
+  </div>
+
+  <br />
+
+  <div id='body' class="hidden">{{ body|safe }}</div>
+{% include 'footer.html' %}

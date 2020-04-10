@@ -296,14 +296,12 @@ table#summary {
   table#summary td a {
     color: #ccf; }
 
-.fade1 {
-  opacity: 0.75; }
-
-.fade2 {
-  opacity: 0.5; }
-
-.fade3 {
-  opacity: 0.25; }
+table#summary a.fade {
+  color: #111;
+  background: linear-gradient(90deg, #ccccff 0%, #ccccff 93%, rgba(204, 204, 255, 0) 100%);
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text; }
 
 .yes {
   color: #94C594; }

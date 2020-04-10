@@ -36,7 +36,7 @@ from redbot.ratelimit import ratelimiter, RateLimitViolation
 from redbot.resource import HttpResource
 from redbot.resource.robot_fetch import RobotFetcher, url_to_origin
 from redbot.formatter import find_formatter, html, slack, Formatter
-from redbot.formatter.html import e_url
+from redbot.formatter.html_base import e_url
 from redbot.type import (
     RawHeaderListType,
     StrHeaderListType,
