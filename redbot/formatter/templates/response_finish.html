@@ -58,7 +58,7 @@
       </span>
       {% endif %}
 
-      {% if resource.link_count > 0 %}
+      {% if is_resource and resource.link_count > 0 %}
       <span class='option' title='Run REDbot on images, frames and embedded links'>
         <a href='?descend=True&{{ self_link }}' accesskey='a'>check embedded</a>
       </span>
