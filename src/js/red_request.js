@@ -41,9 +41,9 @@ function addReqHdr (rawName, rawVal) {
       } else {
         nameHtml += `<option>${name}</option>`
       }
-      nameHtml += "<option value='other...'>other...</option> </select>"
-      qs('.hdr_name', reqHdr).innerHTML = nameHtml
     }
+    nameHtml += "<option value='other...'>other...</option> </select>"
+    qs('.hdr_name', reqHdr).innerHTML = nameHtml
 
     /* select specified header, if any */
     if (setName != null) {
