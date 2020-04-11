@@ -1,4 +1,4 @@
-/* global qs docReady alert */
+/* global qs docReady alert escapeHtml */
 
 var knownReqHdrs = {
   'Accept-Language': ['', 'en', 'en-us', 'en-uk', 'fr'],
@@ -7,9 +7,7 @@ var knownReqHdrs = {
   Referer: null,
   'User-Agent': [
     'RED/1 (http://redbot.org/about)',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.162 Safari/537.36',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:74.0) Gecko/20100101 Firefox/74.0',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1 Safari/605.1.15'
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:74.0) Gecko/20100101 Firefox/74.0'
   ]
 }
 
@@ -22,7 +20,9 @@ var redReqHdrs = [
   'content-length'
 ]
 
-function addReqHdr (setName, setVal) {
+function addReqHdr (rawName, rawVal) {
+  var setName = escapeHtml(rawName)
+  var setVal = escapeHtml(rawVal)
   var reqHdrs = qs('#req_hdrs')
   var reqHdr = document.createElement('div')
   reqHdr.classList.add('req_hdr')
@@ -49,7 +49,7 @@ function addReqHdr (setName, setVal) {
     if (setName != null) {
       var knownHdrVals = knownReqHdrs[setName]
       if (knownHdrVals == null) {
-        setValue(reqHdr, `<input class="hdrVal" type="text" value="${setVal}"/>`)
+        setValue(reqHdr, `<input class="hdr_val" type="text" value="${setVal}"/>`)
       } else if (knownHdrVals.indexOf(setVal) > -1) {
         var valHtml = "<select class='hdr_val'><option />"
         knownHdrVals.forEach(val => {
@@ -62,7 +62,7 @@ function addReqHdr (setName, setVal) {
         valHtml += "<option value='other...'>other...</option></select>"
         setValue(reqHdr, valHtml)
       } else if (setVal != null) {
-        setValue(reqHdr, `<input class="hdrVal" type="text" value="${setVal}"/>`)
+        setValue(reqHdr, `<input class="hdr_val" type="text" value="${setVal}"/>`)
       }
     }
   }
@@ -106,7 +106,7 @@ function installNameChangeHandler (reqHdr) {
       }
       setValue(reqHdr, valHtml)
     } else {
-      newName = content.value
+      newName = escapeHtml(content.value)
       if (redReqHdrs.indexOf(newName.toLowerCase()) > -1) {
         alert(`Setting the ${newName} request header can lead to unpredictable results.`)
       }

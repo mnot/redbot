@@ -9,7 +9,7 @@
   color: $header_colour;
   @include rounded_corners(0.75em);
   border: 1px solid black;
-  padding: 1em 0;
+  padding: 1em 1.5em;
   margin-bottom: 0;
   overflow-x: auto;
   a {

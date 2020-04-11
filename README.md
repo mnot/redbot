@@ -25,10 +25,11 @@ REDbot needs:
 2. [thor](http://github.com/mnot/thor/)
 3. [markdown](https://pythonhosted.org/Markdown/)
 4. [netaddr](https://netaddr.readthedocs.io/en/latest/)
+5. [Jinja2](https://palletsprojects.com/p/jinja/)
 
 Once you have Python, you can install the required libraries with:
 
-> pip install thor markdown netaddr
+> pip install thor markdown netaddr jinja2
 
 
 ### Installing RED

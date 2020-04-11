@@ -17,13 +17,14 @@ setup(name='redbot',
       package_dir={'redbot': 'redbot'},
       scripts=['bin/redbot_cli', 'bin/redbot_daemon.py', 'bin/redbot_cgi.py'],
       package_data={
-        'redbot': ['assets/*.css', 'assets/*.js', 'assets/*.map', 'assets/webfonts/*', 'assets/logo/*']
+        'redbot': ['assets/*.css', 'assets/*.js', 'assets/*.map', 'assets/webfonts/*', 'assets/logo/*', 'formatter/templates/*']
       },
       python_requires=">=3.6",
       install_requires=[
           'thor >= 0.8.0',
           'markdown >= 2.6.5',
-          'netaddr >= 0.7.19'
+          'netaddr >= 0.7.19',
+          'Jinja2 >= 2.11.1'
       ],
       extras_require={
           'dev': [

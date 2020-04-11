@@ -1,4 +1,4 @@
-/* global qs qsa docReady tippy */
+/* global qs qsa escapeHtml docReady tippy */
 
 docReady(function () {
   qsa('span.prob_num', function (element) {
@@ -20,7 +20,7 @@ docReady(function () {
   })
 
   qsa('a.preview', function (element) {
-    var link = (element.title !== '') ? element.title : element.href
+    var link = (element.title !== '') ? escapeHtml(element.title) : escapeHtml(element.href)
     var tooltip = document.createElement('img')
     tooltip.src = link
     tippy(element, {
@@ -37,7 +37,13 @@ docReady(function () {
   })
 
   qsa('tr.droid', function (element) {
-    var noteNums = element.className.split(' ').slice(1)
+    var noteNums = []
+    qsa('span.prob_num', function (span) {
+      console.log(span)
+      if (span.textContent) {
+        noteNums.push(span.textContent)
+      }
+    }, qs('td:last-child', element))
     element.onmouseover = element.onmouseout = function () {
       qsa('li.note', function (noteElement) {
         var noteOffset = noteElement.getAttribute('data-offset')

@@ -28,3 +28,15 @@ function docReady (fn) {
     document.addEventListener('DOMContentLoaded', fn)
   }
 }
+
+function escapeHtml (unsafe) {
+  if (unsafe === undefined) {
+    return undefined
+  }
+  return unsafe
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
