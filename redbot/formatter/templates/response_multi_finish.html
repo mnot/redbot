@@ -56,8 +56,8 @@
     <td>{{ resource.response.payload_len|f_num(by1024=True) }}</td>
     <td>{{ yes_no(resource.response.store_shared) }}</td>
     <td>{{ yes_no(resource.response.store_private) }}</td>
-    <td>{{ resource.response.age|relative_time(0,0) }}</td>
-    <td>{{ resource.response.freshness_lifetime|relative_time(0,0) }}</td>
+    <td>{{ resource.response.age|relative_time(0,0) or '-' }}</td>
+    <td>{{ resource.response.freshness_lifetime|relative_time(0,0) or '-' }}</td>
     <td>{{ yes_no(resource.ims_support) }}</td>
     <td>{{ yes_no(resource.inm_support) }}</td>
     {% if resource.gzip_support %}
