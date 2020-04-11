@@ -30,6 +30,9 @@ function docReady (fn) {
 }
 
 function escapeHtml (unsafe) {
+  if (unsafe === undefined) {
+    return undefined
+  }
   return unsafe
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
