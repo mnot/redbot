@@ -1,4 +1,4 @@
-/* global qs qsa docReady tippy */
+/* global qs qsa escapeHtml docReady tippy */
 
 docReady(function () {
   qsa('span.prob_num', function (element) {
@@ -20,7 +20,7 @@ docReady(function () {
   })
 
   qsa('a.preview', function (element) {
-    var link = (element.title !== '') ? element.title : element.href
+    var link = (element.title !== '') ? escapeHtml(element.title) : escapeHtml(element.href)
     var tooltip = document.createElement('img')
     tooltip.src = link
     tippy(element, {

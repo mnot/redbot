@@ -1,4 +1,4 @@
-/* global qs docReady alert */
+/* global qs docReady alert escapeHtml */
 
 var knownReqHdrs = {
   'Accept-Language': ['', 'en', 'en-us', 'en-uk', 'fr'],
@@ -7,7 +7,7 @@ var knownReqHdrs = {
   Referer: null,
   'User-Agent': [
     'RED/1 (http://redbot.org/about)',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:74.0) Gecko/20100101 Firefox/74.0',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:74.0) Gecko/20100101 Firefox/74.0'
   ]
 }
 
@@ -20,7 +20,9 @@ var redReqHdrs = [
   'content-length'
 ]
 
-function addReqHdr (setName, setVal) {
+function addReqHdr (rawName, rawVal) {
+  var setName = escapeHtml(rawName)
+  var setVal = escapeHtml(rawVal)
   var reqHdrs = qs('#req_hdrs')
   var reqHdr = document.createElement('div')
   reqHdr.classList.add('req_hdr')
@@ -39,9 +41,9 @@ function addReqHdr (setName, setVal) {
       } else {
         nameHtml += `<option>${name}</option>`
       }
+      nameHtml += "<option value='other...'>other...</option> </select>"
+      qs('.hdr_name', reqHdr).innerHTML = nameHtml
     }
-    nameHtml += "<option value='other...'>other...</option> </select>"
-    qs('.hdr_name', reqHdr).innerHTML = nameHtml
 
     /* select specified header, if any */
     if (setName != null) {
@@ -104,7 +106,7 @@ function installNameChangeHandler (reqHdr) {
       }
       setValue(reqHdr, valHtml)
     } else {
-      newName = content.value
+      newName = escapeHtml(content.value)
       if (redReqHdrs.indexOf(newName.toLowerCase()) > -1) {
         alert(`Setting the ${newName} request header can lead to unpredictable results.`)
       }
