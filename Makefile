@@ -3,7 +3,7 @@ PYTHONPATH=./
 SASS=sassc
 
 MODULES = src/node_modules
-JSFILES = $(MODULES)/google-code-prettify/src/prettify.js src/js/*.js $(MODULES)/@popperjs/core/dist/umd/popper.js $(MODULES)/tippy.js/dist/tippy.umd.js
+JSFILES = src/js/*.js $(MODULES)/@popperjs/core/dist/umd/popper.js $(MODULES)/tippy.js/dist/tippy.umd.js
 CSSFILES = redbot/assets/red_style.css $(MODULES)/google-code-prettify/src/prettify.css
 
 
@@ -101,7 +101,11 @@ redbot/message/headers/%.py:
 ## assets
 
 .PHONY: redbot/assets
-redbot/assets: redbot/assets/script.js redbot/assets/style.css redbot/assets/webfonts
+redbot/assets: redbot/assets/script.js redbot/assets/prettify.js redbot/assets/style.css redbot/assets/webfonts
+
+redbot/assets/prettify.js:
+	closure-compiler --create_source_map $@.map --js_output_file $@ $(MODULES)/google-code-prettify/src/prettify.js
+	echo "\n//# sourceMappingURL=prettify.js.map" >> $@
 
 redbot/assets/script.js: $(JSFILES)
 	closure-compiler --create_source_map $@.map --js_output_file $@ $(JSFILES)
