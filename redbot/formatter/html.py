@@ -158,7 +158,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 
                     safe_sample = Markup(
                         re.sub(
-                            r"('|&quot;)%s\1" % re.escape(link), link_to, safe_sample
+                            r"(&#34;|&#39;)%s\1" % re.escape(link), link_to, safe_sample
                         )
                     )
         message = ""
