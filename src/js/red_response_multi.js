@@ -41,7 +41,6 @@ docReady(function () {
   qsa('tr.droid', function (element) {
     var noteNums = []
     qsa('span.prob_num', function (span) {
-      console.log(span)
       if (span.textContent) {
         noteNums.push(span.textContent)
       }
