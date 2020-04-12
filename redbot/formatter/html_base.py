@@ -76,7 +76,7 @@ class BaseHtmlFormatter(Formatter):
                 "version": __version__,
                 "baseuri": self.config["ui_uri"],
                 "static": self.config["static_root"],
-                "hcaptcha": self.config.get("hcaptcha_sitekey", False) and True
+                "hcaptcha": self.config.get("hcaptcha_sitekey", False) and True,
             }
         )
         self.start = thor.time()
@@ -114,7 +114,9 @@ class BaseHtmlFormatter(Formatter):
                             "redbot_uri": e_js(uri),
                             "redbot_req_hdrs": req_headers,
                             "redbot_version": __version__,
-                            "hcaptcha_sitekey": self.config.get("hcaptcha_sitekey", None)
+                            "hcaptcha_sitekey": self.config.get(
+                                "hcaptcha_sitekey", None
+                            ),
                         },
                         ensure_ascii=True,
                     ).replace("<", "\\u003c")
