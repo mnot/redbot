@@ -1,4 +1,4 @@
-/* global hcaptcha, config */
+/* global hcaptcha */
 
 import { qs, qsa, docReady, toggleHidden, config } from './red_util.js'
 
@@ -13,8 +13,8 @@ docReady(function () {
           size: 'compact',
           sitekey: config.hcaptcha_sitekey,
           callback: function (token) {
-            let tokenElement = document.createElement('input')
-            tokenElement.name = "token"
+            const tokenElement = document.createElement('input')
+            tokenElement.name = 'token'
             tokenElement.value = token
             qs('#request_form').appendChild(tokenElement)
             qs('#request_form').submit()
