@@ -1,4 +1,8 @@
 
+.tip {
+  display: none;
+}
+
 .tippy-box[data-theme~='redbot'] {
   @include rounded_corners(0.5em);
   background-color: #679;

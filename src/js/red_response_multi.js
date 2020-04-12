@@ -4,7 +4,7 @@ import tippy from 'tippy.js'
 
 docReady(function () {
   qsa('span.prob_num', function (element) {
-    var tooltip = qs('span.tip', element)
+    var tooltip = qs('span.tip *', element)
     if (tooltip === null) {
       return
     }

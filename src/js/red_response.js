@@ -9,7 +9,7 @@ docReady(function () {
   qsa('span.hdr', function (element) {
     var headerName = element.getAttribute('data-name')
     var offset = element.getAttribute('data-offset')
-    var tooltip = qs('span.tip', element)
+    var tooltip = qs('span.tip *', element)
     if (tooltip === null) {
       return
     }
@@ -55,7 +55,7 @@ docReady(function () {
   /* single response display - note hover */
 
   qsa('li.note span', function (element) {
-    var tooltip = qs('span.tip', element)
+    var tooltip = qs('span.tip *', element)
     if (tooltip === null) {
       return
     }
