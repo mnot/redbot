@@ -40,3 +40,8 @@ export function escapeHtml (unsafe) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;')
 }
+
+// ie11 fix
+if (window.NodeList && !window.NodeList.prototype.forEach) {
+  window.NodeList.prototype.forEach = Array.prototype.forEach
+}
