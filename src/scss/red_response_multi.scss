@@ -42,12 +42,20 @@ table#summary a.fade {
   background-clip: text;
 }
 
-.yes {
-  color: #94C594;
+// filters via https://codepen.io/sosuke/pen/Pjoqqp
+
+.yes img {
+  fill: #94C594;
+  filter: invert(80%) sepia(25%) saturate(395%) hue-rotate(71deg) brightness(89%) contrast(88%);
+  height: $icon_size;
 }
-.no {
-  color: #D98080;
+.no img {
+  fill: #D98080;
+  filter: invert(89%) sepia(22%) saturate(4693%) hue-rotate(301deg) brightness(90%) contrast(86%);
+  height: $icon_size;
 }
-.maybe {
-  color: #AA8A22;
+.maybe img {
+  fill: #AA8A22;
+  filter: invert(63%) sepia(66%) saturate(5879%) hue-rotate(29deg) brightness(105%) contrast(73%);
+  height: $icon_size;
 }

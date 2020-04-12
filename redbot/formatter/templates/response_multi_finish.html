@@ -18,11 +18,11 @@
 
 {% macro yes_no(value) %}
   {% if value == True %}
-    <span class="fa yes"></span>
+    <span class="yes"><img src="{{ static }}/icons/check-circle.svg"/></span>
   {% elif value == False %}
-    <span class="fa no"></span>
+    <span class="no"><img src="{{ static }}/icons/times-circle.svg"/></span>
   {% elif value == None %}
-    <span class="fa maybe"></span>
+    <span class="maybe"><img src="{{ static }}/icons/question-circle.svg"/></span>
   {% endif %}
 {%- endmacro %}
 

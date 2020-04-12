@@ -6,6 +6,9 @@ MODULES = src/node_modules
 JS_ENTRIES = src/js/red_script.js src/js/red_request.js src/js/red_response.js src/js/red_response_multi.js
 CSSFILES = redbot/assets/red_style.css $(MODULES)/google-code-prettify/src/prettify.css
 
+ICONS = solid/check-circle solid/times-circle solid/question-circle solid/exclamation-circle solid/info-circle brands/twitter
+ICON_FILES = $(foreach i, $(ICONS),$(MODULES)/@fortawesome/fontawesome-free/svgs/$(i).svg)
+
 
 .PHONY: test
 test: typecheck unit_test webui_test
@@ -101,7 +104,7 @@ redbot/message/headers/%.py:
 ## assets
 
 .PHONY: redbot/assets
-redbot/assets: redbot/assets/script.js redbot/assets/prettify.js redbot/assets/style.css redbot/assets/webfonts
+redbot/assets: redbot/assets/script.js redbot/assets/prettify.js redbot/assets/style.css redbot/assets/icons
 
 redbot/assets/prettify.js:
 	webpack-cli --entry ./$(MODULES)/google-code-prettify/src/prettify.js --config src/js/webpack.config.js --mode production --output $@
@@ -115,9 +118,10 @@ redbot/assets/red_style.css: src/scss/*.scss
 redbot/assets/style.css: $(CSSFILES)
 	cat $(CSSFILES) | cssmin > $@
 
-redbot/assets/webfonts:
-	cp -R $(MODULES)/font-awesome/fonts $@
+.PHONY: redbot/assets/icons
+redbot/assets/icons: $(ICON_FILES)
+	cp $(ICON_FILES) $@/
 
 .PHONY: clean-assets
 clean-assets:
-	rm -rf redbot/assets/*.js redbot/assets/*.map redbot/assets/*.css redbot/assets/webfonts
+	rm -rf redbot/assets/*.js redbot/assets/*.map redbot/assets/*.css redbot/assets/icons

@@ -124,7 +124,9 @@ class BaseHtmlFormatter(Formatter):
         """
         self.output(self.format_extra())
         tpl = self.templates.get_template("footer.html")
-        self.output(tpl.render(baseuri=self.config["ui_uri"]))
+        self.output(
+            tpl.render(baseuri=self.config["ui_uri"], static=self.config["static_root"])
+        )
 
     def error_output(self, message: str) -> None:
         """

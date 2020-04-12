@@ -129,9 +129,10 @@ body.blank > .footer {
 }
 
 .twitterlogo {
-  font-family: 'FontAwesome';
-  margin-bottom: -10px;
   color: #1DA1F2;
+  filter: invert(51%) sepia(35%) saturate(2513%) hue-rotate(176deg) brightness(98%) contrast(93%);
+  height: 18px;
+  margin-bottom: -5px;
 }
 
 /* news */

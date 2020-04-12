@@ -103,6 +103,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             tpl = self.templates.get_template("response_finish.html")
             self.output(
                 tpl.render(
+                    version=__version__,
+                    static=self.config["static_root"],
                     formatter=self,
                     resource=self.resource,
                     body=self.format_body_sample(self.resource),
@@ -275,6 +277,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         self.output(
             tpl.render(
                 version=__version__,
+                static=self.config["static_root"],
                 formatter=self,
                 droid_lists=self.make_droid_lists(self.resource),
                 problems=self.problems,

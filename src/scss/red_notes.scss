@@ -15,14 +15,23 @@ li {
 
 /* note levels */
 
-@mixin fontawesome-bullet {
-  font-family: 'FontAwesome';
-  margin:0 6px 0 -28px;
-  font-weight: 400;
+@mixin svg-bullet {
+  // add background-image
+  // get a filter from https://codepen.io/sosuke/pen/Pjoqqp
+  position: absolute;
+  display: block;
+  content: '';
+  left: -1.3em;
+  width: 1em;
+  height: 1.1em; /* unrelated to image height; this is so it gets snipped */
+  background-repeat: no-repeat;
+  background-size: 1em;
+  background-position: 0 .1em;
 }
 
 li.note {
   list-style-type: none;
+  position: relative;
 }
 
 li.note.hilight {
@@ -33,31 +42,34 @@ li.note.hilight {
   color: #659365;
 }
 li.good:before {
-  @include fontawesome-bullet;
-  content: '\f058';
+  @include svg-bullet;
+  background-image: url('icons/check-circle.svg');
+  filter: invert(51%) sepia(37%) saturate(361%) hue-rotate(71deg) brightness(96%) contrast(88%);
 }
 
 .warning {
   color: #AA8A22;
 }
 li.warning:before {
-  @include fontawesome-bullet;
-  content: '\f06a';
+  @include svg-bullet;
+  background-image: url('icons/exclamation-circle.svg');
+  filter: invert(50%) sepia(100%) saturate(343%) hue-rotate(8deg) brightness(90%) contrast(90%);
 }
 
 .bad {
   color: #a64029;
 }
 li.bad:before {
-  @include fontawesome-bullet;
-  content: '\f057';
+  @include svg-bullet;
+  background-image: url('icons/times-circle.svg');
+  filter: invert(22%) sepia(64%) saturate(1739%) hue-rotate(345deg) brightness(104%) contrast(84%);
 }
 
 .info {
   color: $text_colour;
 }
 li.info:before {
-  @include fontawesome-bullet;
-  content: '\f05a';
-  color: #1676b7;
+  @include svg-bullet;
+  background-image: url('icons/info-circle.svg');
+  filter: invert(35%) sepia(28%) saturate(2614%) hue-rotate(174deg) brightness(98%) contrast(88%);
 }
