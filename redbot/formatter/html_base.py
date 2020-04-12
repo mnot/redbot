@@ -70,6 +70,15 @@ class BaseHtmlFormatter(Formatter):
         self.templates.filters.update(
             {"f_num": f_num, "relative_time": relative_time, "req_qs": self.req_qs}
         )
+        self.templates.globals.update(
+            {
+                "formatter": self,
+                "version": __version__,
+                "baseuri": self.config["ui_uri"],
+                "static": self.config["static_root"],
+                "hcaptcha": self.config.get("hcaptcha_sitekey", False) and True
+            }
+        )
         self.start = thor.time()
 
     def feed(self, chunk: bytes) -> None:
@@ -97,8 +106,6 @@ class BaseHtmlFormatter(Formatter):
         tpl = self.templates.get_template("response_start.html")
         self.output(
             tpl.render(
-                static=self.config["static_root"],
-                version=__version__,
                 html_uri=uri,
                 test_id=self.kw.get("test_id", ""),
                 config=Markup(
@@ -112,7 +119,6 @@ class BaseHtmlFormatter(Formatter):
                         ensure_ascii=True,
                     ).replace("<", "\\u003c")
                 ),
-                hcaptcha_js=self.config.get("hcaptcha_sitekey", False) and True,
                 extra_js=self.format_extra(".js"),
                 extra_title=Markup(extra_title),
                 extra_body_class=extra_body_class,

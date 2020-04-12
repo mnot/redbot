@@ -103,9 +103,6 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             tpl = self.templates.get_template("response_finish.html")
             self.output(
                 tpl.render(
-                    version=__version__,
-                    static=self.config["static_root"],
-                    formatter=self,
                     resource=self.resource,
                     body=self.format_body_sample(self.resource),
                     is_resource=isinstance(self.resource, HttpResource),
@@ -114,7 +111,6 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     har_link=self.req_qs(res_format="har"),
                     self_link=self.req_qs(use_stored=False),
                     validator_link=validator_link,
-                    baseuri=self.config["ui_uri"],
                 )
             )
         else:
@@ -276,9 +272,6 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         tpl = self.templates.get_template("response_multi_finish.html")
         self.output(
             tpl.render(
-                version=__version__,
-                static=self.config["static_root"],
-                formatter=self,
                 droid_lists=self.make_droid_lists(self.resource),
                 problems=self.problems,
                 levels=levels,
@@ -286,7 +279,6 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                 allow_save=self.kw.get("allow_save", False),
                 har_link=self.req_qs(res_format="har"),
                 self_link=self.req_qs(use_stored=False),
-                baseuri=self.config["ui_uri"],
             )
         )
 
