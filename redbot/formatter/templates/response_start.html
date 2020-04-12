@@ -52,10 +52,15 @@
 
     <form method="GET" id="request_form">
         <span class="help right hidden">Type in a URI here and press 'return' to check it. You can also specify request headers by clicking 'add a request header.'</span>
-        <input type="url" name="uri" value="{{ html_uri }}" id="uri" autocomplete="off" autofocus placeholder="Enter a http:// or https:// URL to check" /><br />
+        <input type="url" name="uri" value="{{ html_uri }}" id="uri" autocomplete="off" autofocus
+         placeholder="Enter a http:// or https:// URL to check"/><br />
         <div id="req_hdrs"></div>
     </form>
 </div>
 <div id="red_status"></div>
 <script src="{{ static }}/script.js?{{ version }}" type="text/javascript" async></script>
+{% if hcaptcha_js %}
+<div id="hcaptcha_popup"></div>
+<script src="https://hcaptcha.com/1/api.js" async defer></script>
+{% endif %}
 <script src="{{ static }}/prettify.js" type="text/javascript" defer></script>

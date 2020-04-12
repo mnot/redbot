@@ -33,6 +33,9 @@ debug = False
 # domains which we reject requests for when they're in the referer. Whitespace-separated.
 referer_spam_domains = www.youtube.com
 
+# hCaptcha sitekey; see <https://hcaptcha.com/>. Comment out to disable.
+hcaptcha_sitekey = 79592e6c-c28c-46af-a8bb-988131fca035
+
 # Whether to allow access to localhost, RFC1918 and other "local" services. Note that enabling
 # this can be a security risk.
 enable_local_access = no

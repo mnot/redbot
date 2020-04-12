@@ -45,3 +45,5 @@ export function escapeHtml (unsafe) {
 if (window.NodeList && !window.NodeList.prototype.forEach) {
   window.NodeList.prototype.forEach = Array.prototype.forEach
 }
+
+export const config = JSON.parse(qs('#config').innerHTML)

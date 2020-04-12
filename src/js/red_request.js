@@ -1,6 +1,6 @@
 /* global alert */
 
-import { qs, escapeHtml } from './red_util.js'
+import { qs, escapeHtml, config } from './red_util.js'
 
 var knownReqHdrs = {
   'Accept-Language': ['', 'en', 'en-us', 'en-uk', 'fr'],
@@ -138,8 +138,6 @@ function setValue (reqHdr, valueHtml) {
 }
 
 // setup request headers. Depends on #request_form being available.
-
-const config = JSON.parse(qs('#config').innerHTML)
 
 /* add pre-populated headers */
 config.redbot_req_hdrs.forEach(hdr => {

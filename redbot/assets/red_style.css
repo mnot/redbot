@@ -313,6 +313,13 @@ table#summary a.fade {
   .tippy-box[data-theme~='redbot'] img {
     max-width: 440px; }
 
+#hcaptcha_popup {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); }
+
 /* note lists */
 ul {
   margin-top: 0.2em;

@@ -107,10 +107,12 @@ class BaseHtmlFormatter(Formatter):
                             "redbot_uri": e_js(uri),
                             "redbot_req_hdrs": req_headers,
                             "redbot_version": __version__,
+                            "hcaptcha_sitekey": self.config.get("hcaptcha_sitekey", None)
                         },
                         ensure_ascii=True,
                     ).replace("<", "\\u003c")
                 ),
+                hcaptcha_js=self.config.get("hcaptcha_sitekey", False) and True,
                 extra_js=self.format_extra(".js"),
                 extra_title=Markup(extra_title),
                 extra_body_class=extra_body_class,

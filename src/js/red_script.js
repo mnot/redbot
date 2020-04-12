@@ -1,12 +1,30 @@
+/* global hcaptcha, config */
 
-import { qs, qsa, docReady, toggleHidden } from './red_util.js'
+import { qs, qsa, docReady, toggleHidden, config } from './red_util.js'
 
 docReady(function () {
   /* URI */
 
   qs('input').onkeydown = function (e) {
     if (e.key === 'Enter') {
-      qs('#request_form').submit()
+      if (config.hcaptcha_sitekey) {
+        qs('#hcaptcha_popup').style.display = 'block'
+        var widgetId = hcaptcha.render('hcaptcha_popup', {
+          size: 'compact',
+          sitekey: config.hcaptcha_sitekey,
+          callback: function (token) {
+            let tokenElement = document.createElement('input')
+            tokenElement.name = "token"
+            tokenElement.value = token
+            qs('#request_form').appendChild(tokenElement)
+            qs('#request_form').submit()
+          },
+          'error-callback': function () { qs('hcaptcha_popup').style.display = 'none' }
+        })
+        hcaptcha.execute(widgetId)
+      } else {
+        qs('#request_form').submit()
+      }
       e.preventDefault()
     }
   }
