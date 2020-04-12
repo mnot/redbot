@@ -48,6 +48,9 @@ hcaptcha_sitekey = 79592e6c-c28c-46af-a8bb-988131fca035
 # Comment out to disable; 0 to log all.
 log_traffic = 8192
 
+# Whether to check robots.txt and (lightly) challenge people if it doesn't allow bots.
+robots_check = False
+
 # Where to cache robots.txt. Comment out to disable caching of robots.txt.
 robot_cache_dir = /var/cache/redbot/robots-txt/
 

@@ -325,24 +325,28 @@ class RedWebUi:
         # check robots.txt
         robot_fetcher = RobotFetcher(self.config)
 
-        @thor.events.on(robot_fetcher)
-        def robot(results: Tuple[str, bool]) -> None:
-            url, robot_ok = results
-            if robot_ok:
-                self.continue_test(top_resource, formatter)
-            else:
-                valid_till = str(int(thor.time()) + 60)
-                robot_hmac = hmac.new(
-                    self._robot_secret, bytes(valid_till, "ascii"), "sha512"
-                )
-                self.error_response(
-                    formatter,
-                    b"403",
-                    b"Forbidden",
-                    f"This site doesn't allow robots. If you are human, please <a href='?uri={self.test_uri}&robot_time={valid_till}&robot_hmac={robot_hmac.hexdigest()}'>click here</a>.",
-                )
+        if self.config.getboolean("robots_check"):
 
-        robot_fetcher.check_robots(HttpRequest.iri_to_uri(self.test_uri))
+            @thor.events.on(robot_fetcher)
+            def robot(results: Tuple[str, bool]) -> None:
+                url, robot_ok = results
+                if robot_ok:
+                    self.continue_test(top_resource, formatter)
+                else:
+                    valid_till = str(int(thor.time()) + 60)
+                    robot_hmac = hmac.new(
+                        self._robot_secret, bytes(valid_till, "ascii"), "sha512"
+                    )
+                    self.error_response(
+                        formatter,
+                        b"403",
+                        b"Forbidden",
+                        f"This site doesn't allow robots. If you are human, please <a href='?uri={self.test_uri}&robot_time={valid_till}&robot_hmac={robot_hmac.hexdigest()}'>click here</a>.",
+                    )
+
+            robot_fetcher.check_robots(HttpRequest.iri_to_uri(self.test_uri))
+        else:
+            self.continue_test(top_resource, formatter)
 
     def error_response(
         self,
