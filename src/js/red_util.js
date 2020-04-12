@@ -1,5 +1,5 @@
 
-function qs (query, element) {
+export function qs (query, element) {
   if (element === undefined) {
     return document.querySelector(query)
   } else {
@@ -7,7 +7,7 @@ function qs (query, element) {
   }
 }
 
-function qsa (query, fn, element) {
+export function qsa (query, fn, element) {
   var results
   if (element === undefined) {
     results = document.querySelectorAll(query)
@@ -17,11 +17,11 @@ function qsa (query, fn, element) {
   results.forEach(fn)
 }
 
-function toggleHidden (element) {
+export function toggleHidden (element) {
   element.classList.toggle('hidden')
 }
 
-function docReady (fn) {
+export function docReady (fn) {
   if (document.readyState !== 'loading') {
     fn()
   } else {
@@ -29,7 +29,7 @@ function docReady (fn) {
   }
 }
 
-function escapeHtml (unsafe) {
+export function escapeHtml (unsafe) {
   if (unsafe === undefined) {
     return undefined
   }

@@ -1,4 +1,7 @@
-/* global qs qsa docReady toggleHidden prettyPrint tippy */
+/* global prettyPrint */
+
+import { qs, qsa, docReady, toggleHidden } from './red_util.js'
+import tippy from 'tippy.js'
 
 docReady(function () {
   /* single response display - header hover */

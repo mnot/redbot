@@ -1,4 +1,6 @@
-/* global qs qsa escapeHtml docReady tippy */
+
+import { qs, qsa, escapeHtml, docReady } from './red_util.js'
+import tippy from 'tippy.js'
 
 docReady(function () {
   qsa('span.prob_num', function (element) {

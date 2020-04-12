@@ -1,6 +1,6 @@
-/* global XMLHttpRequest qs qsa docReady toggleHidden */
+/* global XMLHttpRequest */
 
-'use strict'
+import { qs, qsa, docReady, toggleHidden } from './red_util.js'
 
 window.onerror = function (message, url, line, col, errorObj) {
   if (window.XMLHttpRequest) {

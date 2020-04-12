@@ -1,4 +1,6 @@
-/* global qs docReady alert escapeHtml */
+/* global alert */
+
+import { qs, docReady, escapeHtml } from './red_util.js'
 
 var knownReqHdrs = {
   'Accept-Language': ['', 'en', 'en-us', 'en-uk', 'fr'],
@@ -136,12 +138,22 @@ function setValue (reqHdr, valueHtml) {
 }
 
 docReady(function () {
-  var config = JSON.parse(qs('#config').innerHTML)
+  const config = JSON.parse(qs('#config').innerHTML)
 
   /* add pre-populated headers */
   config.redbot_req_hdrs.forEach(hdr => {
     addReqHdr(hdr[0], hdr[1])
   })
+
+  /* add the 'add a request header' button */
+  var addButton = document.createElement('div')
+  addButton.className = 'add_req_hdr'
+  var addLink = document.createElement('a')
+  addLink.href = '#'
+  addLink.id = 'add_req_hdr'
+  addLink.appendChild(document.createTextNode('add a request header'))
+  addButton.appendChild(addLink)
+  qs('#request_form').appendChild(addButton)
 
   /* handle the add header button */
   qs('#add_req_hdr').onclick = function () {

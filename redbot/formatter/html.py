@@ -274,6 +274,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         tpl = self.templates.get_template("response_multi_finish.html")
         self.output(
             tpl.render(
+                version=__version__,
                 formatter=self,
                 droid_lists=self.make_droid_lists(self.resource),
                 problems=self.problems,

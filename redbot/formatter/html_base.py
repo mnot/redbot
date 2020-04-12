@@ -140,7 +140,7 @@ class BaseHtmlFormatter(Formatter):
             f"""
 <script>
 <!-- {thor.time() - self.start:3.3f}
-qs('#red_status').textContent = "{escape(message)}"
+document.querySelector('#red_status').textContent = "{escape(message)}"
 -->
 </script>
 """

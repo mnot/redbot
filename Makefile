@@ -3,7 +3,7 @@ PYTHONPATH=./
 SASS=sassc
 
 MODULES = src/node_modules
-JSFILES = src/js/*.js $(MODULES)/@popperjs/core/dist/umd/popper.js $(MODULES)/tippy.js/dist/tippy.umd.js
+JS_ENTRIES = src/js/red_script.js src/js/red_request.js src/js/red_response.js src/js/red_response_multi.js
 CSSFILES = redbot/assets/red_style.css $(MODULES)/google-code-prettify/src/prettify.css
 
 
@@ -104,12 +104,10 @@ redbot/message/headers/%.py:
 redbot/assets: redbot/assets/script.js redbot/assets/prettify.js redbot/assets/style.css redbot/assets/webfonts
 
 redbot/assets/prettify.js:
-	closure-compiler --create_source_map $@.map --js_output_file $@ $(MODULES)/google-code-prettify/src/prettify.js
-	echo "\n//# sourceMappingURL=prettify.js.map" >> $@
+	webpack-cli --entry ./$(MODULES)/google-code-prettify/src/prettify.js --config src/js/webpack.config.js --mode production --output $@
 
-redbot/assets/script.js: $(JSFILES)
-	closure-compiler --create_source_map $@.map --js_output_file $@ $(JSFILES)
-	echo "\n//# sourceMappingURL=script.js.map" >> $@
+redbot/assets/script.js: $(JS_ENTRIES)
+	webpack-cli $(JS_ENTRIES) --config src/js/webpack.config.js --mode production --output $@
 
 redbot/assets/red_style.css: src/scss/*.scss
 	$(SASS) src/scss/red_style.scss $@
