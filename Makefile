@@ -106,7 +106,7 @@ redbot/assets: redbot/assets/script.js redbot/assets/prettify.js redbot/assets/s
 redbot/assets/prettify.js:
 	webpack-cli --entry ./$(MODULES)/google-code-prettify/src/prettify.js --config src/js/webpack.config.js --mode production --output $@
 
-redbot/assets/script.js: $(JS_ENTRIES)
+redbot/assets/script.js: src/js/*.js
 	webpack-cli $(JS_ENTRIES) --config src/js/webpack.config.js --mode production --output $@
 
 redbot/assets/red_style.css: src/scss/*.scss
