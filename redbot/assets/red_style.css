@@ -313,6 +313,9 @@ table#summary a.fade {
 .maybe {
   color: #AA8A22; }
 
+.tip {
+  display: none; }
+
 .tippy-box[data-theme~='redbot'] {
   -webkit-border-radius: 0.5em;
   -moz-border-radius: 0.5em;
