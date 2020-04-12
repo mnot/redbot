@@ -118,7 +118,6 @@ redbot/assets/red_style.css: src/scss/*.scss
 redbot/assets/style.css: $(CSSFILES)
 	cat $(CSSFILES) | cssmin > $@
 
-.PHONY: redbot/assets/icons
 redbot/assets/icons: $(ICON_FILES)
 	cp $(ICON_FILES) $@/
 
