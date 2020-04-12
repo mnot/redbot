@@ -137,26 +137,27 @@ function setValue (reqHdr, valueHtml) {
   }
 }
 
-docReady(function () {
-  const config = JSON.parse(qs('#config').innerHTML)
 
-  /* add pre-populated headers */
-  config.redbot_req_hdrs.forEach(hdr => {
-    addReqHdr(hdr[0], hdr[1])
-  })
+// setup request headers. Depends on #request_form being available.
 
-  /* add the 'add a request header' button */
-  var addButton = document.createElement('div')
-  addButton.className = 'add_req_hdr'
-  var addLink = document.createElement('a')
-  addLink.href = '#'
-  addLink.id = 'add_req_hdr'
-  addLink.appendChild(document.createTextNode('add a request header'))
-  addButton.appendChild(addLink)
-  qs('#request_form').appendChild(addButton)
+const config = JSON.parse(qs('#config').innerHTML)
 
-  /* handle the add header button */
-  qs('#add_req_hdr').onclick = function () {
-    addReqHdr()
-  }
+/* add pre-populated headers */
+config.redbot_req_hdrs.forEach(hdr => {
+  addReqHdr(hdr[0], hdr[1])
 })
+
+/* add the 'add a request header' button */
+var addButton = document.createElement('div')
+addButton.className = 'add_req_hdr'
+var addLink = document.createElement('a')
+addLink.href = '#'
+addLink.id = 'add_req_hdr'
+addLink.appendChild(document.createTextNode('add a request header'))
+addButton.appendChild(addLink)
+qs('#request_form').appendChild(addButton)
+
+/* handle the add header button */
+qs('#add_req_hdr').onclick = function () {
+  addReqHdr()
+}

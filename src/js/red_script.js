@@ -2,14 +2,6 @@
 
 import { qs, qsa, docReady, toggleHidden } from './red_util.js'
 
-window.onerror = function (message, url, line, col, errorObj) {
-  if (window.XMLHttpRequest) {
-    var xhr = new XMLHttpRequest()
-    var data = `${message} at ${url}, ${line}:${col}`
-    xhr.open('POST', '?client_error=1', true)
-    xhr.send(data)
-  }
-}
 
 docReady(function () {
   /* URI */

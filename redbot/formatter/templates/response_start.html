@@ -5,9 +5,17 @@
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta name="ROBOTS" content="INDEX, NOFOLLOW" />
     <link rel="stylesheet" type="text/css" href="{{ static }}/style.css?{{ version }}">
+    <script type="text/javascript">
+      window.onerror = function (message, url, line, col, errorObj) {
+        if (window.XMLHttpRequest) {
+          var xhr = new XMLHttpRequest()
+          var data = `${message} at ${url}, ${line}:${col}`
+          xhr.open('POST', '?client_error=1', true)
+          xhr.send(data)
+        }
+      }
+    </script>
     <script id="config" type="application/json">{{ config }}</script>
-    <script src="{{ static }}/script.js?{{ version }}" type="module"></script>
-    <script src="{{ static }}/prettify.js" type="text/javascript" defer></script>
     <link rel="apple-touch-icon-precomposed" sizes="144x144"
      href="{{ static }}/logo/apple-touch-icon-144x144.png" />
     <link rel="apple-touch-icon-precomposed" sizes="152x152"
@@ -43,3 +51,5 @@
     </form>
 </div>
 <div id="red_status"></div>
+<script src="{{ static }}/script.js?{{ version }}" type="text/javascript" async></script>
+<script src="{{ static }}/prettify.js" type="text/javascript" defer></script>
