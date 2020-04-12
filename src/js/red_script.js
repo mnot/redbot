@@ -1,7 +1,5 @@
-/* global XMLHttpRequest */
 
 import { qs, qsa, docReady, toggleHidden } from './red_util.js'
-
 
 docReady(function () {
   /* URI */

@@ -1,6 +1,6 @@
 /* global alert */
 
-import { qs, docReady, escapeHtml } from './red_util.js'
+import { qs, escapeHtml } from './red_util.js'
 
 var knownReqHdrs = {
   'Accept-Language': ['', 'en', 'en-us', 'en-uk', 'fr'],
@@ -136,7 +136,6 @@ function setValue (reqHdr, valueHtml) {
     qs('input[type=hidden]', reqHdr).value = `${hdrName.getAttribute('data-name')}:${newValue}`
   }
 }
-
 
 // setup request headers. Depends on #request_form being available.
 
