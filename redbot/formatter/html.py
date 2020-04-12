@@ -164,7 +164,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         message = ""
         if not resource.response.decoded_sample_complete:
             message = "<p class='btw'>REDbot isn't showing the whole body, because it's so big!</p>"
-        return Markup(f"<pre class='prettyprint'>{safe_sample}</pre>\n{{ message }}")
+        return Markup(f"<pre class='prettyprint'>{safe_sample}</pre>\n{message}")
 
     def format_subrequest_messages(self, category: categories) -> Markup:
         out = []
