@@ -1,26 +1,3 @@
-/* font-awesome
-
-   We do not use fontawesome.scss due to bloat; instead we
-   use individual characters.
-   See: http://astronautweb.co/snippet/font-awesome/
-*/
-/* FONT PATH
- * -------------------------- */
-@font-face {
-  font-family: 'FontAwesome';
-  src: url("/static/webfonts/fontawesome-webfont.eot?v=4.7.0");
-  src: url("/static/webfonts/fontawesome-webfont.eot?#iefix&v=4.7.0") format("embedded-opentype"), url("/static/webfonts/fontawesome-webfont.woff2?v=4.7.0") format("woff2"), url("/static/webfonts/fontawesome-webfont.woff?v=4.7.0") format("woff"), url("/static/webfonts/fontawesome-webfont.ttf?v=4.7.0") format("truetype"), url("/static/webfonts/fontawesome-webfont.svg?v=4.7.0#fontawesomeregular") format("svg");
-  font-weight: normal;
-  font-style: normal; }
-
-.fa {
-  display: inline-block;
-  font: normal normal normal 14px/1 FontAwesome;
-  font-size: inherit;
-  text-rendering: auto;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale; }
-
 /* layout, major elements */
 body {
   background-color: #f9f9f9;
@@ -133,9 +110,10 @@ body.blank > .footer {
   width: 650px; }
 
 .twitterlogo {
-  font-family: 'FontAwesome';
-  margin-bottom: -10px;
-  color: #1DA1F2; }
+  color: #1DA1F2;
+  filter: invert(51%) sepia(35%) saturate(2513%) hue-rotate(176deg) brightness(98%) contrast(93%);
+  height: 18px;
+  margin-bottom: -5px; }
 
 /* news */
 .news {
@@ -304,14 +282,20 @@ table#summary a.fade {
   -webkit-background-clip: text;
   background-clip: text; }
 
-.yes {
-  color: #94C594; }
+.yes img {
+  fill: #94C594;
+  filter: invert(80%) sepia(25%) saturate(395%) hue-rotate(71deg) brightness(89%) contrast(88%);
+  height: 18px; }
 
-.no {
-  color: #D98080; }
+.no img {
+  fill: #D98080;
+  filter: invert(89%) sepia(22%) saturate(4693%) hue-rotate(301deg) brightness(90%) contrast(86%);
+  height: 18px; }
 
-.maybe {
-  color: #AA8A22; }
+.maybe img {
+  fill: #AA8A22;
+  filter: invert(63%) sepia(66%) saturate(5879%) hue-rotate(29deg) brightness(105%) contrast(73%);
+  height: 18px; }
 
 .tip {
   display: none; }
@@ -344,7 +328,8 @@ li {
 
 /* note levels */
 li.note {
-  list-style-type: none; }
+  list-style-type: none;
+  position: relative; }
 
 li.note.hilight {
   font-weight: bold; }
@@ -353,38 +338,69 @@ li.note.hilight {
   color: #659365; }
 
 li.good:before {
-  font-family: 'FontAwesome';
-  margin: 0 6px 0 -28px;
-  font-weight: 400;
-  content: '\f058'; }
+  position: absolute;
+  display: block;
+  content: '';
+  left: -1.3em;
+  width: 1em;
+  height: 1.1em;
+  /* unrelated to image height; this is so it gets snipped */
+  background-repeat: no-repeat;
+  background-size: 1em;
+  background-position: 0 .1em;
+  background-image: url("icons/check-circle.svg");
+  filter: invert(51%) sepia(37%) saturate(361%) hue-rotate(71deg) brightness(96%) contrast(88%); }
 
 .warning {
   color: #AA8A22; }
 
 li.warning:before {
-  font-family: 'FontAwesome';
-  margin: 0 6px 0 -28px;
-  font-weight: 400;
-  content: '\f06a'; }
+  position: absolute;
+  display: block;
+  content: '';
+  left: -1.3em;
+  width: 1em;
+  height: 1.1em;
+  /* unrelated to image height; this is so it gets snipped */
+  background-repeat: no-repeat;
+  background-size: 1em;
+  background-position: 0 .1em;
+  background-image: url("icons/exclamation-circle.svg");
+  filter: invert(50%) sepia(100%) saturate(343%) hue-rotate(8deg) brightness(90%) contrast(90%); }
 
 .bad {
   color: #a64029; }
 
 li.bad:before {
-  font-family: 'FontAwesome';
-  margin: 0 6px 0 -28px;
-  font-weight: 400;
-  content: '\f057'; }
+  position: absolute;
+  display: block;
+  content: '';
+  left: -1.3em;
+  width: 1em;
+  height: 1.1em;
+  /* unrelated to image height; this is so it gets snipped */
+  background-repeat: no-repeat;
+  background-size: 1em;
+  background-position: 0 .1em;
+  background-image: url("icons/times-circle.svg");
+  filter: invert(22%) sepia(64%) saturate(1739%) hue-rotate(345deg) brightness(104%) contrast(84%); }
 
 .info {
   color: #111; }
 
 li.info:before {
-  font-family: 'FontAwesome';
-  margin: 0 6px 0 -28px;
-  font-weight: 400;
-  content: '\f05a';
-  color: #1676b7; }
+  position: absolute;
+  display: block;
+  content: '';
+  left: -1.3em;
+  width: 1em;
+  height: 1.1em;
+  /* unrelated to image height; this is so it gets snipped */
+  background-repeat: no-repeat;
+  background-size: 1em;
+  background-position: 0 .1em;
+  background-image: url("icons/info-circle.svg");
+  filter: invert(35%) sepia(28%) saturate(2614%) hue-rotate(174deg) brightness(98%) contrast(88%); }
 
 /* help bubbles */
 /* http://konigi.com/tools/css-sticky-notes */
