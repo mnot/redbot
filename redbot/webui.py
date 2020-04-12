@@ -24,7 +24,7 @@ from typing import (
     Tuple,
     Union,
 )  # pylint: disable=unused-import
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, urlsplit, urlencode
 import zlib
 
 import thor
@@ -360,55 +360,58 @@ class RedWebUi:
 
             @thor.events.on(exchange)
             def response_done(trailers):
-                if exchange.tmp_status != 200:
+                if exchange.tmp_status != b"200":
+                    e_str = f"hCaptcha returned {exchange.tmp_status.decode('utf-8')} status code"
                     self.error_response(
-                        formatter,
-                        b"403",
-                        b"Forbidden",
-                        f"hCaptcha validation returned {exchange.tmp-status} status code",
+                        formatter, b"403", b"Forbidden", e_str, e_str,
                     )
                 results = json.loads(exchange.tmp_res_body)
                 if results["success"]:
                     self.continue_test(top_resource, formatter)
                 else:
+                    e_str = f"hCaptcha errors: {', '.join([e for e in results['error-codes']])}"
                     self.error_response(
-                        formatter,
-                        b"403",
-                        b"Forbidden",
-                        f"hCaptcha errors: {', '.join([e for e in results['error-codes']])}",
+                        formatter, b"403", b"Forbidden", e_str, e_str,
                     )
 
-            {
+            request_form = {
                 "secret": self.config["hcaptcha_secret"],
                 "response": self.hcaptcha_token,
                 "remoteip": client_id,
             }
-            exchange.request_start(b"POST", b"https://hcaptcha.com/siteverify", [])
-
-        # check robots.txt
-        robot_fetcher = RobotFetcher(self.config)
-        if self.config.getboolean("robots_check"):
-
-            @thor.events.on(robot_fetcher)
-            def robot(results: Tuple[str, bool]) -> None:
-                url, robot_ok = results
-                if robot_ok:
-                    self.continue_test(top_resource, formatter)
-                else:
-                    valid_till = str(int(thor.time()) + 60)
-                    robot_hmac = hmac.new(
-                        self._robot_secret, bytes(valid_till, "ascii"), "sha512"
-                    )
-                    self.error_response(
-                        formatter,
-                        b"403",
-                        b"Forbidden",
-                        f"This site doesn't allow robots. If you are human, please <a href='?uri={self.test_uri}&robot_time={valid_till}&robot_hmac={robot_hmac.hexdigest()}'>click here</a>.",
-                    )
-
-            robot_fetcher.check_robots(HttpRequest.iri_to_uri(self.test_uri))
+            exchange.request_start(
+                b"POST",
+                b"https://hcaptcha.com/siteverify",
+                [[b"content-type", b"application/x-www-form-urlencoded"]],
+            )
+            exchange.request_body(urlencode(request_form).encode("utf-8", "replace"))
+            exchange.request_done({})
         else:
-            self.continue_test(top_resource, formatter)
+
+            # check robots.txt
+            robot_fetcher = RobotFetcher(self.config)
+            if self.config.getboolean("robots_check"):
+
+                @thor.events.on(robot_fetcher)
+                def robot(results: Tuple[str, bool]) -> None:
+                    url, robot_ok = results
+                    if robot_ok:
+                        self.continue_test(top_resource, formatter)
+                    else:
+                        valid_till = str(int(thor.time()) + 60)
+                        robot_hmac = hmac.new(
+                            self._robot_secret, bytes(valid_till, "ascii"), "sha512"
+                        )
+                        self.error_response(
+                            formatter,
+                            b"403",
+                            b"Forbidden",
+                            f"This site doesn't allow robots. If you are human, please <a href='?uri={self.test_uri}&robot_time={valid_till}&robot_hmac={robot_hmac.hexdigest()}'>click here</a>.",
+                        )
+
+                robot_fetcher.check_robots(HttpRequest.iri_to_uri(self.test_uri))
+            else:
+                self.continue_test(top_resource, formatter)
 
     def error_response(
         self,

@@ -16,6 +16,7 @@ docReady(function () {
             const tokenElement = document.createElement('input')
             tokenElement.name = 'hCaptcha_token'
             tokenElement.value = token
+            tokenElement.style.visibility = 'hidden'
             qs('#request_form').appendChild(tokenElement)
             qs('#request_form').submit()
           },
