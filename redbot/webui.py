@@ -29,7 +29,7 @@ import zlib
 
 import thor
 import thor.http.common
-from thor.http import get_header
+from thor.http import get_header, HttpClient
 from redbot import __version__
 from redbot.message import HttpRequest
 from redbot.ratelimit import ratelimiter, RateLimitViolation
@@ -53,6 +53,7 @@ class RedWebUi:
     """
 
     _robot_secret = secrets.token_bytes(16)  # type: bytes
+    token_client = HttpClient()
 
     def __init__(
         self,
@@ -117,6 +118,7 @@ class RedWebUi:
         if not self.descend:
             self.check_name = qs.get("check_name", [None])[0]
         self.test_id = qs.get("id", [None])[0]
+        self.hcaptcha_token = qs.get("hCaptcha_token", [None])[0]
         self.robot_time = qs.get("robot_time", [None])[0]
         self.robot_hmac = qs.get("robot_hmac", [None])[0]
         self.start = time.time()
@@ -322,9 +324,69 @@ class RedWebUi:
                     "origin over limit: %s" % origin,
                 )
 
+        # hCaptcha
+        if self.config.get("hcaptcha_sitekey", "") and self.config.get(
+            "hcaptcha_secret", ""
+        ):
+            if not self.hcaptcha_token:
+                return self.error_response(
+                    formatter,
+                    b"403",
+                    b"Forbidden",
+                    "hCatpcha token required.",
+                    "hCaptcha token required.",
+                )
+            exchange = self.token_client.exchange()
+
+            @thor.events.on(exchange)
+            def error(err_msg):
+                return self.error_response(
+                    formatter,
+                    b"403",
+                    b"Forbidden",
+                    "hCatpcha error.",
+                    f"hCaptcha error: {err_msg}.",
+                )
+
+            @thor.events.on(exchange)
+            def response_start(status, phrase, headers):
+                exchange.tmp_status = status
+
+            exchange.tmp_res_body = b""
+
+            @thor.events.on(exchange)
+            def response_body(chunk):
+                exchange.tmp_res_body += chunk
+
+            @thor.events.on(exchange)
+            def response_done(trailers):
+                if exchange.tmp_status != 200:
+                    self.error_response(
+                        formatter,
+                        b"403",
+                        b"Forbidden",
+                        f"hCaptcha validation returned {exchange.tmp-status} status code",
+                    )
+                results = json.loads(exchange.tmp_res_body)
+                if results["success"]:
+                    self.continue_test(top_resource, formatter)
+                else:
+                    self.error_response(
+                        formatter,
+                        b"403",
+                        b"Forbidden",
+                        f"hCaptcha errors: {', '.join([e for e in results['error-codes']])}",
+                    )
+
+            {
+                "secret": self.config["hcaptcha_secret"],
+                "response": self.hcaptcha_token,
+                "remoteip": client_id,
+            }
+            exchange.request_start(b"POST", b"https://hcaptcha.com/siteverify", [])
+
         # check robots.txt
         robot_fetcher = RobotFetcher(self.config)
-
         if self.config.getboolean("robots_check"):
 
             @thor.events.on(robot_fetcher)

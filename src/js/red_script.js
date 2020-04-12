@@ -14,7 +14,7 @@ docReady(function () {
           sitekey: config.hcaptcha_sitekey,
           callback: function (token) {
             const tokenElement = document.createElement('input')
-            tokenElement.name = 'token'
+            tokenElement.name = 'hCaptcha_token'
             tokenElement.value = token
             qs('#request_form').appendChild(tokenElement)
             qs('#request_form').submit()

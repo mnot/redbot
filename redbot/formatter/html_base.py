@@ -76,7 +76,8 @@ class BaseHtmlFormatter(Formatter):
                 "version": __version__,
                 "baseuri": self.config["ui_uri"],
                 "static": self.config["static_root"],
-                "hcaptcha": self.config.get("hcaptcha_sitekey", False) and True,
+                "hcaptcha": self.config.get("hcaptcha_sitekey", "") != ""
+                and self.config.get("hcaptcha_secret", "") != "",
             }
         )
         self.start = thor.time()
@@ -134,9 +135,7 @@ class BaseHtmlFormatter(Formatter):
         """
         self.output(self.format_extra())
         tpl = self.templates.get_template("footer.html")
-        self.output(
-            tpl.render(baseuri=self.config["ui_uri"], static=self.config["static_root"])
-        )
+        self.output(tpl.render())
 
     def error_output(self, message: str) -> None:
         """
