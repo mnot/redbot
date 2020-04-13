@@ -29,9 +29,10 @@ import zlib
 
 import thor
 import thor.http.common
-from thor.http import get_header, HttpClient
+from thor.http import get_header
 from redbot import __version__
 from redbot.message import HttpRequest
+from redbot.webui.captcha import handle_captcha
 from redbot.webui.ratelimit import ratelimiter, RateLimitViolation
 from redbot.resource import HttpResource
 from redbot.resource.robot_fetch import RobotFetcher, url_to_origin
@@ -53,7 +54,6 @@ class RedWebUi:
     """
 
     _robot_secret = secrets.token_bytes(16)  # type: bytes
-    token_client = HttpClient()
 
     def __init__(
         self,
@@ -106,28 +106,33 @@ class RedWebUi:
 
     def run(self, query_string: bytes) -> None:
         """Given a bytes query_string from the wire, set attributes."""
-        qs = parse_qs(query_string.decode(self.config["charset"], "replace"))
-        self.test_uri = qs.get("uri", [""])[0]
+        self.query_string = parse_qs(
+            query_string.decode(self.config["charset"], "replace")
+        )
+        self.test_uri = self.query_string.get("uri", [""])[0]
         self.req_hdrs = [
             tuple(h.split(":", 1))  # type: ignore
-            for h in qs.get("req_hdr", [])
+            for h in self.query_string.get("req_hdr", [])
             if h.find(":") > 0
         ]
-        self.format = qs.get("format", ["html"])[0]
-        self.descend = "descend" in qs
+        self.format = self.query_string.get("format", ["html"])[0]
+        self.descend = "descend" in self.query_string
         if not self.descend:
-            self.check_name = qs.get("check_name", [None])[0]
-        self.test_id = qs.get("id", [None])[0]
-        self.hcaptcha_token = qs.get("hCaptcha_token", [None])[0]
-        self.robot_time = qs.get("robot_time", [None])[0]
-        self.robot_hmac = qs.get("robot_hmac", [None])[0]
+            self.check_name = self.query_string.get("check_name", [None])[0]
+        self.test_id = self.query_string.get("id", [None])[0]
+        self.robot_time = self.query_string.get("robot_time", [None])[0]
+        self.robot_hmac = self.query_string.get("robot_hmac", [None])[0]
         self.start = time.time()
         if self.method == "POST":
-            if "save" in qs and self.config.get("save_dir", "") and self.test_id:
+            if (
+                "save" in self.query_string
+                and self.config.get("save_dir", "")
+                and self.test_id
+            ):
                 self.save_test()
-            elif "slack" in qs:
+            elif "slack" in self.query_string:
                 self.run_slack()
-            elif "client_error" in qs:
+            elif "client_error" in self.query_string:
                 self.dump_client_error()
         elif self.method in ["GET", "HEAD"]:
             if self.test_id:
@@ -328,64 +333,8 @@ class RedWebUi:
         if self.config.get("hcaptcha_sitekey", "") and self.config.get(
             "hcaptcha_secret", ""
         ):
-            if not self.hcaptcha_token:
-                return self.error_response(
-                    formatter,
-                    b"403",
-                    b"Forbidden",
-                    "hCatpcha token required.",
-                    "hCaptcha token required.",
-                )
-            exchange = self.token_client.exchange()
-
-            @thor.events.on(exchange)
-            def error(err_msg):
-                return self.error_response(
-                    formatter,
-                    b"403",
-                    b"Forbidden",
-                    "hCatpcha error.",
-                    f"hCaptcha error: {err_msg}.",
-                )
-
-            @thor.events.on(exchange)
-            def response_start(status, phrase, headers):
-                exchange.tmp_status = status
-
-            exchange.tmp_res_body = b""
-
-            @thor.events.on(exchange)
-            def response_body(chunk):
-                exchange.tmp_res_body += chunk
-
-            @thor.events.on(exchange)
-            def response_done(trailers):
-                if exchange.tmp_status != b"200":
-                    e_str = f"hCaptcha returned {exchange.tmp_status.decode('utf-8')} status code"
-                    self.error_response(
-                        formatter, b"403", b"Forbidden", e_str, e_str,
-                    )
-                results = json.loads(exchange.tmp_res_body)
-                if results["success"]:
-                    self.continue_test(top_resource, formatter)
-                else:
-                    e_str = f"hCaptcha errors: {', '.join([e for e in results['error-codes']])}"
-                    self.error_response(
-                        formatter, b"403", b"Forbidden", e_str, e_str,
-                    )
-
-            request_form = {
-                "secret": self.config["hcaptcha_secret"],
-                "response": self.hcaptcha_token,
-                "remoteip": client_id,
-            }
-            exchange.request_start(
-                b"POST",
-                b"https://hcaptcha.com/siteverify",
-                [[b"content-type", b"application/x-www-form-urlencoded"]],
-            )
-            exchange.request_body(urlencode(request_form).encode("utf-8", "replace"))
-            exchange.request_done({})
+            presented_token = self.query_string.get("hCaptcha_token", [None])[0]
+            handle_captcha(self, top_resource, formatter, presented_token, client_id)
         else:
 
             # check robots.txt
