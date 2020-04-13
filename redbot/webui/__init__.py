@@ -32,7 +32,7 @@ import thor.http.common
 from thor.http import get_header, HttpClient
 from redbot import __version__
 from redbot.message import HttpRequest
-from redbot.ratelimit import ratelimiter, RateLimitViolation
+from redbot.webui.ratelimit import ratelimiter, RateLimitViolation
 from redbot.resource import HttpResource
 from redbot.resource.robot_fetch import RobotFetcher, url_to_origin
 from redbot.formatter import find_formatter, html, slack, Formatter
