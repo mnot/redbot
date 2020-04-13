@@ -53,16 +53,14 @@ def extend_saved_test(webui: "RedWebUi") -> None:
         if webui.descend:
             location = b"%s&descend=True" % location
         webui.response_start(b"303", b"See Other", [(b"Location", location)])
-        webui.response_body(
-            "Redirecting to the saved test page...".encode(webui.config["charset"])
-        )
+        webui.output("Redirecting to the saved test page...")
     except (OSError, IOError):
         webui.response_start(
             b"500",
             b"Internal Server Error",
             [(b"Content-Type", b"text/html; charset=%s" % webui.charset_bytes)],
         )
-        webui.response_body(webui.show_error("Sorry, I couldn't save that."))
+        webui.output("Sorry, I couldn't save that.")
     webui.response_done([])
 
 
@@ -82,9 +80,7 @@ def load_saved_test(webui: "RedWebUi") -> None:
                 (b"Cache-Control", b"max-age=600, must-revalidate"),
             ],
         )
-        webui.response_body(
-            webui.show_error("I'm sorry, I can't find that saved response.")
-        )
+        webui.output("I'm sorry, I can't find that saved response.")
         webui.response_done([])
         return
     is_saved = mtime > thor.time()
@@ -99,9 +95,7 @@ def load_saved_test(webui: "RedWebUi") -> None:
                 (b"Cache-Control", b"max-age=600, must-revalidate"),
             ],
         )
-        webui.response_body(
-            webui.show_error("I'm sorry, I had a problem loading that.")
-        )
+        webui.output("I'm sorry, I had a problem loading that.")
         webui.response_done([])
         return
     finally:

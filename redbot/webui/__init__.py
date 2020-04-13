@@ -273,17 +273,6 @@ class RedWebUi:
         if log_message:
             self.error_log(log_message)
 
-    def show_error(self, message: str, to_output: bool = False) -> Union[None, bytes]:
-        """
-        Display a message. If to_output is True, send it to self.output(); otherwise
-        return it as binary
-        """
-        out = f"<p class='error'>{message}</p>"
-        if to_output:
-            self.output(out)
-            return None
-        return out.encode(self.config["charset"], "replace")
-
     def output(self, chunk: str) -> None:
         self.response_body(chunk.encode(self.config["charset"], "replace"))
 
@@ -296,7 +285,7 @@ class RedWebUi:
     def timeoutError(self, detail: Callable[[], str]) -> None:
         """ Max runtime reached."""
         self.error_log(f"timeout: <{self.test_uri}> descend={self.descend}; {detail()}")
-        self.show_error("REDbot timeout.", to_output=True)
+        self.output(f"<p class='error'>REDbot timeout.</p>")
         self.response_done([])
 
     def get_client_id(self) -> str:
