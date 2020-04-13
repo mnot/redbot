@@ -35,7 +35,7 @@ def handle_captcha(
 
     @thor.events.on(exchange)
     def error(err_msg: HttpError) -> None:
-        return webui.error_response(
+        webui.error_response(
             formatter,
             b"403",
             b"Forbidden",
@@ -61,7 +61,7 @@ def handle_captcha(
             e_str = (
                 f"hCaptcha returned {exchange.tmp_status.decode('utf-8')} status code"
             )
-            webui.error_response(
+            return webui.error_response(
                 formatter, b"403", b"Forbidden", e_str, e_str,
             )
         results = json.loads(exchange.tmp_res_body)
