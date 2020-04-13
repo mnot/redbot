@@ -68,7 +68,6 @@ class RedWebUi:
         error_log: Callable[[str], int] = sys.stderr.write,
     ) -> None:
         self.config = config  # type: SectionProxy
-        self.method = method
         self.query_string = parse_qs(
             query_string.decode(self.config["charset"], "replace")
         )
@@ -97,7 +96,7 @@ class RedWebUi:
         if not self.descend:
             self.check_name = self.query_string.get("check_name", [None])[0]
         self.start = time.time()
-        if self.method == "POST":
+        if method == "POST":
             if (
                 "save" in self.query_string
                 and self.config.get("save_dir", "")
@@ -108,13 +107,20 @@ class RedWebUi:
                 run_slack(self)
             elif "client_error" in self.query_string:
                 self.dump_client_error()
-        elif self.method in ["GET", "HEAD"]:
+        elif method in ["GET", "HEAD"]:
             if self.test_id:
                 load_saved_test(self)
             elif self.test_uri:
                 self.run_test()
             else:
                 self.show_default()
+        else:
+            self.error_response(
+                find_formatter("html")(self.config, self.output),
+                b"405",
+                b"Method Not Allowed",
+                "Method Not Allowed",
+            )
 
     def run_test(self) -> None:
         """Test a URI."""
