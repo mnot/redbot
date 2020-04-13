@@ -362,29 +362,6 @@ class RedWebUi:
             else:
                 self.continue_test(top_resource, formatter)
 
-    def error_response(
-        self,
-        formatter: Formatter,
-        status_code: bytes,
-        status_phrase: bytes,
-        message: str,
-        log_message: str = None,
-    ) -> None:
-        """Send an error response."""
-        self.response_start(
-            status_code,
-            status_phrase,
-            [
-                (b"Content-Type", formatter.content_type()),
-                (b"Cache-Control", b"max-age=60, must-revalidate"),
-            ],
-        )
-        formatter.start_output()
-        formatter.error_output(message)
-        self.response_done([])
-        if log_message:
-            self.error_log(log_message)
-
     def continue_test(self, top_resource: HttpResource, formatter: Formatter) -> None:
         "Preliminary checks are done; actually run the test."
 
@@ -515,6 +492,29 @@ class RedWebUi:
         formatter.start_output()
         formatter.finish_output()
         self.response_done([])
+
+    def error_response(
+        self,
+        formatter: Formatter,
+        status_code: bytes,
+        status_phrase: bytes,
+        message: str,
+        log_message: str = None,
+    ) -> None:
+        """Send an error response."""
+        self.response_start(
+            status_code,
+            status_phrase,
+            [
+                (b"Content-Type", formatter.content_type()),
+                (b"Cache-Control", b"max-age=60, must-revalidate"),
+            ],
+        )
+        formatter.start_output()
+        formatter.error_output(message)
+        self.response_done([])
+        if log_message:
+            self.error_log(log_message)
 
     def show_error(self, message: str, to_output: bool = False) -> Union[None, bytes]:
         """
