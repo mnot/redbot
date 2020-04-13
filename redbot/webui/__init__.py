@@ -6,8 +6,6 @@ A Web UI for RED, the Resource Expert Droid.
 
 from collections import defaultdict
 from configparser import SectionProxy
-import hmac
-import json
 import os
 import string
 import sys
@@ -40,8 +38,9 @@ from redbot.webui.saved_tests import (
     extend_saved_test,
     load_saved_test,
 )
+from redbot.webui.slack import run_slack
 from redbot.resource import HttpResource
-from redbot.formatter import find_formatter, html, slack, Formatter
+from redbot.formatter import find_formatter, html, Formatter
 from redbot.formatter.html_base import e_url
 from redbot.type import (
     RawHeaderListType,
@@ -120,7 +119,7 @@ class RedWebUi:
             ):
                 extend_saved_test(self)
             elif "slack" in self.query_string:
-                self.run_slack()
+                run_slack(self)
             elif "client_error" in self.query_string:
                 self.dump_client_error()
         elif self.method in ["GET", "HEAD"]:
@@ -173,7 +172,7 @@ class RedWebUi:
         try:
             ratelimiter.process(self, formatter)
         except ValueError:
-            return # over limit
+            return  # over limit, don't continue.
 
         # hCaptcha
         if self.config.get("hcaptcha_sitekey", "") and self.config.get(
@@ -232,73 +231,6 @@ class RedWebUi:
         body = self.req_body.decode("ascii", "replace")[:255].replace("\n", "")
         body_safe = "".join([x for x in body if x in string.printable])
         self.error_log(f"Client JS -> {body_safe}")
-
-    def run_slack(self) -> None:
-        """Handle a slack request."""
-        body = parse_qs(self.req_body.decode("utf-8"))
-        slack_response_uri = body.get("response_url", [""])[0].strip()
-        formatter = slack.SlackFormatter(
-            self.config, self.output, slack_uri=slack_response_uri
-        )
-        self.test_uri = body.get("text", [""])[0].strip()
-
-        self.response_start(
-            b"200",
-            b"OK",
-            [
-                (b"Content-Type", formatter.content_type()),
-                (b"Cache-Control", b"max-age=300"),
-            ],
-        )
-        self.output(
-            json.dumps(
-                {
-                    "response_type": "ephemeral",
-                    "text": f"_Checking_ {self.test_uri} _..._",
-                }
-            )
-        )
-        self.response_done([])
-
-        top_resource = HttpResource(self.config)
-        top_resource.set_request(self.test_uri, req_hdrs=self.req_hdrs)
-        formatter.bind_resource(top_resource)
-        if not self.verify_slack_secret():
-            return self.error_response(
-                formatter,
-                b"403",
-                b"Forbidden",
-                "Incorrect Slack Authentication.",
-                "Bad slack token.",
-            )
-        self.timeout = thor.schedule(int(self.config["max_runtime"]), self.timeoutError)
-
-        @thor.events.on(formatter)
-        def formatter_done() -> None:
-            save_test(self, top_resource)
-
-        top_resource.check()
-
-    def verify_slack_secret(self) -> bool:
-        """Verify the slack secret."""
-        slack_signing_secret = self.config.get(
-            "slack_signing_secret", fallback=""
-        ).encode("utf-8")
-        timestamp = get_header(self.req_headers, b"x-slack-request-timestamp")
-        if not timestamp or not timestamp[0].isdigit():
-            return False
-        timestamp = timestamp[0]
-        if abs(thor.time() - int(timestamp)) > 60 * 5:
-            return False
-        sig_basestring = b"v0:" + timestamp + b":" + self.req_body
-        signature = (
-            f"v0={hmac.new(slack_signing_secret, sig_basestring, 'sha256').hexdigest()}"
-        )
-        presented_signature = get_header(self.req_headers, b"x-slack-signature")
-        if not presented_signature:
-            return False
-        presented_sig = presented_signature[0].decode("utf-8")
-        return hmac.compare_digest(signature, presented_sig)
 
     def show_default(self) -> None:
         """Show the default page."""
