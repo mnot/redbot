@@ -144,12 +144,6 @@ class RedWebUi:
             else:
                 self.show_default()
 
-    def dump_client_error(self) -> None:
-        """Dump a client error."""
-        body = self.req_body.decode("ascii", "replace")[:255].replace("\n", "")
-        body_safe = "".join([x for x in body if x in string.printable])
-        self.error_log(f"Client JS -> {body_safe}")
-
     def run_test(self) -> None:
         """Test a URI."""
         self.test_id = init_save_file(self)
@@ -294,6 +288,12 @@ class RedWebUi:
             display_resource = top_resource
         formatter.bind_resource(display_resource)
         top_resource.check()
+
+    def dump_client_error(self) -> None:
+        """Dump a client error."""
+        body = self.req_body.decode("ascii", "replace")[:255].replace("\n", "")
+        body_safe = "".join([x for x in body if x in string.printable])
+        self.error_log(f"Client JS -> {body_safe}")
 
     def run_slack(self) -> None:
         """Handle a slack request."""
