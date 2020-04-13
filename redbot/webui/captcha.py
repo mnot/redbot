@@ -28,8 +28,8 @@ def handle_captcha(
             formatter,
             b"403",
             b"Forbidden",
-            "hCatpcha token required.",
-            "hCaptcha token required.",
+            "Catpcha token required.",
+            "Captcha token required.",
         )
     exchange = token_client.exchange()
 
@@ -39,8 +39,8 @@ def handle_captcha(
             formatter,
             b"403",
             b"Forbidden",
-            "hCatpcha error.",
-            f"hCaptcha error: {err_msg}.",
+            "Catpcha error.",
+            f"Captcha error: {err_msg}.",
         )
 
     @thor.events.on(exchange)
@@ -59,14 +59,14 @@ def handle_captcha(
     def response_done(trailers: RawHeaderListType) -> None:
         if exchange.tmp_status != b"200":
             e_str = (
-                f"hCaptcha returned {exchange.tmp_status.decode('utf-8')} status code"
+                f"Captcha returned {exchange.tmp_status.decode('utf-8')} status code"
             )
             return webui.error_response(formatter, b"403", b"Forbidden", e_str, e_str,)
         results = json.loads(exchange.tmp_res_body)
         if results["success"]:
             webui.continue_test(top_resource, formatter)
         else:
-            e_str = f"hCaptcha errors: {', '.join([e for e in results['error-codes']])}"
+            e_str = f"Captcha errors: {', '.join([e for e in results['error-codes']])}"
             webui.error_response(
                 formatter, b"403", b"Forbidden", e_str, e_str,
             )
