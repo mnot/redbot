@@ -68,48 +68,34 @@ class RedWebUi:
         error_log: Callable[[str], int] = sys.stderr.write,
     ) -> None:
         self.config = config  # type: SectionProxy
-        self.charset_bytes = self.config["charset"].encode("ascii")
         self.method = method
+        self.query_string = parse_qs(
+            query_string.decode(self.config["charset"], "replace")
+        )
         self.req_headers = req_headers
         self.req_body = req_body
         self.response_start = exchange.response_start
         self.response_body = exchange.response_body
         self._response_done = exchange.response_done
         self.error_log = error_log  # function to log errors to
-        self.test_uri = None  # type: str
-        self.test_id = None  # type: str
-        self.req_hdrs = None  # type: StrHeaderListType
-        self.format = None  # type: str
-        self.check_name = None  # type: str
-        self.descend = None  # type: bool
-        self.save = None  # type: bool
-        self.save_path = None  # type: str
-        self.timeout = None  # type: Any
-        self.referer_spam_domains = []  # type: List[str]
 
-        if config.get("referer_spam_domains", fallback=""):
-            self.referer_spam_domains = [
-                i.strip() for i in config["referer_spam_domains"].split()
-            ]
-
-        self.run(query_string)
-
-    def run(self, query_string: bytes) -> None:
-        """Given a bytes query_string from the wire, set attributes."""
-        self.query_string = parse_qs(
-            query_string.decode(self.config["charset"], "replace")
-        )
         self.test_uri = self.query_string.get("uri", [""])[0]
+        self.test_id = self.query_string.get("id", [None])[0]
         self.req_hdrs = [
             tuple(h.split(":", 1))  # type: ignore
             for h in self.query_string.get("req_hdr", [])
             if h.find(":") > 0
-        ]
+        ]  # type: StrHeaderListType
         self.format = self.query_string.get("format", ["html"])[0]
         self.descend = "descend" in self.query_string
+        self.charset_bytes = self.config["charset"].encode("ascii")
+
+        self.save_path = None  # type: str
+        self.timeout = None  # type: Any
+
+        self.check_name = None  # type: str
         if not self.descend:
             self.check_name = self.query_string.get("check_name", [None])[0]
-        self.test_id = self.query_string.get("id", [None])[0]
         self.start = time.time()
         if self.method == "POST":
             if (
@@ -155,10 +141,21 @@ class RedWebUi:
             if hdr.lower() == "referer":
                 referers.append(value)
         referer_error = None
+
         if len(referers) > 1:
             referer_error = "Multiple referers not allowed."
-        if referers and urlsplit(referers[0]).hostname in self.referer_spam_domains:
+
+        referer_spam_domains = [
+            i.strip()
+            for i in self.config.get("referer_spam_domains", fallback="").split()
+        ]
+        if (
+            referer_spam_domains
+            and referers
+            and urlsplit(referers[0]).hostname in referer_spam_domains
+        ):
             referer_error = "Referer not allowed."
+
         if referer_error:
             return self.error_response(formatter, b"403", b"Forbidden", referer_error)
 
