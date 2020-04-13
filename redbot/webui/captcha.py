@@ -1,5 +1,5 @@
 import json
-from typing import TYPE_CHECKING
+from typing import Callable, TYPE_CHECKING
 from urllib.parse import urlencode
 
 import thor
@@ -18,29 +18,21 @@ if TYPE_CHECKING:
 
 def handle_captcha(
     webui: "RedWebUi",
-    top_resource: HttpResource,
-    formatter: Formatter,
     presented_token: str,
     client_id: str,
+    continue_test: Callable[[], None],
+    error_response: Callable,
 ) -> None:
     if not presented_token:
-        return webui.error_response(
-            formatter,
-            b"403",
-            b"Forbidden",
-            "Catpcha token required.",
-            "Captcha token required.",
+        return error_response(
+            b"403", b"Forbidden", "Catpcha token required.", "Captcha token required.",
         )
     exchange = token_client.exchange()
 
     @thor.events.on(exchange)
     def error(err_msg: HttpError) -> None:
-        webui.error_response(
-            formatter,
-            b"403",
-            b"Forbidden",
-            "Catpcha error.",
-            f"Captcha error: {err_msg}.",
+        error_response(
+            b"403", b"Forbidden", "Catpcha error.", f"Captcha error: {err_msg}.",
         )
 
     @thor.events.on(exchange)
@@ -61,14 +53,14 @@ def handle_captcha(
             e_str = (
                 f"Captcha returned {exchange.tmp_status.decode('utf-8')} status code"
             )
-            return webui.error_response(formatter, b"403", b"Forbidden", e_str, e_str,)
+            return error_response(b"403", b"Forbidden", e_str, e_str,)
         results = json.loads(exchange.tmp_res_body)
         if results["success"]:
-            webui.continue_test(top_resource, formatter)
+            continue_test()
         else:
             e_str = f"Captcha errors: {', '.join([e for e in results['error-codes']])}"
-            webui.error_response(
-                formatter, b"403", b"Forbidden", e_str, e_str,
+            error_response(
+                b"403", b"Forbidden", e_str, e_str,
             )
 
     request_form = {

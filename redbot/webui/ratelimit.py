@@ -6,7 +6,7 @@ Rate Limiting for RED, the Resource Expert Droid.
 
 from collections import defaultdict
 from configparser import SectionProxy
-from typing import Dict, Set, TYPE_CHECKING
+from typing import Dict, Set, Callable, TYPE_CHECKING
 
 import thor.loop
 
@@ -27,7 +27,7 @@ class RateLimiter:
     def __init__(self) -> None:
         self.loop = thor.loop
 
-    def process(self, webui: "RedWebUi", formatter: Formatter) -> None:
+    def process(self, webui: "RedWebUi", error_response: Callable) -> None:
         """Enforce limits on webui."""
         if not self.running:
             self.setup(webui.config)
@@ -38,8 +38,7 @@ class RateLimiter:
             try:
                 self.increment("client_id", client_id)
             except RateLimitViolation:
-                webui.error_response(
-                    formatter,
+                error_response(
                     b"429",
                     b"Too Many Requests",
                     "Your client is over limit. Please try later.",
@@ -53,8 +52,7 @@ class RateLimiter:
             try:
                 self.increment("origin", origin)
             except RateLimitViolation:
-                webui.error_response(
-                    formatter,
+                error_response(
                     b"429",
                     b"Too Many Requests",
                     "Origin is over limit. Please try later.",

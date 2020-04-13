@@ -11,7 +11,13 @@ import hashlib
 import hmac
 from os import path
 import secrets
-from typing import Union, Dict, Tuple, TYPE_CHECKING  # pylint: disable=unused-import
+from typing import (
+    Union,
+    Dict,
+    Tuple,
+    Callable,
+    TYPE_CHECKING,
+)  # pylint: disable=unused-import
 from urllib.robotparser import RobotFileParser
 from urllib.parse import urlsplit
 
@@ -34,7 +40,7 @@ ROBOT_SECRET = secrets.token_bytes(16)  # type: bytes
 
 
 def request_robot_proof(
-    webui: "RedWebUi", top_resource: HttpResource, formatter: Formatter
+    webui: "RedWebUi", continue_test: Callable[[], None], error_response: Callable
 ) -> None:
     robot_fetcher = RobotFetcher(webui.config)
 
@@ -42,12 +48,11 @@ def request_robot_proof(
     def robot(results: Tuple[str, bool]) -> None:
         url, robot_ok = results
         if robot_ok:
-            webui.continue_test(top_resource, formatter)
+            continue_test()
         else:
             valid_till = str(int(thor.time()) + 60)
             robot_hmac = hmac.new(ROBOT_SECRET, bytes(valid_till, "ascii"), "sha512")
-            webui.error_response(
-                formatter,
+            error_response(
                 b"403",
                 b"Forbidden",
                 f"This site doesn't allow robots. If you are human, please <a href='?uri={webui.test_uri}&robot_time={valid_till}&robot_hmac={robot_hmac.hexdigest()}'>click here</a>.",
@@ -57,7 +62,7 @@ def request_robot_proof(
 
 
 def check_robot_proof(
-    webui: "RedWebUi", top_resource: HttpResource, formatter: Formatter
+    webui: "RedWebUi", continue_test: Callable[[], None], error_response: Callable
 ) -> None:
     robot_time = webui.query_string.get("robot_time", [None])[0]
     robot_hmac = webui.query_string.get("robot_hmac", [None])[0]
@@ -66,11 +71,9 @@ def check_robot_proof(
         computed_hmac = hmac.new(ROBOT_SECRET, bytes(robot_time, "ascii"), "sha512")
         is_valid = robot_hmac == computed_hmac.hexdigest()
         if is_valid and valid_till >= thor.time():
-            webui.continue_test(top_resource, formatter)
+            continue_test()
         else:
-            webui.error_response(
-                formatter, b"403", b"Forbidden", "Naughty.", "Naughty robot key."
-            )
+            error_response(b"403", b"Forbidden", "Naughty.", "Naughty robot key.")
             raise ValueError
 
 

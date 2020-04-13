@@ -6,6 +6,7 @@ A Web UI for RED, the Resource Expert Droid.
 
 from collections import defaultdict
 from configparser import SectionProxy
+from functools import partial
 import os
 import string
 import sys
@@ -126,11 +127,6 @@ class RedWebUi:
         """Test a URI."""
         self.test_id = init_save_file(self)
         top_resource = HttpResource(self.config, descend=self.descend)
-        self.timeout = thor.schedule(
-            int(self.config["max_runtime"]),
-            self.timeoutError,
-            top_resource.show_task_map,
-        )
         top_resource.set_request(self.test_uri, req_hdrs=self.req_hdrs)
         formatter = find_formatter(self.format, "html", self.descend)(
             self.config,
@@ -139,6 +135,14 @@ class RedWebUi:
             is_saved=False,
             test_id=self.test_id,
             descend=self.descend,
+        )
+        continue_test = partial(self.continue_test, top_resource, formatter)
+        error_response = partial(self.error_response, formatter)
+
+        self.timeout = thor.schedule(
+            int(self.config["max_runtime"]),
+            self.timeoutError,
+            top_resource.show_task_map,
         )
 
         # referer limiting
@@ -167,13 +171,13 @@ class RedWebUi:
 
         # robot human check
         try:
-            check_robot_proof(self, top_resource, formatter)
+            check_robot_proof(self, continue_test, error_response)
         except ValueError:
             return  # the check failed, don't continue.
 
         # enforce client limits
         try:
-            ratelimiter.process(self, formatter)
+            ratelimiter.process(self, error_response)
         except ValueError:
             return  # over limit, don't continue.
 
@@ -183,14 +187,18 @@ class RedWebUi:
         ):
             presented_token = self.query_string.get("hCaptcha_token", [None])[0]
             handle_captcha(
-                self, top_resource, formatter, presented_token, self.get_client_id()
+                self,
+                presented_token,
+                self.get_client_id(),
+                continue_test,
+                error_response,
             )
         else:
             if self.config.getboolean("robots_check"):
                 # check robots.txt
-                request_robot_proof(self, top_resource, formatter)
+                request_robot_proof(self, continue_test, error_response)
             else:
-                self.continue_test(top_resource, formatter)
+                continue_test()
 
     def continue_test(self, top_resource: HttpResource, formatter: Formatter) -> None:
         "Preliminary checks are done; actually run the test."
