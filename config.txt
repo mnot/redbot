@@ -6,26 +6,11 @@
 
 [redbot]
 
-# Output language (not working yet; see #169).
-lang = en_US.UTF-8
-
-# Output character set. No real reason to change from UTF-8.
-charset = utf-8
-
-# how many seconds to allow a check to run for.
-max_runtime = 60
-
-# limit on how many links to check in a page when descending
-max_links = 100
-
-# Where to keep files for future reference, when users save them. Comment out to disable.
+# Where to keep files when users `save` them. Comment out to disable saving.
 save_dir = /var/state/redbot/
 
 # how long to store things when users save them, in days.
 save_days = 30
-
-# show errors in the browser; boolean.
-debug = False
 
 # directory whose contents will be append to the front page; Comment out to disable.
 extra_dir = extra
@@ -33,29 +18,46 @@ extra_dir = extra
 # URI root for static assets (absolute or relative, but no trailing '/').
 static_root = static
 
+# how many seconds to allow a check to run for.
+max_runtime = 60
+
+# limit on how many links to check in a page when descending
+max_links = 100
+
+# Output language (not working yet; see #169).
+lang = en_US.UTF-8
+
+# Output character set. No real reason to change from UTF-8.
+charset = utf-8
+
+# show errors in the browser; boolean.
+debug = False
+
+
 ###
 ### Abuse controls
 ###
 
 # Whether to allow access to localhost, RFC1918 and other "local" services. Note that enabling
 # this can be a security risk.
-enable_local_access = no
+enable_local_access = False
 
 # hCaptcha sitekey; see <https://hcaptcha.com/>. Comment out to disable hCaptcha.
-hcaptcha_sitekey = 79592e6c-c28c-46af-a8bb-988131fca035
+hcaptcha_sitekey = 10000000-ffff-ffff-ffff-000000000001
 
 # hCaptcha secret; see <https://hcaptcha.com/>. This MUST be kept secret.
-hcaptcha_secret = foo
-
-# log when total traffic is bigger than this (in kbytes), so we can catch abuse
-# Comment out to disable; 0 to log all.
-log_traffic = 8192
+hcaptcha_secret = 0x0000000000000000000000000000000000000000
 
 # Whether to check robots.txt and (lightly) challenge people if it doesn't allow bots.
+# Disabled if hCaptcha is used.
 robots_check = False
 
 # Where to cache robots.txt. Comment out to disable caching of robots.txt.
 robot_cache_dir = /var/cache/redbot/robots-txt/
+
+# log when total traffic is bigger than this (in kbytes), so we can catch abuse
+# Comment out to disable; 0 to log all.
+log_traffic = 8192
 
 # domains which we reject requests for when they're in the referer. Whitespace-separated.
 referer_spam_domains = www.youtube.com
