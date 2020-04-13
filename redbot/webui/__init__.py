@@ -6,15 +6,12 @@ A Web UI for RED, the Resource Expert Droid.
 
 from collections import defaultdict
 from configparser import SectionProxy
-import gzip
 import hmac
 import json
 import os
-import pickle
 import secrets
 import string
 import sys
-import tempfile
 import time
 from typing import (
     Any,
@@ -25,7 +22,6 @@ from typing import (
     Union,
 )  # pylint: disable=unused-import
 from urllib.parse import parse_qs, urlsplit, urlencode
-import zlib
 
 import thor
 import thor.http.common
@@ -34,6 +30,12 @@ from redbot import __version__
 from redbot.message import HttpRequest
 from redbot.webui.captcha import handle_captcha
 from redbot.webui.ratelimit import ratelimiter, RateLimitViolation
+from redbot.webui.saved_tests import (
+    init_save_file,
+    save_test,
+    extend_saved_test,
+    load_saved_test,
+)
 from redbot.resource import HttpResource
 from redbot.resource.robot_fetch import RobotFetcher, url_to_origin
 from redbot.formatter import find_formatter, html, slack, Formatter
@@ -129,114 +131,18 @@ class RedWebUi:
                 and self.config.get("save_dir", "")
                 and self.test_id
             ):
-                self.save_test()
+                extend_saved_test(self)
             elif "slack" in self.query_string:
                 self.run_slack()
             elif "client_error" in self.query_string:
                 self.dump_client_error()
         elif self.method in ["GET", "HEAD"]:
             if self.test_id:
-                self.load_saved_test()
+                load_saved_test(self)
             elif self.test_uri:
                 self.run_test()
             else:
                 self.show_default()
-
-    def save_test(self) -> None:
-        """Save a previously run test_id."""
-        try:
-            # touch the save file so it isn't deleted.
-            os.utime(
-                os.path.join(self.config["save_dir"], self.test_id),
-                (
-                    thor.time(),
-                    thor.time() + (int(self.config["save_days"]) * 24 * 60 * 60),
-                ),
-            )
-            location = b"?id=%s" % self.test_id.encode("ascii")
-            if self.descend:
-                location = b"%s&descend=True" % location
-            self.response_start(b"303", b"See Other", [(b"Location", location)])
-            self.response_body(
-                "Redirecting to the saved test page...".encode(self.config["charset"])
-            )
-        except (OSError, IOError):
-            self.response_start(
-                b"500",
-                b"Internal Server Error",
-                [(b"Content-Type", b"text/html; charset=%s" % self.charset_bytes)],
-            )
-            self.response_body(self.show_error("Sorry, I couldn't save that."))
-        self.response_done([])
-
-    def load_saved_test(self) -> None:
-        """Load a saved test by test_id."""
-        try:
-            fd = gzip.open(
-                os.path.join(self.config["save_dir"], os.path.basename(self.test_id))
-            )
-            mtime = os.fstat(fd.fileno()).st_mtime
-        except (OSError, IOError, TypeError, zlib.error):
-            self.response_start(
-                b"404",
-                b"Not Found",
-                [
-                    (b"Content-Type", b"text/html; charset=%s" % self.charset_bytes),
-                    (b"Cache-Control", b"max-age=600, must-revalidate"),
-                ],
-            )
-            self.response_body(
-                self.show_error("I'm sorry, I can't find that saved response.")
-            )
-            self.response_done([])
-            return
-        is_saved = mtime > thor.time()
-        try:
-            top_resource = pickle.load(fd)
-        except (pickle.PickleError, IOError, EOFError):
-            self.response_start(
-                b"500",
-                b"Internal Server Error",
-                [
-                    (b"Content-Type", b"text/html; charset=%s" % self.charset_bytes),
-                    (b"Cache-Control", b"max-age=600, must-revalidate"),
-                ],
-            )
-            self.response_body(
-                self.show_error("I'm sorry, I had a problem loading that.")
-            )
-            self.response_done([])
-            return
-        finally:
-            fd.close()
-
-        if self.check_name:
-            display_resource = top_resource.subreqs.get(self.check_name, top_resource)
-        else:
-            display_resource = top_resource
-
-        formatter = find_formatter(self.format, "html", top_resource.descend)(
-            self.config,
-            self.output,
-            allow_save=(not is_saved),
-            is_saved=True,
-            test_id=self.test_id,
-        )
-
-        self.response_start(
-            b"200",
-            b"OK",
-            [
-                (b"Content-Type", formatter.content_type()),
-                (b"Cache-Control", b"max-age=3600, must-revalidate"),
-            ],
-        )
-
-        @thor.events.on(formatter)
-        def formatter_done() -> None:
-            self.response_done([])
-
-        formatter.bind_resource(display_resource)
 
     def dump_client_error(self) -> None:
         """Dump a client error."""
@@ -246,17 +152,7 @@ class RedWebUi:
 
     def run_test(self) -> None:
         """Test a URI."""
-        # try to initialise stored test results
-        if self.config.get("save_dir", "") and os.path.exists(self.config["save_dir"]):
-            try:
-                fd, self.save_path = tempfile.mkstemp(
-                    prefix="", dir=self.config["save_dir"]
-                )
-                self.test_id = os.path.split(self.save_path)[1]
-            except (OSError, IOError):
-                # Don't try to store it.
-                self.test_id = None  # should already be None, but make sure
-
+        self.test_id = init_save_file(self)
         top_resource = HttpResource(self.config, descend=self.descend)
         self.timeout = thor.schedule(
             int(self.config["max_runtime"]),
@@ -368,13 +264,7 @@ class RedWebUi:
         @thor.events.on(formatter)
         def formatter_done() -> None:
             self.response_done([])
-            if self.test_id:
-                try:
-                    tmp_file = gzip.open(self.save_path, "w")
-                    pickle.dump(top_resource, tmp_file)
-                    tmp_file.close()
-                except (IOError, zlib.error, pickle.PickleError):
-                    pass  # we don't cry if we can't store it.
+            save_test(self, top_resource)
 
             # log excessive traffic
             ti = sum(
@@ -447,13 +337,7 @@ class RedWebUi:
 
         @thor.events.on(formatter)
         def formatter_done() -> None:
-            if self.test_id:
-                try:
-                    tmp_file = gzip.open(self.save_path, "w")
-                    pickle.dump(top_resource, tmp_file)
-                    tmp_file.close()
-                except (IOError, zlib.error, pickle.PickleError):
-                    pass  # we don't cry if we can't store it.
+            save_test(self, top_resource)
 
         top_resource.check()
 

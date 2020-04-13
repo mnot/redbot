@@ -1,4 +1,3 @@
-from functools import partial
 import json
 from typing import TYPE_CHECKING
 from urllib.parse import urlencode
