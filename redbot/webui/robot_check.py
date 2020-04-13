@@ -37,28 +37,23 @@ def request_robot_proof(
     webui: "RedWebUi", top_resource: HttpResource, formatter: Formatter
 ) -> None:
     robot_fetcher = RobotFetcher(webui.config)
-    if webui.config.getboolean("robots_check"):
 
-        @thor.events.on(robot_fetcher)
-        def robot(results: Tuple[str, bool]) -> None:
-            url, robot_ok = results
-            if robot_ok:
-                webui.continue_test(top_resource, formatter)
-            else:
-                valid_till = str(int(thor.time()) + 60)
-                robot_hmac = hmac.new(
-                    ROBOT_SECRET, bytes(valid_till, "ascii"), "sha512"
-                )
-                webui.error_response(
-                    formatter,
-                    b"403",
-                    b"Forbidden",
-                    f"This site doesn't allow robots. If you are human, please <a href='?uri={webui.test_uri}&robot_time={valid_till}&robot_hmac={robot_hmac.hexdigest()}'>click here</a>.",
-                )
+    @thor.events.on(robot_fetcher)
+    def robot(results: Tuple[str, bool]) -> None:
+        url, robot_ok = results
+        if robot_ok:
+            webui.continue_test(top_resource, formatter)
+        else:
+            valid_till = str(int(thor.time()) + 60)
+            robot_hmac = hmac.new(ROBOT_SECRET, bytes(valid_till, "ascii"), "sha512")
+            webui.error_response(
+                formatter,
+                b"403",
+                b"Forbidden",
+                f"This site doesn't allow robots. If you are human, please <a href='?uri={webui.test_uri}&robot_time={valid_till}&robot_hmac={robot_hmac.hexdigest()}'>click here</a>.",
+            )
 
-        robot_fetcher.check_robots(HttpRequest.iri_to_uri(webui.test_uri))
-    else:
-        webui.continue_test(top_resource, formatter)
+    robot_fetcher.check_robots(HttpRequest.iri_to_uri(webui.test_uri))
 
 
 def check_robot_proof(
@@ -76,6 +71,7 @@ def check_robot_proof(
             webui.error_response(
                 formatter, b"403", b"Forbidden", "Naughty.", "Naughty robot key."
             )
+            raise ValueError
 
 
 class RobotFetcher(thor.events.EventEmitter):

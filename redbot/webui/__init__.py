@@ -28,7 +28,7 @@ from thor.http import get_header
 from redbot import __version__
 from redbot.message import HttpRequest
 from redbot.webui.captcha import handle_captcha
-from redbot.webui.ratelimit import ratelimiter, RateLimitViolation
+from redbot.webui.ratelimit import ratelimiter
 from redbot.webui.robot_check import (
     request_robot_proof,
     check_robot_proof,
@@ -87,16 +87,6 @@ class RedWebUi:
         self.save_path = None  # type: str
         self.timeout = None  # type: Any
         self.referer_spam_domains = []  # type: List[str]
-
-        if config.get("limit_client_tests", fallback=""):
-            limit = self.config.getint("limit_client_tests")
-            period = config.getfloat("limit_client_period", fallback=1) * 3600
-            ratelimiter.setup("client_id", limit, period)
-
-        if config.get("limit_origin_tests", fallback=""):
-            limit = self.config.getint("limit_origin_tests")
-            period = config.getfloat("limit_origin_period", fallback=1) * 3600
-            ratelimiter.setup("origin", limit, period)
 
         if config.get("referer_spam_domains", fallback=""):
             self.referer_spam_domains = [
@@ -174,46 +164,31 @@ class RedWebUi:
             return self.error_response(formatter, b"403", b"Forbidden", referer_error)
 
         # robot human check
-        check_robot_proof(self, top_resource, formatter)
+        try:
+            check_robot_proof(self, top_resource, formatter)
+        except ValueError:
+            return  # the check failed, don't continue.
 
         # enforce client limits
-        client_id = self.get_client_id()
-        if client_id:
-            try:
-                ratelimiter.increment("client_id", client_id)
-            except RateLimitViolation:
-                return self.error_response(
-                    formatter,
-                    b"429",
-                    b"Too Many Requests",
-                    "Your client is over limit. Please try later.",
-                    "client over limit: %s" % client_id,
-                )
-
-        # enforce origin limits
-        origin = url_to_origin(self.test_uri)
-        if origin:
-            try:
-                ratelimiter.increment("origin", origin)
-            except RateLimitViolation:
-                return self.error_response(
-                    formatter,
-                    b"429",
-                    b"Too Many Requests",
-                    "Origin is over limit. Please try later.",
-                    "origin over limit: %s" % origin,
-                )
+        try:
+            ratelimiter.process(self, formatter)
+        except ValueError:
+            return # over limit
 
         # hCaptcha
         if self.config.get("hcaptcha_sitekey", "") and self.config.get(
             "hcaptcha_secret", ""
         ):
             presented_token = self.query_string.get("hCaptcha_token", [None])[0]
-            handle_captcha(self, top_resource, formatter, presented_token, client_id)
+            handle_captcha(
+                self, top_resource, formatter, presented_token, self.get_client_id()
+            )
         else:
-
-            # check robots.txt
-            request_robot_proof(self, top_resource, formatter)
+            if self.config.getboolean("robots_check"):
+                # check robots.txt
+                request_robot_proof(self, top_resource, formatter)
+            else:
+                self.continue_test(top_resource, formatter)
 
     def continue_test(self, top_resource: HttpResource, formatter: Formatter) -> None:
         "Preliminary checks are done; actually run the test."

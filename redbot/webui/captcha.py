@@ -61,9 +61,7 @@ def handle_captcha(
             e_str = (
                 f"hCaptcha returned {exchange.tmp_status.decode('utf-8')} status code"
             )
-            return webui.error_response(
-                formatter, b"403", b"Forbidden", e_str, e_str,
-            )
+            return webui.error_response(formatter, b"403", b"Forbidden", e_str, e_str,)
         results = json.loads(exchange.tmp_res_body)
         if results["success"]:
             webui.continue_test(top_resource, formatter)
