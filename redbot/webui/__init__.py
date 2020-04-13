@@ -9,7 +9,6 @@ from configparser import SectionProxy
 import hmac
 import json
 import os
-import secrets
 import string
 import sys
 import time
@@ -30,7 +29,11 @@ from redbot import __version__
 from redbot.message import HttpRequest
 from redbot.webui.captcha import handle_captcha
 from redbot.webui.ratelimit import ratelimiter, RateLimitViolation
-from redbot.resource.robot_check import RobotFetcher, url_to_origin
+from redbot.webui.robot_check import (
+    request_robot_proof,
+    check_robot_proof,
+    url_to_origin,
+)
 from redbot.webui.saved_tests import (
     init_save_file,
     save_test,
@@ -55,8 +58,6 @@ class RedWebUi:
     If descend is true, spider the links and present a summary.
     """
 
-    _robot_secret = secrets.token_bytes(16)  # type: bytes
-
     def __init__(
         self,
         config: SectionProxy,
@@ -78,8 +79,6 @@ class RedWebUi:
         self.error_log = error_log  # function to log errors to
         self.test_uri = None  # type: str
         self.test_id = None  # type: str
-        self.robot_time = None  # type: str
-        self.robot_hmac = None  # type: str
         self.req_hdrs = None  # type: StrHeaderListType
         self.format = None  # type: str
         self.check_name = None  # type: str
@@ -122,8 +121,6 @@ class RedWebUi:
         if not self.descend:
             self.check_name = self.query_string.get("check_name", [None])[0]
         self.test_id = self.query_string.get("id", [None])[0]
-        self.robot_time = self.query_string.get("robot_time", [None])[0]
-        self.robot_hmac = self.query_string.get("robot_hmac", [None])[0]
         self.start = time.time()
         if self.method == "POST":
             if (
@@ -177,19 +174,7 @@ class RedWebUi:
             return self.error_response(formatter, b"403", b"Forbidden", referer_error)
 
         # robot human check
-        if self.robot_time and self.robot_time.isdigit() and self.robot_hmac:
-            valid_till = int(self.robot_time)
-            computed_hmac = hmac.new(
-                self._robot_secret, bytes(self.robot_time, "ascii"), "sha512"
-            )
-            is_valid = self.robot_hmac == computed_hmac.hexdigest()
-            if is_valid and valid_till >= thor.time():
-                self.continue_test(top_resource, formatter)
-                return
-            else:
-                return self.error_response(
-                    formatter, b"403", b"Forbidden", "Naughty.", "Naughty robot key."
-                )
+        check_robot_proof(self, top_resource, formatter)
 
         # enforce client limits
         client_id = self.get_client_id()
@@ -228,29 +213,7 @@ class RedWebUi:
         else:
 
             # check robots.txt
-            robot_fetcher = RobotFetcher(self.config)
-            if self.config.getboolean("robots_check"):
-
-                @thor.events.on(robot_fetcher)
-                def robot(results: Tuple[str, bool]) -> None:
-                    url, robot_ok = results
-                    if robot_ok:
-                        self.continue_test(top_resource, formatter)
-                    else:
-                        valid_till = str(int(thor.time()) + 60)
-                        robot_hmac = hmac.new(
-                            self._robot_secret, bytes(valid_till, "ascii"), "sha512"
-                        )
-                        self.error_response(
-                            formatter,
-                            b"403",
-                            b"Forbidden",
-                            f"This site doesn't allow robots. If you are human, please <a href='?uri={self.test_uri}&robot_time={valid_till}&robot_hmac={robot_hmac.hexdigest()}'>click here</a>.",
-                        )
-
-                robot_fetcher.check_robots(HttpRequest.iri_to_uri(self.test_uri))
-            else:
-                self.continue_test(top_resource, formatter)
+            request_robot_proof(self, top_resource, formatter)
 
     def continue_test(self, top_resource: HttpResource, formatter: Formatter) -> None:
         "Preliminary checks are done; actually run the test."

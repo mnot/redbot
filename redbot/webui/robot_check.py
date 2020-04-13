@@ -8,8 +8,10 @@ Fetches robots.txt for a given URL.
 
 from configparser import SectionProxy
 import hashlib
+import hmac
 from os import path
-from typing import Union, Dict  # pylint: disable=unused-import
+import secrets
+from typing import Union, Dict, Tuple, TYPE_CHECKING  # pylint: disable=unused-import
 from urllib.robotparser import RobotFileParser
 from urllib.parse import urlsplit
 
@@ -17,10 +19,63 @@ import thor
 
 from redbot import __version__
 from redbot.cache_file import CacheFile
+from redbot.formatter import Formatter
+from redbot.message import HttpRequest
+from redbot.resource import HttpResource
 from redbot.type import RawHeaderListType
 
-UA_STRING = "RED/%s (https://redbot.org/)" % __version__
+if TYPE_CHECKING:
+    from redbot.webui import RedWebUi  # pylint: disable=cyclic-import,unused-import
+
 RobotChecker = Union[RobotFileParser, "DummyChecker"]
+
+UA_STRING = "RED/%s (https://redbot.org/)" % __version__
+ROBOT_SECRET = secrets.token_bytes(16)  # type: bytes
+
+
+def request_robot_proof(
+    webui: "RedWebUi", top_resource: HttpResource, formatter: Formatter
+) -> None:
+    robot_fetcher = RobotFetcher(webui.config)
+    if webui.config.getboolean("robots_check"):
+
+        @thor.events.on(robot_fetcher)
+        def robot(results: Tuple[str, bool]) -> None:
+            url, robot_ok = results
+            if robot_ok:
+                webui.continue_test(top_resource, formatter)
+            else:
+                valid_till = str(int(thor.time()) + 60)
+                robot_hmac = hmac.new(
+                    ROBOT_SECRET, bytes(valid_till, "ascii"), "sha512"
+                )
+                webui.error_response(
+                    formatter,
+                    b"403",
+                    b"Forbidden",
+                    f"This site doesn't allow robots. If you are human, please <a href='?uri={webui.test_uri}&robot_time={valid_till}&robot_hmac={robot_hmac.hexdigest()}'>click here</a>.",
+                )
+
+        robot_fetcher.check_robots(HttpRequest.iri_to_uri(webui.test_uri))
+    else:
+        webui.continue_test(top_resource, formatter)
+
+
+def check_robot_proof(
+    webui: "RedWebUi", top_resource: HttpResource, formatter: Formatter
+) -> None:
+    robot_time = webui.query_string.get("robot_time", [None])[0]
+    robot_hmac = webui.query_string.get("robot_hmac", [None])[0]
+    if robot_time and robot_time.isdigit() and robot_hmac:
+        valid_till = int(robot_time)
+        computed_hmac = hmac.new(ROBOT_SECRET, bytes(robot_time, "ascii"), "sha512")
+        is_valid = robot_hmac == computed_hmac.hexdigest()
+        if is_valid and valid_till >= thor.time():
+            webui.continue_test(top_resource, formatter)
+        else:
+            webui.error_response(
+                formatter, b"403", b"Forbidden", "Naughty.", "Naughty robot key."
+            )
 
 
 class RobotFetcher(thor.events.EventEmitter):
@@ -142,7 +197,6 @@ class RobotFetcher(thor.events.EventEmitter):
         """Continue after getting the robots file."""
         robot_ok = robots_checker.can_fetch(UA_STRING, url)
         self.emit("robot", (url, robot_ok))
-        return None
 
 
 def url_to_origin(url: str) -> Union[str, None]:

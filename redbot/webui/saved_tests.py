@@ -7,7 +7,8 @@ import zlib
 
 import thor
 
-from redbot.formatter import Formatter, find_formatter
+from redbot.formatter import find_formatter
+from redbot.resource import HttpResource
 
 if TYPE_CHECKING:
     from redbot.webui import RedWebUi  # pylint: disable=cyclic-import,unused-import
@@ -26,7 +27,7 @@ def init_save_file(webui: "RedWebUi") -> str:
     return None  # should already be None, but make sure
 
 
-def save_test(webui: "RedWebUi", top_resource: Formatter) -> None:
+def save_test(webui: "RedWebUi", top_resource: HttpResource) -> None:
     """Save a test by test_id."""
     if webui.test_id:
         try:
