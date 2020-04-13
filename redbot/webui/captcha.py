@@ -1,15 +1,29 @@
 from functools import partial
 import json
+from typing import TYPE_CHECKING
 from urllib.parse import urlencode
 
 import thor
 from thor.http import HttpClient
+from thor.http.error import HttpError
 
+from redbot.formatter import Formatter
+from redbot.resource import HttpResource
+from redbot.type import RawHeaderListType
 
 token_client = HttpClient()
 
+if TYPE_CHECKING:
+    from redbot.webui import RedWebUi  # pylint: disable=cyclic-import,unused-import
 
-def handle_captcha(webui, top_resource, formatter, presented_token, client_id):
+
+def handle_captcha(
+    webui: "RedWebUi",
+    top_resource: HttpResource,
+    formatter: Formatter,
+    presented_token: str,
+    client_id: str,
+) -> None:
     if not presented_token:
         return webui.error_response(
             formatter,
@@ -21,7 +35,7 @@ def handle_captcha(webui, top_resource, formatter, presented_token, client_id):
     exchange = token_client.exchange()
 
     @thor.events.on(exchange)
-    def error(err_msg):
+    def error(err_msg: HttpError) -> None:
         return webui.error_response(
             formatter,
             b"403",
@@ -31,17 +45,19 @@ def handle_captcha(webui, top_resource, formatter, presented_token, client_id):
         )
 
     @thor.events.on(exchange)
-    def response_start(status, phrase, headers):
+    def response_start(
+        status: bytes, phrase: bytes, headers: RawHeaderListType
+    ) -> None:
         exchange.tmp_status = status
 
     exchange.tmp_res_body = b""
 
     @thor.events.on(exchange)
-    def response_body(chunk):
+    def response_body(chunk: bytes) -> None:
         exchange.tmp_res_body += chunk
 
     @thor.events.on(exchange)
-    def response_done(trailers):
+    def response_done(trailers: RawHeaderListType) -> None:
         if exchange.tmp_status != b"200":
             e_str = (
                 f"hCaptcha returned {exchange.tmp_status.decode('utf-8')} status code"
