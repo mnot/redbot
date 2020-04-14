@@ -21,7 +21,7 @@ docReady(function () {
     })
   })
 
-  qsa('a.preview', function (element) {
+  qsa('.preview', function (element) {
     var link = (element.title !== '') ? escapeHtml(element.title) : escapeHtml(element.href)
     var tooltip = document.createElement('img')
     tooltip.src = link

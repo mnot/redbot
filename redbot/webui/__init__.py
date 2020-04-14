@@ -99,6 +99,7 @@ class RedWebUi:
         self.timeout = None  # type: Any
 
         self.start = time.time()
+
         if method == "POST":
             if (
                 "save" in self.query_string
@@ -110,6 +111,15 @@ class RedWebUi:
                 run_slack(self)
             elif "client_error" in self.query_string:
                 self.dump_client_error()
+            elif self.test_uri:
+                self.run_test()
+            else:
+                self.error_response(
+                    find_formatter("html")(self.config, self.output),
+                    b"400",
+                    b"Bad Request",
+                    "Bad Request"
+                )
         elif method in ["GET", "HEAD"]:
             if self.test_id:
                 load_saved_test(self)
@@ -195,7 +205,6 @@ class RedWebUi:
 
     def continue_test(self, top_resource: HttpResource, formatter: Formatter) -> None:
         "Preliminary checks are done; actually run the test."
-        import sys
 
         @thor.events.on(formatter)
         def formatter_done() -> None:

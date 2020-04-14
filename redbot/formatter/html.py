@@ -108,8 +108,10 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     is_resource=isinstance(self.resource, HttpResource),
                     is_saved=self.kw.get("is_saved", False),
                     allow_save=self.kw.get("allow_save", False),
-                    har_link=self.req_qs(res_format="har"),
-                    self_link=self.req_qs(use_stored=False),
+                    har_link=self.redbot_link("view har", res_format="har"),
+                    self_link=self.redbot_link(
+                        "check embedded", use_stored=False, descend=True
+                    ),
                     validator_link=validator_link,
                 )
             )
@@ -147,10 +149,11 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                         continue  # we're not interested in raising these upstream
 
                     def link_to(matchobj: Match) -> str:
-                        return r"%s<a href='?%s' class='nocode'>%s</a>%s" % (
+                        return r"%s%s%s" % (
                             matchobj.group(1),
-                            self.req_qs(link, use_stored=False),
-                            escape(link),
+                            self.redbot_link(
+                                escape(link), link, use_stored=False, css_class="nocode"
+                            ),
                             matchobj.group(1),
                         )
 
@@ -171,8 +174,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 if not self.resource.subreqs[check_name].fetch_started:
                     continue
                 out.append(
-                    '<span class="req_link"> (<a href="?%s">%s response</a>'
-                    % (self.req_qs(check_name=check_name), check_name)
+                    f'<span class="req_link"> {self.redbot_link(f"{check_name} response", check_name=check_name)}'
                 )
                 smsgs = [
                     note
@@ -230,10 +232,11 @@ class HeaderPresenter:
         value = value.rstrip()
         svalue = value.lstrip()
         space = len(value) - len(svalue)
-        return '%s<a href="?%s">%s</a>' % (
+        return "%s%s" % (
             " " * space,
-            self.formatter.req_qs(svalue, use_stored=False),
-            self.I(escape(svalue), len(name)),
+            self.formatter.redbot_link(
+                self.I(escape(svalue), len(name)), svalue, use_stored=False
+            ),
         )
 
     content_location = location = x_xrds_location = BARE_URI
@@ -277,8 +280,10 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                 levels=levels,
                 is_saved=self.kw.get("is_saved", False),
                 allow_save=self.kw.get("allow_save", False),
-                har_link=self.req_qs(res_format="har"),
-                self_link=self.req_qs(use_stored=False),
+                har_link=self.redbot_link("view har", res_format="har"),
+                self_link=self.redbot_link(
+                    "check embedded", use_stored=False, descend=True
+                ),
             )
         )
 

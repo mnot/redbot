@@ -45,6 +45,11 @@ body {
   }
 }
 
+*:link {
+  color: $link_colour;
+  text-decoration: underline;
+}
+
 h1 {
   color: $text_colour;
   padding: 0;
@@ -113,6 +118,19 @@ br {
   right: 2em;
 }
 
+form.link {
+  display: inline;
+}
+form.link input[type='submit'] {
+  border: none;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  color: $link_colour;
+  text-decoration: underline;
+}
 
 
 /* footer */

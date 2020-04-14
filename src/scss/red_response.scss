@@ -12,7 +12,7 @@
   padding: 1em 1.5em;
   margin-bottom: 0;
   overflow-x: auto;
-  a {
+  a, .post_link {
     color: #ccf;
   }
 }
@@ -33,11 +33,12 @@
   margin-bottom: 2em;
   padding-top: 0;
   text-align: center;
-  font-size: 0.75em;
 }
 
-.options > * {
+.option {
   padding-right: 2em;
+  display: inline;
+  font-size: 0.75em;
 }
 
 /* response body */

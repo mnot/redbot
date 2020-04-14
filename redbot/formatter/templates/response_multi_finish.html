@@ -38,16 +38,16 @@
   {% for resource in droids %}
   <tr class="droid">
     <td class="uri">
-        <a href="?{{ resource.request.uri|req_qs(use_stored=False) }}" title="{{ resource.request.uri }}"
-        class="{% if resource.response.parsed_headers.get('content-type', [''])[0][:6] == "image/"  %}preview {% endif %}
-{% if resource.request.uri|length > 80 %}fade">{{ resource.request.uri[:80] }}
-{% else %}">{{ resource.request.uri }}
-{% endif %}
+        {% set pclass = " preview" if resource.response.parsed_headers.get('content-type', [''])[0][:6] == "image/" else "" %}
+        {% set fclass = " fade" if resource.request.uri| length > 80 else "" %}
+        {% set class = pclass + fclass %}
+        {% set display_uri = resource.request.uri[:80] %}
+        {{ resource.request.uri|redbot_link(display_uri, use_stored=False, css_class=class, title=resource.request.uri) }}
         </a>
     </td>
   {% if resource.response.complete %}
     {% if resource.response.status_code in ["301", "302", "303", "307", "308"] and "location" in resource.response.parsed_headers %}
-    <td><a href="?descend=True&{{ resource.response.parsed_headers['location']|req_qs(use_stored=False) }}">{{ resource.response.status_code }}</a></td>
+    <td>{{ resource.response.parsed_headers['location']|redbot_link(resource.response.status_code, use_stored=False, descend=True) }}</td>
     {% elif resource.response.status_code in ["400", "404", "410"] %}
     <td class="bad">{{ resource.response.status_code }}</td>
     {% else %}
