@@ -40,7 +40,7 @@ UA_STRING = "RED/%s (https://redbot.org/)" % __version__
 def request_robot_proof(
     webui: "RedWebUi", continue_test: Callable[[], None], error_response: Callable
 ) -> None:
-    robot_secret = webui.config.get("robot_secret", "")
+    robot_secret = webui.config.get("robot_secret", "").encode("utf-8")
     robot_fetcher = RobotFetcher(webui.config)
 
     @thor.events.on(robot_fetcher)
@@ -65,7 +65,7 @@ def check_robot_proof(
 ) -> None:
     robot_time = webui.query_string.get("robot_time", [None])[0]
     robot_hmac = webui.query_string.get("robot_hmac", [None])[0]
-    robot_secret = webui.config.get("robot_secret", "")
+    robot_secret = webui.config.get("robot_secret", "").encode("utf-8")
     if robot_time and robot_time.isdigit() and robot_hmac:
         valid_till = int(robot_time)
         computed_hmac = hmac.new(robot_secret, bytes(robot_time, "ascii"), "sha512")
