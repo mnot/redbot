@@ -89,6 +89,7 @@ class RedWebUi:
         ]  # type: StrHeaderListType
         self.format = self.query_string.get("format", ["html"])[0]
         self.descend = "descend" in self.query_string
+        self.check_name = None  # type: str
         if not self.descend:
             self.check_name = self.query_string.get("check_name", [None])[0]
 
@@ -96,7 +97,6 @@ class RedWebUi:
 
         self.save_path = None  # type: str
         self.timeout = None  # type: Any
-        self.check_name = None  # type: str
 
         self.start = time.time()
         if method == "POST":
@@ -183,7 +183,6 @@ class RedWebUi:
         ):
             handle_captcha(
                 self,
-                presented_token,
                 self.get_client_id(),
                 continue_test,
                 error_response,
