@@ -45,13 +45,14 @@ def run_slack(webui: "RedWebUi") -> None:
     top_resource.set_request(webui.test_uri, req_hdrs=webui.req_hdrs)
     formatter.bind_resource(top_resource)
     if not verify_slack_secret(webui):
-        return webui.error_response(
+        webui.error_response(
             formatter,
             b"403",
             b"Forbidden",
             "Incorrect Slack Authentication.",
             "Bad slack token.",
         )
+        return
     webui.timeout = thor.schedule(int(webui.config["max_runtime"]), webui.timeoutError)
 
     @thor.events.on(formatter)

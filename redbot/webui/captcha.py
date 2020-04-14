@@ -23,9 +23,10 @@ def handle_captcha(
 ) -> None:
     presented_token = webui.query_string.get("hCaptcha_token", [None])[0]
     if not presented_token:
-        return error_response(
+        error_response(
             b"403", b"Forbidden", "Catpcha token required.", "Captcha token required.",
         )
+        return
     exchange = token_client.exchange()
 
     @thor.events.on(exchange)
@@ -52,12 +53,15 @@ def handle_captcha(
             e_str = (
                 f"Captcha returned {exchange.tmp_status.decode('utf-8')} status code"
             )
-            return error_response(b"403", b"Forbidden", e_str, e_str,)
+            error_response(
+                b"403", b"Forbidden", e_str, e_str,
+            )
+            return
         results = json.loads(exchange.tmp_res_body)
         if results["success"]:
             continue_test()
         else:
-            e_str = f"Captcha errors: {', '.join([e for e in results['error-codes']])}"
+            e_str = f"Captcha errors: {', '.join(results['error-codes'])}"
             error_response(
                 b"403", b"Forbidden", e_str, e_str,
             )

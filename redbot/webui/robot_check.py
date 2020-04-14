@@ -40,12 +40,12 @@ UA_STRING = "RED/%s (https://redbot.org/)" % __version__
 def init_robot_check(
     webui: "RedWebUi", continue_test: Callable[[], None], error_response: Callable
 ) -> None:
-    robot_secret = webui.config.get("robot_secret", "").encode("utf-8")
-    robot_fetcher = RobotFetcher(webui.config)
     """
     Initiate a robots.txt check. If it successes, continue the test; otherwise
     write an error page with an HMAC.
     """
+    robot_secret = webui.config.get("robot_secret", "").encode("utf-8")
+    robot_fetcher = RobotFetcher(webui.config)
 
     @thor.events.on(robot_fetcher)
     def robot(results: Tuple[str, bool]) -> None:
@@ -195,7 +195,7 @@ class RobotFetcher(thor.events.EventEmitter):
         def del_checker() -> None:
             try:
                 del self.robot_checkers[origin]
-            except:
+            except KeyError:
                 pass
 
         thor.schedule(self.freshness_lifetime, del_checker)

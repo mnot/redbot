@@ -177,7 +177,8 @@ class RedWebUi:
             referer_error = "Referer not allowed."
 
         if referer_error:
-            return error_response(b"403", b"Forbidden", referer_error)
+            error_response(b"403", b"Forbidden", referer_error)
+            return
 
         # enforce client limits
         try:
@@ -220,7 +221,7 @@ class RedWebUi:
             )
             if ti + to > int(self.config["log_traffic"]) * 1024:
                 self.error_log(
-                    f"{ti / 1024}K in {to / 1024}K out for <{e_url(self.test_uri)}> (descend {self.descend})"
+                    f"{ti / 1024:n}K in {to / 1024:n}K out for <{e_url(self.test_uri)}> (descend {self.descend})"
                 )
 
         self.response_start(
@@ -249,7 +250,6 @@ class RedWebUi:
         formatter = html.BaseHtmlFormatter(
             self.config, self.output, is_blank=self.test_uri == ""
         )
-        started = False
         if self.test_uri:
             top_resource = HttpResource(self.config, descend=self.descend)
             top_resource.set_request(self.test_uri, req_hdrs=self.req_hdrs)
@@ -316,8 +316,6 @@ class RedWebUi:
         xff = thor.http.common.get_header(self.req_headers, b"x-forwarded-for")
         if xff:
             return xff[-1].decode("idna")
-        else:
-            return thor.http.common.get_header(self.req_headers, b"client-ip")[
-                -1
-            ].decode("idna")
-        return None
+        return thor.http.common.get_header(self.req_headers, b"client-ip")[-1].decode(
+            "idna"
+        )
