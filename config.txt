@@ -35,7 +35,7 @@ debug = False
 
 
 ###
-### Abuse controls
+### Abuse controls for the Web UI
 ###
 
 # Whether to allow access to localhost, RFC1918 and other "local" services. Note that enabling
