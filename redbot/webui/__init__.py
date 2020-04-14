@@ -167,7 +167,7 @@ class RedWebUi:
             referer_error = "Referer not allowed."
 
         if referer_error:
-            return self.error_response(formatter, b"403", b"Forbidden", referer_error)
+            return error_response(b"403", b"Forbidden", referer_error)
 
         # enforce client limits
         try:
