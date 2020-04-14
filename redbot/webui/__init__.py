@@ -118,13 +118,11 @@ class RedWebUi:
                     find_formatter("html")(self.config, self.output),
                     b"400",
                     b"Bad Request",
-                    "Bad Request"
+                    "Bad Request",
                 )
         elif method in ["GET", "HEAD"]:
             if self.test_id:
                 load_saved_test(self)
-            elif self.test_uri:
-                self.run_test()
             else:
                 self.show_default()
         else:
@@ -248,7 +246,19 @@ class RedWebUi:
 
     def show_default(self) -> None:
         """Show the default page."""
-        formatter = html.BaseHtmlFormatter(self.config, self.output, is_blank=True)
+        formatter = html.BaseHtmlFormatter(
+            self.config, self.output, is_blank=self.test_uri == ""
+        )
+        started = False
+        if self.test_uri:
+            top_resource = HttpResource(self.config, descend=self.descend)
+            top_resource.set_request(self.test_uri, req_hdrs=self.req_hdrs)
+            if self.check_name:
+                formatter.resource = top_resource.subreqs.get(
+                    self.check_name, top_resource
+                )
+            else:
+                formatter.resource = top_resource
         self.response_start(
             b"200",
             b"OK",

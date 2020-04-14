@@ -277,7 +277,7 @@ console.log("{thor.time() - self.start:3.3f} {e_js(message)}");
                 )
             if referer:
                 if args[-1][0] == "req_hdr":
-                    args[-1][1].append(f"Referer:{uri}") # type: ignore
+                    args[-1][1].append(f"Referer:{uri}")  # type: ignore
                 else:
                     args.append(("req_hdr", f"Referer:{uri}"))
             if check_name:

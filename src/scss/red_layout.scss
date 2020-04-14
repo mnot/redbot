@@ -45,7 +45,7 @@ body {
   }
 }
 
-*:link {
+a, .post_link {
   color: $link_colour;
   text-decoration: underline;
 }
