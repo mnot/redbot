@@ -37,11 +37,15 @@ RobotChecker = Union[RobotFileParser, "DummyChecker"]
 UA_STRING = "RED/%s (https://redbot.org/)" % __version__
 
 
-def request_robot_proof(
+def init_robot_check(
     webui: "RedWebUi", continue_test: Callable[[], None], error_response: Callable
 ) -> None:
     robot_secret = webui.config.get("robot_secret", "").encode("utf-8")
     robot_fetcher = RobotFetcher(webui.config)
+    """
+    Initiate a robots.txt check. If it successes, continue the test; otherwise
+    write an error page with an HMAC.
+    """
 
     @thor.events.on(robot_fetcher)
     def robot(results: Tuple[str, bool]) -> None:
@@ -60,9 +64,12 @@ def request_robot_proof(
     robot_fetcher.check_robots(HttpRequest.iri_to_uri(webui.test_uri))
 
 
-def check_robot_proof(
+def verify_robot_proof(
     webui: "RedWebUi", continue_test: Callable[[], None], error_response: Callable
 ) -> None:
+    """
+    Check the URL's robot HMAC.
+    """
     robot_time = webui.query_string.get("robot_time", [None])[0]
     robot_hmac = webui.query_string.get("robot_hmac", [None])[0]
     robot_secret = webui.config.get("robot_secret", "").encode("utf-8")
@@ -74,7 +81,6 @@ def check_robot_proof(
             continue_test()
         else:
             error_response(b"403", b"Forbidden", "Naughty.", "Naughty robot key.")
-            raise ValueError
 
 
 class RobotFetcher(thor.events.EventEmitter):

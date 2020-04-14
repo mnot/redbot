@@ -29,8 +29,8 @@ from redbot.message import HttpRequest
 from redbot.webui.captcha import handle_captcha
 from redbot.webui.ratelimit import ratelimiter
 from redbot.webui.robot_check import (
-    request_robot_proof,
-    check_robot_proof,
+    init_robot_check,
+    verify_robot_proof,
     url_to_origin,
 )
 from redbot.webui.saved_tests import (
@@ -169,13 +169,6 @@ class RedWebUi:
         if referer_error:
             return self.error_response(formatter, b"403", b"Forbidden", referer_error)
 
-        # check robot proof, if provided
-        if self.config.get("robot_secret", ""):
-            try:
-                check_robot_proof(self, continue_test, error_response)
-            except ValueError:
-                return  # the check failed, don't continue.
-
         # enforce client limits
         try:
             ratelimiter.process(self, error_response)
@@ -196,13 +189,18 @@ class RedWebUi:
             )
         else:
             if self.config.get("robot_secret", ""):
-                # initiate robots check
-                request_robot_proof(self, continue_test, error_response)
+                if not self.query_string.get("robot_time", [None])[0]:
+                    init_robot_check(self, continue_test, error_response)
+                else:
+                    verify_robot_proof(self, continue_test, error_response)
             else:
                 continue_test()
 
     def continue_test(self, top_resource: HttpResource, formatter: Formatter) -> None:
         "Preliminary checks are done; actually run the test."
+        import sys
+
+        sys.stderr.write("continuing.\n")
 
         @thor.events.on(formatter)
         def formatter_done() -> None:
