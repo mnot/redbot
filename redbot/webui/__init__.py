@@ -79,6 +79,7 @@ class RedWebUi:
         self._response_done = exchange.response_done
         self.error_log = error_log  # function to log errors to
 
+        # query processing
         self.test_uri = self.query_string.get("uri", [""])[0]
         self.test_id = self.query_string.get("id", [None])[0]
         self.req_hdrs = [
@@ -88,14 +89,15 @@ class RedWebUi:
         ]  # type: StrHeaderListType
         self.format = self.query_string.get("format", ["html"])[0]
         self.descend = "descend" in self.query_string
+        if not self.descend:
+            self.check_name = self.query_string.get("check_name", [None])[0]
+
         self.charset_bytes = self.config["charset"].encode("ascii")
 
         self.save_path = None  # type: str
         self.timeout = None  # type: Any
-
         self.check_name = None  # type: str
-        if not self.descend:
-            self.check_name = self.query_string.get("check_name", [None])[0]
+
         self.start = time.time()
         if method == "POST":
             if (
@@ -198,8 +200,6 @@ class RedWebUi:
     def continue_test(self, top_resource: HttpResource, formatter: Formatter) -> None:
         "Preliminary checks are done; actually run the test."
         import sys
-
-        sys.stderr.write("continuing.\n")
 
         @thor.events.on(formatter)
         def formatter_done() -> None:
