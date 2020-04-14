@@ -17,11 +17,11 @@ if TYPE_CHECKING:
 
 def handle_captcha(
     webui: "RedWebUi",
-    presented_token: str,
     client_id: str,
     continue_test: Callable[[], None],
     error_response: Callable,
 ) -> None:
+    presented_token = webui.query_string.get("hCaptcha_token", [None])[0]
     if not presented_token:
         return error_response(
             b"403", b"Forbidden", "Catpcha token required.", "Captcha token required.",

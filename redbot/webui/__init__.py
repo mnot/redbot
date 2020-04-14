@@ -179,7 +179,6 @@ class RedWebUi:
         if self.config.get("hcaptcha_sitekey", "") and self.config.get(
             "hcaptcha_secret", ""
         ):
-            presented_token = self.query_string.get("hCaptcha_token", [None])[0]
             handle_captcha(
                 self,
                 presented_token,
