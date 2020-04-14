@@ -169,11 +169,12 @@ class RedWebUi:
         if referer_error:
             return self.error_response(formatter, b"403", b"Forbidden", referer_error)
 
-        # robot human check
-        try:
-            check_robot_proof(self, continue_test, error_response)
-        except ValueError:
-            return  # the check failed, don't continue.
+        # check robot proof, if provided
+        if self.config.get("robot_secret", ""):
+            try:
+                check_robot_proof(self, continue_test, error_response)
+            except ValueError:
+                return  # the check failed, don't continue.
 
         # enforce client limits
         try:
@@ -194,8 +195,8 @@ class RedWebUi:
                 error_response,
             )
         else:
-            if self.config.getboolean("robots_check"):
-                # check robots.txt
+            if self.config.get("robot_secret", ""):
+                # initiate robots check
                 request_robot_proof(self, continue_test, error_response)
             else:
                 continue_test()

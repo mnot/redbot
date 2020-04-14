@@ -48,9 +48,9 @@ hcaptcha_sitekey = 10000000-ffff-ffff-ffff-000000000001
 # hCaptcha secret; see <https://hcaptcha.com/>. This MUST be kept secret.
 hcaptcha_secret = 0x0000000000000000000000000000000000000000
 
-# Whether to check robots.txt and (lightly) challenge people if it doesn't allow bots.
-# Disabled if hCaptcha is used.
-robots_check = False
+# To check robots.txt and (lightly) challenge people if it doesn't allow bots, supply
+# a random secret. Comment out to disable; not available if hCaptcha is used.
+robot_secret = please replace this with your secret
 
 # Where to cache robots.txt. Comment out to disable caching of robots.txt.
 robot_cache_dir = /var/cache/redbot/robots-txt/

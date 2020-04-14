@@ -10,7 +10,6 @@ from configparser import SectionProxy
 import hashlib
 import hmac
 from os import path
-import secrets
 from typing import (
     Union,
     Dict,
@@ -36,12 +35,12 @@ if TYPE_CHECKING:
 RobotChecker = Union[RobotFileParser, "DummyChecker"]
 
 UA_STRING = "RED/%s (https://redbot.org/)" % __version__
-ROBOT_SECRET = secrets.token_bytes(16)  # type: bytes
 
 
 def request_robot_proof(
     webui: "RedWebUi", continue_test: Callable[[], None], error_response: Callable
 ) -> None:
+    robot_secret = webui.config.get("robot_secret", "")
     robot_fetcher = RobotFetcher(webui.config)
 
     @thor.events.on(robot_fetcher)
@@ -51,7 +50,7 @@ def request_robot_proof(
             continue_test()
         else:
             valid_till = str(int(thor.time()) + 60)
-            robot_hmac = hmac.new(ROBOT_SECRET, bytes(valid_till, "ascii"), "sha512")
+            robot_hmac = hmac.new(robot_secret, bytes(valid_till, "ascii"), "sha512")
             error_response(
                 b"403",
                 b"Forbidden",
@@ -66,9 +65,10 @@ def check_robot_proof(
 ) -> None:
     robot_time = webui.query_string.get("robot_time", [None])[0]
     robot_hmac = webui.query_string.get("robot_hmac", [None])[0]
+    robot_secret = webui.config.get("robot_secret", "")
     if robot_time and robot_time.isdigit() and robot_hmac:
         valid_till = int(robot_time)
-        computed_hmac = hmac.new(ROBOT_SECRET, bytes(robot_time, "ascii"), "sha512")
+        computed_hmac = hmac.new(robot_secret, bytes(robot_time, "ascii"), "sha512")
         is_valid = robot_hmac == computed_hmac.hexdigest()
         if is_valid and valid_till >= thor.time():
             continue_test()
