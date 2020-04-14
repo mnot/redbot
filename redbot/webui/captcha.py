@@ -6,7 +6,6 @@ import thor
 from thor.http import HttpClient
 from thor.http.error import HttpError
 
-from redbot.formatter import Formatter
 from redbot.resource import HttpResource
 from redbot.type import RawHeaderListType
 

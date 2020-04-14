@@ -10,7 +10,6 @@ from typing import Dict, Set, Callable, TYPE_CHECKING
 
 import thor.loop
 
-from redbot.formatter import Formatter
 from redbot.webui.robot_check import url_to_origin
 
 if TYPE_CHECKING:
