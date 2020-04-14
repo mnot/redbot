@@ -14,7 +14,7 @@ from redbot.speak import Note, categories, levels, display_bytes
 from redbot.type import StrHeaderListType
 
 if TYPE_CHECKING:
-    from redbot.resource import HttpResource # pylint: disable=cyclic-import
+    from redbot.resource import HttpResource  # pylint: disable=cyclic-import
 
 
 class RangeRequest(SubRequest):
