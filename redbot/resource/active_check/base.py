@@ -16,9 +16,7 @@ from redbot.speak import Note, levels, categories
 from redbot.type import StrHeaderListType
 
 if TYPE_CHECKING:
-    from redbot.resource import (
-        HttpResource,
-    )  # pylint: disable=cyclic-import,unused-import
+    from redbot.resource import HttpResource # pylint: disable=cyclic-import
 
 
 class SubRequest(RedFetcher, metaclass=ABCMeta):
