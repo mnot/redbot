@@ -182,10 +182,7 @@ class RedWebUi:
             "hcaptcha_secret", ""
         ):
             handle_captcha(
-                self,
-                self.get_client_id(),
-                continue_test,
-                error_response,
+                self, self.get_client_id(), continue_test, error_response,
             )
         else:
             if self.config.get("robot_secret", ""):
