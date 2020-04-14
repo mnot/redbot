@@ -357,9 +357,7 @@ class HeaderTest(unittest.TestCase):
             self.name.lower(), "HEADER HANDLER NOT FOUND"
         )
         self.assertEqual(self.expected_out, out)
-        diff = set(
-            [n.__name__ for n in self.expected_err]
-        ).symmetric_difference(  # type: ignore
+        diff = {n.__name__ for n in self.expected_err}.symmetric_difference(
             set(self.message.note_classes)
         )
         for message in self.message.notes:  # check formatting
