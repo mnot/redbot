@@ -59,7 +59,6 @@ class BaseHtmlFormatter(Formatter):
 
     def __init__(self, *args: Any, **kw: Any) -> None:
         Formatter.__init__(self, *args, **kw)
-        self.hidden_text = []  # type: List[Tuple[str, str]]
         self.templates = Environment(
             loader=PackageLoader("redbot.formatter"),
             trim_blocks=True,
