@@ -80,7 +80,9 @@ def verify_robot_proof(
         if is_valid and valid_till >= thor.time():
             continue_test()
         else:
-            error_response(b"403", b"Forbidden", "Naughty.", "Naughty robot key.")
+            error_response(
+                b"403", b"Forbidden", "Incorrect robot key.", "Incorrect robot key."
+            )
 
 
 class RobotFetcher(thor.events.EventEmitter):
