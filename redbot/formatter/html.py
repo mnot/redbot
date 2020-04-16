@@ -174,7 +174,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 if not self.resource.subreqs[check_name].fetch_started:
                     continue
                 out.append(
-                    f'<span class="req_link"> {self.redbot_link(f"{check_name} response", check_name=check_name)}'
+                    f'<span class="req_link"> ({self.redbot_link(f"{check_name} response", check_name=check_name)}'
                 )
                 smsgs = [
                     note
