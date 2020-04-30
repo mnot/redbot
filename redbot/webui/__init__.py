@@ -193,7 +193,7 @@ class RedWebUi:
             handle_captcha(
                 self, self.get_client_id(), continue_test, error_response,
             )
-        else:
+        else:  # robot check
             if self.config.get("robot_secret", ""):
                 if not self.query_string.get("robot_time", [None])[0]:
                     init_robot_check(self, continue_test, error_response)
