@@ -249,7 +249,7 @@ console.log("{thor.time() - self.start:3.3f} {e_js(message)}");
         Request headers are copied over from the current context.
         """
         uri = self.resource.request.uri
-        args = []  # type: List[Tuple[str, Union[List[str], str]]]
+        args = []  # type: List[Tuple[str, str]]
         if use_stored and self.kw.get("test_id", None):
             args.append(("id", self.kw["test_id"]))
             if check_name:
