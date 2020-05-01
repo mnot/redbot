@@ -4,14 +4,14 @@
 input#uri, input#submit {
   border: 2px solid #898984;
   font-size: 1.1em;
-  height: 21px;
+  height: 30px;
   padding: 1px;
   margin: 0;
-  box-sizing: content-box;
+  box-sizing: border-box;
 }
 
 input#uri {
-  width: $left_width - 6px - 40px;
+  width: $left_width - 40px;
   color: $text_colour;
   border-right: none;
   &::placeholder {
@@ -55,12 +55,14 @@ input#submit {
   white-space: nowrap;
 }
 
-input.hdr_name {
+input.hdr_name, select.hdr_name {
   width: 130px;
+  box-sizing: border-box;
 }
 
-input.hdr_val {
-  width: 460px;
+input.hdr_val, select.hdr_val {
+  width: $left_width - 130px - 40px;
+  box-sizing: border-box;
 }
 
 option[value="other..."] {
