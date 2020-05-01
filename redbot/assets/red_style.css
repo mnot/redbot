@@ -117,9 +117,6 @@ form.link input[type='submit'] {
   text-decoration: underline; }
 
 /* footer */
-.footer {
-  max-width: 650px; }
-
 body.blank > .footer {
   position: absolute;
   margin: 0 auto;
