@@ -38,9 +38,12 @@ input#uri {
   white-space: nowrap;
 }
 
+input.hdr_name {
+  width: 120px;
+}
 input.hdr_val {
-  width: 200px;
-  max-width: 200px;
+  width: 470px;
+  max-width: 470px;
 }
 
 option[value="other..."] {
