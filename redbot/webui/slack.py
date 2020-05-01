@@ -16,12 +16,11 @@ if TYPE_CHECKING:
 
 def run_slack(webui: "RedWebUi") -> None:
     """Handle a slack request."""
-    body = parse_qs(webui.req_body.decode("utf-8"))
-    slack_response_uri = body.get("response_url", [""])[0].strip()
+    slack_response_uri = webui.body_args.get("response_url", [""])[0].strip()
     formatter = slack.SlackFormatter(
         webui.config, webui.output, slack_uri=slack_response_uri
     )
-    webui.test_uri = body.get("text", [""])[0].strip()
+    webui.test_uri = webui.body_args.get("text", [""])[0].strip()
 
     webui.response_start(
         b"200",

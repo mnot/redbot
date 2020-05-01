@@ -264,22 +264,12 @@ console.log("{thor.time() - self.start:3.3f} {e_js(message)}");
             )
         else:
             args.append(("uri", urljoin(uri, link or "")))
-            if self.resource.request.headers:
-                args.append(
-                    (
-                        "req_hdr",
-                        [
-                            f"{k}:{v}"
-                            for k, v in self.resource.request.headers
-                            if k.lower() != "referer"
-                        ],
-                    )
-                )
+            for k, v in self.resource.request.headers:
+                if referer and k.lower() == "referer":
+                    continue
+                args.append(("req_hdr", f"{k}:{v}"))
             if referer:
-                if args[-1][0] == "req_hdr":
-                    args[-1][1].append(f"Referer:{uri}")  # type: ignore
-                else:
-                    args.append(("req_hdr", f"Referer:{uri}"))
+                args.append(("req_hdr", f"Referer:{uri}"))
             if check_name:
                 args.append(("check_name", check_name))
             elif self.resource.check_name is not None:
@@ -288,7 +278,11 @@ console.log("{thor.time() - self.start:3.3f} {e_js(message)}");
                 args.append(("format", res_format))
             if descend:
                 args.append(("descend", "1"))
+            argstring = "".join(
+                f"""<input type='hidden' name='{arg[0]}' value='{arg[1].replace("'", '"')}' />"""
+                for arg in args
+            )
             return Markup(
                 f"""\
-<form class="link" action="?{urlencode(args, doseq=True)}" method="POST"><input type="submit" value="{link_value}" class="post_link {css_class}" title="{title}" /></form>"""
+<form class="link" action="" method="POST"><input type="submit" value="{link_value}" class="post_link {css_class}" title="{title}" />{argstring}</form>"""
             )

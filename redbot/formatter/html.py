@@ -109,7 +109,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     is_saved=self.kw.get("is_saved", False),
                     allow_save=self.kw.get("allow_save", False),
                     har_link=self.redbot_link("view har", res_format="har"),
-                    self_link=self.redbot_link(
+                    descend_link=self.redbot_link(
                         "check embedded", use_stored=False, descend=True
                     ),
                     validator_link=validator_link,
@@ -281,9 +281,6 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                 is_saved=self.kw.get("is_saved", False),
                 allow_save=self.kw.get("allow_save", False),
                 har_link=self.redbot_link("view har", res_format="har"),
-                self_link=self.redbot_link(
-                    "check embedded", use_stored=False, descend=True
-                ),
             )
         )
 

@@ -74,6 +74,7 @@ class RedWebUi:
         )
         self.req_headers = req_headers
         self.req_body = req_body
+        self.body_args = {}
         self.response_start = exchange.response_start
         self.response_body = exchange.response_body
         self._response_done = exchange.response_done
@@ -101,6 +102,12 @@ class RedWebUi:
         self.start = time.time()
 
         if method == "POST":
+            req_ct = get_header(self.req_headers, b"content-type")
+            if req_ct and req_ct[-1].lower() == b"application/x-www-form-urlencoded":
+                self.body_args = parse_qs(
+                    req_body.decode(self.config["charset"], "replace")
+                )
+
             if (
                 "save" in self.query_string
                 and self.config.get("save_dir", "")

@@ -21,7 +21,7 @@ def handle_captcha(
     continue_test: Callable[[], None],
     error_response: Callable,
 ) -> None:
-    presented_token = webui.query_string.get("hCaptcha_token", [None])[0]
+    presented_token = webui.body_args.get("catpcha_token", [None])[0]
     if not presented_token:
         error_response(
             b"403", b"Forbidden", "Catpcha token required.", "Captcha token required.",

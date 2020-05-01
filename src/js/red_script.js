@@ -5,37 +5,9 @@ import { qs, qsa, docReady, toggleHidden, config } from './red_util.js'
 docReady(function () {
   /* URI */
 
-  qs('input').onkeydown = function (e) {
-    function submitForm () {
-      var form = qs('#request_form')
-      var args = serializeForm(form)
-      form.action = `?${args}`
-      form.submit()
-    }
-
-    if (e.key === 'Enter') {
-      if (config.hcaptcha_sitekey) {
-        qs('#hcaptcha_popup').style.display = 'block'
-        var widgetId = hcaptcha.render('hcaptcha_popup', {
-          size: 'compact',
-          sitekey: config.hcaptcha_sitekey,
-          callback: function (token) {
-            const tokenElement = document.createElement('input')
-            tokenElement.name = 'hCaptcha_token'
-            tokenElement.value = token
-            tokenElement.style.visibility = 'hidden'
-            qs('#request_form').appendChild(tokenElement)
-            submitForm()
-          },
-          'error-callback': function () { qs('hcaptcha_popup').style.display = 'none' }
-        })
-        hcaptcha.execute(widgetId)
-      } else {
-        submitForm()
-      }
-      e.preventDefault()
-    }
-  }
+  qsa('form', function (form) {
+    form.onsubmit = captchaLink
+  })
 
   /* help */
 
@@ -49,6 +21,37 @@ docReady(function () {
     }
   })
 })
+
+function captchaLink (e) {
+  var form = e.target.closest('form')
+  if (config.hcaptcha_sitekey) {
+    qs('#captcha_popup').style.display = 'block'
+    var widgetId = hcaptcha.render('captcha_popup', {
+      size: 'compact',
+      sitekey: config.hcaptcha_sitekey,
+      callback: function (token) {
+        const tokenElement = document.createElement('input')
+        tokenElement.name = 'catpcha_token'
+        tokenElement.value = token
+        tokenElement.style.visibility = 'hidden'
+        form.appendChild(tokenElement)
+        submitForm(form)
+      },
+      'error-callback': function () { qs('captcha_popup').style.display = 'none' }
+    })
+    hcaptcha.execute(widgetId)
+  } else {
+    submitForm(form)
+  }
+  e.preventDefault()
+}
+
+function submitForm (form) {
+  qs('#captcha_popup').style.display = 'none'
+  var args = serializeForm(form)
+  form.action = `?${args}`
+  form.submit()
+}
 
 function serializeForm (form) {
   var q = []
