@@ -331,7 +331,7 @@ table#summary a.fade {
   .tippy-box[data-theme~='redbot'] img {
     max-width: 440px; }
 
-#hcaptcha_popup {
+#captcha_popup {
   display: none;
   position: absolute;
   top: 50%;
