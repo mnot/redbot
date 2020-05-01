@@ -1,13 +1,30 @@
 
 /* request */
 
-input#uri {
-  width: $left_width - 7px;
+input#uri, input#submit {
+  border: 2px solid #898984;
   font-size: 1.1em;
+  height: 21px;
+  padding: 1px;
+  margin: 0;
+  box-sizing: content-box;
+}
+
+input#uri {
+  width: $left_width - 6px - 40px;
   color: $text_colour;
+  border-right: none;
   &::placeholder {
     color: lighten($text_colour, 70%);
   }
+}
+
+input#submit {
+  width: 40px;
+  border-left: none;
+  border-right: none;
+  background-color: #898984;
+  color: white;
 }
 
 .add_req_hdr {
@@ -41,6 +58,7 @@ input#uri {
 input.hdr_name {
   width: 120px;
 }
+
 input.hdr_val {
   width: 470px;
   max-width: 470px;

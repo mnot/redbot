@@ -53,7 +53,8 @@
     <form method="POST" id="request_form">
         <span class="help right hidden">Type in a URI here and press 'return' to check it. You can also specify request headers by clicking 'add a request header.'</span>
         <input type="url" name="uri" value="{{ html_uri }}" id="uri" autocomplete="off" autofocus
-         placeholder="Enter a http:// or https:// URL to check"/><br />
+         placeholder="Enter a http:// or https:// URL to check"/><input type="submit" id="submit" value="➤"/>
+         <br />
         <div id="req_hdrs"></div>
     </form>
 </div>
