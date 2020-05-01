@@ -159,13 +159,13 @@ body.blank > .footer {
 input#uri, input#submit {
   border: 2px solid #898984;
   font-size: 1.1em;
-  height: 21px;
+  height: 30px;
   padding: 1px;
   margin: 0;
-  box-sizing: content-box; }
+  box-sizing: border-box; }
 
 input#uri {
-  width: 604px;
+  width: 610px;
   color: #111;
   border-right: none; }
   input#uri::placeholder {
@@ -201,12 +201,13 @@ input#submit {
   width: 650px;
   white-space: nowrap; }
 
-input.hdr_name {
-  width: 120px; }
+input.hdr_name, select.hdr_name {
+  width: 130px;
+  box-sizing: border-box; }
 
-input.hdr_val {
-  width: 470px;
-  max-width: 470px; }
+input.hdr_val, select.hdr_val {
+  width: 480px;
+  box-sizing: border-box; }
 
 option[value="other..."] {
   color: #aaa;
