@@ -42,12 +42,12 @@
         {% set fclass = " fade" if resource.request.uri| length > 80 else "" %}
         {% set class = pclass + fclass %}
         {% set display_uri = resource.request.uri[:80] %}
-        {{ resource.request.uri|redbot_link(display_uri, use_stored=False, css_class=class, title=resource.request.uri) }}
+        {{ resource.request.uri|redbot_link(display_uri, use_stored=False, css_class=class, title=resource.request.uri, referer=True) }}
         </a>
     </td>
   {% if resource.response.complete %}
     {% if resource.response.status_code in ["301", "302", "303", "307", "308"] and "location" in resource.response.parsed_headers %}
-    <td>{{ resource.response.parsed_headers['location']|redbot_link(resource.response.status_code, use_stored=False, descend=True) }}</td>
+    <td>{{ resource.response.parsed_headers['location']|redbot_link(resource.response.status_code, use_stored=False, descend=True, referer=True) }}</td>
     {% elif resource.response.status_code in ["400", "404", "410"] %}
     <td class="bad">{{ resource.response.status_code }}</td>
     {% else %}

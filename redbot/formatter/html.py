@@ -110,7 +110,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     allow_save=self.kw.get("allow_save", False),
                     har_link=self.redbot_link("view har", res_format="har"),
                     descend_link=self.redbot_link(
-                        "check embedded", use_stored=False, descend=True
+                        "check embedded", use_stored=False, descend=True, referer=True
                     ),
                     validator_link=validator_link,
                 )
@@ -152,7 +152,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                         return r"%s%s%s" % (
                             matchobj.group(1),
                             self.redbot_link(
-                                escape(link), link, use_stored=False, css_class="nocode"
+                                escape(link), link, use_stored=False, css_class="nocode", referer=True
                             ),
                             matchobj.group(1),
                         )
@@ -235,7 +235,7 @@ class HeaderPresenter:
         return "%s%s" % (
             " " * space,
             self.formatter.redbot_link(
-                self.I(escape(svalue), len(name)), svalue, use_stored=False
+                self.I(escape(svalue), len(name)), svalue, use_stored=False, referer=True
             ),
         )
 

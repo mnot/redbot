@@ -221,7 +221,7 @@ console.log("{thor.time() - self.start:3.3f} {e_js(message)}");
         res_format: str = None,
         use_stored: bool = True,
         descend: bool = False,
-        referer: bool = True,
+        referer: bool = False,
         css_class: str = "",
         title: str = "",
     ) -> Markup:
