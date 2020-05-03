@@ -23,7 +23,7 @@ function captchaLink (e) {
   if (config.hcaptcha_sitekey) {
     qs('#captcha_popup').style.display = 'block'
     var widgetId = hcaptcha.render('captcha_popup', {
-      size: 'compact',
+      size: 'normal',
       sitekey: config.hcaptcha_sitekey,
       callback: function (token) {
         const tokenElement = document.createElement('input')
@@ -33,8 +33,7 @@ function captchaLink (e) {
         tokenElement.style.visibility = 'hidden'
         form.appendChild(tokenElement)
         submitForm(form)
-      },
-      'error-callback': function () { qs('captcha_popup').style.display = 'none' }
+      }
     })
     hcaptcha.execute(widgetId)
   } else {
