@@ -156,7 +156,7 @@ body.blank > .footer {
   color: white; }
 
 /* request */
-input#uri, input#submit {
+input#uri, input#go {
   border: 2px solid #898984;
   font-size: 1.1em;
   height: 30px;
@@ -171,7 +171,7 @@ input#uri {
   input#uri::placeholder {
     color: #c4c4c4; }
 
-input#submit {
+input#go {
   width: 40px;
   border-left: none;
   border-right: none;
