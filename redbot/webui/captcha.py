@@ -49,19 +49,21 @@ def handle_captcha(
 
     @thor.events.on(exchange)
     def response_done(trailers: RawHeaderListType) -> None:
-        if exchange.tmp_status != b"200":
-            e_str = (
-                f"Captcha returned {exchange.tmp_status.decode('utf-8')} status code"
-            )
+        try:
+            results = json.loads(exchange.tmp_res_body)
+        except ValueError:
+            if exchange.tmp_status != b"200":
+                e_str = f"Captcha returned {exchange.tmp_status.decode('utf-8')} status code"
+            else:
+                e_str = f"Captcha response decoding error"
             error_response(
-                b"403", b"Forbidden", e_str, e_str,
+                b"500", b"Internal Server Error", e_str, e_str,
             )
             return
-        results = json.loads(exchange.tmp_res_body)
         if results["success"]:
             continue_test()
         else:
-            e_str = f"Captcha errors: {', '.join(results['error-codes'])}"
+            e_str = f"Captcha errors: {', '.join(results.get('error-codes', ['unknown error']))}"
             error_response(
                 b"403", b"Forbidden", e_str, e_str,
             )
