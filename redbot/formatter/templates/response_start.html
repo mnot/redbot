@@ -61,7 +61,10 @@
 <div id="red_status"></div>
 <script src="{{ static }}/script.js?{{ version }}" type="text/javascript" async></script>
 {% if hcaptcha %}
-<div id="captcha_popup"></div>
-<script src="https://hcaptcha.com/1/api.js" async defer></script>
+<div id="captcha_popup" data-size="invisible"></div>
+<script src="https://hcaptcha.com/1/api.js?onload=loadDone&render=explicit" async defer></script>
+<script type="text/javascript">
+  function loadDone () {}
+</script>
 {% endif %}
 <script src="{{ static }}/prettify.js" type="text/javascript" defer></script>
