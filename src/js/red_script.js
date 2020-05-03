@@ -49,13 +49,17 @@ function submitForm (form) {
   form.submit()
 }
 
+const secrets = ['captcha_token']
+
 function serializeForm (form) {
   var q = []
   for (var i = form.elements.length - 1; i >= 0; i = i - 1) {
     var element = form.elements[i]
     if (element.nodeName === 'INPUT' && ['hidden', 'url'].includes(element.type)
     ) {
-      q.unshift(`${element.name}=${encodeURIComponent(element.value)}`)
+      if (!secrets.includes(element.name)) {
+        q.unshift(`${element.name}=${encodeURIComponent(element.value)}`)
+      }
     }
   }
   return q.join('&')
