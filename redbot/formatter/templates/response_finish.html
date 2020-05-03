@@ -40,7 +40,7 @@
       </div>
 
       {% if is_resource %}
-      <div class='option' title='View a HAR (HTTP ARchive, a JSON format) file for this test'>
+      <div class='option'>
         {{ har_link }}
       </div>
       {% endif %}
@@ -59,7 +59,7 @@
       {% endif %}
 
       {% if is_resource and resource.link_count > 0 %}
-      <div class='option' title='Run REDbot on images, frames and embedded links'>
+      <div class='option'>
         {{ descend_link }}
       </div>
       {% endif %}
