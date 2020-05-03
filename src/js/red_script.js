@@ -27,6 +27,7 @@ function captchaLink (e) {
       sitekey: config.hcaptcha_sitekey,
       callback: function (token) {
         const tokenElement = document.createElement('input')
+        tokenElement.type = 'hidden'
         tokenElement.name = 'captcha_token'
         tokenElement.value = token
         tokenElement.style.visibility = 'hidden'
