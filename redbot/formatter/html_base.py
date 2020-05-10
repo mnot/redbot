@@ -256,9 +256,6 @@ console.log("{thor.time() - self.start:3.3f} {e_js(message)}");
                 args.append(("check_name", check_name))
             elif self.resource.check_name is not None:
                 args.append(("check_name", self.resource.check_name))
-            import sys
-
-            sys.stderr.write(f"GET: {str(args)}\n")
             return Markup(
                 f"<a href='?{urlencode(args, doseq=True)}' class='{css_class}' title='{title}'>{link_value}</a>"
             )
