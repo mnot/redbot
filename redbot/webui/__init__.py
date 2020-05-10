@@ -116,13 +116,7 @@ class RedWebUi:
             elif self.test_uri:
                 self.run_test()
             else:
-                self.error_response(
-                    find_formatter("html")(self.config, None, self.output),
-                    b"400",
-                    b"Bad Request",
-                    "Bad Request",
-                    "POST fallthrough",
-                )
+                self.show_default()
         elif method in ["GET", "HEAD"]:
             if self.test_id:
                 load_saved_test(self)
