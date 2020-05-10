@@ -48,7 +48,7 @@ class CaptchaHandler:
                 b"400",
                 b"Bad Request",
                 "Sorry, your cookies appear corrupted. Please try again.",
-                f"Cookie Parse Error: {cookie_str}",
+                f"Cookie Parse Error: {cookie_str.decode('utf-8', 'replace')}",
             )
             return
         human_time = cookiejar.get("human_time", None)
