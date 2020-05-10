@@ -150,7 +150,8 @@ body.blank > .footer {
   padding: 0.5em;
   font-weight: bold;
   font-size: 1.1em;
-  max-width: 650px; }
+  width: 650px;
+  box-sizing: border-box; }
 
 .error a {
   color: white; }
