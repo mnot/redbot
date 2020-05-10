@@ -170,7 +170,8 @@ body.blank > .footer {
   padding: 0.5em;
   font-weight: bold;
   font-size: 1.1em;
-  max-width: $left_width;
+  width: $left_width;
+  box-sizing: content-box;
 }
 
 .error a {
