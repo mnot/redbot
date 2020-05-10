@@ -26,13 +26,8 @@ import thor.http.common
 from thor.http import get_header
 from redbot import __version__
 from redbot.message import HttpRequest
-from redbot.webui.captcha import handle_captcha
+from redbot.webui.captcha import CaptchaHandler
 from redbot.webui.ratelimit import ratelimiter
-from redbot.webui.robot_check import (
-    init_robot_check,
-    verify_robot_proof,
-    url_to_origin,
-)
 from redbot.webui.saved_tests import (
     init_save_file,
     save_test,
@@ -126,7 +121,7 @@ class RedWebUi:
                     b"400",
                     b"Bad Request",
                     "Bad Request",
-                    "POST fallthrough"
+                    "POST fallthrough",
                 )
         elif method in ["GET", "HEAD"]:
             if self.test_id:
@@ -198,19 +193,18 @@ class RedWebUi:
         if self.config.get("hcaptcha_sitekey", "") and self.config.get(
             "hcaptcha_secret", ""
         ):
-            handle_captcha(
+            CaptchaHandler(
                 self, self.get_client_id(), continue_test, error_response,
-            )
-        else:  # robot check
-            if self.config.get("robot_secret", ""):
-                if not self.query_string.get("robot_time", [None])[0]:
-                    init_robot_check(self, continue_test, error_response)
-                else:
-                    verify_robot_proof(self, continue_test, error_response)
-            else:
-                continue_test()
+            ).run()
+        else:
+            continue_test()
 
-    def continue_test(self, top_resource: HttpResource, formatter: Formatter) -> None:
+    def continue_test(
+        self,
+        top_resource: HttpResource,
+        formatter: Formatter,
+        extra_headers: RawHeaderListType = [],
+    ) -> None:
         "Preliminary checks are done; actually run the test."
 
         @thor.events.on(formatter)
@@ -238,7 +232,8 @@ class RedWebUi:
             [
                 (b"Content-Type", formatter.content_type()),
                 (b"Cache-Control", b"max-age=60, must-revalidate"),
-            ],
+            ]
+            + extra_headers,
         )
         if self.check_name:
             display_resource = top_resource.subreqs.get(self.check_name, top_resource)

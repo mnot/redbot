@@ -20,7 +20,8 @@ docReady(function () {
 
 function captchaLink (e) {
   var form = e.target.closest('form')
-  if (config.hcaptcha_sitekey) {
+  if (config.hcaptcha_sitekey && !document.cookie.split(';').some((item) =>
+    item.trim().startsWith('human_hmac='))) {
     qs('#captcha_popup').style.display = 'block'
     var widgetId = hcaptcha.render('captcha_popup', {
       size: 'normal',

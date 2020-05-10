@@ -6,11 +6,10 @@ Rate Limiting for RED, the Resource Expert Droid.
 
 from collections import defaultdict
 from configparser import SectionProxy
-from typing import Dict, Set, Callable, TYPE_CHECKING
+from typing import Dict, Set, Union, Callable, TYPE_CHECKING
+from urllib.parse import urlsplit
 
 import thor.loop
-
-from redbot.webui.robot_check import url_to_origin
 
 if TYPE_CHECKING:
     from redbot.webui import RedWebUi  # pylint: disable=cyclic-import,unused-import
@@ -109,3 +108,18 @@ ratelimiter = RateLimiter()
 
 class RateLimitViolation(Exception):
     pass
+
+
+def url_to_origin(url: str) -> Union[str, None]:
+    "Convert an URL to an RFC6454 Origin."
+    default_port = {"http": 80, "https": 443}
+    try:
+        p_url = urlsplit(url)
+        origin = "%s://%s:%s" % (
+            p_url.scheme.lower(),
+            p_url.hostname.lower(),
+            p_url.port or default_port.get(p_url.scheme, 0),
+        )
+    except (AttributeError, ValueError):
+        origin = None
+    return origin
