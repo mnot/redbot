@@ -252,7 +252,7 @@ class RedWebUi:
     def show_default(self) -> None:
         """Show the default page."""
         formatter = html.BaseHtmlFormatter(
-            self.config, self.output, is_blank=self.test_uri == ""
+            self.config, None, self.output, is_blank=self.test_uri == ""
         )
         if self.test_uri:
             top_resource = HttpResource(self.config, descend=self.descend)
