@@ -1,0 +1,4 @@
+Jinja2>=2.11.1
+Markdown>=3.2.2
+netaddr>=0.7.19
+thor>=0.8.0
