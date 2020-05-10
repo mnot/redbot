@@ -47,10 +47,6 @@ class CaptchaHandler:
         human_time = cookiejar.get("human_time", None)
         human_hmac = cookiejar.get("human_hmac", None)
 
-        import sys
-
-        sys.stderr.write(f"- {cookiejar}\n")
-
         if human_time and human_time.value.isdigit() and human_hmac:
             if self.verify_human(int(human_time.value), human_hmac.value):
                 self.continue_test()
