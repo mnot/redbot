@@ -108,6 +108,7 @@ def load_saved_test(webui: "RedWebUi") -> None:
 
     formatter = find_formatter(webui.format, "html", top_resource.descend)(
         webui.config,
+        display_resource,
         webui.output,
         allow_save=(not is_saved),
         is_saved=True,

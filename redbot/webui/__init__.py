@@ -117,7 +117,7 @@ class RedWebUi:
                 self.run_test()
             else:
                 self.error_response(
-                    find_formatter("html")(self.config, self.output),
+                    find_formatter("html")(self.config, None, self.output),
                     b"400",
                     b"Bad Request",
                     "Bad Request",
@@ -130,7 +130,7 @@ class RedWebUi:
                 self.show_default()
         else:
             self.error_response(
-                find_formatter("html")(self.config, self.output),
+                find_formatter("html")(self.config, None, self.output),
                 b"405",
                 b"Method Not Allowed",
                 "Method Not Allowed",
@@ -143,6 +143,7 @@ class RedWebUi:
         top_resource.set_request(self.test_uri, req_hdrs=self.req_hdrs)
         formatter = find_formatter(self.format, "html", self.descend)(
             self.config,
+            top_resource,
             self.output,
             allow_save=self.test_id,
             is_saved=False,
