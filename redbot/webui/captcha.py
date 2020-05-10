@@ -12,6 +12,10 @@ from redbot.resource import HttpResource
 from redbot.type import RawHeaderListType
 
 token_client = HttpClient()
+token_client.idle_timeout = 30
+token_client.connect_timeout = 10
+token_client.read_timeout = 10
+token_client.max_server_conn = 30
 
 if TYPE_CHECKING:
     from redbot.webui import RedWebUi  # pylint: disable=cyclic-import,unused-import
