@@ -9,19 +9,19 @@
 # Where to keep files when users `save` them. Comment out to disable saving.
 save_dir = /var/state/redbot/
 
-# how long to store things when users save them, in days.
+# How long to store things when users save them, in days.
 save_days = 30
 
-# directory whose contents will be append to the front page; Comment out to disable.
+# Directory whose contents will be append to the front page; Comment out to disable.
 extra_dir = extra
 
 # URI root for static assets (absolute or relative, but no trailing '/').
 static_root = static
 
-# how many seconds to allow a check to run for.
+# How many seconds to allow a check to run for.
 max_runtime = 60
 
-# limit on how many links to check in a page when descending
+# Limit on how many links to check in a page when descending
 max_links = 100
 
 # Output language (not working yet; see #169).
@@ -30,7 +30,7 @@ lang = en_US.UTF-8
 # Output character set. No real reason to change from UTF-8.
 charset = utf-8
 
-# show errors in the browser; boolean.
+# Show errors in the browser; boolean.
 debug = False
 
 
@@ -48,19 +48,33 @@ hcaptcha_sitekey = 10000000-ffff-ffff-ffff-000000000001
 # hCaptcha secret; see <https://hcaptcha.com/>. This MUST be kept secret.
 hcaptcha_secret = 0x0000000000000000000000000000000000000000
 
-# To check robots.txt and (lightly) challenge people if it doesn't allow bots, supply
-# a random secret. Comment out to disable; not available if hCaptcha is used.
-robot_secret = please replace this with your secret
+# How long to remember that someone is human before running a captcha again, in seconds.
+# Longer periods are less annoying, but more vulnerable to token reuse.
+token_lifetime = 300
 
-# Where to cache robots.txt. Comment out to disable caching of robots.txt.
-robot_cache_dir = /var/cache/redbot/robots-txt/
-
-# log when total traffic is bigger than this (in kbytes), so we can catch abuse
+# Log when total traffic is bigger than this (in kbytes), so we can catch abuse
 # Comment out to disable; 0 to log all.
 log_traffic = 8192
 
-# domains which we reject requests for when they're in the referer. Whitespace-separated.
+# Domains which we reject requests for when they're in the referer. Whitespace-separated.
 referer_spam_domains = www.youtube.com
+
+
+##
+## Rate limiting requests; only useful when running as a standalone server.
+##
+
+# Number of tests to allow per period, per client. Comment out to disable.
+limit_client_tests = 200
+
+# Period of time those requests are allowed within, in hours.
+limit_client_period = 1
+
+# Number of tests to allow per period, per origin. Comment out to disable.
+limit_origin_tests = 200
+
+# Period of time those requests are allowed within, in hours.
+limit_origin_period = 1
 
 
 ###
@@ -90,23 +104,6 @@ asset_dir = redbot/assets
 # Directory in the filesystem where other assets should be layered into the URI root.
 # Comment out to disable.
 # extra_base_dir = files
-
-
-##
-## Rate limiting requests; only useful when running as a standalone server.
-##
-
-# Number of tests to allow per period, per client. Comment out to disable.
-limit_client_tests = 200
-
-# Period of time those requests are allowed within, in hours.
-limit_client_period = 1
-
-# Number of tests to allow per period, per origin. Comment out to disable.
-limit_origin_tests = 200
-
-# Period of time those requests are allowed within, in hours.
-limit_origin_period = 1
 
 
 ###
