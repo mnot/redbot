@@ -45,7 +45,10 @@ class CaptchaHandler:
             )  # type: cookies.SimpleCookie
         except cookies.CookieError:
             self.error_response(
-                b"400", b"Bad Request", "Cookie Parse Error", "Cookie Parse Error"
+                b"400",
+                b"Bad Request",
+                "Sorry, your cookies appear corrupted. Please try again.",
+                f"Cookie Parse Error: {cookie_str}",
             )
             return
         human_time = cookiejar.get("human_time", None)
@@ -56,13 +59,19 @@ class CaptchaHandler:
                 self.continue_test()
             else:
                 self.error_response(
-                    b"403", b"Forbidden", "Please resubmit.", "Human token required.",
+                    b"403",
+                    b"Forbidden",
+                    "I need to double-check that you're human; please resubmit.",
+                    "Invalid human token",
                 )
         elif captcha_token:
             self.verify_captcha(captcha_token)
         else:
             self.error_response(
-                b"403", b"Forbidden", "Please resubmit.", "Captcha token required.",
+                b"403",
+                b"Forbidden",
+                "I need to double-check that you're human; please resubmit.",
+                "Invalid captcha.",
             )
 
     def verify_captcha(self, presented_token: str) -> None:
@@ -71,7 +80,10 @@ class CaptchaHandler:
         @thor.events.on(exchange)
         def error(err_msg: HttpError) -> None:
             self.error_response(
-                b"403", b"Forbidden", "Catpcha error.", f"Captcha error: {err_msg}.",
+                b"403",
+                b"Forbidden",
+                "There was a problem with the Captcha server; please try again soon.",
+                f"Captcha error: {err_msg}.",
             )
 
         @thor.events.on(exchange)
@@ -92,9 +104,9 @@ class CaptchaHandler:
                 results = json.loads(exchange.tmp_res_body)
             except ValueError:
                 if exchange.tmp_status != b"200":
-                    e_str = f"Captcha returned {exchange.tmp_status.decode('utf-8')} status code"
+                    e_str = f"Captcha server returned {exchange.tmp_status.decode('utf-8')} status code"
                 else:
-                    e_str = f"Captcha response decoding error"
+                    e_str = f"Captcha server response error"
                 self.error_response(
                     b"500", b"Internal Server Error", e_str, e_str,
                 )
