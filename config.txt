@@ -1,10 +1,28 @@
-#
-# REDbot Configuration
-#
+###
+### REDbot Configuration
+###
+
 # All directory paths are relative to the PWD that Redbot is run from.
-#
 
 [redbot]
+
+# Where to keep files when users `save` them. Comment out to disable saving.
+save_dir = /var/state/redbot/
+
+# How long to store things when users save them, in days.
+save_days = 30
+
+# Directory whose contents will be append to the front page; Comment out to disable.
+extra_dir = extra
+
+# URI root for static assets (absolute or relative, but no trailing '/').
+static_root = static
+
+# How many seconds to allow a check to run for.
+max_runtime = 60
+
+# Limit on how many links to check in a page when descending
+max_links = 100
 
 # Output language (not working yet; see #169).
 lang = en_US.UTF-8
@@ -12,63 +30,35 @@ lang = en_US.UTF-8
 # Output character set. No real reason to change from UTF-8.
 charset = utf-8
 
-# Where to store exceptions; Comment out to disable traceback logging. Only for CGI.
-exception_dir = exceptions
-
-# how many seconds to allow a check to run for.
-max_runtime = 60
-
-# limit on how many links to check in a page when descending
-max_links = 100
-
-# Where to keep files for future reference, when users save them. Comment out to disable.
-save_dir = /var/state/redbot/
-
-# how long to store things when users save them, in days.
-save_days = 30
-
-# show errors in the browser; boolean.
+# Show errors in the browser; boolean.
 debug = False
 
-# domains which we reject requests for when they're in the referer. Whitespace-separated.
-referer_spam_domains = www.youtube.com
+
+###
+### Abuse controls for the Web UI
+###
 
 # Whether to allow access to localhost, RFC1918 and other "local" services. Note that enabling
 # this can be a security risk.
-enable_local_access = no
+enable_local_access = False
 
-# log when total traffic is bigger than this (in kbytes), so we can catch abuse
+# hCaptcha sitekey; see <https://hcaptcha.com/>. Comment out to disable hCaptcha.
+# hcaptcha_sitekey = 10000000-ffff-ffff-ffff-000000000001
+
+# hCaptcha secret; see <https://hcaptcha.com/>. This MUST be kept secret.
+# hcaptcha_secret = 0x0000000000000000000000000000000000000000
+
+# How long to remember that someone is human before running a captcha again, in seconds.
+# Longer periods are less annoying, but more vulnerable to token reuse.
+token_lifetime = 15
+
+# Log when total traffic is bigger than this (in kbytes), so we can catch abuse
 # Comment out to disable; 0 to log all.
 log_traffic = 8192
 
-# Where the User Interface is rooted. Will be overwritten by redbot_cgi.
-ui_uri = https://redbot.org/
+# Domains which we reject requests for when they're in the referer. Whitespace-separated.
+referer_spam_domains = www.youtube.com
 
-# Where to cache robots.txt. Comment out to disable caching of robots.txt.
-robot_cache_dir = /var/cache/redbot/robots-txt/
-
-# directory whose contents will be append to the front page; Comment out to disable.
-extra_dir = extra
-
-# URI root for static assets (absolute or relative, but no trailing '/').
-static_root = static
-
-###
-### Options for running REDbot as a standalone server
-###
-
-# Hostname to listen on. Comment out to listen on all interfaces.
-host = localhost
-
-# Port to listen on.
-port = 8000
-
-# Directory in the filesystem where REDbot's static assets are located.
-asset_dir = redbot/assets
-
-# Directory in the filesystem where other assets should be layered into the URI root.
-# Comment out to disable.
-# extra_base_dir = files
 
 ##
 ## Rate limiting requests; only useful when running as a standalone server.
@@ -88,7 +78,36 @@ limit_origin_period = 1
 
 
 ###
-### Slack
+### Options for running REDbot as a CGI script
+###
+
+# Where to store exceptions; Comment out to disable traceback logging.
+exception_dir = exceptions
+
+
+###
+### Options for running REDbot as a standalone server
+###
+
+# Hostname to listen on. Comment out to listen on all interfaces.
+host = localhost
+
+# Port to listen on.
+port = 8000
+
+# The URL where the User Interface is rooted.
+ui_uri = https://redbot.org/
+
+# Directory in the filesystem where REDbot's static assets are located.
+asset_dir = redbot/assets
+
+# Directory in the filesystem where other assets should be layered into the URI root.
+# Comment out to disable.
+# extra_base_dir = files
+
+
+###
+### Slack integration
 ###
 
 # Signing secret from slack. Comment out to disable Slack integration.

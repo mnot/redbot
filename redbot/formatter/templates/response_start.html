@@ -50,12 +50,21 @@
 <div id="request">
     <h1><a href="?"><span class="hilight"><abbr title="Resource Expert Droid">RED</abbr></span>bot</a>{{ extra_title }}</h1>
 
-    <form method="GET" id="request_form">
+    <form method="POST" id="request_form">
         <span class="help right hidden">Type in a URI here and press 'return' to check it. You can also specify request headers by clicking 'add a request header.'</span>
-        <input type="url" name="uri" value="{{ html_uri }}" id="uri" autocomplete="off" autofocus placeholder="Enter a http:// or https:// URL to check" /><br />
+        <input type="url" name="uri" value="{{ html_uri }}" id="uri" autocomplete="off" autofocus
+         placeholder="Enter a http:// or https:// URL to check"/><input type="submit" id="go" value="➤"/>
+         <br />
         <div id="req_hdrs"></div>
     </form>
 </div>
 <div id="red_status"></div>
 <script src="{{ static }}/script.js?{{ version }}" type="text/javascript" async></script>
+{% if hcaptcha %}
+<div id="captcha_popup" data-size="invisible"></div>
+<script type="text/javascript">
+  function loadDone () {}
+</script>
+<script src="https://hcaptcha.com/1/api.js?onload=loadDone&render=explicit" async defer></script>
+{% endif %}
 <script src="{{ static }}/prettify.js" type="text/javascript" defer></script>

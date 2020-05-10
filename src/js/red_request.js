@@ -1,6 +1,6 @@
 /* global alert */
 
-import { qs, escapeHtml } from './red_util.js'
+import { qs, escapeHtml, config } from './red_util.js'
 
 var knownReqHdrs = {
   'Accept-Language': ['', 'en', 'en-us', 'en-uk', 'fr'],
@@ -32,11 +32,11 @@ function addReqHdr (rawName, rawVal) {
 <a href='#' class='delete_req_hdr'>x</a>
 <span class='hdr_name' data-name='${setName || ''}'></span>: <span class='hdr_val'></span>
 <input type='hidden' name='req_hdr' value='${setName || ''}:${setVal || ''}'/>`
-  reqHdrs.appendChild(reqHdr)
 
-  /* populate header name list */
+  /* populate header name */
+  var nameHtml
   if (setName == null || setName in knownReqHdrs) {
-    var nameHtml = "<select class='hdr_name'><option/>"
+    nameHtml = "<select class='hdr_name'><option/>"
     for (var name in knownReqHdrs) {
       if (name === setName) {
         nameHtml += `<option selected='true'>${name}</option>`
@@ -45,31 +45,34 @@ function addReqHdr (rawName, rawVal) {
       }
     }
     nameHtml += "<option value='other...'>other...</option> </select>"
-    qs('.hdr_name', reqHdr).innerHTML = nameHtml
+  } else {
+    nameHtml = `<input class="hdr_name" type="text" value="${setName}"/>`
+  }
+  qs('.hdr_name', reqHdr).innerHTML = nameHtml
 
-    /* select specified header, if any */
-    if (setName != null) {
-      var knownHdrVals = knownReqHdrs[setName]
-      if (knownHdrVals == null) {
-        setValue(reqHdr, `<input class="hdr_val" type="text" value="${setVal}"/>`)
-      } else if (knownHdrVals.indexOf(setVal) > -1) {
-        var valHtml = "<select class='hdr_val'><option />"
-        knownHdrVals.forEach(val => {
-          if (setVal === val) {
-            valHtml += `<option selected='true'>${val}</option>`
-          } else {
-            valHtml += `<option>${val}</option>`
-          }
-        })
-        valHtml += "<option value='other...'>other...</option></select>"
-        setValue(reqHdr, valHtml)
-      } else if (setVal != null) {
-        setValue(reqHdr, `<input class="hdr_val" type="text" value="${setVal}"/>`)
-      }
+  /* populate header value */
+  if (setVal != null) {
+    var knownHdrVals = knownReqHdrs[setName]
+    if (knownHdrVals == null) {
+      setValue(reqHdr, `<input class="hdr_val" type="text" value="${setVal}"/>`)
+    } else if (knownHdrVals.indexOf(setVal) > -1) {
+      var valHtml = "<select class='hdr_val'><option />"
+      knownHdrVals.forEach(val => {
+        if (setVal === val) {
+          valHtml += `<option selected='true'>${val}</option>`
+        } else {
+          valHtml += `<option>${val}</option>`
+        }
+      })
+      valHtml += "<option value='other...'>other...</option></select>"
+      setValue(reqHdr, valHtml)
+    } else {
+      setValue(reqHdr, `<input class="hdr_val" type="text" value="${setVal}"/>`)
     }
   }
 
   installNameChangeHandler(reqHdr)
+  reqHdrs.appendChild(reqHdr)
 
   /* handle delete */
   var deleteHdr = qs('.delete_req_hdr', reqHdr)
@@ -138,8 +141,6 @@ function setValue (reqHdr, valueHtml) {
 }
 
 // setup request headers. Depends on #request_form being available.
-
-const config = JSON.parse(qs('#config').innerHTML)
 
 /* add pre-populated headers */
 config.redbot_req_hdrs.forEach(hdr => {

@@ -74,8 +74,7 @@ class Note:
         """
         return Markup(
             markdown(
-                self.text
-                % dict([(k, escape(str(v))) for k, v in list(self.vars.items())]),
+                self.text % {k: escape(str(v)) for k, v in self.vars.items()},
                 output_format="html5",
             )
         )

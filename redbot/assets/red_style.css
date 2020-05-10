@@ -36,6 +36,10 @@ body {
     padding: 0;
     float: left; } }
 
+a, .post_link {
+  color: blue;
+  text-decoration: underline; }
+
 h1 {
   color: #111;
   padding: 0;
@@ -99,10 +103,20 @@ br {
   top: 2em;
   right: 2em; }
 
-/* footer */
-.footer {
-  max-width: 650px; }
+form.link {
+  display: inline; }
 
+form.link input[type='submit'] {
+  border: none;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  color: blue;
+  text-decoration: underline; }
+
+/* footer */
 body.blank > .footer {
   position: absolute;
   margin: 0 auto;
@@ -136,18 +150,34 @@ body.blank > .footer {
   padding: 0.5em;
   font-weight: bold;
   font-size: 1.1em;
-  max-width: 650px; }
+  width: 650px;
+  box-sizing: border-box; }
 
 .error a {
   color: white; }
 
 /* request */
-input#uri {
-  width: 643px;
+input#uri, input#go {
+  border: 2px solid #898984;
   font-size: 1.1em;
-  color: #111; }
+  height: 30px;
+  padding: 1px;
+  margin: 0;
+  box-sizing: border-box; }
+
+input#uri {
+  width: 610px;
+  color: #111;
+  border-right: none; }
   input#uri::placeholder {
     color: #c4c4c4; }
+
+input#go {
+  width: 40px;
+  border-left: none;
+  border-right: none;
+  background-color: #898984;
+  color: white; }
 
 .add_req_hdr {
   -webkit-border-bottom-right-radius: 0.5em;
@@ -172,9 +202,13 @@ input#uri {
   width: 650px;
   white-space: nowrap; }
 
-input.hdr_val {
-  width: 200px;
-  max-width: 200px; }
+input.hdr_name, select.hdr_name {
+  width: 130px;
+  box-sizing: border-box; }
+
+input.hdr_val, select.hdr_val {
+  width: 480px;
+  box-sizing: border-box; }
 
 option[value="other..."] {
   color: #aaa;
@@ -205,7 +239,7 @@ option[value="other..."] {
   padding: 1em 1.5em;
   margin-bottom: 0;
   overflow-x: auto; }
-  #response a, .nonfinal_response a {
+  #response a, .nonfinal_response a, #response .post_link, .nonfinal_response .post_link {
     color: #ccf; }
 
 .nonfinal_response {
@@ -220,11 +254,12 @@ option[value="other..."] {
   margin-top: 0.2em;
   margin-bottom: 2em;
   padding-top: 0;
-  text-align: center;
-  font-size: 0.75em; }
+  text-align: center; }
 
-.options > * {
-  padding-right: 2em; }
+.option {
+  padding-right: 2em;
+  display: inline;
+  font-size: 0.75em; }
 
 /* response body */
 #body {
@@ -271,7 +306,7 @@ table#summary {
   table#summary td.uri {
     text-align: left;
     font-family: monospace; }
-  table#summary td a {
+  table#summary td a, table#summary td .post_link {
     color: #ccf;
     text-decoration: none; }
 
@@ -312,6 +347,14 @@ table#summary a.fade {
   font-size: 0.85em; }
   .tippy-box[data-theme~='redbot'] img {
     max-width: 440px; }
+
+#captcha_popup {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 500; }
 
 /* note lists */
 ul {

@@ -3,7 +3,7 @@ from functools import partial
 import json
 import os
 from typing import Any, List, Match, Tuple, Union  # pylint: disable=unused-import
-from urllib.parse import urljoin, quote as urlquote
+from urllib.parse import urljoin, urlencode, quote as urlquote
 
 from jinja2 import Environment, PackageLoader, select_autoescape, Markup, escape
 
@@ -59,7 +59,6 @@ class BaseHtmlFormatter(Formatter):
 
     def __init__(self, *args: Any, **kw: Any) -> None:
         Formatter.__init__(self, *args, **kw)
-        self.hidden_text = []  # type: List[Tuple[str, str]]
         self.templates = Environment(
             loader=PackageLoader("redbot.formatter"),
             trim_blocks=True,
@@ -68,7 +67,21 @@ class BaseHtmlFormatter(Formatter):
             ),
         )
         self.templates.filters.update(
-            {"f_num": f_num, "relative_time": relative_time, "req_qs": self.req_qs}
+            {
+                "f_num": f_num,
+                "relative_time": relative_time,
+                "redbot_link": self.redbot_link,
+            }
+        )
+        self.templates.globals.update(
+            {
+                "formatter": self,
+                "version": __version__,
+                "baseuri": self.config["ui_uri"],
+                "static": self.config["static_root"],
+                "hcaptcha": self.config.get("hcaptcha_sitekey", "") != ""
+                and self.config.get("hcaptcha_secret", "") != "",
+            }
         )
         self.start = thor.time()
 
@@ -97,8 +110,6 @@ class BaseHtmlFormatter(Formatter):
         tpl = self.templates.get_template("response_start.html")
         self.output(
             tpl.render(
-                static=self.config["static_root"],
-                version=__version__,
                 html_uri=uri,
                 test_id=self.kw.get("test_id", ""),
                 config=Markup(
@@ -107,6 +118,9 @@ class BaseHtmlFormatter(Formatter):
                             "redbot_uri": e_js(uri),
                             "redbot_req_hdrs": req_headers,
                             "redbot_version": __version__,
+                            "hcaptcha_sitekey": self.config.get(
+                                "hcaptcha_sitekey", None
+                            ),
                         },
                         ensure_ascii=True,
                     ).replace("<", "\\u003c")
@@ -124,9 +138,7 @@ class BaseHtmlFormatter(Formatter):
         """
         self.output(self.format_extra())
         tpl = self.templates.get_template("footer.html")
-        self.output(
-            tpl.render(baseuri=self.config["ui_uri"], static=self.config["static_root"])
-        )
+        self.output(tpl.render())
 
     def error_output(self, message: str) -> None:
         """
@@ -201,16 +213,23 @@ console.log("{thor.time() - self.start:3.3f} {e_js(message)}");
                     o.append(f"<!-- error opening {extra_file}: {why} -->")
         return Markup(nl.join(o))
 
-    def req_qs(
+    def redbot_link(
         self,
+        link_value: str,
         link: str = None,
         check_name: str = None,
         res_format: str = None,
         use_stored: bool = True,
-        referer: bool = True,
+        descend: bool = False,
+        referer: bool = False,
+        css_class: str = "",
+        title: str = "",
     ) -> Markup:
         """
-        Format a query string to refer to another REDbot resource.
+        Format a query string to refer to another REDbot resource. If it can be, it will be linked
+        with a GET; otherwise a POST form will be written.
+
+        "link_value" is the link text.
 
         "link" is the resource to test; it is evaluated relative to the current context
         If blank, it is the same resource.
@@ -225,25 +244,45 @@ console.log("{thor.time() - self.start:3.3f} {e_js(message)}");
 
         If 'referer" is true, we'll strip any existing Referer and add our own.
 
+        "css_class" adds css classes; 'title' adds a title.
+
         Request headers are copied over from the current context.
         """
-        out = []
         uri = self.resource.request.uri
+        args = []  # type: List[Tuple[str, str]]
         if use_stored and self.kw.get("test_id", None):
-            out.append("id=%s" % e_query_arg(self.kw["test_id"]))
+            args.append(("id", self.kw["test_id"]))
+            if check_name:
+                args.append(("check_name", check_name))
+            elif self.resource.check_name is not None:
+                args.append(("check_name", self.resource.check_name))
+            import sys
+
+            sys.stderr.write(f"GET: {str(args)}\n")
+            return Markup(
+                f"<a href='?{urlencode(args, doseq=True)}' class='{css_class}' title='{title}'>{link_value}</a>"
+            )
         else:
-            out.append("uri=%s" % e_query_arg(urljoin(uri, link or "")))
-        if self.resource.request.headers:
+            args.append(("uri", urljoin(uri, link or "")))
             for k, v in self.resource.request.headers:
                 if referer and k.lower() == "referer":
                     continue
-                out.append(f"req_hdr={e_query_arg(k)}%3A{e_query_arg(v)}")
-        if referer:
-            out.append(f"req_hdr=Referer%3A{e_query_arg(uri)}")
-        if check_name:
-            out.append(f"check_name={e_query_arg(check_name)}")
-        elif self.resource.check_name is not None:
-            out.append(f"check_name={e_query_arg(self.resource.check_name)}")
-        if res_format:
-            out.append(f"format={e_query_arg(res_format)}")
-        return escape("&".join(out))
+                args.append(("req_hdr", f"{k}:{v}"))
+            if referer:
+                args.append(("req_hdr", f"Referer:{uri}"))
+            if check_name:
+                args.append(("check_name", check_name))
+            elif self.resource.check_name is not None:
+                args.append(("check_name", self.resource.check_name))
+            if res_format:
+                args.append(("format", res_format))
+            if descend:
+                args.append(("descend", "1"))
+            argstring = "".join(
+                f"""<input type='hidden' name='{arg[0]}' value='{arg[1].replace("'", '"')}' />"""
+                for arg in args
+            )
+            return Markup(
+                f"""\
+<form class="link" action="" method="POST"><input type="submit" value="{link_value}" class="post_link {css_class}" title="{title}" />{argstring}</form>"""
+            )

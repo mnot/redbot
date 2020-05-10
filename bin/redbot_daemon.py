@@ -9,6 +9,7 @@ import locale
 import os
 import signal
 import sys
+import traceback
 from types import FrameType
 from typing import Dict
 from urllib.parse import urlsplit
@@ -22,7 +23,10 @@ from redbot.type import RawHeaderListType
 from redbot.webui import RedWebUi
 
 if os.environ.get("SYSTEMD_WATCHDOG"):
-    from systemd.daemon import notify, Notification
+    try:
+        from systemd.daemon import notify, Notification
+    except ImportError:
+        notify = Notification = None
 
 _loop.precision = 0.1
 
@@ -51,8 +55,6 @@ class RedBotServer:
         thor.schedule(self.watchdog_freq, self.watchdog_ping)
 
     def abrt_handler(self, signum: int, frame: FrameType) -> None:
-        import traceback
-
         sys.stderr.write("* ABORT\n")
         traceback.print_stack(frame)
         sys.exit(0)
@@ -129,7 +131,6 @@ REDbot has encountered a fatal error which it really, really can't recover from
 in standalone server mode. Details follow.
 """
                 )
-                import traceback
 
                 dump = traceback.format_exc()
                 thor.stop()

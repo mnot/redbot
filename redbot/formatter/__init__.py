@@ -18,9 +18,7 @@ import thor
 from thor.events import EventEmitter
 
 if TYPE_CHECKING:
-    from redbot.resource import (
-        HttpResource,
-    )  # pylint: disable=cyclic-import,unused-import
+    from redbot.resource import HttpResource  # pylint: disable=cyclic-import
 
 _formatters = ["html", "text", "har"]
 
@@ -83,7 +81,11 @@ class Formatter(EventEmitter):
     can_multiple = False  # formatter can represent multiple responses.
 
     def __init__(
-        self, config: SectionProxy, output: Callable[[str], None], **kw: Any
+        self,
+        config: SectionProxy,
+        resource: "HttpResource",
+        output: Callable[[str], None],
+        **kw: Any,
     ) -> None:
         """
         Formatter for the given URI, writing
@@ -92,10 +94,10 @@ class Formatter(EventEmitter):
         """
         EventEmitter.__init__(self)
         self.config = config
+        self.resource = resource
         self.lang = config["lang"]
         self.output = output  # output file object
         self.kw = kw  # extra keyword arguments
-        self.resource = None  # type: HttpResource
 
     def bind_resource(self, display_resource: "HttpResource") -> None:
         """

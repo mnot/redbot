@@ -65,5 +65,5 @@ class CacheFile:
         "Remove the file, discarding errors silently."
         try:
             os.remove(self.path)
-        except:
+        except (OSError, IOError):
             pass

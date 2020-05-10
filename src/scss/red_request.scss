@@ -1,13 +1,30 @@
 
 /* request */
 
-input#uri {
-  width: $left_width - 7px;
+input#uri, input#go {
+  border: 2px solid #898984;
   font-size: 1.1em;
+  height: 30px;
+  padding: 1px;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+input#uri {
+  width: $left_width - 40px;
   color: $text_colour;
+  border-right: none;
   &::placeholder {
     color: lighten($text_colour, 70%);
   }
+}
+
+input#go {
+  width: 40px;
+  border-left: none;
+  border-right: none;
+  background-color: #898984;
+  color: white;
 }
 
 .add_req_hdr {
@@ -38,9 +55,14 @@ input#uri {
   white-space: nowrap;
 }
 
-input.hdr_val {
-  width: 200px;
-  max-width: 200px;
+input.hdr_name, select.hdr_name {
+  width: 130px;
+  box-sizing: border-box;
+}
+
+input.hdr_val, select.hdr_val {
+  width: $left_width - 130px - 40px;
+  box-sizing: border-box;
 }
 
 option[value="other..."] {

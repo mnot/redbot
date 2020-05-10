@@ -17,7 +17,7 @@
 
   <pre id='response'>{{ format_response(resource.response) }}</pre>
 
-    <p class="options">
+    <div class="options">
       <span class='help hidden'>
         Here, you can see the response body, a HAR document for the request, and when appropriate,
         validate the response or check its assets (such as referenced images, stylesheets and scripts).
@@ -33,38 +33,38 @@
 
       <br/>
 
-      <span class='option' title='View this response body (with any gzip compression removed'>
+      <div class='option' title='View this response body (with any gzip compression removed'>
         <script type="text/javascript">
           document.write("<a href='#' id='body_view' accesskey='b'>view body</a>")
         </script>
-      </span>
+      </div>
 
       {% if is_resource %}
-      <span class='option' title='View a HAR (HTTP ARchive, a JSON format) file for this test'>
-        <a href="?{{ har_link }}" accesskey="h">view har</a>
-      </span>
+      <div class='option'>
+        {{ har_link }}
+      </div>
       {% endif %}
 
       {% if not is_saved %}
       {% if allow_save %}
-      <span class='option' title='Save these results for future reference'>
+      <div class='option' title='Save these results for future reference'>
         <a href='#' id='save' accesskey='s'>save</a>
-      </span>
+      </div>
       {% endif %}
 
       {% if validator_link %}
-      <span class='option' title='Validate the response body with a third party service'>
+      <div class='option' title='Validate the response body with a third party service'>
         <a href='{{ validator_link }}' accesskey='v'>validate body</a>
-      </span>
+      </div>
       {% endif %}
 
       {% if is_resource and resource.link_count > 0 %}
-      <span class='option' title='Run REDbot on images, frames and embedded links'>
-        <a href='?descend=True&{{ self_link }}' accesskey='a'>check embedded</a>
-      </span>
+      <div class='option'>
+        {{ descend_link }}
+      </div>
       {% endif %}
       {% endif %}
-    </p>
+    </div>
   </div>
 
   <div id="right_column">
@@ -93,4 +93,5 @@
   <br />
 
   <div id='body' class="hidden">{{ body }}</div>
+
 {% include 'footer.html' %}
