@@ -126,6 +126,7 @@ class RedWebUi:
                     b"400",
                     b"Bad Request",
                     "Bad Request",
+                    "POST fallthrough"
                 )
         elif method in ["GET", "HEAD"]:
             if self.test_id:
