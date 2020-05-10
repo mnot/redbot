@@ -18,7 +18,7 @@ def run_slack(webui: "RedWebUi") -> None:
     """Handle a slack request."""
     slack_response_uri = webui.body_args.get("response_url", [""])[0].strip()
     formatter = slack.SlackFormatter(
-        webui.config, webui.output, slack_uri=slack_response_uri
+        webui.config, None, webui.output, slack_uri=slack_response_uri
     )
     webui.test_uri = webui.body_args.get("text", [""])[0].strip()
 
