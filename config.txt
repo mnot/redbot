@@ -43,14 +43,14 @@ debug = False
 enable_local_access = False
 
 # hCaptcha sitekey; see <https://hcaptcha.com/>. Comment out to disable hCaptcha.
-hcaptcha_sitekey = 10000000-ffff-ffff-ffff-000000000001
+# hcaptcha_sitekey = 10000000-ffff-ffff-ffff-000000000001
 
 # hCaptcha secret; see <https://hcaptcha.com/>. This MUST be kept secret.
-hcaptcha_secret = 0x0000000000000000000000000000000000000000
+# hcaptcha_secret = 0x0000000000000000000000000000000000000000
 
 # How long to remember that someone is human before running a captcha again, in seconds.
 # Longer periods are less annoying, but more vulnerable to token reuse.
-token_lifetime = 300
+token_lifetime = 15
 
 # Log when total traffic is bigger than this (in kbytes), so we can catch abuse
 # Comment out to disable; 0 to log all.
