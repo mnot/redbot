@@ -67,7 +67,7 @@ class RateLimiter:
         user_id = webui.body_args.get("user_id", [""])[0].strip()
         if user_id:
             try:
-                self.increment("slack_user_id", user_id)
+                self.increment("slack_user", user_id)
             except RateLimitViolation:
                 user_name = webui.body_args.get("user_name", ["unknown"])[0].strip()
                 webui.error_log(f"slack user over limit: {user_name} ({user_id})")
@@ -81,7 +81,7 @@ class RateLimiter:
         team_id = webui.body_args.get("team_id", [""])[0].strip()
         if team_id:
             try:
-                self.increment("slack_team_id", user_id)
+                self.increment("slack_team", user_id)
             except RateLimitViolation:
                 team_name = webui.body_args.get("team_name", ["unknown"])[0].strip()
                 webui.error_log(f"slack team over limit: {team_name} ({team_id})")
