@@ -74,6 +74,8 @@ class RateLimiter:
                 raise ValueError(
                     "_You've hit the per-user request limit. Please try later._"
                 )
+        else:
+            webui.error_log("Can't find slack user id.")
 
         # enforce team limits
         team_id = webui.body_args.get("team_id", [""])[0].strip()
@@ -86,6 +88,8 @@ class RateLimiter:
                 raise ValueError(
                     "_You've hit the per-team request limit. Please try later._"
                 )
+        else:
+            webui.error_log("Can't find slack team id.")
 
     def setup(self, config: SectionProxy) -> None:
         """Set up the counters for config."""
