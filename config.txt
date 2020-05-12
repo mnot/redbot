@@ -110,5 +110,11 @@ asset_dir = redbot/assets
 ### Slack integration
 ###
 
-# Signing secret from slack. Comment out to disable Slack integration.
+# Signing secret from Slack. Comment out to disable Slack integration.
 # slack_signing_secret =
+
+# Client secret from Slack. Only necessary if you're publishing an app.
+# slack_client_secret =
+
+# Client ID. Only necessary if you're publishing an app.
+# slack_client_id =

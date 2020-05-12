@@ -8,13 +8,14 @@ from thor.http import get_header
 
 from redbot.formatter import slack
 from redbot.resource import HttpResource
+from redbot.resource.fetch import RedHttpClient
 from redbot.webui.saved_tests import save_test
 
 if TYPE_CHECKING:
     from redbot.webui import RedWebUi  # pylint: disable=cyclic-import,unused-import
 
 
-def run_slack(webui: "RedWebUi") -> None:
+def slack_run(webui: "RedWebUi") -> None:
     """Handle a slack request."""
     slack_response_uri = webui.body_args.get("response_url", [""])[0].strip()
     formatter = slack.SlackFormatter(
@@ -84,3 +85,23 @@ def verify_slack_secret(webui: "RedWebUi") -> bool:
         return False
     presented_sig = presented_signature[0].decode("utf-8")
     return hmac.compare_digest(signature, presented_sig)
+
+
+def slack_auth(webui: "RedWebUi") -> None:
+    webui.error_log("Slack Auth Redirect received.")
+    args = [
+        ("code", webui.query_string.get("code", [""])[0]),
+        ("client_id", webui.config.get("slack_client_id", fallback="")),
+        ("client_secret", webui.config.get("slack_client_secret", fallback="")),
+    ]
+    payload = "&".join([f"{arg[0]}={arg[1]}" for arg in args])
+    client = RedHttpClient().exchange()
+    client.request_start(
+        b"POST",
+        b"https://slack.com/api/oauth.v2.access",
+        [(b"content-type", b"application/x-www-form-urlencoded")],
+    )
+    client.request_body(payload.encode("utf-8"))
+    client.request_done([])
+    webui.exchange.response_start(b"200", b"OK", [])
+    webui.exchange.response_done([])

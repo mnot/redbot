@@ -34,7 +34,7 @@ from redbot.webui.saved_tests import (
     extend_saved_test,
     load_saved_test,
 )
-from redbot.webui.slack import run_slack
+from redbot.webui.slack import slack_run, slack_auth
 from redbot.resource import HttpResource
 from redbot.formatter import find_formatter, html, Formatter
 from redbot.formatter.html_base import e_url
@@ -108,7 +108,9 @@ class RedWebUi:
             ):
                 extend_saved_test(self)
             elif "slack" in self.query_string:
-                run_slack(self)
+                slack_run(self)
+            elif "slack_auth" in self.query_string:
+                slack_auth(self)
             elif "client_error" in self.query_string:
                 self.dump_client_error()
             elif self.test_uri:
