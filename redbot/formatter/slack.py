@@ -59,17 +59,26 @@ class SlackFormatter(Formatter):
                 self.format_headers(self.resource.response)
             ] + self.format_recommendations(self.resource)
         else:
-            blocks = [{"type": "section", "text": {"type": "mrkdwn", "text": ""}}]
             if self.resource.response.http_error is None:
-                blocks[0]["text"]["text"] = "_No response error._"
+                blocks = [self.markdown_block("_No response error._")]
             elif isinstance(self.resource.response.http_error, httperr.HttpError):
-                blocks[0]["text"][
-                    "text"
-                ] = f"_Sorry, I can't do that; {self.resource.response.http_error.desc}_"
+                blocks = [
+                    self.markdown_block(
+                        f"_Sorry, I can't do that; {self.resource.response.http_error.desc}_"
+                    )
+                ]
             else:
-                blocks[0]["text"]["text"] = "_Unknown incomplete response error._"
-        payload = json.dumps({"blocks": blocks})
+                blocks = [self.markdown_block("_Unknown incomplete response error._")]
+        self.send_slack_message(blocks)
 
+    def error_output(self, message: str) -> None:
+        self.output(message)
+
+    def timeout(self) -> None:
+        self.send_slack_message([self.markdown_block("_Timed out._")])
+
+    def send_slack_message(self, blocks: List[Dict]) -> None:
+        payload = json.dumps({"blocks": blocks})
         client = RedHttpClient().exchange()
         client.request_start(
             b"POST",
@@ -79,18 +88,18 @@ class SlackFormatter(Formatter):
         client.request_body(payload.encode("utf-8"))
         client.request_done([])
 
-    def error_output(self, message: str) -> None:
-        self.output(message)
+    def markdown_block(self, content: str) -> Dict:
+        return {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": content},
+        }
 
     def format_headers(self, response: HttpResponse) -> Dict:
         status_line = (
             f"HTTP/{response.version} {response.status_code} {response.status_phrase}\n"
         )
         headers = NL.join([f"{name}:{value}" for (name, value) in response.headers])
-        return {
-            "type": "section",
-            "text": {"type": "mrkdwn", "text": f"```{status_line}{headers}```"},
-        }
+        return self.markdown_block(f"```{status_line}{headers}```")
 
     def format_recommendations(self, resource: HttpResource) -> List:
         out = []
@@ -114,4 +123,4 @@ class SlackFormatter(Formatter):
                 f" {self.emoji.get(thing.level, '•')} {thing.show_summary('en')}"
             )
         out.append(NL)
-        return {"type": "section", "text": {"type": "mrkdwn", "text": NL.join(out)}}
+        return self.markdown_block(NL.join(out))
