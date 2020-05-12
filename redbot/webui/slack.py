@@ -104,4 +104,5 @@ def slack_auth(webui: "RedWebUi") -> None:
     client.request_body(payload.encode("utf-8"))
     client.request_done([])
     webui.exchange.response_start(b"200", b"OK", [])
+    webui.output("Response sent to Slack; your app should be installed.")
     webui.exchange.response_done([])
