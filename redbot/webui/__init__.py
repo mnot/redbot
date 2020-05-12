@@ -281,6 +281,9 @@ class RedWebUi:
         log_message: str = None,
     ) -> None:
         """Send an error response."""
+        if self.timeout:
+            self.timeout.delete()
+            self.timeout = None
         self.exchange.response_start(
             status_code,
             status_phrase,
