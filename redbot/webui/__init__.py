@@ -109,7 +109,7 @@ class RedWebUi:
                 extend_saved_test(self)
             elif "slack" in self.query_string:
                 slack_run(self)
-            elif "slack_auth" in self.query_string:
+            elif "code" in self.query_string:
                 slack_auth(self)
             elif "client_error" in self.query_string:
                 self.dump_client_error()
