@@ -70,9 +70,7 @@ class RedWebUi:
         self.req_headers = req_headers
         self.req_body = req_body
         self.body_args = {}
-        self.response_start = exchange.response_start
-        self.response_body = exchange.response_body
-        self._response_done = exchange.response_done
+        self.exchange = exchange
         self.error_log = error_log  # function to log errors to
 
         # query processing
@@ -204,7 +202,10 @@ class RedWebUi:
 
         @thor.events.on(formatter)
         def formatter_done() -> None:
-            self.response_done([])
+            if self.timeout:
+                self.timeout.delete()
+                self.timeout = None
+            self.exchange.response_done([])
             save_test(self, top_resource)
 
             # log excessive traffic
@@ -221,7 +222,7 @@ class RedWebUi:
                     f"{ti / 1024:n}K in {to / 1024:n}K out for <{e_url(self.test_uri)}> (descend {self.descend})"
                 )
 
-        self.response_start(
+        self.exchange.response_start(
             b"200",
             b"OK",
             [
@@ -257,7 +258,7 @@ class RedWebUi:
                 )
             else:
                 formatter.resource = top_resource
-        self.response_start(
+        self.exchange.response_start(
             b"200",
             b"OK",
             [
@@ -267,7 +268,7 @@ class RedWebUi:
         )
         formatter.start_output()
         formatter.finish_output()
-        self.response_done([])
+        self.exchange.response_done([])
 
     def error_response(
         self,
@@ -278,7 +279,7 @@ class RedWebUi:
         log_message: str = None,
     ) -> None:
         """Send an error response."""
-        self.response_start(
+        self.exchange.response_start(
             status_code,
             status_phrase,
             [
@@ -288,18 +289,12 @@ class RedWebUi:
         )
         formatter.start_output()
         formatter.error_output(message)
-        self.response_done([])
+        self.exchange.response_done([])
         if log_message:
             self.error_log(log_message)
 
     def output(self, chunk: str) -> None:
-        self.response_body(chunk.encode(self.config["charset"], "replace"))
-
-    def response_done(self, trailers: RawHeaderListType) -> None:
-        if self.timeout:
-            self.timeout.delete()
-            self.timeout = None
-        self._response_done(trailers)
+        self.exchange.response_body(chunk.encode(self.config["charset"], "replace"))
 
     def timeoutError(self, detail: Callable[[], str] = None) -> None:
         """ Max runtime reached."""
@@ -308,7 +303,7 @@ class RedWebUi:
             details = f"detail={detail()}"
         self.error_log(f"timeout: <{self.test_uri}> descend={self.descend} {details}")
         self.output(f"<p class='error'>REDbot timeout.</p>")
-        self.response_done([])
+        self.exchange.response_done([])
 
     def get_client_id(self) -> str:
         """

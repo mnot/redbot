@@ -22,7 +22,7 @@ def run_slack(webui: "RedWebUi") -> None:
     )
     webui.test_uri = webui.body_args.get("text", [""])[0].strip()
 
-    webui.response_start(
+    webui.exchange.response_start(
         b"200",
         b"OK",
         [
@@ -38,7 +38,7 @@ def run_slack(webui: "RedWebUi") -> None:
             }
         )
     )
-    webui.response_done([])
+    webui.exchange.response_done([])
 
     top_resource = HttpResource(webui.config)
     top_resource.set_request(webui.test_uri, req_hdrs=webui.req_hdrs)

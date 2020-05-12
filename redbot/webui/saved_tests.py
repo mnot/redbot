@@ -52,16 +52,16 @@ def extend_saved_test(webui: "RedWebUi") -> None:
         location = b"?id=%s" % webui.test_id.encode("ascii")
         if webui.descend:
             location = b"%s&descend=True" % location
-        webui.response_start(b"303", b"See Other", [(b"Location", location)])
+        webui.exchange.response_start(b"303", b"See Other", [(b"Location", location)])
         webui.output("Redirecting to the saved test page...")
     except (OSError, IOError):
-        webui.response_start(
+        webui.exchange.response_start(
             b"500",
             b"Internal Server Error",
             [(b"Content-Type", b"text/html; charset=%s" % webui.charset_bytes)],
         )
         webui.output("Sorry, I couldn't save that.")
-    webui.response_done([])
+    webui.exchange.response_done([])
 
 
 def load_saved_test(webui: "RedWebUi") -> None:
@@ -72,7 +72,7 @@ def load_saved_test(webui: "RedWebUi") -> None:
         )
         mtime = os.fstat(fd.fileno()).st_mtime
     except (OSError, IOError, TypeError, zlib.error):
-        webui.response_start(
+        webui.exchange.response_start(
             b"404",
             b"Not Found",
             [
@@ -81,13 +81,13 @@ def load_saved_test(webui: "RedWebUi") -> None:
             ],
         )
         webui.output("I'm sorry, I can't find that saved response.")
-        webui.response_done([])
+        webui.exchange.response_done([])
         return
     is_saved = mtime > thor.time()
     try:
         top_resource = pickle.load(fd)
     except (pickle.PickleError, IOError, EOFError):
-        webui.response_start(
+        webui.exchange.response_start(
             b"500",
             b"Internal Server Error",
             [
@@ -96,7 +96,7 @@ def load_saved_test(webui: "RedWebUi") -> None:
             ],
         )
         webui.output("I'm sorry, I had a problem loading that.")
-        webui.response_done([])
+        webui.exchange.response_done([])
         return
     finally:
         fd.close()
@@ -115,7 +115,7 @@ def load_saved_test(webui: "RedWebUi") -> None:
         test_id=webui.test_id,
     )
 
-    webui.response_start(
+    webui.exchange.response_start(
         b"200",
         b"OK",
         [
@@ -126,6 +126,6 @@ def load_saved_test(webui: "RedWebUi") -> None:
 
     @thor.events.on(formatter)
     def formatter_done() -> None:
-        webui.response_done([])
+        webui.exchange.response_done([])
 
     formatter.bind_resource(display_resource)
