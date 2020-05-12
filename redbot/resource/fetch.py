@@ -52,7 +52,6 @@ class RedFetcher(thor.events.EventEmitter):
     response_phrase = "undefined"
     client = RedHttpClient()
     client.idle_timeout = 5
-    robot_emitter = thor.events.EventEmitter()
 
     def __init__(self, config: SectionProxy) -> None:
         thor.events.EventEmitter.__init__(self)
@@ -153,16 +152,6 @@ class RedFetcher(thor.events.EventEmitter):
             # generally a good sign that we're not going much further.
             self._fetch_done()
             return
-        self.run_continue(True)
-
-    def run_continue(self, allowed: bool) -> None:
-        """
-        Continue after getting the robots file.
-        """
-        if not allowed:
-            self.response.http_error = RobotsTxtError()
-            self._fetch_done()
-            return
 
         self.fetch_started = True
 
@@ -255,11 +244,6 @@ class RedFetcher(thor.events.EventEmitter):
             self.fetch_done = True
             self.exchange = None
             self.emit("fetch_done")
-
-
-class RobotsTxtError(httperr.HttpError):
-    desc = "Forbidden by robots.txt"
-    server_status = ("502", "Gateway Error")
 
 
 class BODY_NOT_ALLOWED(Note):
