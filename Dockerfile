@@ -2,7 +2,7 @@ FROM python:3-alpine
 WORKDIR /redbot
 COPY . /redbot
 
-RUN pip install --trusted-host -r requirements.txt
+RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
 EXPOSE 8000
 
