@@ -76,6 +76,17 @@ limit_origin_tests = 200
 # Period of time those requests are allowed within, in hours.
 limit_origin_period = 1
 
+# Number of tests to allow per period, per Slack user. Comment out to disable.
+limit_slack_user_tests = 100
+
+# Period of time those requests are allowed within, in hours.
+limit_slack_user_period = 1
+
+# Number of tests to allow per period, per Slack team. Comment out to disable.
+limit_slack_team_tests = 300
+
+# Period of time those requests are allowed within, in hours.
+limit_slack_team_period = 1
 
 ###
 ### Options for running REDbot as a CGI script

@@ -58,6 +58,35 @@ class RateLimiter:
                 )
                 raise ValueError
 
+    def process_slack(self, webui: "RedWebUi") -> None:
+        """Enforce limits on Slack."""
+        if not self.running:
+            self.setup(webui.config)
+
+        # enforce user limits
+        user_id = webui.body_args.get("user_id", [""])[0].strip()
+        if user_id:
+            try:
+                self.increment("slack_user_id", user_id)
+            except RateLimitViolation:
+                user_name = webui.body_args.get("user_name", ["unknown"])[0].strip()
+                webui.error_log(f"slack user over limit: {user_name} ({user_id})")
+                raise ValueError(
+                    "_You've hit the per-user request limit. Please try later._"
+                )
+
+        # enforce team limits
+        team_id = webui.body_args.get("team_id", [""])[0].strip()
+        if team_id:
+            try:
+                self.increment("slack_team_id", user_id)
+            except RateLimitViolation:
+                team_name = webui.body_args.get("team_name", ["unknown"])[0].strip()
+                webui.error_log(f"slack team over limit: {team_name} ({team_id})")
+                raise ValueError(
+                    "_You've hit the per-team request limit. Please try later._"
+                )
+
     def setup(self, config: SectionProxy) -> None:
         """Set up the counters for config."""
         client_limit = config.getint("limit_client_tests", fallback=0)
@@ -69,6 +98,21 @@ class RateLimiter:
         if origin_limit:
             origin_period = config.getfloat("limit_origin_period", fallback=1) * 3600
             self._setup("origin", origin_limit, origin_period)
+
+        slack_user_limit = config.getint("limit_slack_user_tests", fallback=0)
+        if slack_user_limit:
+            slack_user_period = (
+                config.getfloat("limit_slack_user_period", fallback=1) * 3600
+            )
+            self._setup("slack_user", slack_user_limit, slack_user_period)
+
+        slack_team_limit = config.getint("limit_slack_team_tests", fallback=0)
+        if slack_team_limit:
+            slack_team_period = (
+                config.getfloat("limit_slack_team_period", fallback=1) * 3600
+            )
+            self._setup("slack_team", slack_team_limit, slack_team_period)
+
         self.running = True
 
     def _setup(self, metric_name: str, limit: int, period: float) -> None:

@@ -1,3 +1,4 @@
+from functools import partial
 import hmac
 import json
 from typing import TYPE_CHECKING
@@ -9,6 +10,7 @@ from thor.http import get_header
 from redbot.formatter import slack
 from redbot.resource import HttpResource
 from redbot.resource.fetch import RedHttpClient
+from redbot.webui.ratelimit import ratelimiter
 from redbot.webui.saved_tests import save_test
 
 if TYPE_CHECKING:
@@ -31,6 +33,15 @@ def slack_run(webui: "RedWebUi") -> None:
             (b"Cache-Control", b"max-age=300"),
         ],
     )
+
+    # enforce rate limits
+    try:
+        ratelimiter.process_slack(webui)
+    except ValueError as msg:
+        webui.output(json.dumps({"response_type": "ephemeral", "text": str(msg),}))
+        webui.exchange.response_done([])
+        return  # over limit, don't continue.
+
     webui.output(
         json.dumps(
             {
