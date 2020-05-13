@@ -27,6 +27,8 @@ You can also report problems or ask questions to our [twitter
 account](https://twitter.com/redbotorg); if you don't hear an answer from us in a reasonable amount
 of time, please try the issues list!
 
+Finally, you can e-mail us at [red@redbot.org](mailto:red@redbot.org).
+
 
 ## Writing Code for REDbot
 
@@ -36,16 +38,16 @@ Code contributions are very welcome!
 
 First, a quick overview of the repository contents.
 
-* `bin/` has the command-line and Web (CGI, standalone and mod_python) executables that are the glue between the outside world and REDbot
+* `bin/` has the command-line and Web (CGI and standalone daemon) executables that are the glue between the outside world and REDbot
 * `redbot/` contains the redbot Python module:
   * `assets/` contains static assets for the Web UI
   * `formatter/` holds the different output formatters (e.g., HTML, plaintext, [HAR](http://www.softwareishard.com/blog/har-12-spec/)) for the check results
   * `message/` checks one message, either request or response (but currently, mostly responses)
     * `headers/` checks individual HTTP headers
-  * `resource/` defines the actual checker for a given URL, as `HTTPResource` in `__init__.py`. Lower-level fetching of resources is handled in `fetch.py`, and `robot_fetch.py` checks [robots.txt](http://www.robotstxt.org)
+  * `resource/` defines the actual checker for a given URL, as `HTTPResource` in `__init__.py`. Lower-level fetching of resources is handled in `fetch.py`.
     * `active_check/` doing a check on a resource might involve making additional requests, e.g., for ETag validation. Those checks are defined here
   * `syntax/` has a collection of [ABNF](https://tools.ietf.org/html/rfc5234) translated into regex, for checking syntax
-  * `webui.py` is the engine for Web-based interaction with REDbot
+  * `webui/` contains the engine for Web-based interaction with REDbot
 * `src/` contains the source files for the JavaScript and CSS files
 * `test/` guess what's here?
 
@@ -60,12 +62,18 @@ If you plan to support a new HTTP header in REDbot (a very common task), see the
 Development](https://github.com/mnot/redbot/blob/master/redbot/message/headers/README.md).
 
 
-### Testing REDbot Locally
+### Coding Conventions
 
-You can test locally by running `make server`; this will create a standalone Web server on port
-8080 for testing, and if problems are encountered, they'll be dumped to STDERR.
+We use [black](https://pypi.org/project/black/) for Python formatting, and [standard](https://standardjs.com) for JavaScript; both can be run with `make tidy`.
 
-Of course, you should also run the rest of the tests, with `make test`.
+
+### Helpful Make Targets
+
+* `make lint` - run pylint with REDbot-specific configuration
+* `make tidy` - format Python and JavaScript source
+* `make redbot/assets` - re-generate the JavaScript and CSS in the `assets/` directory
+* `make server` - run a local standalong Web server on port 8000 for testing
+* `make test` - run the tests
 
 
 ### Before you Submit
@@ -79,3 +87,5 @@ The best way to submit changes to REDbot is through a pull request. A few things
 
 If you're not sure how to dig in, feel free to ask for help, or sketch out an idea in an issue
 first.
+
+
