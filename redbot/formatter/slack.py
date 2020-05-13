@@ -34,10 +34,10 @@ class SlackFormatter(Formatter):
         categories.RANGE,
     ]
     emoji = {
-        levels.GOOD: ":small_blue_diamond:",
-        levels.WARN: ":small_orange_diamond:",
-        levels.BAD: ":small_red_triangle:",
-        levels.INFO: ":black_small_square:",
+        levels.GOOD: ":white_check_mark:",
+        levels.WARN: ":warning:",
+        levels.BAD: ":no_entry:",
+        levels.INFO: ":information_source:",
     }
 
     def __init__(self, *args: Any, **kw: Any) -> None:
