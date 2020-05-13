@@ -1,23 +1,9 @@
 
 # Contributing to REDbot
 
-The following is a set of guidelines for contributing to REDbot. These are just guidelines, not
-rules, use your best judgment and feel free to propose changes to this document in a pull request.
+Contributions - in the form of code, bugs, or ideas - are very welcome!
 
-
-## Code of Conduct
-
-This project adheres to the [Contributor Covenant code of
-conduct](http://contributor-covenant.org/version/1/4/). By participating, you are expected to
-uphold this code. Please report unacceptable behavior to [red@redbot.org](mailto:red@redbot.org).
-
-
-## Intellectual Property
-
-By contributing code, bugs or enhancement requests to this project (whether that be through pull requests, the issues list, Twitter, e-mail or other means), you are licensing your contribution under the [project's terms](LICENSE.md).
-
-
-## Reporting Bugs and Suggesting Enhancements
+## Reporting bugs and suggesting enhancements
 
 The [issues list](https://github.com/mnot/redbot/issues) is the best place to report
 problems or suggest new features. Before you submit something, it would be great if you had a look
@@ -30,13 +16,11 @@ of time, please try the issues list!
 Finally, you can e-mail us at [red@redbot.org](mailto:red@redbot.org).
 
 
-## Writing Code for REDbot
-
-Code contributions are very welcome!
+## Making code contributions
 
 ### Understanding REDbot
 
-First, a quick overview of the repository contents.
+A quick overview of the repository contents:
 
 * `bin/` has the command-line and Web (CGI and standalone daemon) executables that are the glue between the outside world and REDbot
 * `redbot/` contains the redbot Python module:
@@ -62,13 +46,26 @@ If you plan to support a new HTTP header in REDbot (a very common task), see the
 Development](https://github.com/mnot/redbot/blob/master/redbot/message/headers/README.md).
 
 
-### Coding Conventions
+### Coding conventions
 
 We use [black](https://pypi.org/project/black/) for Python formatting, and [standard](https://standardjs.com) for JavaScript; both can be run with `make tidy`.
 
 
-### Helpful Make Targets
+### Setting up a development environment
 
+It should be possible to develop REDbot on any modern Unix-like environment, provided that recent releases of Python and NodeJS are installed.
+
+Thanks to [Makefile.venv](https://github.com/sio/Makefile.venv), a Python virtual environment is set up and run each time you use `make`.
+
+That means that Python dependencies will be installed automatically, provided that you use `make`.
+
+`make` will also install npm dependencies for a few development tools into a local `node_modules` directory.
+
+
+#### Helpful Make targets
+
+* `make shell` - start a shell in the Python virtual environment
+* `make python` - start an interactive Python interpreter in the virtual environment
 * `make lint` - run pylint with REDbot-specific configuration
 * `make tidy` - format Python and JavaScript source
 * `make redbot/assets` - re-generate the JavaScript and CSS in the `assets/` directory
@@ -76,16 +73,18 @@ We use [black](https://pypi.org/project/black/) for Python formatting, and [stan
 * `make test` - run the tests
 
 
-### Before you Submit
+### Before you submit
 
 The best way to submit changes to REDbot is through a pull request. A few things to keep in mind when you're doing so:
 
-* Please follow [PEP8](https://www.python.org/dev/peps/pep-0008/); that means four spaces, not tabs :)
-* That said, our convention for line length is **100 characters**.
-* Check your code with [pylint](https://www.pylint.org). It doesn't need to be a perfect 10, but please make sure indentation and whitespace are OK and it doesn't complain about anything major.
+* Run `make tidy`
+* Check your code with `make lint`. It doesn't need to be a perfect 10, but please make sure indentation and whitespace are OK and it doesn't complain about anything major.
 * Every new header and every new `Note` should have a test covering it.
 
 If you're not sure how to dig in, feel free to ask for help, or sketch out an idea in an issue
 first.
 
 
+### Intellectual property
+
+By contributing code, bugs or enhancement requests to this project (whether that be through pull requests, the issues list, Twitter, e-mail or other means), you are licensing your contribution under the [project's terms](LICENSE.md).
