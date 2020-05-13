@@ -22,7 +22,7 @@ test: typecheck unit_test webui_test
 .PHONY: clean
 clean:
 	find . -d -type d -name __pycache__ -exec rm -rf {} \;
-	rm -rf build dist MANIFEST redbot.egg-info *.log
+	rm -rf build dist MANIFEST redbot.egg-info package-lock.json node_modules .venv .npx-cache .mypy_cache *.log
 
 .PHONY: tidy
 tidy: venv node_modules/standard
