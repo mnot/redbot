@@ -151,7 +151,7 @@ body.blank > .footer {
   font-weight: bold;
   font-size: 1.1em;
   width: 650px;
-  box-sizing: border-box; }
+  box-sizing: content-box; }
 
 .error a {
   color: white; }
