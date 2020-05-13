@@ -10,4 +10,5 @@ geckodriver.log
 .sass-cache
 .coverage
 .mypy_cache
+.venv
 redbot.egg-info

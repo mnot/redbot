@@ -2,3 +2,6 @@ Jinja2>=2.11.1
 Markdown>=3.2.2
 netaddr>=0.7.19
 thor>=0.8.0
+pylint>=2.4.4
+mypy>=0.770
+twine>=3.1.1

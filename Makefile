@@ -1,5 +1,3 @@
-PYTHON=python3
-PYTHONPATH=./
 SASS=sassc
 
 MODULES = src/node_modules
@@ -19,51 +17,51 @@ clean: clean-deploy
 	rm -rf build dist MANIFEST redbot.egg-info *.log
 
 .PHONY: tidy
-tidy:
+tidy: venv
 	black redbot bin/*
 	standard --fix src/js/*.js
 
 .PHONY: lint
-lint:
-	PYTHONPATH=$(PYTHONPATH) pylint --output-format=colorized --rcfile=test/pylintrc \
+lint: venv
+	PYTHONPATH=$(VENV) $(VENV)/pylint --output-format=colorized --rcfile=test/pylintrc \
 	  redbot bin/redbot_daemon.py bin/redbot_cgi.py bin/redbot_cli
 	standard src/js/*.js
 
 .PHONY: typecheck
-typecheck:
-	PYTHONPATH=$(PYTHONPATH) $(PYTHON) -m mypy --config-file=test/mypy.ini \
+typecheck: venv
+	PYTHONPATH=$(VENV) $(VENV)/python -m mypy --config-file=test/mypy.ini \
 	  redbot \
 	  bin/redbot_daemon.py \
 	  bin/redbot_cgi.py \
 	  bin/redbot_cli
 
 .PHONY: syntax
-syntax:
-	PYTHONPATH=$(PYTHONPATH) $(PYTHON) redbot/syntax/__init__.py
+syntax: venv
+	PYTHONPATH=$(VENV) $(VENV)/python redbot/syntax/__init__.py
 
 ## Coverage and Tests
 
 .PHONY: note_coverage
-note_coverage:
-	PYTHONPATH=$(PYTHONPATH) $(PYTHON) test/note_coverage.py
+note_coverage: venv
+	PYTHONPATH=$(VENV) $(VENV)/python test/note_coverage.py
 
 .PHONY: header_coverage
-header_coverage:
-	PYTHONPATH=$(PYTHONPATH) $(PYTHON) test/header_coverage.py test/registries/message-headers.xml
+header_coverage: venv
+	PYTHONPATH=$(VENV) $(VENV)/python test/header_coverage.py test/registries/message-headers.xml
 
 .PHONY: webui_test
-webui_test: deploy
-	PYTHONPATH=$(PYTHONPATH) $(PYTHON) test/test_webui.py
+webui_test: deploy venv
+	PYTHONPATH=$(VENV) $(VENV)/python test/test_webui.py
 
 .PHONY: unit_test
-unit_test:
-	PYTHONPATH=$(PYTHONPATH) $(PYTHON) test/unit_tests.py
+unit_test: venv
+	PYTHONPATH=$(VENV) $(VENV)/python test/unit_tests.py
 
 ## Deploy and Server
 
 .PHONY: server
-server: clean-deploy deploy
-	PYTHONPATH=$(PYTHONPATH) $(PYTHON) -u deploy/redbot_daemon.py config.txt
+server: venv clean-deploy deploy
+	PYTHONPATH=$(VENV) $(VENV)/python -u deploy/redbot_daemon.py config.txt
 
 .PHONY: deploy
 deploy: clean-deploy
@@ -88,14 +86,14 @@ docker: docker-image
 ## Distribution
 
 .PHONY: dist
-dist: clean typecheck test
+dist: venv clean typecheck test
 	git tag redbot-$(version)
 	git push
 	git push --tags origin
-	$(PYTHON) setup.py sdist
-	$(PYTHON) -m twine upload dist/*
+	$(VENV)/python setup.py sdist
+	$(VENV)/python -m twine upload dist/*
 
-## New headers
+## Create new headers
 
 redbot/message/headers/%.py:
 	cp redbot/message/headers/_header.tpl $@
@@ -124,3 +122,6 @@ redbot/assets/icons: $(ICON_FILES)
 .PHONY: clean-assets
 clean-assets:
 	rm -rf redbot/assets/*.js redbot/assets/*.map redbot/assets/*.css redbot/assets/icons
+
+
+include Makefile.venv
