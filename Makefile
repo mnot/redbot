@@ -20,7 +20,7 @@ ICON_FILES = $(foreach i, $(ICONS),$(MODULES)/@fortawesome/fontawesome-free/svgs
 test: typecheck unit_test webui_test
 
 .PHONY: clean
-clean: clean-deploy
+clean:
 	find . -d -type d -name __pycache__ -exec rm -rf {} \;
 	rm -rf build dist MANIFEST redbot.egg-info *.log
 
@@ -59,7 +59,7 @@ header_coverage: venv
 	PYTHONPATH=$(VENV) $(VENV)/python test/header_coverage.py test/registries/message-headers.xml
 
 .PHONY: webui_test
-webui_test: deploy venv
+webui_test: venv
 	PYTHONPATH=$(VENV) $(VENV)/python test/test_webui.py
 
 .PHONY: unit_test
@@ -67,21 +67,12 @@ unit_test: venv
 	PYTHONPATH=$(VENV) $(VENV)/python test/unit_tests.py
 
 #############################################################################
-## Deploy and Server
+## Local test server
 
 .PHONY: server
-server: venv clean-deploy deploy
-	PYTHONPATH=$(VENV) $(VENV)/python -u deploy/redbot_daemon.py config.txt
+server: venv
+	PYTHONPATH=$(VENV) $(VENV)/python -u bin/redbot_daemon.py config.txt
 
-.PHONY: deploy
-deploy: clean-deploy
-	mkdir deploy
-	cp -p bin/redbot_daemon.py deploy/
-	chmod a+x deploy/redbot_daemon.py
-
-.PHONY: clean-deploy
-clean-deploy:
-	rm -rf deploy
 
 #############################################################################
 ## Docker

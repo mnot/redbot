@@ -50,7 +50,7 @@ if __name__ == "__main__":
     test_port = 8000
     redbot_uri = "http://%s:%s/" % (test_host, test_port)
     import sys
-    sys.path.insert(0, "deploy")
+    sys.path.insert(0, "bin")
     def redbot_run():
         import redbot_daemon
         from configparser import ConfigParser
