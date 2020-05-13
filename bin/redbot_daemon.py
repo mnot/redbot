@@ -4,7 +4,8 @@
 Run REDbot as a daemon.
 """
 
-from configparser import ConfigParser
+from configparser import ConfigParser, SectionProxy
+from functools import partial
 import locale
 import os
 import signal
@@ -36,14 +37,25 @@ class RedBotServer:
 
     watchdog_freq = 5
 
-    def __init__(self) -> None:
+    def __init__(self, config: SectionProxy) -> None:
+        self.config = config
+        self.handler = partial(RedHandler, server=self)
+
         # Set up the watchdog
         if os.environ.get("SYSTEMD_WATCHDOG"):
             thor.schedule(self.watchdog_freq, self.watchdog_ping)
             signal.signal(signal.SIGABRT, self.abrt_handler)
+
+        # Read static files
+        self.static_files = self.walk_files(self.config["asset_dir"], b"static/")
+        if self.config.get("extra_base_dir"):
+            self.static_files.update(self.walk_files(self.config["extra_base_dir"]))
+
         # Set up the server
-        server = thor.http.HttpServer(config.get("host", ""), int(config["port"]))
-        server.on("exchange", RedHandler)
+        server = thor.http.HttpServer(
+            self.config.get("host", ""), int(self.config["port"])
+        )
+        server.on("exchange", self.handler)
         try:
             thor.run()
         except KeyboardInterrupt:
@@ -59,6 +71,21 @@ class RedBotServer:
         traceback.print_stack(frame)
         sys.exit(0)
 
+    @staticmethod
+    def walk_files(dir_name: str, base: bytes = b"") -> Dict[bytes, bytes]:
+        out = {}  # type: Dict[bytes, bytes]
+        for root, dirs, files in os.walk(dir_name):
+            for name in files:
+                try:
+                    path = os.path.join(root, name)
+                    uri = os.path.relpath(path, dir_name).encode("utf-8")
+                    out[b"/%s%s" % (base, uri)] = open(path, "rb").read()
+                    if uri.endswith(b"/index.html"):
+                        out[b"/%s%s" % (base, uri[:-10])] = open(path, "rb").read()
+                except IOError:
+                    sys.stderr.write("* Problem loading %s\n" % path)
+        return out
+
 
 class RedHandler:
     static_types = {
@@ -73,8 +100,10 @@ class RedHandler:
         b".svg": b"image/svg+xml",
     }
 
-    def __init__(self, exchange: EventEmitter) -> None:
+    def __init__(self, exchange: EventEmitter, server: RedBotServer) -> None:
         self.exchange = exchange
+        self.config = server.config
+        self.static_files = server.static_files
         self.method = b""
         self.uri = b""
         self.req_hdrs = []  # type: RawHeaderListType
@@ -95,14 +124,14 @@ class RedHandler:
 
     def request_done(self, trailers: RawHeaderListType) -> None:
         p_uri = urlsplit(self.uri)
-        if p_uri.path in static_files:
+        if p_uri.path in self.static_files:
             file_ext = os.path.splitext(p_uri.path)[1].lower() or b".html"
             content_type = self.static_types.get(file_ext, b"application/octet-stream")
             headers = []
             headers.append((b"Content-Type", content_type))
             headers.append((b"Cache-Control", b"max-age=3600"))
             self.exchange.response_start(b"200", b"OK", headers)
-            self.exchange.response_body(static_files[p_uri.path])
+            self.exchange.response_body(self.static_files[p_uri.path])
             self.exchange.response_done([])
         elif p_uri.path == b"/":
             try:
@@ -115,8 +144,8 @@ class RedHandler:
                     )
                 )
                 RedWebUi(
-                    config,
-                    self.method.decode(config["charset"]),
+                    self.config,
+                    self.method.decode(self.config["charset"]),
                     p_uri.query,
                     self.req_hdrs,
                     self.req_body,
@@ -148,21 +177,6 @@ in standalone server mode. Details follow.
         sys.stderr.write("%s\n" % message)
 
 
-def walk_files(dir_name: str, base: bytes = b"") -> Dict[bytes, bytes]:
-    out = {}  # type: Dict[bytes, bytes]
-    for root, dirs, files in os.walk(dir_name):
-        for name in files:
-            try:
-                path = os.path.join(root, name)
-                uri = os.path.relpath(path, dir_name).encode("utf-8")
-                out[b"/%s%s" % (base, uri)] = open(path, "rb").read()
-                if uri.endswith(b"/index.html"):
-                    out[b"/%s%s" % (base, uri[:-10])] = open(path, "rb").read()
-            except IOError:
-                sys.stderr.write("* Problem loading %s\n" % path)
-    return out
-
-
 if __name__ == "__main__":
 
     from optparse import OptionParser
@@ -188,8 +202,4 @@ if __name__ == "__main__":
         + "http://%s:%s/\n" % (config.get("host", ""), config["port"])
     )
 
-    static_files = walk_files(config["asset_dir"], b"static/")
-    if config.get("extra_base_dir"):
-        static_files.update(walk_files(config["extra_base_dir"]))
-
-    RedBotServer()
+    RedBotServer(config)
