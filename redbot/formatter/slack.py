@@ -112,7 +112,7 @@ class SlackFormatter(Formatter):
             rec = self.format_recommendation(resource, category)
             if rec:
                 out.append(rec)
-        return [out]
+        return out
 
     def format_recommendation(
         self, resource: HttpResource, category: categories
