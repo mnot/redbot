@@ -11,7 +11,7 @@ from redbot.formatter import slack
 from redbot.resource import HttpResource
 from redbot.resource.fetch import RedHttpClient
 from redbot.webui.ratelimit import ratelimiter
-from redbot.webui.saved_tests import save_test
+from redbot.webui.saved_tests import init_save_file, save_test
 
 if TYPE_CHECKING:
     from redbot.webui import RedWebUi  # pylint: disable=cyclic-import,unused-import
@@ -19,11 +19,16 @@ if TYPE_CHECKING:
 
 def slack_run(webui: "RedWebUi") -> None:
     """Handle a slack request."""
+    webui.test_uri = webui.body_args.get("text", [""])[0].strip()
+    webui.test_id = init_save_file(webui)
     slack_response_uri = webui.body_args.get("response_url", [""])[0].strip()
     formatter = slack.SlackFormatter(
-        webui.config, None, webui.output, slack_uri=slack_response_uri
+        webui.config,
+        None,
+        webui.output,
+        slack_uri=slack_response_uri,
+        test_id=webui.test_id,
     )
-    webui.test_uri = webui.body_args.get("text", [""])[0].strip()
 
     webui.exchange.response_start(
         b"200",

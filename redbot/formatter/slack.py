@@ -56,9 +56,11 @@ class SlackFormatter(Formatter):
         if self.resource.response.complete:
             # success
             notification = None
-            blocks = [
+            blocks = (
                 self.format_headers(self.resource.response)
-            ] + self.format_recommendations(self.resource)
+                + self.format_recommendations(self.resource)
+                + self.link_saved()
+            )
         else:
             if self.resource.response.http_error is None:
                 notification = "No response error."
@@ -97,12 +99,12 @@ class SlackFormatter(Formatter):
             "text": {"type": "mrkdwn", "text": content},
         }
 
-    def format_headers(self, response: HttpResponse) -> Dict:
+    def format_headers(self, response: HttpResponse) -> List:
         status_line = (
             f"HTTP/{response.version} {response.status_code} {response.status_phrase}\n"
         )
         headers = NL.join([f"{name}:{value}" for (name, value) in response.headers])
-        return self.markdown_block(f"```{status_line}{headers}```")
+        return [self.markdown_block(f"```{status_line}{headers}```")]
 
     def format_recommendations(self, resource: HttpResource) -> List:
         out = []
@@ -110,7 +112,7 @@ class SlackFormatter(Formatter):
             rec = self.format_recommendation(resource, category)
             if rec:
                 out.append(rec)
-        return out
+        return [out]
 
     def format_recommendation(
         self, resource: HttpResource, category: categories
@@ -127,3 +129,10 @@ class SlackFormatter(Formatter):
             )
         out.append(NL)
         return self.markdown_block(NL.join(out))
+
+    def link_saved(self) -> List:
+        test_id = self.kw.get("test_id", None)
+        if test_id:
+            saved_link = f"{self.config['ui_uri']}?id={test_id}"
+            return [self.markdown_block(f"_See more detail [here]({saved_link})._")]
+        return []
