@@ -55,30 +55,33 @@ class SlackFormatter(Formatter):
     def finish_output(self) -> None:
         if self.resource.response.complete:
             # success
-            notification = "Your REDbot test results are back."
+            notification = None
             blocks = [
                 self.format_headers(self.resource.response)
             ] + self.format_recommendations(self.resource)
         else:
             if self.resource.response.http_error is None:
-                Notification = "_No response error._"
+                notification = "No response error."
             elif isinstance(self.resource.response.http_error, httperr.HttpError):
                 notification = (
                     f"Sorry, I can't do that; {self.resource.response.http_error.desc}"
                 )
             else:
                 notification = "Unknown incomplete response error."
-        blocks = [self.markdown_block(f"_{notification}_")]
-        self.send_slack_message(notification, blocks)
+            blocks = [self.markdown_block(f"_{notification}_")]
+        self.send_slack_message(blocks, notification)
 
     def error_output(self, message: str) -> None:
         self.output(message)
 
     def timeout(self) -> None:
-        self.send_slack_message("Timed out.", [self.markdown_block("_Timed out._")])
+        self.send_slack_message([self.markdown_block("_Timed out._")], "Timed out.")
 
-    def send_slack_message(self, notification: str, blocks: List[Dict]) -> None:
-        payload = json.dumps({"text": notification, "blocks": blocks})
+    def send_slack_message(self, blocks: List[Dict], notification: str = None) -> None:
+        data = {"blocks": blocks}  # type: Dict
+        if notification:
+            data["text"] = notification
+        payload = json.dumps(data)
         client = RedHttpClient().exchange()
         client.request_start(
             b"POST",
