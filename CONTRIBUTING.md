@@ -61,6 +61,7 @@ That means that Python dependencies will be installed automatically, provided th
 
 `make` will also install npm dependencies for a few development tools into a local `node_modules` directory.
 
+Note that [geckodriver](https://github.com/mozilla/geckodriver) needs to be installed on your system to run `make webui_test`.
 
 #### Helpful Make targets
 
