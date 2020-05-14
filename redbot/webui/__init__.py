@@ -198,9 +198,12 @@ class RedWebUi:
         self,
         top_resource: HttpResource,
         formatter: Formatter,
-        extra_headers: RawHeaderListType = [],
+        extra_headers: RawHeaderListType = None,
     ) -> None:
         "Preliminary checks are done; actually run the test."
+
+        if not extra_headers:
+            extra_headers = []
 
         @thor.events.on(formatter)
         def formatter_done() -> None:
