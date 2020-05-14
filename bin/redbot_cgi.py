@@ -117,6 +117,7 @@ def except_handler_factory(
         else:
             import stat
             import traceback
+            import tempfile
 
             if qs:
                 doc = "<h3><code>%s</code></h3>" % qs.decode("utf-8", "replace")
