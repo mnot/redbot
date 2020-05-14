@@ -2,6 +2,8 @@ FROM python:3-alpine
 WORKDIR /redbot
 COPY . /redbot
 
+RUN apk add --no-cache libffi-dev build-base openssl-dev
+
 RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
 EXPOSE 8000
