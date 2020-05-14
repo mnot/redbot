@@ -83,7 +83,7 @@ docker-image:
 
 .PHONY: docker
 docker: docker-image
-	docker run -p 8000:8000 redbot
+	docker run --rm --name redbot -p 8000:8000 redbot
 
 #############################################################################
 ## Distribution
