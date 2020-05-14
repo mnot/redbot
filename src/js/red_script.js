@@ -44,7 +44,10 @@ function captchaLink (e) {
 }
 
 function submitForm (form) {
-  qs('#captcha_popup').style.display = 'none'
+  var captchaPopup = qs('#captcha_popup')
+  if (captchaPopup) {
+    captchaPopup.style.display = 'none'
+  }
   var args = serializeForm(form)
   form.action = `?${args}`
   form.submit()
