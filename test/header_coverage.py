@@ -61,7 +61,7 @@ def checkHeader(header_cls):
             continue
         if attr_name in ['syntax'] and attr_value == False:
             continue
-        if attr_required and attr_value == None:
+        if attr_required and attr_value is None:
             sys.stderr.write("* %s lacks %s\n" % (header_name, attr_name))
         elif True not in [isinstance(attr_value, t) for t in attr_types]:
             sys.stderr.write("* %s %s has wrong type\n" % (header_name, attr_name))

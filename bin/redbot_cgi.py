@@ -13,7 +13,6 @@ from typing import Callable
 import thor
 from thor.loop import _loop
 
-from redbot import __version__
 from redbot.type import RawHeaderListType, HttpResponseExchange
 from redbot.webui import RedWebUi
 
