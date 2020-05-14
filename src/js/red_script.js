@@ -44,7 +44,9 @@ function captchaLink (e) {
 }
 
 function submitForm (form) {
-  qs('#captcha_popup').style.display = 'none'
+  if (config.hcaptcha_sitekey) {
+    qs('#captcha_popup').style.display = 'none'
+  }
   var args = serializeForm(form)
   form.action = `?${args}`
   form.submit()
