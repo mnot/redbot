@@ -20,8 +20,9 @@ def init_save_file(webui: "RedWebUi") -> str:
             fd, webui.save_path = tempfile.mkstemp(
                 prefix="", dir=webui.config["save_dir"]
             )
+            os.close(fd)
             return os.path.split(webui.save_path)[1]
-        except (OSError, IOError):
+        except OSError:
             # Don't try to store it.
             pass
     return None  # should already be None, but make sure
@@ -31,10 +32,9 @@ def save_test(webui: "RedWebUi", top_resource: HttpResource) -> None:
     """Save a test by test_id."""
     if webui.test_id:
         try:
-            tmp_file = gzip.open(webui.save_path, "w")
-            pickle.dump(top_resource, tmp_file)
-            tmp_file.close()
-        except (IOError, zlib.error, pickle.PickleError):
+            with gzip.open(webui.save_path, "w") as tmp_file:
+                pickle.dump(top_resource, tmp_file)
+        except (OSError, zlib.error, pickle.PickleError):
             pass  # we don't cry if we can't store it.
 
 
@@ -54,7 +54,7 @@ def extend_saved_test(webui: "RedWebUi") -> None:
             location = b"%s&descend=True" % location
         webui.exchange.response_start(b"303", b"See Other", [(b"Location", location)])
         webui.output("Redirecting to the saved test page...")
-    except (OSError, IOError):
+    except OSError:
         webui.exchange.response_start(
             b"500",
             b"Internal Server Error",
@@ -67,11 +67,13 @@ def extend_saved_test(webui: "RedWebUi") -> None:
 def load_saved_test(webui: "RedWebUi") -> None:
     """Load a saved test by test_id."""
     try:
-        fd = gzip.open(
+        with gzip.open(
             os.path.join(webui.config["save_dir"], os.path.basename(webui.test_id))
-        )
-        mtime = os.fstat(fd.fileno()).st_mtime
-    except (OSError, IOError, TypeError, zlib.error):
+        ) as fd:
+            mtime = os.fstat(fd.fileno()).st_mtime
+            is_saved = mtime > thor.time()
+            top_resource = pickle.load(fd)
+    except (OSError, TypeError):
         webui.exchange.response_start(
             b"404",
             b"Not Found",
@@ -83,10 +85,7 @@ def load_saved_test(webui: "RedWebUi") -> None:
         webui.output("I'm sorry, I can't find that saved response.")
         webui.exchange.response_done([])
         return
-    is_saved = mtime > thor.time()
-    try:
-        top_resource = pickle.load(fd)
-    except (pickle.PickleError, IOError, EOFError):
+    except (pickle.PickleError, zlib.error, EOFError):
         webui.exchange.response_start(
             b"500",
             b"Internal Server Error",
@@ -98,8 +97,6 @@ def load_saved_test(webui: "RedWebUi") -> None:
         webui.output("I'm sorry, I had a problem loading that.")
         webui.exchange.response_done([])
         return
-    finally:
-        fd.close()
 
     if webui.check_name:
         display_resource = top_resource.subreqs.get(webui.check_name, top_resource)
