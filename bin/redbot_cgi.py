@@ -13,7 +13,6 @@ from typing import Callable
 import thor
 from thor.loop import _loop
 
-from redbot import __version__
 from redbot.type import RawHeaderListType, HttpResponseExchange
 from redbot.webui import RedWebUi
 
@@ -117,6 +116,7 @@ def except_handler_factory(
         else:
             import stat
             import traceback
+            import tempfile
 
             if qs:
                 doc = "<h3><code>%s</code></h3>" % qs.decode("utf-8", "replace")
