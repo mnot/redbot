@@ -1,6 +1,6 @@
 # REDbot
 
-REDbot is lint for HTTP.
+REDbot is lint for HTTP resources.
 
 It checks HTTP resources for feature support and common protocol problems. You can use the public
 instance on <https://redbot.org/>, or you can install it locally and use it on the command line, or
