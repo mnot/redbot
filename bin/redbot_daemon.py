@@ -25,7 +25,7 @@ from redbot.webui import RedWebUi
 
 if os.environ.get("SYSTEMD_WATCHDOG"):
     try:
-        from systemd.daemon import notify, Notification
+        from cysystemd.daemon import notify, Notification
     except ImportError:
         notify = Notification = None
 

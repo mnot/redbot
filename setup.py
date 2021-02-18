@@ -27,9 +27,12 @@ setup(name='redbot',
           'Jinja2 >= 2.11.1'
       ],
       extras_require={
+          'systemd': [
+            'cysystemd'
+          ]
           'dev': [
-          'mypy',
-          'selenium'
+            'mypy',
+            'selenium'
           ]
       },
       classifiers=[
