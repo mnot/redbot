@@ -117,12 +117,31 @@ def loose_parse(
             cookie_attribute_list.append(("Secure", ""))
         elif case_norm_attribute_name == "httponly":
             cookie_attribute_list.append(("HttpOnly", ""))
+        elif case_norm_attribute_name == "samesite":
+            case_norm_attribute_value = attribute_value.lower()
+            if case_norm_attribute_value == "strict":
+                cookie_samesite = "Strict"
+            elif case_norm_attribute_value == "none":
+                cookie_samesite = "None"
+            elif case_norm_attribute_value == "lax" or case_norm_attribute_value == "":
+                cookie_samesite = "Lax"
+            else:
+                cookie_samesite = attribute_value
+                add_note(
+                    SET_COOKIE_UNKNOWN_ATTRIBUTE_VALUE,
+                    cookie_name=cookie_name,
+                    attribute_name=attribute_name,
+                    attribute_value=attribute_value,
+                )
+            cookie_attribute_list.append(("SameSite", cookie_samesite))
         else:
             add_note(
                 SET_COOKIE_UNKNOWN_ATTRIBUTE,
                 cookie_name=cookie_name,
                 attribute=attribute_name,
             )
+        if ("SameSite", "None") in cookie_attribute_list and ("Secure", "") not in cookie_attribute_list:
+            add_note(SET_COOKIE_NOT_SECURE, cookie_name=cookie_name)
     return (cookie_name, cookie_value, cookie_attribute_list)
 
 
@@ -287,6 +306,16 @@ class SET_COOKIE_EMPTY_DOMAIN(Note):
   Browsers will probably ignore it as a result."""
 
 
+class SET_COOKIE_NOT_SECURE(Note):
+    category = categories.GENERAL
+    level = levels.WARN
+    summary = "The %(cookie_name)s Set-Cookie header is missing the Secure attribute."
+    text = """\
+  The `Secure` attribute on this `Set-Cookie` header is missing.
+
+  Browsers will ignore it."""
+
+
 class SET_COOKIE_UNKNOWN_ATTRIBUTE(Note):
     category = categories.GENERAL
     level = levels.WARN
@@ -295,6 +324,16 @@ class SET_COOKIE_UNKNOWN_ATTRIBUTE(Note):
   This `Set-Cookie` header has an extra parameter, "%(attribute)s".
 
   Browsers will ignore it."""
+
+
+class SET_COOKIE_UNKNOWN_ATTRIBUTE_VALUE(Note):
+    category = categories.GENERAL
+    level = levels.WARN
+    summary = "The %(cookie_name)s Set-Cookie header has an unknown '%(attribute_name)s' attribute value."
+    text = """\
+  This `Set-Cookie` header has an unknown "%(attribute_name)s" attribute value, "%(attribute_value)s".
+
+  Browsers will probably ignore it as a result."""
 
 
 class BasicSCTest(headers.HeaderTest):
