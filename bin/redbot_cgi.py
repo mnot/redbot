@@ -158,10 +158,7 @@ REDbot has remembered it, and we'll try to fix it soon."""
                     error_template
                     % """\
 A problem has occurred, but it probably isn't your fault.
-REDbot tried to save it, but it couldn't! Oops.<br>
-Please e-mail the information below to
-<a href='mailto:red@redbot.org'>red@redbot.org</a>
-and we'll look into it."""
+REDbot tried to save it, but it couldn't! Oops."""
                 )
                 out("<h3>Original Error</h3>")
                 out("<pre>")

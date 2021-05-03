@@ -13,8 +13,6 @@ You can also report problems or ask questions to our [twitter
 account](https://twitter.com/redbotorg); if you don't hear an answer from us in a reasonable amount
 of time, please try the issues list!
 
-Finally, you can e-mail us at [red@redbot.org](mailto:red@redbot.org).
-
 
 ## Making code contributions
 
