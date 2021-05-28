@@ -1,7 +1,7 @@
 #
 # SEAMLESSLY MANAGE PYTHON VIRTUAL ENVIRONMENT WITH A MAKEFILE
 #
-# https://github.com/sio/Makefile.venv             v2020.05.07
+# https://github.com/sio/Makefile.venv             v2020.08.14
 #
 #
 # Insert `include Makefile.venv` at the bottom of your Makefile to enable these
@@ -74,7 +74,7 @@
 PY?=python3
 WORKDIR?=.
 VENVDIR?=$(WORKDIR)/.venv
-REQUIREMENTS_TXT?=requirements.txt  # Multiple paths are supported (space separated)
+REQUIREMENTS_TXT?=$(wildcard requirements.txt)  # Multiple paths are supported (space separated)
 MARKER=.initialized-with-Makefile.venv
 
 
@@ -114,6 +114,7 @@ debug-venv:
 	$(info PY="$(PY)")
 	$(info REQUIREMENTS_TXT="$(REQUIREMENTS_TXT)")
 	$(info VENVDIR="$(VENVDIR)")
+	$(info VENVDEPENDS="$(VENVDEPENDS)")
 	$(info WORKDIR="$(WORKDIR)")
 
 
@@ -121,9 +122,8 @@ debug-venv:
 # Dependencies
 #
 
-_REQUIREMENTS=$(strip $(foreach path, $(REQUIREMENTS_TXT), $(wildcard $(path))))
-ifneq ($(_REQUIREMENTS),)
-VENVDEPENDS+=$(_REQUIREMENTS)
+ifneq ($(strip $(REQUIREMENTS_TXT)),)
+VENVDEPENDS+=$(REQUIREMENTS_TXT)
 endif
 
 ifneq ($(wildcard setup.py),)
@@ -135,11 +135,11 @@ endif
 
 $(VENV):
 	$(PY) -m venv $(VENVDIR)
-	$(VENV)/python -m pip install --upgrade pip setuptools
+	$(VENV)/python -m pip install --upgrade pip setuptools wheel
 
 $(VENV)/$(MARKER): $(VENVDEPENDS) | $(VENV)
-ifneq ($(_REQUIREMENTS),)
-	$(VENV)/pip install $(foreach path,$(_REQUIREMENTS),-r $(path))
+ifneq ($(strip $(REQUIREMENTS_TXT)),)
+	$(VENV)/pip install $(foreach path,$(REQUIREMENTS_TXT),-r $(path))
 endif
 ifneq ($(wildcard setup.py),)
 	$(VENV)/pip install -e .
