@@ -38,7 +38,7 @@ def cgi_main(config: SectionProxy) -> None:
     method = os.environ.get("REQUEST_METHOD").encode(config["charset"])
     query_string = os.environ.get("QUERY_STRING", "").encode(config["charset"])
     req_hdrs = []  # type: RawHeaderListType
-    for (k, v) in os.environ:
+    for (k, v) in os.environ.items():
         if k[:5] == "HTTP_":
             req_hdrs.append((k[:5].lower().encode("ascii"), v.encode("ascii")))
     req_body = sys.stdin.read().encode("utf-8")
