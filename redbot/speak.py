@@ -75,7 +75,7 @@ class Note:
         return Markup(
             markdown(
                 self.text % {k: escape(str(v)) for k, v in self.vars.items()},
-                output_format="html5",
+                output_format="html",
             )
         )
 

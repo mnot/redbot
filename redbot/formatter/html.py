@@ -211,7 +211,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             return Markup(
                 '<span class="tip">'
                 + markdown(
-                    description % {"field_name": header_name}, output_format="html5"
+                    description % {"field_name": header_name}, output_format="html"
                 )
                 + "</span>"
             )
@@ -333,7 +333,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         if description:
             return Markup(
                 markdown(
-                    description % {"field_name": header_name}, output_format="html5"
+                    description % {"field_name": header_name}, output_format="html"
                 )
             )
         return Markup("")
