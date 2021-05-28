@@ -44,7 +44,7 @@ class RedBotServer:
         self.handler = partial(RedHandler, server=self)
 
         # Set up the watchdog
-        if notify != None:
+        if notify is not None:
             thor.schedule(self.watchdog_freq, self.watchdog_ping)
             signal.signal(signal.SIGABRT, self.abrt_handler)
 
