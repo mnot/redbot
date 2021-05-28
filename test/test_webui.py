@@ -21,13 +21,13 @@ class BasicWebUiTest(unittest.TestCase):
         self.uri = self.browser.find_element_by_id("uri")
         self.uri.send_keys(self.test_uri)
         self.uri.submit()
-        time.sleep(3.0)
+        time.sleep(4.0)
         self.check_complete()
 
     def test_multi(self):
-        check = self.browser.find_element_by_css_selector('a[accesskey="a"]')
+        check = self.browser.find_element_by_css_selector('input[value="check embedded"]')
         check.click()
-        time.sleep(10.0)
+        time.sleep(12.0)
         self.check_complete()
 
     def check_complete(self):
@@ -44,6 +44,14 @@ class BasicWebUiTest(unittest.TestCase):
 class CnnWebUiTest(BasicWebUiTest):
     test_uri = 'https://edition.cnn.com/'
 
+def redbot_run():
+    import redbot_daemon
+    from configparser import ConfigParser
+    conf = ConfigParser()
+    conf.read("config.txt")
+    redconf = conf['redbot']
+    redbot_daemon.RedBotServer(redconf)
+
 
 if __name__ == "__main__":
     test_host = "localhost"
@@ -51,13 +59,6 @@ if __name__ == "__main__":
     redbot_uri = "http://%s:%s/" % (test_host, test_port)
     import sys
     sys.path.insert(0, "bin")
-    def redbot_run():
-        import redbot_daemon
-        from configparser import ConfigParser
-        conf = ConfigParser()
-        conf.read("config.txt")
-        redconf = conf['redbot']
-        redbot_daemon.RedBotServer(redconf)
     from multiprocessing import Process
     p = Process(target=redbot_run)
     p.start()
