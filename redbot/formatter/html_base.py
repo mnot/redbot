@@ -226,7 +226,7 @@ console.log("{thor.time() - self.start:3.3f} {e_js(message)}");
         title: str = "",
     ) -> Markup:
         """
-        Format a query string to refer to another REDbot resource. If it can be, it will be linked
+        Format an HTML form to refer to another REDbot resource. If it can be, it will be linked
         with a GET; otherwise a POST form will be written.
 
         "link_value" is the link text.
