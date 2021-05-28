@@ -7,3 +7,4 @@ mypy>=0.770
 twine>=3.1.1
 black
 selenium
+build

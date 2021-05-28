@@ -47,6 +47,7 @@ typecheck: venv
 syntax: venv
 	PYTHONPATH=$(VENV) $(VENV)/python redbot/syntax/__init__.py
 
+
 #############################################################################
 ## Coverage and Tests
 
@@ -71,7 +72,7 @@ unit_test: venv
 
 .PHONY: server
 server: venv
-	PYTHONPATH=$(VENV) $(VENV)/python -u bin/redbot_daemon.py config.txt
+	PYTHONPATH=.:$(VENV) $(VENV)/python -u bin/redbot_daemon.py config.txt
 
 
 #############################################################################
@@ -88,12 +89,14 @@ docker: docker-image
 #############################################################################
 ## Distribution
 
-.PHONY: dist
-dist: venv clean typecheck test
+build: clean venv
+	$(VENV)/python -m build
+
+.PHONY: upload
+upload: build typecheck test
 	git tag redbot-$(version)
 	git push
 	git push --tags origin
-	$(VENV)/python setup.py sdist
 	$(VENV)/python -m twine upload dist/*
 
 #############################################################################
