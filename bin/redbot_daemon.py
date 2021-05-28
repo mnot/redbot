@@ -23,11 +23,12 @@ from redbot import __version__
 from redbot.type import RawHeaderListType
 from redbot.webui import RedWebUi
 
+notify = Notification = None
 if os.environ.get("SYSTEMD_WATCHDOG"):
     try:
         from cysystemd.daemon import notify, Notification
     except ImportError:
-        notify = Notification = None
+        pass
 
 _loop.precision = 0.1
 
