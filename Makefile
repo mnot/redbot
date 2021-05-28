@@ -61,11 +61,11 @@ header_coverage: venv
 
 .PHONY: webui_test
 webui_test: venv
-	PYTHONPATH=$(VENV) $(VENV)/python test/test_webui.py
+	PYTHONPATH=.:$(VENV) $(VENV)/python test/test_webui.py
 
 .PHONY: unit_test
 unit_test: venv
-	PYTHONPATH=$(VENV) $(VENV)/python test/unit_tests.py
+	PYTHONPATH=.:$(VENV) $(VENV)/python test/unit_tests.py
 
 #############################################################################
 ## Local test server
