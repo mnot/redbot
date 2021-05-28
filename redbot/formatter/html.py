@@ -154,7 +154,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     if len(link) > 8000: # avoid processing inline assets through regex
                         continue
                     try:
-                        link = urljoin(resource.response.base_uri, link)
+                        abs_link = urljoin(resource.response.base_uri, link)
                     except ValueError:
                         continue  # we're not interested in raising these upstream
 
@@ -163,7 +163,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                             matchobj.group(1),
                             self.redbot_link(
                                 escape(link),
-                                link,
+                                abs_link,
                                 use_stored=False,
                                 css_class="nocode",
                                 referer=True,
