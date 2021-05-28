@@ -66,8 +66,10 @@ unsatisfied_range = r"(?: \*/ {complete_length} )".format(**locals())
 
 # byte-content-range = bytes-unit SP ( byte-range-resp / unsatisfied-range )
 
-byte_content_range = r"(?: {bytes_unit} {SP} (?: {byte_range_resp} | {unsatisfied_range} )  )".format(
-    **locals()
+byte_content_range = (
+    r"(?: {bytes_unit} {SP} (?: {byte_range_resp} | {unsatisfied_range} )  )".format(
+        **locals()
+    )
 )
 
 # other-range-resp = *CHAR

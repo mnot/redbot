@@ -140,7 +140,10 @@ def loose_parse(
                 cookie_name=cookie_name,
                 attribute=attribute_name,
             )
-        if ("SameSite", "None") in cookie_attribute_list and ("Secure", "") not in cookie_attribute_list:
+        if ("SameSite", "None") in cookie_attribute_list and (
+            "Secure",
+            "",
+        ) not in cookie_attribute_list:
             add_note(SET_COOKIE_NOT_SECURE, cookie_name=cookie_name)
     return (cookie_name, cookie_value, cookie_attribute_list)
 

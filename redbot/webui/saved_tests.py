@@ -2,7 +2,7 @@ import gzip
 import os
 import pickle
 import tempfile
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast, IO
 import zlib
 
 import thor
@@ -32,7 +32,7 @@ def save_test(webui: "RedWebUi", top_resource: HttpResource) -> None:
     """Save a test by test_id."""
     if webui.test_id:
         try:
-            with gzip.open(webui.save_path, "w") as tmp_file:
+            with cast(IO[bytes], gzip.open(webui.save_path, "w")) as tmp_file:
                 pickle.dump(top_resource, tmp_file)
         except (OSError, zlib.error, pickle.PickleError):
             pass  # we don't cry if we can't store it.
@@ -67,8 +67,11 @@ def extend_saved_test(webui: "RedWebUi") -> None:
 def load_saved_test(webui: "RedWebUi") -> None:
     """Load a saved test by test_id."""
     try:
-        with gzip.open(
-            os.path.join(webui.config["save_dir"], os.path.basename(webui.test_id))
+        with cast(
+            IO[bytes],
+            gzip.open(
+                os.path.join(webui.config["save_dir"], os.path.basename(webui.test_id))
+            ),
         ) as fd:
             mtime = os.fstat(fd.fileno()).st_mtime
             is_saved = mtime > thor.time()

@@ -63,7 +63,8 @@ class BaseHtmlFormatter(Formatter):
             loader=PackageLoader("redbot.formatter"),
             trim_blocks=True,
             autoescape=select_autoescape(
-                enabled_extensions=("html", "xml"), default_for_string=True,
+                enabled_extensions=("html", "xml"),
+                default_for_string=True,
             ),
         )
         self.templates.filters.update(

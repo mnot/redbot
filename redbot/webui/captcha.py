@@ -108,7 +108,10 @@ class CaptchaHandler:
                 else:
                     e_str = f"Captcha server response error"
                 self.error_response(
-                    b"500", b"Internal Server Error", e_str, e_str,
+                    b"500",
+                    b"Internal Server Error",
+                    e_str,
+                    e_str,
                 )
                 return
             if results["success"]:
@@ -116,7 +119,10 @@ class CaptchaHandler:
             else:
                 e_str = f"Captcha errors: {', '.join(results.get('error-codes', ['unknown error']))}"
                 self.error_response(
-                    b"403", b"Forbidden", e_str, e_str,
+                    b"403",
+                    b"Forbidden",
+                    e_str,
+                    e_str,
                 )
 
         request_form = {

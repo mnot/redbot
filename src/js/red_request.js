@@ -2,7 +2,7 @@
 
 import { qs, escapeHtml, config } from './red_util.js'
 
-var knownReqHdrs = {
+const knownReqHdrs = {
   'Accept-Language': ['', 'en', 'en-us', 'en-uk', 'fr'],
   'Cache-Control': ['', 'no-cache', 'only-if-cached'],
   Cookie: null,
@@ -13,7 +13,7 @@ var knownReqHdrs = {
   ]
 }
 
-var redReqHdrs = [
+const redReqHdrs = [
   'accept-encoding',
   'if-modified-since',
   'if-none-match',
@@ -23,10 +23,10 @@ var redReqHdrs = [
 ]
 
 function addReqHdr (rawName, rawVal) {
-  var setName = escapeHtml(rawName)
-  var setVal = escapeHtml(rawVal)
-  var reqHdrs = qs('#req_hdrs')
-  var reqHdr = document.createElement('div')
+  const setName = escapeHtml(rawName)
+  const setVal = escapeHtml(rawVal)
+  const reqHdrs = qs('#req_hdrs')
+  const reqHdr = document.createElement('div')
   reqHdr.classList.add('req_hdr')
   reqHdr.innerHTML = `
 <a href='#' class='delete_req_hdr'>x</a>
@@ -34,10 +34,10 @@ function addReqHdr (rawName, rawVal) {
 <input type='hidden' name='req_hdr' value='${setName || ''}:${setVal || ''}'/>`
 
   /* populate header name */
-  var nameHtml
+  let nameHtml
   if (setName == null || setName in knownReqHdrs) {
     nameHtml = "<select class='hdr_name'><option/>"
-    for (var name in knownReqHdrs) {
+    for (const name in knownReqHdrs) {
       if (name === setName) {
         nameHtml += `<option selected='true'>${name}</option>`
       } else {
@@ -52,11 +52,11 @@ function addReqHdr (rawName, rawVal) {
 
   /* populate header value */
   if (setVal != null) {
-    var knownHdrVals = knownReqHdrs[setName]
+    const knownHdrVals = knownReqHdrs[setName]
     if (knownHdrVals == null) {
       setValue(reqHdr, `<input class="hdr_val" type="text" value="${setVal}"/>`)
     } else if (knownHdrVals.indexOf(setVal) > -1) {
-      var valHtml = "<select class='hdr_val'><option />"
+      let valHtml = "<select class='hdr_val'><option />"
       knownHdrVals.forEach(val => {
         if (setVal === val) {
           valHtml += `<option selected='true'>${val}</option>`
@@ -75,31 +75,31 @@ function addReqHdr (rawName, rawVal) {
   reqHdrs.appendChild(reqHdr)
 
   /* handle delete */
-  var deleteHdr = qs('.delete_req_hdr', reqHdr)
+  const deleteHdr = qs('.delete_req_hdr', reqHdr)
   deleteHdr.onclick = function () {
     reqHdrs.removeChild(reqHdr)
   }
 }
 
 function installNameChangeHandler (reqHdr) {
-  var hdrName = qs('.hdr_name', reqHdr)
-  var content = hdrName.firstElementChild
+  const hdrName = qs('.hdr_name', reqHdr)
+  const content = hdrName.firstElementChild
   if (!content) {
     console.log(`Missing content for ${hdrName}.`)
     return
   }
   content.onchange = function () {
-    var newName
+    let newName
     if (content.tagName === 'SELECT') {
       newName = qs('option:checked', content).text
       hdrName.setAttribute('data-name', newName)
-      var valHtml
+      let valHtml
       if (newName in knownReqHdrs) {
         if (knownReqHdrs[newName] == null) {
           valHtml = "<input class='hdr_val' type='text'/>"
         } else {
           valHtml = "<select class='hdr_val'>"
-          for (var val in knownReqHdrs[newName]) {
+          for (const val in knownReqHdrs[newName]) {
             valHtml += `<option>${knownReqHdrs[newName][val]}</option>`
           }
           valHtml += "<option value='other...'>other...</option></select>"
@@ -121,12 +121,12 @@ function installNameChangeHandler (reqHdr) {
 }
 
 function setValue (reqHdr, valueHtml) {
-  var hdrName = qs('.hdr_name', reqHdr)
-  var hdrVal = qs('.hdr_val', reqHdr)
+  const hdrName = qs('.hdr_name', reqHdr)
+  const hdrVal = qs('.hdr_val', reqHdr)
   hdrVal.innerHTML = valueHtml
-  var content = hdrVal.firstElementChild
+  const content = hdrVal.firstElementChild
   content.onchange = function () {
-    var newValue = ''
+    let newValue = ''
     if (content.tagName === 'SELECT') { // option list value
       if (qs('option:checked', hdrVal).value === 'other...') {
         setValue(reqHdr, "<input class='hdr_val' type='text'/>")
@@ -148,9 +148,9 @@ config.redbot_req_hdrs.forEach(hdr => {
 })
 
 /* add the 'add a request header' button */
-var addButton = document.createElement('div')
+const addButton = document.createElement('div')
 addButton.className = 'add_req_hdr'
-var addLink = document.createElement('a')
+const addLink = document.createElement('a')
 addLink.href = '#'
 addLink.id = 'add_req_hdr'
 addLink.appendChild(document.createTextNode('add a request header'))

@@ -43,7 +43,14 @@ def slack_run(webui: "RedWebUi") -> None:
     try:
         ratelimiter.process_slack(webui)
     except ValueError as msg:
-        webui.output(json.dumps({"response_type": "ephemeral", "text": str(msg),}))
+        webui.output(
+            json.dumps(
+                {
+                    "response_type": "ephemeral",
+                    "text": str(msg),
+                }
+            )
+        )
         webui.exchange.response_done([])
         return  # over limit, don't continue.
 

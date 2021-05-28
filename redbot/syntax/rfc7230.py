@@ -111,8 +111,10 @@ class list_rule:
         if self.minimum > 1:
             # <n>#<m>element => element <n-1>*<m-1>( OWS "," OWS element )
             adj_min = self.minimum - 1
-            return r"(?: {element} (?: {OWS} , {OWS} {element} ){{{adj_min},}} )".format(
-                element=self.element, OWS=OWS, adj_min=adj_min
+            return (
+                r"(?: {element} (?: {OWS} , {OWS} {element} ){{{adj_min},}} )".format(
+                    element=self.element, OWS=OWS, adj_min=adj_min
+                )
             )
         # element => [ 1#element ]
         return r"(?: {element} (?: {OWS} , {OWS} {element} )* )?".format(
@@ -140,8 +142,8 @@ Host = r"{uri_host} (?: : {port} )?".format(**locals())
 
 # transfer-parameter = token BWS "=" BWS ( token / quoted-string )
 
-transfer_parameter = r"(?: {token} {BWS} = {BWS} (?: {token} | {quoted_string} ) )".format(
-    **locals()
+transfer_parameter = (
+    r"(?: {token} {BWS} = {BWS} (?: {token} | {quoted_string} ) )".format(**locals())
 )
 
 # transfer-extension = token *( OWS ";" OWS transfer-parameter )
@@ -160,8 +162,10 @@ t_ranking = r"(?: {OWS} \; {OWS} q\= {rank} )".format(**locals())
 
 # transfer-coding = "chunked" / "compress" / "deflate" / "gzip" / transfer-extension
 
-transfer_coding = r"(?: chunked | compress | deflate | gzip | {transfer_extension} )".format(
-    **locals()
+transfer_coding = (
+    r"(?: chunked | compress | deflate | gzip | {transfer_extension} )".format(
+        **locals()
+    )
 )
 
 # t-codings = "trailers" / ( transfer-coding [ t-ranking ] )
@@ -221,8 +225,10 @@ received_protocol = r"(?: (?: {protocol_name} / )? {protocol_version} )".format(
 #  / %x5D-7E ; ']'-'~'
 #  / obs-text
 
-ctext = r"(?: {HTAB} | {SP} | [\x21-\x27] | [\x2A-\x5b] | \x5D-\x7E | {obs_text} )".format(
-    **locals()
+ctext = (
+    r"(?: {HTAB} | {SP} | [\x21-\x27] | [\x2A-\x5b] | \x5D-\x7E | {obs_text} )".format(
+        **locals()
+    )
 )
 
 # comment = "(" *( ctext / quoted-pair / comment ) ")"
@@ -378,8 +384,10 @@ reason_phrase = r"(?: {HTAB} | {SP} | {VCHAR} | {obs_text} )*".format(**locals()
 
 # status-line = HTTP-version SP status-code SP reason-phrase CRLF
 
-status_line = r"(?: {HTTP_version} [ ] {status_code} [ ] {reason_phrase} {CRLF} )".format(
-    **locals()
+status_line = (
+    r"(?: {HTTP_version} [ ] {status_code} [ ] {reason_phrase} {CRLF} )".format(
+        **locals()
+    )
 )
 
 # start-line = request-line / status-line

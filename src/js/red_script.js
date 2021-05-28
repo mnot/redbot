@@ -19,11 +19,11 @@ docReady(function () {
 })
 
 function captchaLink (e) {
-  var form = e.target.closest('form')
+  const form = e.target.closest('form')
   if (config.hcaptcha_sitekey && !document.cookie.split(';').some((item) =>
     item.trim().startsWith('human_hmac='))) {
     qs('#captcha_popup').style.display = 'block'
-    var widgetId = hcaptcha.render('captcha_popup', {
+    const widgetId = hcaptcha.render('captcha_popup', {
       size: 'normal',
       sitekey: config.hcaptcha_sitekey,
       callback: function (token) {
@@ -47,7 +47,7 @@ function submitForm (form) {
   if (config.hcaptcha_sitekey) {
     qs('#captcha_popup').style.display = 'none'
   }
-  var args = serializeForm(form)
+  const args = serializeForm(form)
   form.action = `?${args}`
   form.submit()
 }
@@ -55,9 +55,9 @@ function submitForm (form) {
 const secrets = ['captcha_token']
 
 function serializeForm (form) {
-  var q = []
-  for (var i = form.elements.length - 1; i >= 0; i = i - 1) {
-    var element = form.elements[i]
+  const q = []
+  for (let i = form.elements.length - 1; i >= 0; i = i - 1) {
+    const element = form.elements[i]
     if (element.nodeName === 'INPUT' && ['hidden', 'url'].includes(element.type)
     ) {
       if (!secrets.includes(element.name)) {

@@ -189,7 +189,10 @@ class RedWebUi:
             "hcaptcha_secret", ""
         ):
             CaptchaHandler(
-                self, self.get_client_id(), continue_test, error_response,
+                self,
+                self.get_client_id(),
+                continue_test,
+                error_response,
             ).run()
         else:
             continue_test()
@@ -305,7 +308,7 @@ class RedWebUi:
         self.exchange.response_body(chunk.encode(self.config["charset"], "replace"))
 
     def timeoutError(self, detail: Callable[[], str] = None) -> None:
-        """ Max runtime reached."""
+        """Max runtime reached."""
         details = ""
         if detail:
             details = f"detail={detail()}"

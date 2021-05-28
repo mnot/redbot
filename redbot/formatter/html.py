@@ -151,7 +151,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         if hasattr(resource, "links"):
             for tag, link_set in list(resource.links.items()):
                 for link in link_set:
-                    if len(link) > 8000: # avoid processing inline assets through regex
+                    if len(link) > 8000:  # avoid processing inline assets through regex
                         continue
                     try:
                         abs_link = urljoin(resource.response.base_uri, link)

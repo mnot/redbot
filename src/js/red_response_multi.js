@@ -4,7 +4,7 @@ import tippy from 'tippy.js'
 
 docReady(function () {
   qsa('span.prob_num', function (element) {
-    var tooltip = qs('span.tip *', element)
+    const tooltip = qs('span.tip *', element)
     if (tooltip === null) {
       return
     }
@@ -22,8 +22,8 @@ docReady(function () {
   })
 
   qsa('.preview', function (element) {
-    var link = (element.title !== '') ? escapeHtml(element.title) : escapeHtml(element.href)
-    var tooltip = document.createElement('img')
+    const link = (element.title !== '') ? escapeHtml(element.title) : escapeHtml(element.href)
+    const tooltip = document.createElement('img')
     tooltip.src = link
     tippy(element, {
       content: tooltip,
@@ -39,7 +39,7 @@ docReady(function () {
   })
 
   qsa('tr.droid', function (element) {
-    var noteNums = []
+    const noteNums = []
     qsa('span.prob_num', function (span) {
       if (span.textContent) {
         noteNums.push(span.textContent)
@@ -47,7 +47,7 @@ docReady(function () {
     }, qs('td:last-child', element))
     element.onmouseover = element.onmouseout = function () {
       qsa('li.note', function (noteElement) {
-        var noteOffset = noteElement.getAttribute('data-offset')
+        const noteOffset = noteElement.getAttribute('data-offset')
         if (noteNums.includes(noteOffset)) {
           noteElement.classList.toggle('hilight')
         }

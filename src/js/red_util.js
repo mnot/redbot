@@ -8,7 +8,7 @@ export function qs (query, element) {
 }
 
 export function qsa (query, fn, element) {
-  var results
+  let results
   if (element === undefined) {
     results = document.querySelectorAll(query)
   } else {

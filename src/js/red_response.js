@@ -7,9 +7,9 @@ docReady(function () {
   /* single response display - header hover */
 
   qsa('span.hdr', function (element) {
-    var headerName = element.getAttribute('data-name')
-    var offset = element.getAttribute('data-offset')
-    var tooltip = qs('span.tip *', element)
+    const headerName = element.getAttribute('data-name')
+    const offset = element.getAttribute('data-offset')
+    const tooltip = qs('span.tip *', element)
     if (tooltip === null) {
       return
     }
@@ -36,8 +36,8 @@ docReady(function () {
 
   function highlightHeaderRelated (headerName, offset, direction) {
     qsa('li.note', function (element) {
-      var noteInteresting = false
-      var subjects = element.getAttribute('data-subject').split(' ')
+      let noteInteresting = false
+      const subjects = element.getAttribute('data-subject').split(' ')
       subjects.forEach(subject => {
         if (subject === `header-${headerName}`) {
           noteInteresting = true
@@ -55,7 +55,7 @@ docReady(function () {
   /* single response display - note hover */
 
   qsa('li.note span', function (element) {
-    var tooltip = qs('span.tip *', element)
+    const tooltip = qs('span.tip *', element)
     if (tooltip === null) {
       return
     }
@@ -79,7 +79,7 @@ docReady(function () {
   })
 
   function highlightNoteRelated (note, direction) {
-    var noteSubjects = note.parentNode.getAttribute('data-subject').split(' ')
+    const noteSubjects = note.parentNode.getAttribute('data-subject').split(' ')
     noteSubjects.forEach(subject => {
       if (subject.indexOf('offset-') === 0) {
         qsa(`span.hdr[data-offset='${subject.slice(7)}']`, function (element) {
@@ -95,8 +95,8 @@ docReady(function () {
 
   /* single response display - response body */
 
-  var bodyButton = qs('#body_view')
-  var showingBody = false
+  const bodyButton = qs('#body_view')
+  let showingBody = false
   if (bodyButton !== null) {
     bodyButton.onclick = function () {
       toggleHidden(qs('#body'))
@@ -113,7 +113,7 @@ docReady(function () {
 
   /* single response display - save */
 
-  var saveButton = qs('#save')
+  const saveButton = qs('#save')
   if (saveButton !== null) {
     saveButton.onclick = function () {
       qs('#save_form').submit()

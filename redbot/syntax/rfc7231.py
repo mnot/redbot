@@ -134,8 +134,10 @@ asctime_date = r"(?: {day_name} {SP} {date3} {SP} {time_of_day} {SP} {year} )".f
 
 # rfc850-date = day-name-l "," SP date2 SP time-of-day SP GMT
 
-rfc850_date = r"(?: {day_name_l} \, {SP} {date2} {SP} {time_of_day} {SP} {GMT} )".format(
-    **locals()
+rfc850_date = (
+    r"(?: {day_name_l} \, {SP} {date2} {SP} {time_of_day} {SP} {GMT} )".format(
+        **locals()
+    )
 )
 
 # obs-date = rfc850-date / asctime-date
@@ -155,8 +157,10 @@ weight = r"(?: {OWS} \; {OWS} q\= {qvalue} )".format(**locals())
 
 # accept-ext = OWS ";" OWS token [ "=" ( token / quoted-string ) ]
 
-accept_ext = r"(?: {OWS} ; {OWS} {token} (?: \= (?: {token} | {quoted_string} ) )? )".format(
-    **locals()
+accept_ext = (
+    r"(?: {OWS} ; {OWS} {token} (?: \= (?: {token} | {quoted_string} ) )? )".format(
+        **locals()
+    )
 )
 
 # accept-params = weight *accept-ext
@@ -207,8 +211,10 @@ Accept_Encoding = list_rule(r"(?: {codings} {weight}? )".format(**locals()))
 # language-range   = (1*8ALPHA *("-" 1*8alphanum)) / "*"
 # alphanum         = ALPHA / DIGIT
 
-language_range = r"(?: (?: {ALPHA}{{1,8}} (?: \- (?: {ALPHA} {DIGIT} ){{1,8}} )* ) | \* )".format(
-    **locals()
+language_range = (
+    r"(?: (?: {ALPHA}{{1,8}} (?: \- (?: {ALPHA} {DIGIT} ){{1,8}} )* ) | \* )".format(
+        **locals()
+    )
 )
 
 # Accept-Language = 1#( language-range [ weight ] )

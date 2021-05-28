@@ -190,7 +190,7 @@ def relative_time(utime: float, now: float = None, show_sign: int = 1) -> str:
       0 - don't show
       1 - ago / from now  [DEFAULT]
       2 - early / late
-     """
+    """
 
     signs = {
         0: ("0", "", ""),
