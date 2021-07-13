@@ -9,12 +9,13 @@ docReady(function () {
   qsa('span.hdr', function (element) {
     const headerName = element.getAttribute('data-name')
     const offset = element.getAttribute('data-offset')
-    const tooltip = qs('span.tip *', element)
+    const tooltip = qs('span.tip', element)
     if (tooltip === null) {
       return
     }
     tippy(element, {
-      content: tooltip,
+      content: tooltip.innerHTML,
+      allowHTML: true,
       theme: 'redbot',
       delay: [10, 10],
       interactive: true,
@@ -55,12 +56,13 @@ docReady(function () {
   /* single response display - note hover */
 
   qsa('li.note span', function (element) {
-    const tooltip = qs('span.tip *', element)
+    const tooltip = qs('span.tip', element)
     if (tooltip === null) {
       return
     }
     tippy(element, {
-      content: tooltip,
+      content: tooltip.innerHTML,
+      allowHTML: true,
       theme: 'redbot',
       delay: [10, 10],
       interactive: true,
