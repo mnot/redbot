@@ -1,14 +1,29 @@
-import getCompositeRect from "./getCompositeRect.js";
-import getWindow from "./getWindow.js";
 import getDocumentElement from "./getDocumentElement.js";
+import getComputedStyle from "./getComputedStyle.js";
+import getWindowScrollBarX from "./getWindowScrollBarX.js";
 import getWindowScroll from "./getWindowScroll.js";
+import { max } from "../utils/math.js"; // Gets the entire size of the scrollable document area, even extending outside
+// of the `<html>` and `<body>` rect bounds if horizontally scrollable
+
 export default function getDocumentRect(element) {
-  var win = getWindow(element);
+  var _element$ownerDocumen;
+
+  var html = getDocumentElement(element);
   var winScroll = getWindowScroll(element);
-  var documentRect = getCompositeRect(getDocumentElement(element), win);
-  documentRect.height = Math.max(documentRect.height, win.innerHeight);
-  documentRect.width = Math.max(documentRect.width, win.innerWidth);
-  documentRect.x = -winScroll.scrollLeft;
-  documentRect.y = -winScroll.scrollTop;
-  return documentRect;
+  var body = (_element$ownerDocumen = element.ownerDocument) == null ? void 0 : _element$ownerDocumen.body;
+  var width = max(html.scrollWidth, html.clientWidth, body ? body.scrollWidth : 0, body ? body.clientWidth : 0);
+  var height = max(html.scrollHeight, html.clientHeight, body ? body.scrollHeight : 0, body ? body.clientHeight : 0);
+  var x = -winScroll.scrollLeft + getWindowScrollBarX(element);
+  var y = -winScroll.scrollTop;
+
+  if (getComputedStyle(body || html).direction === 'rtl') {
+    x += max(html.clientWidth, body ? body.clientWidth : 0) - width;
+  }
+
+  return {
+    width: width,
+    height: height,
+    x: x,
+    y: y
+  };
 }
