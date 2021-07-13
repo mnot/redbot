@@ -4,6 +4,7 @@ netaddr>=0.7.19
 thor>=0.8.4
 pylint>=2.4.4
 mypy>=0.770
+types-Markdown
 twine>=3.1.1
 black
 selenium
