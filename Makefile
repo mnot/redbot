@@ -7,7 +7,7 @@ SASS=$(NPX) node-sass
 WEBPACK_DEPS = node_modules/webpack node_modules/webpack-cli node_modules/exports-loader
 
 MODULES = src/node_modules
-JS_ENTRIES = src/js/red_script.js src/js/red_request.js src/js/red_response.js src/js/red_response_multi.js
+JS_ENTRIES = ./src/js/red_script.js ./src/js/red_request.js ./src/js/red_response.js ./src/js/red_response_multi.js
 CSSFILES = redbot/assets/red_style.css $(MODULES)/google-code-prettify/src/prettify.css
 
 ICONS = solid/check-circle solid/times-circle solid/question-circle solid/exclamation-circle solid/info-circle brands/twitter
@@ -113,10 +113,10 @@ redbot/message/headers/%.py:
 redbot/assets: redbot/assets/script.js redbot/assets/prettify.js redbot/assets/style.css redbot/assets/icons
 
 redbot/assets/prettify.js: $(WEBPACK_DEPS)
-	$(WEBPACK) --entry ./$(MODULES)/google-code-prettify/src/prettify.js --config src/js/webpack.config.js --mode production --output $@
+	$(WEBPACK) --entry ./$(MODULES)/google-code-prettify/src/prettify.js --config ./src/js/webpack.config.js --mode production --output-path . --output-filename $@
 
 redbot/assets/script.js: src/js/*.js $(WEBPACK_DEPS)
-	$(WEBPACK) $(JS_ENTRIES) --config src/js/webpack.config.js --mode production --output $@
+	$(WEBPACK) $(JS_ENTRIES) --config ./src/js/webpack.config.js --mode production --output-path . --output-filename $@
 
 redbot/assets/red_style.css: src/scss/*.scss
 	$(SASS) src/scss/red_style.scss $@
