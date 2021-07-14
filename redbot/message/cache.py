@@ -705,7 +705,7 @@ Ask your server administrator to synchronise the clock, e.g., using
 
 Apparent clock skew can also be caused by caching the response without adjusting the `Age` header;
 e.g., in a reverse proxy or Content Delivery network. See [this
-paper](http://www2.research.att.com/~edith/Papers/HTML/usits01/index.html) for more information. """
+paper](https://www.usenix.org/legacy/events/usits01/full_papers/cohen/cohen_html/index.html) for more information. """
 
 
 class AGE_PENALTY(Note):
