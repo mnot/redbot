@@ -89,12 +89,17 @@ docker: docker-image
 #############################################################################
 ## Distribution
 
+.PHONY: version
+version: venv
+	$(eval VERSION=$(shell $(VENV)/python -c "import redbot; print(redbot.__version__)"))
+
+.PHONY: build
 build: clean venv
 	$(VENV)/python -m build
 
 .PHONY: upload
-upload: build typecheck test
-	git tag redbot-$(version)
+upload: build typecheck test version
+	git tag redbot-$(VERSION)
 	git push
 	git push --tags origin
 	$(VENV)/python -m twine upload dist/*
