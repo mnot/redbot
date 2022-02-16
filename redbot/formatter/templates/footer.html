@@ -8,7 +8,7 @@
       </script>
       <a href="https://twitter.com/redbotorg"><img class="twitterlogo" src="{{ static }}/icons/twitter.svg"></a> |
       <span class="help hidden">Drag the bookmarklet to your bookmark bar - it makes checking easy!</span>
-      <a href="javascript:location%%20=%%20'{{ baseuri }}?uri='+encodeURIComponent(location);%%20void%%200"
+      <a href="javascript:void(window.open('{{ baseuri }}?uri=%27+encodeURIComponent(location)));%20void%200"
        title="drag me to your toolbar to use REDbot any time.">REDbot</a> bookmarklet
     </p>
 
