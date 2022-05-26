@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 # coding=UTF-8
 
-import os
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.firefox.options import Options
+from playwright.sync_api import sync_playwright, TimeoutError
 
 import time
 import unittest
@@ -14,42 +11,35 @@ class BasicWebUiTest(unittest.TestCase):
     test_uri = "https://www.mnot.net/"
 
     def setUp(self):
-        options = Options()
-        options.add_argument('-headless')
-        self.browser = webdriver.Firefox(options=options)
-        self.browser.get(redbot_uri)
-        self.uri = self.browser.find_element_by_id("uri")
-        self.uri.send_keys(self.test_uri)
-        self.uri.submit()
-        time.sleep(4.0)
+        self.page = browser.new_page()
+        self.page.goto(url=redbot_uri, wait_until="load")
         self.check_complete()
+        self.page.fill("#uri", self.test_uri)
+        self.page.press("#uri", "Enter")
 
     def test_multi(self):
-        check = self.browser.find_element_by_css_selector('input[value="check embedded"]')
-        check.click()
-        time.sleep(12.0)
+        self.page.click('input[value="check embedded"]')
         self.check_complete()
 
     def check_complete(self):
         try:
-            self.browser.find_element_by_css_selector("div.footer")
-        except:
-            self.browser.save_screenshot('dump.png')
+            self.page.wait_for_selector("div.footer")
+        except TimeoutError:
+            self.page.screenshot(path="error.png", full_page=True)
             raise
 
-    def tearDown(self):
-        self.check_complete()
-        self.browser.close()
 
 class CnnWebUiTest(BasicWebUiTest):
-    test_uri = 'https://edition.cnn.com/'
+    test_uri = "https://edition.cnn.com/"
+
 
 def redbot_run():
     import redbot_daemon
     from configparser import ConfigParser
+
     conf = ConfigParser()
     conf.read("config.txt")
-    redconf = conf['redbot']
+    redconf = conf["redbot"]
     redbot_daemon.RedBotServer(redconf)
 
 
@@ -58,11 +48,15 @@ if __name__ == "__main__":
     test_port = 8000
     redbot_uri = "http://%s:%s/" % (test_host, test_port)
     import sys
+
     sys.path.insert(0, "bin")
     from multiprocessing import Process
+
     p = Process(target=redbot_run)
     p.start()
-    unittest.main(exit=False, verbosity=2)
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch()
+        unittest.main(exit=False, verbosity=2)
+        browser.close()
     print("done webui test...")
     p.terminate()
-
