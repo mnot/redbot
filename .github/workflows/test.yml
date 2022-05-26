@@ -28,8 +28,8 @@ jobs:
           ~/.cache/ms-playwright
         key: cache-playwright-linux-1.22.0
     - name: Install Playwright
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps
+      if: steps.playwright-cache.outputs.cache-hit != 'true'
+      run: npx playwright install --with-deps
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v1
       with:
