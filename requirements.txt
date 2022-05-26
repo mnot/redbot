@@ -11,3 +11,4 @@ black
 playwright
 build
 pytest
+pytest-md

@@ -14,3 +14,4 @@ geckodriver.log
 /.npx-cache
 /node_modules
 /package-lock.json
+/throwaway

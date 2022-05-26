@@ -49,4 +49,4 @@ jobs:
     - name: Set up venv
       run: make venv
     - name: Test
-      run: make test
+      run: make -e test

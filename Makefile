@@ -4,6 +4,7 @@ WEBPACK=$(NPX) webpack-cli
 CSSMIN=$(NPX) cssmin
 SASS=$(NPX) node-sass
 
+GITHUB_STEP_SUMMARY ?= throwaway
 WEBPACK_DEPS = node_modules/webpack node_modules/webpack-cli node_modules/exports-loader
 
 MODULES = src/node_modules
@@ -49,7 +50,7 @@ webui_test: venv
 
 .PHONY: message_test
 message_test: venv
-	PYTHONPATH=.:$(VENV) $(VENV)/pytest redbot/message/*.py redbot/message/headers/*.py
+	PYTHONPATH=.:$(VENV) $(VENV)/pytest --md $(GITHUB_STEP_SUMMARY) -v redbot/message/*.py redbot/message/headers/*.py
 
 .PHONY: typecheck
 typecheck: venv
