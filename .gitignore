@@ -9,6 +9,7 @@ geckodriver.log
 /.sass-cache
 /.coverage
 /.mypy_cache
+/.pytest_cache
 /.venv
 /redbot.egg-info
 /.npx-cache
