@@ -23,7 +23,7 @@ class BasicWebUiTest(unittest.TestCase):
 
     def check_complete(self):
         try:
-            self.page.wait_for_selector("div.footer")
+            self.page.wait_for_selector("div.footer", timeout=30)
         except TimeoutError:
             self.page.screenshot(path="error.png", full_page=True)
             raise
