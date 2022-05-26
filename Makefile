@@ -42,7 +42,7 @@ syntax: venv
 
 
 #############################################################################
-## Coverage and Tests
+## Tests
 
 .PHONY: webui_test
 webui_test: venv
@@ -50,7 +50,7 @@ webui_test: venv
 
 .PHONY: message_test
 message_test: venv
-	PYTHONPATH=.:$(VENV) $(VENV)/pytest --md $(GITHUB_STEP_SUMMARY) -v redbot/message/*.py redbot/message/headers/*.py
+	PYTHONPATH=.:$(VENV) $(VENV)/pytest --md $(GITHUB_STEP_SUMMARY) redbot/message/*.py redbot/message/headers/*.py
 
 .PHONY: typecheck
 typecheck: venv
