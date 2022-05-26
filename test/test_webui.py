@@ -56,9 +56,9 @@ if __name__ == "__main__":
     p.start()
     with sync_playwright() as pw:
         browser = pw.chromium.launch()
-        result = unittest.main(exit=False, verbosity=2)
+        tests = unittest.main(exit=False, verbosity=2)
         browser.close()
     print("done webui test...")
     p.terminate()
-    if len(result.errors) > 0 or len(result.failures > 0):
+    if len(tests.result.errors) > 0 or len(tests.result.failures > 0):
         sys.exit(1)
