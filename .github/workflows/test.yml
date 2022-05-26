@@ -30,17 +30,17 @@ jobs:
     - name: Install Playwright
       if: steps.playwright-cache.outputs.cache-hit != 'true'
       run: npx playwright install --with-deps
-    - name: pip cache
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Cache venv
+      uses: actions/cache@v3
+      with:
+        path: ~/.venv
+        key: ${{ runner.os }}-${{ matrix.python-version }}-venv-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.python-version }}-venv-
     - name: Set up venv
       run: make venv
     - name: Test
