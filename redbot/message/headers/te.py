@@ -12,7 +12,7 @@ and whether or not it is willing to accept trailer fields after the body when th
 chunked transfer-coding.
 
 The most common transfer-coding, `chunked`, doesn't need to be listed in `TE`."""
-    reference = "%s#header.te" % rfc7230.SPEC_URL
+    reference = f"{rfc7230.SPEC_URL}#header.te"
     syntax = rfc7230.TE
     list_header = True
     deprecated = False

@@ -11,7 +11,7 @@ class accept_ranges(headers.HttpHeader):
     description = """\
 The `Accept-Ranges` header allows the server to indicate that it accepts range requests for a
 resource."""
-    reference = "%s#header.accept-ranges" % rfc7233.SPEC_URL
+    reference = f"{rfc7233.SPEC_URL}#header.accept-ranges"
     syntax = rfc7233.Accept_Ranges
     list_header = True
     deprecated = False

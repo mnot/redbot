@@ -28,7 +28,7 @@ other_range_unit = token
 
 # range-unit = bytes-unit / other-range-unit
 
-range_unit = r"(?: {bytes_unit} | {other_range_unit} )".format(**locals())
+range_unit = rf"(?: {bytes_unit} | {other_range_unit} )"
 
 # acceptable-ranges = 1#range-unit / "none"
 
@@ -40,88 +40,78 @@ Accept_Ranges = acceptable_ranges
 
 # first-byte-pos = 1*DIGIT
 
-first_byte_pos = r"{DIGIT}+".format(**locals())
+first_byte_pos = rf"{DIGIT}+"
 
 # last-byte-pos = 1*DIGIT
 
-last_byte_pos = r"{DIGIT}+".format(**locals())
+last_byte_pos = rf"{DIGIT}+"
 
 # byte-range = first-byte-pos "-" last-byte-pos
 
-byte_range = r"(?: {first_byte_pos} \- {last_byte_pos} )".format(**locals())
+byte_range = rf"(?: {first_byte_pos} \- {last_byte_pos} )"
 
 # complete-length = 1*DIGIT
 
-complete_length = r"{DIGIT}+".format(**locals())
+complete_length = rf"{DIGIT}+"
 
 # byte-range-resp = byte-range "/" ( complete-length / "*" )
 
-byte_range_resp = r"(?: {byte_range} / (?: {complete_length} | \* ) )".format(
-    **locals()
-)
+byte_range_resp = rf"(?: {byte_range} / (?: {complete_length} | \* ) )"
 
 # unsatisfied-range = "*/" complete-length
 
-unsatisfied_range = r"(?: \*/ {complete_length} )".format(**locals())
+unsatisfied_range = rf"(?: \*/ {complete_length} )"
 
 # byte-content-range = bytes-unit SP ( byte-range-resp / unsatisfied-range )
 
 byte_content_range = (
-    r"(?: {bytes_unit} {SP} (?: {byte_range_resp} | {unsatisfied_range} )  )".format(
-        **locals()
-    )
+    rf"(?: {bytes_unit} {SP} (?: {byte_range_resp} | {unsatisfied_range} )  )"
 )
 
 # other-range-resp = *CHAR
 
-other_range_resp = r"{VCHAR}*".format(**locals())
+other_range_resp = rf"{VCHAR}*"
 
 # other-content-range = other-range-unit SP other-range-resp
 
-other_content_range = r"(?: {other_range_unit} {SP} {other_range_resp} )".format(
-    **locals()
-)
+other_content_range = rf"(?: {other_range_unit} {SP} {other_range_resp} )"
 
 # Content-Range = byte-content-range / other-content-range
 
-Content_Range = r"(?: {byte_content_range} | {other_content_range} )".format(**locals())
+Content_Range = rf"(?: {byte_content_range} | {other_content_range} )"
 
 # If-Range = entity-tag / HTTP-date
 
-If_Range = r"(?: {entity_tag} | {HTTP_date} )".format(**locals())
+If_Range = rf"(?: {entity_tag} | {HTTP_date} )"
 
 # suffix-length = 1*DIGIT
 
-suffix_length = r"{DIGIT}+".format(**locals())
+suffix_length = rf"{DIGIT}+"
 
 # suffix-byte-range-spec = "-" suffix-length
 
-suffix_byte_range_spec = r"(?: \- {suffix_length} )+".format(**locals())
+suffix_byte_range_spec = rf"(?: \- {suffix_length} )+"
 
 # byte-range-spec = first-byte-pos "-" [ last-byte-pos ]
 
-byte_range_spec = r"(?: {first_byte_pos} \- {last_byte_pos} )+".format(**locals())
+byte_range_spec = rf"(?: {first_byte_pos} \- {last_byte_pos} )+"
 
 # byte-range-set = 1#( byte-range-spec / suffix-byte-range-spec )
 
-byte_range_set = list_rule(
-    r"(?: {byte_range_spec} | {suffix_byte_range_spec} )".format(**locals()), 1
-)
+byte_range_set = list_rule(rf"(?: {byte_range_spec} | {suffix_byte_range_spec} )", 1)
 
 # byte-ranges-specifier = bytes-unit "=" byte-range-set
 
-byte_ranges_specifier = r"(?: {bytes_unit} = {byte_range_set} )+".format(**locals())
+byte_ranges_specifier = rf"(?: {bytes_unit} = {byte_range_set} )+"
 
 # other-range-set = 1*VCHAR
 
-other_range_set = r"{VCHAR}+".format(**locals())
+other_range_set = rf"{VCHAR}+"
 
 # other-ranges-specifier = other-range-unit "=" other-range-set
 
-other_ranges_specifier = r"(?: {other_range_unit} = {other_range_set} )+".format(
-    **locals()
-)
+other_ranges_specifier = rf"(?: {other_range_unit} = {other_range_set} )+"
 
 # Range = byte-ranges-specifier / other-ranges-specifier
 
-Range = r"(?: {byte_ranges_specifier} | {other_ranges_specifier} )".format(**locals())
+Range = rf"(?: {byte_ranges_specifier} | {other_ranges_specifier} )"

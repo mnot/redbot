@@ -26,24 +26,22 @@ language = Language_Tag
 #  pct-encoded   = "%" HEXDIG HEXDIG
 #                ; see [RFC3986], Section 2.1
 
-pct_encoded = r"(?: % {HEXDIG} {HEXDIG} )".format(**locals())
+pct_encoded = rf"(?: % {HEXDIG} {HEXDIG} )"
 
 #  attr-char     = ALPHA / DIGIT
 #                / "!" / "#" / "$" / "&" / "+" / "-" / "."
 #                / "^" / "_" / "`" / "|" / "~"
 #                ; token except ( "*" / "'" / "%" )
 
-attr_char = r"""(?:
-                  {ALPHA} | {DIGIT} 
+attr_char = rf"""(?:
+                  {ALPHA} | {DIGIT}
                 | !  | #  | \$ | &  | \+ | -  | .
                 | \^ | _  | `  | \| | ~
-)""".format(
-    **locals()
-)
+)"""
 
 #  value-chars   = *( pct-encoded / attr-char )
 
-value_chars = r"(?: (?: {pct_encoded} | {attr_char} )* )".format(**locals())
+value_chars = rf"(?: (?: {pct_encoded} | {attr_char} )* )"
 
 #  mime-charsetc = ALPHA / DIGIT
 #                / "!" / "#" / "$" / "%" / "&"
@@ -53,25 +51,23 @@ value_chars = r"(?: (?: {pct_encoded} | {attr_char} )* )".format(**locals())
 #                ; except that the single quote is not included
 #                ; SHOULD be registered in the IANA charset registry
 
-mime_charsetc = r"""(?:
+mime_charsetc = rf"""(?:
                   {ALPHA} | {DIGIT}
                 | !  | #  | \$ | %  | &
                 | \+ | -  | \^ | _  | `
                 | \{{ | \}} | ~
-)""".format(
-    **locals()
-)
+)"""
 
 #  mime-charset  = 1*mime-charsetc
 
-mime_charset = r"(?: {mime_charsetc}+ )".format(**locals())
+mime_charset = rf"(?: {mime_charsetc}+ )"
 
 #  charset       = "UTF-8" / mime-charset
 
-charset = r"(?: UTF-8 | {mime_charset} )".format(**locals())
+charset = rf"(?: UTF-8 | {mime_charset} )"
 
 #  ext-value     = charset  "'" [ language ] "'" value-chars
 #                ; like RFC 2231's <extended-initial-value>
 #                ; (see [RFC2231], Section 7)
 
-ext_value = r"(?: {charset} ' (?: {language} )? ' {value_chars} )".format(**locals())
+ext_value = rf"(?: {charset} ' (?: {language} )? ' {value_chars} )"

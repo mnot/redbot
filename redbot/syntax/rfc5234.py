@@ -36,7 +36,7 @@ LF = r"[\x0A]"
 # CRLF           =  CR LF
 #                     ; Internet standard newline
 
-CRLF = r"(?: {CR} {LF} )".format(**locals())
+CRLF = rf"(?: {CR} {LF} )"
 
 # CTL            =  %x00-1F / %x7F
 #                     ; controls
@@ -79,7 +79,7 @@ VCHAR = r"[\x21-\x7E]"
 # WSP            =  SP / HTAB
 #                     ; white space
 
-WSP = r"(?: {SP} | {HTAB} )".format(**locals())
+WSP = rf"(?: {SP} | {HTAB} )"
 
 # LWSP           =  *(WSP / CRLF WSP)
 #                     ; Use of this linear-white-space rule
@@ -92,4 +92,4 @@ WSP = r"(?: {SP} | {HTAB} )".format(**locals())
 #                     ;  headers and use with caution in
 #                     ;  other contexts.
 
-LWSP = r"(?: {WSP} | (?: {CRLF} {WSP} ) )".format(**locals())
+LWSP = rf"(?: {WSP} | (?: {CRLF} {WSP} ) )"

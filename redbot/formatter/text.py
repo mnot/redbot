@@ -106,9 +106,9 @@ class BaseTextFormatter(Formatter):
             return ""
         out = []
         if [note for note in notes]:
-            out.append("* %s:" % category.value)
+            out.append(f"* {category.value}:")
         for m in notes:
-            out.append("  * %s" % (self.colorize(m.level, m.show_summary("en"))))
+            out.append(f"  * {self.colorize(m.level, m.show_summary('en'))}")
             if self.verbose:
                 out.append("")
                 out.extend("    " + line for line in self.format_text(m))

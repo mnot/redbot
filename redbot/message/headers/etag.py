@@ -11,7 +11,7 @@ class etag(headers.HttpHeader):
     canonical_name = "ETag"
     description = """\
 The `ETag` header provides an opaque identifier for the representation."""
-    reference = "%s#header.etag" % rfc7232.SPEC_URL
+    reference = f"{rfc7232.SPEC_URL}#header.etag"
     syntax = rfc7232.ETag
     list_header = False
     deprecated = False

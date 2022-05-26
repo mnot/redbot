@@ -101,9 +101,7 @@ class HttpResource(RedFetcher):
         try:
             self._task_map.remove(resource)
         except KeyError:
-            raise KeyError(
-                "* Can't find %s in task map: %s" % (resource, self._task_map)
-            )
+            raise KeyError(f"* Can't find {resource} in task map: {self._task_map}")
         tasks_left = len(self._task_map)
         #        self.emit("debug", "%s checks remaining: %i" % (repr(self), tasks_left))
         if tasks_left == 0:
@@ -115,7 +113,7 @@ class HttpResource(RedFetcher):
         Show the task map for debugging.
         """
         if self._task_map and watch:
-            sys.stderr.write("* %s - %s\n" % (self, self._task_map))
+            sys.stderr.write(f"* {self} - {self._task_map}\n")
             thor.schedule(5, self.show_task_map)
             return None
         return repr(self._task_map)

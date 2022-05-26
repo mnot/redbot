@@ -10,7 +10,7 @@ class trailer(headers.HttpHeader):
     description = """\
 The `Trailer` header indicates that the given set of header fields will be
 present in the trailer of the message, after the body."""
-    reference = "%s#header.trailer" % rfc7230.SPEC_URL
+    reference = f"{rfc7230.SPEC_URL}#header.trailer"
     syntax = rfc7230.Trailer
     list_header = True
     deprecated = False

@@ -10,7 +10,7 @@ class content_language(headers.HttpHeader):
     description = """\
 The `Content-Language` header describes the natural language(s) of the intended audience. Note that
 this might not convey all of the languages used within the body."""
-    reference = "%s#header.content_language" % rfc7231.SPEC_URL
+    reference = f"{rfc7231.SPEC_URL}#header.content_language"
     syntax = rfc7231.Content_Language
     list_header = False
     deprecated = False

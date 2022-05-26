@@ -9,7 +9,7 @@ class proxy_authenticate(headers.HttpHeader):
     description = """\
 The `Proxy-Authenticate` response header consists of a challenge that indicates the authentication
 scheme and parameters applicable to the proxy for this request-target."""
-    reference = "%s#header.proxy-authenticate" % rfc7235.SPEC_URL
+    reference = f"{rfc7235.SPEC_URL}#header.proxy-authenticate"
     syntax = rfc7235.Proxy_Authenticate
     list_header = True
     deprecated = False

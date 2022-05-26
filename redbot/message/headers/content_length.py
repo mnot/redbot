@@ -14,7 +14,7 @@ HEAD method, it indicates the size of the body that would have been sent had the
 
 If Content-Length is incorrect, persistent connections will not work, and caches may not store the
 response (since they can't be sure if they have the whole response)."""
-    reference = "%s#header.content_length" % rfc7230.SPEC_URL
+    reference = f"{rfc7230.SPEC_URL}#header.content_length"
     syntax = rfc7230.Content_Length
     list_header = False
     deprecated = False

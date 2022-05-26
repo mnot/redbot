@@ -17,7 +17,7 @@ from .rfc5987 import ext_value
 from .rfc7230 import list_rule, OWS, quoted_string, token
 from .rfc7231 import _type as type_name, subtype as subtype_name
 
-MediaDesc = r"(?: {token} (?: {SP}+ {token} )* )".format(**locals())
+MediaDesc = r"(?: {token} (?: {SP}+ {token} )* )"
 parmname = token
 LOALPHA = r"(?: [a-z] )"
 
@@ -28,7 +28,7 @@ SPEC_URL = "http://httpwg.org/specs/rfc5988"
 #                                ; extensions.  Whitespace NOT
 #                                ; allowed in between.
 
-ext_name_star = r"(?: {parmname} [*] )".format(**locals())
+ext_name_star = rf"(?: {parmname} [*] )"
 
 #  ptokenchar     = "!" | "#" | "$" | "%" | "&" | "'" | "("
 #                 | ")" | "*" | "+" | "-" | "." | "/" | DIGIT
@@ -36,39 +36,35 @@ ext_name_star = r"(?: {parmname} [*] )".format(**locals())
 #                 | "[" | "]" | "^" | "_" | "`" | "{" | "|"
 #                 | "}" | "~"
 
-ptokenchar = r"""(?:
+ptokenchar = rf"""(?:
                      !  | #  | \$ | %  | &  | '  | \(
                    | \) | \* | \+ | -  | \. | /  | {DIGIT}
                    | :  | <  | =  | >  | \? | @  | {ALPHA}
                    | \[ | \] | \^ | _  | `  | \{{ | \|
                    | \}} | ~
-)""".format(
-    **locals()
-)
+)"""
 
 #  ptoken         = 1*ptokenchar
 
-ptoken = r"(?: {ptokenchar}+ )".format(**locals())
+ptoken = rf"(?: {ptokenchar}+ )"
 
 #  link-extension = ( parmname [ "=" ( ptoken | quoted-string ) ] )
 #                 | ( ext-name-star "=" ext-value )
 
-link_extension = r"""(?: (?: {parmname} (?: = (?: {ptoken} | {quoted_string} ) )? )
-                       | (?: {ext_name_star} = {ext_value} ) )""".format(
-    **locals()
-)
+link_extension = rf"""(?: (?: {parmname} (?: = (?: {ptoken} | {quoted_string} ) )? )
+                       | (?: {ext_name_star} = {ext_value} ) )"""
 
 #  media-type     = type-name "/" subtype-name
 
-media_type = r"(?: {type_name} / {subtype_name} )".format(**locals())
+media_type = rf"(?: {type_name} / {subtype_name} )"
 
 #  quoted-mt      = <"> media-type <">
 
-quoted_mt = r"""(?: " {media_type} " )""".format(**locals())
+quoted_mt = rf"""(?: " {media_type} " )"""
 
 #  reg-rel-type   = LOALPHA *( LOALPHA | DIGIT | "." | "-" )
 
-reg_rel_type = r"(?: {LOALPHA} (?: {LOALPHA} | {DIGIT} | [.-] )* )".format(**locals())
+reg_rel_type = rf"(?: {LOALPHA} (?: {LOALPHA} | {DIGIT} | [.-] )* )"
 
 #  ext-rel-type   = URI
 
@@ -76,16 +72,14 @@ ext_rel_type = URI
 
 #  relation-type  = reg-rel-type | ext-rel-type
 
-relation_type = r"(?: {reg_rel_type} | {ext_rel_type} )".format(**locals())
+relation_type = rf"(?: {reg_rel_type} | {ext_rel_type} )"
 
 #  relation-types = relation-type
 #                 | <"> relation-type *( 1*SP relation-type ) <">
 
-relation_types = r"""(?: {relation_type}
-                      |  " {relation_type} (?: {SP}+ {relation_type} )* " 
-)""".format(
-    **locals()
-)
+relation_types = rf"""(?: {relation_type}
+                      |  " {relation_type} (?: {SP}+ {relation_type} )* "
+)"""
 
 #  link-param     = ( ( "rel" "=" relation-types )
 #                 | ( "anchor" "=" <"> URI-Reference <"> )
@@ -97,7 +91,7 @@ relation_types = r"""(?: {relation_type}
 #                 | ( "type" "=" ( media-type | quoted-mt ) )
 #                 | ( link-extension ) )
 
-link_param = r"""(?: (?: rel = {relation_types} )
+link_param = rf"""(?: (?: rel = {relation_types} )
                    | (?: anchor = " {URI_reference} " )
                    | (?: rev = {relation_types} )
                    | (?: hreflang = {Language_Tag} )
@@ -105,15 +99,11 @@ link_param = r"""(?: (?: rel = {relation_types} )
                    | (?: title = {quoted_string} )
                    | (?: title\* = {ext_value} )
                    | (?: type = (?: {media_type} | {quoted_mt} ) )
-                   | (?: {link_extension} ) )""".format(
-    **locals()
-)
+                   | (?: {link_extension} ) )"""
 
 #  link-value     = "<" URI-Reference ">" *( ";" link-param )
 
-link_value = r"(?: < {URI_reference} > (?: {OWS} ; {OWS} {link_param} )* )".format(
-    **locals()
-)
+link_value = rf"(?: < {URI_reference} > (?: {OWS} ; {OWS} {link_param} )* )"
 
 #  Link           = "Link" ":" #link-value
 

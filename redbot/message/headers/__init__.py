@@ -136,7 +136,7 @@ class HttpHeader:
         """
 
         # check field name syntax
-        if not re.match("^%s$" % rfc7230.token, self.wire_name, RE_FLAGS):
+        if not re.match(f"^{rfc7230.token}$", self.wire_name, RE_FLAGS):
             add_note(FIELD_NAME_BAD_SYNTAX)
         if self.deprecated:
             deprecation_ref = getattr(self, "deprecation_ref", self.reference)
@@ -218,7 +218,7 @@ class HeaderProcessor:
 
         for name, value in headers:
             offset += 1
-            add_note = partial(self.message.add_note, "offset-%s" % offset)
+            add_note = partial(self.message.add_note, f"offset-{offset}")
 
             # track header size
             header_size = len(name) + len(value)
@@ -255,7 +255,7 @@ class HeaderProcessor:
         for header_name, header_handler in list(self._header_handlers.items()):
             header_add_note = partial(
                 self.message.add_note,
-                "header-%s" % header_handler.canonical_name.lower(),
+                f"header-{header_handler.canonical_name.lower()}",
                 field_name=header_handler.canonical_name,
             )
             header_handler.finish(self.message, header_add_note)  # type: ignore
@@ -305,7 +305,7 @@ class HeaderProcessor:
         if name_token in HeaderProcessor.header_aliases:
             name_token = HeaderProcessor.header_aliases[name_token]
         try:
-            module_name = "redbot.message.headers.%s" % name_token
+            module_name = f"redbot.message.headers.{name_token}"
             __import__(module_name)
             return sys.modules[module_name]
         except (ImportError, KeyError, TypeError):
@@ -364,7 +364,7 @@ class HeaderTest(unittest.TestCase):
             message.vars.update({"field_name": self.name, "response": "response"})
             self.assertTrue(message.text % message.vars)
             self.assertTrue(message.summary % message.vars)
-        self.assertEqual(len(diff), 0, "Mismatched notes: %s" % diff)
+        self.assertEqual(len(diff), 0, f"Mismatched notes: {diff}")
         return None
 
     def set_context(self, message: "HttpMessage") -> None:

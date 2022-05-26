@@ -13,7 +13,7 @@ class content_type(headers.HttpHeader):
 The `Content-Type` header indicates the media type of the body sent to the recipient or, in the
 case of responses to the HEAD method, the media type that would have been sent had the request been
 a GET."""
-    reference = "%s#header.content_type" % rfc7231.SPEC_URL
+    reference = f"{rfc7231.SPEC_URL}#header.content_type"
     syntax = rfc7231.Content_Type
     list_header = False
     deprecated = False

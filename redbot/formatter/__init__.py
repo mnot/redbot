@@ -36,7 +36,7 @@ def find_formatter(
     if name not in _formatters:
         name = default
     try:
-        module_name = "redbot.formatter.%s" % name
+        module_name = f"redbot.formatter.{name}"
         __import__(module_name)
         module = sys.modules[module_name]
     except (ImportError, KeyError, TypeError):

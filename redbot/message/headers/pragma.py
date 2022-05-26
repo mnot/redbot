@@ -14,7 +14,7 @@ The `Pragma` header is used to include implementation-specific directives that m
 recipient along the request/response chain.
 
 This header is deprecated, in favour of `Cache-Control`."""
-    reference = "%s#header.pragma" % rfc7234.SPEC_URL
+    reference = f"{rfc7234.SPEC_URL}#header.pragma"
     syntax = rfc7234.Pragma
     list_header = True
     deprecated = True

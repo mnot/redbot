@@ -12,11 +12,11 @@ qtext = r"[\x21\x23-\x5b\x5d-\x7e]"
 
 # quoted-pair     =   ("\" (VCHAR / WSP)) / obs-qp
 
-quoted_pair = r"(?: \\ (?: {VCHAR} | {WSP} ) )".format(**locals())
+quoted_pair = rf"(?: \\ (?: {VCHAR} | {WSP} ) )"
 
 # qcontent        =   qtext / quoted-pair
 
-qcontent = r"(?: {qtext} | {quoted_pair} )".format(**locals())
+qcontent = rf"(?: {qtext} | {quoted_pair} )"
 
 # ctext           =   %d33-39 /          ; Printable US-ASCII
 #                     %d42-91 /          ;  characters not including
@@ -27,27 +27,25 @@ ctext = r"[\x21-\x27\x2a-\x5b\x5d\x7e]"
 
 # ccontent        =   ctext / quoted-pair / comment
 
-ccontent = r"(?: {ctext} | {quoted_pair} |)".format(**locals())
+ccontent = rf"(?: {ctext} | {quoted_pair} |)"
 
 # FWS             =   ([*WSP CRLF] 1*WSP) /  obs-FWS
 
-FWS = r"(?: (?: {WSP}* {CRLF} )? {WSP}{{1,}} )".format(**locals())
+FWS = rf"(?: (?: {WSP}* {CRLF} )? {WSP}{{1,}} )"
 
 # comment         =   "(" *([FWS] ccontent) [FWS] ")"
 
-comment = r"(?: \( (?: {FWS}? {ccontent} )* {FWS}? \) )".format(**locals())
+comment = rf"(?: \( (?: {FWS}? {ccontent} )* {FWS}? \) )"
 
 # CFWS            =   (1*([FWS] comment) [FWS]) / FWS
 
-CFWS = r"(?: (?: {FWS}? {comment} {FWS}? ){{1,}} | {FWS} )".format(**locals())
+CFWS = rf"(?: (?: {FWS}? {comment} {FWS}? ){{1,}} | {FWS} )"
 
 # quoted-string   =  [CFWS]
 #                    DQUOTE *([FWS] qcontent) [FWS] DQUOTE
 #                    [CFWS]
 
-quoted_string = r"(?: {CFWS}? \" (?: {FWS}? {qcontent} )* \" {CFWS}? )".format(
-    **locals()
-)
+quoted_string = rf"(?: {CFWS}? \" (?: {FWS}? {qcontent} )* \" {CFWS}? )"
 
 # atext           =   ALPHA / DIGIT /    ; Printable US-ASCII
 #                    "!" / "#" /        ;  characters not including
@@ -61,19 +59,19 @@ quoted_string = r"(?: {CFWS}? \" (?: {FWS}? {qcontent} )* \" {CFWS}? )".format(
 #                    "|" / "}" /
 #                    "~"
 
-atext = r"(?: {ALPHA} | {DIGIT} | [!#$%&'*+-/=?^_`{{|}}~] )".format(**locals())
+atext = rf"(?: {ALPHA} | {DIGIT} | [!#$%&'*+-/=?^_`{{|}}~] )"
 
 # atom            =   [CFWS] 1*atext [CFWS]
 
-atom = r"(?: {CFWS}? {atext}{{1,}} {CFWS}? )".format(**locals())
+atom = rf"(?: {CFWS}? {atext}{{1,}} {CFWS}? )"
 
 # word            =   atom / quoted-string
 
-word = r"(?: {atom} | {quoted_string} )".format(**locals())
+word = rf"(?: {atom} | {quoted_string} )"
 
 # phrase          =   1*word / obs-phrase
 
-phrase = r"(?: {word}{{1,}} | obs_phrase )".format(**locals())
+phrase = rf"(?: {word}{{1,}} | obs_phrase )"
 
 # display-name    =   phrase
 
@@ -81,45 +79,43 @@ display_name = phrase
 
 # dot-atom-text   =   1*atext *("." 1*atext)
 
-dot_atom_text = r"(?: {atext}+ (?: \. {atext}+ )* )".format(**locals())
+dot_atom_text = rf"(?: {atext}+ (?: \. {atext}+ )* )"
 
 # dot-atom        =   [CFWS] dot-atom-text [CFWS]
 
-dot_atom = r"(?: {CFWS}? {dot_atom_text} {CFWS}? )".format(**locals())
+dot_atom = rf"(?: {CFWS}? {dot_atom_text} {CFWS}? )"
 
 # local-part      =   dot-atom / quoted-string / obs-local-part
 
-local_part = r"(?: {dot_atom} | {quoted_string} )".format(**locals())
+local_part = rf"(?: {dot_atom} | {quoted_string} )"
 
 # dtext           =   %d33-90 /          ; Printable US-ASCII
 #                     %d94-126 /         ;  characters not including
 #                     obs-dtext          ;  "[", "]", or "\"
 
-dtext = r"[\x21-\x5a\x5e-\x7e]".format(**locals())
+dtext = rf"[\x21-\x5a\x5e-\x7e]"
 
 # domain-literal  =   [CFWS] "[" *([FWS] dtext) [FWS] "]" [CFWS]
 
-domain_literal = r"(?: {CFWS}? \[ (?: {FWS}? {dtext} )* {FWS}? \] {CFWS}? )".format(
-    **locals()
-)
+domain_literal = rf"(?: {CFWS}? \[ (?: {FWS}? {dtext} )* {FWS}? \] {CFWS}? )"
 
 # domain          =   dot-atom / domain-literal / obs-domain
 
-domain = r"(?: {dot_atom} | {domain_literal} )".format(**locals())
+domain = rf"(?: {dot_atom} | {domain_literal} )"
 
 # addr-spec       =   local-part "@" domain
 
-addr_spec = r"(?: {local_part} @ {domain} )".format(**locals())
+addr_spec = rf"(?: {local_part} @ {domain} )"
 
 # angle-addr      =   [CFWS] "<" addr-spec ">" [CFWS] /
 #                     obs-angle-addr
 
-angle_addr = r"(?: {CFWS}? \< {addr_spec} \> {CFWS}? )".format(**locals())
+angle_addr = rf"(?: {CFWS}? \< {addr_spec} \> {CFWS}? )"
 
 # name-addr       =   [display-name] angle-addr
 
-name_addr = r"(?: {display_name}? {angle_addr} )".format(**locals())
+name_addr = rf"(?: {display_name}? {angle_addr} )"
 
 # mailbox         =   name-addr / addr-spec
 
-mailbox = r"(?: {name_addr} | {addr_spec} )".format(**locals())
+mailbox = rf"(?: {name_addr} | {addr_spec} )"

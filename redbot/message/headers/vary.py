@@ -13,7 +13,7 @@ to use the response to reply to a subsequent request without validation.
 
 In uncacheable or stale responses, the Vary field value advises the user agent about the criteria
 that were used to select the representation."""
-    reference = "%s#header.vary" % rfc7231.SPEC_URL
+    reference = f"{rfc7231.SPEC_URL}#header.vary"
     syntax = rfc7231.Vary
     list_header = True
     deprecated = False

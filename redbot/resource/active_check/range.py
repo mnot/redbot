@@ -39,9 +39,7 @@ class RangeRequest(SubRequest):
             self.range_target = self.base.response.payload_sample[sample_num][1][
                 : sample_len + 1
             ]
-            base_headers.append(
-                ("Range", "bytes=%s-%s" % (self.range_start, self.range_end))
-            )
+            base_headers.append(("Range", f"bytes={self.range_start}-{self.range_end}"))
         return base_headers
 
     def preflight(self) -> bool:
@@ -103,7 +101,7 @@ class RangeRequest(SubRequest):
                     self.add_base_note(
                         "header-accept-ranges",
                         RANGE_INCORRECT,
-                        range="bytes=%s-%s" % (self.range_start, self.range_end),
+                        range=f"bytes={self.range_start}-{self.range_end}",
                         range_expected=display_bytes(self.range_target),
                         range_expected_bytes=f_num(len(self.range_target)),
                         range_received=display_bytes(self.response.payload),

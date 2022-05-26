@@ -18,13 +18,13 @@ from .rfc5234 import DIGIT, ALPHA, HEXDIG
 
 
 #   pct-encoded   = "%" HEXDIG HEXDIG
-pct_encoded = r" % {HEXDIG} {HEXDIG}".format(**locals())
+pct_encoded = rf" % {HEXDIG} {HEXDIG}"
 
 #   unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
-unreserved = r"(?: {ALPHA} | {DIGIT} | \- | \. | _ | ~ )".format(**locals())
+unreserved = rf"(?: {ALPHA} | {DIGIT} | \- | \. | _ | ~ )"
 
 #   gen-delims    = ":" / "/" / "?" / "#" / "[" / "]" / "@"
-gen_delims = r"(?: : | / | \? | \# | \[ | \] | @ )"
+gen_delims = rf"(?: : | / | \? | \# | \[ | \] | @ )"
 
 #   sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
 #                 / "*" / "+" / "," / ";" / "="
@@ -32,16 +32,16 @@ sub_delims = r"""(?: ! | \$ | & | ' | \( | \) |
                      \* | \+ | , | ; | = )"""
 
 #   pchar         = unreserved / pct-encoded / sub-delims / ":" / "@"
-pchar = r"(?: {unreserved} | {pct_encoded} | {sub_delims} | : | @ )".format(**locals())
+pchar = rf"(?: {unreserved} | {pct_encoded} | {sub_delims} | : | @ )"
 
 #   reserved      = gen-delims / sub-delims
-reserved = r"(?: {gen_delims} | {sub_delims} )".format(**locals())
+reserved = rf"(?: {gen_delims} | {sub_delims} )"
 
 
 ### scheme
 
 #   scheme        = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
-scheme = r"{ALPHA} (?: {ALPHA} | {DIGIT} | \+ | \- | \. )*".format(**locals())
+scheme = rf"{ALPHA} (?: {ALPHA} | {DIGIT} | \+ | \- | \. )*"
 
 
 ### authority
@@ -51,26 +51,22 @@ scheme = r"{ALPHA} (?: {ALPHA} | {DIGIT} | \+ | \- | \. )*".format(**locals())
 #                 / "1" 2DIGIT            ; 100-199
 #                 / "2" %x30-34 DIGIT     ; 200-249
 #                 / "25" %x30-35          ; 250-255
-dec_octet = r"""(?: {DIGIT} |
+dec_octet = rf"""(?: {DIGIT} |
                     [\x31-\x39] {DIGIT} |
                     1 {DIGIT}{{2}} |
                     2 [\x30-\x34] {DIGIT} |
                     25 [\x30-\x35]
                 )
-""".format(
-    **locals()
-)
+"""
 
 #  IPv4address   = dec-octet "." dec-octet "." dec-octet "." dec-octet
-IPv4address = r"{dec_octet} \. {dec_octet} \. {dec_octet} \. {dec_octet}".format(
-    **locals()
-)
+IPv4address = rf"{dec_octet} \. {dec_octet} \. {dec_octet} \. {dec_octet}"
 
 #  h16           = 1*4HEXDIG
-h16 = r"(?: {HEXDIG} ){{1,4}}".format(**locals())
+h16 = rf"(?: {HEXDIG} ){{1,4}}"
 
 #  ls32          = ( h16 ":" h16 ) / IPv4address
-ls32 = r"(?: (?: {h16} : {h16} ) | {IPv4address} )".format(**locals())
+ls32 = rf"(?: (?: {h16} : {h16} ) | {IPv4address} )"
 
 #   IPv6address   =                            6( h16 ":" ) ls32
 #                 /                       "::" 5( h16 ":" ) ls32
@@ -81,7 +77,7 @@ ls32 = r"(?: (?: {h16} : {h16} ) | {IPv4address} )".format(**locals())
 #                 / [ *4( h16 ":" ) h16 ] "::"              ls32
 #                 / [ *5( h16 ":" ) h16 ] "::"              h16
 #                 / [ *6( h16 ":" ) h16 ] "::"
-IPv6address = r"""(?:                            (?: {h16} : ){{6}} {ls32} |
+IPv6address = rf"""(?:                            (?: {h16} : ){{6}} {ls32} |
                                               :: (?: {h16} : ){{5}} {ls32} |
                                         {h16} :: (?: {h16} : ){{4}} {ls32} |
                      (?: {h16} : )      {h16} :: (?: {h16} : ){{3}} {ls32} |
@@ -91,84 +87,78 @@ IPv6address = r"""(?:                            (?: {h16} : ){{6}} {ls32} |
                      (?: {h16} : ){{5}} {h16} ::                    {h16}  |
                      (?: {h16} : ){{6}} {h16} ::
                   )
-""".format(
-    **locals()
-)
+"""
 
 #   IPvFuture     = "v" 1*HEXDIG "." 1*( unreserved / sub-delims / ":" )
-IPvFuture = r"v {HEXDIG}+ \. (?: {unreserved} | {sub_delims} | : )+".format(**locals())
+IPvFuture = rf"v {HEXDIG}+ \. (?: {unreserved} | {sub_delims} | : )+"
 
 #   IP-literal    = "[" ( IPv6address / IPvFuture  ) "]"
-IP_literal = r"\[ (?: {IPv6address} | {IPvFuture} ) \]".format(**locals())
+IP_literal = rf"\[ (?: {IPv6address} | {IPvFuture} ) \]"
 
 #   reg-name      = *( unreserved / pct-encoded / sub-delims )
-reg_name = r"(?: {unreserved} | {pct_encoded} | {sub_delims} )*".format(**locals())
+reg_name = rf"(?: {unreserved} | {pct_encoded} | {sub_delims} )*"
 
 #   userinfo      = *( unreserved / pct-encoded / sub-delims / ":" )
-userinfo = r"(?: {unreserved} | {pct_encoded} | {sub_delims} | : )".format(**locals())
+userinfo = rf"(?: {unreserved} | {pct_encoded} | {sub_delims} | : )"
 
 #   host          = IP-literal / IPv4address / reg-name
-host = r"(?: {IP_literal} | {IPv4address} | {reg_name} )".format(**locals())
+host = rf"(?: {IP_literal} | {IPv4address} | {reg_name} )"
 
 #   port          = *DIGIT
-port = r"(?: {DIGIT} )*".format(**locals())
+port = rf"(?: {DIGIT} )*"
 
 #   authority     = [ userinfo "@" ] host [ ":" port ]
-authority = r"(?: {userinfo} @)? {host} (?: : {port})?".format(**locals())
+authority = rf"(?: {userinfo} @)? {host} (?: : {port})?"
 
 
 ### Path
 
 #   segment       = *pchar
-segment = r"{pchar}*".format(**locals())
+segment = rf"{pchar}*"
 
 #   segment-nz    = 1*pchar
-segment_nz = r"{pchar}+".format(**locals())
+segment_nz = rf"{pchar}+"
 
 #   segment-nz-nc = 1*( unreserved / pct-encoded / sub-delims / "@" )
 #                 ; non-zero-length segment without any colon ":"
-segment_nz_nc = r"(?: {unreserved} | {pct_encoded} | {sub_delims} | @ )+".format(
-    **locals()
-)
+segment_nz_nc = rf"(?: {unreserved} | {pct_encoded} | {sub_delims} | @ )+"
 
 #   path-abempty  = *( "/" segment )
-path_abempty = r"(?: / {segment} )*".format(**locals())
+path_abempty = rf"(?: / {segment} )*"
 
 #   path-absolute = "/" [ segment-nz *( "/" segment ) ]
-path_absolute = r"/ (?: {segment_nz} (?: / {segment} )* )?".format(**locals())
+path_absolute = rf"/ (?: {segment_nz} (?: / {segment} )* )?"
 
 #   path-noscheme = segment-nz-nc *( "/" segment )
-path_noscheme = r"{segment_nz_nc} (?: / {segment} )*".format(**locals())
+path_noscheme = rf"{segment_nz_nc} (?: / {segment} )*"
 
 #   path-rootless = segment-nz *( "/" segment )
-path_rootless = r"{segment_nz} (?: / {segment} )*".format(**locals())
+path_rootless = rf"{segment_nz} (?: / {segment} )*"
 
 #   path-empty    = 0<pchar>
-path_empty = r"{pchar}{0}"
+path_empty = rf"{pchar}{0}"
 
 #   path          = path-abempty    ; begins with "/" or is empty
 #                 / path-absolute   ; begins with "/" but not "//"
 #                 / path-noscheme   ; begins with a non-colon segment
 #                 / path-rootless   ; begins with a segment
 #                 / path-empty      ; zero characters
-path = r"""(?: {path_abempty} |
+path = rf"""(?: {path_abempty} |
                {path_absolute} |
                {path_noscheme} |
                {path_rootless} |
                {path_empty}
             )
-""".format(
-    **locals()
-)
+"""
 
 
 ### Query and Fragment
 
 #   query         = *( pchar / "/" / "?" )
-query = r"(?: {pchar} | / | \? )*".format(**locals())
+query = rf"(?: {pchar} | / | \? )*"
 
 #   fragment      = *( pchar / "/" / "?" )
-fragment = r"(?: {pchar} | / | \? )*".format(**locals())
+fragment = rf"(?: {pchar} | / | \? )*"
 
 
 ### URIs
@@ -177,43 +167,35 @@ fragment = r"(?: {pchar} | / | \? )*".format(**locals())
 #                 / path-absolute
 #                 / path-rootless
 #                 / path-empty
-hier_part = r"""(?: (?: // {authority} {path_abempty} ) |
+hier_part = rf"""(?: (?: // {authority} {path_abempty} ) |
                     {path_absolute} |
                     {path_rootless} |
                     {path_empty}
                 )
-""".format(
-    **locals()
-)
+"""
 
 #   relative-part = "//" authority path-abempty
 #                 / path-absolute
 #                 / path-noscheme
 #                 / path-empty
-relative_part = r"""(?: (?: // {authority} {path_abempty} ) |
+relative_part = rf"""(?: (?: // {authority} {path_abempty} ) |
                         {path_absolute} |
                         {path_noscheme} |
                         {path_empty}
                     )
-""".format(
-    **locals()
-)
+"""
 
 #   relative-ref  = relative-part [ "?" query ] [ "#" fragment ]
-relative_ref = r"{relative_part} (?: \? {query})? (?: \# {fragment})?".format(
-    **locals()
-)
+relative_ref = rf"{relative_part} (?: \? {query})? (?: \# {fragment})?"
 
 #   URI           = scheme ":" hier-part [ "?" query ] [ "#" fragment ]
-URI = r"(?: {scheme} : {hier_part} (?: \? {query} )? (?: \# {fragment} )? )".format(
-    **locals()
-)
+URI = rf"(?: {scheme} : {hier_part} (?: \? {query} )? (?: \# {fragment} )? )"
 
 #   URI-reference = URI / relative-ref
-URI_reference = r"(?: {URI} | {relative_ref} )".format(**locals())
+URI_reference = rf"(?: {URI} | {relative_ref} )"
 
 #   absolute-URI  = scheme ":" hier-part [ "?" query ]
-absolute_URI = r"(?: {scheme} : {hier_part} (?: \? {query} )? )".format(**locals())
+absolute_URI = rf"(?: {scheme} : {hier_part} (?: \? {query} )? )"
 
 
 if __name__ == "__main__":
@@ -223,25 +205,25 @@ if __name__ == "__main__":
     try:
         instr = sys.argv[1]
     except IndexError:
-        print("usage: %s test-string" % sys.argv[0])
+        print(f"usage: {sys.argv[0]} test-string")
         sys.exit(1)
 
-    print('testing: "%s"' % instr)
+    print(f'testing: "{instr}"')
 
     print("URI:", end=" ")
-    if re.match("^%s$" % URI, instr, re.VERBOSE):
+    if re.match(f"^{URI}$", instr, re.VERBOSE):
         print("yes")
     else:
         print("no")
 
     print("URI reference:", end=" ")
-    if re.match("^%s$" % URI_reference, instr, re.VERBOSE):
+    if re.match(f"^{URI_reference}$", instr, re.VERBOSE):
         print("yes")
     else:
         print("no")
 
     print("Absolute URI:", end=" ")
-    if re.match("^%s$" % absolute_URI, instr, re.VERBOSE):
+    if re.match(f"^{absolute_URI}$", instr, re.VERBOSE):
         print("yes")
     else:
         print("no")

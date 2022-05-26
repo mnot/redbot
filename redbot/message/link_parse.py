@@ -76,7 +76,7 @@ class HTMLLinkParser(HTMLParser):
                 pass
             except Exception as why:  # oh, well...
                 if self.err:
-                    self.err("feed problem: %s" % why)
+                    self.err(f"feed problem: {why}")
                 self.errors += 1
         else:
             self.ok = False
@@ -121,7 +121,7 @@ class HTMLLinkParser(HTMLParser):
         if self.getpos() == self.last_err_pos:
             # we're in a loop; give up.
             if self.err:
-                self.err("giving up on link parsing after %s errors" % self.errors)
+                self.err(f"giving up on link parsing after {self.errors} errors")
             self.ok = False
             raise BadErrorIReallyMeanIt()
         else:
@@ -146,7 +146,7 @@ if __name__ == "__main__":
     T.set_request(sys.argv[1], req_hdrs=[("Accept-Encoding", "gzip")])
 
     def show_link(base: str, link: str, tag: str, title: str) -> None:
-        print("* [%s] %s -- %s" % (tag, base, link))
+        print(f"* [{tag}] {base} -- {link}")
 
     P = HTMLLinkParser(T.response, [show_link], sys.stderr.write)
 

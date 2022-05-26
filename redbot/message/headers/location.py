@@ -16,7 +16,7 @@ The `Location` header is used in `3xx` responses to redirect the recipient to a 
 to complete the request.
 
 In `201 Created` responses, it identifies a newly created resource."""
-    reference = "%s#header.location" % rfc7231.SPEC_URL
+    reference = f"{rfc7231.SPEC_URL}#header.location"
     syntax = rfc7231.Location
     list_header = False
     deprecated = False

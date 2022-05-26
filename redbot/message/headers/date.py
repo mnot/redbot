@@ -12,7 +12,7 @@ The `Date` header represents the time when the message was generated, regardless
 happened since.
 
 It is used by caches as input to expiration calculations, and to detect clock drift."""
-    reference = "%s#header.date" % rfc7231.SPEC_URL
+    reference = f"{rfc7231.SPEC_URL}#header.date"
     syntax = False  # rfc7231.Date
     list_header = False
     deprecated = False

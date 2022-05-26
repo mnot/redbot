@@ -12,7 +12,7 @@ class via(headers.HttpHeader):
 The `Via` header is added to requests and responses by proxies and other HTTP intermediaries. It
 can be used to help avoid request loops and identify the protocol capabilities of all senders along
 the request/response chain."""
-    reference = "%s#header.Via" % rfc7230.SPEC_URL
+    reference = f"{rfc7230.SPEC_URL}#header.Via"
     syntax = rfc7230.Via
     list_header = True
     deprecated = False
@@ -22,7 +22,7 @@ the request/response chain."""
     def evaluate(self, add_note: AddNoteMethodType) -> None:
         via_list = (
             "<ul>"
-            + "\n".join(["<li><code>%s</code></li>" % v for v in self.value])
+            + "\n".join([f"<li><code>{v}</code></li>" for v in self.value])
             + "</ul>"
         )
         add_note(VIA_PRESENT, via_list=via_list)

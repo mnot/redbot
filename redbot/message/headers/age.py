@@ -11,7 +11,7 @@ class age(headers.HttpHeader):
     description = """\
 The `Age` header conveys the sender's estimate of the amount of time since the response (or its
 validation) was generated at the origin server."""
-    reference = "%s#header.age" % rfc7234.SPEC_URL
+    reference = f"{rfc7234.SPEC_URL}#header.age"
     syntax = False  # rfc7234.Age
     list_header = False
     deprecated = False

@@ -85,7 +85,7 @@ class RedBotServer:
                     if uri.endswith(b"/index.html"):
                         out[b"/%s%s" % (base, uri[:-10])] = open(path, "rb").read()
                 except IOError:
-                    sys.stderr.write("* Problem loading %s\n" % path)
+                    sys.stderr.write(f"* Problem loading {path}\n")
         return out
 
 
@@ -176,7 +176,7 @@ in standalone server mode. Details follow.
             self.exchange.response_done([])
 
     def error_log(self, message: str) -> None:
-        sys.stderr.write("%s\n" % message)
+        sys.stderr.write(f"{message}\n")
 
 
 if __name__ == "__main__":
@@ -184,7 +184,7 @@ if __name__ == "__main__":
     from optparse import OptionParser
 
     usage = "Usage: %prog configfile"
-    version = "REDbot version %s" % __version__
+    version = f"REDbot version {__version__}"
     option_parser = OptionParser(usage=usage, version=version)
     (options, args) = option_parser.parse_args()
     if len(args) < 1:
@@ -200,8 +200,8 @@ if __name__ == "__main__":
         locale.setlocale(locale.LC_ALL, "")
 
     sys.stderr.write(
-        "Starting on PID %s...\n" % os.getpid()
-        + "http://%s:%s/\n" % (config.get("host", ""), config["port"])
+        f"Starting on PID {os.getpid()}...\n"
+        + f"http://{config.get('host', '')}:{config['port']}/\n"
     )
 
     RedBotServer(config)

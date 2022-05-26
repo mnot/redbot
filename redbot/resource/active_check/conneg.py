@@ -74,7 +74,7 @@ class ConnegCheck(SubRequest):
                     hdr, None
                 ):
                     self.add_base_note(
-                        "header-%s" % hdr, VARY_HEADER_MISMATCH, header=hdr
+                        f"header-{hdr}", VARY_HEADER_MISMATCH, header=hdr
                     )
 
             # check Vary headers

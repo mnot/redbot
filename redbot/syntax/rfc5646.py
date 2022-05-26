@@ -13,7 +13,7 @@ from .rfc5234 import DIGIT, ALPHA
 
 # alphanum      = (ALPHA / DIGIT)     ; letters and numbers
 
-alphanum = r"(?: {ALPHA} | {DIGIT} )".format(**locals())
+alphanum = r"(?: {ALPHA} | {DIGIT} )"
 
 # irregular     = "en-GB-oed"         ; irregular tags do not match
 #               / "i-ami"             ; the 'langtag' production and
@@ -78,12 +78,12 @@ art\-lojban
 # grandfathered = irregular           ; non-redundant tags registered
 #               / regular             ; during the RFC 3066 era
 
-grandfathered = r"(?: {irregular} | {regular} )".format(**locals())
+grandfathered = rf"(?: {irregular} | {regular} )"
 
 # extlang       = 3ALPHA              ; selected ISO 639 codes
 #                 *2("-" 3ALPHA)      ; permanently reserved
 
-extlang = r"(?: {ALPHA}{{3}} (?: \- {ALPHA}{{3}} ){{,2}} )".format(**locals())
+extlang = rf"(?: {ALPHA}{{3}} (?: \- {ALPHA}{{3}} ){{,2}} )"
 
 # language      = 2*3ALPHA            ; shortest ISO 639 code
 #                 ["-" extlang]       ; sometimes followed by
@@ -91,28 +91,26 @@ extlang = r"(?: {ALPHA}{{3}} (?: \- {ALPHA}{{3}} ){{,2}} )".format(**locals())
 #               / 4ALPHA              ; or reserved for future use
 #               / 5*8ALPHA            ; or registered language subtag
 
-language = r"""(?:
+language = rf"""(?:
   {ALPHA}{{2,3}}
   (?: \- {extlang} )?
 | {ALPHA}{{4}}
 | {ALPHA}{{5,8}}
-)""".format(
-    **locals()
-)
+)"""
 
 # script        = 4ALPHA              ; ISO 15924 code
 
-script = r"(?: {ALPHA}{{4}} )".format(**locals())
+script = rf"(?: {ALPHA}{{4}} )"
 
 # region        = 2ALPHA              ; ISO 3166-1 code
 #               / 3DIGIT              ; UN M.49 code
 
-region = r"(?: {ALPHA}{{2}} | {DIGIT}{{3}} )".format(**locals())
+region = rf"(?: {ALPHA}{{2}} | {DIGIT}{{3}} )"
 
 # variant       = 5*8alphanum         ; registered variants
 #               / (DIGIT 3alphanum)
 
-variant = r"(?: {alphanum}{{3}} | (?: {DIGIT} {alphanum}{{3}} ) )".format(**locals())
+variant = rf"(?: {alphanum}{{3}} | (?: {DIGIT} {alphanum}{{3}} ) )"
 
 # singleton     = DIGIT               ; 0 - 9
 #               / %x41-57             ; A - W
@@ -120,15 +118,15 @@ variant = r"(?: {alphanum}{{3}} | (?: {DIGIT} {alphanum}{{3}} ) )".format(**loca
 #               / %x61-77             ; a - w
 #               / %x79-7A             ; y - z
 
-singleton = r"(?: {DIGIT} | [\x41-\x57\x59-\x5a\x61-\x77\x79-\x7a] )".format(**locals())
+singleton = rf"(?: {DIGIT} | [\x41-\x57\x59-\x5a\x61-\x77\x79-\x7a] )"
 
 # extension     = singleton 1*("-" (2*8alphanum))
 
-extension = r"{singleton} (?: \- {alphanum}{{2,8}} ){{1,}}".format(**locals())
+extension = rf"{singleton} (?: \- {alphanum}{{2,8}} ){{1,}}"
 
 # privateuse    = "x" 1*("-" (1*8alphanum))
 
-privateuse = r"x (?: \- {alphanum}{{1,8}} ){{1,}}".format(**locals())
+privateuse = rf"x (?: \- {alphanum}{{1,8}} ){{1,}}"
 
 # langtag       = language
 #                 ["-" script]
@@ -137,19 +135,17 @@ privateuse = r"x (?: \- {alphanum}{{1,8}} ){{1,}}".format(**locals())
 #                 *("-" extension)
 #                 ["-" privateuse]
 
-langtag = r"""(?:
+langtag = rf"""(?:
   {language}
   (?: \- {script} )?
   (?: \- {region} )?
   (?: \- {variant} )*
   (?: \- {extension} )*
   (?: \- {privateuse} )?
-)""".format(
-    **locals()
-)
+)"""
 
 # Language-Tag  = langtag             ; normal language tags
 #               / privateuse          ; private use tag
 #               / grandfathered       ; grandfathered tags
 
-Language_Tag = r"(?: {langtag} | {privateuse} | {grandfathered} )".format(**locals())
+Language_Tag = rf"(?: {langtag} | {privateuse} | {grandfathered} )"

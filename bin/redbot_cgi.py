@@ -119,7 +119,7 @@ def except_handler_factory(
             import tempfile
 
             if qs:
-                doc = "<h3><code>%s</code></h3>" % qs.decode("utf-8", "replace")
+                doc = f"<h3><code>{qs.decode('utf-8', 'replace')}</code></h3>"
             try:
                 doc += cgitb.html((etype, evalue, etb), 5)
             except:  # just in case something goes wrong
@@ -141,7 +141,7 @@ def except_handler_factory(
                     os.umask(0o002)
                     os.makedirs(ldir)
                 (fd, path) = tempfile.mkstemp(
-                    prefix="%s_" % e_line, suffix=".html", dir=ldir
+                    prefix=f"{e_line}_", suffix=".html", dir=ldir
                 )
                 fh = os.fdopen(fd, "w")
                 fh.write(doc)

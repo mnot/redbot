@@ -49,7 +49,7 @@ class StatusChecker:
         self.response = response
         self.add_note = partial(response.add_note, status=response.status_code)
         try:
-            status_m = getattr(self, "status%s" % response.status_code)
+            status_m = getattr(self, f"status{response.status_code}")
         except AttributeError:
             self.add_note("status", STATUS_NONSTANDARD)
             return
@@ -178,7 +178,7 @@ class StatusChecker:
 
     def status414(self) -> None:  # Request-URI Too Long
         if self.request:
-            uri_len = "(%s characters)" % len(self.request.uri)
+            uri_len = f"({len(self.request.uri)} characters)"
         else:
             uri_len = ""
         self.add_note("uri", STATUS_URI_TOO_LONG, uri_len=uri_len)

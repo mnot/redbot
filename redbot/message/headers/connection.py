@@ -13,7 +13,7 @@ are not forwarded by intermediaries.
 
 It also indicates options that are desired for this particular connection; e.g., `close` means that
 it should not be reused."""
-    reference = "%s#header.connection" % rfc7230.SPEC_URL
+    reference = f"{rfc7230.SPEC_URL}#header.connection"
     syntax = rfc7230.Connection
     list_header = True
     deprecated = False

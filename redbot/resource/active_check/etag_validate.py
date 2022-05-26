@@ -26,7 +26,7 @@ class ETagValidate(SubRequest):
                 # #65: note on weak etag
             else:
                 weak_str = ""
-            etag_str = '%s"%s"' % (weak_str, etag)
+            etag_str = f'{weak_str}"{etag}"'
             base_headers.append(("If-None-Match", etag_str))
         return base_headers
 

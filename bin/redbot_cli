@@ -19,7 +19,7 @@ from redbot.resource import HttpResource
 
 def main() -> None:
     usage = """Usage: %prog [options] <url>"""
-    version = """Redbot version %s, http://redbot.org/ """ % __version__
+    version = f"""Redbot version {__version__}, http://redbot.org/ """
 
     opt_parser = OptionParser(usage=usage, version=version)
     opt_parser.set_defaults(
@@ -38,7 +38,7 @@ def main() -> None:
         "--output-format",
         action="store",
         dest="output_format",
-        help="one of: %s" % ", ".join(available_formatters()),
+        help=f"one of: {', '.join(available_formatters())}",
     )
 
     (options, args) = opt_parser.parse_args()

@@ -11,7 +11,7 @@ class content_range(headers.HttpHeader):
     description = """\
 The `Content-Range` header is sent with a partial body to specify where in the full body the
 partial body should be applied."""
-    reference = "%s#header.content_range" % rfc7233.SPEC_URL
+    reference = f"{rfc7233.SPEC_URL}#header.content_range"
     syntax = rfc7233.Content_Range
     list_header = False
     deprecated = False

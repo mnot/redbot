@@ -15,7 +15,7 @@ class link(headers.HttpHeader):
 The `Link` header field allows structured links to be described. A link can be viewed as a
 statement of the form "[context IRI] has a [relation type] resource at [target IRI], which has
 [target attributes]."""
-    reference = "%s#header.link" % rfc5988.SPEC_URL
+    reference = f"{rfc5988.SPEC_URL}#header.link"
     syntax = rfc5988.Link
     list_header = True
     deprecated = False

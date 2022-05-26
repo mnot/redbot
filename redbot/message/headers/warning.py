@@ -9,7 +9,7 @@ class warning(headers.HttpHeader):
     description = """\
 The `Warning` header is used to carry additional information about the status or transformation of
 a message that might not be reflected in it. It has been deprecated."""
-    reference = "%s#header.warning" % rfc7234.SPEC_URL
+    reference = f"{rfc7234.SPEC_URL}#header.warning"
     syntax = rfc7234.Warning
     list_header = True
     deprecated = True

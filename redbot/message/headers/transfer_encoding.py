@@ -19,7 +19,7 @@ end-to-end.
 
 The most commonly used transfer-coding is `chunked`, which allows persistent connections to be used
 without knowing the entire body's length."""
-    reference = "%s#header.transfer-encoding" % rfc7230.SPEC_URL
+    reference = f"{rfc7230.SPEC_URL}#header.transfer-encoding"
     syntax = rfc7230.Transfer_Encoding
     list_header = True
     deprecated = False

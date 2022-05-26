@@ -32,36 +32,34 @@ SPEC_URL = "http://httpwg.org/specs/rfc7231"
 
 # parameter = token "=" ( token / quoted-string )
 
-parameter = r"(?: {token} = (?: {token} | {quoted_string} ) )".format(**locals())
+parameter = rf"(?: {token} = (?: {token} | {quoted_string} ) )"
 
 # qvalue = ( "0" [ "." *3DIGIT ] ) / ( "1" [ "." *3"0" ] )
 
-qvalue = r"(?: (?: 0 (: \. {DIGIT}{{,3}} ) ) | (?: 1 (: \. [0]{{,3}} ) ) )".format(
-    **locals()
-)
+qvalue = rf"(?: (?: 0 (: \. {DIGIT}{{,3}} ) ) | (?: 1 (: \. [0]{{,3}} ) ) )"
 
 
 ## Dates
 
 # second = 2DIGIT
 
-second = r"(?: {DIGIT} {DIGIT} )".format(**locals())
+second = rf"(?: {DIGIT} {DIGIT} )"
 
 # minute = 2DIGIT
 
-minute = r"(?: {DIGIT} {DIGIT} )".format(**locals())
+minute = rf"(?: {DIGIT} {DIGIT} )"
 
 # hour = 2DIGIT
 
-hour = r"(?: {DIGIT} {DIGIT} )".format(**locals())
+hour = rf"(?: {DIGIT} {DIGIT} )"
 
 # time-of-day = hour ":" minute ":" second
 
-time_of_day = r"(?: {hour} : {minute} : {second} )".format(**locals())
+time_of_day = rf"(?: {hour} : {minute} : {second} )"
 
 # day = 2DIGIT
 
-day = r"(?: {DIGIT} {DIGIT} )".format(**locals())
+day = rf"(?: {DIGIT} {DIGIT} )"
 
 # day-name = %x4D.6F.6E ; Mon
 #  / %x54.75.65 ; Tue
@@ -102,7 +100,7 @@ month = r"(?: Jan | Feb | Mar | Apr | May | Jun | Jul | Aug | Sep | Oct | Nov | 
 
 # year = 4DIGIT
 
-year = r"(?: {DIGIT}{{4}} )".format(**locals())
+year = rf"(?: {DIGIT}{{4}} )"
 
 # GMT = %x47.4D.54 ; GMT
 
@@ -110,62 +108,50 @@ GMT = r"(?: GMT )"
 
 # date1 = day SP month SP year
 
-date1 = r"(?: {day} {SP} {month} {SP} {year} )".format(**locals())
+date1 = rf"(?: {day} {SP} {month} {SP} {year} )"
 
 # date2 = day "-" month "-" 2DIGIT
 
-date2 = r"(?: {day} \- {month} \- {DIGIT}{{2}} )".format(**locals())
+date2 = rf"(?: {day} \- {month} \- {DIGIT}{{2}} )"
 
 # date3 = month SP ( 2DIGIT / ( SP DIGIT ) )
 
-date3 = r"(?: {month} {SP} (?: {DIGIT}{{2}} | (?: {SP} {DIGIT} ) ) )".format(**locals())
+date3 = rf"(?: {month} {SP} (?: {DIGIT}{{2}} | (?: {SP} {DIGIT} ) ) )"
 
 # IMF-fixdate = day-name "," SP date1 SP time-of-day SP GMT
 
-IMF_fixdate = r"(?: {day_name} , {SP} {date1} {SP} {time_of_day} {SP} {GMT} )".format(
-    **locals()
-)
+IMF_fixdate = rf"(?: {day_name} , {SP} {date1} {SP} {time_of_day} {SP} {GMT} )"
 
 # asctime-date = day-name SP date3 SP time-of-day SP year
 
-asctime_date = r"(?: {day_name} {SP} {date3} {SP} {time_of_day} {SP} {year} )".format(
-    **locals()
-)
+asctime_date = rf"(?: {day_name} {SP} {date3} {SP} {time_of_day} {SP} {year} )"
 
 # rfc850-date = day-name-l "," SP date2 SP time-of-day SP GMT
 
-rfc850_date = (
-    r"(?: {day_name_l} \, {SP} {date2} {SP} {time_of_day} {SP} {GMT} )".format(
-        **locals()
-    )
-)
+rfc850_date = rf"(?: {day_name_l} \, {SP} {date2} {SP} {time_of_day} {SP} {GMT} )"
 
 # obs-date = rfc850-date / asctime-date
 
-obs_date = r"(?: {rfc850_date} | {asctime_date} )".format(**locals())
+obs_date = rf"(?: {rfc850_date} | {asctime_date} )"
 
 # HTTP-date = IMF-fixdate / obs-date
 
-HTTP_date = r"(?: {IMF_fixdate} | {obs_date} )".format(**locals())
+HTTP_date = rf"(?: {IMF_fixdate} | {obs_date} )"
 
 
 ## Headers
 
 # weight = OWS ";" OWS "q=" qvalue
 
-weight = r"(?: {OWS} \; {OWS} q\= {qvalue} )".format(**locals())
+weight = rf"(?: {OWS} \; {OWS} q\= {qvalue} )"
 
 # accept-ext = OWS ";" OWS token [ "=" ( token / quoted-string ) ]
 
-accept_ext = (
-    r"(?: {OWS} ; {OWS} {token} (?: \= (?: {token} | {quoted_string} ) )? )".format(
-        **locals()
-    )
-)
+accept_ext = rf"(?: {OWS} ; {OWS} {token} (?: \= (?: {token} | {quoted_string} ) )? )"
 
 # accept-params = weight *accept-ext
 
-accept_params = r"(?: {weight} {accept_ext}* )".format(**locals())
+accept_params = rf"(?: {weight} {accept_ext}* )"
 
 # type = token
 
@@ -177,13 +163,11 @@ subtype = token
 
 # media-range = ( "*/*" / ( type "/*" ) / ( type "/" subtype ) ) *( OWS ";" OWS parameter )
 
-media_range = r"(?: (?: \*/\* | (?: {_type} /\* ) | (?: {_type} / {subtype} ) ) ( {OWS} ; {OWS} {parameter} )* )".format(
-    **locals()
-)
+media_range = rf"(?: (?: \*/\* | (?: {_type} /\* ) | (?: {_type} / {subtype} ) ) ( {OWS} ; {OWS} {parameter} )* )"
 
 # Accept = #( media-range [ accept-params ] )
 
-Accept = list_rule(r"(?: {media_range} (?: {accept_params} )? )".format(**locals()))
+Accept = list_rule(rf"(?: {media_range} (?: {accept_params} )? )")
 
 # charset = token
 
@@ -191,9 +175,7 @@ charset = token
 
 # Accept-Charset = 1#( ( charset / "*" ) [ weight ] )
 
-Accept_Charset = list_rule(
-    r"(?: (?: {charset} | \* ) {weight}? )".format(**locals()), 1
-)
+Accept_Charset = list_rule(rf"(?: (?: {charset} | \* ) {weight}? )", 1)
 
 # content-coding = token
 
@@ -201,25 +183,23 @@ content_coding = token
 
 # codings = content-coding / "identity" / "*"
 
-codings = r"(?: {content_coding} | identity | \* )".format(**locals())
+codings = rf"(?: {content_coding} | identity | \* )"
 
 # Accept-Encoding  = #( codings [ weight ] )
 
-Accept_Encoding = list_rule(r"(?: {codings} {weight}? )".format(**locals()))
+Accept_Encoding = list_rule(rf"(?: {codings} {weight}? )")
 
 # language-range = <language-range, see [RFC4647], Section 2.1>
 # language-range   = (1*8ALPHA *("-" 1*8alphanum)) / "*"
 # alphanum         = ALPHA / DIGIT
 
 language_range = (
-    r"(?: (?: {ALPHA}{{1,8}} (?: \- (?: {ALPHA} {DIGIT} ){{1,8}} )* ) | \* )".format(
-        **locals()
-    )
+    rf"(?: (?: {ALPHA}{{1,8}} (?: \- (?: {ALPHA} {DIGIT} ){{1,8}} )* ) | \* )"
 )
 
 # Accept-Language = 1#( language-range [ weight ] )
 
-Accept_Language = list_rule(r"(?: {language_range} {weight}? )".format(**locals()), 1)
+Accept_Language = list_rule(rf"(?: {language_range} {weight}? )", 1)
 
 # method = token
 
@@ -241,13 +221,11 @@ Content_Language = list_rule(language_tag, 1)
 
 # Content-Location = absolute-URI / partial-URI
 
-Content_Location = r"(?: {absolute_URI} | {partial_URI} )".format(**locals())
+Content_Location = rf"(?: {absolute_URI} | {partial_URI} )"
 
 # media-type = type "/" subtype *( OWS ";" OWS parameter )
 
-media_type = r"(?: {_type} / {subtype} (?: {OWS} ; {OWS} {parameter} )* )".format(
-    **locals()
-)
+media_type = rf"(?: {_type} / {subtype} (?: {OWS} ; {OWS} {parameter} )* )"
 
 # Content-Type = media-type
 
@@ -271,19 +249,19 @@ Location = URI_reference
 
 # Max-Forwards = 1*DIGIT
 
-Max_Forwards = r"(?: {DIGIT}+ )".format(**locals())
+Max_Forwards = rf"(?: {DIGIT}+ )"
 
 # Referer = absolute-URI / partial-URI
 
-Referer = r"(?: {absolute_URI} | {partial_URI} )".format(**locals())
+Referer = rf"(?: {absolute_URI} | {partial_URI} )"
 
 # delay-seconds = 1*DIGIT
 
-delay_seconds = r"(?: {DIGIT}+ )".format(**locals())
+delay_seconds = rf"(?: {DIGIT}+ )"
 
 # Retry-After = HTTP-date / delay-seconds
 
-Retry_After = r"(?: {HTTP_date} | {delay_seconds} )".format(**locals())
+Retry_After = rf"(?: {HTTP_date} | {delay_seconds} )"
 
 # product-version = token
 
@@ -291,17 +269,15 @@ product_version = token
 
 # product = token [ "/" product-version ]
 
-product = r"(?: {token} (?: / {product_version} )? )".format(**locals())
+product = rf"(?: {token} (?: / {product_version} )? )"
 
 # Server = product *( RWS ( product / comment ) )
 
-Server = r"(?: {product} (?: {RWS} (?: {product} | {comment} ) )* )".format(**locals())
+Server = rf"(?: {product} (?: {RWS} (?: {product} | {comment} ) )* )"
 
 # User-Agent = product *( RWS ( product / comment ) )
 
-User_Agent = r"(?: {product} (?: {RWS} (?: {product} | {comment} ) )* )".format(
-    **locals()
-)
+User_Agent = rf"(?: {product} (?: {RWS} (?: {product} | {comment} ) )* )"
 
 # Vary = "*" / 1#field-name
 

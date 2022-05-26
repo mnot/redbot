@@ -20,7 +20,7 @@ SPEC_URL = "http://httpwg.org/specs/rfc7234"
 
 # delta-seconds = 1*DIGIT
 
-delta_seconds = r"{DIGIT}+".format(**locals())
+delta_seconds = rf"{DIGIT}+"
 
 # Age = delta-seconds
 
@@ -28,9 +28,7 @@ Age = delta_seconds
 
 # cache-directive = token [ "=" ( token / quoted-string ) ]
 
-cache_directive = r"(?: {token} (?: = (?: {token} | {quoted_string} ) )? )".format(
-    **locals()
-)
+cache_directive = rf"(?: {token} (?: = (?: {token} | {quoted_string} ) )? )"
 
 # Cache-Control = 1#cache-directive
 
@@ -42,13 +40,11 @@ Expires = HTTP_date
 
 # extension-pragma = token [ "=" ( token / quoted-string ) ]
 
-extension_pragma = r"(?: {token} (?: = (?: {token} | {quoted_string} ) )? )".format(
-    **locals()
-)
+extension_pragma = rf"(?: {token} (?: = (?: {token} | {quoted_string} ) )? )"
 
 # pragma-directive = "no-cache" / extension-pragma
 
-pragma_directive = r"(?: no-cache | {extension_pragma} )".format(**locals())
+pragma_directive = rf"(?: no-cache | {extension_pragma} )"
 
 # Pragma = 1#pragma-directive
 
@@ -56,15 +52,15 @@ Pragma = list_rule(pragma_directive, 1)
 
 # warn-agent = ( uri-host [ ":" port ] ) / pseudonym
 
-warn_agent = r"(?: (?: {uri_host} (?: : {port} )? ) | {pseudonym} )"
+warn_agent = rf"(?: (?: {uri_host} (?: : {port} )? ) | {pseudonym} )"
 
 # warn-code = 3DIGIT
 
-warn_code = r"{DIGIT}{{3}}".format(**locals())
+warn_code = rf"{DIGIT}{{3}}"
 
 # warn-date = DQUOTE HTTP-date DQUOTE
 
-warn_date = r"(?: {DQUOTE} {HTTP_date} {DQUOTE} )".format(**locals())
+warn_date = rf"(?: {DQUOTE} {HTTP_date} {DQUOTE} )"
 
 # warn-text = quoted-string
 
@@ -72,8 +68,8 @@ warn_text = quoted_string
 
 # warning-value = warn-code SP warn-agent SP warn-text [ SP warn-date ]
 
-warning_value = r"(?: {warn_code} {SP} {warn_agent} {SP} {warn_text} (?: {SP} {warn_date} )? )".format(
-    **locals()
+warning_value = (
+    rf"(?: {warn_code} {SP} {warn_agent} {SP} {warn_text} (?: {SP} {warn_date} )? )"
 )
 
 # Warning = 1#warning-value

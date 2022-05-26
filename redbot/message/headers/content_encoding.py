@@ -16,7 +16,7 @@ media-type referenced by the Content-Type header field.
 
 Content-Encoding is primarily used to allow a document to be compressed without losing the identity
 of its underlying media type; e.g., `gzip` and `deflate`."""
-    reference = "%s#header.content_encoding" % rfc7231.SPEC_URL
+    reference = f"{rfc7231.SPEC_URL}#header.content_encoding"
     syntax = rfc7231.Content_Encoding
     list_header = True
     deprecated = False

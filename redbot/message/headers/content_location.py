@@ -11,7 +11,7 @@ class content_location(headers.HttpHeader):
 The `Content-Location` header can used to supply an address for the
 representation when it is accessible from a location separate from the request
 URI."""
-    reference = "%s#header.content_location" % rfc7231.SPEC_URL
+    reference = f"{rfc7231.SPEC_URL}#header.content_location"
     syntax = rfc7231.Content_Location
     list_header = False
     deprecated = False

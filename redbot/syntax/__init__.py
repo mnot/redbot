@@ -21,7 +21,7 @@ __all__ = [
 def check_regex() -> None:
     """Grab all the regex in this module."""
     for module_name in __all__:
-        full_name = "redbot.syntax.%s" % module_name
+        full_name = f"redbot.syntax.{module_name}"
         __import__(full_name)
         module = sys.modules[full_name]
         for attr_name in dir(module):

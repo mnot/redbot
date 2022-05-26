@@ -23,15 +23,15 @@ weak = r"(?: \x57\x2F )"
 
 # etagc = "!" / %x23-7E ; '#'-'~' / obs-text
 
-etagc = r"(?: ! | [\x23-\x7E] | {obs_text} )".format(**locals())
+etagc = rf"(?: ! | [\x23-\x7E] | {obs_text} )"
 
 # opaque-tag = DQUOTE *etagc DQUOTE
 
-opaque_tag = r"(?: {DQUOTE} {etagc}* {DQUOTE} )".format(**locals())
+opaque_tag = rf"(?: {DQUOTE} {etagc}* {DQUOTE} )"
 
 # entity-tag = [ weak ] opaque-tag
 
-entity_tag = r"(?: {weak}? {opaque_tag} )".format(**locals())
+entity_tag = rf"(?: {weak}? {opaque_tag} )"
 
 # ETag = entity-tag
 

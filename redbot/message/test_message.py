@@ -48,7 +48,7 @@ class GeneralHeaderTesters(unittest.TestCase):
                 r"\s*,\s*",
             ),
         ]:
-            self.red.__init__() # type: ignore
+            self.red.__init__()  # type: ignore
             outlist = headers.split_string(str(instr), item, split)
             self.assertEqual(
                 expected_outlist,
@@ -91,13 +91,13 @@ class GeneralHeaderTesters(unittest.TestCase):
             ("foo*=''a%cc%88.txt", {}, [headers.PARAM_STAR_NOCHARSET], ";"),
             ("foo*=utf-16''a%cc%88.txt", {}, [headers.PARAM_STAR_CHARSET], ";"),
             ("nostar*=utf-8''a%cc%88.txt", {}, [headers.PARAM_STAR_BAD], ";"),
-            ("NOstar*=utf-8''a%cc%88.txt", {}, [headers.PARAM_STAR_BAD], ";")
+            ("NOstar*=utf-8''a%cc%88.txt", {}, [headers.PARAM_STAR_BAD], ";"),
         ]:
-            self.red.__init__() # type: ignore
+            self.red.__init__()  # type: ignore
             param_dict = headers.parse_params(
                 instr, partial(self.red.add_note, "test"), ["nostar"], delim
             )
-            diff = set([n.__name__ for n in expected_notes]).symmetric_difference( # type: ignore
+            diff = set([n.__name__ for n in expected_notes]).symmetric_difference(  # type: ignore
                 set(self.red.note_classes)
             )
             self.assertEqual(len(diff), 0, f"[{i}] Mismatched notes: {diff}")

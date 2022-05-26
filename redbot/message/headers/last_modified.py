@@ -11,7 +11,7 @@ class last_modified(headers.HttpHeader):
     description = """\
 The `Last-Modified` header indicates the time that the origin server believes the
 representation was last modified."""
-    reference = "%s#header.last_modified" % rfc7232.SPEC_URL
+    reference = f"{rfc7232.SPEC_URL}#header.last_modified"
     syntax = False  # rfc7232.Last_Modified
     list_header = False
     deprecated = False

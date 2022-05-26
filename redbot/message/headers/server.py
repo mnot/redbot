@@ -10,7 +10,7 @@ class server(headers.HttpHeader):
     description = """\
 The `Server` header contains information about the software used by the origin server to handle the
 request."""
-    reference = "%s#header.server" % rfc7231.SPEC_URL
+    reference = f"{rfc7231.SPEC_URL}#header.server"
     syntax = rfc7231.Server
     list_header = True
     deprecated = False

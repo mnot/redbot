@@ -304,7 +304,7 @@ class HttpRequest(HttpMessage):
         scheme = scheme
         if ":" in authority:
             host, port = authority.split(":", 1)
-            authority = host.encode("idna").decode("ascii") + ":%s" % port
+            authority = host.encode("idna").decode("ascii") + f":{port}"
         else:
             authority = authority.encode("idna").decode("ascii")
         sub_delims = "!$&'()*+,;="

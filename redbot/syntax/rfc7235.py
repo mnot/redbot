@@ -18,9 +18,7 @@ SPEC_URL = "http://httpwg.org/specs/rfc7235"
 
 # auth-param = token BWS "=" BWS ( token / quoted-string )
 
-auth_param = r"(?: {token} {BWS} = {BWS} (?: {token} | {quoted_string} ) )".format(
-    **locals()
-)
+auth_param = rf"(?: {token} {BWS} = {BWS} (?: {token} | {quoted_string} ) )"
 
 # auth-scheme = token
 
@@ -28,9 +26,7 @@ auth_scheme = token
 
 # token68 = 1*( ALPHA / DIGIT / "-" / "." / "_" / "~" / "+" / "/" ) *"="
 
-token68 = r"(?: (?: {ALPHA} | {DIGIT} | \- | \. | _ | \~ | \+ | / )* =* )".format(
-    **locals()
-)
+token68 = rf"(?: (?: {ALPHA} | {DIGIT} | \- | \. | _ | \~ | \+ | / )* =* )"
 
 # challenge = auth-scheme
 #             [ 1*SP
@@ -42,7 +38,7 @@ token68 = r"(?: (?: {ALPHA} | {DIGIT} | \- | \. | _ | \~ | \+ | / )* =* )".forma
 #               )
 #             ]
 
-challenge = r"""(?: {auth_scheme}
+challenge = rf"""(?: {auth_scheme}
                         (?: {SP}+
                           (?: {token68} |
                             (?:
@@ -51,9 +47,7 @@ challenge = r"""(?: {auth_scheme}
                             )?
                           )
                         )?
-)""".format(
-    **locals()
-)
+)"""
 
 # credentials = auth-scheme
 #             [ 1*SP
@@ -65,7 +59,7 @@ challenge = r"""(?: {auth_scheme}
 #               )
 #             ]
 
-credentials = r"""(?: {auth_scheme}
+credentials = rf"""(?: {auth_scheme}
                         (?: {SP}+
                           (?: {token68} |
                             (?:
@@ -74,9 +68,7 @@ credentials = r"""(?: {auth_scheme}
                             )?
                           )
                         )?
-)""".format(
-    **locals()
-)
+)"""
 
 # Authorization = credentials
 

@@ -14,7 +14,7 @@ class cache_control(headers.HttpHeader):
 The `Cache-Control` header is used to specify directives that must be obeyed by all caches along
 the request/response chain. Cache directives are unidirectional in that the presence of a directive
 in a request does not imply that the same directive is in effect in the response."""
-    reference = "%s#header.cache-control" % rfc7234.SPEC_URL
+    reference = f"{rfc7234.SPEC_URL}#header.cache-control"
     syntax = rfc7234.Cache_Control
     list_header = True
     deprecated = False

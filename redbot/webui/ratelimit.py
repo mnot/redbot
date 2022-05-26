@@ -40,7 +40,7 @@ class RateLimiter:
                     b"429",
                     b"Too Many Requests",
                     "Your client is over limit. Please try later.",
-                    "client over limit: %s" % client_id,
+                    f"client over limit: {client_id}",
                 )
                 raise ValueError
 
@@ -54,7 +54,7 @@ class RateLimiter:
                     b"429",
                     b"Too Many Requests",
                     "Origin is over limit. Please try later.",
-                    "origin over limit: %s" % origin,
+                    f"origin over limit: {origin}",
                 )
                 raise ValueError
 

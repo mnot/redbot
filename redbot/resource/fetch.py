@@ -22,7 +22,7 @@ from redbot.message.cache import checkCaching
 from redbot.type import StrHeaderListType, RawHeaderListType
 
 
-UA_STRING = "RED/%s (https://redbot.org/)" % __version__
+UA_STRING = f"RED/{__version__} (https://redbot.org/)"
 
 
 class RedHttpClient(thor.http.HttpClient):
@@ -75,7 +75,7 @@ class RedFetcher(thor.events.EventEmitter):
     def __repr__(self) -> str:
         out = [self.__class__.__name__]
         if self.request.uri:
-            out.append("%s" % self.request.uri)
+            out.append(f"{self.request.uri}")
         if self.fetch_started:
             out.append("fetch_started")
         if self.fetch_done:
@@ -163,8 +163,8 @@ class RedFetcher(thor.events.EventEmitter):
         self.exchange.on("response_body", self._response_body)
         self.exchange.once("response_done", self._response_done)
         self.exchange.on("error", self._response_error)
-        self.emit("status", "fetching %s (%s)" % (self.request.uri, self.check_name))
-        self.emit("debug", "fetching %s (%s)" % (self.request.uri, self.check_name))
+        self.emit("status", f"fetching {self.request.uri} ({self.check_name})")
+        self.emit("debug", f"fetching {self.request.uri} ({self.check_name})")
         req_hdrs = [
             (k.encode("ascii", "replace"), v.encode("ascii", "replace"))
             for (k, v) in self.request.headers
@@ -209,7 +209,7 @@ class RedFetcher(thor.events.EventEmitter):
 
     def _response_done(self, trailers: List[Tuple[bytes, bytes]]) -> None:
         "Finish analysing the response, handling any parse errors."
-        self.emit("debug", "fetched %s (%s)" % (self.request.uri, self.check_name))
+        self.emit("debug", f"fetched {self.request.uri} ({self.check_name})")
         self.response.transfer_length = self.exchange.input_transfer_length
         self.response.header_length = self.exchange.input_header_length
         self.response.body_done(True, trailers)
@@ -219,8 +219,7 @@ class RedFetcher(thor.events.EventEmitter):
         "Handle an error encountered while fetching the response."
         self.emit(
             "debug",
-            "fetch error %s (%s) - %s"
-            % (self.request.uri, self.check_name, error.desc),
+            f"fetch error {self.request.uri} ({self.check_name}) - {error.desc}",
         )
         err_sample = error.detail[:40] or ""
         if isinstance(error, httperr.ExtraDataError):
@@ -233,7 +232,7 @@ class RedFetcher(thor.events.EventEmitter):
                 "header-transfer-encoding", BAD_CHUNK, chunk_sample=err_sample
             )
         elif isinstance(error, httperr.HeaderSpaceError):
-            subject = "header-%s" % (error.detail.lower().strip())
+            subject = f"header-{error.detail.lower().strip()}"
             self.add_note(subject, HEADER_NAME_SPACE, header_name=error.detail)
         else:
             self.response.http_error = error

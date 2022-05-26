@@ -210,21 +210,21 @@ def loose_date_parse(cookie_date: str) -> int:
             missing.append("month")
         if not found_year:
             missing.append("year")
-        raise ValueError("didn't have a: %s" % ",".join(missing))
+        raise ValueError(f"didn't have a: {','.join(missing)}")
     if 99 >= year_value >= 70:
         year_value += 1900
     if 69 >= year_value >= 0:
         year_value += 2000
     if day_of_month_value < 1 or day_of_month_value > 31:
-        raise ValueError("%s is out of range for day_of_month" % day_of_month_value)
+        raise ValueError(f"{day_of_month_value} is out of range for day_of_month")
     if year_value < 1601:
-        raise ValueError("%s is out of range for year" % year_value)
+        raise ValueError(f"{year_value} is out of range for year")
     if hour_value > 23:
-        raise ValueError("%s is out of range for hour" % hour_value)
+        raise ValueError(f"{hour_value} is out of range for hour")
     if minute_value > 59:
-        raise ValueError("%s is out of range for minute" % minute_value)
+        raise ValueError(f"{minute_value} is out of range for minute")
     if second_value > 59:
-        raise ValueError("%s is out of range for second" % second_value)
+        raise ValueError(f"{second_value} is out of range for second")
     parsed_cookie_date = timegm(
         (
             year_value,
