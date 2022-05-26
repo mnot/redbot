@@ -37,7 +37,7 @@ jobs:
     - name: Cache venv
       uses: actions/cache@v3
       with:
-        path: ~/.venv
+        path: .venv
         key: ${{ runner.os }}-${{ matrix.python-version }}-venv-${{ hashFiles('**/requirements.txt') }}
         restore-keys: |
           ${{ runner.os }}-${{ matrix.python-version }}-venv-
