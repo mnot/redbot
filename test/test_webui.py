@@ -29,8 +29,8 @@ class BasicWebUiTest(unittest.TestCase):
             raise
 
 
-class CnnWebUiTest(BasicWebUiTest):
-    test_uri = "https://edition.cnn.com/"
+#class CnnWebUiTest(BasicWebUiTest):
+#    test_uri = "https://edition.cnn.com/"
 
 
 def redbot_run():
