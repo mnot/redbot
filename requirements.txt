@@ -10,3 +10,4 @@ twine
 black
 playwright
 build
+pytest

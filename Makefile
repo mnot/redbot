@@ -17,7 +17,7 @@ ICON_FILES = $(foreach i, $(ICONS),$(MODULES)/@fortawesome/fontawesome-free/svgs
 ## Tasks
 
 .PHONY: test
-test: typecheck unit_test webui_test
+test: typecheck message_test webui_test
 
 .PHONY: clean
 clean:
@@ -35,14 +35,6 @@ lint: venv node_modules/standard
 	  redbot bin/redbot_daemon.py bin/redbot_cgi.py bin/redbot_cli
 	$(STANDARD) src/js/*.js
 
-.PHONY: typecheck
-typecheck: venv
-	PYTHONPATH=$(VENV) $(VENV)/python -m mypy --config-file=test/mypy.ini \
-	  redbot \
-	  bin/redbot_daemon.py \
-	  bin/redbot_cgi.py \
-	  bin/redbot_cli
-
 .PHONY: syntax
 syntax: venv
 	PYTHONPATH=$(VENV) $(VENV)/python redbot/syntax/__init__.py
@@ -51,21 +43,36 @@ syntax: venv
 #############################################################################
 ## Coverage and Tests
 
-.PHONY: note_coverage
-note_coverage: venv
-	PYTHONPATH=$(VENV) $(VENV)/python test/note_coverage.py
+.PHONY: webui_test
+webui_test: venv
+	PYTHONPATH=.:$(VENV) $(VENV)/python test/test_webui.py
+
+.PHONY: message_test
+message_test: venv
+	PYTHONPATH=.:$(VENV) $(VENV)/pytest redbot/message/*.py redbot/message/headers/*.py
+
+.PHONY: typecheck
+typecheck: venv
+	PYTHONPATH=$(VENV) $(VENV)/python -m mypy --config-file=test/mypy.ini \
+	  redbot \
+	  bin/redbot_daemon.py \
+	  bin/redbot_cgi.py \
+	  bin/redbot_cli
+
+#############################################################################
+### Coverage
+
+.PHONY: coverage
+coverage: header_coverage note_coverage
 
 .PHONY: header_coverage
 header_coverage: venv
 	PYTHONPATH=$(VENV) $(VENV)/python test/header_coverage.py test/registries/message-headers.xml
 
-.PHONY: webui_test
-webui_test: venv
-	PYTHONPATH=.:$(VENV) $(VENV)/python test/test_webui.py
+.PHONY: note_coverage
+note_coverage: venv
+	PYTHONPATH=$(VENV) $(VENV)/python test/note_coverage.py
 
-.PHONY: unit_test
-unit_test: venv
-	PYTHONPATH=.:$(VENV) $(VENV)/python test/unit_tests.py
 
 #############################################################################
 ## Local test server
