@@ -6,6 +6,7 @@ from playwright.sync_api import sync_playwright, TimeoutError
 import time
 import unittest
 
+TIMEOUT = 30 * 1000
 
 class BasicWebUiTest(unittest.TestCase):
     test_uri = "https://www.mnot.net/"
@@ -23,7 +24,7 @@ class BasicWebUiTest(unittest.TestCase):
 
     def check_complete(self):
         try:
-            self.page.wait_for_selector("div.footer", timeout=30)
+            self.page.wait_for_selector("div.footer", timeout=TIMEOUT)
         except TimeoutError:
             self.page.screenshot(path="error.png", full_page=True)
             raise AssertionError("Timeout")
