@@ -3,8 +3,14 @@ name: Test
 on:
   push:
     branches: [ main ]
+    paths:
+    - '*.py'
+    - '*.yml'
   pull_request:
     branches: [ main ]
+    paths:
+    - '*.py'
+    - '*.yml'
 
 jobs:
   build:
