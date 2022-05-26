@@ -12,7 +12,7 @@ from binascii import b2a_hex
 from enum import Enum
 from typing import Any, Dict, Union
 
-from jinja2 import Markup, escape
+from markupsafe import Markup, escape
 from markdown import markdown
 
 

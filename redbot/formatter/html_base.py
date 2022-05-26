@@ -5,7 +5,8 @@ import os
 from typing import Any, List, Match, Tuple, Union  # pylint: disable=unused-import
 from urllib.parse import urljoin, urlencode, quote as urlquote
 
-from jinja2 import Environment, PackageLoader, select_autoescape, Markup, escape
+from jinja2 import Environment, PackageLoader, select_autoescape
+from markupsafe import Markup, escape
 
 import thor
 
