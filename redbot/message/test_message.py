@@ -1,22 +1,25 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # coding=UTF-8
 
 import sys
 import unittest
 
 from functools import partial
+from typing import List, Sequence, Type
 
 import redbot.message.headers as headers
+from redbot.speak import Note
 from redbot.syntax import rfc7230
 from redbot.message import DummyMsg
 
 
 class GeneralHeaderTesters(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.red = DummyMsg()
 
-    def test_unquote_string(self):
+    def test_unquote_string(self) -> None:
         i = 0
+        expected_notes: Sequence[Type[List]]
         for (instr, expected_str, expected_notes) in [
             ("foo", "foo", []),
             ('"foo"', "foo", []),
@@ -30,11 +33,11 @@ class GeneralHeaderTesters(unittest.TestCase):
             self.assertEqual(
                 expected_str,
                 out_str,
-                "[%s] %s != %s" % (i, str(expected_str), str(out_str)),
+                f"[{i}] {str(expected_str)} != {str(out_str)}",
             )
             i += 1
 
-    def test_split_string(self):
+    def test_split_string(self) -> None:
         i = 0
         for (instr, expected_outlist, item, split) in [
             ('"abc", "def"', ['"abc"', '"def"'], rfc7230.quoted_string, r"\s*,\s*"),
@@ -45,17 +48,19 @@ class GeneralHeaderTesters(unittest.TestCase):
                 r"\s*,\s*",
             ),
         ]:
-            self.red.__init__()
+            self.red.__init__() # type: ignore
             outlist = headers.split_string(str(instr), item, split)
             self.assertEqual(
                 expected_outlist,
                 outlist,
-                "[%s] %s != %s" % (i, str(expected_outlist), str(outlist)),
+                f"[{i}] {str(expected_outlist)} != {str(outlist)}",
             )
             i += 1
 
-    def test_parse_params(self):
+    def test_parse_params(self) -> None:
         i = 0
+        expected_pd: object
+        expected_notes: object
         for (instr, expected_pd, expected_notes, delim) in [
             ("foo=bar", {"foo": "bar"}, [], ";"),
             ('foo="bar"', {"foo": "bar"}, [], ";"),
@@ -86,19 +91,19 @@ class GeneralHeaderTesters(unittest.TestCase):
             ("foo*=''a%cc%88.txt", {}, [headers.PARAM_STAR_NOCHARSET], ";"),
             ("foo*=utf-16''a%cc%88.txt", {}, [headers.PARAM_STAR_CHARSET], ";"),
             ("nostar*=utf-8''a%cc%88.txt", {}, [headers.PARAM_STAR_BAD], ";"),
-            ("NOstar*=utf-8''a%cc%88.txt", {}, [headers.PARAM_STAR_BAD], ";"),
+            ("NOstar*=utf-8''a%cc%88.txt", {}, [headers.PARAM_STAR_BAD], ";")
         ]:
-            self.red.__init__()
+            self.red.__init__() # type: ignore
             param_dict = headers.parse_params(
                 instr, partial(self.red.add_note, "test"), ["nostar"], delim
             )
-            diff = set([n.__name__ for n in expected_notes]).symmetric_difference(
+            diff = set([n.__name__ for n in expected_notes]).symmetric_difference( # type: ignore
                 set(self.red.note_classes)
             )
-            self.assertEqual(len(diff), 0, "[%s] Mismatched notes: %s" % (i, diff))
+            self.assertEqual(len(diff), 0, f"[{i}] Mismatched notes: {diff}")
             self.assertEqual(
                 expected_pd,
                 param_dict,
-                "[%s] %s != %s" % (i, str(expected_pd), str(param_dict)),
+                f"[{i}] {str(expected_pd)} != {str(param_dict)}",
             )
             i += 1
