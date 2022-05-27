@@ -44,6 +44,11 @@ from redbot.type import (
     HttpResponseExchange,
 )  # pylint: disable=unused-import
 
+CSP_VALUE = b"script-src 'self' 'unsafe-inline' https://hcaptcha.com https://*.hcaptcha.com; \
+frame-src 'self' https://hcaptcha.com https://*.hcaptcha.com; \
+style-src 'self' https://hcaptcha.com https://*.hcaptcha.com; \
+connect-src 'self' https://hcaptcha.com https://*.hcaptcha.com;"
+
 
 class RedWebUi:
     """
@@ -236,6 +241,7 @@ class RedWebUi:
             [
                 (b"Content-Type", formatter.content_type()),
                 (b"Cache-Control", b"max-age=60, must-revalidate"),
+                (b"Content-Security-Policy", CSP_VALUE)
             ]
             + extra_headers,
         )
@@ -272,6 +278,7 @@ class RedWebUi:
             [
                 (b"Content-Type", formatter.content_type()),
                 (b"Cache-Control", b"max-age=300"),
+                (b"Content-Security-Policy", CSP_VALUE)
             ],
         )
         formatter.start_output()
@@ -296,6 +303,7 @@ class RedWebUi:
             [
                 (b"Content-Type", formatter.content_type()),
                 (b"Cache-Control", b"max-age=60, must-revalidate"),
+                (b"Content-Security-Policy", CSP_VALUE)
             ],
         )
         formatter.start_output()
