@@ -8,7 +8,24 @@ docReady(function () {
   })
 
   qs('#help').onclick = function () {
-    qsa('.help', toggleHidden)
+    const helpOn = []
+    const helpOff = []
+    document.querySelectorAll('.help').forEach(helpbox => {
+      if (helpbox.classList.contains('hidden')) {
+        helpOff.push(helpbox)
+      } else {
+        helpOn.push(helpbox)
+      }
+    })
+    if (helpOn.length === 0) {
+      helpOff.forEach(helpbox => {
+        helpbox.classList.remove('hidden')
+      })
+    } else {
+      helpOn.forEach(helpbox => {
+        helpbox.classList.add('hidden')
+      })
+    }
   }
 
   qsa('.help', function (element) {
