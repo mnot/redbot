@@ -241,7 +241,7 @@ class RedWebUi:
             [
                 (b"Content-Type", formatter.content_type()),
                 (b"Cache-Control", b"max-age=60, must-revalidate"),
-                (b"Content-Security-Policy", CSP_VALUE)
+                (b"Content-Security-Policy", CSP_VALUE),
             ]
             + extra_headers,
         )
@@ -278,7 +278,7 @@ class RedWebUi:
             [
                 (b"Content-Type", formatter.content_type()),
                 (b"Cache-Control", b"max-age=300"),
-                (b"Content-Security-Policy", CSP_VALUE)
+                (b"Content-Security-Policy", CSP_VALUE),
             ],
         )
         formatter.start_output()
@@ -303,7 +303,7 @@ class RedWebUi:
             [
                 (b"Content-Type", formatter.content_type()),
                 (b"Cache-Control", b"max-age=60, must-revalidate"),
-                (b"Content-Security-Policy", CSP_VALUE)
+                (b"Content-Security-Policy", CSP_VALUE),
             ],
         )
         formatter.start_output()
