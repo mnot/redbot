@@ -141,6 +141,7 @@ class HarFormatter(Formatter):
         out = []
         for m in resource.notes:
             msg = {
+                "note_id": m.__class__.__name__,
                 "subject": m.subject,
                 "category": m.category.name,
                 "level": m.level.name,
