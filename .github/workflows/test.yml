@@ -44,8 +44,6 @@ jobs:
       with:
         path: .venv
         key: ${{ runner.os }}-${{ matrix.python-version }}-venv-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-${{ matrix.python-version }}-venv-
     - name: Set up venv
       run: make venv
     - name: Test
