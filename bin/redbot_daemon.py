@@ -43,8 +43,6 @@ class RedBotServer:
         self.config = config
         self.handler = partial(RedHandler, server=self)
 
-        sys.stderr.write(f"Starting REDbot {__version__} (thor {thor.__version__}).")
-
         # Set up the watchdog
         if notify is not None:
             thor.schedule(self.watchdog_freq, self.watchdog_ping)
@@ -202,7 +200,7 @@ if __name__ == "__main__":
         locale.setlocale(locale.LC_ALL, "")
 
     sys.stderr.write(
-        f"Starting on PID {os.getpid()}...\n"
+        f"Starting on PID {os.getpid()}... (thor {thor.__version__})\n"
         + f"http://{config.get('host', '')}:{config['port']}/\n"
     )
 
