@@ -43,6 +43,8 @@ class RedBotServer:
         self.config = config
         self.handler = partial(RedHandler, server=self)
 
+        sys.stderr.write(f"Starting REDbot {redbot.__version__} (thor {thor.__version__}).")
+
         # Set up the watchdog
         if notify is not None:
             thor.schedule(self.watchdog_freq, self.watchdog_ping)
