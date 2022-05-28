@@ -55,7 +55,7 @@ class RedBotServer:
 
         # Set up the server
         server = thor.http.HttpServer(
-            self.config.get("host", ""), int(self.config["port"])
+            self.config.get("host", "").encode('utf-8'), int(self.config["port"])
         )
         server.on("exchange", self.handler)
         try:
