@@ -1,8 +1,8 @@
-#!/usr/bin/env python
-
 """
 Cacheability checking function.
 """
+
+# pylint: disable=too-many-branches,too-many-statements
 
 from redbot.formatter import relative_time, f_num
 from redbot.message import HttpRequest, HttpResponse

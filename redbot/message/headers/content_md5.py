@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from redbot.message import headers
 
 

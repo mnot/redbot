@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 Slack Formatter for REDbot.
 """

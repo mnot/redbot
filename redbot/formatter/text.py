@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 HAR Formatter for REDbot.
 """

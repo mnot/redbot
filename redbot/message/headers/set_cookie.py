@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-
-
 from calendar import timegm
 from re import match, split
 from urllib.parse import urlsplit
@@ -32,7 +29,7 @@ requests to the server."""
         return loose_parse(field_value, path, start_time, add_note)
 
 
-def loose_parse(
+def loose_parse(  # pylint: disable=too-many-branches
     set_cookie_string: str,
     uri_path: str,
     current_time: float,

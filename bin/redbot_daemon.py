@@ -185,17 +185,15 @@ in standalone server mode. Details follow.
 
 if __name__ == "__main__":
 
-    from optparse import OptionParser
+    import argparse
 
-    usage = "Usage: %prog configfile"  # pylint: disable=invalid-name
-    version = f"REDbot version {__version__}"
-    option_parser = OptionParser(usage=usage, version=version)
-    (options, args) = option_parser.parse_args()
-    if len(args) < 1:
-        option_parser.error("Please specify a config file.")
-
+    parser = argparse.ArgumentParser(description="REDbot daemon")
+    parser.add_argument(
+        "config_file", type=argparse.FileType("r"), help="configuration file"
+    )
+    args = parser.parse_args()
     conf = ConfigParser()
-    conf.read(args[0])
+    conf.read_file(args.config_file)
 
     try:
         locale.setlocale(locale.LC_ALL, locale.normalize(conf["redbot"]["lang"]))

@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-
-
 from redbot.message import headers
 from redbot.syntax import rfc7234
 from redbot.type import AddNoteMethodType

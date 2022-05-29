@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 A Web UI for RED, the Resource Expert Droid.
 """

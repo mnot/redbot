@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 Subrequest for content negotiation checks.
 """

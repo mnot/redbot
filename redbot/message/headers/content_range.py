@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from redbot.message import headers, HttpMessage
 from redbot.speak import Note, categories, levels
 from redbot.syntax import rfc7233

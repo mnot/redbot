@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 The Resource Expert Droid header checks.
 

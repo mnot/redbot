@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 Rate Limiting for RED, the Resource Expert Droid.
 """

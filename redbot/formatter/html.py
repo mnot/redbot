@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 HTML Formatter for REDbot.
 """
@@ -167,7 +165,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     )
 
                     def link_to(matchobj: Match) -> str:
-                        return rf"{matchobj.group(1)}{link_str}{matchobj.group(1)}"
+                        return rf"{matchobj.group(1)}{link_str}{matchobj.group(1)}"  # pylint: disable=cell-var-from-loop
 
                     safe_sample = Markup(
                         re.sub(

@@ -77,6 +77,7 @@ class HttpResource(RedFetcher):
 
     def add_check(self, *resources: RedFetcher) -> None:
         "Remember a subordinate check on one or more HttpResource instance."
+        # pylint: disable=cell-var-from-loop
         for resource in resources:
             self._task_map.add(resource)
 
@@ -91,6 +92,8 @@ class HttpResource(RedFetcher):
             @thor.events.on(resource)
             def check_done() -> None:
                 self.finish_check(resource)
+
+        # pylint: enable=cell-var-from-loop
 
     def finish_check(self, resource: RedFetcher) -> None:
         "A check is done. Was that the last one?"

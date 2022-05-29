@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import re
 from urllib.parse import urljoin
 

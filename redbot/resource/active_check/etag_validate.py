@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 Subrequest for ETag validation checks.
 """

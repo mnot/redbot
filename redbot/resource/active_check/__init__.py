@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 Subrequests to do things like range requests, content negotiation checks,
 and validation.

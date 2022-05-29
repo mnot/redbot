@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import gzip
 import os
 from os import path

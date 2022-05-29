@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # pylint: disable=too-many-public-methods
 
 """

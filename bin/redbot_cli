@@ -7,7 +7,7 @@ CLI interface to REDbot
 __author__ = "Jerome Renard <jerome.renard@gmail.com>"
 
 from configparser import ConfigParser
-from optparse import OptionParser
+from argparse import ArgumentParser
 import sys
 
 import thor
@@ -18,48 +18,41 @@ from redbot.resource import HttpResource
 
 
 def main() -> None:
-    usage = """Usage: %prog [options] <url>"""
-    version = f"""Redbot version {__version__}, http://redbot.org/ """
 
-    opt_parser = OptionParser(usage=usage, version=version)
-    opt_parser.set_defaults(
+    parser = ArgumentParser()
+    parser.set_defaults(
         version=False, descend=False, output_format="text", show_recommendations=False
     )
 
-    opt_parser.add_option(
+    parser.add_argument("url", help="URL to check")
+
+    parser.add_argument(
         "-a",
         "--assets",
         action="store_true",
         dest="descend",
         help="check assets, if the URL contains HTML",
     )
-    opt_parser.add_option(
+    parser.add_argument(
         "-o",
         "--output-format",
         action="store",
         dest="output_format",
-        help=f"one of: {', '.join(available_formatters())}",
+        choices=available_formatters(),
+        default="text",
+        help="output format",
     )
+    args = parser.parse_args()
 
-    (options, args) = opt_parser.parse_args()
+    config_parser = ConfigParser()
+    config_parser.read_dict({"redbot": {"lang": "en", "charset": "utf-8"}})
+    config = config_parser["redbot"]
 
-    if len(args) != 1:
-        opt_parser.error("Please specify a URL.")
+    resource = HttpResource(config, descend=args.descend)
+    resource.set_request(args.url)
 
-    if options.output_format not in available_formatters():
-        opt_parser.error("Unrecognised output format.")
-
-    url = args[0]
-
-    parser = ConfigParser()
-    parser.read_dict({"redbot": {"lang": "en", "charset": "utf-8"}})
-    config = parser["redbot"]
-
-    resource = HttpResource(config, descend=options.descend)
-    resource.set_request(url)
-
-    formatter = find_formatter(options.output_format, "text", options.descend)(
-        config, resource, output, tty_out=sys.stdout.isatty(), descend=options.descend
+    formatter = find_formatter(args.output_format, "text", args.descend)(
+        config, resource, output, tty_out=sys.stdout.isatty(), descend=args.descend
     )
 
     formatter.bind_resource(resource)

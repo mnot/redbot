@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 Subrequest for Last-Modified validation checks.
 """

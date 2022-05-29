@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 All checks that can be performed on a message in isolation.
 """
