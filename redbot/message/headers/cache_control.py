@@ -36,7 +36,7 @@ in a request does not imply that the same directive is in effect in the response
                 return (directive_name, int(directive_val))
             except (ValueError, TypeError):
                 add_note(BAD_CC_SYNTAX, bad_cc_attr=directive_name)
-                raise ValueError
+                raise ValueError  # pylint: disable=raise-missing-from
         return (directive_name, directive_val)
 
 

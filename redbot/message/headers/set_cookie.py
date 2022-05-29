@@ -19,7 +19,7 @@ class set_cookie(headers.HttpHeader):
 The `Set-Cookie` response header sets a stateful "cookie" on the client, to be included in future
 requests to the server."""
     syntax = False
-    reference = headers.rfc6265
+    reference = headers.RFC6265
     list_header = False
     nonstandard_syntax = True
     deprecated = False
@@ -29,11 +29,7 @@ requests to the server."""
     def parse(self, field_value: str, add_note: AddNoteMethodType) -> CookieType:
         path = urlsplit(self.message.base_uri).path
         start_time = self.message.start_time
-        try:
-            set_cookie_value = loose_parse(field_value, path, start_time, add_note)
-        except ValueError:
-            raise
-        return set_cookie_value
+        return loose_parse(field_value, path, start_time, add_note)
 
 
 def loose_parse(
@@ -54,7 +50,9 @@ def loose_parse(
         name, value = name_value_pair.split("=", 1)
     except ValueError:
         add_note(SET_COOKIE_NO_VAL)
-        raise ValueError("Cookie doesn't have a value")
+        raise ValueError(  # pylint: disable=raise-missing-from
+            "Cookie doesn't have a value"
+        )
     name, value = name.strip(), value.strip()
     if name == "":
         add_note(SET_COOKIE_NO_NAME)
@@ -96,7 +94,7 @@ def loose_parse(
             if attribute_value == "":
                 add_note(SET_COOKIE_EMPTY_DOMAIN, cookie_name=cookie_name)
                 continue
-            elif attribute_value[0] == ".":
+            if attribute_value[0] == ".":
                 cookie_domain = attribute_value[1:]
             else:
                 cookie_domain = attribute_value
@@ -123,7 +121,7 @@ def loose_parse(
                 cookie_samesite = "Strict"
             elif case_norm_attribute_value == "none":
                 cookie_samesite = "None"
-            elif case_norm_attribute_value == "lax" or case_norm_attribute_value == "":
+            elif case_norm_attribute_value in ("lax", ""):
                 cookie_samesite = "Lax"
             else:
                 cookie_samesite = attribute_value
@@ -190,7 +188,7 @@ def loose_date_parse(cookie_date: str) -> int:
                 found_day_of_month = True
                 day_of_month_value = int(re_match.group(1))
                 continue
-        if not found_month and date_token[:3].lower() in list(MONTHS.keys()):
+        if not found_month and date_token[:3].lower() in MONTHS:
             found_month = True
             month_value = MONTHS[date_token[:3].lower()]
             continue
@@ -332,7 +330,10 @@ class SET_COOKIE_UNKNOWN_ATTRIBUTE(Note):
 class SET_COOKIE_UNKNOWN_ATTRIBUTE_VALUE(Note):
     category = categories.GENERAL
     level = levels.WARN
-    summary = "The %(cookie_name)s Set-Cookie header has an unknown '%(attribute_name)s' attribute value."
+    summary = (
+        "The %(cookie_name)s Set-Cookie header has an unknown "
+        "'%(attribute_name)s' attribute value."
+    )
     text = """\
   This `Set-Cookie` header has an unknown "%(attribute_name)s" attribute value, "%(attribute_value)s".
 

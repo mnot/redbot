@@ -17,7 +17,7 @@ from redbot.message import HttpResponse
 from redbot.resource import HttpResource
 from redbot.speak import Note, levels, categories
 
-nl = "\n"
+NL = "\n"
 
 
 class BaseTextFormatter(Formatter):
@@ -53,24 +53,24 @@ class BaseTextFormatter(Formatter):
     def start_output(self) -> None:
         pass
 
-    def feed(self, chunk: bytes) -> None:
+    def feed(self, sample: bytes) -> None:
         pass
 
-    def status(self, msg: str) -> None:
+    def status(self, status: str) -> None:
         pass
 
     def finish_output(self) -> None:
         "Fill in the template with RED's results."
         if self.resource.response.complete:
             self.output(
-                nl.join(
+                NL.join(
                     [self.format_headers(r) for r in self.resource.nonfinal_responses]
                 )
-                + nl
-                + nl
+                + NL
+                + NL
             )
-            self.output(self.format_headers(self.resource.response) + nl + nl)
-            self.output(self.format_recommendations(self.resource) + nl)
+            self.output(self.format_headers(self.resource.response) + NL + NL)
+            self.output(self.format_recommendations(self.resource) + NL)
         else:
             if self.resource.response.http_error is None:
                 pass
@@ -84,11 +84,12 @@ class BaseTextFormatter(Formatter):
     def error_output(self, message: str) -> None:
         self.output(self.error_template % message)
 
-    def format_headers(self, response: HttpResponse) -> str:
+    @staticmethod
+    def format_headers(response: HttpResponse) -> str:
         out = [
             f"HTTP/{response.version} {response.status_code} {response.status_phrase}"
         ]
-        return nl.join(out + [f"{h[0]}:{h[1]}" for h in response.headers])
+        return NL.join(out + [f"{h[0]}:{h[1]}" for h in response.headers])
 
     def format_recommendations(self, resource: HttpResource) -> str:
         return "".join(
@@ -105,19 +106,22 @@ class BaseTextFormatter(Formatter):
         if not notes:
             return ""
         out = []
-        if [note for note in notes]:
+        if list(notes):
             out.append(f"* {category.value}:")
-        for m in notes:
-            out.append(f"  * {self.colorize(m.level, m.show_summary('en'))}")
+        for note in notes:
+            out.append(f"  * {self.colorize(note.level, note.show_summary('en'))}")
             if self.verbose:
                 out.append("")
-                out.extend("    " + line for line in self.format_text(m))
+                out.extend("    " + line for line in self.format_text(note))
                 out.append("")
-        out.append(nl)
-        return nl.join(out)
+        out.append(NL)
+        return NL.join(out)
 
-    def format_text(self, m: Note) -> List[str]:
-        return textwrap.wrap(strip_tags(re.sub(r"(?m)\s\s+", " ", m.show_text("en"))))
+    @staticmethod
+    def format_text(note: Note) -> List[str]:
+        return textwrap.wrap(
+            strip_tags(re.sub(r"(?m)\s\s+", " ", note.show_text("en")))
+        )
 
     def colorize(self, level: levels, instr: str) -> str:
         if self.kw.get("tty_out", False):
@@ -137,8 +141,7 @@ class BaseTextFormatter(Formatter):
                 color_start = "\033[1;34m"
                 color_end = "\033[0;39m"
             return color_start + instr + color_end
-        else:
-            return instr
+        return instr
 
 
 class TextFormatter(BaseTextFormatter):
@@ -180,16 +183,15 @@ class TextListFormatter(BaseTextFormatter):
         "Fill in the template with RED's results."
         BaseTextFormatter.finish_output(self)
         sep = "=" * 78
-        nl = "\n"
         for hdr_tag, heading in self.link_order:
             subresources = [d[0] for d in self.resource.linked if d[1] == hdr_tag]
-            self.output(f"{sep}{nl}{heading} ({len(subresources)}){nl}{sep}{nl}")
+            self.output(f"{sep}{NL}{heading} ({len(subresources)}){NL}{sep}{NL}")
             if subresources:
                 subresources.sort(key=operator.attrgetter("request.uri"))
                 for subresource in subresources:
-                    self.output(self.format_uri(subresource) + nl + nl)
-                    self.output(self.format_headers(subresource.response) + nl + nl)
-                    self.output(self.format_recommendations(subresource) + nl + nl)
+                    self.output(self.format_uri(subresource) + NL + NL)
+                    self.output(self.format_headers(subresource.response) + NL + NL)
+                    self.output(self.format_recommendations(subresource) + NL + NL)
 
     def format_uri(self, resource: HttpResource) -> str:
         return self.colorize(None, resource.request.uri)
@@ -205,17 +207,18 @@ class VerboseTextListFormatter(TextListFormatter):
 
 class MLStripper(HTMLParser):
     def __init__(self) -> None:
+        HTMLParser.__init__(self)
         self.reset()
         self.fed: List[str] = []
 
-    def handle_data(self, d: str) -> None:
-        self.fed.append(d)
+    def handle_data(self, data: str) -> None:
+        self.fed.append(data)
 
     def get_data(self) -> str:
         return "".join(self.fed)
 
 
 def strip_tags(html: str) -> str:
-    s = MLStripper()
-    s.feed(html)
-    return s.get_data()
+    stripper = MLStripper()
+    stripper.feed(html)
+    return stripper.get_data()

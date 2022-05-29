@@ -1,5 +1,3 @@
-# pylint: disable=line-too-long, unused-import
-
 """
 Regex for RFC5646
 
@@ -7,6 +5,9 @@ These regex are directly derived from the collected ABNF in RFC5646.
 
 They should be processed with re.VERBOSE.
 """
+
+# pylint: disable=invalid-name
+
 
 from .rfc5234 import DIGIT, ALPHA
 

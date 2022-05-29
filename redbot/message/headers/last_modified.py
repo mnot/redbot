@@ -19,11 +19,7 @@ representation was last modified."""
     valid_in_responses = True
 
     def parse(self, field_value: str, add_note: AddNoteMethodType) -> int:
-        try:
-            date = headers.parse_date(field_value, add_note)
-        except ValueError:
-            raise
-        return date
+        return headers.parse_date(field_value, add_note)
 
 
 class BasicLMTest(headers.HeaderTest):

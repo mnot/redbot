@@ -9,7 +9,7 @@ This is the base class for all subrequests.
 
 from abc import ABCMeta, abstractmethod
 from configparser import SectionProxy
-from typing import List, Tuple, Type, Union, TYPE_CHECKING
+from typing import List, Type, Union, TYPE_CHECKING
 
 from redbot.resource.fetch import RedFetcher
 from redbot.speak import Note, levels, categories
@@ -30,7 +30,9 @@ class SubRequest(RedFetcher, metaclass=ABCMeta):
 
     def __init__(self, config: SectionProxy, base_resource: "HttpResource") -> None:
         self.config = config
-        self.base: HttpResource = base_resource
+        self.base: HttpResource = (  # pylint: disable=used-before-assignment
+            base_resource
+        )
         RedFetcher.__init__(self, config)
         self.check_done = False
         self.on("fetch_done", self._check_done)
@@ -59,10 +61,10 @@ class SubRequest(RedFetcher, metaclass=ABCMeta):
 
     @abstractmethod
     def modify_request_headers(
-        self, base_request_headers: StrHeaderListType
+        self, base_headers: StrHeaderListType
     ) -> StrHeaderListType:
         """Usually overridden; modifies the request headers."""
-        return base_request_headers
+        return base_headers
 
     def add_base_note(
         self, subject: str, note: Type[Note], **kw: Union[str, int]

@@ -16,7 +16,7 @@ The `Content-Disposition` header suggests a name to use when saving the file.
 When the disposition (the first value) is set to `attachment`, it also prompts browsers to download
 the file, rather than display it."""
     reference = "https://tools.ietf.org/html/rfc6266"
-    syntax = r"(?:%s(?:\s*;\s*%s)*)" % (rfc7231.token, rfc7231.parameter)
+    syntax = rf"(?:{rfc7231.token}(?:\s*;\s*{rfc7231.parameter})*)"
     list_header = False
     deprecated = False
     valid_in_requests = True
@@ -69,7 +69,10 @@ carry an internationalised filename, so that browsers can fall back to an ASCII-
 class DISPOSITION_FILENAME_PERCENT(Note):
     category = categories.GENERAL
     level = levels.WARN
-    summary = "The 'filename' parameter on the Content-Disposition header contains a '%%' character."
+    summary = (
+        "The 'filename' parameter on the Content-Disposition header"
+        "contains a '%%' character."
+    )
     text = """\
 The `Content-Disposition` header suggests a filename for clients to use when saving the file
 locally, using the `filename` parameter.

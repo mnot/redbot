@@ -35,7 +35,7 @@ In `201 Created` responses, it identifies a newly created resource."""
             "308",
         ]:
             add_note(LOCATION_UNDEFINED)
-        if not re.match(r"^\s*%s\s*$" % rfc3986.URI, field_value, re.VERBOSE):
+        if not re.match(rf"^\s*{rfc3986.URI}\s*$", field_value, re.VERBOSE):
             add_note(
                 LOCATION_NOT_ABSOLUTE,
                 full_uri=urljoin(self.message.base_uri, field_value),

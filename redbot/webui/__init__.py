@@ -18,7 +18,7 @@ from typing import (
     List,
     Tuple,
     Union,
-)  # pylint: disable=unused-import
+)
 from urllib.parse import parse_qs, urlsplit, urlencode
 
 import thor
@@ -42,7 +42,7 @@ from redbot.type import (
     RawHeaderListType,
     StrHeaderListType,
     HttpResponseExchange,
-)  # pylint: disable=unused-import
+)
 
 CSP_VALUE = b"script-src 'self' 'unsafe-inline' https://hcaptcha.com https://*.hcaptcha.com; \
 frame-src 'self' https://hcaptcha.com https://*.hcaptcha.com; \
@@ -154,7 +154,7 @@ class RedWebUi:
 
         self.timeout = thor.schedule(
             int(self.config["max_runtime"]),
-            self.timeoutError,
+            self.timeout_error,
             top_resource.show_task_map,
         )
 
@@ -232,7 +232,9 @@ class RedWebUi:
             )
             if ti + to > int(self.config["log_traffic"]) * 1024:
                 self.error_log(
-                    f"{ti / 1024:n}K in {to / 1024:n}K out for <{e_url(self.test_uri)}> (descend {self.descend})"
+                    f"{ti / 1024:n}K in {to / 1024:n}"
+                    "K out for <{e_url(self.test_uri)}>"
+                    " (descend {self.descend})"
                 )
 
         self.exchange.response_start(
@@ -315,13 +317,13 @@ class RedWebUi:
     def output(self, chunk: str) -> None:
         self.exchange.response_body(chunk.encode(self.config["charset"], "replace"))
 
-    def timeoutError(self, detail: Callable[[], str] = None) -> None:
+    def timeout_error(self, detail: Callable[[], str] = None) -> None:
         """Max runtime reached."""
         details = ""
         if detail:
             details = f"detail={detail()}"
         self.error_log(f"timeout: <{self.test_uri}> descend={self.descend} {details}")
-        self.output(f"<p class='error'>REDbot timeout.</p>")
+        self.output("<p class='error'>REDbot timeout.</p>")
         self.exchange.response_done([])
 
     def get_client_id(self) -> str:

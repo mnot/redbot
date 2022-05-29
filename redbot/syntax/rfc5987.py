@@ -1,5 +1,3 @@
-# pylint: disable=line-too-long, unused-import
-
 """
 Regex for RFC5987
 
@@ -14,7 +12,6 @@ They should be processed with re.VERBOSE.
 
 from .rfc5234 import ALPHA, DIGIT, HEXDIG
 from .rfc5646 import Language_Tag
-from .rfc7230 import token
 
 SPEC_URL = "http://httpwg.org/specs/rfc5987"
 

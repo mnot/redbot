@@ -1,5 +1,3 @@
-# pylint: disable=line-too-long, unused-import
-
 """
 Regex for RFC7233
 
@@ -10,8 +8,11 @@ These regex are directly derived from the collected ABNF in RFC7233.
 They should be processed with re.VERBOSE.
 """
 
+# pylint: disable=invalid-name
+
+
 from .rfc5234 import DIGIT, SP, VCHAR
-from .rfc7230 import list_rule, OWS, token
+from .rfc7230 import list_rule, token
 from .rfc7231 import HTTP_date
 from .rfc7232 import entity_tag
 
@@ -32,7 +33,7 @@ range_unit = rf"(?: {bytes_unit} | {other_range_unit} )"
 
 # acceptable-ranges = 1#range-unit / "none"
 
-acceptable_ranges = r"(?: %s | none )" % list_rule(range_unit, 1)
+acceptable_ranges = rf"(?: {list_rule(range_unit, 1)} | none )"
 
 # Accept-Ranges = acceptable-ranges
 

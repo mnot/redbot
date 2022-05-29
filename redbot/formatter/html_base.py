@@ -2,7 +2,7 @@ import codecs
 from functools import partial
 import json
 import os
-from typing import Any, List, Match, Tuple, Union  # pylint: disable=unused-import
+from typing import Any, List, Tuple
 from urllib.parse import urljoin, urlencode, quote as urlquote
 
 from jinja2 import Environment, PackageLoader, select_autoescape
@@ -12,10 +12,9 @@ import thor
 
 from redbot import __version__
 from redbot.formatter import Formatter, relative_time, f_num
-from redbot.resource import HttpResource
-from redbot.speak import Note, levels, categories  # pylint: disable=unused-import
+from redbot.speak import Note
 
-nl = "\n"
+NL = "\n"
 
 
 def unicode_url_escape(url: str, safe: str) -> str:
@@ -28,8 +27,8 @@ def unicode_url_escape(url: str, safe: str) -> str:
     return urlquote(url, safe + r"%~")
 
 
-uri_gen_delims = r":/?#[]@"
-uri_sub_delims = r"!$&'()*+,;="
+uri_gen_delims = r":/?#[]@"  # pylint: disable=invalid-name
+uri_sub_delims = r"!$&'()*+,;="  # pylint: disable=invalid-name
 e_url = partial(unicode_url_escape, safe=uri_gen_delims + uri_sub_delims)
 e_authority = partial(unicode_url_escape, safe=uri_sub_delims + r"[]:@")
 e_path = partial(unicode_url_escape, safe=uri_sub_delims + r":@/")
@@ -87,7 +86,7 @@ class BaseHtmlFormatter(Formatter):
         )
         self.start = thor.time()
 
-    def feed(self, chunk: bytes) -> None:
+    def feed(self, sample: bytes) -> None:
         pass
 
     def start_output(self) -> None:
@@ -150,13 +149,13 @@ class BaseHtmlFormatter(Formatter):
         tpl = self.templates.get_template("footer.html")
         self.output(tpl.render(baseuri=self.config["ui_uri"]))
 
-    def status(self, message: str) -> None:
+    def status(self, status: str) -> None:
         "Update the status bar of the browser"
         self.output(
             f"""
 <script>
 <!-- {thor.time() - self.start:3.3f}
-document.querySelector('#red_status').textContent = "{escape(message)}"
+document.querySelector('#red_status').textContent = "{escape(status)}"
 -->
 </script>
 """
@@ -193,7 +192,7 @@ console.log("{thor.time() - self.start:3.3f} {e_js(message)}");
           - '.js': javascript block (with script tag surrounding)
             included on every page view.
         """
-        o = []
+        out = []
         if self.config.get("extra_dir", "") and os.path.isdir(self.config["extra_dir"]):
             extra_files = [
                 p
@@ -203,17 +202,16 @@ console.log("{thor.time() - self.start:3.3f} {e_js(message)}");
             for extra_file in extra_files:
                 extra_path = os.path.join(self.config["extra_dir"], extra_file)
                 try:
-                    o.append(
-                        codecs.open(
-                            extra_path,
-                            mode="r",
-                            encoding="utf-8",
-                            errors="replace",
-                        ).read()
-                    )
+                    with codecs.open(
+                        extra_path,
+                        mode="r",
+                        encoding="utf-8",
+                        errors="replace",
+                    ) as fh:
+                        out.append(fh.read())
                 except IOError as why:
-                    o.append(f"<!-- error opening {extra_file}: {why} -->")
-        return Markup(nl.join(o))
+                    out.append(f"<!-- error opening {extra_file}: {why} -->")
+        return Markup(NL.join(out))
 
     def redbot_link(
         self,
@@ -259,29 +257,30 @@ console.log("{thor.time() - self.start:3.3f} {e_js(message)}");
             elif self.resource.check_name is not None:
                 args.append(("check_name", self.resource.check_name))
             return Markup(
-                f"<a href='?{urlencode(args, doseq=True)}' class='{css_class}' title='{title}'>{link_value}</a>"
+                f"<a href='?{urlencode(args, doseq=True)}'"
+                "class='{css_class}' title='{title}'>{link_value}</a>"
             )
-        else:
-            args.append(("uri", urljoin(uri, link or "")))
-            for k, v in self.resource.request.headers:
-                if referer and k.lower() == "referer":
-                    continue
-                args.append(("req_hdr", f"{k}:{v}"))
-            if referer:
-                args.append(("req_hdr", f"Referer:{uri}"))
-            if check_name:
-                args.append(("check_name", check_name))
-            elif self.resource.check_name is not None:
-                args.append(("check_name", self.resource.check_name))
-            if res_format:
-                args.append(("format", res_format))
-            if descend:
-                args.append(("descend", "1"))
-            argstring = "".join(
-                f"""<input type='hidden' name='{arg[0]}' value='{arg[1].replace("'", '"')}' />"""
-                for arg in args
-            )
-            return Markup(
-                f"""\
-<form class="link" action="" method="POST"><input type="submit" value="{link_value}" class="post_link {css_class}" title="{title}" />{argstring}</form>"""
-            )
+        args.append(("uri", urljoin(uri, link or "")))
+        for name, val in self.resource.request.headers:
+            if referer and name.lower() == "referer":
+                continue
+            args.append(("req_hdr", f"{name}:{val}"))
+        if referer:
+            args.append(("req_hdr", f"Referer:{uri}"))
+        if check_name:
+            args.append(("check_name", check_name))
+        elif self.resource.check_name is not None:
+            args.append(("check_name", self.resource.check_name))
+        if res_format:
+            args.append(("format", res_format))
+        if descend:
+            args.append(("descend", "1"))
+        argstring = "".join(
+            f"""<input type='hidden' name='{arg[0]}' value='{arg[1].replace("'", '"')}' />"""
+            for arg in args
+        )
+        return Markup(
+            f'<form class="link" action="" method="POST">'
+            f'<input type="submit" value="{link_value}" class="post_link {css_class}"'
+            f' title="{title}" />{argstring}</form>'
+        )

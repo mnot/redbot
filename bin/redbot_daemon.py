@@ -27,9 +27,9 @@ if os.environ.get("SYSTEMD_WATCHDOG"):
     try:
         from cysystemd.daemon import notify, Notification  # type: ignore
     except ImportError:
-        notify = Notification = None
+        notify = Notification = None  # pylint: disable=invalid-name
 else:
-    notify = Notification = None
+    notify = Notification = None  # pylint: disable=invalid-name
 
 _loop.precision = 0.1
 
@@ -68,7 +68,8 @@ class RedBotServer:
         notify(Notification.WATCHDOG)
         thor.schedule(self.watchdog_freq, self.watchdog_ping)
 
-    def abrt_handler(self, signum: int, frame: FrameType) -> None:
+    @staticmethod
+    def abrt_handler(signum: int, frame: FrameType) -> None:
         sys.stderr.write("* ABORT\n")
         traceback.print_stack(frame)
         sys.exit(0)
@@ -76,14 +77,16 @@ class RedBotServer:
     @staticmethod
     def walk_files(dir_name: str, base: bytes = b"") -> Dict[bytes, bytes]:
         out: Dict[bytes, bytes] = {}
-        for root, dirs, files in os.walk(dir_name):
+        for root, _, files in os.walk(dir_name):
             for name in files:
                 try:
                     path = os.path.join(root, name)
                     uri = os.path.relpath(path, dir_name).encode("utf-8")
-                    out[b"/%s%s" % (base, uri)] = open(path, "rb").read()
+                    with open(path, "rb") as fh:
+                        out[b"/%s%s" % (base, uri)] = fh.read()
                     if uri.endswith(b"/index.html"):
-                        out[b"/%s%s" % (base, uri[:-10])] = open(path, "rb").read()
+                        with open(path, "rb") as fh:
+                            out[b"/%s%s" % (base, uri[:-10])] = fh.read()
                 except IOError:
                     sys.stderr.write(f"* Problem loading {path}\n")
         return out
@@ -154,7 +157,7 @@ class RedHandler:
                     self.exchange,
                     self.error_log,
                 )
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 self.error_log(
                     """
 *** FATAL ERROR
@@ -175,7 +178,8 @@ in standalone server mode. Details follow.
             self.exchange.response_body(b"'%s' not found." % p_uri.path)
             self.exchange.response_done([])
 
-    def error_log(self, message: str) -> None:
+    @staticmethod
+    def error_log(message: str) -> None:
         sys.stderr.write(f"{message}\n")
 
 
@@ -183,7 +187,7 @@ if __name__ == "__main__":
 
     from optparse import OptionParser
 
-    usage = "Usage: %prog configfile"
+    usage = "Usage: %prog configfile"  # pylint: disable=invalid-name
     version = f"REDbot version {__version__}"
     option_parser = OptionParser(usage=usage, version=version)
     (options, args) = option_parser.parse_args()
@@ -192,16 +196,15 @@ if __name__ == "__main__":
 
     conf = ConfigParser()
     conf.read(args[0])
-    config = conf["redbot"]
 
     try:
-        locale.setlocale(locale.LC_ALL, locale.normalize(config["lang"]))
+        locale.setlocale(locale.LC_ALL, locale.normalize(conf["redbot"]["lang"]))
     except ValueError:
         locale.setlocale(locale.LC_ALL, "")
 
     sys.stderr.write(
         f"Starting on PID {os.getpid()}... (thor {thor.__version__})\n"
-        + f"http://{config.get('host', '')}:{config['port']}/\n"
+        + f"http://{conf['redbot'].get('host', '')}:{conf['redbot']['port']}/\n"
     )
 
-    RedBotServer(config)
+    RedBotServer(conf["redbot"])

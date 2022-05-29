@@ -9,12 +9,12 @@ from redbot.message import HttpRequest, HttpResponse
 from redbot.speak import Note, categories, levels
 
 ### configuration
-cacheable_methods = ["GET"]
-heuristic_cacheable_status = ["200", "203", "206", "300", "301", "410"]
-max_clock_skew = 5  # seconds
+CACHEABLE_METHODS = ["GET"]
+HEURISTIC_CACHEABLE_STATUS = ["200", "203", "206", "300", "301", "410"]
+MAX_CLOCK_SKEW = 5  # seconds
 
 
-def checkCaching(response: HttpResponse, request: HttpRequest = None) -> None:
+def check_caching(response: HttpResponse, request: HttpRequest = None) -> None:
     "Examine HTTP caching characteristics."
 
     # get header values
@@ -64,7 +64,7 @@ def checkCaching(response: HttpResponse, request: HttpRequest = None) -> None:
             response.add_note("header-cache-control", CC_DUP, cc=cc)
 
     # Who can store this?
-    if request and request.method not in cacheable_methods:
+    if request and request.method not in CACHEABLE_METHODS:
         response.store_shared = response.store_private = False
         request.add_note("method", METHOD_UNCACHEABLE, method=request.method)
         return  # bail; nothing else to see here
@@ -157,9 +157,9 @@ def checkCaching(response: HttpResponse, request: HttpRequest = None) -> None:
             )
     else:
         skew = date_hdr - response.start_time + (response.age)
-        if response.age > max_clock_skew and (current_age - skew) < max_clock_skew:
+        if response.age > MAX_CLOCK_SKEW > (current_age - skew):
             response.add_note("header-date header-age", AGE_PENALTY)
-        elif abs(skew) > max_clock_skew:
+        elif abs(skew) > MAX_CLOCK_SKEW:
             response.add_note(
                 "header-date",
                 DATE_INCORRECT,
@@ -222,7 +222,7 @@ def checkCaching(response: HttpResponse, request: HttpRequest = None) -> None:
             )
 
     # can heuristic freshness be used?
-    elif response.status_code in heuristic_cacheable_status:
+    elif response.status_code in HEURISTIC_CACHEABLE_STATUS:
         response.add_note("header-last-modified", FRESHNESS_HEURISTIC)
     else:
         response.add_note("", FRESHNESS_NONE)
@@ -705,7 +705,7 @@ Ask your server administrator to synchronise the clock, e.g., using
 
 Apparent clock skew can also be caused by caching the response without adjusting the `Age` header;
 e.g., in a reverse proxy or Content Delivery network. See [this
-paper](https://www.usenix.org/legacy/events/usits01/full_papers/cohen/cohen_html/index.html) for more information. """
+paper](https://www.usenix.org/legacy/events/usits01/full_papers/cohen/cohen_html/index.html) for more information. """  # pylint: disable=line-too-long
 
 
 class AGE_PENALTY(Note):

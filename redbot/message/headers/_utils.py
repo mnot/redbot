@@ -1,7 +1,7 @@
 import calendar
 from email.utils import parsedate as lib_parsedate
 import re
-from typing import Callable, Dict, List, Tuple, Union  # pylint: disable=unused-import
+from typing import Dict, List, Union
 
 from urllib.parse import unquote as urlunquote
 
@@ -24,10 +24,10 @@ RE_FLAGS = re.VERBOSE | re.IGNORECASE
 
 def parse_date(value: str, add_note: AddNoteMethodType) -> int:
     """Parse a HTTP date. Raises ValueError if it's bad."""
-    if not re.match(r"^%s$" % rfc7231.HTTP_date, value, RE_FLAGS):
+    if not re.match(rf"^{rfc7231.HTTP_date}$", value, RE_FLAGS):
         add_note(BAD_DATE_SYNTAX)
         raise ValueError
-    if re.match(r"^%s$" % rfc7231.obs_date, value, RE_FLAGS):
+    if re.match(rf"^{rfc7231.obs_date}$", value, RE_FLAGS):
         add_note(DATE_OBSOLETE)
     date_tuple = lib_parsedate(value)
     if date_tuple is None:
@@ -71,8 +71,7 @@ def split_string(instr: str, item: str, split: str) -> List[str]:
     if not instr:
         return []
     return [
-        h.strip()
-        for h in re.findall(r"%s(?=%s|\s*$)" % (item, split), instr, re.VERBOSE)
+        h.strip() for h in re.findall(rf"{item}(?={split}|\s*$)", instr, re.VERBOSE)
     ]
 
 
@@ -86,7 +85,7 @@ def parse_params(
     Parse parameters into a dictionary.
     """
     param_dict: Dict[str, str] = {}
-    for param in split_string(instr, rfc7231.parameter, r"\s*%s\s*" % delim):
+    for param in split_string(instr, rfc7231.parameter, rf"\s*{delim}\s*"):
         try:
             key, val = param.split("=", 1)
         except ValueError:
@@ -119,7 +118,7 @@ def parse_params(
                 if enc == "":
                     add_note(PARAM_STAR_NOCHARSET, param=k_norm)
                     continue
-                elif enc not in ["utf-8"]:
+                if enc not in ["utf-8"]:
                     add_note(PARAM_STAR_CHARSET, param=k_norm, enc=enc)
                     continue
                 unq_v = urlunquote(esc_v)

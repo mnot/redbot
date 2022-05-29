@@ -20,11 +20,7 @@ It is used by caches as input to expiration calculations, and to detect clock dr
     valid_in_responses = True
 
     def parse(self, field_value: str, add_note: AddNoteMethodType) -> int:
-        try:
-            date_value = headers.parse_date(field_value, add_note)
-        except ValueError:
-            raise
-        return date_value
+        return headers.parse_date(field_value, add_note)
 
 
 class BasicDateTest(headers.HeaderTest):

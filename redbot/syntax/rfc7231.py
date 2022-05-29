@@ -1,5 +1,3 @@
-# pylint: disable=line-too-long, unused-import
-
 """
 Regex for RFC7231
 
@@ -10,13 +8,15 @@ These regex are directly derived from the collected ABNF in RFC7231.
 They should be processed with re.VERBOSE.
 """
 
+# pylint: disable=invalid-name,line-too-long
+
+
 from .rfc3986 import URI_reference, absolute_URI
 from .rfc5322 import mailbox
 from .rfc5234 import DIGIT, SP, ALPHA
 from .rfc5646 import Language_Tag as language_tag
 from .rfc7230 import (
     list_rule,
-    BWS,
     OWS,
     RWS,
     field_name,
@@ -281,4 +281,4 @@ User_Agent = rf"(?: {product} (?: {RWS} (?: {product} | {comment} ) )* )"
 
 # Vary = "*" / 1#field-name
 
-Vary = r"(?: \* | %s )" % list_rule(field_name, 1)
+Vary = rf"(?: \* | {list_rule(field_name, 1)} )"

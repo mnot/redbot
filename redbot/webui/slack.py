@@ -1,8 +1,6 @@
-from functools import partial
 import hmac
 import json
 from typing import TYPE_CHECKING
-from urllib.parse import parse_qs
 
 import thor
 from thor.http import get_header

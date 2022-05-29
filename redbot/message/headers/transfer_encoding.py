@@ -38,7 +38,7 @@ without knowing the entire body's length."""
         return coding
 
     def evaluate(self, add_note: AddNoteMethodType) -> None:
-        unwanted = set([c for c in self.value if c not in ["chunked", "identity"]])
+        unwanted = {c for c in self.value if c not in ["chunked", "identity"]}
         if unwanted:
             add_note(TRANSFER_CODING_UNWANTED, unwanted_codings=", ".join(unwanted))
         if "identity" in self.value:

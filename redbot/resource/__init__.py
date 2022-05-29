@@ -97,7 +97,9 @@ class HttpResource(RedFetcher):
         try:
             self._task_map.remove(resource)
         except KeyError:
-            raise KeyError(f"* Can't find {resource} in task map: {self._task_map}")
+            raise KeyError(  # pylint: disable=raise-missing-from
+                f"* Can't find {resource} in task map: {self._task_map}"
+            )
         tasks_left = len(self._task_map)
         #        self.emit("debug", "%s checks remaining: %i" % (repr(self), tasks_left))
         if tasks_left == 0:

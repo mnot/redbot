@@ -1,5 +1,3 @@
-# pylint: disable=line-too-long, unused-import
-
 """
 Regex for RFC7235
 

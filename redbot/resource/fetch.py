@@ -10,6 +10,7 @@ from configparser import SectionProxy
 from typing import Any, Dict, List, Tuple, Type, Union
 
 import thor
+from thor.http.client import HttpClientExchange
 import thor.http.error as httperr
 
 from netaddr import IPAddress  # type: ignore
@@ -18,7 +19,7 @@ from redbot import __version__
 from redbot.speak import Note, levels, categories
 from redbot.message import HttpRequest, HttpResponse
 from redbot.message.status import StatusChecker
-from redbot.message.cache import checkCaching
+from redbot.message.cache import check_caching
 from redbot.type import StrHeaderListType, RawHeaderListType
 
 
@@ -62,7 +63,7 @@ class RedFetcher(thor.events.EventEmitter):
         self.request = HttpRequest(self.ignore_note)
         self.nonfinal_responses: List[HttpResponse] = []
         self.response = HttpResponse(self.add_note)
-        self.exchange: thor.http.ClientExchange = None
+        self.exchange: HttpClientExchange = None
         self.fetch_started = False
         self.fetch_done = False
         self.setup_check_ip()
@@ -80,7 +81,7 @@ class RedFetcher(thor.events.EventEmitter):
             out.append("fetch_started")
         if self.fetch_done:
             out.append("fetch_done")
-        return "<%s at %#x>" % (", ".join(out), id(self))
+        return f"{', '.join(out)} at {id(self):#x}>"
 
     def add_note(self, subject: str, note: Type[Note], **kw: Union[str, int]) -> None:
         "Set a note."
@@ -88,11 +89,12 @@ class RedFetcher(thor.events.EventEmitter):
             kw["response"] = self.response_phrase
         self.notes.append(note(subject, kw))
 
-    def ignore_note(self, subject: str, note: Type[Note], **kw: str) -> None:
+    @staticmethod
+    def ignore_note(subject: str, note: Type[Note], **kw: str) -> None:
         "Ignore a note (for requests)."
         return
 
-    def preflight(self) -> bool:
+    def preflight(self) -> bool:  # pylint: disable=no-self-use
         """
         Check to see if we should bother running. Return True
         if so; False if not. Can be overridden.
@@ -200,7 +202,7 @@ class RedFetcher(thor.events.EventEmitter):
         self.response.process_top_line(self.exchange.res_version, status, phrase)
         self.response.process_raw_headers(res_headers)
         StatusChecker(self.response, self.request)
-        checkCaching(self.response, self.request)
+        check_caching(self.response, self.request)
 
     def _response_body(self, chunk: bytes) -> None:
         "Process a chunk of the response body."

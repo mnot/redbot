@@ -53,7 +53,7 @@ class HarFormatter(Formatter):
     def start_output(self) -> None:
         pass
 
-    def status(self, msg: str) -> None:
+    def status(self, status: str) -> None:
         pass
 
     def feed(self, sample: bytes) -> None:
@@ -147,18 +147,19 @@ class HarFormatter(Formatter):
         self.har["log"]["pages"].append(page)
         return page_id
 
-    def format_headers(self, hdrs: StrHeaderListType) -> List[Dict[str, str]]:
+    @staticmethod
+    def format_headers(hdrs: StrHeaderListType) -> List[Dict[str, str]]:
         return [{"name": n, "value": v} for n, v in hdrs]
 
     def format_notes(self, resource: HttpResource) -> List[Dict[str, str]]:
         out = []
-        for m in resource.notes:
+        for note in resource.notes:
             msg = {
-                "note_id": m.__class__.__name__,
-                "subject": m.subject,
-                "category": m.category.name,
-                "level": m.level.name,
-                "summary": m.show_summary(self.lang),
+                "note_id": note.__class__.__name__,
+                "subject": note.subject,
+                "category": note.category.name,
+                "level": note.level.name,
+                "summary": note.show_summary(self.lang),
             }
             out.append(msg)
         return out

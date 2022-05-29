@@ -43,14 +43,17 @@ class LmValidate(SubRequest):
                 )
             except ValueError:
                 return base_headers  # this shouldn't really happen
-            date_str = "%s, %.2d %s %.4d %.2d:%.2d:%.2d GMT" % (
-                self._weekdays[l_m.weekday()],
-                l_m.day,
-                self._months[l_m.month],
-                l_m.year,
-                l_m.hour,
-                l_m.minute,
-                l_m.second,
+            date_str = (
+                "%s, %.2d %s %.4d %.2d:%.2d:%.2d GMT"  # pylint: disable=consider-using-f-string
+                % (
+                    self._weekdays[l_m.weekday()],
+                    l_m.day,
+                    self._months[l_m.month],
+                    l_m.year,
+                    l_m.hour,
+                    l_m.minute,
+                    l_m.second,
+                )
             )
             base_headers.append(("If-Modified-Since", date_str))
         return base_headers
@@ -137,7 +140,10 @@ changed, indicating that it doesn't support `Last-Modified` validation."""
 class IMS_UNKNOWN(Note):
     category = categories.VALIDATION
     level = levels.INFO
-    summary = "An If-Modified-Since conditional request returned the full content, but it had changed."
+    summary = (
+        "An If-Modified-Since conditional request returned the full content, "
+        "but it had changed."
+    )
     text = """\
 HTTP allows clients to make conditional requests to see if a copy that they hold is still valid.
 Since this response has a `Last-Modified` header, clients should be able to use an

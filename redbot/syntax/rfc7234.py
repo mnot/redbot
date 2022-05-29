@@ -1,5 +1,3 @@
-# pylint: disable=line-too-long, unused-import
-
 """
 Regex for RFC7234
 
@@ -12,7 +10,7 @@ They should be processed with re.VERBOSE.
 
 from .rfc3986 import port, host as uri_host
 from .rfc5234 import DIGIT, DQUOTE, SP
-from .rfc7230 import list_rule, OWS, field_name, pseudonym, quoted_string, token
+from .rfc7230 import list_rule, pseudonym, quoted_string, token
 from .rfc7231 import HTTP_date
 
 SPEC_URL = "http://httpwg.org/specs/rfc7234"
@@ -74,4 +72,4 @@ warning_value = (
 
 # Warning = 1#warning-value
 
-Warning = list_rule(warning_value, 1)
+Warning_ = list_rule(warning_value, 1)

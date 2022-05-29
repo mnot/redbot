@@ -1,5 +1,3 @@
-# pylint: disable=line-too-long, unused-import
-
 """
 Regex for RFC7232
 
@@ -10,8 +8,11 @@ These regex are directly derived from the collected ABNF in RFC7232.
 They should be processed with re.VERBOSE.
 """
 
+# pylint: disable=invalid-name
+
+
 from .rfc5234 import DQUOTE
-from .rfc7230 import list_rule, OWS, obs_text
+from .rfc7230 import list_rule, obs_text
 from .rfc7231 import HTTP_date
 
 SPEC_URL = "http://httpwg.org/specs/rfc7232"
@@ -39,7 +40,7 @@ ETag = entity_tag
 
 # If-Match = "*" / 1#entity-tag
 
-If_Match = r"(?: \* | %s )" % list_rule(entity_tag, 1)
+If_Match = rf"(?: \* | {list_rule(entity_tag, 1)} )"
 
 # If-Modified-Since = HTTP-date
 
@@ -47,7 +48,7 @@ If_Modified_Since = HTTP_date
 
 # If-None-Match = "*" / 1#entity-tag
 
-If_None_Match = r"(?: \* | %s )" % list_rule(entity_tag, 1)
+If_None_Match = rf"(?: \* | {list_rule(entity_tag, 1)} )"
 
 # If-Unmodified-Since = HTTP-date
 

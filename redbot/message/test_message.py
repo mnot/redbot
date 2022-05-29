@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 # coding=UTF-8
 
-import sys
 import unittest
 
 from functools import partial
-from typing import List, Sequence, Type, Tuple, Dict
+from typing import List, Type, Dict
 
-import redbot.message.headers as headers
+from redbot.message import headers
 from redbot.speak import Note
 from redbot.syntax import rfc7230
 from redbot.message import DummyMsg
@@ -19,8 +18,7 @@ class GeneralHeaderTesters(unittest.TestCase):
 
     def test_unquote_string(self) -> None:
         i = 0
-        expected_notes: Sequence[Type[List]]
-        for (instr, expected_str, expected_notes) in [
+        for (instr, expected_str, _) in [
             ("foo", "foo", []),
             ('"foo"', "foo", []),
             (r'"fo\"o"', 'fo"o', []),
@@ -97,7 +95,7 @@ class GeneralHeaderTesters(unittest.TestCase):
             param_dict = headers.parse_params(
                 instr, partial(self.red.add_note, "test"), ["nostar"], delim
             )
-            diff = set([n.__name__ for n in expected_notes]).symmetric_difference(
+            diff = {n.__name__ for n in expected_notes}.symmetric_difference(
                 set(self.red.note_classes)
             )
             self.assertEqual(len(diff), 0, f"[{i}] Mismatched notes: {diff}")

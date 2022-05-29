@@ -4,10 +4,14 @@
 A CGI-based Web UI for RED, the Resource Expert Droid.
 """
 
+import cgitb
 from configparser import ConfigParser, SectionProxy
 import locale
 import os
 import sys
+import stat
+import traceback
+import tempfile
 from types import TracebackType
 from typing import Callable, Type
 
@@ -30,34 +34,32 @@ def cgi_main(config: SectionProxy) -> None:
         except IOError:
             pass
 
-    config["ui_uri"] = "%s://%s%s%s" % (
-        "HTTPS" in os.environ and "https" or "http",
-        os.environ.get("HTTP_HOST"),
-        os.environ.get("SCRIPT_NAME"),
-        os.environ.get("PATH_INFO", ""),
+    config["ui_uri"] = (
+        f'{"HTTPS" in os.environ and "https" or "http"}://'
+        f'{os.environ.get("HTTP_HOST")}'
+        f'{os.environ.get("SCRIPT_NAME")}'
+        f'{os.environ.get("PATH_INFO", "")}'
     )
     method = os.environ.get("REQUEST_METHOD").encode(config["charset"])
     query_string = os.environ.get("QUERY_STRING", "").encode(config["charset"])
     req_hdrs: RawHeaderListType = []
-    for (k, v) in os.environ.items():
-        if k[:5] == "HTTP_":
-            req_hdrs.append((k[:5].lower().encode("ascii"), v.encode("ascii")))
+    for (key, val) in os.environ.items():
+        if key[:5] == "HTTP_":
+            req_hdrs.append((key[:5].lower().encode("ascii"), val.encode("ascii")))
     req_body = sys.stdin.read().encode("utf-8")
 
     class Exchange(HttpResponseExchange):
-        @staticmethod
         def response_start(
-            code: bytes, phrase: bytes, res_hdrs: RawHeaderListType
+            self, status_code: bytes, status_phrase: bytes, res_hdrs: RawHeaderListType
         ) -> None:
-            out_v = [b"Status: %s %s" % (code, phrase)]
+            out_v = [b"Status: %s %s" % (status_code, status_phrase)]
             for name, value in res_hdrs:
                 out_v.append(b"%s: %s" % (name, value))
             out_v.append(b"")
             out_v.append(b"")
             out(b"\n".join(out_v))
 
-        @staticmethod
-        def response_body(chunk: bytes) -> None:
+        def response_body(self, chunk: bytes) -> None:
             freak_ceiling = 20000
             rest = None
             if len(chunk) > freak_ceiling:
@@ -65,10 +67,9 @@ def cgi_main(config: SectionProxy) -> None:
                 chunk = chunk[:freak_ceiling]
             out(chunk)
             if rest:
-                Exchange.response_body(rest)
+                self.response_body(rest)
 
-        @staticmethod
-        def response_done(trailers: RawHeaderListType) -> None:
+        def response_done(self, trailers: RawHeaderListType) -> None:
             thor.schedule(0, thor.stop)
 
     try:
@@ -81,7 +82,7 @@ def cgi_main(config: SectionProxy) -> None:
             Exchange(),
         )
         thor.run()
-    except Exception:
+    except Exception:  # pylint: disable=broad-except
         except_handler_factory(config, qs=query_string.decode(config["charset"]))()
 
 
@@ -108,7 +109,6 @@ def except_handler_factory(
         """
         if not etype or not evalue or not etb:
             etype, evalue, etb = sys.exc_info()
-        import cgitb
 
         out(cgitb.reset())
         if not config.get("exception_dir", ""):
@@ -119,15 +119,11 @@ def except_handler_factory(
     """
             )
         else:
-            import stat
-            import traceback
-            import tempfile
-
             if qs:
                 doc = f"<h3><code>{qs}</code></h3>"
             try:
                 doc += cgitb.html((etype, evalue, etb), 5)
-            except:  # just in case something goes wrong
+            except Exception:  # pylint: disable=broad-except
                 doc += (
                     "<pre>"
                     + "".join(traceback.format_exception(etype, evalue, etb))
@@ -158,7 +154,7 @@ def except_handler_factory(
 A problem has occurred, but it probably isn't your fault.
 REDbot has remembered it, and we'll try to fix it soon."""
                 )
-            except:
+            except Exception:  # pylint: disable=broad-except
                 out(
                     error_template
                     % """\

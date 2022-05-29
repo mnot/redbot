@@ -91,6 +91,6 @@ def display_bytes(inbytes: bytes, encoding: str = "utf-8", truncate: int = 40) -
     out = []
     for char in instr[:truncate]:
         if not char.isprintable():
-            char = r"\x%s" % b2a_hex(char.encode(encoding)).decode("ascii")
+            char = rf"\x{b2a_hex(char.encode(encoding)).decode('ascii')}"
         out.append(char)
     return "".join(out)

@@ -1,6 +1,6 @@
-# pylint: disable=line-too-long, unused-import
-
 from .rfc5234 import VCHAR, WSP, CRLF, ALPHA, DIGIT
+
+# pylint: disable=invalid-name
 
 
 # qtext           =  %d33 /             ; Printable US-ASCII
@@ -93,7 +93,7 @@ local_part = rf"(?: {dot_atom} | {quoted_string} )"
 #                     %d94-126 /         ;  characters not including
 #                     obs-dtext          ;  "[", "]", or "\"
 
-dtext = rf"[\x21-\x5a\x5e-\x7e]"
+dtext = r"[\x21-\x5a\x5e-\x7e]"
 
 # domain-literal  =   [CFWS] "[" *([FWS] dtext) [FWS] "]" [CFWS]
 

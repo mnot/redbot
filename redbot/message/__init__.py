@@ -74,7 +74,7 @@ class HttpMessage(thor.events.EventEmitter):
 
     def __repr__(self) -> str:
         status = [self.__class__.__module__ + "." + self.__class__.__name__]
-        return "<%s at %#x>" % (", ".join(status), id(self))
+        return f"<{', '.join(status)} at {id(self):#x}>"
 
     def __getstate__(self) -> Dict[str, Any]:
         state: Dict[str, Any] = thor.events.EventEmitter.__getstate__(self)
@@ -121,7 +121,9 @@ class HttpMessage(thor.events.EventEmitter):
         if len(self.payload_sample) > 4:
             self.payload_sample.pop(0)
         self._md5_processor.update(chunk)
-        if (not self.is_request) and self.status_code == "206":
+        if (
+            not self.is_request
+        ) and self.status_code == "206":  # pylint: disable=no-member
             # only store 206; don't try to understand it
             self.payload += chunk
         else:
@@ -157,7 +159,8 @@ class HttpMessage(thor.events.EventEmitter):
         self.decoded_md5 = self._md5_post_processor.digest()
 
         if self.is_request or (
-            not self.is_head_response and self.status_code not in ["304"]
+            not self.is_head_response  # pylint: disable=no-member
+            and self.status_code not in ["304"]  # pylint: disable=no-member
         ):
             # check payload basics
             if "content-length" in self.parsed_headers:
@@ -237,8 +240,8 @@ class HttpMessage(thor.events.EventEmitter):
         magic = content[:2]
         if magic != b"\037\213":
             raise IOError(
-                "Not a gzip header (magic is hex %s, should be 1f8b)"
-                % binascii.b2a_hex(magic).decode("ascii")
+                f"Not a gzip header (magic is hex {binascii.b2a_hex(magic).decode('ascii')}, "
+                "should be 1f8b)"
             )
         method = ord(content[2:3])
         if method != 8:
@@ -289,7 +292,7 @@ class HttpRequest(HttpMessage):
             self.uri = self.iri_to_uri(iri)
         except (ValueError, UnicodeError) as why:
             raise thor.http.error.UrlError(why.args[0])
-        if not re.match(r"^\s*%s\s*$" % rfc3986.URI, self.uri, re.VERBOSE):
+        if not re.match(rf"^\s*{rfc3986.URI}\s*$", self.uri, re.VERBOSE):
             self.add_note("uri", URI_BAD_SYNTAX)
         if "#" in self.uri:
             # chop off the fragment
@@ -301,7 +304,6 @@ class HttpRequest(HttpMessage):
     def iri_to_uri(iri: str) -> str:
         "Takes a unicode string that can contain an IRI and emits a unicode URI."
         scheme, authority, path, query, frag = urlsplit(iri)
-        scheme = scheme
         if ":" in authority:
             host, port = authority.split(":", 1)
             authority = host.encode("idna").decode("ascii") + f":{port}"

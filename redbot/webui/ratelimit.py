@@ -42,7 +42,7 @@ class RateLimiter:
                     "Your client is over limit. Please try later.",
                     f"client over limit: {client_id}",
                 )
-                raise ValueError
+                raise ValueError  # pylint: disable=raise-missing-from
 
         # enforce origin limits
         origin = url_to_origin(webui.test_uri)
@@ -56,7 +56,7 @@ class RateLimiter:
                     "Origin is over limit. Please try later.",
                     f"origin over limit: {origin}",
                 )
-                raise ValueError
+                raise ValueError  # pylint: disable=raise-missing-from
 
     def process_slack(self, webui: "RedWebUi") -> None:
         """Enforce limits on Slack."""
@@ -71,7 +71,7 @@ class RateLimiter:
             except RateLimitViolation:
                 user_name = webui.body_args.get("user_name", ["unknown"])[0].strip()
                 webui.error_log(f"slack user over limit: {user_name} ({user_id})")
-                raise ValueError(
+                raise ValueError(  # pylint: disable=raise-missing-from
                     "_You've hit the per-user request limit. Please try later._"
                 )
         else:
@@ -85,7 +85,7 @@ class RateLimiter:
             except RateLimitViolation:
                 team_name = webui.body_args.get("team_name", ["unknown"])[0].strip()
                 webui.error_log(f"slack team over limit: {team_name} ({team_id})")
-                raise ValueError(
+                raise ValueError(  # pylint: disable=raise-missing-from
                     "_You've hit the per-team request limit. Please try later._"
                 )
         else:
@@ -163,10 +163,10 @@ def url_to_origin(url: str) -> Union[str, None]:
     default_port = {"http": 80, "https": 443}
     try:
         p_url = urlsplit(url)
-        origin = "%s://%s:%s" % (
-            p_url.scheme.lower(),
-            p_url.hostname.lower(),
-            p_url.port or default_port.get(p_url.scheme, 0),
+        origin = (
+            f"{p_url.scheme.lower()}://"
+            f"{p_url.hostname.lower()}:"
+            f"{p_url.port or default_port.get(p_url.scheme, 0)}"
         )
     except (AttributeError, ValueError):
         origin = None

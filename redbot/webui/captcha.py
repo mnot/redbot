@@ -8,7 +8,6 @@ import thor
 from thor.http import HttpClient, get_header
 from thor.http.error import HttpError
 
-from redbot.resource import HttpResource
 from redbot.type import RawHeaderListType
 
 token_client = HttpClient()
@@ -99,14 +98,17 @@ class CaptchaHandler:
             exchange.tmp_res_body += chunk
 
         @thor.events.on(exchange)
-        def response_done(trailers: RawHeaderListType) -> None:
+        def response_done(_: RawHeaderListType) -> None:
             try:
                 results = json.loads(exchange.tmp_res_body)
             except ValueError:
                 if exchange.tmp_status != b"200":
-                    e_str = f"Captcha server returned {exchange.tmp_status.decode('utf-8')} status code"
+                    e_str = (
+                        "Captcha server returned "
+                        f"{exchange.tmp_status.decode('utf-8')} status code"
+                    )
                 else:
-                    e_str = f"Captcha server response error"
+                    e_str = "Captcha server response error"
                 self.error_response(
                     b"500",
                     b"Internal Server Error",
@@ -117,7 +119,10 @@ class CaptchaHandler:
             if results["success"]:
                 self.continue_test(self.issue_human())
             else:
-                e_str = f"Captcha errors: {', '.join(results.get('error-codes', ['unknown error']))}"
+                e_str = (
+                    "Captcha errors:"
+                    f"{', '.join(results.get('error-codes', ['unknown error']))}"
+                )
                 self.error_response(
                     b"403",
                     b"Forbidden",
@@ -167,7 +172,4 @@ class CaptchaHandler:
         """
         computed_hmac = hmac.new(self.secret, bytes(str(human_time), "ascii"), "sha512")
         is_valid = human_hmac == computed_hmac.hexdigest()
-        if is_valid and human_time >= thor.time():
-            return True
-        else:
-            return False
+        return bool(is_valid and human_time >= thor.time())

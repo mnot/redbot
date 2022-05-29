@@ -13,8 +13,11 @@ class x_xss_protection(headers.HttpHeader):
     description = """\
 The `X-XSS-Protection` response header field can be sent by servers to control how
 older versions of Internet Explorer configure their Cross Site Scripting protection."""
-    reference = "https://blogs.msdn.microsoft.com/ieinternals/2011/01/31/controlling-the-xss-filter/"
-    syntax = r"(?:[10](?:\s*;\s*%s)*)" % rfc7231.parameter
+    reference = (
+        "https://blogs.msdn.microsoft.com/ieinternals/"
+        "2011/01/31/controlling-the-xss-filter/"
+    )
+    syntax = rf"(?:[10](?:\s*;\s*{rfc7231.parameter})*)"
     list_header = False
     deprecated = False
     valid_in_requests = False
@@ -27,10 +30,7 @@ older versions of Internet Explorer configure their Cross Site Scripting protect
             protect, param_str = field_value.split(";", 1)
         except ValueError:
             protect, param_str = field_value, ""
-        try:
-            protect_int = int(protect)
-        except ValueError:
-            raise
+        protect_int = int(protect)
         params = headers.parse_params(param_str, add_note, True)
         if protect_int == 0:
             add_note(XSS_PROTECTION_OFF)

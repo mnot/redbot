@@ -2,26 +2,23 @@
 
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
-from redbot.syntax import rfc3986, rfc7230  # pylint: disable=unused-import
+from redbot.syntax import rfc3986, rfc7230
 from redbot.type import AddNoteMethodType
 
 # X-Frame-Options = "DENY"
 #          / "SAMEORIGIN"
 #          / ( "ALLOW-FROM" RWS SERIALIZED-ORIGIN )
 
-serialized_origin = r"""(?:
+serialized_origin = rf"""(?:
 {rfc3986.scheme} :// {rfc3986.host} (?: : {rfc3986.port} )?
 )
-""".format(
-    **locals()
-)
-X_Frame_Options = r"""(?:
+"""
+
+X_Frame_Options = rf"""(?:
     DENY
   | SAMEORIGIN
   | (?: ALLOW-FROM {rfc7230.RWS} {serialized_origin} )
-)""".format(
-    **locals()
-)
+)"""
 
 
 class x_frame_options(headers.HttpHeader):
@@ -65,7 +62,10 @@ See [this blog entry](http://bit.ly/v5Bh5Q) for more information.
 class FRAME_OPTIONS_SAMEORIGIN(Note):
     category = categories.SECURITY
     level = levels.INFO
-    summary = "%(response)s prevents some browsers from rendering it within a frame on another site."
+    summary = (
+        "%(response)s prevents some browsers from rendering it within a frame "
+        "on another site."
+    )
     text = """\
 The `X-Frame-Options` response header controls how IE8 handles HTML frames; the `DENY` value
 prevents this content from being rendered within a frame on another site, which defends against

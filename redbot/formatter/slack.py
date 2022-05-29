@@ -93,7 +93,8 @@ class SlackFormatter(Formatter):
         client.request_body(payload.encode("utf-8"))
         client.request_done([])
 
-    def markdown_block(self, content: str) -> Dict:
+    @staticmethod
+    def markdown_block(content: str) -> Dict:
         return {
             "type": "section",
             "text": {"type": "mrkdwn", "text": content},
@@ -121,7 +122,7 @@ class SlackFormatter(Formatter):
         if not notes:
             return None
         out = []
-        if [note for note in notes]:
+        if list(notes):
             out.append(f"*{category.value}*")
         for thing in notes:
             out.append(

@@ -143,7 +143,7 @@ class Formatter(EventEmitter):
         """
         raise NotImplementedError
 
-    def debug(self, message: str) -> None:
+    def debug(self, message: str) -> None:  # pylint: disable=no-self-use
         """
         Debug output.
         """
@@ -171,16 +171,16 @@ class Formatter(EventEmitter):
 def f_num(i: int, by1024: bool = False) -> str:
     "Format a number according to the locale."
     if by1024:
-        k = int(i / 1024)
-        m = int(k / 1024)
-        g = int(m / 1024)
-        if g:
-            return locale.format("%d", g, grouping=True) + "g"
-        if m:
-            return locale.format("%d", m, grouping=True) + "m"
-        if k:
-            return locale.format("%d", k, grouping=True) + "k"
-    return locale.format("%d", i, grouping=True)
+        kilo = int(i / 1024)
+        mega = int(kilo / 1024)
+        giga = int(mega / 1024)
+        if giga:
+            return locale.format_string("%d", giga, grouping=True) + "g"
+        if mega:
+            return locale.format_string("%d", mega, grouping=True) + "m"
+        if kilo:
+            return locale.format_string("%d", kilo, grouping=True) + "k"
+    return locale.format_string("%d", i, grouping=True)
 
 
 def relative_time(utime: float, now: float = None, show_sign: int = 1) -> str:
@@ -206,12 +206,12 @@ def relative_time(utime: float, now: float = None, show_sign: int = 1) -> str:
     if age == 0:
         return signs[show_sign][0]
 
-    a = abs(age)
-    yrs = int(a / 60 / 60 / 24 / 365)
-    day = int(a / 60 / 60 / 24) % 365
-    hrs = int(a / 60 / 60) % 24
-    mnt = int(a / 60) % 60
-    sec = int(a % 60)
+    aa = abs(age)
+    yrs = int(aa / 60 / 60 / 24 / 365)
+    day = int(aa / 60 / 60 / 24) % 365
+    hrs = int(aa / 60 / 60) % 24
+    mnt = int(aa / 60) % 60
+    sec = int(aa % 60)
 
     if age > 0:
         sign = signs[show_sign][1]

@@ -61,7 +61,7 @@ class HTMLLinkParser(HTMLParser):
         "Feed a given chunk of bytes to the parser"
         self.feed(bchunk.decode(self.message.character_encoding, "ignore"))
 
-    def feed(self, chunk: str) -> None:
+    def feed(self, data: str) -> None:
         "Feed a given chunk of str to the parser"
         if not self.ok:
             return
@@ -70,10 +70,10 @@ class HTMLLinkParser(HTMLParser):
             in self.link_parseable_types
         ):
             try:
-                HTMLParser.feed(self, chunk)
+                HTMLParser.feed(self, data)
             except BadErrorIReallyMeanIt:
                 pass
-            except Exception as why:  # oh, well...
+            except Exception as why:  # pylint: disable=broad-except
                 if self.err:
                     self.err(f"feed problem: {why}")
                 self.errors += 1
@@ -107,8 +107,8 @@ class HTMLLinkParser(HTMLParser):
                     params, rfc7231.parameter, r"\s*;\s*"
                 ):
                     try:
-                        a, v = param.split("=", 1)
-                        param_dict[a.lower()] = headers.unquote_string(v)
+                        attr, val = param.split("=", 1)
+                        param_dict[attr.lower()] = headers.unquote_string(val)
                     except ValueError:
                         param_dict[param.lower()] = None
                 self.message.character_encoding = param_dict.get(
@@ -123,16 +123,13 @@ class HTMLLinkParser(HTMLParser):
                 self.err(f"giving up on link parsing after {self.errors} errors")
             self.ok = False
             raise BadErrorIReallyMeanIt()
-        else:
-            self.last_err_pos, offset = self.getpos()
-            if self.err:
-                self.err(message)
+        self.last_err_pos, _ = self.getpos()
+        if self.err:
+            self.err(message)
 
 
 class BadErrorIReallyMeanIt(Exception):
     """See http://bugs.python.org/issue8885 for why this is necessary."""
-
-    pass
 
 
 if __name__ == "__main__":
@@ -144,7 +141,7 @@ if __name__ == "__main__":
     T = RedFetcher(ConfigParser()["DEFAULT"])
     T.set_request(sys.argv[1], req_hdrs=[("Accept-Encoding", "gzip")])
 
-    def show_link(base: str, link: str, tag: str, title: str) -> None:
+    def show_link(base: str, link: str, tag: str, _: str) -> None:
         print(f"* [{tag}] {base} -- {link}")
 
     P = HTMLLinkParser(T.response, [show_link], sys.stderr.write)

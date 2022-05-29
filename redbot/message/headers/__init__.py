@@ -38,12 +38,12 @@ from ._notes import *
 if TYPE_CHECKING:
     from redbot.message import (
         HttpMessage,
-    )  # pylint: disable=cyclic-import,unused-import
+    )  # pylint: disable=cyclic-import
 
 # base URLs for references
-rfc2616 = "http://tools.ietf.org/html/rfc2616.html#%s"
-rfc6265 = "http://tools.ietf.org/html/rfc6265.html#%s"
-rfc6266 = "http://tools.ietf.org/html/rfc6266.html#section-4"
+RFC2616 = "http://tools.ietf.org/html/rfc2616.html#%s"
+RFC6265 = "http://tools.ietf.org/html/rfc6265.html#%s"
+RFC6266 = "http://tools.ietf.org/html/rfc6266.html#section-4"
 
 ### configuration
 MAX_HDR_SIZE = 4 * 1024
@@ -74,7 +74,9 @@ class HttpHeader:
             self.canonical_name = self.wire_name
         self.value: Any = []
 
-    def parse(self, field_value: str, add_note: AddNoteMethodType) -> Any:
+    def parse(  # pylint: disable=no-self-use
+        self, field_value: str, add_note: AddNoteMethodType
+    ) -> Any:
         """
         Given a string value and an add_note function, parse and return the result."""
         return field_value
@@ -84,7 +86,6 @@ class HttpHeader:
         Called once header processing is done; typically used to evaluate an entire
         header's values.
         """
-        pass
 
     def handle_input(self, field_value: str, add_note: AddNoteMethodType) -> None:
         """
@@ -100,11 +101,11 @@ class HttpHeader:
             # check field value syntax
             if self.syntax:
                 element_syntax = (
-                    isinstance(self.syntax, rfc7230.list_rule)
-                    and self.syntax.element
-                    or self.syntax
+                    self.syntax.element
+                    if isinstance(self.syntax, rfc7230.list_rule)
+                    else self.syntax
                 )
-                if not re.match(r"^\s*(?:%s)\s*$" % element_syntax, value, RE_FLAGS):
+                if not re.match(rf"^\s*(?:{element_syntax})\s*$", value, RE_FLAGS):
                     add_note(BAD_SYNTAX, ref_uri=self.reference)
             try:
                 parsed_value = self.parse(value.strip(), add_note)
@@ -248,7 +249,7 @@ class HeaderProcessor:
                 )
 
         # check each of the complete header values and get the parsed value
-        for header_name, header_handler in list(self._header_handlers.items()):
+        for _, header_handler in list(self._header_handlers.items()):
             header_add_note = partial(
                 self.message.add_note,
                 f"header-{header_handler.canonical_name.lower()}",
@@ -267,10 +268,9 @@ class HeaderProcessor:
         norm_name = header_name.lower()
         if norm_name in self._header_handlers:
             return self._header_handlers[norm_name]
-        else:
-            handler = self.find_header_handler(header_name)(header_name, self.message)
-            self._header_handlers[norm_name] = handler
-            return handler
+        handler = self.find_header_handler(header_name)(header_name, self.message)
+        self._header_handlers[norm_name] = handler
+        return handler
 
     @staticmethod
     def find_header_handler(
@@ -327,7 +327,7 @@ class HeaderTest(unittest.TestCase):
 
     def setUp(self) -> None:
         "Test setup."
-        from redbot.message import DummyMsg
+        from redbot.message import DummyMsg  # pylint: disable=import-outside-toplevel
 
         self.message = DummyMsg()
         self.set_context(self.message)

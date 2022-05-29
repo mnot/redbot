@@ -7,7 +7,7 @@ HTML Formatter for REDbot.
 import operator
 import re
 import textwrap
-from typing import Any, List, Match, Tuple, Union  # pylint: disable=unused-import
+from typing import Any, List, Match, Tuple
 from urllib.parse import urljoin
 
 from markdown import markdown
@@ -21,11 +21,11 @@ from redbot.formatter.html_base import (
     e_query_arg,
     Markup,
     escape,
-    nl,
+    NL,
 )
 from redbot.resource import HttpResource, active_check
 from redbot.message.headers import HeaderProcessor
-from redbot.speak import Note, levels, categories  # pylint: disable=unused-import
+from redbot.speak import Note, levels, categories
 
 
 class SingleEntryHtmlFormatter(BaseHtmlFormatter):
@@ -149,7 +149,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             uni_sample = sample.decode("utf-8", "replace")
         safe_sample = escape(uni_sample)
         if hasattr(resource, "links"):
-            for tag, link_set in list(resource.links.items()):
+            for _, link_set in list(resource.links.items()):
                 for link in link_set:
                     if len(link) > 8000:  # avoid processing inline assets through regex
                         continue
@@ -158,22 +158,20 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     except ValueError:
                         continue  # we're not interested in raising these upstream
 
+                    link_str = self.redbot_link(
+                        escape(link),
+                        abs_link,
+                        use_stored=False,
+                        css_class="nocode",
+                        referer=True,
+                    )
+
                     def link_to(matchobj: Match) -> str:
-                        return r"%s%s%s" % (
-                            matchobj.group(1),
-                            self.redbot_link(
-                                escape(link),
-                                abs_link,
-                                use_stored=False,
-                                css_class="nocode",
-                                referer=True,
-                            ),
-                            matchobj.group(1),
-                        )
+                        return rf"{matchobj.group(1)}{link_str}{matchobj.group(1)}"
 
                     safe_sample = Markup(
                         re.sub(
-                            r"(&#34;|&#39;)%s\1" % re.escape(link), link_to, safe_sample
+                            rf"(&#34;|&#39;){re.escape(link)}\1", link_to, safe_sample
                         )
                     )
         message = ""
@@ -188,7 +186,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 if not self.resource.subreqs[check_name].fetch_started:
                     continue
                 out.append(
-                    f'<span class="req_link"> ({self.redbot_link(f"{check_name} response", check_name=check_name)}'
+                    f'<span class="req_link">'
+                    f'({self.redbot_link(f"{check_name} response", check_name=check_name)}'
                 )
                 smsgs = [
                     note
@@ -200,12 +199,13 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 elif smsgs:
                     out.append(f" - {len(smsgs)} problems\n")
                 out.append(")</span>")
-        return Markup(nl.join(out))
+        return Markup(NL.join(out))
 
     def format_header(self, header: Tuple[str, str]) -> Markup:
-        return Markup(self.header_presenter.Show(header[0], header[1]))
+        return Markup(self.header_presenter.show(header[0], header[1]))
 
-    def format_header_description(self, header_name: str) -> Markup:
+    @staticmethod
+    def format_header_description(header_name: str) -> Markup:
         description = HeaderProcessor.find_header_handler(header_name).description
         if description:
             return Markup(
@@ -230,7 +230,7 @@ class HeaderPresenter:
     def __init__(self, formatter: Formatter) -> None:
         self.formatter = formatter
 
-    def Show(self, name: str, value: str) -> Markup:
+    def show(self, name: str, value: str) -> Markup:
         """
         Return the given header name/value pair after
         presentation processing.
@@ -239,27 +239,25 @@ class HeaderPresenter:
         name_token = name.replace("-", "_")
         if name_token[0] != "_" and hasattr(self, name_token):
             return getattr(self, name_token)(name, value)
-        return Markup(self.I(escape(value), len(name)))
+        return Markup(self.wrap(escape(value), len(name)))
 
-    def BARE_URI(self, name: str, value: str) -> str:
+    def bare_uri(self, name: str, value: str) -> str:
         "Present a bare URI header value"
         value = value.rstrip()
         svalue = value.lstrip()
         space = len(value) - len(svalue)
-        return "%s%s" % (
-            " " * space,
-            self.formatter.redbot_link(
-                self.I(escape(svalue), len(name)),
-                svalue,
-                use_stored=False,
-                referer=True,
-            ),
+        link = self.formatter.redbot_link(
+            self.wrap(escape(svalue), len(name)),
+            svalue,
+            use_stored=False,
+            referer=True,
         )
+        return f"{' ' * space}{link}"
 
-    content_location = location = x_xrds_location = BARE_URI
+    content_location = location = x_xrds_location = bare_uri
 
     @staticmethod
-    def I(value: str, sub_width: int) -> str:
+    def wrap(value: str, sub_width: int) -> str:
         "wrap a line to fit in the header box"
         hdr_sz = 75
         sw = hdr_sz - min(hdr_sz - 1, sub_width)
@@ -305,8 +303,9 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             )
         )
 
+    @staticmethod
     def make_droid_lists(
-        self, resource: HttpResource
+        resource: HttpResource,
     ) -> List[Tuple[str, List[HttpResource]]]:
         link_order = [
             ("link", "Head Links"),
@@ -328,7 +327,8 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             self.problems.append(problem)
         return self.problems.index(problem) + 1
 
-    def format_note_description(self, header_name: str) -> Markup:
+    @staticmethod
+    def format_note_description(header_name: str) -> Markup:
         description = HeaderProcessor.find_header_handler(header_name).description
         if description:
             return Markup(
