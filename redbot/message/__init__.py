@@ -41,31 +41,31 @@ class HttpMessage(thor.events.EventEmitter):
     def __init__(self, add_note: AddNoteMethodType) -> None:
         thor.events.EventEmitter.__init__(self)
         if not hasattr(self, "add_note"):
-            self.add_note = add_note  # type: AddNoteMethodType
-        self.is_request = None  # type: bool
-        self.version = ""  # type: str
-        self.base_uri = ""  # type: str
-        self.start_time = None  # type: float
-        self.complete = False  # type: bool
-        self.complete_time = None  # type: float
-        self.headers = []  # type: StrHeaderListType
-        self.parsed_headers = {}  # type: HeaderDictType
-        self.header_length = 0  # type: int
-        self.payload = b""  # type: bytes   # Only used for 206 responses
-        self.payload_len = 0  # type: int
-        self.payload_md5 = None  # type: bytes
-        self.payload_sample = []  # type: List[Tuple[int, bytes]]
-        self.character_encoding = None  # type: str
-        self.decoded_len = 0  # type: int
-        self.decoded_md5 = None  # type: bytes
-        self.decoded_sample = b""  # type: bytes   # first decoded_sample_size bytes
-        self.decoded_sample_size = 24 * 1024  # type: int
-        self._decoded_sample_seen = 0  # type: int
-        self.decoded_sample_complete = True  # type: bool
-        self._decode_ok = True  # type: bool    # turn False if we have a problem
-        self.transfer_length = 0  # type: int
-        self.trailers = []  # type: RawHeaderListType
-        self.http_error = None  # type: thor.http.error.HttpError
+            self.add_note: AddNoteMethodType = add_note
+        self.is_request: bool = None
+        self.version: str = ""
+        self.base_uri: str = ""
+        self.start_time: float = None
+        self.complete: bool = False
+        self.complete_time: float = None
+        self.headers: StrHeaderListType = []
+        self.parsed_headers: HeaderDictType = {}
+        self.header_length: int = 0
+        self.payload: bytes = b""  # Only used for 206 responses
+        self.payload_len: int = 0
+        self.payload_md5: bytes = None
+        self.payload_sample: List[Tuple[int, bytes]] = []
+        self.character_encoding: str = None
+        self.decoded_len: int = 0
+        self.decoded_md5: bytes = None
+        self.decoded_sample: bytes = b""  # first decoded_sample_size bytes
+        self.decoded_sample_size: int = 24 * 1024
+        self._decoded_sample_seen: int = 0
+        self.decoded_sample_complete: bool = True
+        self._decode_ok: bool = True  # turn False if we have a problem
+        self.transfer_length: int = 0
+        self.trailers: RawHeaderListType = []
+        self.http_error: thor.http.error.HttpError = None
         self._md5_processor = hashlib.new("md5")
         self._md5_post_processor = hashlib.new("md5")
         self._gzip_processor = zlib.decompressobj(-zlib.MAX_WBITS)
@@ -77,7 +77,7 @@ class HttpMessage(thor.events.EventEmitter):
         return "<%s at %#x>" % (", ".join(status), id(self))
 
     def __getstate__(self) -> Dict[str, Any]:
-        state = thor.events.EventEmitter.__getstate__(self)
+        state: Dict[str, Any] = thor.events.EventEmitter.__getstate__(self)
         for key in [
             "_md5_processor",
             "_md5_post_processor",

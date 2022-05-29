@@ -41,8 +41,8 @@ class Note:
     related to the URI under test.
     """
 
-    category = None  # type: categories
-    level = None  # type: levels
+    category: categories = None
+    level: levels = None
     summary = ""
     text = ""
 

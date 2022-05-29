@@ -206,7 +206,7 @@ class VerboseTextListFormatter(TextListFormatter):
 class MLStripper(HTMLParser):
     def __init__(self) -> None:
         self.reset()
-        self.fed = []  # type: List[str]
+        self.fed: List[str] = []
 
     def handle_data(self, d: str) -> None:
         self.fed.append(d)

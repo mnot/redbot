@@ -5,17 +5,18 @@ Subrequests to do things like range requests, content negotiation checks,
 and validation.
 """
 
-from typing import List, Type
+from typing import List, Type, Union
 
-from redbot.resource.fetch import RedFetcher
-from redbot.resource.active_check.conneg import ConnegCheck
-from redbot.resource.active_check.range import RangeRequest
-from redbot.resource.active_check.etag_validate import ETagValidate
-from redbot.resource.active_check.lm_validate import LmValidate
+from .conneg import ConnegCheck
+from .range import RangeRequest
+from .etag_validate import ETagValidate
+from .lm_validate import LmValidate
 
-active_checks = [
+active_checks: List[
+    Union[Type[ConnegCheck], Type[RangeRequest], Type[ETagValidate], Type[LmValidate]]
+] = [
     ConnegCheck,
     RangeRequest,
     ETagValidate,
     LmValidate,
-]  # type: List[Type[RedFetcher]]
+]

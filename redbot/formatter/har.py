@@ -8,11 +8,24 @@ HAR Formatter for REDbot.
 import datetime
 import json
 from typing import Any, Dict, List
+from typing_extensions import TypedDict
 
 from redbot import __version__
 from redbot.formatter import Formatter
 from redbot.message.headers import StrHeaderListType
 from redbot.resource import HttpResource
+
+
+class HarLogDict(TypedDict):
+    version: str
+    creator: Dict[str, str]
+    browser: Dict[str, str]
+    pages: List[Any]
+    entries: List[Dict[str, Any]]
+
+
+class HarDict(TypedDict):
+    log: HarLogDict
 
 
 class HarFormatter(Formatter):
@@ -26,7 +39,7 @@ class HarFormatter(Formatter):
 
     def __init__(self, *args: Any, **kw: Any) -> None:
         Formatter.__init__(self, *args, **kw)
-        self.har = {
+        self.har: HarDict = {
             "log": {
                 "version": "1.1",
                 "creator": {"name": "REDbot", "version": __version__},
@@ -99,7 +112,7 @@ class HarFormatter(Formatter):
             "bodySize": resource.response.payload_len,
         }
 
-        cache = {}  # type: Dict[None, None]
+        cache: Dict[None, None] = {}
         timings = {
             "dns": -1,
             "connect": -1,
@@ -121,7 +134,7 @@ class HarFormatter(Formatter):
                 "timings": timings,
             }
         )
-        self.har["log"]["entries"].append(entry)  # type: ignore
+        self.har["log"]["entries"].append(entry)
 
     def add_page(self, resource: HttpResource) -> int:
         page_id = self.last_id + 1
@@ -131,7 +144,7 @@ class HarFormatter(Formatter):
             "title": "",
             "pageTimings": {"onContentLoad": -1, "onLoad": -1},
         }
-        self.har["log"]["pages"].append(page)  # type: ignore
+        self.har["log"]["pages"].append(page)
         return page_id
 
     def format_headers(self, hdrs: StrHeaderListType) -> List[Dict[str, str]]:

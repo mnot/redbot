@@ -52,7 +52,6 @@ class AgeTest(headers.HeaderTest):
     name = "Age"
     inputs = [b"10"]
     expected_out = 10
-    expected_err = []  # type: ignore
 
 
 class MultipleAgeTest(headers.HeaderTest):
@@ -65,12 +64,12 @@ class MultipleAgeTest(headers.HeaderTest):
 class CharAgeTest(headers.HeaderTest):
     name = "Age"
     inputs = [b"foo"]
-    expected_out = None  # type: ignore
+    expected_out = None
     expected_err = [AGE_NOT_INT]
 
 
 class NegAgeTest(headers.HeaderTest):
     name = "Age"
     inputs = [b"-20"]
-    expected_out = None  # type: ignore
+    expected_out = None
     expected_err = [AGE_NEGATIVE]

@@ -35,9 +35,9 @@ def parse_date(value: str, add_note: AddNoteMethodType) -> int:
     # http://sourceforge.net/tracker/index.php?func=detail&aid=1194222&group_id=5470&atid=105470
     if date_tuple[0] < 100:
         if date_tuple[0] > 68:
-            date_tuple = (date_tuple[0] + 1900,) + date_tuple[1:]  # type: ignore
+            date_tuple = (date_tuple[0] + 1900,) + date_tuple[1:]
         else:
-            date_tuple = (date_tuple[0] + 2000,) + date_tuple[1:]  # type: ignore
+            date_tuple = (date_tuple[0] + 2000,) + date_tuple[1:]
     return calendar.timegm(date_tuple)
 
 
@@ -85,7 +85,7 @@ def parse_params(
     """
     Parse parameters into a dictionary.
     """
-    param_dict = {}  # type: Dict[str, str]
+    param_dict: Dict[str, str] = {}
     for param in split_string(instr, rfc7231.parameter, r"\s*%s\s*" % delim):
         try:
             key, val = param.split("=", 1)
@@ -103,7 +103,7 @@ def parse_params(
                 param_val_unquoted=val[1:-1],
             )
         if key[-1] == "*":
-            if nostar is True or (nostar and k_norm[:-1] in nostar):  # type: ignore
+            if nostar is True or (nostar and k_norm[:-1] in nostar):
                 add_note(PARAM_STAR_BAD, param=k_norm[:-1])
             else:
                 if val[0] == '"' and val[-1] == '"':

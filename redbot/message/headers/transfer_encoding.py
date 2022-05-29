@@ -86,7 +86,6 @@ class TransferEncodingTest(headers.HeaderTest):
     name = "Transfer-Encoding"
     inputs = [b"chunked"]
     expected_out = ["chunked"]
-    expected_err = []  # type: ignore
 
 
 class TransferEncodingParamTest(headers.HeaderTest):
@@ -107,7 +106,6 @@ class TransferEncodingCaseTest(headers.HeaderTest):
     name = "Transfer-Encoding"
     inputs = [b"chUNked"]
     expected_out = ["chunked"]
-    expected_err = []  # type: ignore
 
 
 class TransferEncodingIdentityTest(headers.HeaderTest):

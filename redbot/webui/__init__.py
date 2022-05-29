@@ -68,7 +68,7 @@ class RedWebUi:
         exchange: HttpResponseExchange,
         error_log: Callable[[str], int] = sys.stderr.write,
     ) -> None:
-        self.config = config  # type: SectionProxy
+        self.config: SectionProxy = config
         self.query_string = parse_qs(
             query_string.decode(self.config["charset"], "replace")
         )
@@ -81,21 +81,21 @@ class RedWebUi:
         # query processing
         self.test_uri = self.query_string.get("uri", [""])[0]
         self.test_id = self.query_string.get("id", [None])[0]
-        self.req_hdrs = [
+        self.req_hdrs: StrHeaderListType = [
             tuple(h.split(":", 1))  # type: ignore
             for h in self.query_string.get("req_hdr", [])
-            if h.find(":") > 0
-        ]  # type: StrHeaderListType
+            if ":" in h
+        ]
         self.format = self.query_string.get("format", ["html"])[0]
         self.descend = "descend" in self.query_string
-        self.check_name = None  # type: str
+        self.check_name: str = None
         if not self.descend:
             self.check_name = self.query_string.get("check_name", [None])[0]
 
         self.charset_bytes = self.config["charset"].encode("ascii")
 
-        self.save_path = None  # type: str
-        self.timeout = None  # type: Any
+        self.save_path: str = None
+        self.timeout: Any = None
 
         self.start = time.time()
 
@@ -330,7 +330,9 @@ class RedWebUi:
         """
         xff = thor.http.common.get_header(self.req_headers, b"x-forwarded-for")
         if xff:
-            return xff[-1].decode("idna")
-        return thor.http.common.get_header(self.req_headers, b"client-ip")[-1].decode(
-            "idna"
+            return str(xff[-1].decode("idna"))
+        return str(
+            thor.http.common.get_header(self.req_headers, b"client-ip")[-1].decode(
+                "idna"
+            )
         )

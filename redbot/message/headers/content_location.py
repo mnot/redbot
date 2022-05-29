@@ -23,4 +23,3 @@ class ContentLocationTest(headers.HeaderTest):
     name = "Content-Location"
     inputs = [b"/foo"]
     expected_out = "/foo"
-    expected_err = []  # type: ignore

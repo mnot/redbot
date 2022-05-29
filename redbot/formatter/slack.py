@@ -80,7 +80,7 @@ class SlackFormatter(Formatter):
         self.send_slack_message([self.markdown_block("_Timed out._")], "Timed out.")
 
     def send_slack_message(self, blocks: List[Dict], notification: str = None) -> None:
-        data = {"blocks": blocks}  # type: Dict
+        data: Dict[str, Any] = {"blocks": blocks}
         if notification:
             data["text"] = notification
         payload = json.dumps(data)

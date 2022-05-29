@@ -32,20 +32,19 @@ class ContentLengthTest(headers.HeaderTest):
     name = "Content-Length"
     inputs = [b"1"]
     expected_out = 1
-    expected_err = []  # type: ignore
 
 
 class ContentLengthTextTest(headers.HeaderTest):
     name = "Content-Length"
     inputs = [b"a"]
-    expected_out = None  # type: ignore
+    expected_out = None
     expected_err = [headers.BAD_SYNTAX]
 
 
 class ContentLengthSemiTest(headers.HeaderTest):
     name = "Content-Length"
     inputs = [b"1;"]
-    expected_out = None  # type: ignore
+    expected_out = None
     expected_err = [headers.BAD_SYNTAX]
 
 
@@ -53,11 +52,9 @@ class ContentLengthSpaceTest(headers.HeaderTest):
     name = "Content-Length"
     inputs = [b" 1 "]
     expected_out = 1
-    expected_err = []  # type: ignore
 
 
 class ContentLengthBigTest(headers.HeaderTest):
     name = "Content-Length"
     inputs = [b"9" * 999]
     expected_out = int("9" * 999)
-    expected_err = []  # type: ignore

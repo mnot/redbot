@@ -25,7 +25,7 @@ from redbot.webui import RedWebUi
 
 if os.environ.get("SYSTEMD_WATCHDOG"):
     try:
-        from cysystemd.daemon import notify, Notification
+        from cysystemd.daemon import notify, Notification  # type: ignore
     except ImportError:
         notify = Notification = None
 else:
@@ -55,7 +55,7 @@ class RedBotServer:
 
         # Set up the server
         server = thor.http.HttpServer(
-            self.config.get("host", "").encode('utf-8'), int(self.config["port"])
+            self.config.get("host", "").encode("utf-8"), int(self.config["port"])
         )
         server.on("exchange", self.handler)
         try:
@@ -75,7 +75,7 @@ class RedBotServer:
 
     @staticmethod
     def walk_files(dir_name: str, base: bytes = b"") -> Dict[bytes, bytes]:
-        out = {}  # type: Dict[bytes, bytes]
+        out: Dict[bytes, bytes] = {}
         for root, dirs, files in os.walk(dir_name):
             for name in files:
                 try:
@@ -108,7 +108,7 @@ class RedHandler:
         self.static_files = server.static_files
         self.method = b""
         self.uri = b""
-        self.req_hdrs = []  # type: RawHeaderListType
+        self.req_hdrs: RawHeaderListType = []
         self.req_body = b""
         exchange.on("request_start", self.request_start)
         exchange.on("request_body", self.request_body)

@@ -115,5 +115,5 @@ class OneBlockXXSSTest(headers.HeaderTest):
 class BadXXSSTest(headers.HeaderTest):
     name = "X-XSS-Protection"
     inputs = [b"foo"]
-    expected_out = None  # type: ignore
+    expected_out = None
     expected_err = [headers.BAD_SYNTAX]

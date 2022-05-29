@@ -29,18 +29,17 @@ class BasicExpiresTest(headers.HeaderTest):
     name = "Expires"
     inputs = [b"Mon, 04 Jul 2011 09:08:06 GMT"]
     expected_out = 1309770486
-    expected_err = []  # type: ignore
 
 
 class BadExpiresTest(headers.HeaderTest):
     name = "Expires"
     inputs = [b"0"]
-    expected_out = None  # type: ignore
+    expected_out = None
     expected_err = [headers.BAD_DATE_SYNTAX]
 
 
 class BlankExpiresTest(headers.HeaderTest):
     name = "Expires"
     inputs = [b""]
-    expected_out = None  # type: ignore
+    expected_out = None
     expected_err = [headers.BAD_DATE_SYNTAX]

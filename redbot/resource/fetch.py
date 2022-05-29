@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Tuple, Type, Union
 import thor
 import thor.http.error as httperr
 
-from netaddr import IPAddress
+from netaddr import IPAddress  # type: ignore
 
 from redbot import __version__
 from redbot.speak import Note, levels, categories
@@ -56,19 +56,19 @@ class RedFetcher(thor.events.EventEmitter):
     def __init__(self, config: SectionProxy) -> None:
         thor.events.EventEmitter.__init__(self)
         self.config = config
-        self.notes = []  # type: List[Note]
+        self.notes: List[Note] = []
         self.transfer_in = 0
         self.transfer_out = 0
-        self.request = HttpRequest(self.ignore_note)  # type: HttpRequest
-        self.nonfinal_responses = []  # type: List[HttpResponse]
-        self.response = HttpResponse(self.add_note)  # type: HttpResponse
-        self.exchange = None  # type: thor.http.ClientExchange
+        self.request = HttpRequest(self.ignore_note)
+        self.nonfinal_responses: List[HttpResponse] = []
+        self.response = HttpResponse(self.add_note)
+        self.exchange: thor.http.ClientExchange = None
         self.fetch_started = False
         self.fetch_done = False
         self.setup_check_ip()
 
     def __getstate__(self) -> Dict[str, Any]:
-        state = thor.events.EventEmitter.__getstate__(self)
+        state: Dict[str, Any] = thor.events.EventEmitter.__getstate__(self)
         del state["exchange"]
         return state
 
@@ -131,15 +131,15 @@ class RedFetcher(thor.events.EventEmitter):
         Set the resource's request. All values are strings.
         """
         self.request.method = method
-        self.response.is_head_response = method == "HEAD"  # type: ignore
+        self.response.is_head_response = method == "HEAD"
         try:
             self.request.set_iri(iri)
         except httperr.UrlError as why:
             self.response.http_error = why
-        self.response.base_uri = self.request.uri  # type: ignore
+        self.response.base_uri = self.request.uri
         if req_hdrs:
             self.request.set_headers(req_hdrs)
-        self.request.payload = req_body  # type: ignore
+        self.request.payload = req_body
         self.request.complete = True  # cheating a bit
 
     def check(self) -> None:

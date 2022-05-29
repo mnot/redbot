@@ -30,7 +30,7 @@ class SubRequest(RedFetcher, metaclass=ABCMeta):
 
     def __init__(self, config: SectionProxy, base_resource: "HttpResource") -> None:
         self.config = config
-        self.base = base_resource  # type: HttpResource
+        self.base: HttpResource = base_resource
         RedFetcher.__init__(self, config)
         self.check_done = False
         self.on("fetch_done", self._check_done)

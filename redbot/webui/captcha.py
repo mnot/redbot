@@ -40,9 +40,9 @@ class CaptchaHandler:
         captcha_token = self.webui.body_args.get("captcha_token", [None])[0]
         cookie_str = b", ".join(get_header(self.webui.req_headers, b"cookie"))
         try:
-            cookiejar = cookies.SimpleCookie(
+            cookiejar: cookies.SimpleCookie = cookies.SimpleCookie(
                 cookie_str.decode("utf-8", "replace")
-            )  # type: cookies.SimpleCookie
+            )
         except cookies.CookieError:
             self.error_response(
                 b"400",

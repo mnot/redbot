@@ -53,22 +53,18 @@ MAX_TTL_HDR = 8 * 1000
 class HttpHeader:
     """A HTTP Header handler."""
 
-    canonical_name = None  # type: str
-    description = None  # type: str
-    reference = None  # type: str
-    syntax = (
-        None
-    )  # type: Union[str, rfc7230.list_rule, bool] # Verbose regular expression to match.
-    list_header = (
-        None
-    )  # type: bool                     # Can be split into values on commas.
-    nonstandard_syntax = (
-        False
-    )  # type: bool             # Don't check for a single value at the end.
-    deprecated = None  # type: bool
-    valid_in_requests = None  # type: bool
-    valid_in_responses = None  # type: bool
-    no_coverage = False  # type: bool                   # Turns off coverage checks.
+    canonical_name: str = None
+    description: str = None
+    reference: str = None
+    syntax: Union[
+        str, rfc7230.list_rule, bool
+    ] = None  # Verbose regular expression to match.
+    list_header: bool = None  # Can be split into values on commas.
+    nonstandard_syntax: bool = False  # Don't check for a single value at the end.
+    deprecated: bool = None
+    valid_in_requests: bool = None
+    valid_in_responses: bool = None
+    no_coverage: bool = False  # Turns off coverage checks.
 
     def __init__(self, wire_name: str, message: "HttpMessage") -> None:
         self.wire_name = wire_name.strip()
@@ -76,7 +72,7 @@ class HttpHeader:
         self.norm_name = self.wire_name.lower()
         if self.canonical_name is None:
             self.canonical_name = self.wire_name
-        self.value = []  # type: Any
+        self.value: Any = []
 
     def parse(self, field_value: str, add_note: AddNoteMethodType) -> Any:
         """
@@ -192,7 +188,7 @@ class HeaderProcessor:
 
     def __init__(self, message: "HttpMessage") -> None:
         self.message = message
-        self._header_handlers = {}  # type: Dict[str, HttpHeader]
+        self._header_handlers: Dict[str, HttpHeader] = {}
 
     def process(
         self, headers: RawHeaderListType
@@ -239,7 +235,7 @@ class HeaderProcessor:
 
             header_handler = self.get_header_handler(str_name)
             field_add_note = partial(
-                add_note,  # type: ignore
+                add_note,
                 field_name=header_handler.canonical_name,
             )
             header_handler.handle_input(str_value, field_add_note)
@@ -258,7 +254,7 @@ class HeaderProcessor:
                 f"header-{header_handler.canonical_name.lower()}",
                 field_name=header_handler.canonical_name,
             )
-            header_handler.finish(self.message, header_add_note)  # type: ignore
+            header_handler.finish(self.message, header_add_note)
             parsed_headers[header_handler.norm_name] = header_handler.value
 
         return unicode_headers, parsed_headers
@@ -289,7 +285,7 @@ class HeaderProcessor:
         name_token = HeaderProcessor.name_token(header_name)
         hdr_module = HeaderProcessor.find_header_module(name_token)
         if hdr_module and hasattr(hdr_module, name_token):
-            return getattr(hdr_module, name_token)
+            return getattr(hdr_module, name_token)  # type: ignore
         if default:
             return UnknownHttpHeader
         return None
@@ -324,10 +320,10 @@ class HeaderTest(unittest.TestCase):
     Testing machinery for headers.
     """
 
-    name = None  # type: str
-    inputs = []  # type: List[bytes]
-    expected_out = None  # type: Any
-    expected_err = []  # type: List[Type[Note]]
+    name: str = None
+    inputs: List[bytes] = []
+    expected_out: Any = []
+    expected_err: List[Type[Note]] = []
 
     def setUp(self) -> None:
         "Test setup."
@@ -340,18 +336,10 @@ class HeaderTest(unittest.TestCase):
         "Test the header."
         if not self.name:
             return self.skipTest("")
-        if not isinstance(self.name, bytes):
-            name = self.name.encode("utf-8")
-        else:
-            name = self.name
-        inputs = []
-        for val in self.inputs:
-            if not isinstance(val, bytes):
-                val = val.encode("utf-8")
-            inputs.append(val)
+        name = self.name.encode("utf-8")
         hp = HeaderProcessor(self.message)
         self.message.headers, self.message.parsed_headers = hp.process(
-            [(name, inp) for inp in inputs]
+            [(name, inp) for inp in self.inputs]
         )
         out = self.message.parsed_headers.get(
             self.name.lower(), "HEADER HANDLER NOT FOUND"

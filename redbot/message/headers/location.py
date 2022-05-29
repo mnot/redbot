@@ -74,7 +74,6 @@ class LocationTest(headers.HeaderTest):
     name = "Location"
     inputs = [b"http://other.example.com/foo"]
     expected_out = "http://other.example.com/foo"
-    expected_err = []  # type: ignore
 
     def set_context(self, message: HttpMessage) -> None:
         message.status_code = "300"

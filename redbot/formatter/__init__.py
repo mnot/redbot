@@ -76,8 +76,8 @@ class Formatter(EventEmitter):
     Is available to UIs based upon the 'name' attribute.
     """
 
-    media_type = None  # type: str   # the media type of the format.
-    name = None  # type: str         # the name of the format.
+    media_type: str = None  # the media type of the format.
+    name: str = None  # the name of the format.
     can_multiple = False  # formatter can represent multiple responses.
 
     def __init__(

@@ -207,7 +207,7 @@ console.log("{thor.time() - self.start:3.3f} {e_js(message)}");
                         codecs.open(
                             extra_path,
                             mode="r",
-                            encoding="utf-8",  # type: ignore
+                            encoding="utf-8",
                             errors="replace",
                         ).read()
                     )
@@ -251,7 +251,7 @@ console.log("{thor.time() - self.start:3.3f} {e_js(message)}");
         Request headers are copied over from the current context.
         """
         uri = self.resource.request.uri
-        args = []  # type: List[Tuple[str, str]]
+        args: List[Tuple[str, str]] = []
         if use_stored and self.kw.get("test_id", None):
             args.append(("id", self.kw["test_id"]))
             if check_name:

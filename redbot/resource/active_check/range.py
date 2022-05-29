@@ -23,9 +23,9 @@ class RangeRequest(SubRequest):
     response_phrase = "The partial response"
 
     def __init__(self, config: SectionProxy, resource: "HttpResource") -> None:
-        self.range_start = None  # type: int
-        self.range_end = None  # type: int
-        self.range_target = None  # type: bytes
+        self.range_start: int = None
+        self.range_end: int = None
+        self.range_target: bytes = None
         SubRequest.__init__(self, config, resource)
 
     def modify_request_headers(

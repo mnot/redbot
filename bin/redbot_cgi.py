@@ -8,7 +8,8 @@ from configparser import ConfigParser, SectionProxy
 import locale
 import os
 import sys
-from typing import Callable
+from types import TracebackType
+from typing import Callable, Type
 
 import thor
 from thor.loop import _loop
@@ -37,7 +38,7 @@ def cgi_main(config: SectionProxy) -> None:
     )
     method = os.environ.get("REQUEST_METHOD").encode(config["charset"])
     query_string = os.environ.get("QUERY_STRING", "").encode(config["charset"])
-    req_hdrs = []  # type: RawHeaderListType
+    req_hdrs: RawHeaderListType = []
     for (k, v) in os.environ.items():
         if k[:5] == "HTTP_":
             req_hdrs.append((k[:5].lower().encode("ascii"), v.encode("ascii")))
@@ -97,7 +98,11 @@ def except_handler_factory(
         out = sys.stdout.write
     error_template = "<p class='error'>%s</p>"
 
-    def except_handler(etype=None, evalue=None, etb=None):  # type: ignore
+    def except_handler(
+        etype: Type[BaseException] = None,
+        evalue: BaseException = None,
+        etb: TracebackType = None,
+    ) -> None:
         """
         Log uncaught exceptions and display a friendly error.
         """
@@ -119,7 +124,7 @@ def except_handler_factory(
             import tempfile
 
             if qs:
-                doc = f"<h3><code>{qs.decode('utf-8', 'replace')}</code></h3>"
+                doc = f"<h3><code>{qs}</code></h3>"
             try:
                 doc += cgitb.html((etype, evalue, etb), 5)
             except:  # just in case something goes wrong

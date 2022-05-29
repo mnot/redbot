@@ -28,14 +28,12 @@ class ETagTest(headers.HeaderTest):
     name = "ETag"
     inputs = [b'"foo"']
     expected_out = (False, "foo")
-    expected_err = []  # type: ignore
 
 
 class WeakETagTest(headers.HeaderTest):
     name = "ETag"
     inputs = [b'W/"foo"']
     expected_out = (True, "foo")
-    expected_err = []  # type: ignore
 
 
 class UnquotedETagTest(headers.HeaderTest):

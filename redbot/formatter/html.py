@@ -279,7 +279,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
 
     def __init__(self, *args: Any, **kw: Any) -> None:
         BaseHtmlFormatter.__init__(self, *args, **kw)
-        self.problems = []  # type: List[Note]
+        self.problems: List[Note] = []
         self.templates.filters.update(
             {
                 "index_problem": self.index_problem,

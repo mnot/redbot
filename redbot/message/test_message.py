@@ -5,7 +5,7 @@ import sys
 import unittest
 
 from functools import partial
-from typing import List, Sequence, Type
+from typing import List, Sequence, Type, Tuple, Dict
 
 import redbot.message.headers as headers
 from redbot.speak import Note
@@ -59,9 +59,9 @@ class GeneralHeaderTesters(unittest.TestCase):
 
     def test_parse_params(self) -> None:
         i = 0
-        expected_pd: object
-        expected_notes: object
-        for (instr, expected_pd, expected_notes, delim) in [
+        expected_pd: Dict[str, str]
+        expected_notes: List[Type[Note]]
+        for (instr, expected_pd, expected_notes, delim) in [  # type: ignore
             ("foo=bar", {"foo": "bar"}, [], ";"),
             ('foo="bar"', {"foo": "bar"}, [], ";"),
             ('foo="bar"; baz=bat', {"foo": "bar", "baz": "bat"}, [], ";"),
@@ -97,7 +97,7 @@ class GeneralHeaderTesters(unittest.TestCase):
             param_dict = headers.parse_params(
                 instr, partial(self.red.add_note, "test"), ["nostar"], delim
             )
-            diff = set([n.__name__ for n in expected_notes]).symmetric_difference(  # type: ignore
+            diff = set([n.__name__ for n in expected_notes]).symmetric_difference(
                 set(self.red.note_classes)
             )
             self.assertEqual(len(diff), 0, f"[{i}] Mismatched notes: {diff}")

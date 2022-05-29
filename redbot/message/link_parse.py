@@ -41,24 +41,28 @@ class HTMLLinkParser(HTMLParser):
         self.message = message
         self.link_procs = link_procs
         self.err = err
-        self.link_types = {
+        self.link_types: Dict[str, Tuple[str, List[str]]] = {
             "link": ("href", ["stylesheet"]),
             "a": ("href", None),
             "img": ("src", None),
             "script": ("src", None),
             "frame": ("src", None),
             "iframe": ("src", None),
-        }  # type: Dict[str, Tuple[str, List[str]]]
+        }
         self.errors = 0
-        self.last_err_pos = None  # type: int
+        self.last_err_pos: int = None
         self.ok = True
         HTMLParser.__init__(self)
 
     def __getstate__(self) -> Dict[str, Any]:
         return {"errors": self.errors, "last_err_pos": self.last_err_pos, "ok": self.ok}
 
-    def feed(self, chunk: str) -> None:
+    def feed_bytes(self, bchunk: bytes) -> None:
         "Feed a given chunk of bytes to the parser"
+        self.feed(bchunk.decode(self.message.character_encoding, "ignore"))
+
+    def feed(self, chunk: str) -> None:
+        "Feed a given chunk of str to the parser"
         if not self.ok:
             return
         if (
@@ -66,11 +70,6 @@ class HTMLLinkParser(HTMLParser):
             in self.link_parseable_types
         ):
             try:
-                if not isinstance(chunk, str):
-                    try:
-                        chunk = chunk.decode(self.message.character_encoding, "ignore")
-                    except LookupError:
-                        pass
                 HTMLParser.feed(self, chunk)
             except BadErrorIReallyMeanIt:
                 pass

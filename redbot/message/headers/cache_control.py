@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from typing import Tuple
+from typing import Tuple, Union
 
 from redbot.message import headers
 from redbot.speak import Note, categories, levels
@@ -21,7 +21,9 @@ in a request does not imply that the same directive is in effect in the response
     valid_in_requests = True
     valid_in_responses = True
 
-    def parse(self, field_value: str, add_note: AddNoteMethodType) -> Tuple[str, str]:
+    def parse(
+        self, field_value: str, add_note: AddNoteMethodType
+    ) -> Tuple[str, Union[int, str]]:
         try:
             directive_name, directive_val = field_value.split("=", 1)
             directive_val = headers.unquote_string(directive_val)
@@ -31,7 +33,7 @@ in a request does not imply that the same directive is in effect in the response
         directive_name = directive_name.lower()
         if directive_name in ["max-age", "s-maxage"]:
             try:
-                directive_val = int(directive_val)  # type: ignore
+                return (directive_name, int(directive_val))
             except (ValueError, TypeError):
                 add_note(BAD_CC_SYNTAX, bad_cc_attr=directive_name)
                 raise ValueError
@@ -49,32 +51,27 @@ class CacheControlTest(headers.HeaderTest):
     name = "Cache-Control"
     inputs = [b"a=b, c=d", b"e=f", b"g"]
     expected_out = [("a", "b"), ("c", "d"), ("e", "f"), ("g", None)]
-    expected_err = []  # type: ignore
 
 
 class CacheControlCaseTest(headers.HeaderTest):
     name = "Cache-Control"
     inputs = [b"A=b, c=D"]
     expected_out = [("a", "b"), ("c", "D")]
-    expected_err = []  # type: ignore
 
 
 class CacheControlQuotedTest(headers.HeaderTest):
     name = "Cache-Control"
     inputs = [b'a="b,c", c=d']
     expected_out = [("a", "b,c"), ("c", "d")]
-    expected_err = []  # type: ignore
 
 
 class CacheControlMaxAgeTest(headers.HeaderTest):
     name = "Cache-Control"
     inputs = [b"max-age=5"]
     expected_out = [("max-age", 5)]
-    expected_err = []  # type: ignore
 
 
 class CacheControlBadMaxAgeTest(headers.HeaderTest):
     name = "Cache-Control"
     inputs = [b"max-age=foo"]
-    expected_out = []  # type: ignore
     expected_err = [BAD_CC_SYNTAX]

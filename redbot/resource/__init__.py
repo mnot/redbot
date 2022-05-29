@@ -41,32 +41,28 @@ class HttpResource(RedFetcher):
 
     def __init__(self, config: SectionProxy, descend: bool = False) -> None:
         RedFetcher.__init__(self, config)
-        self.descend = descend  # type: bool
-        self.check_done = False  # type: bool
-        self.partial_support = None  # type: bool
-        self.inm_support = None  # type: bool
-        self.ims_support = None  # type: bool
-        self.gzip_support = None  # type: bool
-        self.gzip_savings = 0  # type: int
-        self._task_map = set(
-            [None]
-        )  # type: Set[RedFetcher]   # None is the original request
-        self.subreqs = {
-            ac.check_name: ac(config, self) for ac in active_checks  # type: ignore
-        }
+        self.descend: bool = descend
+        self.check_done: bool = False
+        self.partial_support: bool = None
+        self.inm_support: bool = None
+        self.ims_support: bool = None
+        self.gzip_support: bool = None
+        self.gzip_savings: int = 0
+        self._task_map: Set[RedFetcher] = set([None])
+        self.subreqs = {ac.check_name: ac(config, self) for ac in active_checks}
         self.response.once("content_available", self.run_active_checks)
 
         def _finish_check() -> None:
             self.finish_check(None)
 
         self.on("fetch_done", _finish_check)
-        self.links = {}  # type: Dict[str, Set[str]]
-        self.link_count = 0  # type: int
-        self.linked = []  # type: List[Tuple[HttpResource, str]]  # linked HttpResources
+        self.links: Dict[str, Set[str]] = {}
+        self.link_count: int = 0
+        self.linked: List[Tuple[HttpResource, str]] = []  # linked HttpResources
         self._link_parser = link_parse.HTMLLinkParser(
             self.response, [self.process_link]
         )
-        self.response.on("chunk", self._link_parser.feed)
+        self.response.on("chunk", self._link_parser.feed_bytes)
 
     #        self.show_task_map(True) # for debugging
 

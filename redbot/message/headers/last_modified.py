@@ -30,18 +30,17 @@ class BasicLMTest(headers.HeaderTest):
     name = "Last-Modified"
     inputs = [b"Mon, 04 Jul 2011 09:08:06 GMT"]
     expected_out = 1309770486
-    expected_err = []  # type: ignore
 
 
 class BadLMTest(headers.HeaderTest):
     name = "Last-Modified"
     inputs = [b"0"]
-    expected_out = None  # type: ignore
+    expected_out = None
     expected_err = [headers.BAD_DATE_SYNTAX]
 
 
 class BlankLMTest(headers.HeaderTest):
     name = "Last-Modified"
     inputs = [b""]
-    expected_out = None  # type: ignore
+    expected_out = None
     expected_err = [headers.BAD_DATE_SYNTAX]

@@ -26,7 +26,7 @@ class x_ua_compatible(headers.HttpHeader):
         return attr, attr_value
 
     def evaluate(self, add_note: AddNoteMethodType) -> None:
-        directives = {}  # type: Dict[str, str]
+        directives: Dict[str, str] = {}
         warned = False
         attr, attr_value = self.value
         if attr in directives and not warned:

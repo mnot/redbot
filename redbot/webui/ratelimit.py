@@ -16,10 +16,10 @@ if TYPE_CHECKING:
 
 
 class RateLimiter:
-    limits = {}  # type: Dict[str, int]
-    counts = {}  # type: Dict[str, Dict[str, int]]
-    periods = {}  # type: Dict[str, float]
-    watching = set()  # type: Set[str]
+    limits: Dict[str, int] = {}
+    counts: Dict[str, Dict[str, int]] = {}
+    periods: Dict[str, float] = {}
+    watching: Set[str] = set()
     running = False
 
     def __init__(self) -> None:

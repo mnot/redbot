@@ -36,4 +36,3 @@ class BasicCTTest(headers.HeaderTest):
     name = "Content-Type"
     inputs = [b"text/plain; charset=utf-8"]
     expected_out = ("text/plain", {"charset": "utf-8"})
-    expected_err = []  # type: ignore
