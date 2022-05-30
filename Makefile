@@ -28,13 +28,13 @@ clean:
 .PHONY: tidy
 tidy: venv node_modules/standard
 	$(VENV)/black redbot bin/*
-	$(STANDARD) --fix src/js/*.js
+	$(STANDARD) --fix "src/js/*.js"
 
 .PHONY: lint
 lint: venv node_modules/standard
 	PYTHONPATH=$(VENV) $(VENV)/pylint --output-format=colorized --rcfile=test/pylintrc \
 	  redbot bin/redbot_daemon.py bin/redbot_cgi.py bin/redbot_cli
-	$(STANDARD) src/js/*.js
+	$(STANDARD) "src/js/*.js"
 
 .PHONY: syntax
 syntax: venv
