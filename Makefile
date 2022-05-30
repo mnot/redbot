@@ -51,6 +51,7 @@ webui_test: venv
 .PHONY: message_test
 message_test: venv
 	PYTHONPATH=.:$(VENV) $(VENV)/pytest --md $(GITHUB_STEP_SUMMARY) redbot/message/*.py redbot/message/headers/*.py
+	rm -f throwaway
 
 .PHONY: typecheck
 typecheck: venv
