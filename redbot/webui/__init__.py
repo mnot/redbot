@@ -9,14 +9,7 @@ import os
 import string
 import sys
 import time
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    List,
-    Tuple,
-    Union,
-)
+from typing import Any, Callable, Dict, List, Tuple, Union, cast
 from urllib.parse import parse_qs, urlsplit, urlencode
 
 import thor
@@ -246,7 +239,9 @@ class RedWebUi:
             + extra_headers,
         )
         if self.check_name:
-            display_resource = top_resource.subreqs.get(self.check_name, top_resource)
+            display_resource = cast(
+                HttpResource, top_resource.subreqs.get(self.check_name, top_resource)
+            )
         else:
             display_resource = top_resource
         formatter.bind_resource(display_resource)
@@ -267,8 +262,9 @@ class RedWebUi:
             top_resource = HttpResource(self.config, descend=self.descend)
             top_resource.set_request(self.test_uri, req_hdrs=self.req_hdrs)
             if self.check_name:
-                formatter.resource = top_resource.subreqs.get(
-                    self.check_name, top_resource
+                formatter.resource = cast(
+                    HttpResource,
+                    top_resource.subreqs.get(self.check_name, top_resource),
                 )
             else:
                 formatter.resource = top_resource

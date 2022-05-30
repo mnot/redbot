@@ -38,11 +38,15 @@ class HttpMessage(thor.events.EventEmitter):
 
     def __init__(self, add_note: AddNoteMethodType) -> None:
         thor.events.EventEmitter.__init__(self)
-        if not hasattr(self, "add_note"):
-            self.add_note: AddNoteMethodType = add_note
         self.is_request: bool = None
         self.version: str = ""
         self.base_uri: str = ""
+        self.method = None  # type: str
+        self.uri = None  # type: str
+        self.iri = None  # type: str
+        self.status_code = None  # type: str
+        self.status_phrase = ""
+        self.is_head_response = False
         self.start_time: float = None
         self.complete: bool = False
         self.complete_time: float = None
@@ -69,6 +73,8 @@ class HttpMessage(thor.events.EventEmitter):
         self._gzip_processor = zlib.decompressobj(-zlib.MAX_WBITS)
         self._in_gzip_body = False
         self._gzip_header_buffer = b""
+        if not hasattr(self, "add_note"):
+            self.add_note: AddNoteMethodType = add_note
 
     def __repr__(self) -> str:
         status = [self.__class__.__module__ + "." + self.__class__.__name__]
@@ -119,9 +125,7 @@ class HttpMessage(thor.events.EventEmitter):
         if len(self.payload_sample) > 4:
             self.payload_sample.pop(0)
         self._md5_processor.update(chunk)
-        if (
-            not self.is_request
-        ) and self.status_code == "206":  # pylint: disable=no-member
+        if (isinstance(self, HttpResponse)) and self.status_code == "206":
             # only store 206; don't try to understand it
             self.payload += chunk
         else:
@@ -156,9 +160,10 @@ class HttpMessage(thor.events.EventEmitter):
         self.payload_md5 = self._md5_processor.digest()
         self.decoded_md5 = self._md5_post_processor.digest()
 
-        if self.is_request or (
-            not self.is_head_response  # pylint: disable=no-member
-            and self.status_code not in ["304"]  # pylint: disable=no-member
+        if isinstance(self, HttpRequest) or (
+            isinstance(self, HttpResponse)
+            and not self.is_head_response
+            and self.status_code not in ["304"]
         ):
             # check payload basics
             if "content-length" in self.parsed_headers:
@@ -277,9 +282,6 @@ class HttpRequest(HttpMessage):
     def __init__(self, add_note: AddNoteMethodType) -> None:
         HttpMessage.__init__(self, add_note)
         self.is_request = True  # type: bool
-        self.method = None  # type: str
-        self.uri = None  # type: str
-        self.iri = None  # type: str
 
     def set_iri(self, iri: str) -> None:
         """
@@ -323,9 +325,6 @@ class HttpResponse(HttpMessage):
     def __init__(self, add_note: AddNoteMethodType) -> None:
         HttpMessage.__init__(self, add_note)
         self.is_request = False
-        self.is_head_response = False
-        self.status_code = None  # type: str
-        self.status_phrase = ""
         self.freshness_lifetime = None  # type: int
         self.age = None  # type: int
         self.store_shared = None  # type: bool

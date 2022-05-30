@@ -91,10 +91,10 @@ def verify_slack_secret(webui: "RedWebUi") -> bool:
     slack_signing_secret = webui.config.get("slack_signing_secret", fallback="").encode(
         "utf-8"
     )
-    timestamp = get_header(webui.req_headers, b"x-slack-request-timestamp")
-    if not timestamp or not timestamp[0].isdigit():
+    timestamps = get_header(webui.req_headers, b"x-slack-request-timestamp")
+    if not timestamps or not timestamps[0].isdigit():
         return False
-    timestamp = timestamp[0]
+    timestamp = timestamps[0]
     if abs(thor.time() - int(timestamp)) > 60 * 5:
         return False
     sig_basestring = b"v0:" + timestamp + b":" + webui.req_body

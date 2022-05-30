@@ -13,7 +13,6 @@ from markdown import markdown
 import thor.http.error as httperr
 
 from redbot import __version__
-from redbot.formatter import Formatter
 from redbot.formatter.html_base import (
     BaseHtmlFormatter,
     e_query_arg,
@@ -225,7 +224,7 @@ class HeaderPresenter:
     field-name, that method will be run instead to represent the value.
     """
 
-    def __init__(self, formatter: Formatter) -> None:
+    def __init__(self, formatter: BaseHtmlFormatter) -> None:
         self.formatter = formatter
 
     def show(self, name: str, value: str) -> Markup:
@@ -236,7 +235,8 @@ class HeaderPresenter:
         name = name.lower()
         name_token = name.replace("-", "_")
         if name_token[0] != "_" and hasattr(self, name_token):
-            return getattr(self, name_token)(name, value)
+            content: Markup = getattr(self, name_token)(name, value)
+            return content
         return Markup(self.wrap(escape(value), len(name)))
 
     def bare_uri(self, name: str, value: str) -> str:

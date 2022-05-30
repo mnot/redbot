@@ -89,23 +89,24 @@ class CaptchaHandler:
         def response_start(
             status: bytes, phrase: bytes, headers: RawHeaderListType
         ) -> None:
-            exchange.tmp_status = status
+            exchange.tmp_status = status  # type: ignore[attr-defined]
 
-        exchange.tmp_res_body = b""
+        exchange.tmp_res_body = b""  # type: ignore[attr-defined]
 
         @thor.events.on(exchange)
         def response_body(chunk: bytes) -> None:
-            exchange.tmp_res_body += chunk
+            exchange.tmp_res_body += chunk  # type: ignore[attr-defined]
 
         @thor.events.on(exchange)
         def response_done(_: RawHeaderListType) -> None:
             try:
-                results = json.loads(exchange.tmp_res_body)
+                results = json.loads(exchange.tmp_res_body)  # type: ignore[attr-defined]
             except ValueError:
-                if exchange.tmp_status != b"200":
+                if exchange.tmp_status != b"200":  # type: ignore[attr-defined]
                     e_str = (
                         "Captcha server returned "
-                        f"{exchange.tmp_status.decode('utf-8')} status code"
+                        f"{exchange.tmp_status.decode('utf-8')}"  # type: ignore[attr-defined]
+                        " status code"
                     )
                 else:
                     e_str = "Captcha server response error"
@@ -138,10 +139,10 @@ class CaptchaHandler:
         exchange.request_start(
             b"POST",
             b"https://hcaptcha.com/siteverify",
-            [[b"content-type", b"application/x-www-form-urlencoded"]],
+            [(b"content-type", b"application/x-www-form-urlencoded")],
         )
         exchange.request_body(urlencode(request_form).encode("utf-8", "replace"))
-        exchange.request_done({})
+        exchange.request_done([])
 
     def issue_human(self) -> RawHeaderListType:
         """

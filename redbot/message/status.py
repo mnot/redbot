@@ -7,7 +7,7 @@ The Resource Expert Droid Status Code Checker.
 from functools import partial
 from typing import List
 
-from thor.http import header_names, safe_methods
+from thor.http import safe_methods
 
 from redbot.message import HttpRequest, HttpResponse
 from redbot.speak import Note, levels, categories
@@ -60,7 +60,7 @@ class StatusChecker:
             self.add_note("status", UNEXPECTED_CONTINUE)
 
     def status101(self) -> None:  # Switching Protocols
-        if self.request and "upgrade" not in header_names(self.request.headers):
+        if self.request and not get_header(self.request.headers, "upgrade"):
             self.add_note("status", UPGRADE_NOT_REQUESTED)
 
     def status102(self) -> None:  # Processing
@@ -88,7 +88,7 @@ class StatusChecker:
         pass
 
     def status206(self) -> None:  # Partial Content
-        if self.request and "range" not in header_names(self.request.headers):
+        if self.request and not get_header(self.request.headers, "range"):
             self.add_note("", PARTIAL_NOT_REQUESTED)
         if "content-range" not in self.response.parsed_headers:
             self.add_note("header-location", PARTIAL_WITHOUT_RANGE)

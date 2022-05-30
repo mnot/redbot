@@ -5,8 +5,6 @@ Slack Formatter for REDbot.
 import json
 from typing import Any, List, Dict, Union
 
-import thor.http.error as httperr
-
 from redbot.formatter import Formatter
 from redbot.message import HttpResponse
 from redbot.resource import HttpResource
@@ -62,12 +60,10 @@ class SlackFormatter(Formatter):
         else:
             if self.resource.response.http_error is None:
                 notification = "No response error."
-            elif isinstance(self.resource.response.http_error, httperr.HttpError):
+            else:
                 notification = (
                     f"Sorry, I can't do that; {self.resource.response.http_error.desc}"
                 )
-            else:
-                notification = "Unknown incomplete response error."
             blocks = [self.markdown_block(f"_{notification}_")]
         self.send_slack_message(blocks, notification)
 

@@ -16,7 +16,6 @@ from typing import Dict
 from urllib.parse import urlsplit
 
 import thor
-from thor.events import EventEmitter
 from thor.loop import _loop
 
 from redbot import __version__
@@ -105,7 +104,9 @@ class RedHandler:
         b".svg": b"image/svg+xml",
     }
 
-    def __init__(self, exchange: EventEmitter, server: RedBotServer) -> None:
+    def __init__(
+        self, exchange: thor.http.server.HttpServerExchange, server: RedBotServer
+    ) -> None:
         self.exchange = exchange
         self.config = server.config
         self.static_files = server.static_files
