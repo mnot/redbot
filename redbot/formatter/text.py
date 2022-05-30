@@ -215,6 +215,9 @@ class MLStripper(HTMLParser):
     def get_data(self) -> str:
         return "".join(self.fed)
 
+    def error(self, message: str) -> None:
+        pass
+
 
 def strip_tags(html: str) -> str:
     stripper = MLStripper()

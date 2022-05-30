@@ -12,7 +12,6 @@ import thor
 
 from redbot import __version__
 from redbot.formatter import Formatter, relative_time, f_num
-from redbot.speak import Note
 
 NL = "\n"
 
