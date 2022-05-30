@@ -103,11 +103,8 @@ class CaptchaHandler:
                 results = json.loads(exchange.tmp_res_body)  # type: ignore[attr-defined]
             except ValueError:
                 if exchange.tmp_status != b"200":  # type: ignore[attr-defined]
-                    e_str = (
-                        "Captcha server returned "
-                        f"{exchange.tmp_status.decode('utf-8')}"  # type: ignore[attr-defined]
-                        " status code"
-                    )
+                    status = exchange.tmp_status.decode('utf-8')  #type: ignore[attr-defined]
+                    e_str = f"Captcha server returned {status} status code"
                 else:
                     e_str = "Captcha server response error"
                 self.error_response(
