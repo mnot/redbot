@@ -52,5 +52,7 @@ jobs:
       run: make -e message_test
     - name: Typecheck
       run: make typecheck
+    - name: Lint
+      run: make lint
     - name: UI Smoketest
       run: make webui_test
