@@ -32,7 +32,7 @@ tidy: venv node_modules/standard
 
 .PHONY: lint
 lint: venv node_modules/standard
-	PYTHONPATH=$(VENV) $(VENV)/pylint --output-format=colorized --rcfile=test/pylintrc \
+	PYTHONPATH=$(VENV) $(VENV)/pylint --output-format=colorized \
 	  redbot bin/redbot_daemon.py bin/redbot_cgi.py bin/redbot_cli
 	$(STANDARD) "src/js/*.js"
 
@@ -55,7 +55,7 @@ message_test: venv
 
 .PHONY: typecheck
 typecheck: venv
-	PYTHONPATH=$(VENV) $(VENV)/python -m mypy --config-file=test/mypy.ini \
+	PYTHONPATH=$(VENV) $(VENV)/python -m mypy \
 	  redbot \
 	  bin/redbot_daemon.py \
 	  bin/redbot_cgi.py \

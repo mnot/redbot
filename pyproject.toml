@@ -5,3 +5,47 @@ requires = [
 ]
 build-backend = "setuptools.build_meta"
 
+
+[tool.mypy]
+python_version = 3.7
+follow_imports = "skip"
+incremental = true
+disallow_untyped_defs = true
+disallow_untyped_calls = true
+disallow_incomplete_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+warn_unreachable = true
+strict_optional = false
+show_error_codes = true
+
+
+[tool.pylint.basic]
+function-rgx = "[a-z_][a-z0-9_]{1,30}$"
+variable-rgx = "[a-z_][a-z0-9_]{1,30}$"
+attr-rgx = "[a-z_][a-z0-9_]{1,30}$"
+argument-rgx = "[a-z_][a-z0-9_]{1,30}$"
+class-attribute-rgx = "([A-Za-z_][A-Za-z0-9_]{1,30}|(__.*__))$"
+method-rgx = "[a-z_][a-z0-9_]{1,30}$"
+class-rgx = "[a-zA-Z0-9_]+$"
+
+[tool.pylint.messages_control]
+disable = "C0114,C0115,C0116,W0613"
+
+[tool.pylint.reports]
+reports = false
+
+[tool.pylint.variables]
+dummy-variables-rgx = "response_start|response_body|response_done|error|formatter_done|check_done|_"
+
+[tool.pylint.design]
+max-args=10
+max-locals=35
+max-branches=25
+max-statements=100
+max-attributes=30
+min-public-methods=1
+
+[tool.pylint.similarities]
+min-similarity-lines = 10
