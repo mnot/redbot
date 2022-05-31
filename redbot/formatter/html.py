@@ -70,11 +70,11 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 
     # Validator uris, by media type
     validators = {
-        "text/html": "http://validator.w3.org/check?uri=%s",
-        "text/css": "http://jigsaw.w3.org/css-validator/validator?uri=%s&",
-        "application/xhtml+xml": "http://validator.w3.org/check?uri=%s",
-        "application/atom+xml": "http://feedvalidator.org/check.cgi?url=%s",
-        "application/rss+xml": "http://feedvalidator.org/check.cgi?url=%s",
+        "text/html": "https://validator.w3.org/check?uri=%s",
+        "text/css": "https://jigsaw.w3.org/css-validator/validator?uri=%s&",
+        "application/xhtml+xml": "https://validator.w3.org/check?uri=%s",
+        "application/atom+xml": "https://validator.w3.org/feed/check.cgi?url=%s",
+        "application/rss+xml": "https://validator.w3.org/feed/check.cgi?url==%s",
     }
 
     name = "html"
