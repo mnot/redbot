@@ -40,7 +40,7 @@ headers. If `descend` is true, the response will be parsed for links and `HTTPRe
 created for each of them. When it's all done, the "root" `HTTPResource` will be fed to a
 `Formatter` for presentation.
 
-If you plan to support a new HTTP header in REDbot (a very common task), see the [guide for Header
+If you plan to support a new HTTP header in REDbot (a common task), see the [guide for Header
 Development](https://github.com/mnot/redbot/blob/master/redbot/message/headers/README.md).
 
 
@@ -48,24 +48,22 @@ Development](https://github.com/mnot/redbot/blob/master/redbot/message/headers/R
 
 We use [black](https://pypi.org/project/black/) for Python formatting, and [standard](https://standardjs.com) for JavaScript; both can be run with `make tidy`.
 
+All Python functions and methods need to have type annotations. See `pyproject.toml` for specific pylint and mypy settings.
+
 
 ### Setting up a development environment
 
 It should be possible to develop REDbot on any modern Unix-like environment, provided that recent releases of Python and NodeJS are installed.
 
-Thanks to [Makefile.venv](https://github.com/sio/Makefile.venv), a Python virtual environment is set up and run each time you use `make`.
+Thanks to [Makefile.venv](https://github.com/sio/Makefile.venv), a Python virtual environment is set up and run each time you use `make`. As long as you use `make`, Python dependencies will be installed automatically. `make` will also install npm dependencies for a few development tools into a local `node_modules` directory.
 
-That means that Python dependencies will be installed automatically, provided that you use `make`.
-
-`make` will also install npm dependencies for a few development tools into a local `node_modules` directory.
-
-Note that [geckodriver](https://github.com/mozilla/geckodriver) needs to be installed on your system to run `make webui_test`.
 
 #### Helpful Make targets
 
 * `make shell` - start a shell in the Python virtual environment
 * `make python` - start an interactive Python interpreter in the virtual environment
 * `make lint` - run pylint with REDbot-specific configuration
+* `make typecheck` - run mypy to check Python types
 * `make tidy` - format Python and JavaScript source
 * `make redbot/assets` - re-generate the JavaScript and CSS in the `assets/` directory
 * `make server` - run a local standalong Web server on port 8000 for testing
@@ -76,8 +74,9 @@ Note that [geckodriver](https://github.com/mozilla/geckodriver) needs to be inst
 
 The best way to submit changes to REDbot is through a pull request. A few things to keep in mind when you're doing so:
 
-* Run `make tidy`
-* Check your code with `make lint`. It doesn't need to be a perfect 10, but please make sure indentation and whitespace are OK and it doesn't complain about anything major.
+* Run `make tidy`.
+* Check your code with `make lint` and address any issues found.
+* Check your code with `make typecheck` and address any issues found.
 * Every new header and every new `Note` should have a test covering it.
 
 If you're not sure how to dig in, feel free to ask for help, or sketch out an idea in an issue
