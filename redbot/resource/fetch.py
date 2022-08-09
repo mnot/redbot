@@ -94,7 +94,7 @@ class RedFetcher(thor.events.EventEmitter):
         "Ignore a note (for requests)."
         return
 
-    def preflight(self) -> bool:  # pylint: disable=no-self-use
+    def preflight(self) -> bool:
         """
         Check to see if we should bother running. Return True
         if so; False if not. Can be overridden.

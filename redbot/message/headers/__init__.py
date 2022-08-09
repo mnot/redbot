@@ -72,9 +72,7 @@ class HttpHeader:
             self.canonical_name = self.wire_name
         self.value: Any = []
 
-    def parse(  # pylint: disable=no-self-use
-        self, field_value: str, add_note: AddNoteMethodType
-    ) -> Any:
+    def parse(self, field_value: str, add_note: AddNoteMethodType) -> Any:
         """
         Given a string value and an add_note function, parse and return the result."""
         return field_value

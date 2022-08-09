@@ -141,7 +141,7 @@ class Formatter(EventEmitter):
         """
         raise NotImplementedError
 
-    def debug(self, message: str) -> None:  # pylint: disable=no-self-use
+    def debug(self, message: str) -> None:
         """
         Debug output.
         """

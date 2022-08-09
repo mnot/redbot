@@ -12,9 +12,6 @@ from redbot.message import DummyMsg
 
 
 class GeneralHeaderTesters(unittest.TestCase):
-    def setUp(self) -> None:
-        self.red = DummyMsg()
-
     def test_unquote_string(self) -> None:
         i = 0
         for (instr, expected_str, _) in [
@@ -45,7 +42,6 @@ class GeneralHeaderTesters(unittest.TestCase):
                 r"\s*,\s*",
             ),
         ]:
-            self.red.__init__()  # type: ignore
             outlist = headers.split_string(str(instr), item, split)
             self.assertEqual(
                 expected_outlist,
@@ -90,12 +86,12 @@ class GeneralHeaderTesters(unittest.TestCase):
             ("nostar*=utf-8''a%cc%88.txt", {}, [headers.PARAM_STAR_BAD], ";"),
             ("NOstar*=utf-8''a%cc%88.txt", {}, [headers.PARAM_STAR_BAD], ";"),
         ]:
-            self.red.__init__()  # type: ignore
+            msg = DummyMsg()
             param_dict = headers.parse_params(
-                instr, partial(self.red.add_note, "test"), ["nostar"], delim
+                instr, partial(msg.add_note, "test"), ["nostar"], delim
             )
             diff = {n.__name__ for n in expected_notes}.symmetric_difference(
-                set(self.red.note_classes)
+                set(msg.note_classes)
             )
             self.assertEqual(len(diff), 0, f"[{i}] Mismatched notes: {diff}")
             self.assertEqual(
