@@ -60,9 +60,9 @@ class RedWebUi:
         error_log: Callable[[str], int] = sys.stderr.write,
     ) -> None:
         self.config: SectionProxy = config
-        self.query_string = parse_qs(
-            query_string.decode(self.config["charset"], "replace")
-        )
+        self.charset = self.config["charset"]
+        self.charset_bytes = self.charset.encode("ascii")
+        self.query_string = parse_qs(query_string.decode(self.charset, "replace"))
         self.req_headers = req_headers
         self.req_body = req_body
         self.body_args = {}
@@ -83,8 +83,6 @@ class RedWebUi:
         if not self.descend:
             self.check_name = self.query_string.get("check_name", [None])[0]
 
-        self.charset_bytes = self.config["charset"].encode("ascii")
-
         self.save_path: str = None
         self.timeout: Any = None
 
@@ -93,9 +91,7 @@ class RedWebUi:
         if method == "POST":
             req_ct = get_header(self.req_headers, b"content-type")
             if req_ct and req_ct[-1].lower() == b"application/x-www-form-urlencoded":
-                self.body_args = parse_qs(
-                    req_body.decode(self.config["charset"], "replace")
-                )
+                self.body_args = parse_qs(req_body.decode(self.charset, "replace"))
 
             if (
                 "save" in self.query_string
@@ -309,7 +305,7 @@ class RedWebUi:
             self.error_log(log_message)
 
     def output(self, chunk: str) -> None:
-        self.exchange.response_body(chunk.encode(self.config["charset"], "replace"))
+        self.exchange.response_body(chunk.encode(self.charset, "replace"))
 
     def timeout_error(self, detail: Callable[[], str] = None) -> None:
         """Max runtime reached."""
