@@ -32,7 +32,7 @@ Once you have Python, you can install the required libraries with:
 > pip install -r requirements.txt
 
 
-### Installing RED
+### Installation
 
 Unpack the REDbot tarball. The relevant files are:
 
