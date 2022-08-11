@@ -257,7 +257,7 @@ console.log("{thor.time() - self.start:3.3f} {e_js(message)}");
                 args.append(("check_name", self.resource.check_name))
             return Markup(
                 f"<a href='?{urlencode(args, doseq=True)}'"
-                "class='{css_class}' title='{title}'>{link_value}</a>"
+                f"class='{css_class}' title='{title}'>{link_value}</a>"
             )
         args.append(("uri", urljoin(uri, link or "")))
         for name, val in self.resource.request.headers:
