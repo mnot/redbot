@@ -100,9 +100,8 @@ class HttpMessage(thor.events.EventEmitter):
         self.headers, self.parsed_headers = hp.process(headers)
         if "content-type" in self.parsed_headers:
             self.character_encoding = self.parsed_headers["content-type"][1].get(
-                "charset", "utf-8"
+                "charset", None
             )
-            # default isn't UTF-8, but oh well
         self.emit("headers_available")
 
     def set_headers(self, headers: StrHeaderListType) -> None:
