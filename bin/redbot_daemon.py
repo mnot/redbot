@@ -36,7 +36,7 @@ _loop.precision = 0.1
 class RedBotServer:
     """Run REDbot as a standalone Web server."""
 
-    watchdog_freq = 5
+    watchdog_freq = 3
 
     def __init__(self, config: SectionProxy) -> None:
         self.config = config
