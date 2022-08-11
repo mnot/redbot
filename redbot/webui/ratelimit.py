@@ -33,6 +33,7 @@ class RateLimiter:
         if client_id:
             try:
                 self.increment("client_id", client_id)
+                self.increment("instant", client_id)
             except RateLimitViolation:
                 error_response(
                     b"429",
@@ -91,6 +92,10 @@ class RateLimiter:
 
     def setup(self, config: SectionProxy) -> None:
         """Set up the counters for config."""
+        instant_limit = config.getint("instant_limit", fallback=0)
+        if instant_limit:
+            self._setup("instant", instant_limit, 15)
+
         client_limit = config.getint("limit_client_tests", fallback=0)
         if client_limit:
             client_period = config.getfloat("limit_client_period", fallback=1) * 3600
