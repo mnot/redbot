@@ -11,6 +11,8 @@ from redbot.message import headers, HttpMessage
 from redbot.syntax import rfc7231
 
 
+DEFAULT_ENCODING = "utf-8"
+
 class HTMLLinkParser(HTMLParser):
     """
     Parse the links out of an HTML document in a very forgiving way.
@@ -59,7 +61,7 @@ class HTMLLinkParser(HTMLParser):
 
     def feed_bytes(self, bchunk: bytes) -> None:
         "Feed a given chunk of bytes to the parser"
-        self.feed(bchunk.decode(self.message.character_encoding, "ignore"))
+        self.feed(bchunk.decode(self.message.character_encoding or DEFAULT_ENCODING, "ignore"))
 
     def feed(self, data: str) -> None:
         "Feed a given chunk of str to the parser"
@@ -113,7 +115,7 @@ class HTMLLinkParser(HTMLParser):
                         param_dict[param.lower()] = None
                 self.message.character_encoding = param_dict.get(
                     "charset", self.message.character_encoding
-                )
+                ) or DEFAULT_ENCODING
 
     def error(self, message: str) -> None:
         self.errors += 1
@@ -157,7 +159,7 @@ if __name__ == "__main__":
 
     @thor.events.on(T.response)
     def chunk(decoded_chunk: bytes) -> None:
-        P.feed(decoded_chunk.decode(P.message.character_encoding, "ignore"))
+        P.feed(decoded_chunk.decode(P.message.character_encoding or DEFAULT_ENCODING, "ignore"))
 
     T.check()
     thor.run()
