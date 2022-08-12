@@ -2,6 +2,7 @@ import gzip
 import os
 import pickle
 import tempfile
+import time
 from typing import TYPE_CHECKING, cast, IO
 import zlib
 
@@ -42,11 +43,12 @@ def extend_saved_test(webui: "RedWebUi") -> None:
     """Extend the expiry time of a previously run test_id."""
     try:
         # touch the save file so it isn't deleted.
+        now = time.time()
         os.utime(
             os.path.join(webui.config["save_dir"], webui.test_id),
             (
-                thor.time(),
-                thor.time() + (int(webui.config["save_days"]) * 24 * 60 * 60),
+                now,
+                now + (int(webui.config["save_days"]) * 24 * 60 * 60),
             ),
         )
         location = b"?id=%s" % webui.test_id.encode("ascii")
@@ -74,7 +76,7 @@ def load_saved_test(webui: "RedWebUi") -> None:
             ),
         ) as fd:
             mtime = os.fstat(fd.fileno()).st_mtime
-            is_saved = mtime > thor.time()
+            is_saved = mtime > time.time()
             top_resource = pickle.load(fd)
     except (OSError, TypeError):
         webui.exchange.response_start(

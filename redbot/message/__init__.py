@@ -154,7 +154,7 @@ class HttpMessage(thor.events.EventEmitter):
         know it's complete (e.g., final chunk, Content-Length).
         """
         self.complete = complete
-        self.complete_time = thor.time()
+        self.complete_time = time.time()
         self.trailers = trailers or []
         self.payload_md5 = self._md5_processor.digest()
         self.decoded_md5 = self._md5_post_processor.digest()

@@ -1,5 +1,6 @@
 import hmac
 import json
+import time
 from typing import TYPE_CHECKING
 
 import thor
@@ -95,7 +96,7 @@ def verify_slack_secret(webui: "RedWebUi") -> bool:
     if not timestamps or not timestamps[0].isdigit():
         return False
     timestamp = timestamps[0]
-    if abs(thor.time() - int(timestamp)) > 60 * 5:
+    if abs(time.time() - int(timestamp)) > 60 * 5:
         return False
     sig_basestring = b"v0:" + timestamp + b":" + webui.req_body
     signature = (

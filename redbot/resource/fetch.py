@@ -7,6 +7,7 @@ based upon the provided headers.
 """
 
 from configparser import SectionProxy
+import time
 from typing import Any, Dict, List, Tuple, Type, Union
 
 import thor
@@ -176,7 +177,7 @@ class RedFetcher(thor.events.EventEmitter):
             self.request.uri.encode("ascii"),
             req_hdrs,
         )
-        self.request.start_time = thor.time()
+        self.request.start_time = time.time()
         if not self.fetch_done:  # the request could have immediately failed.
             if self.request.payload is not None:
                 self.exchange.request_body(self.request.payload)
@@ -198,7 +199,7 @@ class RedFetcher(thor.events.EventEmitter):
         self, status: bytes, phrase: bytes, res_headers: RawHeaderListType
     ) -> None:
         "Process the response start-line and headers."
-        self.response.start_time = thor.time()
+        self.response.start_time = time.time()
         self.response.process_top_line(self.exchange.res_version, status, phrase)
         self.response.process_raw_headers(res_headers)
         StatusChecker(self.response, self.request)

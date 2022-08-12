@@ -2,13 +2,12 @@ import codecs
 from functools import partial
 import json
 import os
+import time
 from typing import Any, List, Tuple
 from urllib.parse import urljoin, urlencode, quote as urlquote
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 from markupsafe import Markup, escape
-
-import thor
 
 from redbot import __version__
 from redbot.formatter import Formatter, relative_time, f_num
@@ -83,7 +82,7 @@ class BaseHtmlFormatter(Formatter):
                 and self.config.get("hcaptcha_secret", "") != "",
             }
         )
-        self.start = thor.time()
+        self.start = time.time()
 
     def feed(self, sample: bytes) -> None:
         pass
@@ -153,7 +152,7 @@ class BaseHtmlFormatter(Formatter):
         self.output(
             f"""
 <script>
-<!-- {thor.time() - self.start:3.3f}
+<!-- {time.time() - self.start:3.3f}
 document.querySelector('#red_status').textContent = "{escape(status)}"
 -->
 </script>
@@ -166,7 +165,7 @@ document.querySelector('#red_status').textContent = "{escape(status)}"
             f"""
 <script>
 <!--
-console.log("{thor.time() - self.start:3.3f} {e_js(message)}");
+console.log("{time.time() - self.start:3.3f} {e_js(message)}");
 -->
 </script>
 """
@@ -179,7 +178,7 @@ console.log("{thor.time() - self.start:3.3f} {e_js(message)}");
         self.status("")
         self.output(
             f"""
-<div id="final_status">{thor.time() - self.start:2.2f} seconds</div>
+<div id="final_status">{time.time() - self.start:2.2f} seconds</div>
 """
         )
 

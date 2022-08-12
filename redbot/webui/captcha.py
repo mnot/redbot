@@ -1,6 +1,7 @@
 import hmac
 from http import cookies
 import json
+import time
 from typing import Callable, TYPE_CHECKING
 from urllib.parse import urlencode
 
@@ -145,7 +146,7 @@ class CaptchaHandler:
         """
         Return cookie headers for later verification that this is a human.
         """
-        human_time = str(int(thor.time()) + self.token_lifetime)
+        human_time = str(int(time.time()) + self.token_lifetime)
         human_hmac = hmac.new(
             self.secret, bytes(human_time, "ascii"), "sha512"
         ).hexdigest()
@@ -170,4 +171,4 @@ class CaptchaHandler:
         """
         computed_hmac = hmac.new(self.secret, bytes(str(human_time), "ascii"), "sha512")
         is_valid = human_hmac == computed_hmac.hexdigest()
-        return bool(is_valid and human_time >= thor.time())
+        return bool(is_valid and human_time >= time.time())

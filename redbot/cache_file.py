@@ -1,9 +1,8 @@
 import gzip
 import os
 from os import path
+import time
 import zlib
-
-import thor
 
 
 class CacheFile:
@@ -31,7 +30,7 @@ class CacheFile:
 
         try:
             mtime = os.fstat(fd.fileno()).st_mtime
-            is_fresh = mtime > thor.time()
+            is_fresh = mtime > time.time()
             if not is_fresh:
                 self.delete()
                 return None
@@ -52,7 +51,8 @@ class CacheFile:
         try:
             fd = gzip.open(self.path, "w")
             fd.write(content)
-            os.utime(self.path, (thor.time(), thor.time() + lifetime))
+            now = time.time()
+            os.utime(self.path, (now, now + lifetime))
         except (OSError, IOError, zlib.error):
             return
         finally:
