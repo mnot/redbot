@@ -5,14 +5,17 @@ Run REDbot as a daemon.
 """
 
 from configparser import ConfigParser, SectionProxy
+import cProfile
 from functools import partial
+import io
 import locale
 import os
+from pstats import SortKey, Stats  # type: ignore[attr-defined]
 import signal
 import sys
 import traceback
 from types import FrameType
-from typing import Dict
+from typing import Dict, Optional
 from urllib.parse import urlsplit
 
 import thor
@@ -30,8 +33,16 @@ if os.environ.get("SYSTEMD_WATCHDOG"):
 else:
     notify = Notification = None  # pylint: disable=invalid-name
 
-_loop.precision = 0.1
+_loop.precision = 0.2
 _loop.debug = True
+def print_debug(message: str, profile: Optional[cProfile.Profile]):
+    sys.stderr.write(f"WARNING: {message}\n\n")
+    if profile:
+        st = io.StringIO()
+        ps = Stats(profile, stream=st).sort_stats('cumulative')
+        ps.print_stats('redbot', 10)
+        sys.stderr.write(f"{st.getvalue()}\n")
+_loop.debug_out = print_debug
 
 
 class RedBotServer:
