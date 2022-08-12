@@ -10,7 +10,7 @@ from functools import partial
 import io
 import locale
 import os
-from pstats import SortKey, Stats  # type: ignore[attr-defined]
+from pstats import Stats
 import signal
 import sys
 import traceback
@@ -35,14 +35,18 @@ else:
 
 _loop.precision = 0.2
 _loop.debug = True
-def print_debug(message: str, profile: Optional[cProfile.Profile]):
+
+
+def print_debug(message: str, profile: Optional[cProfile.Profile]) -> None:
     sys.stderr.write(f"WARNING: {message}\n\n")
     if profile:
         st = io.StringIO()
-        ps = Stats(profile, stream=st).sort_stats('cumulative')
-        ps.print_stats('redbot', 10)
+        ps = Stats(profile, stream=st).sort_stats("cumulative")
+        ps.print_stats("redbot", 10)
         sys.stderr.write(f"{st.getvalue()}\n")
-_loop.debug_out = print_debug
+
+
+_loop.debug_out = print_debug  # type: ignore
 
 
 class RedBotServer:
