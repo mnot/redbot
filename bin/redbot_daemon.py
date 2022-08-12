@@ -31,6 +31,7 @@ else:
     notify = Notification = None  # pylint: disable=invalid-name
 
 _loop.precision = 0.1
+_loop.debug = True
 
 
 class RedBotServer:
