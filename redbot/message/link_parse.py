@@ -62,9 +62,12 @@ class HTMLLinkParser(HTMLParser):
 
     def feed_bytes(self, bchunk: bytes) -> None:
         "Feed a given chunk of bytes to the parser"
-        self.feed(
-            bchunk.decode(self.message.character_encoding or DEFAULT_ENCODING, "ignore")
-        )
+        if self.ok:
+            self.feed(
+                bchunk.decode(
+                    self.message.character_encoding or DEFAULT_ENCODING, "ignore"
+                )
+            )
 
     def feed(self, data: str) -> None:
         "Feed a given chunk of str to the parser"
