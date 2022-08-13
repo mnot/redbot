@@ -24,6 +24,10 @@ max_runtime = 60
 # Limit on how many links to check in a page when descending
 max_links = 100
 
+# Whether to make links in the content view clickable (starting new tests). This is
+# expensive; do not enable if running redbot_daemon.py.
+content_links = no
+
 # Output language (not working yet; see #169).
 lang = en_US.UTF-8
 
