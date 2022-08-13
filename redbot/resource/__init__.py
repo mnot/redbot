@@ -24,8 +24,8 @@ from redbot.resource.active_check import active_checks
 
 class HttpResource(RedFetcher):
     """
-    Given a URI (optionally with method, request headers and body), examine the URI for issues and
-    notable conditions, making any necessary additional requests.
+    Given a URI (optionally with method, request headers and content), examine the URI for issues
+    and notable conditions, making any necessary additional requests.
 
     After processing the response-specific attributes of RedFetcher will be populated, as well as
     its notes; see that class for details.

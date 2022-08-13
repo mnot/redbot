@@ -251,9 +251,9 @@ negotiated and non-negotiated responses."""
 class VARY_BODY_MISMATCH(Note):
     category = categories.CONNEG
     level = levels.INFO
-    summary = "The response body is different when content negotiation happens."
+    summary = "The response content is different when content negotiation happens."
     text = """\
-When content negotiation is used, the response body typically shouldn't change between negotiated
+When content negotiation is used, the response content typically shouldn't change between negotiated
 and non-negotiated responses.
 
 There might be legitimate reasons for this; e.g., because different servers handled the two

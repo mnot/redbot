@@ -6,7 +6,7 @@ class trailer(headers.HttpHeader):
     canonical_name = "Trailer"
     description = """\
 The `Trailer` header indicates that the given set of header fields will be
-present in the trailer of the message, after the body."""
+present in the trailer of the message, after the content."""
     reference = f"{rfc7230.SPEC_URL}#header.trailer"
     syntax = rfc7230.Trailer
     list_header = True

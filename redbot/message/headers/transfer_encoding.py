@@ -8,14 +8,14 @@ class transfer_encoding(headers.HttpHeader):
     canonical_name = "Transfer-Encoding"
     description = """\
 The `Transfer-Encoding` header indicates what (if any) type of transformation has been applied to
-the message body.
+the message content.
 
 This differs from `Content-Encoding` in that transfer-codings are a property of the message, not of
 the representation; i.e., it will be removed by the next "hop", whereas content-codings are
 end-to-end.
 
 The most commonly used transfer-coding is `chunked`, which allows persistent connections to be used
-without knowing the entire body's length."""
+without knowing the content's length."""
     reference = f"{rfc7230.SPEC_URL}#header.transfer-encoding"
     syntax = rfc7230.Transfer_Encoding
     list_header = True
@@ -47,7 +47,7 @@ class TRANSFER_CODING_IDENTITY(Note):
     level = levels.INFO
     summary = "The identity transfer-coding isn't necessary."
     text = """\
-HTTP defines _transfer-codings_ as a hop-by-hop encoding of the message body. The `identity`
+HTTP defines _transfer-codings_ as a hop-by-hop encoding of the message content. The `identity`
 tranfer-coding was defined as the absence of encoding; it doesn't do anything, so it's necessary.
 
 You can remove this token to save a few bytes."""

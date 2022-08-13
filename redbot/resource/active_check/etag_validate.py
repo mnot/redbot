@@ -120,9 +120,7 @@ changed, indicating that it doesn't support `ETag` validation."""
 class INM_DUP_ETAG_WEAK(Note):
     category = categories.VALIDATION
     level = levels.INFO
-    summary = (
-        "During validation, the ETag didn't change, even though the response body did."
-    )
+    summary = "During validation, the ETag didn't change, even though the response content did."
     text = """\
 `ETag`s are supposed to uniquely identify the response representation; if the content changes, so
 should the ETag.
@@ -139,9 +137,7 @@ If the changes are important, a different `ETag` should be used."""
 class INM_DUP_ETAG_STRONG(Note):
     category = categories.VALIDATION
     level = levels.BAD
-    summary = (
-        "During validation, the ETag didn't change, even though the response body did."
-    )
+    summary = "During validation, the ETag didn't change, even though the response content did."
     text = """\
 `ETag`s are supposed to uniquely identify the response representation; if the content changes, so
 should the ETag.

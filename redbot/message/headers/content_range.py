@@ -7,8 +7,8 @@ from redbot.type import AddNoteMethodType
 class content_range(headers.HttpHeader):
     canonical_name = "Content-Range"
     description = """\
-The `Content-Range` header is sent with a partial body to specify where in the full body the
-partial body should be applied."""
+The `Content-Range` header is sent with partial content to specify where in the full content the
+partial content should be applied."""
     reference = f"{rfc7233.SPEC_URL}#header.content_range"
     syntax = rfc7233.Content_Range
     list_header = False

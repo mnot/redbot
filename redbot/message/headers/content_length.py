@@ -6,8 +6,9 @@ from redbot.type import AddNoteMethodType
 class content_length(headers.HttpHeader):
     canonical_name = "Content-Length"
     description = """\
-The `Content-Length` header indicates the size of the body, in number of bytes. In responses to the
-HEAD method, it indicates the size of the body that would have been sent had the request been a GET.
+The `Content-Length` header indicates the size of the content, in number of bytes. In responses to
+the HEAD method, it indicates the size of the content that would have been sent had the request
+been a GET.
 
 If Content-Length is incorrect, persistent connections will not work, and caches may not store the
 response (since they can't be sure if they have the whole response)."""

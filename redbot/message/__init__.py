@@ -395,8 +395,8 @@ class CL_CORRECT(Note):
     summary = "The Content-Length header is correct."
     text = """\
 `Content-Length` is used by HTTP to delimit messages; that is, to mark the end of one message and
-the beginning of the next. REDbot has checked the length of the body and found the `Content-Length`
-to be correct."""
+the beginning of the next. REDbot has checked the length of the content and found the
+`Content-Length` to be correct."""
 
 
 class CL_INCORRECT(Note):
@@ -405,11 +405,11 @@ class CL_INCORRECT(Note):
     summary = "%(response)s's Content-Length header is incorrect."
     text = """\
 `Content-Length` is used by HTTP to delimit messages; that is, to mark the end of one message and
-the beginning of the next. REDbot has checked the length of the body and found the `Content-Length`
-is not correct. This can cause problems not only with connection handling, but also caching, since
-an incomplete response is considered uncacheable.
+the beginning of the next. REDbot has checked the length of the content and found the
+`Content-Length` is not correct. This can cause problems not only with connection handling, but
+also caching, since an incomplete response is considered uncacheable.
 
-The actual body size sent was %(body_length)s bytes."""
+The actual content size sent was %(body_length)s bytes."""
 
 
 class CMD5_CORRECT(Note):
@@ -417,7 +417,7 @@ class CMD5_CORRECT(Note):
     level = levels.GOOD
     summary = "The Content-MD5 header is correct."
     text = """\
-`Content-MD5` is a hash of the body, and can be used to ensure integrity of the response. REDbot
+`Content-MD5` is a hash of the content, and can be used to ensure integrity of the response. REDbot
 has checked its value and found it to be correct."""
 
 
@@ -426,9 +426,9 @@ class CMD5_INCORRECT(Note):
     level = levels.BAD
     summary = "The Content-MD5 header is incorrect."
     text = """\
-`Content-MD5` is a hash of the body, and can be used to ensure integrity of the response. REDbot has
-checked its value and found it to be incorrect; i.e., the given `Content-MD5` does not match what
-REDbot thinks it should be (%(calc_md5)s)."""
+`Content-MD5` is a hash of the content, and can be used to ensure integrity of the response. REDbot
+has checked its value and found it to be incorrect; i.e., the given `Content-MD5` does not match
+what REDbot thinks it should be (%(calc_md5)s)."""
 
 
 class BAD_GZIP(Note):

@@ -42,7 +42,7 @@ class RedFetcher(thor.events.EventEmitter):
     """
     Abstract class for a fetcher.
 
-    Fetches the given URI (with the provided method, headers and body) and:
+    Fetches the given URI (with the provided method, headers and content) and:
       - emits 'status' and 'debug' as it progresses
       - emits 'fetch_done' when the fetch is finished.
 
@@ -251,14 +251,14 @@ class RedFetcher(thor.events.EventEmitter):
 class BODY_NOT_ALLOWED(Note):
     category = categories.CONNECTION
     level = levels.BAD
-    summary = "%(response)s has a body."
+    summary = "%(response)s has content."
     text = """\
-HTTP defines a few special situations where a response does not allow a body. This includes 101,
+HTTP defines a few special situations where a response does not allow content. This includes 101,
 204 and 304 responses, as well as responses to the `HEAD` method.
 
 %(response)s had data after the headers ended, despite it being disallowed. Clients receiving it
-may treat the body as the next response in the connection, leading to interoperability and security
-issues.
+may treat the content as the next response in the connection, leading to interoperability and
+security issues.
 
 The extra data started with:
 

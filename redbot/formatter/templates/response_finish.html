@@ -25,7 +25,7 @@
 
       <span class='option' title='How large the response headers are, including the status line'>response headers: {{ resource.response.header_length|f_num }} bytes</span>
 
-      <span class='option' title='How large the response body is'>body: {{ resource.response.payload_len|f_num }} bytes</span>
+      <span class='option' title='How large the response content is'>content: {{ resource.response.payload_len|f_num }} bytes</span>
 
       {% if resource.response.transfer_length - resource.response.payload_len > 0 -%}
       <span class='option' title='How much using chunked encoding adds to the response size'>transfer overhead: {{ (resource.response.transfer_length - resource.response.payload_len)|f_num }} bytes</span>
@@ -33,9 +33,9 @@
 
       <br/>
 
-      <div class='option' title='View this response body (with any gzip compression removed'>
+      <div class='option' title='View this response content (with any gzip compression removed'>
         <script type="text/javascript">
-          document.write("<a href='#' id='body_view' accesskey='b'>view body</a>")
+          document.write("<a href='#' id='body_view' accesskey='b'>view content</a>")
         </script>
       </div>
 
@@ -54,7 +54,7 @@
 
       {% if validator_link %}
       <div class='option' title='Validate the response body with a third party service'>
-        <a href='{{ validator_link }}' accesskey='v'>validate body</a>
+        <a href='{{ validator_link }}' accesskey='v'>validate content</a>
       </div>
       {% endif %}
 

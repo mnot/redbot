@@ -247,7 +247,7 @@ class UNEXPECTED_CONTINUE(Note):
     level = levels.BAD
     summary = "A 100 Continue response was sent when it wasn't asked for."
     text = """\
-HTTP allows clients to ask a server if a request with a body (e.g., uploading a large file) will
+HTTP allows clients to ask a server if a request with content (e.g., uploading a large file) will
 succeed before sending it, using a mechanism called "Expect/continue".
 
 When used, the client sends an `Expect: 100-continue`, in the request headers, and if the server is
@@ -306,7 +306,7 @@ class PARTIAL_WITHOUT_RANGE(Note):
     level = levels.BAD
     summary = "%(response)s doesn't have a Content-Range header."
     text = """\
-The `206 Partial Response` status code indicates that the response body is only partial.
+The `206 Partial Response` status code indicates that the response content is only partial.
 
 However, for a response to be partial, it needs to have a `Content-Range` header to indicate what
 part of the full response it carries. This response does not have one, and as a result clients
@@ -318,7 +318,7 @@ class PARTIAL_NOT_REQUESTED(Note):
     level = levels.BAD
     summary = "A partial response was sent when it wasn't requested."
     text = """\
-The `206 Partial Response` status code indicates that the response body is only partial.
+The `206 Partial Response` status code indicates that the response content is only partial.
 
 However, the client needs to ask for it with the `Range` header.
 
@@ -415,9 +415,9 @@ The server previously had a resource at the given URI, but it is no longer there
 class STATUS_REQUEST_ENTITY_TOO_LARGE(Note):
     category = categories.GENERAL
     level = levels.INFO
-    summary = "The request body was too large for the server."
+    summary = "The request content was too large for the server."
     text = """\
-The server rejected the request because the request body sent was too large."""
+The server rejected the request because the request content sent was too large."""
 
 
 class STATUS_URI_TOO_LONG(Note):

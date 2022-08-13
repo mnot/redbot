@@ -8,8 +8,8 @@ class content_encoding(headers.HttpHeader):
     canonical_name = "Content-Encoding"
     description = """\
 The `Content-Encoding` header's value indicates what additional content codings have
-been applied to the body, and thus what decoding mechanisms must be applied in order to obtain the
-media-type referenced by the Content-Type header field.
+been applied to the content, and thus what decoding mechanisms must be applied in order to obtain
+the media-type referenced by the Content-Type header field.
 
 Content-Encoding is primarily used to allow a document to be compressed without losing the identity
 of its underlying media type; e.g., `gzip` and `deflate`."""
