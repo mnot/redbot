@@ -54,17 +54,17 @@ class BaseHtmlFormatter(Formatter):
     Base class for HTML formatters."""
 
     media_type = "text/html"
+    templates = Environment(
+        loader=PackageLoader("redbot.formatter"),
+        trim_blocks=True,
+        autoescape=select_autoescape(
+            enabled_extensions=("html", "xml"),
+            default_for_string=True,
+        ),
+    )
 
     def __init__(self, *args: Any, **kw: Any) -> None:
         Formatter.__init__(self, *args, **kw)
-        self.templates = Environment(
-            loader=PackageLoader("redbot.formatter"),
-            trim_blocks=True,
-            autoescape=select_autoescape(
-                enabled_extensions=("html", "xml"),
-                default_for_string=True,
-            ),
-        )
         self.templates.filters.update(
             {
                 "f_num": f_num,
