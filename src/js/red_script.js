@@ -41,7 +41,7 @@ function captchaLink (e) {
     item.trim().startsWith('human_hmac='))) {
     qs('#captcha_popup').style.display = 'block'
     const widgetId = hcaptcha.render('captcha_popup', {
-      size: 'normal',
+      size: 'invisible',
       sitekey: config.hcaptcha_sitekey,
       callback: function (token) {
         const tokenElement = document.createElement('input')
