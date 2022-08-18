@@ -6,16 +6,14 @@ Run REDbot as a daemon.
 
 from configparser import ConfigParser, SectionProxy
 import cProfile
+import faulthandler
 from functools import partial
-import inspect
 import io
 import locale
 import os
 from pstats import Stats
-import signal
 import sys
 import traceback
-from types import FrameType
 from typing import Dict, Optional
 from urllib.parse import urlsplit
 
@@ -49,6 +47,9 @@ def print_debug(message: str, profile: Optional[cProfile.Profile]) -> None:
 
 _loop.debug_out = print_debug  # type: ignore
 
+# dump stack on faults
+faulthandler.enable()
+
 
 class RedBotServer:
     """Run REDbot as a standalone Web server."""
@@ -62,7 +63,6 @@ class RedBotServer:
         # Set up the watchdog
         if notify is not None:
             thor.schedule(self.watchdog_freq, self.watchdog_ping)
-            signal.signal(signal.SIGABRT, self.abrt_handler)
 
         # Read static files
         self.static_files = self.walk_files(self.config["asset_dir"], b"static/")
@@ -83,12 +83,6 @@ class RedBotServer:
     def watchdog_ping(self) -> None:
         notify(Notification.WATCHDOG)
         thor.schedule(self.watchdog_freq, self.watchdog_ping)
-
-    @staticmethod
-    def abrt_handler(signum: int, frame: FrameType) -> None:
-        sys.stderr.write("* ABORT\n")
-        traceback.print_stack(inspect.getframeinfo(frame))
-        sys.exit(0)
 
     @staticmethod
     def walk_files(dir_name: str, base: bytes = b"") -> Dict[bytes, bytes]:
