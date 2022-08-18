@@ -7,6 +7,7 @@ Run REDbot as a daemon.
 from configparser import ConfigParser, SectionProxy
 import cProfile
 from functools import partial
+import inspect
 import io
 import locale
 import os
@@ -86,7 +87,7 @@ class RedBotServer:
     @staticmethod
     def abrt_handler(signum: int, frame: FrameType) -> None:
         sys.stderr.write("* ABORT\n")
-        traceback.print_stack(frame)
+        traceback.print_stack(inspect.getframeinfo(frame))
         sys.exit(0)
 
     @staticmethod
