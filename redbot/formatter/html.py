@@ -8,8 +8,6 @@ import textwrap
 from typing import Any, List, Match, Tuple
 from urllib.parse import urljoin
 
-from markdown import markdown
-
 import thor.http.error as httperr
 
 from redbot import __version__
@@ -203,14 +201,13 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     def format_header(self, header: Tuple[str, str]) -> Markup:
         return Markup(self.header_presenter.show(header[0], header[1]))
 
-    @staticmethod
-    def format_header_description(header_name: str) -> Markup:
+    def format_header_description(self, header_name: str) -> Markup:
         description = HeaderProcessor.find_header_handler(header_name).description
         if description:
             return Markup(
                 '<span class="tip">'
-                + markdown(
-                    description % {"field_name": header_name}, output_format="html"
+                + self._markdown.reset().convert(
+                    description % {"field_name": header_name}
                 )
                 + "</span>"
             )
@@ -327,13 +324,12 @@ class TableHtmlFormatter(BaseHtmlFormatter):
             self.problems.append(problem)
         return self.problems.index(problem) + 1
 
-    @staticmethod
-    def format_note_description(header_name: str) -> Markup:
+    def format_note_description(self, header_name: str) -> Markup:
         description = HeaderProcessor.find_header_handler(header_name).description
         if description:
             return Markup(
-                markdown(
-                    description % {"field_name": header_name}, output_format="html"
+                self._markdown.reset().convert(
+                    description % {"field_name": header_name}
                 )
             )
         return Markup("")

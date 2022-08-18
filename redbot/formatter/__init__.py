@@ -12,6 +12,7 @@ import time
 from typing import Any, Callable, List, Dict, Type, TYPE_CHECKING
 import unittest
 
+from markdown import Markdown
 import thor
 from thor.events import EventEmitter
 
@@ -96,6 +97,7 @@ class Formatter(EventEmitter):
         self.lang = config["lang"]
         self.output = output  # output file object
         self.kw = kw  # extra keyword arguments
+        self._markdown = Markdown(output_format="html")
 
     def bind_resource(self, display_resource: "HttpResource") -> None:
         """
