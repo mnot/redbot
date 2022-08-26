@@ -248,6 +248,12 @@ class RedWebUi:
         body = self.req_body.decode("ascii", "replace")[:255].replace("\n", "")
         body_safe = "".join([x for x in body if x in string.printable])
         self.error_log(f"Client JS -> {body_safe}")
+        self.exchange.response_start(
+            b"204",
+            b"No Content",
+            [],
+        )
+        self.exchange.response_done([])
 
     def show_default(self) -> None:
         """Show the default page."""
