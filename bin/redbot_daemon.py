@@ -41,7 +41,7 @@ def print_debug(message: str, profile: Optional[cProfile.Profile]) -> None:
     if profile:
         st = io.StringIO()
         ps = Stats(profile, stream=st).sort_stats("cumulative")
-        ps.print_stats("redbot", 10)
+        ps.print_stats(15)
         sys.stderr.write(f"{st.getvalue()}\n")
 
 
