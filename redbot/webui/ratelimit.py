@@ -39,7 +39,7 @@ class RateLimiter:
                     b"429",
                     b"Too Many Requests",
                     "Your client is over limit. Please try later.",
-                    f"client over limit: {client_id}",
+                    "client over limit",
                 )
                 raise ValueError  # pylint: disable=raise-missing-from
 

@@ -219,6 +219,7 @@ class RedWebUi:
             )
             if ti + to > int(self.config["log_traffic"]) * 1024:
                 self.error_log(
+                    f"{self.get_client_id()}"
                     f"{ti / 1024:n}K in {to / 1024:n}"
                     "K out for <{e_url(self.test_uri)}>"
                     " (descend {self.descend})"
@@ -247,7 +248,7 @@ class RedWebUi:
         """Dump a client error."""
         body = self.req_body.decode("ascii", "replace")[:255].replace("\n", "")
         body_safe = "".join([x for x in body if x in string.printable])
-        self.error_log(f"Client JS -> {body_safe}")
+        self.error_log(f"{self.get_client_id()} Client JS -> {body_safe}")
         self.exchange.response_start(
             b"204",
             b"No Content",
@@ -308,7 +309,7 @@ class RedWebUi:
         formatter.error_output(message)
         self.exchange.response_done([])
         if log_message:
-            self.error_log(log_message)
+            self.error_log(f"{self.get_client_id()} {log_message}")
 
     def output(self, chunk: str) -> None:
         self.exchange.response_body(chunk.encode(self.charset, "replace"))
@@ -318,7 +319,9 @@ class RedWebUi:
         details = ""
         if detail:
             details = f"detail={detail()}"
-        self.error_log(f"timeout: <{self.test_uri}> descend={self.descend} {details}")
+        self.error_log(
+            f"{self.get_client_id()} timeout: <{self.test_uri}> descend={self.descend} {details}"
+        )
         self.output("<p class='error'>REDbot timeout.</p>")
         self.exchange.response_done([])
 
