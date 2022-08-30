@@ -219,10 +219,11 @@ class RedWebUi:
             )
             if ti + to > int(self.config["log_traffic"]) * 1024:
                 self.error_log(
-                    f"{self.get_client_id()}"
-                    f"{ti / 1024:n}K in {to / 1024:n}"
-                    "K out for <{e_url(self.test_uri)}>"
-                    " (descend {self.descend})"
+                    f"{self.get_client_id()} "
+                    f"{ti / 1024:n}K in "
+                    f"{to / 1024:n}K out "
+                    f"for <{e_url(self.test_uri)}> "
+                    f"(descend {self.descend})"
                 )
 
         self.exchange.response_start(
