@@ -1,44 +1,45 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>REDbot: &lt;{{ html_uri }}&gt;</title>
-	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <title>REDbot: &lt;{{ html_uri }}&gt;</title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 	<meta name="ROBOTS" content="INDEX, NOFOLLOW" />
-    <link rel="stylesheet" type="text/css" href="{{ static }}/style.css?{{ version }}">
-    <script type="text/javascript">
-      window.onerror = function (message, url, line, col, errorObj) {
-        if (window.XMLHttpRequest) {
-          var xhr = new XMLHttpRequest()
-          var data = `${message} at ${url}, ${line}:${col}`
-          xhr.open('POST', '?client_error=1', true)
-          xhr.send(data)
-        }
+  <link rel="stylesheet" type="text/css" href="{{ static }}/style.css?{{ version }}">
+  <script type="text/javascript">
+    window.onerror = function (message, url, line, col, errorObj) {
+      if (window.XMLHttpRequest) {
+        var xhr = new XMLHttpRequest()
+        var data = `${message} at ${url}, ${line}:${col}`
+        xhr.open('POST', '?client_error=1', true)
+        xhr.send(data)
       }
-    </script>
-    <script id="config" type="application/json">{{ config }}</script>
-    <link rel="apple-touch-icon-precomposed" sizes="144x144"
-     href="{{ static }}/logo/apple-touch-icon-144x144.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="152x152"
-     href="{{ static }}/logo/apple-touch-icon-152x152.png" />
-    <link rel="icon" href="{{ static }}/logo/favicon.ico"/>
-    <link rel="icon" type="image/png" href="{{ static }}/logo/favicon-32x32.png" sizes="32x32" />
-    <link rel="icon" type="image/png" href="{{ static }}/logo/favicon-16x16.png" sizes="16x16" />
-    <meta name="application-name" content="REDbot"/>
-    <meta name="msapplication-TileColor" content="#FFFFFF" />
-    <meta name="msapplication-TileImage" content="{{ static }}/logo/mstile-144x144.png" />
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="REDbot">
-    <meta property="og:description" content="Lint for your HTTP resources">
-    <meta property="og:url" content="https://redbot.org/">
-    <meta property="og:site_name" content="REDbot">
-    <meta property="og:image" content="https://redbot.org/static/logo/redbot-sq.png">
-    <link rel="prefetch" href="{{ static }}/icons/check-circle.svg" />
-    <link rel="prefetch" href="{{ static }}/icons/exclamation-circle.svg" />
-    <link rel="prefetch" href="{{ static }}/icons/info-circle.svg" />
-    <link rel="prefetch" href="{{ static }}/icons/question-circle.svg" />
-    <link rel="prefetch" href="{{ static }}/icons/times-circle.svg" />
-    <link rel="prefetch" href="{{ static }}/icons/twitter.svg" />
-    {{ extra_js }}
+    }
+  </script>
+  <script id="config" type="application/json">{{ config }}</script>
+  <link rel="apple-touch-icon-precomposed" sizes="144x144"
+   href="{{ static }}/logo/apple-touch-icon-144x144.png" />
+  <link rel="apple-touch-icon-precomposed" sizes="152x152"
+   href="{{ static }}/logo/apple-touch-icon-152x152.png" />
+  <link rel="icon" href="{{ static }}/logo/favicon.ico"/>
+  <link rel="icon" type="image/png" href="{{ static }}/logo/favicon-32x32.png" sizes="32x32" />
+  <link rel="icon" type="image/png" href="{{ static }}/logo/favicon-16x16.png" sizes="16x16" />
+  <meta name="application-name" content="REDbot"/>
+  <meta name="msapplication-TileColor" content="#FFFFFF" />
+  <meta name="msapplication-TileImage" content="{{ static }}/logo/mstile-144x144.png" />
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="REDbot">
+  <meta property="og:description" content="Lint for your HTTP resources">
+  <meta property="og:url" content="https://redbot.org/">
+  <meta property="og:site_name" content="REDbot">
+  <meta property="og:image" content="https://redbot.org/static/logo/redbot-sq.png">
+  <link rel="prefetch" href="{{ static }}/icons/check-circle.svg" />
+  <link rel="prefetch" href="{{ static }}/icons/exclamation-circle.svg" />
+  <link rel="prefetch" href="{{ static }}/icons/info-circle.svg" />
+  <link rel="prefetch" href="{{ static }}/icons/question-circle.svg" />
+  <link rel="prefetch" href="{{ static }}/icons/times-circle.svg" />
+  <link rel="prefetch" href="{{ static }}/icons/twitter.svg" />
+  {{ extra_js }}
 </head>
 
 <body class="{{ extra_body_class }}">
