@@ -72,7 +72,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         "text/css": "https://jigsaw.w3.org/css-validator/validator?uri=%s&",
         "application/xhtml+xml": "https://validator.w3.org/check?uri=%s",
         "application/atom+xml": "https://validator.w3.org/feed/check.cgi?url=%s",
-        "application/rss+xml": "https://validator.w3.org/feed/check.cgi?url==%s",
+        "application/rss+xml": "https://validator.w3.org/feed/check.cgi?url=%s",
     }
 
     name = "html"

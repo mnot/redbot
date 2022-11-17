@@ -43,7 +43,7 @@ Unpack the REDbot tarball. The relevant files are:
 
 To install from source (e.g., if you clone from github):
 
-> python setup.py install
+> pip install .
 
 installs REDbot's libraries as well as the command-line version as `redbot_cli`.
 
@@ -109,7 +109,7 @@ If you wish to run REDbot using [Docker](https://www.docker.com), get a local co
 
 Start the webserver:
 
-> docker run -p 8000:80 redbot
+> docker run -p 8000:8000 redbot
 
 Or, just:
 
