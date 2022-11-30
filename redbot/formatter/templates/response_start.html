@@ -61,11 +61,11 @@
 </div>
 <div id="red_status"></div>
 <script src="{{ static }}/script.js?{{ version }}" type="text/javascript" async></script>
-{% if hcaptcha %}
+{% if captcha_provider != "" %}
 <div id="captcha_popup" data-size="invisible"></div>
 <script type="text/javascript">
   function loadDone () {}
 </script>
-<script src="https://hcaptcha.com/1/api.js?onload=loadDone&render=explicit" async defer></script>
+<script src="{{ captcha_script_url }}" async defer></script>
 {% endif %}
 <script src="{{ static }}/prettify.js" type="text/javascript" defer></script>

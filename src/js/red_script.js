@@ -37,12 +37,12 @@ docReady(function () {
 
 function captchaLink (e) {
   const form = e.target.closest('form')
-  if (config.hcaptcha_sitekey && !document.cookie.split(';').some((item) =>
+  if (config.captcha_sitekey && !document.cookie.split(';').some((item) =>
     item.trim().startsWith('human_hmac='))) {
     qs('#captcha_popup').style.display = 'block'
     const widgetId = hcaptcha.render('captcha_popup', {
       size: 'invisible',
-      sitekey: config.hcaptcha_sitekey,
+      sitekey: config.captcha_sitekey,
       callback: function (token) {
         const tokenElement = document.createElement('input')
         tokenElement.type = 'hidden'
@@ -61,7 +61,7 @@ function captchaLink (e) {
 }
 
 function submitForm (form) {
-  if (config.hcaptcha_sitekey) {
+  if (config.captcha_sitekey) {
     qs('#captcha_popup').style.display = 'none'
   }
   const args = serializeForm(form)

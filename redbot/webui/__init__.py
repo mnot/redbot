@@ -176,16 +176,15 @@ class RedWebUi:
         except ValueError:
             return  # over limit, don't continue.
 
-        # hCaptcha
-        if self.config.get("hcaptcha_sitekey", "") and self.config.get(
-            "hcaptcha_secret", ""
-        ):
-            CaptchaHandler(
-                self,
-                self.get_client_id(),
-                continue_test,
-                error_response,
-            ).run()
+        # Captcha
+        captcha = CaptchaHandler(
+            self,
+            self.get_client_id(),
+            continue_test,
+            error_response,
+        )
+        if captcha.configured():
+            captcha.run()
         else:
             continue_test()
 

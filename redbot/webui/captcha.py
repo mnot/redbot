@@ -2,7 +2,7 @@ import hmac
 from http import cookies
 import json
 import time
-from typing import Callable, TYPE_CHECKING
+from typing import Callable, Dict, TYPE_CHECKING
 from urllib.parse import urlencode
 
 import thor
@@ -20,6 +20,14 @@ token_client.max_server_conn = 30
 if TYPE_CHECKING:
     from redbot.webui import RedWebUi  # pylint: disable=cyclic-import,unused-import
 
+CAPTCHA_PROVIDERS: Dict[str, Dict[str, bytes]] = {
+    "hcaptcha": {
+        "verify_url": b"https://hcaptcha.com/siteverify",
+        "script_url": b"https://hcaptcha.com/1/api.js?onload=loadDone&render=explicit",
+        "captcha_js": b"hcaptcha"
+    }
+}
+
 
 class CaptchaHandler:
     def __init__(
@@ -33,8 +41,18 @@ class CaptchaHandler:
         self.client_id = client_id
         self.continue_test = continue_test
         self.error_response = error_response
-        self.secret = webui.config.get("hcaptcha_secret", "").encode("utf-8")
+        self.provider = webui.config.get("captcha_provider", "")
+        self.secret = webui.config.get("captcha_secret", "").encode("utf-8")
         self.token_lifetime = webui.config.getint("token_lifetime", fallback=300)
+
+    def configured(self) -> bool:
+        if (
+            CAPTCHA_PROVIDERS.get(self.provider, "")
+            and self.secret
+            and self.webui.config.get("captcha_sitekey", "")
+        ):
+            return True
+        return False
 
     def run(self) -> None:
         captcha_token = self.webui.body_args.get("captcha_token", [None])[0]
@@ -82,7 +100,7 @@ class CaptchaHandler:
             self.error_response(
                 b"403",
                 b"Forbidden",
-                "There was a problem with the Captcha server; please try again soon.",
+                "There was a problem with the captcha server; please try again soon.",
                 f"Captcha error: {err_msg}.",
             )
 
@@ -136,7 +154,7 @@ class CaptchaHandler:
         }
         exchange.request_start(
             b"POST",
-            b"https://hcaptcha.com/siteverify",
+            CAPTCHA_PROVIDERS[self.provider]["verify_url"],
             [(b"content-type", b"application/x-www-form-urlencoded")],
         )
         exchange.request_body(urlencode(request_form).encode("utf-8", "replace"))

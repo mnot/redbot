@@ -11,6 +11,7 @@ from markupsafe import Markup, escape
 
 from redbot import __version__
 from redbot.formatter import Formatter, relative_time, f_num
+from redbot.webui.captcha import CAPTCHA_PROVIDERS
 
 NL = "\n"
 
@@ -72,14 +73,16 @@ class BaseHtmlFormatter(Formatter):
                 "redbot_link": self.redbot_link,
             }
         )
+        captcha_provider = self.config.get("captcha_provider", "")
+        captcha_data = CAPTCHA_PROVIDERS.get(captcha_provider, {})
         self.templates.globals.update(
             {
                 "formatter": self,
                 "version": __version__,
                 "baseuri": self.config["ui_uri"],
                 "static": self.config["static_root"],
-                "hcaptcha": self.config.get("hcaptcha_sitekey", "") != ""
-                and self.config.get("hcaptcha_secret", "") != "",
+                "captcha_provider": captcha_provider,
+                "captcha_script_url": captcha_data.get("script_url", ""),
             }
         )
         self.start = time.time()
@@ -117,9 +120,7 @@ class BaseHtmlFormatter(Formatter):
                             "redbot_uri": e_js(uri),
                             "redbot_req_hdrs": req_headers,
                             "redbot_version": __version__,
-                            "hcaptcha_sitekey": self.config.get(
-                                "hcaptcha_sitekey", None
-                            ),
+                            "captcha_sitekey": self.config.get("captcha_sitekey", None),
                         },
                         ensure_ascii=True,
                     ).replace("<", "\\u003c")
