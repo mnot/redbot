@@ -168,7 +168,7 @@ document.querySelector('#red_status').textContent = "{escape(status)}"
         "Debug to console."
         self.output(
             f"""
-<script>
+<script nonce="{self.kw['nonce']}">
 <!--
 console.log("{time.time() - self.start:3.3f} {e_js(message)}");
 -->
