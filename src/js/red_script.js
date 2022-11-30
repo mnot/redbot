@@ -1,4 +1,4 @@
-/* global hcaptcha turnstile */
+/* global hcaptcha */
 
 import { qs, qsa, docReady, toggleHidden, config } from './red_util.js'
 
@@ -36,8 +36,7 @@ docReady(function () {
 })
 
 const captchaObjects = {
-  hcaptcha,
-  turnstile
+  hcaptcha
 }
 
 function captchaLink (e) {
