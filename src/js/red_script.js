@@ -1,4 +1,4 @@
-/* global hcaptcha */
+/* global hcaptcha turnstile */
 
 import { qs, qsa, docReady, toggleHidden, config } from './red_util.js'
 
@@ -35,13 +35,17 @@ docReady(function () {
   })
 })
 
-const captchaObjects = {
-  hcaptcha
+function getCaptchaObject () {
+  switch (config.captcha_provider) {
+    case 'hcaptcha': return hcaptcha
+    case 'turnstile': return turnstile
+    default: return null
+  }
 }
 
 function captchaLink (e) {
   const form = e.target.closest('form')
-  const captcha = captchaObjects[config.captcha_provider]
+  const captcha = getCaptchaObject()
   if (captcha && !document.cookie.split(';').some((item) =>
     item.trim().startsWith('human_hmac='))) {
     qs('#captcha_popup').style.display = 'block'
