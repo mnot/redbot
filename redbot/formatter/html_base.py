@@ -82,7 +82,9 @@ class BaseHtmlFormatter(Formatter):
                 "baseuri": self.config["ui_uri"],
                 "static": self.config["static_root"],
                 "captcha_provider": captcha_provider,
-                "captcha_script_url": captcha_data.get("script_url", ""),
+                "captcha_script_url": captcha_data.get("script_url", b"").decode(
+                    "ascii"
+                ),
             }
         )
         self.start = time.time()
