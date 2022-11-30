@@ -2,10 +2,12 @@
 A Web UI for RED, the Resource Expert Droid.
 """
 
+from base64 import standard_b64encode
 from collections import defaultdict
 from configparser import SectionProxy
 from functools import partial
 import os
+from random import getrandbits
 import string
 import sys
 import time
@@ -35,10 +37,7 @@ from redbot.type import (
     HttpResponseExchange,
 )
 
-CSP_VALUE = b"script-src 'self' 'unsafe-inline' https://hcaptcha.com https://*.hcaptcha.com; \
-frame-src 'self' https://hcaptcha.com https://*.hcaptcha.com; \
-style-src 'self' https://hcaptcha.com https://*.hcaptcha.com; \
-connect-src 'self' https://hcaptcha.com https://*.hcaptcha.com;"
+CSP = b""
 
 
 class RedWebUi:
@@ -86,6 +85,9 @@ class RedWebUi:
         self.save_path: str = None
         self.timeout: Any = None
 
+        self.nonce: str = standard_b64encode(getrandbits(64).to_bytes(8, "big")).decode(
+            "ascii"
+        )
         self.start = time.time()
 
         if method == "POST":
@@ -116,7 +118,9 @@ class RedWebUi:
                 self.show_default()
         else:
             self.error_response(
-                find_formatter("html")(self.config, None, self.output),
+                find_formatter("html")(
+                    self.config, None, self.output, nonce=self.nonce
+                ),
                 b"405",
                 b"Method Not Allowed",
                 "Method Not Allowed",
@@ -135,6 +139,7 @@ class RedWebUi:
             is_saved=False,
             test_id=self.test_id,
             descend=self.descend,
+            nonce=self.nonce,
         )
         continue_test = partial(self.continue_test, top_resource, formatter)
         error_response = partial(self.error_response, formatter)
@@ -231,7 +236,10 @@ class RedWebUi:
             [
                 (b"Content-Type", formatter.content_type()),
                 (b"Cache-Control", b"max-age=60, must-revalidate"),
-                (b"Content-Security-Policy", CSP_VALUE),
+                (
+                    b"Content-Security-Policy",
+                    f"{CSP} 'strict-dynamic' 'nonce-{self.nonce}".encode("ascii"),
+                ),
             ]
             + extra_headers,
         )
@@ -259,7 +267,11 @@ class RedWebUi:
     def show_default(self) -> None:
         """Show the default page."""
         formatter = html.BaseHtmlFormatter(
-            self.config, None, self.output, is_blank=self.test_uri == ""
+            self.config,
+            None,
+            self.output,
+            is_blank=self.test_uri == "",
+            nonce=self.nonce,
         )
         if self.test_uri:
             top_resource = HttpResource(self.config, descend=self.descend)
@@ -277,7 +289,10 @@ class RedWebUi:
             [
                 (b"Content-Type", formatter.content_type()),
                 (b"Cache-Control", b"max-age=300"),
-                (b"Content-Security-Policy", CSP_VALUE),
+                (
+                    b"Content-Security-Policy",
+                    f"{CSP} 'strict-dynamic' 'nonce-{self.nonce}".encode("ascii"),
+                ),
             ],
         )
         formatter.start_output()
@@ -302,7 +317,10 @@ class RedWebUi:
             [
                 (b"Content-Type", formatter.content_type()),
                 (b"Cache-Control", b"max-age=60, must-revalidate"),
-                (b"Content-Security-Policy", CSP_VALUE),
+                (
+                    b"Content-Security-Policy",
+                    f"{CSP} 'strict-dynamic' 'nonce-{self.nonce}".encode("ascii"),
+                ),
             ],
         )
         formatter.start_output()

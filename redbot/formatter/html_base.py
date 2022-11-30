@@ -85,6 +85,7 @@ class BaseHtmlFormatter(Formatter):
                 "captcha_script_url": Markup(
                     captcha_data.get("script_url", b"").decode("ascii")
                 ),
+                "nonce": self.kw["nonce"],
             }
         )
         self.start = time.time()
@@ -155,7 +156,7 @@ class BaseHtmlFormatter(Formatter):
         "Update the status bar of the browser"
         self.output(
             f"""
-<script>
+<script nonce="{self.nonce}">
 <!-- {time.time() - self.start:3.3f}
 document.querySelector('#red_status').textContent = "{escape(status)}"
 -->

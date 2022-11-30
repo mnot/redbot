@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 	<meta name="ROBOTS" content="INDEX, NOFOLLOW" />
   <link rel="stylesheet" type="text/css" href="{{ static }}/style.css?{{ version }}">
-  <script type="text/javascript">
+  <script type="text/javascript" nonce="{{ nonce }}">
     window.onerror = function (message, url, line, col, errorObj) {
       if (window.XMLHttpRequest) {
         var xhr = new XMLHttpRequest()
@@ -16,7 +16,7 @@
       }
     }
   </script>
-  <script id="config" type="application/json">{{ config }}</script>
+  <script id="config" type="application/json" nonce="{{ nonce }}">{{ config }}</script>
   <link rel="apple-touch-icon-precomposed" sizes="144x144"
    href="{{ static }}/logo/apple-touch-icon-144x144.png" />
   <link rel="apple-touch-icon-precomposed" sizes="152x152"
@@ -60,12 +60,12 @@
     </form>
 </div>
 <div id="red_status"></div>
-<script src="{{ static }}/script.js?{{ version }}" type="text/javascript" async></script>
+<script src="{{ static }}/script.js?{{ version }}" type="text/javascript" nonce="{{ nonce }}" async></script>
 {% if captcha_provider != "" %}
 <div id="captcha_popup" data-size="invisible"></div>
-<script type="text/javascript">
+<script type="text/javascript" nonce="{{ nonce }}">
   function loadDone () {}
 </script>
-<script src="{{ captcha_script_url }}" async defer></script>
+<script src="{{ captcha_script_url }}" nonce="{{ nonce }}" async defer></script>
 {% endif %}
-<script src="{{ static }}/prettify.js" type="text/javascript" defer></script>
+<script src="{{ static }}/prettify.js" nonce="{{ nonce }}" type="text/javascript" defer></script>
