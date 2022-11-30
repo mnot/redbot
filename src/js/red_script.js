@@ -1,4 +1,4 @@
-/* global hcaptcha */
+/* global hcaptcha turnstile */
 
 import { qs, qsa, docReady, toggleHidden, config } from './red_util.js'
 
@@ -36,7 +36,8 @@ docReady(function () {
 })
 
 const captchaObjects = {
-  hcaptcha
+  hcaptcha,
+  turnstile
 }
 
 function captchaLink (e) {
@@ -58,7 +59,9 @@ function captchaLink (e) {
         submitForm(form)
       }
     })
-    captcha.execute(widgetId)
+    if (config.captcha_provider === 'hcaptcha') {
+      captcha.execute(widgetId)
+    }
   } else {
     submitForm(form)
   }
