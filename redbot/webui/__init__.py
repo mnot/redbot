@@ -37,7 +37,7 @@ from redbot.type import (
     HttpResponseExchange,
 )
 
-CSP = ""
+CSP = "script-src"
 
 
 class RedWebUi:
