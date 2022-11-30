@@ -37,7 +37,7 @@ from redbot.type import (
     HttpResponseExchange,
 )
 
-CSP = b""
+CSP = ""
 
 
 class RedWebUi:
@@ -238,7 +238,7 @@ class RedWebUi:
                 (b"Cache-Control", b"max-age=60, must-revalidate"),
                 (
                     b"Content-Security-Policy",
-                    f"{CSP} 'strict-dynamic' 'nonce-{self.nonce}".encode("ascii"),
+                    f"{CSP} 'strict-dynamic' 'nonce-{self.nonce}'".encode("ascii"),
                 ),
             ]
             + extra_headers,
@@ -291,7 +291,7 @@ class RedWebUi:
                 (b"Cache-Control", b"max-age=300"),
                 (
                     b"Content-Security-Policy",
-                    f"{CSP} 'strict-dynamic' 'nonce-{self.nonce}".encode("ascii"),
+                    f"{CSP} 'strict-dynamic' 'nonce-{self.nonce}'".encode("ascii"),
                 ),
             ],
         )
@@ -319,7 +319,7 @@ class RedWebUi:
                 (b"Cache-Control", b"max-age=60, must-revalidate"),
                 (
                     b"Content-Security-Policy",
-                    f"{CSP} 'strict-dynamic' 'nonce-{self.nonce}".encode("ascii"),
+                    f"{CSP} 'strict-dynamic' 'nonce-{self.nonce}'".encode("ascii"),
                 ),
             ],
         )
