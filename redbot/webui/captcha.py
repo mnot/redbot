@@ -24,7 +24,7 @@ CAPTCHA_PROVIDERS: Dict[str, Dict[str, bytes]] = {
     "hcaptcha": {
         "verify_url": b"https://hcaptcha.com/siteverify",
         "script_url": b"https://hcaptcha.com/1/api.js?onload=loadDone&render=explicit",
-        "captcha_js": b"hcaptcha"
+        "captcha_js": b"hcaptcha",
     }
 }
 
