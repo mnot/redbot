@@ -122,6 +122,7 @@ class BaseHtmlFormatter(Formatter):
                             "redbot_uri": e_js(uri),
                             "redbot_req_hdrs": req_headers,
                             "redbot_version": __version__,
+                            "captcha_provider": self.config.get("captcha_provider", ""),
                             "captcha_sitekey": self.config.get("captcha_sitekey", None),
                         },
                         ensure_ascii=True,

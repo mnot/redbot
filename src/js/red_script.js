@@ -35,12 +35,17 @@ docReady(function () {
   })
 })
 
+const captchaObjects = {
+  hcaptcha
+}
+
 function captchaLink (e) {
   const form = e.target.closest('form')
-  if (config.captcha_sitekey && !document.cookie.split(';').some((item) =>
+  const captcha = captchaObjects[config.captcha_provider]
+  if (captcha && !document.cookie.split(';').some((item) =>
     item.trim().startsWith('human_hmac='))) {
     qs('#captcha_popup').style.display = 'block'
-    const widgetId = hcaptcha.render('captcha_popup', {
+    const widgetId = captcha.render('captcha_popup', {
       size: 'invisible',
       sitekey: config.captcha_sitekey,
       callback: function (token) {
@@ -53,7 +58,7 @@ function captchaLink (e) {
         submitForm(form)
       }
     })
-    hcaptcha.execute(widgetId)
+    captcha.execute(widgetId)
   } else {
     submitForm(form)
   }
@@ -61,7 +66,7 @@ function captchaLink (e) {
 }
 
 function submitForm (form) {
-  if (config.captcha_sitekey) {
+  if (config.captcha_provider) {
     qs('#captcha_popup').style.display = 'none'
   }
   const args = serializeForm(form)
