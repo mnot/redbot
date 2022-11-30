@@ -156,7 +156,7 @@ class BaseHtmlFormatter(Formatter):
         "Update the status bar of the browser"
         self.output(
             f"""
-<script nonce="{self.nonce}">
+<script nonce="{self.kw[nonce]}">
 <!-- {time.time() - self.start:3.3f}
 document.querySelector('#red_status').textContent = "{escape(status)}"
 -->
