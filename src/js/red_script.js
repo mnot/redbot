@@ -49,7 +49,7 @@ function captchaLink (e) {
   if (captcha && !document.cookie.split(';').some((item) =>
     item.trim().startsWith('human_hmac='))) {
     qs('#captcha_popup').style.display = 'block'
-    const widgetId = captcha.render('captcha_popup', {
+    const widgetId = captcha.render('#captcha_popup', {
       size: 'invisible',
       sitekey: config.captcha_sitekey,
       callback: function (token) {
