@@ -115,6 +115,7 @@ def load_saved_test(webui: "RedWebUi") -> None:
         allow_save=(not is_saved),
         is_saved=True,
         test_id=webui.test_id,
+        nonce=webui.nonce,
     )
 
     webui.exchange.response_start(
