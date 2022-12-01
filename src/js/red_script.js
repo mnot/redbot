@@ -49,8 +49,9 @@ function captchaLink (e) {
   if (captcha && !document.cookie.split(';').some((item) =>
     item.trim().startsWith('human_hmac='))) {
     qs('#captcha_popup').style.display = 'block'
+    const size = (config.captcha_provider === 'hcaptcha') ? 'invisible' : 'compact'
     const widgetId = captcha.render('#captcha_popup', {
-      size: 'invisible',
+      size,
       sitekey: config.captcha_sitekey,
       callback: function (token) {
         const tokenElement = document.createElement('input')
