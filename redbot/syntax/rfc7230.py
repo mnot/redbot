@@ -205,11 +205,11 @@ received_protocol = rf"(?: (?: {protocol_name} / )? {protocol_version} )"
 #  / %x5D-7E ; ']'-'~'
 #  / obs-text
 
-ctext = rf"(?: {HTAB} | {SP} | [\x21-\x27] | [\x2A-\x5b] | \x5D-\x7E | {obs_text} )"
+ctext = rf"(?: {HTAB} | {SP} | [\x21-\x27] | [\x2A-\x5b] | [\x5D-\x7E] | {obs_text} )"
 
 # comment = "(" *( ctext / quoted-pair / comment ) ")"
 
-comment = rf"(?: \( (?: {ctext} | {quoted_pair} )* \) ) "
+comment = rf"(?: \( (?: {ctext} | {quoted_pair} )* \) )"
 
 # Via = 1#( received-protocol RWS received-by [ RWS comment ] )
 
