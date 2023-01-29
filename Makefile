@@ -77,12 +77,15 @@ note_coverage: venv
 
 
 #############################################################################
-## Local test server
+## Local test server / cli
 
 .PHONY: server
 server: venv
 	PYTHONPATH=.:$(VENV) $(VENV)/python -u bin/redbot_daemon.py config.txt
 
+.PHONY: cli
+cli: venv
+	PYTHONPATH=.:$(VENV) $(VENV)/python bin/redbot_cli $(filter-out $@,$(MAKECMDGOALS))
 
 #############################################################################
 ## Docker
