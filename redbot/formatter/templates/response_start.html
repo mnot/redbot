@@ -7,12 +7,15 @@
 	<meta name="ROBOTS" content="INDEX, NOFOLLOW" />
   <link rel="stylesheet" type="text/css" href="{{ static }}/style.css?{{ version }}">
   <script type="text/javascript" nonce="{{ nonce }}">
+    var errorsReported = 0
     window.onerror = function (message, url, line, col, errorObj) {
       if (window.XMLHttpRequest) {
+        if (errorsReported > 4) { return }
         var xhr = new XMLHttpRequest()
         var data = `${message} at ${url}, ${line}:${col}`
         xhr.open('POST', '?client_error=1', true)
         xhr.send(data)
+        errorsReported += 1
       }
     }
   </script>
