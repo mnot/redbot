@@ -11,7 +11,7 @@ MODULES = src/node_modules
 JS_ENTRIES = ./src/js/red_script.js ./src/js/red_request.js ./src/js/red_response.js ./src/js/red_response_multi.js
 CSSFILES = redbot/assets/red_style.css $(MODULES)/google-code-prettify/src/prettify.css
 
-ICONS = solid/check-circle solid/times-circle solid/question-circle solid/exclamation-circle solid/info-circle brands/twitter
+ICONS = solid/check-circle solid/times-circle solid/question-circle solid/exclamation-circle solid/info-circle
 ICON_FILES = $(foreach i, $(ICONS),$(MODULES)/@fortawesome/fontawesome-free/svgs/$(i).svg)
 
 #############################################################################

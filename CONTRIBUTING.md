@@ -9,10 +9,6 @@ The [issues list](https://github.com/mnot/redbot/issues) is the best place to re
 problems or suggest new features. Before you submit something, it would be great if you had a look
 through the current issues to see if it's already there.
 
-You can also report problems or ask questions to our [twitter
-account](https://twitter.com/redbotorg); if you don't hear an answer from us in a reasonable amount
-of time, please try the issues list!
-
 
 ## Making code contributions
 
