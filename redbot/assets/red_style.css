@@ -152,7 +152,7 @@ body.blank > .footer {
 
 /* request */
 input#uri, input#go {
-  border: 2px solid #898984;
+  border: 2px solid #72726E;
   font-size: 1.1em;
   height: 30px;
   padding: 1px;
@@ -178,7 +178,7 @@ input#go {
   -webkit-border-bottom-left-radius: 0.5em;
   -moz-border-radius-bottomleft: 0.5em;
   -moz-border-radius-bottomright: 0.5em;
-  background-color: #898984;
+  background-color: #72726E;
   width: 650px;
   margin: 0; }
 
@@ -192,7 +192,7 @@ input#go {
   margin-left: 0.5em; }
 
 .req_hdr {
-  background-color: #898984;
+  background-color: #72726E;
   width: 650px;
   white-space: nowrap; }
 
