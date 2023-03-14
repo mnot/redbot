@@ -1,6 +1,10 @@
 
 /* request */
 
+input:focus{
+ outline: 0;
+}
+
 input#uri, input#go {
   border: 2px solid $input_colour;
   font-size: 1.1em;
