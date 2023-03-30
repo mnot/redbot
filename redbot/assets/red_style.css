@@ -114,7 +114,8 @@ form.link input[type='submit'] {
   font-family: inherit;
   font-size: inherit;
   color: blue;
-  text-decoration: underline; }
+  text-decoration: underline;
+  text-align: left; }
 
 /* footer */
 body.blank > .footer {
