@@ -244,7 +244,7 @@ class HeaderPresenter:
         svalue = value.lstrip()
         space = len(value) - len(svalue)
         link = self.formatter.redbot_link(
-            self.wrap(escape(svalue), len(name)),
+            self.wrap(escape(svalue), len(name), 0),
             svalue,
             use_stored=False,
             referer=True,
@@ -254,12 +254,12 @@ class HeaderPresenter:
     content_location = location = x_xrds_location = bare_uri
 
     @staticmethod
-    def wrap(value: str, sub_width: int) -> str:
+    def wrap(value: str, sub_width: int, indent_amount: int = 8) -> str:
         "wrap a line to fit in the header box"
         hdr_sz = 75
         sw = hdr_sz - min(hdr_sz - 1, sub_width)
         tr = textwrap.TextWrapper(
-            width=sw, subsequent_indent=" " * 8, break_long_words=True
+            width=sw, subsequent_indent=" " * indent_amount, break_long_words=True
         )
         return tr.fill(value)
 
