@@ -66,11 +66,8 @@ class RangeRequest(SubRequest):
 
         if self.response.status_code == "206":
             c_e = "content-encoding"
-            if (
-                "gzip"
-                in self.base.response.parsed_headers.get(c_e, [])
-                == "gzip"
-                not in self.response.parsed_headers.get(c_e, [])
+            if ("gzip" in self.base.response.parsed_headers.get(c_e, [])) == (
+                "gzip" not in self.response.parsed_headers.get(c_e, [])
             ):
                 self.add_base_note(
                     "header-accept-ranges header-content-encoding", RANGE_NEG_MISMATCH
