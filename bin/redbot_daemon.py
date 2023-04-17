@@ -146,7 +146,7 @@ class RedHandler:
             content_type = self.static_types.get(file_ext, b"application/octet-stream")
             headers = []
             headers.append((b"Content-Type", content_type))
-            headers.append((b"Cache-Control", b"max-age=3600"))
+            headers.append((b"Cache-Control", b"max-age=86400"))
             self.exchange.response_start(b"200", b"OK", headers)
             self.exchange.response_body(self.static_files[p_uri.path])
             self.exchange.response_done([])
