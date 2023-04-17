@@ -85,9 +85,9 @@ class RedWebUi:
         self.save_path: str = None
         self.timeout: Any = None
 
-        self.nonce: str = standard_b64encode(getrandbits(128).to_bytes(16, "big")).decode(
-            "ascii"
-        )
+        self.nonce: str = standard_b64encode(
+            getrandbits(128).to_bytes(16, "big")
+        ).decode("ascii")
         self.start = time.time()
 
         if method == "POST":
