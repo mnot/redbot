@@ -14,7 +14,7 @@ from redbot.message import DummyMsg
 class GeneralHeaderTesters(unittest.TestCase):
     def test_unquote_string(self) -> None:
         i = 0
-        for (instr, expected_str, _) in [
+        for instr, expected_str, _ in [
             ("foo", "foo", []),
             ('"foo"', "foo", []),
             (r'"fo\"o"', 'fo"o', []),
@@ -33,7 +33,7 @@ class GeneralHeaderTesters(unittest.TestCase):
 
     def test_split_string(self) -> None:
         i = 0
-        for (instr, expected_outlist, item, split) in [
+        for instr, expected_outlist, item, split in [
             ('"abc", "def"', ['"abc"', '"def"'], rfc7230.quoted_string, r"\s*,\s*"),
             (
                 r'"\"ab", "c\d"',
@@ -54,7 +54,7 @@ class GeneralHeaderTesters(unittest.TestCase):
         i = 0
         expected_pd: Dict[str, str]
         expected_notes: List[Type[Note]]
-        for (instr, expected_pd, expected_notes, delim) in [  # type: ignore
+        for instr, expected_pd, expected_notes, delim in [  # type: ignore
             ("foo=bar", {"foo": "bar"}, [], ";"),
             ('foo="bar"', {"foo": "bar"}, [], ";"),
             ('foo="bar"; baz=bat', {"foo": "bar", "baz": "bat"}, [], ";"),
