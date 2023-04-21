@@ -1,11 +1,10 @@
-NPX=npx --cache .npx-cache
+NPX=npx --cache .npx-cache -y
 STANDARD=$(NPX) standard
 WEBPACK=$(NPX) webpack-cli
 CSSMIN=$(NPX) cssmin
 SASS=$(NPX) node-sass
 
 GITHUB_STEP_SUMMARY ?= throwaway
-WEBPACK_DEPS = node_modules/webpack node_modules/webpack-cli node_modules/exports-loader
 
 MODULES = src/node_modules
 JS_ENTRIES = ./src/js/red_script.js ./src/js/red_request.js ./src/js/red_response.js ./src/js/red_response_multi.js
@@ -23,15 +22,15 @@ test: typecheck message_test webui_test
 .PHONY: clean
 clean:
 	find . -d -type d -name __pycache__ -exec rm -rf {} \;
-	rm -rf build dist MANIFEST redbot.egg-info package-lock.json node_modules .venv .npx-cache .mypy_cache *.log throwaway
+	rm -rf build dist MANIFEST redbot.egg-info .venv .npx-cache .mypy_cache *.log throwaway
 
 .PHONY: tidy
-tidy: venv node_modules/standard
+tidy: venv
 	$(VENV)/black redbot bin/*
 	$(STANDARD) --fix "src/js/*.js"
 
 .PHONY: lint
-lint: venv node_modules/standard
+lint: venv
 	PYTHONPATH=$(VENV) $(VENV)/pylint --output-format=colorized \
 	  redbot bin/redbot_daemon.py bin/redbot_cgi.py bin/redbot_cli
 	$(STANDARD) "src/js/*.js"
@@ -129,16 +128,16 @@ redbot/message/headers/%.py:
 .PHONY: redbot/assets
 redbot/assets: redbot/assets/script.js redbot/assets/prettify.js redbot/assets/style.css redbot/assets/icons
 
-redbot/assets/prettify.js: $(WEBPACK_DEPS)
+redbot/assets/prettify.js:
 	$(WEBPACK) --entry ./$(MODULES)/google-code-prettify/src/prettify.js --config ./src/js/webpack.config.js --mode production --output-path . --output-filename $@
 
-redbot/assets/script.js: src/js/*.js $(WEBPACK_DEPS)
+redbot/assets/script.js: src/js/*.js
 	$(WEBPACK) $(JS_ENTRIES) --config ./src/js/webpack.config.js --mode production --output-path . --output-filename $@
 
 redbot/assets/red_style.css: src/scss/*.scss
 	$(SASS) src/scss/red_style.scss $@
 
-redbot/assets/style.css: $(CSSFILES) node_modules/cssmin
+redbot/assets/style.css: $(CSSFILES)
 	cat $(CSSFILES) | $(CSSMIN) > $@
 
 redbot/assets/icons: $(ICON_FILES)
@@ -149,11 +148,6 @@ redbot/assets/icons: $(ICON_FILES)
 clean-assets:
 	rm -rf redbot/assets/*.js redbot/assets/*.map redbot/assets/*.css redbot/assets/icons
 
-#############################################################################
-## NPM dependencies
-
-node_modules/%:
-	npm i $(notdir $@)
 
 
 include Makefile.venv
