@@ -196,7 +196,6 @@ in standalone server mode. Details follow.
 
 
 if __name__ == "__main__":
-
     import argparse
 
     parser = argparse.ArgumentParser(description="REDbot daemon")

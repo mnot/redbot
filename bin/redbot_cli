@@ -18,7 +18,6 @@ from redbot.resource import HttpResource
 
 
 def main() -> None:
-
     parser = ArgumentParser()
     parser.set_defaults(
         version=False, descend=False, output_format="text", show_recommendations=False
