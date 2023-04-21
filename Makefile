@@ -128,19 +128,19 @@ redbot/message/headers/%.py:
 .PHONY: redbot/assets
 redbot/assets: redbot/assets/script.js redbot/assets/prettify.js redbot/assets/style.css redbot/assets/icons
 
-redbot/assets/prettify.js:
+redbot/assets/prettify.js: $(MODULES)
 	$(WEBPACK) --entry ./$(MODULES)/google-code-prettify/src/prettify.js --config ./src/js/webpack.config.js --mode production --output-path . --output-filename $@
 
-redbot/assets/script.js: src/js/*.js
+redbot/assets/script.js: $(MODULES) src/js/*.js
 	$(WEBPACK) $(JS_ENTRIES) --config ./src/js/webpack.config.js --mode production --output-path . --output-filename $@
 
 redbot/assets/red_style.css: src/scss/*.scss
 	$(SASS) src/scss/red_style.scss $@
 
-redbot/assets/style.css: $(CSSFILES)
+redbot/assets/style.css: $(MODULES) $(CSSFILES)
 	cat $(CSSFILES) | $(CSSMIN) > $@
 
-redbot/assets/icons: $(ICON_FILES)
+redbot/assets/icons: $(MODULES)
 	mkdir -p $@
 	cp $(ICON_FILES) $@/
 
@@ -148,6 +148,8 @@ redbot/assets/icons: $(ICON_FILES)
 clean-assets:
 	rm -rf redbot/assets/*.js redbot/assets/*.map redbot/assets/*.css redbot/assets/icons
 
+$(MODULES):
+	npm i --prefix=./src/
 
 
 include Makefile.venv
