@@ -46,9 +46,11 @@ debug = False
 # this can be a security risk.
 enable_local_access = False
 
-# Captcha provider; currently must be "hcaptcha"; see <https://hcaptcha.com/>.
+# Captcha provider; must be one of:
+# - hcaptcha -- see: https://www.hcaptcha.com
+* - turnstile -- see: https://www.cloudflare.com/products/turnstile/
 # Comment out to disable.
-# captcha_provider = hcaptcha
+captcha_provider = turnstile
 
 # Captcha sitekey.
 # captcha_sitekey = 10000000-ffff-ffff-ffff-000000000001
