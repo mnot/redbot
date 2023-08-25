@@ -104,7 +104,7 @@ class HttpMessage(thor.events.EventEmitter):
             try:
                 codecs.lookup(enc)
                 self.character_encoding = enc
-            except LookupError:
+            except (LookupError, TypeError):
                 pass
         self.emit("headers_available")
 
