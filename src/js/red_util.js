@@ -1,4 +1,3 @@
-
 export function qs (query, element) {
   if (element === undefined) {
     return document.querySelector(query)

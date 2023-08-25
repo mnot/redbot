@@ -1,4 +1,3 @@
-
 import { qs, qsa, escapeHtml, docReady } from './red_util.js'
 import tippy from 'tippy.js'
 
