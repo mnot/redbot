@@ -39,7 +39,7 @@ def cgi_main(config: SectionProxy) -> None:
     req_hdrs: RawHeaderListType = []
     for key, val in os.environ.items():
         if key[:5] == "HTTP_":
-            req_hdrs.append((key[:5].lower().encode("ascii"), val.encode("ascii")))
+            req_hdrs.append((key[5:].lower().encode("ascii"), val.encode("ascii")))
     req_body = sys.stdin.read().encode("utf-8")
 
     class Exchange(HttpResponseExchange):
@@ -54,11 +54,11 @@ def cgi_main(config: SectionProxy) -> None:
             out(b"\n".join(out_v))
 
         def response_body(self, chunk: bytes) -> None:
-            freak_ceiling = 20000
+            ceiling = 20000
             rest = None
-            if len(chunk) > freak_ceiling:
-                rest = chunk[freak_ceiling:]
-                chunk = chunk[:freak_ceiling]
+            if len(chunk) > ceiling:
+                rest = chunk[ceiling:]
+                chunk = chunk[:ceiling]
             out(chunk)
             if rest:
                 self.response_body(rest)
