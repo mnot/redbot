@@ -4,6 +4,7 @@ All checks that can be performed on a message in isolation.
 
 import base64
 import binascii
+import codecs
 import hashlib
 import re
 import time
@@ -99,9 +100,12 @@ class HttpMessage(thor.events.EventEmitter):
         hp = HeaderProcessor(self)
         self.headers, self.parsed_headers = hp.process(headers)
         if "content-type" in self.parsed_headers:
-            self.character_encoding = self.parsed_headers["content-type"][1].get(
-                "charset", None
-            )
+            enc = self.parsed_headers["content-type"][1].get("charset", None)
+            try:
+                codecs.lookup(enc)
+                self.character_encoding = enc
+            except LookupError:
+                pass
         self.emit("headers_available")
 
     def set_headers(self, headers: StrHeaderListType) -> None:

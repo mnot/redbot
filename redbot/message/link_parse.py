@@ -4,6 +4,8 @@
 Parse links from a stream of HTML data.
 """
 
+import codecs
+
 from html.parser import HTMLParser
 from typing import Any, Callable, Dict, List, Tuple
 
@@ -63,11 +65,9 @@ class HTMLLinkParser(HTMLParser):
     def feed_bytes(self, bchunk: bytes) -> None:
         "Feed a given chunk of bytes to the parser"
         if self.ok:
-            self.feed(
-                bchunk.decode(
-                    self.message.character_encoding or DEFAULT_ENCODING, "ignore"
-                )
-            )
+            encoding = self.message.character_encoding or DEFAULT_ENCODING
+            decoded = bchunk.decode(encoding, "ignore")
+            self.feed(decoded)
 
     def feed(self, data: str) -> None:
         "Feed a given chunk of str to the parser"
@@ -119,10 +119,15 @@ class HTMLLinkParser(HTMLParser):
                         param_dict[attr.lower()] = headers.unquote_string(val)
                     except ValueError:
                         param_dict[param.lower()] = None
-                self.message.character_encoding = (
+                enc = (
                     param_dict.get("charset", self.message.character_encoding)
                     or DEFAULT_ENCODING
                 )
+                try:
+                    codecs.lookup(enc)
+                    self.message.character_encoding = enc
+                except LookupError:
+                    pass
 
     def error(self, message: str) -> None:
         self.errors += 1
