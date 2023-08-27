@@ -21,7 +21,7 @@ Your ideas, questions and other contributions are most welcome. See
 
 REDbot needs:
 
-1. [Python 3.7](https://python.org/) or greater
+1. [Python 3.8](https://python.org/) or greater
 2. [thor](http://github.com/mnot/thor/)
 3. [markdown](https://pythonhosted.org/Markdown/)
 4. [netaddr](https://netaddr.readthedocs.io/en/latest/)
