@@ -45,6 +45,7 @@ syntax: venv
 
 .PHONY: webui_test
 webui_test: venv
+	$(VENV)/playwright install chromium
 	PYTHONPATH=.:$(VENV) $(VENV)/python test/test_webui.py
 
 .PHONY: message_test
