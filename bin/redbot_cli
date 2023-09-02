@@ -9,6 +9,7 @@ __author__ = "Jerome Renard <jerome.renard@gmail.com>"
 from configparser import ConfigParser
 from argparse import ArgumentParser
 import sys
+import os
 
 import thor
 
@@ -44,7 +45,7 @@ def main() -> None:
     args = parser.parse_args()
 
     config_parser = ConfigParser()
-    config_parser.read_dict({"redbot": {"lang": "en", "charset": "utf-8"}})
+    config_parser.read(os.environ.get("REDBOT_CONFIG", "config.txt"))
     config = config_parser["redbot"]
 
     resource = HttpResource(config, descend=args.descend)
