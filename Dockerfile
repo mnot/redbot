@@ -1,5 +1,10 @@
 FROM python:3-slim-bookworm
 
+# Notes:
+# Locales are needed for the redbot_daemon.py to run
+# locale.normalize(conf["redbot"]["lang"]) = "en_US.ISO8859-1"
+# by default we will install all standard en_US locales (en_US.ISO-8859-1, en_US.ISO-8859-15, en_US.UTF-8)
+
 # Install necessary Debian packages
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -7,7 +12,7 @@ RUN apt-get update && \
     build-essential \
     openssl \
     locales \
-    && sed -i 's/^# *\(en_US.UTF-8\)/\1/' /etc/locale.gen \ 
+    && sed -i '/^# *en_US/s/^# *//' /etc/locale.gen \
     && locale-gen \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
