@@ -11,7 +11,7 @@ DynamicUser=true
 # Process
 Environment=PYTHONPATH='/redbot' PYTHONUNBUFFERED='true' SYSTEMD_WATCHDOG='true'
 WorkingDirectory=/redbot
-ExecStart=/redbot/bin/redbot_daemon.py /redbot/config.txt
+ExecStart=/redbot/bin/redbot_daemon /redbot/config.txt
 StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=redbot

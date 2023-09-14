@@ -4,6 +4,7 @@
 Run REDbot as a daemon.
 """
 
+import argparse
 from configparser import ConfigParser, SectionProxy
 import cProfile
 import faulthandler
@@ -195,9 +196,7 @@ in standalone server mode. Details follow.
         sys.stderr.write(f"{message}\n")
 
 
-if __name__ == "__main__":
-    import argparse
-
+def main() -> None:
     parser = argparse.ArgumentParser(description="REDbot daemon")
     parser.add_argument(
         "config_file", type=argparse.FileType("r"), help="configuration file"
@@ -217,3 +216,7 @@ if __name__ == "__main__":
     )
 
     RedBotServer(conf["redbot"])
+
+
+if __name__ == "__main__":
+    main()

@@ -26,13 +26,12 @@ clean:
 
 .PHONY: tidy
 tidy: venv
-	$(VENV)/black redbot bin/*
+	$(VENV)/black redbot
 	$(STANDARD) --fix "src/js/*.js"
 
 .PHONY: lint
 lint: venv
-	PYTHONPATH=$(VENV) $(VENV)/pylint --output-format=colorized \
-	  redbot bin/redbot_daemon.py bin/redbot_cgi.py bin/redbot_cli
+	PYTHONPATH=$(VENV) $(VENV)/pylint --output-format=colorized redbot
 	$(STANDARD) "src/js/*.js"
 
 .PHONY: syntax
@@ -55,11 +54,7 @@ message_test: venv
 
 .PHONY: typecheck
 typecheck: venv
-	PYTHONPATH=$(VENV) $(VENV)/python -m mypy \
-	  redbot \
-	  bin/redbot_daemon.py \
-	  bin/redbot_cgi.py \
-	  bin/redbot_cli
+	PYTHONPATH=$(VENV) $(VENV)/python -m mypy redbot
 
 #############################################################################
 ### Coverage
@@ -81,11 +76,11 @@ note_coverage: venv
 
 .PHONY: server
 server: venv
-	PYTHONPATH=.:$(VENV) $(VENV)/python -u bin/redbot_daemon.py config.txt
+	PYTHONPATH=.:$(VENV) $(VENV)/python -u redbot/daemon.py config.txt
 
 .PHONY: cli
 cli: venv
-	PYTHONPATH=.:$(VENV) $(VENV)/python bin/redbot_cli $(filter-out $@,$(MAKECMDGOALS))
+	PYTHONPATH=.:$(VENV) $(VENV)/python redbot/cli.py $(filter-out $@,$(MAKECMDGOALS))
 
 #############################################################################
 ## Docker

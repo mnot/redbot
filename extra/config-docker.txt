@@ -28,7 +28,7 @@ debug = False
 # Comment out to disable; 0 to log all.
 log_traffic = 8192
 
-# Where the User Interface is rooted. Will be overwritten by redbot_cgi.
+# Where the User Interface is rooted.
 ui_uri = /
 
 # Where to cache robots.txt. Comment out to disable.
