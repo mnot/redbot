@@ -9,13 +9,12 @@ Group=redbot
 DynamicUser=true
 
 # Process
-Environment=PYTHONPATH='/redbot' PYTHONUNBUFFERED='true' SYSTEMD_WATCHDOG='true'
-WorkingDirectory=/redbot
-ExecStart=/redbot/bin/redbot_daemon /redbot/config.txt
-StandardOutput=syslog
-StandardError=syslog
+Environment=PYTHONUNBUFFERED='true' SYSTEMD_WATCHDOG='true'
+WorkingDirectory=/
+ExecStart=/app/bin/redbot_daemon /config/config.txt
 SyslogIdentifier=redbot
 Restart=always
+SystemCallArchitectures=native
 
 # Watchdog
 WatchdogSec=10
@@ -23,17 +22,26 @@ WatchdogSec=10
 # Sandbox
 NotifyAccess=main
 NoNewPrivileges=true
+LockPersonality=true
 ProtectSystem=strict
+ProtectProc=invisible
+ProtectHostname=true
 ProtectHome=tmpfs
-BindReadOnlyPaths=/path/to/redbot/change/me:/redbot
-# TODO: exceptions/ directory
-DevicePolicy=closed
-ProtectKernelTunables=true
+ProtectClock=true
 ProtectKernelModules=true
+ProtectKernelTunables=true
 ProtectControlGroups=true
+PrivateDevices=true
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+CapabilityBoundingSet=
+BindReadOnlyPaths=/CHANGEME/app:/app /CHANGEME/files:/files /CHANGEME/config:/config
+DevicePolicy=closed
+RestrictNamespaces=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
 StateDirectory=redbot
-CacheDirectory=redbot/robots-txt
 LogsDirectory=redbot
+LimitCORE=0
 
 # Resource Limits
 CPUQuota=60%
