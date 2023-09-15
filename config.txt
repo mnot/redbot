@@ -12,11 +12,14 @@ save_dir = /var/state/redbot/
 # How long to store things when users save them, in days.
 save_days = 30
 
-# Directory whose contents will be append to the front page; Comment out to disable.
-extra_dir = extra
+# Directory whose contents will be appended to pages; Comment out to disable.
+# Supported file types:
+#  - .html': shown only on start page, after input block
+#  - '.js': javascript block (with script tag surrounding), included on every page view.
+# extra_dir = /path/to/extra/stuff
 
-# URI root for static assets (absolute or relative, but no trailing '/').
-static_root = static
+# URI root for static assets (absolute, but no trailing '/').
+static_root = /static
 
 # How many seconds to allow a check to run for.
 max_runtime = 60
@@ -39,7 +42,7 @@ debug = False
 
 
 ###
-### Abuse controls for the Web UI
+### Abuse controls
 ###
 
 # Whether to allow access to localhost, RFC1918 and other "local" services. Note that enabling
@@ -71,7 +74,7 @@ referer_spam_domains = www.youtube.com
 
 
 ##
-## Rate limiting requests; only useful when running as a standalone server.
+## Rate limiting of test requests
 ##
 
 # Number of tests to allow per period, per client. Comment out to disable.
@@ -80,7 +83,7 @@ limit_client_tests = 180
 # Period of time those requests are allowed within, in hours.
 limit_client_period = 1
 
-# Number of requests per client to allow in a 15-second window.
+# Number of tests per client to allow in a 15-second window.
 instant_limit = 3
 
 # Number of tests to allow per period, per origin. Comment out to disable.
@@ -92,7 +95,7 @@ limit_origin_period = 1
 # Number of tests to allow per period, per Slack user. Comment out to disable.
 limit_slack_user_tests = 60
 
-# Period of time those requests are allowed within, in hours.
+# Period of time they are allowed within, in hours.
 limit_slack_user_period = 1
 
 # Number of tests to allow per period, per Slack team. Comment out to disable.
@@ -103,15 +106,7 @@ limit_slack_team_period = 1
 
 
 ###
-### Options for running REDbot as a CGI script
-###
-
-# Where to store exceptions; Comment out to disable traceback logging.
-exception_dir = exceptions
-
-
-###
-### Options for running REDbot as a standalone server
+### Server options
 ###
 
 # Hostname to listen on. Comment out to listen on all interfaces.
@@ -122,9 +117,6 @@ port = 8000
 
 # The URL where the User Interface is rooted.
 ui_uri = https://redbot.org/
-
-# Directory in the filesystem where REDbot's static assets are located.
-asset_dir = redbot/assets
 
 # Directory in the filesystem where other assets should be layered into the URI root.
 # Comment out to disable.
