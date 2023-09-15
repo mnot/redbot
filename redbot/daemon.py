@@ -9,7 +9,7 @@ from configparser import ConfigParser, SectionProxy
 import cProfile
 import faulthandler
 from functools import partial
-from importlib.resources import files as resource_files
+from importlib_resources import files as resource_files
 import io
 import locale
 import os

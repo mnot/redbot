@@ -4,6 +4,7 @@ Markdown==3.3.7
 netaddr==0.8.0
 thor==0.9.6
 typing-extensions==4.3.0
+importlib_resources
 pylint
 mypy
 types-Markdown
