@@ -19,7 +19,7 @@ Your ideas, questions and other contributions are most welcome. See
 
 ### Installation
 
-REDbot requires [Python](https;/python.org/) 3.9 or greater.
+REDbot requires [Python](https://python.org/) 3.9 or greater.
 
 The recommended method for installing REDbot is using `pipx`. To install the latest release, do:
 
