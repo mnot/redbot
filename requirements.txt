@@ -14,3 +14,4 @@ playwright
 build
 pytest
 pytest-md
+validate-pyproject

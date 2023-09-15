@@ -1,0 +1,6 @@
+include redbot/assets/*.css
+include redbot/assets/*.js
+include redbot/assets/*.map
+include redbot/assets/logo/*
+include redbot/assets/icons/*
+include redbot/formatter/templates/*

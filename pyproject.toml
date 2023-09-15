@@ -5,9 +5,60 @@ requires = [
 ]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "redbot"
+dynamic = ["version", "readme"]
+authors = [
+    {name="Mark Nottingham", email="mnot@mnot.net"}
+]
+description = "REDbot is lint for HTTP."
+requires-python = ">=3.9"
+license = {file = "LICENSE.md"}
+classifiers = [
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.9",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "Environment :: Web Environment",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Software Development :: Testing",
+    "Operating System :: Unix",
+    "Operating System :: MacOS :: MacOS X",
+    "License :: OSI Approved :: MIT License"
+]
+dependencies = [
+    "thor >= 0.9.6",
+    "markdown >= 2.6.5",
+    "netaddr >= 0.7.19",
+    "Jinja2 >= 2.11.1",
+    "typing-extensions >= 4.3.0",
+    "MarkupSafe",
+    "importlib_resources"
+]
+
+[project.urls]
+homepage = "https://redbot.org/project/"
+
+[project.optional-dependencies]
+systemd = ["cysystemd"]
+dev = ["mypy", "playwright", "black", "pytest", "pytest-md", "validate-pyproject"]
+
+[project.scripts]
+redbot = "redbot.cli:main"
+redbot_daemon = "redbot.daemon:main"
+
+[tool.setuptools.dynamic]
+version = {attr = "redbot.__version__"}
+readme = {file = ["README.md"], content-type = "text/markdown"}
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools]
+include-package-data = true
 
 [tool.mypy]
-python_version = 3.9
 follow_imports = "normal"
 incremental = true
 disallow_untyped_defs = true

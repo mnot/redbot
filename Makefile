@@ -33,6 +33,7 @@ tidy: venv
 lint: venv
 	PYTHONPATH=$(VENV) $(VENV)/pylint --output-format=colorized redbot
 	$(STANDARD) "src/js/*.js"
+	$(VENV)/validate-pyproject pyproject.toml
 
 .PHONY: syntax
 syntax: venv
