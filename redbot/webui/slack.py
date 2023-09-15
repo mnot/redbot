@@ -75,7 +75,9 @@ def slack_run(webui: "RedWebUi") -> None:
             "Bad slack token.",
         )
         return
-    webui.timeout = thor.schedule(int(webui.config["max_runtime"]), formatter.timeout)
+    webui.timeout = thor.schedule(
+        webui.config.getint("max_runtime", fallback=60), formatter.timeout
+    )
 
     @thor.events.on(formatter)
     def formatter_done() -> None:
