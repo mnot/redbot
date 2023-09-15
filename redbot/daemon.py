@@ -97,8 +97,7 @@ class RedBotServer:
         thor.schedule(self.watchdog_freq, self.watchdog_ping)
 
     def gc_state(self) -> None:
-        files, removed, errors = clean_saved_tests(self.config)
-#        self.console(f"Garbage collected {removed} of {files} files; {errors} errors")
+        clean_saved_tests(self.config)
         thor.schedule(self.config.getint("gc_mins", fallback=2) * 60, self.gc_state)
 
     def walk_files(self, dir_name: str, uri_base: bytes = b"") -> Dict[bytes, bytes]:
