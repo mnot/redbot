@@ -9,7 +9,6 @@ from configparser import ConfigParser, SectionProxy
 import cProfile
 import faulthandler
 from functools import partial
-from importlib_resources import files as resource_files
 import io
 import locale
 import os
@@ -18,6 +17,8 @@ import sys
 import traceback
 from typing import Dict, Optional
 from urllib.parse import urlsplit
+
+from importlib_resources import files as resource_files
 
 import thor
 from thor.loop import _loop
