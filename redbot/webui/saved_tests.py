@@ -1,9 +1,10 @@
+from configparser import SectionProxy
 import gzip
 import os
 import pickle
 import tempfile
 import time
-from typing import TYPE_CHECKING, cast, IO
+from typing import TYPE_CHECKING, cast, IO, Tuple
 import zlib
 
 import thor
@@ -48,7 +49,7 @@ def extend_saved_test(webui: "RedWebUi") -> None:
             os.path.join(webui.config["save_dir"], webui.test_id),
             (
                 now,
-                now + (int(webui.config["save_days"]) * 24 * 60 * 60),
+                now + (webui.config.getint("save_days", fallback=30) * 24 * 60 * 60),
             ),
         )
         location = b"?id=%s" % webui.test_id.encode("ascii")
@@ -64,6 +65,34 @@ def extend_saved_test(webui: "RedWebUi") -> None:
         )
         webui.output("Sorry, I couldn't save that.")
     webui.exchange.response_done([])
+
+
+def clean_saved_tests(config: SectionProxy) -> Tuple[int, int, int]:
+    """Clean old files from the saved tests directory."""
+    now = time.time()
+    state_dir = config["save_dir"]
+    save_secs = config.getint("no_save_mins", fallback=20) * 60
+    files = [
+        os.path.join(state_dir, f)
+        for f in os.listdir(state_dir)
+        if os.path.isfile(os.path.join(state_dir, f))
+    ]
+    removed = 0
+    errors = 0
+    for path in files:
+        try:
+            mtime = os.path.getmtime(path)
+        except OSError:
+            errors += 1
+            continue
+        if now - mtime > save_secs:
+            try:
+                os.remove(path)
+                removed += 1
+            except OSError:
+                errors += 1
+                continue
+    return (len(files), removed, errors)
 
 
 def load_saved_test(webui: "RedWebUi") -> None:

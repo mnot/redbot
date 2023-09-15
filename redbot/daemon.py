@@ -26,6 +26,7 @@ from thor.loop import _loop
 from redbot import __version__
 from redbot.type import RawHeaderListType
 from redbot.webui import RedWebUi
+from redbot.webui.saved_tests import clean_saved_tests
 
 if os.environ.get("SYSTEMD_WATCHDOG"):
     try:
@@ -75,23 +76,32 @@ class RedBotServer:
         if self.config.get("extra_base_dir"):
             self.extra_files = self.walk_files(self.config["extra_base_dir"])
 
+        # Start garbage collection
+        if config.get("save_dir", ""):
+            thor.schedule(10, self.gc_state)
+
         # Set up the server
         server = thor.http.HttpServer(
-            self.config.get("host", "").encode("utf-8"), int(self.config["port"])
+            self.config.get("host", "").encode("utf-8"),
+            self.config.getint("port", fallback=8000),
         )
         server.on("exchange", self.handler)
         try:
             thor.run()
         except KeyboardInterrupt:
-            sys.stderr.write("Stopping...\n")
+            self.console("Stopping...")
             thor.stop()
 
     def watchdog_ping(self) -> None:
         notify(Notification.WATCHDOG)
         thor.schedule(self.watchdog_freq, self.watchdog_ping)
 
-    @staticmethod
-    def walk_files(dir_name: str, uri_base: bytes = b"") -> Dict[bytes, bytes]:
+    def gc_state(self) -> None:
+        files, removed, errors = clean_saved_tests(self.config)
+#        self.console(f"Garbage collected {removed} of {files} files; {errors} errors")
+        thor.schedule(self.config.getint("gc_mins", fallback=2) * 60, self.gc_state)
+
+    def walk_files(self, dir_name: str, uri_base: bytes = b"") -> Dict[bytes, bytes]:
         out: Dict[bytes, bytes] = {}
         for root, _, files in os.walk(dir_name):
             for name in files:
@@ -104,8 +114,12 @@ class RedBotServer:
                         with open(path, "rb") as fh:
                             out[b"/%s%s" % (uri_base, uri[:-10])] = fh.read()
                 except IOError:
-                    sys.stderr.write(f"* Problem loading {path}\n")
+                    self.console(f"Problem loading static file {path}")
         return out
+
+    @staticmethod
+    def console(message: str) -> None:
+        sys.stderr.write(f"{message}\n")
 
 
 class RedHandler:
@@ -163,11 +177,11 @@ class RedHandler:
                     self.req_hdrs,
                     self.req_body,
                     self.exchange,
-                    self.error_log,
+                    self.server.console,
                 )
                 return None
             except Exception:  # pylint: disable=broad-except
-                self.error_log(
+                self.server.console(
                     """
 *** FATAL ERROR
 REDbot has encountered a fatal error which it really, really can't recover from
@@ -177,7 +191,7 @@ in standalone server mode. Details follow.
 
                 dump = traceback.format_exc()
                 thor.stop()
-                self.error_log(dump)
+                self.server.console(dump)
                 sys.exit(1)
         else:
             return self.serve_static(p_uri.path)
@@ -192,8 +206,8 @@ in standalone server mode. Details follow.
                 ) as fh:
                     content = fh.read()
             except OSError:
-                sys.stderr.write(
-                    f"{self.server.static_files.joinpath(path.decode('ascii'))} not found\n"
+                self.server.console(
+                    f"{self.server.static_files.joinpath(path.decode('ascii'))} not found"
                 )
                 return self.not_found(path)
         else:
@@ -218,10 +232,6 @@ in standalone server mode. Details follow.
         self.exchange.response_start(b"404", b"Not Found", headers)
         self.exchange.response_body(b"'%s' not found." % path)
         self.exchange.response_done([])
-
-    @staticmethod
-    def error_log(message: str) -> None:
-        sys.stderr.write(f"{message}\n")
 
 
 def main() -> None:

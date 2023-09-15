@@ -57,11 +57,7 @@ Then, as root:
 
 By default, REDbot will listen on localhost port 8000. This can be adjusted in `config.txt`. Running REDbot behind a reverse proxy is recommended, if it is to be exposed to the Internet.
 
-You should also create the directory referenced by the 'save_dir' configuration variable, and make
-sure that it's writable to the REDbot process. This is where REDbot stores state files, and you
-should configure a cron job to regularly clean it. For example:
-
-> 0 * * * * find /var/state/redbot/ -mmin +360 -exec rm {} \;
+If you want to allow people to save test results, create the directory referenced by the 'save_dir' configuration variable, and make sure that it's writable to the REDbot process.
 
 
 ### Running REDbot with Docker

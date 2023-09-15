@@ -2,15 +2,25 @@
 ### REDbot Configuration
 ###
 
-# All directory paths are relative to the PWD that Redbot is run from.
+# All directory paths are relative to the PWD that REDbot is run from.
 
 [redbot]
 
-# Where to keep files when users `save` them. Comment out to disable saving.
-save_dir = /var/state/redbot/
+# Where to keep files when users `save` them. Note that files will be automatically
+# deleted from this directory, so it needs to be only used for REDbot.
+# Comment out to disable saving.
+save_dir = /tmp/redbot/
 
 # How long to store things when users save them, in days.
 save_days = 30
+
+# How long to store things when users haven't saved them, in minutes. Used for eg
+# conneg requests.
+no_save_mins = 20
+
+# How often to garbage collect save files, in minutes. Only occurs when save_dir
+# is uncommented.
+gc_mins = 2
 
 # Directory whose contents will be appended to pages; Comment out to disable.
 # Supported file types:
