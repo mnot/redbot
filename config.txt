@@ -18,8 +18,8 @@ save_days = 30
 #  - '.js': javascript block (with script tag surrounding), included on every page view.
 # extra_dir = /path/to/extra/stuff
 
-# URI root for static assets (absolute, but no trailing '/').
-static_root = /static
+# URI root for static assets (absolute or relative, but no trailing '/').
+static_root = static
 
 # How many seconds to allow a check to run for.
 max_runtime = 60

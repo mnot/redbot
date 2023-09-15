@@ -69,6 +69,7 @@ class RedBotServer:
             thor.schedule(self.watchdog_freq, self.watchdog_ping)
 
         # Read static files
+        self.static_root = os.path.join("/", config["static_root"]).encode("ascii")
         self.static_files = resource_files("redbot.assets")
         self.extra_files = {}
         if self.config.get("extra_base_dir"):
@@ -183,7 +184,7 @@ in standalone server mode. Details follow.
 
     def serve_static(self, path: bytes) -> None:
         path = os.path.normpath(path)
-        if path.startswith(b"/static/"):
+        if path.startswith(self.server.static_root):
             path = b"/".join(path.split(b"/")[2:])
             try:
                 with self.server.static_files.joinpath(path.decode("ascii")).open(
