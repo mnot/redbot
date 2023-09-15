@@ -49,9 +49,11 @@ Modify the file appropriately; this is only a sample. In particular, you will ne
 
 Then, as root:
 
+~~~ bash
 > systemctl reload-daemon
 > systemctl enable redbot
 > systemctl start redbot
+~~~
 
 By default, REDbot will listen on localhost port 8000. This can be adjusted in `config.txt`. Running REDbot behind a reverse proxy is recommended, if it is to be exposed to the Internet.
 
