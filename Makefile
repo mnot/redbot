@@ -54,7 +54,7 @@ message_test: venv
 
 .PHONY: typecheck
 typecheck: venv
-	PYTHONPATH=$(VENV) $(VENV)/python -m mypy redbot
+	PYTHONPATH=$(VENV) $(VENV)/python -m mypy --python-version 3.9 redbot
 
 #############################################################################
 ### Coverage
