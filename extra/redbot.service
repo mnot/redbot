@@ -10,8 +10,8 @@ DynamicUser=true
 
 # Process
 Environment=PYTHONUNBUFFERED='true' SYSTEMD_WATCHDOG='true'
-WorkingDirectory=/
-ExecStart=/app/bin/redbot_daemon /config/config.txt
+WorkingDirectory=/opt/redbot
+ExecStart=/opt/redbot/app/bin/redbot_daemon /opt/redbot/config/config.txt
 SyslogIdentifier=redbot
 Restart=always
 SystemCallArchitectures=native
@@ -35,7 +35,6 @@ PrivateDevices=true
 SystemCallFilter=@system-service
 SystemCallErrorNumber=EPERM
 CapabilityBoundingSet=
-BindReadOnlyPaths=/CHANGEME/app:/app /CHANGEME/files:/files /CHANGEME/config:/config
 DevicePolicy=closed
 RestrictNamespaces=true
 RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
