@@ -89,7 +89,7 @@ class RedBotServer:
         thor.schedule(self.watchdog_freq, self.watchdog_ping)
 
     @staticmethod
-    def walk_files(dir_name: str, base: bytes = b"") -> Dict[bytes, bytes]:
+    def walk_files(dir_name: str, uri_base: bytes = b"") -> Dict[bytes, bytes]:
         out: Dict[bytes, bytes] = {}
         for root, _, files in os.walk(dir_name):
             for name in files:
@@ -97,10 +97,10 @@ class RedBotServer:
                     path = os.path.join(root, name)
                     uri = os.path.relpath(path, dir_name).encode("utf-8")
                     with open(path, "rb") as fh:
-                        out[b"/%s%s" % (base, uri)] = fh.read()
+                        out[b"/%s%s" % (uri_base, uri)] = fh.read()
                     if uri.endswith(b"/index.html"):
                         with open(path, "rb") as fh:
-                            out[b"/%s%s" % (base, uri[:-10])] = fh.read()
+                            out[b"/%s%s" % (uri_base, uri[:-10])] = fh.read()
                 except IOError:
                     sys.stderr.write(f"* Problem loading {path}\n")
         return out
