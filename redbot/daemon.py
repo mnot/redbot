@@ -179,10 +179,10 @@ in standalone server mode. Details follow.
                 sys.exit(1)
         else:
             try:
-                source, filename = os.path.normpath(p_uri.path).split(b"/", 1)
+                _, source, filename = os.path.normpath(p_uri.path).split(b"/", 2)
             except ValueError:
                 return self.not_found(p_uri.path)
-            if source == "static":
+            if source == b"static":
                 try:
                     with self.server.static_files.joinpath(
                         filename.decode("ascii")
