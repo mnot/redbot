@@ -29,6 +29,7 @@ if os.environ.get("SYSTEMD_WATCHDOG"):
     try:
         from cysystemd.daemon import notify, Notification  # type: ignore
     except ImportError:
+        sys.stderr.write("WARNING: watchdog enabled, but csystemd not available.\n")
         notify = Notification = None  # pylint: disable=invalid-name
 else:
     notify = Notification = None  # pylint: disable=invalid-name
