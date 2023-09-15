@@ -35,13 +35,13 @@ class BasicWebUiTest(unittest.TestCase):
 
 
 def redbot_run():
-    import redbot_daemon
+    import redbot.daemon
     from configparser import ConfigParser
 
     conf = ConfigParser()
     conf.read("config.txt")
     redconf = conf["redbot"]
-    redbot_daemon.RedBotServer(redconf)
+    redbot.daemon.RedBotServer(redconf)
 
 
 if __name__ == "__main__":
