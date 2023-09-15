@@ -25,11 +25,11 @@ The recommended method for installing REDbot is using `pipx`. To install the lat
 
 > pipx install redbot
 
-Or, to use the most current version of REDbot, download a source tarball, unpack it, change into that directory, and run:
+Or, to use the most development version of REDbot, run:
 
-> pipx install .
+> pipx install git+https://github.com/mnot/redbot.git
 
-Both of these methods will install the following into your [pipx binary folder](https://pypa.github.io/pipx/installation/):
+Both of these methods will install the following programs into your [pipx binary folder](https://pypa.github.io/pipx/installation/):
 
 * `redbot` - the command-line interface
 * `redbot_daemon` - Web interface as a standalone daemon
@@ -39,7 +39,7 @@ Both of these methods will install the following into your [pipx binary folder](
 
 REDbot can run as a standalone service, managed by [systemd](https://freedesktop.org/wiki/Software/systemd/). This offers a degree of sandboxing and resource management, as well as process monitoring (including a watchdog function).
 
-To do this, install REDbot on your system (possibly changing the `PIPX_HOME` environment variable), with the `systemd` option. For example:
+To do this, install REDbot on your system with the `systemd` option. For example:
 
 > pipx install redbot[systemd]
 
