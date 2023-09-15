@@ -178,32 +178,36 @@ in standalone server mode. Details follow.
                 self.error_log(dump)
                 sys.exit(1)
         else:
+            return self.serve_static(p_uri.path)
+
+    def serve_static(self, path: bytes) -> None:
+        path = os.path.normpath(path)
+        if path.startswith(b"/static/"):
+            path = b"/".join(path.split(b"/")[2:])
             try:
-                _, source, filename = os.path.normpath(p_uri.path).split(b"/", 2)
-            except ValueError:
-                return self.not_found(p_uri.path)
-            if source == b"static":
-                try:
-                    with self.server.static_files.joinpath(
-                        filename.decode("ascii")
-                    ).open(mode="rb") as fh:
-                        content = fh.read()
-                except OSError:
-                    return self.not_found(p_uri.path)
-            else:
-                try:
-                    content = self.server.extra_files[p_uri.path]
-                except (KeyError, TypeError):
-                    return self.not_found(p_uri.path)
-            file_ext = os.path.splitext(filename)[1].lower() or b".html"
-            content_type = self.static_types.get(file_ext, b"application/octet-stream")
-            headers = []
-            headers.append((b"Content-Type", content_type))
-            headers.append((b"Cache-Control", b"max-age=86400"))
-            self.exchange.response_start(b"200", b"OK", headers)
-            self.exchange.response_body(content)
-            self.exchange.response_done([])
-            return None
+                with self.server.static_files.joinpath(path.decode("ascii")).open(
+                    mode="rb"
+                ) as fh:
+                    content = fh.read()
+            except OSError:
+                sys.stderr.write(
+                    f"{self.server.static_files.joinpath(path.decode('ascii'))} not found\n"
+                )
+                return self.not_found(path)
+        else:
+            try:
+                content = self.server.extra_files[path]
+            except (KeyError, TypeError):
+                return self.not_found(path)
+        file_ext = os.path.splitext(path)[1].lower() or b".html"
+        content_type = self.static_types.get(file_ext, b"application/octet-stream")
+        headers = []
+        headers.append((b"Content-Type", content_type))
+        headers.append((b"Cache-Control", b"max-age=86400"))
+        self.exchange.response_start(b"200", b"OK", headers)
+        self.exchange.response_body(content)
+        self.exchange.response_done([])
+        return None
 
     def not_found(self, path: bytes) -> None:
         headers = []
