@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 
 [tool.mypy]
-python_version = 3.8
+python_version = 3.9
 follow_imports = "normal"
 incremental = true
 disallow_untyped_defs = true
