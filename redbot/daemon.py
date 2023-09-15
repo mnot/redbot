@@ -205,9 +205,6 @@ in standalone server mode. Details follow.
                 ) as fh:
                     content = fh.read()
             except OSError:
-                self.server.console(
-                    f"{self.server.static_files.joinpath(path.decode('ascii'))} not found"
-                )
                 return self.not_found(path)
         else:
             try:
