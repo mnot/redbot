@@ -9,6 +9,7 @@ from configparser import ConfigParser, SectionProxy
 import cProfile
 import faulthandler
 from functools import partial
+from importlib.resources import files as resource_files
 import io
 import locale
 import os
@@ -67,9 +68,10 @@ class RedBotServer:
             thor.schedule(self.watchdog_freq, self.watchdog_ping)
 
         # Read static files
-        self.static_files = self.walk_files(self.config["asset_dir"], b"static/")
+        self.static_files = resource_files("redbot.assets")
+        self.extra_files = {}
         if self.config.get("extra_base_dir"):
-            self.static_files.update(self.walk_files(self.config["extra_base_dir"]))
+            self.extra_files = self.walk_files(self.config["extra_base_dir"])
 
         # Set up the server
         server = thor.http.HttpServer(
@@ -121,8 +123,7 @@ class RedHandler:
         self, exchange: thor.http.server.HttpServerExchange, server: RedBotServer
     ) -> None:
         self.exchange = exchange
-        self.config = server.config
-        self.static_files = server.static_files
+        self.server = server
         self.method = b""
         self.uri = b""
         self.req_hdrs: RawHeaderListType = []
@@ -143,16 +144,7 @@ class RedHandler:
 
     def request_done(self, trailers: RawHeaderListType) -> None:
         p_uri = urlsplit(self.uri)
-        if p_uri.path in self.static_files:
-            file_ext = os.path.splitext(p_uri.path)[1].lower() or b".html"
-            content_type = self.static_types.get(file_ext, b"application/octet-stream")
-            headers = []
-            headers.append((b"Content-Type", content_type))
-            headers.append((b"Cache-Control", b"max-age=86400"))
-            self.exchange.response_start(b"200", b"OK", headers)
-            self.exchange.response_body(self.static_files[p_uri.path])
-            self.exchange.response_done([])
-        elif p_uri.path == b"/":
+        if p_uri.path == b"/":
             try:
                 self.req_hdrs.append(
                     (
@@ -163,14 +155,15 @@ class RedHandler:
                     )
                 )
                 RedWebUi(
-                    self.config,
-                    self.method.decode(self.config["charset"]),
+                    self.server.config,
+                    self.method.decode(self.server.config["charset"]),
                     p_uri.query,
                     self.req_hdrs,
                     self.req_body,
                     self.exchange,
                     self.error_log,
                 )
+                return None
             except Exception:  # pylint: disable=broad-except
                 self.error_log(
                     """
@@ -185,12 +178,40 @@ in standalone server mode. Details follow.
                 self.error_log(dump)
                 sys.exit(1)
         else:
+            try:
+                source, filename = os.path.normpath(p_uri.path).split(b"/", 1)
+            except ValueError:
+                return self.not_found(p_uri.path)
+            if source == "static":
+                try:
+                    with self.server.static_files.joinpath(
+                        filename.decode("ascii")
+                    ).open(mode="rb") as fh:
+                        content = fh.read()
+                except OSError:
+                    return self.not_found(p_uri.path)
+            else:
+                try:
+                    content = self.server.extra_files[p_uri.path]
+                except (KeyError, TypeError):
+                    return self.not_found(p_uri.path)
+            file_ext = os.path.splitext(filename)[1].lower() or b".html"
+            content_type = self.static_types.get(file_ext, b"application/octet-stream")
             headers = []
-            headers.append((b"Content-Type", b"text/plain"))
-            headers.append((b"Cache-Control", b"max-age=3600"))
-            self.exchange.response_start(b"404", b"Not Found", headers)
-            self.exchange.response_body(b"'%s' not found." % p_uri.path)
+            headers.append((b"Content-Type", content_type))
+            headers.append((b"Cache-Control", b"max-age=86400"))
+            self.exchange.response_start(b"200", b"OK", headers)
+            self.exchange.response_body(content)
             self.exchange.response_done([])
+            return None
+
+    def not_found(self, path: bytes) -> None:
+        headers = []
+        headers.append((b"Content-Type", b"text/plain"))
+        headers.append((b"Cache-Control", b"max-age=3600"))
+        self.exchange.response_start(b"404", b"Not Found", headers)
+        self.exchange.response_body(b"'%s' not found." % path)
+        self.exchange.response_done([])
 
     @staticmethod
     def error_log(message: str) -> None:

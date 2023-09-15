@@ -128,7 +128,7 @@ asset_dir = redbot/assets
 
 # Directory in the filesystem where other assets should be layered into the URI root.
 # Comment out to disable.
-# extra_base_dir = files
+# extra_base_dir = /files
 
 
 ###
