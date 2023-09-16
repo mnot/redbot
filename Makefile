@@ -13,6 +13,9 @@ CSSFILES = redbot/assets/red_style.css $(MODULES)/google-code-prettify/src/prett
 ICONS = solid/check-circle solid/times-circle solid/question-circle solid/exclamation-circle solid/info-circle
 ICON_FILES = $(foreach i, $(ICONS),$(MODULES)/@fortawesome/fontawesome-free/svgs/$(i).svg)
 
+YEAR=`date +%Y`
+MONTH=`date +%m`
+
 #############################################################################
 ## Tasks
 
@@ -100,17 +103,30 @@ docker: docker-image
 .PHONY: version
 version: venv
 	$(eval VERSION=$(shell $(VENV)/python -c "import redbot; print(redbot.__version__)"))
+	$(eval VER_YEAR=$(shell echo $(VERSION) | cut -d. -f1))
+	$(eval VER_MONTH=$(shell echo $(VERSION) | cut -d. -f2))
+	$(eval VER_MICRO=$(shell echo $(VERSION) | cut -d. -f3))
+	$(eval NEXT_MICRO=$(shell \
+		if [[ $(YEAR) != $(VER_YEAR) || $(MONTH) != $(VER_MONTH) ]] ; then \
+			echo "1"; \
+		else \
+			echo $$(( $(VER_MICRO) + 1 )); \
+		fi; \
+	))
+
+.PHONY: bump-version
+bump-version: version
+	cat redbot/__init__.py | sed -e "s/$(VERSION)/${YEAR}.$(MONTH).$(NEXT_MICRO)/" > redbot/__init__.py
 
 .PHONY: build
 build: clean venv
 	$(VENV)/python -m build
 
-.PHONY: upload
-upload: build typecheck test version
-	git tag redbot-$(VERSION)
+.PHONY: release
+release: typecheck test version
+	git tag $(VERSION)
 	git push
-	git push --tags origin
-	$(VENV)/python -m twine upload dist/*
+	git push --tags origin  # github action will push to pypi and create a release there
 
 #############################################################################
 ## Create new headers
