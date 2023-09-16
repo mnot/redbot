@@ -19,6 +19,8 @@
 #     Run mypy on $PROJECT
 # bump-calver
 #     Bump the __version__ in $PROJECT/__init__.py using calver (https://calver.org/)
+# bump-semver-[major,minor,micro]
+#     Bump the __version__ in $PROJECT/__init__.py using semver (https://semver.org/)
 # build
 #     Build the project
 # release
@@ -65,7 +67,7 @@ version_py: venv
 	$(eval VER_MAJOR=$(shell echo $(VERSION) | cut -d. -f1))
 	$(eval VER_MINOR=$(shell echo $(VERSION) | cut -d. -f2))
 	$(eval VER_MICRO=$(shell echo $(VERSION) | cut -d. -f3))
-    ## Just for calendar-based versioning
+	## for calendar-based versioning
 	$(eval NEXT_CALMICRO=$(shell \
 		if [[ $(YEAR) != $(VER_MAJOR) || $(MONTH) != $(VER_MINOR) ]] ; then \
 			echo "1"; \
@@ -73,10 +75,33 @@ version_py: venv
 			echo $$(( $(VER_MICRO) + 1 )); \
 		fi; \
 	))
+	## for semantic versioning
+	$(eval NEXT_SEMMAJOR=$(shell \
+		echo $$(( $(VER_MAJOR) + 1 )); \
+	))
+	$(eval NEXT_SEMMINOR=$(shell \
+		echo $$(( $(VER_MINOR) + 1 )); \
+	))
+	$(eval NEXT_SEMMICRO=$(shell \
+		echo $$(( $(VER_MICRO) + 1 )); \
+	))
 
 .PHONY: bump-calver
 bump-calver: version_py
-	cat $(PROJECT)/__init__.py | sed -e "s/$(VERSION)/$(YEAR).$(MONTH).$(NEXT_CALMICRO)/" > $(PROJECT)/__init__.py
+	sed -i "" -e "s/$(VERSION)/$(YEAR).$(MONTH).$(NEXT_CALMICRO)/" $(PROJECT)/__init__.py
+
+.PHONY: bump-semver-micro
+bump-semver-micro: version_py
+	sed -i "" -e "s/$(VERSION)/$(VER_MAJOR).$(VER_MINOR).$(NEXT_SEMMICRO)/" $(PROJECT)/__init__.py
+
+.PHONY: bump-semver-minor
+bump-semver-minor: version_py
+	sed -i "" -e "s/$(VERSION)/$(VER_MAJOR).$(NEXT_SEMMINOR).0/" $(PROJECT)/__init__.py
+
+.PHONY: bump-semver-major
+bump-semver-major: version_py
+	sed -i "" -e "s/$(VERSION)/$(NEXT_SEMMAJOR).0.0/" $(PROJECT)/__init__.py
+
 
 .PHONY: build
 build: clean venv
