@@ -24,8 +24,7 @@ jobs:
         path: dist/
 
   publish-to-pypi:
-    name: >-
-      Publish Python distribution to PyPI
+    name: Publish Python distribution to PyPI
     needs:
     - build
     runs-on: ubuntu-latest
@@ -44,12 +43,25 @@ jobs:
     - name: Publish distribution to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
 
-  github-release:
+  release:
+    name: Release to Github
+    needs:
+    - build
+    uses: actions/create-release@v1
+    env:
+       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    with:
+      tag_name: ${{ github.ref }}
+      release_name: Release ${{ github.ref }}
+      draft: false
+      prerelease: false
+
+  sign:
     name: >-
-      Sign the Python distribution with Sigstore
+      Sign the Python distribution
       and upload them to GitHub Release
     needs:
-    - publish-to-pypi
+    - release
     runs-on: ubuntu-latest
 
     permissions:
