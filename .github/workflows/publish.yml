@@ -47,6 +47,7 @@ jobs:
     name: Release to Github
     needs:
     - build
+    runs-on: ubuntu-latest
     permissions:
       contents: write  # IMPORTANT: mandatory for making GitHub Releases
     env:
