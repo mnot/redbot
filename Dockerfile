@@ -27,4 +27,4 @@ EXPOSE 8000
 ENV PYTHONPATH /redbot
 ENV PYTHONUNBUFFERED true
 ENTRYPOINT ["python"] 
-CMD ["bin/redbot_daemon.py", "extra/config-docker.txt"]
+CMD ["redbot/daemon.py", "extra/config-docker.txt"]
