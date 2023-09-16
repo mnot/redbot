@@ -1,3 +1,5 @@
+PROJECT = redbot
+
 NPX=npx --cache .npx-cache -y
 STANDARD=$(NPX) standard
 WEBPACK=$(NPX) webpack-cli
@@ -13,30 +15,23 @@ CSSFILES = redbot/assets/red_style.css $(MODULES)/google-code-prettify/src/prett
 ICONS = solid/check-circle solid/times-circle solid/question-circle solid/exclamation-circle solid/info-circle
 ICON_FILES = $(foreach i, $(ICONS),$(MODULES)/@fortawesome/fontawesome-free/svgs/$(i).svg)
 
-YEAR=`date +%Y`
-MONTH=`date +%m`
-
 #############################################################################
 ## Tasks
 
-.PHONY: test
-test: typecheck message_test webui_test
-
 .PHONY: clean
-clean:
-	find . -d -type d -name __pycache__ -exec rm -rf {} \;
-	rm -rf build dist MANIFEST redbot.egg-info .venv .npx-cache .mypy_cache *.log throwaway
-
-.PHONY: tidy
-tidy: venv
-	$(VENV)/black redbot
-	$(STANDARD) --fix "src/js/*.js"
+clean: clean_py
+	rm -rf .npx-cache throwaway
 
 .PHONY: lint
-lint: venv
-	PYTHONPATH=$(VENV) $(VENV)/pylint --output-format=colorized redbot
+lint: lint_py
 	$(STANDARD) "src/js/*.js"
-	$(VENV)/validate-pyproject pyproject.toml
+
+.PHONY: typecheck
+typecheck: typecheck_py
+
+.PHONY: tidy
+tidy: tidy_py
+	$(STANDARD) --fix "src/js/*.js"
 
 .PHONY: syntax
 syntax: venv
@@ -45,6 +40,9 @@ syntax: venv
 
 #############################################################################
 ## Tests
+
+.PHONY: test
+test: message_test webui_test
 
 .PHONY: webui_test
 webui_test: venv
@@ -55,10 +53,6 @@ webui_test: venv
 message_test: venv
 	PYTHONPATH=.:$(VENV) $(VENV)/pytest --md $(GITHUB_STEP_SUMMARY) redbot/message/*.py redbot/message/headers/*.py
 	rm -f throwaway
-
-.PHONY: typecheck
-typecheck: venv
-	PYTHONPATH=$(VENV) $(VENV)/python -m mypy redbot
 
 #############################################################################
 ### Coverage
@@ -73,7 +67,6 @@ header_coverage: venv
 .PHONY: note_coverage
 note_coverage: venv
 	PYTHONPATH=$(VENV) $(VENV)/python test/note_coverage.py
-
 
 #############################################################################
 ## Local test server / cli
@@ -100,37 +93,6 @@ docker: docker-image
 .PHONY: docker-cli
 docker-cli: docker-image
 	docker run --rm --name redbot redbot redbot/cli.py https://redbot.org/
-
-#############################################################################
-## Distribution
-
-.PHONY: version
-version: venv
-	$(eval VERSION=$(shell $(VENV)/python -c "import redbot; print(redbot.__version__)"))
-	$(eval VER_YEAR=$(shell echo $(VERSION) | cut -d. -f1))
-	$(eval VER_MONTH=$(shell echo $(VERSION) | cut -d. -f2))
-	$(eval VER_MICRO=$(shell echo $(VERSION) | cut -d. -f3))
-	$(eval NEXT_MICRO=$(shell \
-		if [[ $(YEAR) != $(VER_YEAR) || $(MONTH) != $(VER_MONTH) ]] ; then \
-			echo "1"; \
-		else \
-			echo $$(( $(VER_MICRO) + 1 )); \
-		fi; \
-	))
-
-.PHONY: bump-version
-bump-version: version
-	cat redbot/__init__.py | sed -e "s/$(VERSION)/${YEAR}.$(MONTH).$(NEXT_MICRO)/" > redbot/__init__.py
-
-.PHONY: build
-build: clean venv
-	$(VENV)/python -m build
-
-.PHONY: release
-release: typecheck test version
-	git tag -a "v$(VERSION)" -m "v$(VERSION)"
-	git push
-	git push --tags origin  # github action will push to pypi and create a release there
 
 #############################################################################
 ## Create new headers
@@ -169,4 +131,4 @@ $(MODULES):
 	npm i --prefix=./src/
 
 
-include Makefile.venv
+include Makefile.pyproject

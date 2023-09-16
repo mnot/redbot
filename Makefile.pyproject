@@ -1,0 +1,93 @@
+#
+# Common Makefile for Python projects
+#
+#
+# Insert `include Makefile.pyproject` at the bottom of your Makefile to enable these
+# rules. Requires Makefile.venv to also be present.
+#
+# Requires $PROJECT to be set to the name of the project, and for that to be the source folder.
+#
+# This Makefile provides the following targets:
+#
+# clean_py
+#     Clean Python-related temporary files
+# tidy_py
+#     Run black on Python files in $PROJECT
+# lint_py
+#     Run pylint on $PROJECT, and validate pyproject.toml
+# typecheck_py
+#     Run mypy on $PROJECT
+# bump-calver
+#     Bump the __version__ in $PROJECT/__init__.py using calver (https://calver.org/)
+# build
+#     Build the project
+# release
+#     Release the project on Pypi and Github releases (requires /.github/workflows/release.yml)
+#
+# See also Makefile.venv.
+#
+#
+# Make sure the following are in requirements.txt:
+# - pylint
+# - mypy
+# - black
+# - build
+# - validate-pyproject
+
+
+YEAR=`date +%Y`
+MONTH=`date +%m`
+
+
+.PHONY: clean_py
+clean_py:
+	find . -d -type d -name __pycache__ -exec rm -rf {} \;
+	rm -rf build dist MANIFEST $(PROJECT).egg-info .venv .mypy_cache *.log
+
+.PHONY: tidy_py
+tidy_py: venv
+	$(VENV)/black $(PROJECT)
+
+.PHONY: lint_py
+lint_py: venv
+	PYTHONPATH=$(VENV) $(VENV)/pylint --output-format=colorized $(PROJECT)
+	$(VENV)/validate-pyproject pyproject.toml
+
+.PHONY: typecheck_py
+typecheck_py: venv
+	PYTHONPATH=$(VENV) $(VENV)/python -m mypy $(PROJECT)
+
+## Distribution
+
+.PHONY: version_py
+version_py: venv
+	$(eval VERSION=$(shell $(VENV)/python -c "import $(PROJECT); print($(PROJECT).__version__)"))
+	$(eval VER_MAJOR=$(shell echo $(VERSION) | cut -d. -f1))
+	$(eval VER_MINOR=$(shell echo $(VERSION) | cut -d. -f2))
+	$(eval VER_MICRO=$(shell echo $(VERSION) | cut -d. -f3))
+    ## Just for calendar-based versioning
+	$(eval NEXT_CALMICRO=$(shell \
+		if [[ $(YEAR) != $(VER_MAJOR) || $(MONTH) != $(VER_MINOR) ]] ; then \
+			echo "1"; \
+		else \
+			echo $$(( $(VER_MICRO) + 1 )); \
+		fi; \
+	))
+
+.PHONY: bump-calver
+bump-calver: version_py
+	cat $(PROJECT)/__init__.py | sed -e "s/$(VERSION)/$(YEAR).$(MONTH).$(NEXT_CALMICRO)/" > $(PROJECT)/__init__.py
+
+.PHONY: build
+build: clean venv
+	$(VENV)/python -m build
+
+# requires /.github/workflows/release.yml
+.PHONY: release
+release: typecheck_py lint_py test version_py
+	git tag -a "v$(VERSION)" -m "v$(VERSION)"
+	git push
+	git push --tags origin  # github action will push to pypi and create a release
+
+
+include Makefile.venv
