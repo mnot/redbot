@@ -1,0 +1,44 @@
+# Ignore git and .git folder
+.git
+.gitignore
+.github
+
+# Ignore cache and temporary files
+*.pyc
+*.pyo
+*.egg-info
+dist/
+build/
+
+# Ignore logs
+*.log
+
+# Ignore IDE and editor folders/files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore other non-relevant files
+README.md
+Dockerfile
+LICENSE
+
+# From .gitingore 
+*.pyc
+__pycache__
+.DS_Store
+/MANIFEST
+/dist
+/build
+ghostdriver.log
+geckodriver.log
+/.sass-cache
+/.coverage
+/.mypy_cache
+/.pytest_cache
+/.venv
+/redbot.egg-info
+/.npx-cache
+/src/node_modules
+/throwaway
