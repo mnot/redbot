@@ -54,6 +54,8 @@ jobs:
        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
           - uses: actions/checkout@v4
+            with:
+              fetch-tags: true
           - run: |
               gh release create ${{ github.ref }} --verify-tag
             env:
