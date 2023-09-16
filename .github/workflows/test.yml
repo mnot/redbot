@@ -3,13 +3,9 @@ name: Test
 on:
   push:
     branches: [ main ]
-    paths:
-    - '**.py'
-    - '**.yml'
+
   pull_request:
     branches: [ main ]
-    paths:
-    - '**.py'
 
 jobs:
   test:
@@ -19,7 +15,7 @@ jobs:
       matrix:
         python-version: ["3.9", "3.10", "3.11"]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules: 'true'
     - uses: actions/setup-node@v3
