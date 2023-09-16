@@ -47,6 +47,8 @@ jobs:
     name: Release to Github
     needs:
     - build
+    permissions:
+      contents: write  # IMPORTANT: mandatory for making GitHub Releases
     env:
        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
