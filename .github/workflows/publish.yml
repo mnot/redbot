@@ -37,7 +37,7 @@ jobs:
             with:
               fetch-depth: 5
           - run: |
-              gh release create ${{ github.ref }} --verify-tag
+              gh release create "${{ github.ref }}" --verify-tag
             env:
               GITHUB_TOKEN: ${{ github.TOKEN }}
             shell: bash
