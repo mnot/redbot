@@ -8,7 +8,6 @@ importlib_resources
 pylint
 mypy
 types-Markdown
-twine
 black
 playwright
 build
