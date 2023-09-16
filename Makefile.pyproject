@@ -40,9 +40,9 @@ MONTH=`date +%m`
 
 
 .PHONY: clean_py
-clean_py:
+clean_py: clean-venv
 	find . -d -type d -name __pycache__ -exec rm -rf {} \;
-	rm -rf build dist MANIFEST $(PROJECT).egg-info .venv .mypy_cache *.log
+	rm -rf build dist MANIFEST $(PROJECT).egg-info .mypy_cache *.log
 
 .PHONY: tidy_py
 tidy_py: venv
