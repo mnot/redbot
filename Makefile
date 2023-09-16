@@ -124,7 +124,7 @@ build: clean venv
 
 .PHONY: release
 release: typecheck test version
-	git tag $(VERSION)
+	git tag "v$(VERSION)"
 	git push
 	git push --tags origin  # github action will push to pypi and create a release there
 
