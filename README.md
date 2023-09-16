@@ -76,6 +76,9 @@ Or, just:
 
 to run REDbot on port 8000.
 
+Run REDbot in cli mode:
+
+> docker run --rm redbot redbot/cli.py https://redbot.org/
 
 
 ## Credits
