@@ -9,7 +9,6 @@ requires-python = ">=3.9"
 license = {file = "LICENSE.md"}
 classifiers = [
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.9",
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: System Administrators",
