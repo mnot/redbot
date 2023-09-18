@@ -45,9 +45,7 @@ To do this, install REDbot on your system with the `systemd` option. For example
 
 The copy `extra/redbot.service` into the appropriate directory (on most systems, `/etc/systemd/system/`.)
 
-Modify the file appropriately; this is only a sample. In particular, you will need to adjust the first part of `BindReadOnlyPaths` to suit the location of the REDbot directory for you.
-
-Then, as root:
+Modify the file appropriately; this is only a sample. Then, as root:
 
 ~~~ bash
 > systemctl reload-daemon
