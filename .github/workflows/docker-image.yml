@@ -1,9 +1,7 @@
-name: Docker Image CI
+name: Docker image publication
 
 on:
-  workflow_dispatch: # Allow manual triggers from the Actions tab.    
-  push:
-    tags: [ 'v*.*.*' ] # Publish semver tags as releases.
+  workflow_call
 
 env:
   REGISTRY: ghcr.io
@@ -12,13 +10,13 @@ env:
 
 
 jobs:
-  build:
+  publish-docker-image:
 
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-      id-token: write      
+      id-token: write
 
     steps:
       - name: Checkout
