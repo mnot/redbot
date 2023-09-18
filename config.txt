@@ -6,6 +6,58 @@
 
 [redbot]
 
+## Basic configuration
+
+# Output language (not working yet; see #169).
+lang = en_US.UTF-8
+
+# Output character set. No real reason to change from UTF-8.
+charset = utf-8
+
+
+## Test configuration
+
+# How many seconds to allow a check to run for.
+max_runtime = 60
+
+# Limit on how many links to check in a page when descending
+max_links = 100
+
+
+## Web server configuration
+
+# Hostname to listen on. Comment out to listen on all interfaces.
+host = localhost
+
+# Port to listen on.
+port = 8000
+
+# The URL where the Web user interface is rooted.
+ui_uri = https://redbot.org/
+
+# Directory in the filesystem where other assets should be layered into the URI root.
+# Comment out to disable.
+# extra_base_dir = /files
+
+# Directory whose contents will be appended to pages; Comment out to disable.
+# Supported file types:
+#  - .html': shown only on start page, after input block
+#  - '.js': javascript block (with script tag surrounding), included on every page view.
+# extra_dir = /path/to/extra/stuff
+
+# URI root for static assets (absolute or relative, but no trailing '/').
+static_root = static
+
+# Show errors in the browser; boolean.
+debug = False
+
+# Whether to make links in the HTML content view clickable (starting new tests). This is
+# expensive, and may cause redbot_daemon to be unresponsive.
+content_links = no
+
+
+## Saved Tests
+
 # Where to keep files when users `save` them. Note that files will be automatically
 # deleted from this directory, so it needs to be only used for REDbot.
 # Comment out to disable saving.
@@ -22,38 +74,8 @@ no_save_mins = 20
 # is uncommented.
 gc_mins = 2
 
-# Directory whose contents will be appended to pages; Comment out to disable.
-# Supported file types:
-#  - .html': shown only on start page, after input block
-#  - '.js': javascript block (with script tag surrounding), included on every page view.
-# extra_dir = /path/to/extra/stuff
 
-# URI root for static assets (absolute or relative, but no trailing '/').
-static_root = static
-
-# How many seconds to allow a check to run for.
-max_runtime = 60
-
-# Limit on how many links to check in a page when descending
-max_links = 100
-
-# Whether to make links in the content view clickable (starting new tests). This is
-# expensive; do not enable if running redbot_daemon.py.
-content_links = no
-
-# Output language (not working yet; see #169).
-lang = en_US.UTF-8
-
-# Output character set. No real reason to change from UTF-8.
-charset = utf-8
-
-# Show errors in the browser; boolean.
-debug = False
-
-
-###
-### Abuse controls
-###
+## Web abuse controls
 
 # Whether to allow access to localhost, RFC1918 and other "local" services. Note that enabling
 # this can be a security risk.
@@ -83,9 +105,7 @@ log_traffic = 8192
 referer_spam_domains = www.youtube.com
 
 
-##
-## Rate limiting of test requests
-##
+## Web test rate limiting
 
 # Number of tests to allow per period, per client. Comment out to disable.
 limit_client_tests = 180
@@ -115,27 +135,7 @@ limit_slack_team_tests = 300
 limit_slack_team_period = 1
 
 
-###
-### Server options
-###
-
-# Hostname to listen on. Comment out to listen on all interfaces.
-host = localhost
-
-# Port to listen on.
-port = 8000
-
-# The URL where the User Interface is rooted.
-ui_uri = https://redbot.org/
-
-# Directory in the filesystem where other assets should be layered into the URI root.
-# Comment out to disable.
-# extra_base_dir = /files
-
-
-###
-### Slack integration
-###
+## Slack integration
 
 # Signing secret from Slack. Comment out to disable Slack integration.
 # slack_signing_secret =
