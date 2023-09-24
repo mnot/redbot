@@ -235,7 +235,6 @@ class RedWebUi:
             b"OK",
             [
                 (b"Content-Type", formatter.content_type()),
-                (b"Cache-Control", b"max-age=60, must-revalidate"),
                 (
                     b"Content-Security-Policy",
                     f"{CSP} 'strict-dynamic' 'nonce-{self.nonce}'".encode("ascii"),
