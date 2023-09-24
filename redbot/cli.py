@@ -30,7 +30,7 @@ def main() -> None:
         "--assets",
         action="store_true",
         dest="descend",
-        help="check assets, if the URL contains HTML",
+        help="check assets, if the response contains HTML",
     )
     parser.add_argument(
         "-o",
