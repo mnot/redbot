@@ -111,7 +111,7 @@ class RedBotServer:
                         out[b"/%s%s" % (uri_base, uri)] = fh.read()
                     if uri.endswith(b"/index.html"):
                         with open(path, "rb") as fh:
-                            out[b"/%s%s" % (uri_base, uri[:-10])] = fh.read()
+                            out[b"/%s%s" % (uri_base, uri[:-11])] = fh.read()
                 except IOError:
                     self.console(f"Problem loading static file {path}")
         return out
