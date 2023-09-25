@@ -241,9 +241,9 @@ def main() -> None:
 
     try:
         locale.setlocale(locale.LC_ALL, locale.normalize(conf["redbot"]["lang"]))
-    except locale.Error: # Catch more general locale-related error
+    except locale.Error:  # Catch more general locale-related error
         print("Warning: Failed to set locale from config. Using default 'en' locale.")
-        locale.setlocale(locale.LC_ALL, 'en_US.UTF-8') # Default to English locale
+        locale.setlocale(locale.LC_ALL, "en_US.UTF-8")  # Default to English locale
 
     sys.stderr.write(
         f"Starting on PID {os.getpid()}... (thor {thor.__version__})\n"
