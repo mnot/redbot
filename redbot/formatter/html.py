@@ -98,24 +98,29 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             tpl = self.templates.get_template("response_finish.html")
             self.output(
                 tpl.render(
-                    resource=self.resource,
-                    body=self.format_body_sample(self.resource),
-                    is_resource=isinstance(self.resource, HttpResource),
-                    is_saved=self.kw.get("is_saved", False),
-                    allow_save=self.kw.get("allow_save", False),
-                    har_link=self.redbot_link(
-                        "view har",
-                        res_format="har",
-                        title="View a HAR (HTTP ARchive, a JSON format) file for this test",
-                    ),
-                    descend_link=self.redbot_link(
-                        "check embedded",
-                        use_stored=False,
-                        descend=True,
-                        referer=True,
-                        title="Run REDbot on images, frames and embedded links",
-                    ),
-                    validator_link=validator_link,
+                    dict(
+                        self.template_vars,
+                        **{
+                            "resource": self.resource,
+                            "body": self.format_body_sample(self.resource),
+                            "is_resource": isinstance(self.resource, HttpResource),
+                            "is_saved": self.kw.get("is_saved", False),
+                            "allow_save": self.kw.get("allow_save", False),
+                            "har_link": self.redbot_link(
+                                "view har",
+                                res_format="har",
+                                title="View a HAR (HTTP ARchive, a JSON format) file for this test",
+                            ),
+                            "descend_link": self.redbot_link(
+                                "check embedded",
+                                use_stored=False,
+                                descend=True,
+                                referer=True,
+                                title="Run REDbot on images, frames and embedded links",
+                            ),
+                            "validator_link": validator_link,
+                        },
+                    )
                 )
             )
         else:
@@ -287,16 +292,21 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         tpl = self.templates.get_template("response_multi_finish.html")
         self.output(
             tpl.render(
-                droid_lists=self.make_droid_lists(self.resource),
-                problems=self.problems,
-                levels=levels,
-                is_saved=self.kw.get("is_saved", False),
-                allow_save=self.kw.get("allow_save", False),
-                har_link=self.redbot_link(
-                    "view har",
-                    res_format="har",
-                    title="View a HAR (HTTP ARchive, a JSON format) file for this test",
-                ),
+                dict(
+                    self.template_vars,
+                    **{
+                        "droid_lists": self.make_droid_lists(self.resource),
+                        "problems": self.problems,
+                        "levels": levels,
+                        "is_saved": self.kw.get("is_saved", False),
+                        "allow_save": self.kw.get("allow_save", False),
+                        "har_link": self.redbot_link(
+                            "view har",
+                            res_format="har",
+                            title="View a HAR (HTTP ARchive, a JSON format) file for this test",
+                        ),
+                    },
+                )
             )
         )
 

@@ -75,19 +75,17 @@ class BaseHtmlFormatter(Formatter):
         )
         captcha_provider = self.config.get("captcha_provider", "")
         captcha_data = CAPTCHA_PROVIDERS.get(captcha_provider, {})
-        self.templates.globals.update(
-            {
-                "formatter": self,
-                "version": __version__,
-                "baseuri": self.config["ui_uri"],
-                "static": self.config["static_root"],
-                "captcha_provider": captcha_provider,
-                "captcha_script_url": Markup(
-                    captcha_data.get("script_url", b"").decode("ascii")
-                ),
-                "nonce": self.kw["nonce"],
-            }
-        )
+        self.template_vars = {
+            "formatter": self,
+            "version": __version__,
+            "baseuri": self.config["ui_uri"],
+            "static": self.config["static_root"],
+            "captcha_provider": captcha_provider,
+            "captcha_script_url": Markup(
+                captcha_data.get("script_url", b"").decode("ascii")
+            ),
+            "nonce": self.kw["nonce"],
+        }
         self.start = time.time()
 
     def feed(self, sample: bytes) -> None:
@@ -115,24 +113,33 @@ class BaseHtmlFormatter(Formatter):
         tpl = self.templates.get_template("response_start.html")
         self.output(
             tpl.render(
-                html_uri=uri,
-                test_id=self.kw.get("test_id", ""),
-                config=Markup(
-                    json.dumps(
-                        {
-                            "redbot_uri": e_js(uri),
-                            "redbot_req_hdrs": req_headers,
-                            "redbot_version": __version__,
-                            "captcha_provider": self.config.get("captcha_provider", ""),
-                            "captcha_sitekey": self.config.get("captcha_sitekey", None),
-                        },
-                        ensure_ascii=True,
-                    ).replace("<", "\\u003c")
-                ),
-                extra_js=self.format_extra(".js"),
-                extra_title=Markup(extra_title),
-                extra_body_class=extra_body_class,
-                descend=descend,
+                dict(
+                    self.template_vars,
+                    **{
+                        "html_uri": uri,
+                        "test_id": self.kw.get("test_id", ""),
+                        "config": Markup(
+                            json.dumps(
+                                {
+                                    "redbot_uri": e_js(uri),
+                                    "redbot_req_hdrs": req_headers,
+                                    "redbot_version": __version__,
+                                    "captcha_provider": self.config.get(
+                                        "captcha_provider", ""
+                                    ),
+                                    "captcha_sitekey": self.config.get(
+                                        "captcha_sitekey", None
+                                    ),
+                                },
+                                ensure_ascii=True,
+                            ).replace("<", "\\u003c")
+                        ),
+                        "extra_js": self.format_extra(".js"),
+                        "extra_title": Markup(extra_title),
+                        "extra_body_class": extra_body_class,
+                        "descend": descend,
+                    },
+                )
             )
         )
 
@@ -142,7 +149,7 @@ class BaseHtmlFormatter(Formatter):
         """
         self.output(self.format_extra())
         tpl = self.templates.get_template("footer.html")
-        self.output(tpl.render())
+        self.output(tpl.render(self.template_vars))
 
     def error_output(self, message: str) -> None:
         """
@@ -150,7 +157,9 @@ class BaseHtmlFormatter(Formatter):
         """
         self.output(f"<p class='error'>{message}</p>")
         tpl = self.templates.get_template("footer.html")
-        self.output(tpl.render(baseuri=self.config["ui_uri"]))
+        self.output(
+            tpl.render(dict(self.template_vars, **{"baseuri": self.config["ui_uri"]}))
+        )
 
     def status(self, status: str) -> None:
         "Update the status bar of the browser"
