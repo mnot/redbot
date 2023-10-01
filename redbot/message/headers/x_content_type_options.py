@@ -22,7 +22,7 @@ class CONTENT_TYPE_OPTIONS(Note):
     level = levels.INFO
     summary = "%(response)s instructs browsers not to 'sniff' its media type."
     text = """\
-Many Web browers "sniff" the media type of responses to figure out whether they're HTML, RSS or
+Many Web browsers "sniff" the media type of responses to figure out whether they're HTML, RSS or
 another format, no matter what the `Content-Type` header says.
 
 This header instructs browsers not to do this, but to always respect the

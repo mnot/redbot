@@ -344,7 +344,7 @@ class RedWebUi:
 
     def get_client_id(self) -> str:
         """
-        Figure out an identifer for the client.
+        Figure out an identifier for the client.
         """
         xff = thor.http.common.get_header(self.req_headers, b"x-forwarded-for")
         if xff:

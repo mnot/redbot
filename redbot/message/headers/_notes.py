@@ -187,7 +187,7 @@ class RESPONSE_HDR_IN_REQUEST(Note):
     level = levels.BAD
     summary = '"%(field_name)s" is a request header.'
     text = """\
-%(field_name)s isn't defined to have any meaning in reqeusts, so REDbot has ignored it."""
+%(field_name)s isn't defined to have any meaning in requests, so REDbot has ignored it."""
 
 
 class HEADER_DEPRECATED(Note):
