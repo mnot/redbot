@@ -197,7 +197,7 @@ in standalone server mode. Details follow.
 
     def serve_static(self, path: bytes) -> None:
         path = os.path.normpath(path)
-        if path.startswith(f"{self.server.static_root}/"):
+        if path.startswith(self.server.static_root + b"/"):
             path = b"/".join(path.split(b"/")[2:])
             try:
                 with self.server.static_files.joinpath(path.decode("ascii")).open(
