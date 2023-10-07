@@ -48,7 +48,7 @@ class TRANSFER_CODING_IDENTITY(Note):
     summary = "The identity transfer-coding isn't necessary."
     text = """\
 HTTP defines _transfer-codings_ as a hop-by-hop encoding of the message content. The `identity`
-tranfer-coding was defined as the absence of encoding; it doesn't do anything, so it's necessary.
+transfer-coding was defined as the absence of encoding; it doesn't do anything, so it's necessary.
 
 You can remove this token to save a few bytes."""
 

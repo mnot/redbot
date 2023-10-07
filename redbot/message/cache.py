@@ -53,7 +53,7 @@ def check_caching(response: HttpResponse, request: HttpRequest = None) -> None:
         "stale-if-error",
     ]
 
-    # check for mis-capitalised directives /
+    # check for miscapitalised directives /
     # assure there aren't any dup directives with different values
     for cc in cc_keys:
         if cc.lower() in known_cc and cc != cc.lower():
@@ -86,7 +86,7 @@ def check_caching(response: HttpResponse, request: HttpRequest = None) -> None:
         response.add_note("header-cache-control", PRIVATE_AUTH)
     else:
         response.store_shared = response.store_private = True
-        response.add_note("header-cache-control", STOREABLE)
+        response.add_note("header-cache-control", STORABLE)
 
     # no-cache?
     if "no-cache" in cc_keys:
@@ -328,7 +328,7 @@ directive, this response can only be stored by caches that are specific to a sin
 example, a browser cache. Shared caches, such as those in proxies, cannot store it."""
 
 
-class STOREABLE(Note):
+class STORABLE(Note):
     category = categories.CACHING
     level = levels.INFO
     summary = """\
@@ -500,7 +500,7 @@ class FRESHNESS_NONE(Note):
 directive, or `Expires` header), and this status code doesn't allow caches to calculate their own.
 
 Therefore, while caches may be allowed to store it, they can't use it, except in unusual
-cirucumstances, such a when the origin server can't be contacted.
+circumstances, such a when the origin server can't be contacted.
 
 This behaviour can be prevented by using the `Cache-Control: must-revalidate` response directive.
 
@@ -728,7 +728,7 @@ class DATE_CLOCKLESS(Note):
     level = levels.WARN
     summary = "%(response)s doesn't have a Date header."
     text = """\
-Although HTTP allowes a server not to send a `Date` header if it doesn't have a local clock, this
+Although HTTP allows a server not to send a `Date` header if it doesn't have a local clock, this
 can make calculation of the response's age inexact."""
 
 

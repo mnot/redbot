@@ -42,7 +42,7 @@
 #
 # This Makefile can be configured via following variables:
 #   PY
-#       Command name for system Python interpreter. It is used only initialy to
+#       Command name for system Python interpreter. It is used only initially to
 #       create the virtual environment
 #       Default: python3
 #   REQUIREMENTS_TXT

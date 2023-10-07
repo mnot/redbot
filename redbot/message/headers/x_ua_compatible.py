@@ -55,7 +55,7 @@ class UA_COMPATIBLE_REPEAT(Note):
     text = """\
 Internet Explorer 8 allows responses to explicitly set the rendering mode used for a page.
 
-This response has more than one such directive targetted at one browser; this may cause
+This response has more than one such directive targeted at one browser; this may cause
 unpredictable results.
 
 See [this blog entry](http://msdn.microsoft.com/en-us/library/cc288325(VS.85).aspx) for more
