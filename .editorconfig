@@ -9,25 +9,13 @@ charset = utf-8
 max_line_length = 100
 trim_trailing_whitespace = true
 indent_style = space
+indent_size = 4
 
 [Makefile*]
 indent_style = tab
-tab_width = 4
 
-[*.md]
-indent_size = 2
-
-[*.py]
-indent_size = 4
-
-[*.js]
-indent_size = 2
-
-[*.scss]
-indent_size = 2
-
-[*.yml]
+[{*.md,*.js,*.scss,*.yml}]
 indent_size = 2
 
 [*.html]
-max_line_length = off
+max_line_length = unset
