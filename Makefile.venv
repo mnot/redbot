@@ -1,7 +1,7 @@
 #
 # SEAMLESSLY MANAGE PYTHON VIRTUAL ENVIRONMENT WITH A MAKEFILE
 #
-# https://github.com/sio/Makefile.venv             v2020.08.14
+# https://github.com/sio/Makefile.venv             v2023.04.17
 #
 #
 # Insert `include Makefile.venv` at the bottom of your Makefile to enable these
@@ -18,27 +18,27 @@
 #   python, ipython
 #       Use these to launch interactive Python shell within virtual environment
 #   shell, bash, zsh
-#   	Launch interactive command line shell. "shell" target launches the
-#   	default shell Makefile executes its rules in (usually /bin/sh).
-#   	"bash" and "zsh" can be used to refer to the specific desired shell.
+#       Launch interactive command line shell. "shell" target launches the
+#       default shell Makefile executes its rules in (usually /bin/sh).
+#       "bash" and "zsh" can be used to refer to the specific desired shell.
 #   show-venv
 #       Show versions of Python and pip, and the path to the virtual environment
 #   clean-venv
 #       Remove virtual environment
 #   $(VENV)/executable_name
-#   	Install `executable_name` with pip. Only packages with names matching
-#   	the name of the corresponding executable are supported.
-#   	Use this as a lightweight mechanism for development dependencies
-#   	tracking. E.g. for one-off tools that are not required in every
-#   	developer's environment, therefore are not included into
-#   	requirements.txt or setup.py.
-#   	Note:
-#   		Rules using such target or dependency MUST be defined below
-#   		`include` directive to make use of correct $(VENV) value.
-#   	Example:
-#   		codestyle: $(VENV)/pyflakes
-#   			$(VENV)/pyflakes .
-#   	See `ipython` target below for another example.
+#       Install `executable_name` with pip. Only packages with names matching
+#       the name of the corresponding executable are supported.
+#       Use this as a lightweight mechanism for development dependencies
+#       tracking. E.g. for one-off tools that are not required in every
+#       developer's environment, therefore are not included into
+#       requirements.txt or setup.py.
+#       Note:
+#           Rules using such target or dependency MUST be defined below
+#           `include` directive to make use of correct $(VENV) value.
+#       Example:
+#           codestyle: $(VENV)/pyflakes
+#               $(VENV)/pyflakes .
+#       See `ipython` target below for another example.
 #
 # This Makefile can be configured via following variables:
 #   PY
@@ -49,18 +49,30 @@
 #       Space separated list of paths to requirements.txt files.
 #       Paths are resolved relative to current working directory.
 #       Default: requirements.txt
+#
+#       Non-existent files are treated as hard dependencies,
+#       recipes for creating such files must be provided by the main Makefile.
+#       Providing empty value (REQUIREMENTS_TXT=) turns off processing of
+#       requirements.txt even when the file exists.
+#   SETUP_PY, SETUP_CFG, PYPROJECT_TOML, VENV_LOCAL_PACKAGE
+#       Space separated list of paths to files that contain build instructions
+#       for local Python packages. Corresponding packages will be installed
+#       into venv in editable mode along with all their dependencies.
+#       Default: setup.py setup.cfg pyproject.toml (whichever present)
+#
+#       Non-existent and empty values are treated in the same way as for REQUIREMENTS_TXT.
 #   WORKDIR
 #       Parent directory for the virtual environment.
 #       Default: current working directory.
 #   VENVDIR
-#   	Python virtual environment directory.
-#   	Default: $(WORKDIR)/.venv
+#       Python virtual environment directory.
+#       Default: $(WORKDIR)/.venv
 #
 # This Makefile was written for GNU Make and may not work with other make
 # implementations.
 #
 #
-# Copyright (c) 2019-2020 Vitaly Potyarkin
+# Copyright (c) 2019-2023 Vitaly Potyarkin
 #
 # Licensed under the Apache License, Version 2.0
 #    <http://www.apache.org/licenses/LICENSE-2.0>
@@ -71,11 +83,74 @@
 # Configuration variables
 #
 
-PY?=python3
 WORKDIR?=.
 VENVDIR?=$(WORKDIR)/.venv
 REQUIREMENTS_TXT?=$(wildcard requirements.txt)  # Multiple paths are supported (space separated)
+SETUP_PY?=$(wildcard setup.py)                  # Multiple paths are supported (space separated)
+SETUP_CFG?=$(foreach s,$(SETUP_PY),$(wildcard $(patsubst %setup.py,%setup.cfg,$(s))))
+PYPROJECT_TOML?=$(wildcard pyproject.toml)
+VENV_LOCAL_PACKAGE?=$(SETUP_PY) $(SETUP_CFG) $(PYPROJECT_TOML)
 MARKER=.initialized-with-Makefile.venv
+
+
+#
+# Python interpreter detection
+#
+
+_PY_AUTODETECT_MSG=Detected Python interpreter: $(PY). Use PY environment variable to override
+
+ifeq (ok,$(shell test -e /dev/null 2>&1 && echo ok))
+NULL_STDERR=2>/dev/null
+else
+NULL_STDERR=2>NUL
+endif
+
+ifndef PY
+_PY_OPTION:=python3
+ifeq (ok,$(shell $(_PY_OPTION) -c "print('ok')" $(NULL_STDERR)))
+PY=$(_PY_OPTION)
+endif
+endif
+
+ifndef PY
+_PY_OPTION:=$(VENVDIR)/bin/python
+ifeq (ok,$(shell $(_PY_OPTION) -c "print('ok')" $(NULL_STDERR)))
+PY=$(_PY_OPTION)
+$(info $(_PY_AUTODETECT_MSG))
+endif
+endif
+
+ifndef PY
+_PY_OPTION:=$(subst /,\,$(VENVDIR)/Scripts/python)
+ifeq (ok,$(shell $(_PY_OPTION) -c "print('ok')" $(NULL_STDERR)))
+PY=$(_PY_OPTION)
+$(info $(_PY_AUTODETECT_MSG))
+endif
+endif
+
+ifndef PY
+_PY_OPTION:=py -3
+ifeq (ok,$(shell $(_PY_OPTION) -c "print('ok')" $(NULL_STDERR)))
+PY=$(_PY_OPTION)
+$(info $(_PY_AUTODETECT_MSG))
+endif
+endif
+
+ifndef PY
+_PY_OPTION:=python
+ifeq (ok,$(shell $(_PY_OPTION) -c "print('ok')" $(NULL_STDERR)))
+PY=$(_PY_OPTION)
+$(info $(_PY_AUTODETECT_MSG))
+endif
+endif
+
+ifndef PY
+define _PY_AUTODETECT_ERR
+Could not detect Python interpreter automatically.
+Please specify path to interpreter via PY environment variable.
+endef
+$(error $(_PY_AUTODETECT_ERR))
+endif
 
 
 #
@@ -90,6 +165,19 @@ VENV=$(VENVDIR)/Scripts
 EXE=.exe
 endif
 
+touch=touch $(1)
+ifeq (,$(shell command -v touch $(NULL_STDERR)))
+# https://ss64.com/nt/touch.html
+touch=type nul >> $(subst /,\,$(1)) && copy /y /b $(subst /,\,$(1))+,, $(subst /,\,$(1))
+endif
+
+RM?=rm -f
+ifeq (,$(shell command -v $(firstword $(RM)) $(NULL_STDERR)))
+RMDIR:=rd /s /q
+else
+RMDIR:=$(RM) -r
+endif
+
 
 #
 # Virtual environment
@@ -100,7 +188,7 @@ venv: $(VENV)/$(MARKER)
 
 .PHONY: clean-venv
 clean-venv:
-	-$(RM) -r "$(VENVDIR)"
+	-$(RMDIR) "$(VENVDIR)"
 
 .PHONY: show-venv
 show-venv: venv
@@ -110,9 +198,13 @@ show-venv: venv
 
 .PHONY: debug-venv
 debug-venv:
+	@echo "PATH (Shell)=$$PATH"
 	@$(MAKE) --version
+	$(info PATH (GNU Make)="$(PATH)")
+	$(info SHELL="$(SHELL)")
 	$(info PY="$(PY)")
 	$(info REQUIREMENTS_TXT="$(REQUIREMENTS_TXT)")
+	$(info VENV_LOCAL_PACKAGE="$(VENV_LOCAL_PACKAGE)")
 	$(info VENVDIR="$(VENVDIR)")
 	$(info VENVDEPENDS="$(VENVDEPENDS)")
 	$(info WORKDIR="$(WORKDIR)")
@@ -126,11 +218,8 @@ ifneq ($(strip $(REQUIREMENTS_TXT)),)
 VENVDEPENDS+=$(REQUIREMENTS_TXT)
 endif
 
-ifneq ($(wildcard setup.py),)
-VENVDEPENDS+=setup.py
-endif
-ifneq ($(wildcard setup.cfg),)
-VENVDEPENDS+=setup.cfg
+ifneq ($(strip $(VENV_LOCAL_PACKAGE)),)
+VENVDEPENDS+=$(VENV_LOCAL_PACKAGE)
 endif
 
 $(VENV):
@@ -141,10 +230,10 @@ $(VENV)/$(MARKER): $(VENVDEPENDS) | $(VENV)
 ifneq ($(strip $(REQUIREMENTS_TXT)),)
 	$(VENV)/pip install $(foreach path,$(REQUIREMENTS_TXT),-r $(path))
 endif
-ifneq ($(wildcard setup.py),)
-	$(VENV)/pip install -e .
+ifneq ($(strip $(VENV_LOCAL_PACKAGE)),)
+	$(VENV)/pip install $(foreach path,$(sort $(VENV_LOCAL_PACKAGE)),-e $(dir $(path)))
 endif
-	touch $(VENV)/$(MARKER)
+	$(call touch,$(VENV)/$(MARKER))
 
 
 #
@@ -180,4 +269,4 @@ endif
 
 $(VENV)/%$(EXE): $(VENV)/$(MARKER)
 	$(VENV)/pip install --upgrade $*
-	touch $@
+	$(call touch,$@)
