@@ -40,6 +40,7 @@
 YEAR=`date +%Y`
 MONTH=`date +%m`
 
+# Python-specific targets
 
 .PHONY: clean_py
 clean_py: clean-venv
@@ -116,3 +117,10 @@ release: typecheck_py lint_py test version_py
 
 
 include Makefile.venv
+
+## Patch venv to install from pyproject.toml
+
+venv: | $(VENV)/$(MARKER)-dev
+$(VENV)/$(MARKER)-dev: $(VENV)/$(MARKER)
+	$(VENV)/pip install -e .[dev]
+	touch $@
