@@ -36,7 +36,7 @@
 # - build
 # - validate-pyproject
 
-
+PY?=python
 YEAR=`date +%Y`
 MONTH=`date +%m`
 
