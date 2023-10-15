@@ -58,7 +58,7 @@ class LmValidate(SubRequest):
         return base_headers
 
     def preflight(self) -> bool:
-        if self.base.response.status_code[0] == "3":
+        if 300 <= self.base.response.status_code <= 399:
             return False
         if self.base.response.headers.parsed.get("last-modified", None):
             return True
@@ -74,7 +74,7 @@ class LmValidate(SubRequest):
             self.add_base_note("", LM_SUBREQ_PROBLEM, problem=problem)
             return
 
-        if self.response.status_code == "304":
+        if self.response.status_code == 304:
             self.base.ims_support = True
             self.add_base_note("header-last-modified", IMS_304)
             self.check_missing_hdrs(

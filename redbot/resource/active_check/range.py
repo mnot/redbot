@@ -6,7 +6,8 @@ from configparser import SectionProxy
 import random
 from typing import TYPE_CHECKING
 
-from httplint.note import Note, categories, levels, display_bytes
+from httplint.note import Note, categories, levels
+from httplint.util import display_bytes
 
 from redbot.resource.active_check.base import SubRequest
 from redbot.formatter import f_num
@@ -42,9 +43,9 @@ class RangeRequest(SubRequest):
         return base_headers
 
     def preflight(self) -> bool:
-        if self.base.response.status_code[0] == "3":
+        if 300 <= self.base.response.status_code <= 399:
             return False
-        if self.base.response.status_code == "206":
+        if self.base.response.status_code == 206:
             return False
         if "bytes" in self.base.response.headers.parsed.get("accept-ranges", []):
             if not self.base.response.content_sample:
@@ -65,7 +66,7 @@ class RangeRequest(SubRequest):
             self.add_base_note("", RANGE_SUBREQ_PROBLEM, problem=problem)
             return
 
-        if self.response.status_code == "206":
+        if self.response.status_code == 206:
             c_e = "content-encoding"
             if ("gzip" in self.base.response.headers.parsed.get(c_e, [])) == (
                 "gzip" not in self.response.headers.parsed.get(c_e, [])

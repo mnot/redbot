@@ -56,7 +56,7 @@ class SubRequest(RedFetcher, metaclass=ABCMeta):
             self.base.request.uri,
             self.base.request.method,
             modified_headers,
-            self.base.request.payload,
+            b"".join([chunk[1] for chunk in self.base.request.content_sample]),
         )
         RedFetcher.check(self)
 

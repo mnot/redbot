@@ -29,7 +29,7 @@ class ConnegCheck(SubRequest):
             k.lower() for (k, v) in self.base.request.headers.text
         ]:
             return False
-        if self.base.response.status_code == "206":
+        if self.base.response.status_code == 206:
             return False
         return True
 
@@ -38,8 +38,8 @@ class ConnegCheck(SubRequest):
         bare = self.base.response
 
         if not negotiated.complete:
-            if self.http_error:
-                problem = self.http_error.desc
+            if self.fetch_error:
+                problem = self.fetch_error.desc
             else:
                 problem = ""
             self.add_base_note("", CONNEG_SUBREQ_PROBLEM, problem=problem)

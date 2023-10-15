@@ -94,7 +94,7 @@ class BaseHtmlFormatter(Formatter):
     def start_output(self) -> None:
         if self.resource:
             uri = self.resource.request.uri or ""
-            req_headers = self.resource.request.headers
+            req_headers = self.resource.request.headers.text
         else:
             uri = ""
             req_headers = []

@@ -8,7 +8,7 @@ based upon the provided headers.
 
 from configparser import SectionProxy
 import time
-from typing import Any, Dict, List, Tuple, Type, Union
+from typing import Any, Dict, List, Tuple
 
 from httplint import HttpRequestLinter, HttpResponseLinter
 from httplint.note import Notes, Note, categories, levels
@@ -61,9 +61,9 @@ class RedFetcher(thor.events.EventEmitter):
         self.request = HttpRequestLinter(max_sample_size=0)
         self.nonfinal_responses: List[HttpResponseLinter] = []
         self.response = HttpResponseLinter()
-        self.exchange: HttpClientExchange = None
+        self.exchange: HttpClientExchange
         self.fetch_started = False
-        self.http_error: httperr.HttpError = None
+        self.fetch_error: httperr.HttpError
         self.fetch_done = False
         self.setup_check_ip()
 
@@ -159,12 +159,12 @@ class RedFetcher(thor.events.EventEmitter):
             (k.encode("ascii", "replace"), v.encode("ascii", "replace"))
             for (k, v) in self.request.headers.text
         ]
+        self.request.start_time = time.time()
         self.exchange.request_start(
             self.request.method.encode("ascii"),
             self.request.uri.encode("ascii"),
             req_hdrs,
         )
-        self.request.start_time = int(time.time())
         if not self.fetch_done:  # the request could have immediately failed.
             if self.request.content_sample:
                 for chunk in self.request.content_sample:
@@ -187,7 +187,7 @@ class RedFetcher(thor.events.EventEmitter):
         self, status: bytes, phrase: bytes, res_headers: RawHeaderListType
     ) -> None:
         "Process the response start-line and headers."
-        self.response.start_time = time.time()
+        self.response.start_time = int(time.time())
         self.response.process_response_topline(
             self.exchange.res_version, status, phrase
         )
@@ -214,7 +214,7 @@ class RedFetcher(thor.events.EventEmitter):
         )
         err_sample = error.detail[:40] or ""
         if isinstance(error, httperr.ExtraDataError):
-            if self.response.status_code == "304":
+            if self.response.status_code == 304:
                 self.notes.add("body", BODY_NOT_ALLOWED, sample=err_sample)
             else:
                 self.notes.add("body", EXTRA_DATA, sample=err_sample)
@@ -230,6 +230,7 @@ class RedFetcher(thor.events.EventEmitter):
         self._fetch_done()
 
     def _fetch_done(self) -> None:
+        self.response.finish_time = time.time()
         if not self.fetch_done:
             self.fetch_done = True
             self.exchange = None

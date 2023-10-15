@@ -75,7 +75,7 @@ class HarFormatter(Formatter):
         entry = {
             "startedDateTime": isoformat(resource.request.start_time),
             "time": int(
-                (resource.response.complete_time - resource.request.start_time) * 1000
+                (resource.response.finish_time - resource.request.start_time) * 1000
             ),
             "_red_messages": self.format_notes(resource),
         }
@@ -120,7 +120,7 @@ class HarFormatter(Formatter):
                 (resource.response.start_time - resource.request.start_time) * 1000
             ),
             "receive": int(
-                (resource.response.complete_time - resource.response.start_time) * 1000
+                (resource.response.finish_time - resource.response.start_time) * 1000
             ),
         }
 
