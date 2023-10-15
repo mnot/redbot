@@ -5,11 +5,12 @@ Slack Formatter for REDbot.
 import json
 from typing import Any, List, Dict, Union
 
+from httplint import HttpResponseLinter
+from httplint.note import categories, levels
+
 from redbot.formatter import Formatter
-from redbot.message import HttpResponse
 from redbot.resource import HttpResource
 from redbot.resource.fetch import RedHttpClient
-from redbot.speak import categories, levels
 
 NL = "\n"
 
@@ -58,11 +59,11 @@ class SlackFormatter(Formatter):
                 + self.link_saved()
             )
         else:
-            if self.resource.response.http_error is None:
+            if self.resource.fetch_error is None:
                 notification = "No response error."
             else:
                 notification = (
-                    f"Sorry, I can't do that; {self.resource.response.http_error.desc}"
+                    f"Sorry, I can't do that; {self.resource.fetch_error.desc}"
                 )
             blocks = [self.markdown_block(f"_{notification}_")]
         self.send_slack_message(blocks, notification)
@@ -94,11 +95,13 @@ class SlackFormatter(Formatter):
             "text": {"type": "mrkdwn", "text": content},
         }
 
-    def format_headers(self, response: HttpResponse) -> List:
+    def format_headers(self, response: HttpResponseLinter) -> List:
         status_line = (
             f"HTTP/{response.version} {response.status_code} {response.status_phrase}\n"
         )
-        headers = NL.join([f"{name}:{value}" for (name, value) in response.headers])
+        headers = NL.join(
+            [f"{name}:{value}" for (name, value) in response.headers.text]
+        )
         return [self.markdown_block(f"```{status_line}{headers}```")]
 
     def format_recommendations(self, resource: HttpResource) -> List:
@@ -119,9 +122,7 @@ class SlackFormatter(Formatter):
         if list(notes):
             out.append(f"*{category.value}*")
         for thing in notes:
-            out.append(
-                f" {self.emoji.get(thing.level, '•')} {thing.show_summary('en')}"
-            )
+            out.append(f" {self.emoji.get(thing.level, '•')} {thing.summary}")
         out.append(NL)
         return self.markdown_block(NL.join(out))
 

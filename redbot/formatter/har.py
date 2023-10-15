@@ -10,8 +10,8 @@ from typing_extensions import TypedDict
 
 from redbot import __version__
 from redbot.formatter import Formatter
-from redbot.message.headers import StrHeaderListType
 from redbot.resource import HttpResource
+from redbot.type import StrHeaderListType
 
 
 class HarLogDict(TypedDict):
@@ -87,7 +87,7 @@ class HarFormatter(Formatter):
             "url": resource.request.uri,
             "httpVersion": "HTTP/1.1",
             "cookies": [],
-            "headers": self.format_headers(resource.request.headers),
+            "headers": self.format_headers(resource.request.headers.text),
             "queryString": [],
             "headersSize": -1,
             "bodySize": -1,
@@ -98,16 +98,16 @@ class HarFormatter(Formatter):
             "statusText": resource.response.status_phrase,
             "httpVersion": f"HTTP/{resource.response.version}",
             "cookies": [],
-            "headers": self.format_headers(resource.response.headers),
+            "headers": self.format_headers(resource.response.headers.text),
             "content": {
-                "size": resource.response.decoded_len,
-                "compression": resource.response.decoded_len
-                - resource.response.payload_len,
-                "mimeType": resource.response.parsed_headers.get("content-type", ""),
+                "size": resource.response.decoded.length,
+                "compression": resource.response.decoded.length
+                - resource.response.content_len,
+                "mimeType": resource.response.headers.parsed.get("content-type", ""),
             },
-            "redirectURL": resource.response.parsed_headers.get("location", ""),
+            "redirectURL": resource.response.headers.parsed.get("location", ""),
             "headersSize": resource.response.header_length,
-            "bodySize": resource.response.payload_len,
+            "bodySize": resource.response.content_len,
         }
 
         cache: Dict[None, None] = {}
@@ -157,7 +157,7 @@ class HarFormatter(Formatter):
                 "subject": note.subject,
                 "category": note.category.name,
                 "level": note.level.name,
-                "summary": note.show_summary(self.lang),
+                "summary": note.summary,
             }
             out.append(msg)
         return out

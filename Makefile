@@ -33,10 +33,6 @@ typecheck: typecheck_py
 tidy: tidy_py
 	$(STANDARD) --fix "src/js/*.js"
 
-.PHONY: syntax
-syntax: venv
-	PYTHONPATH=$(VENV) $(VENV)/python redbot/syntax/__init__.py
-
 
 #############################################################################
 ## Tests
@@ -53,20 +49,6 @@ webui_test: venv
 message_test: venv
 	PYTHONPATH=.:$(VENV) $(VENV)/pytest --md $(GITHUB_STEP_SUMMARY) redbot/message/*.py redbot/message/headers/*.py
 	rm -f throwaway
-
-#############################################################################
-### Coverage
-
-.PHONY: coverage
-coverage: header_coverage note_coverage
-
-.PHONY: header_coverage
-header_coverage: venv
-	PYTHONPATH=$(VENV) $(VENV)/python test/header_coverage.py test/registries/message-headers.xml
-
-.PHONY: note_coverage
-note_coverage: venv
-	PYTHONPATH=$(VENV) $(VENV)/python test/note_coverage.py
 
 #############################################################################
 ## Local test server / cli
@@ -93,13 +75,6 @@ docker: docker-image
 .PHONY: docker-cli
 docker-cli: docker-image
 	docker run --rm --name redbot redbot redbot/cli.py https://redbot.org/
-
-#############################################################################
-## Create new headers
-
-redbot/message/headers/%.py:
-	cp redbot/message/headers/_header.tpl $@
-	sed -i '' -e "s/SHORT_NAME/$*/g" $@
 
 #############################################################################
 ## Assets

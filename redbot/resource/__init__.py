@@ -16,8 +16,8 @@ from urllib.parse import urljoin
 
 import thor
 
+from redbot.resource import link_parse
 from redbot.formatter import f_num
-from redbot.message import link_parse
 from redbot.resource.fetch import RedFetcher
 from redbot.resource.active_check import active_checks
 
@@ -131,7 +131,7 @@ class HttpResource(RedFetcher):
             and self.link_count <= (self.config.getint("max_links", fallback=100))
         ):
             linked = HttpResource(self.config)
-            linked.set_request(urljoin(base, link), req_hdrs=self.request.headers)
+            linked.set_request(urljoin(base, link), headers=self.request.headers.text)
             self.linked.append((linked, tag))
             self.add_check(linked)
             linked.check()

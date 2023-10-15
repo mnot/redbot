@@ -2,10 +2,10 @@
 Subrequest for content negotiation checks.
 """
 
+from httplint.note import Note, categories, levels
 
 from redbot.resource.active_check.base import SubRequest
 from redbot.formatter import f_num
-from redbot.speak import Note, categories, levels
 from redbot.type import StrHeaderListType
 
 
@@ -25,7 +25,9 @@ class ConnegCheck(SubRequest):
         ]
 
     def preflight(self) -> bool:
-        if "accept-encoding" in [k.lower() for (k, v) in self.base.request.headers]:
+        if "accept-encoding" in [
+            k.lower() for (k, v) in self.base.request.headers.text
+        ]:
             return False
         if self.base.response.status_code == "206":
             return False
@@ -36,24 +38,24 @@ class ConnegCheck(SubRequest):
         bare = self.base.response
 
         if not negotiated.complete:
-            if negotiated.http_error:
-                problem = negotiated.http_error.desc
+            if self.http_error:
+                problem = self.http_error.desc
             else:
                 problem = ""
             self.add_base_note("", CONNEG_SUBREQ_PROBLEM, problem=problem)
             return
 
         # see if it was compressed when not negotiated
-        no_conneg_vary_headers = bare.parsed_headers.get("vary", [])
-        if "gzip" in bare.parsed_headers.get(
+        no_conneg_vary_headers = bare.headers.parsed.get("vary", [])
+        if "gzip" in bare.headers.parsed.get(
             "content-encoding", []
-        ) or "x-gzip" in bare.parsed_headers.get("content-encoding", []):
+        ) or "x-gzip" in bare.headers.parsed.get("content-encoding", []):
             self.add_base_note(
                 "header-vary header-content-encoding", CONNEG_GZIP_WITHOUT_ASKING
             )
-        if "gzip" not in negotiated.parsed_headers.get(
+        if "gzip" not in negotiated.headers.parsed.get(
             "content-encoding", []
-        ) and "x-gzip" not in negotiated.parsed_headers.get("content-encoding", []):
+        ) and "x-gzip" not in negotiated.headers.parsed.get("content-encoding", []):
             self.base.gzip_support = False
         else:  # Apparently, content negotiation is happening.
             # check status
@@ -68,7 +70,7 @@ class ConnegCheck(SubRequest):
 
             # check headers that should be invariant
             for hdr in ["content-type"]:
-                if bare.parsed_headers.get(hdr) != negotiated.parsed_headers.get(
+                if bare.headers.parsed.get(hdr) != negotiated.headers.parsed.get(
                     hdr, None
                 ):
                     self.add_base_note(
@@ -76,7 +78,7 @@ class ConnegCheck(SubRequest):
                     )
 
             # check Vary headers
-            vary_headers = negotiated.parsed_headers.get("vary", [])
+            vary_headers = negotiated.headers.parsed.get("vary", [])
             if (not "accept-encoding" in vary_headers) and (not "*" in vary_headers):
                 self.add_base_note("header-vary", CONNEG_NO_VARY)
             if no_conneg_vary_headers != vary_headers:
@@ -88,26 +90,26 @@ class ConnegCheck(SubRequest):
                 )
 
             # check body
-            if bare.payload_md5 != negotiated.decoded_md5:
+            if bare.content_hash != negotiated.decoded.hash:
                 self.add_base_note("body", VARY_BODY_MISMATCH)
 
             # check ETag
-            if bare.parsed_headers.get("etag", 1) == negotiated.parsed_headers.get(
+            if bare.headers.parsed.get("etag", 1) == negotiated.headers.parsed.get(
                 "etag", 2
             ):
-                if not self.base.response.parsed_headers["etag"][0]:  # strong
+                if not self.base.response.headers.parsed["etag"][0]:  # strong
                     self.add_base_note("header-etag", VARY_ETAG_DOESNT_CHANGE)
 
             # check compression efficiency
-            if negotiated.payload_len > 0 and bare.payload_len > 0:
+            if negotiated.content_len > 0 and bare.content_len > 0:
                 savings = int(
                     100
                     * (
-                        (float(bare.payload_len) - negotiated.payload_len)
-                        / bare.payload_len
+                        (float(bare.content_len) - negotiated.content_len)
+                        / bare.content_len
                     )
                 )
-            elif negotiated.payload_len > 0 and bare.payload_len == 0:
+            elif negotiated.content_len > 0 and bare.content_len == 0:
                 # weird.
                 return
             else:
@@ -119,24 +121,24 @@ class ConnegCheck(SubRequest):
                     "header-content-encoding",
                     CONNEG_GZIP_GOOD,
                     savings=savings,
-                    orig_size=f_num(bare.payload_len),
-                    gzip_size=f_num(negotiated.payload_len),
+                    orig_size=f_num(bare.content_len),
+                    gzip_size=f_num(negotiated.content_len),
                 )
             else:
                 self.add_base_note(
                     "header-content-encoding",
                     CONNEG_GZIP_BAD,
                     savings=abs(savings),
-                    orig_size=f_num(bare.payload_len),
-                    gzip_size=f_num(negotiated.payload_len),
+                    orig_size=f_num(bare.content_len),
+                    gzip_size=f_num(negotiated.content_len),
                 )
 
 
 class CONNEG_SUBREQ_PROBLEM(Note):
     category = categories.CONNEG
     level = levels.INFO
-    summary = "There was a problem checking for Content Negotiation support."
-    text = """\
+    _summary = "There was a problem checking for Content Negotiation support."
+    _text = """\
 When REDbot tried to check the resource for content negotiation support, there was a problem:
 
 `%(problem)s`
@@ -147,10 +149,10 @@ Trying again might fix it."""
 class CONNEG_GZIP_GOOD(Note):
     category = categories.CONNEG
     level = levels.GOOD
-    summary = (
+    _summary = (
         "Content negotiation for gzip compression is supported, saving %(savings)s%%."
     )
-    text = """\
+    _text = """\
 HTTP supports compression of responses by negotiating for `Content-Encoding`. When REDbot asked for
 a compressed response, the resource provided one, saving %(savings)s%% of its original size (from
 %(orig_size)s to %(gzip_size)s bytes).
@@ -161,8 +163,8 @@ The compressed response's headers are displayed."""
 class CONNEG_GZIP_BAD(Note):
     category = categories.CONNEG
     level = levels.WARN
-    summary = "Content negotiation for gzip compression makes the response %(savings)s%% larger."
-    text = """\
+    _summary = "Content negotiation for gzip compression makes the response %(savings)s%% larger."
+    _text = """\
 HTTP supports compression of responses by negotiating for `Content-Encoding`. When REDbot asked for
 a compressed response, the resource provided one, but it was %(savings)s%% _larger_ than the
 original response; from %(orig_size)s to %(gzip_size)s bytes.
@@ -177,8 +179,8 @@ The compressed response's headers are displayed."""
 class CONNEG_NO_GZIP(Note):
     category = categories.CONNEG
     level = levels.INFO
-    summary = "Content negotiation for gzip compression isn't supported."
-    text = """\
+    _summary = "Content negotiation for gzip compression isn't supported."
+    _text = """\
 HTTP supports compression of responses by negotiating for `Content-Encoding`. When REDbot asked for
 a compressed response, the resource did not provide one."""
 
@@ -186,8 +188,10 @@ a compressed response, the resource did not provide one."""
 class CONNEG_NO_VARY(Note):
     category = categories.CONNEG
     level = levels.BAD
-    summary = "%(response)s is negotiated, but doesn't have an appropriate Vary header."
-    text = """\
+    _summary = (
+        "%(response)s is negotiated, but doesn't have an appropriate Vary header."
+    )
+    _text = """\
 All content negotiated responses need to have a `Vary` header that reflects the header(s) used to
 select the response.
 
@@ -198,8 +202,8 @@ select the response.
 class CONNEG_GZIP_WITHOUT_ASKING(Note):
     category = categories.CONNEG
     level = levels.WARN
-    summary = "A gzip-compressed response was sent when it wasn't asked for."
-    text = """\
+    _summary = "A gzip-compressed response was sent when it wasn't asked for."
+    _text = """\
 HTTP supports compression of responses by negotiating for `Content-Encoding`. Even though RED
 didn't ask for a compressed response, the resource provided one anyway.
 
@@ -210,8 +214,8 @@ expecting a compressed response."""
 class VARY_INCONSISTENT(Note):
     category = categories.CONNEG
     level = levels.BAD
-    summary = "The resource doesn't send Vary consistently."
-    text = """\
+    _summary = "The resource doesn't send Vary consistently."
+    _text = """\
 HTTP requires that the `Vary` response header be sent consistently for all responses if they change
 based upon different aspects of the request.
 
@@ -228,8 +232,8 @@ cache key for a given URI is."""
 class VARY_STATUS_MISMATCH(Note):
     category = categories.CONNEG
     level = levels.WARN
-    summary = "The response status is different when content negotiation happens."
-    text = """\
+    _summary = "The response status is different when content negotiation happens."
+    _text = """\
 When content negotiation is used, the response status shouldn't change between negotiated and
 non-negotiated responses.
 
@@ -242,8 +246,8 @@ REDbot hasn't checked other aspects of content negotiation because of this."""
 class VARY_HEADER_MISMATCH(Note):
     category = categories.CONNEG
     level = levels.BAD
-    summary = "The %(header)s header is different when content negotiation happens."
-    text = """\
+    _summary = "The %(header)s header is different when content negotiation happens."
+    _text = """\
 When content negotiation is used, the %(header)s response header shouldn't change between
 negotiated and non-negotiated responses."""
 
@@ -251,8 +255,8 @@ negotiated and non-negotiated responses."""
 class VARY_BODY_MISMATCH(Note):
     category = categories.CONNEG
     level = levels.INFO
-    summary = "The response content is different when content negotiation happens."
-    text = """\
+    _summary = "The response content is different when content negotiation happens."
+    _text = """\
 When content negotiation is used, the response content typically shouldn't change between negotiated
 and non-negotiated responses.
 
@@ -263,8 +267,8 @@ requests. However, RED's output may be skewed as a result."""
 class VARY_ETAG_DOESNT_CHANGE(Note):
     category = categories.CONNEG
     level = levels.BAD
-    summary = "The ETag doesn't change between negotiated representations."
-    text = """\
+    _summary = "The ETag doesn't change between negotiated representations."
+    _text = """\
 HTTP requires that the `ETag`s for two different responses associated with the same URI be
 different as well, to help caches and other receivers disambiguate them.
 

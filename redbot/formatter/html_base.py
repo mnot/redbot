@@ -273,7 +273,7 @@ console.log("{time.time() - self.start:3.3f} {e_js(message)}");
                 f"class='{css_class}' title='{title}'>{link_value}</a>"
             )
         args.append(("uri", urljoin(uri, link or "")))
-        for name, val in self.resource.request.headers:
+        for name, val in self.resource.request.headers.text:
             if referer and name.lower() == "referer":
                 continue
             args.append(("req_hdr", f"{name}:{val}"))

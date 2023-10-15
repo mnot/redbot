@@ -64,7 +64,7 @@ def slack_run(webui: "RedWebUi") -> None:
     webui.exchange.response_done([])
 
     top_resource = HttpResource(webui.config)
-    top_resource.set_request(webui.test_uri, req_hdrs=webui.req_hdrs)
+    top_resource.set_request(webui.test_uri, headers=webui.req_hdrs)
     formatter.bind_resource(top_resource)
     if not verify_slack_secret(webui):
         webui.error_response(
