@@ -1,6 +1,6 @@
 {% macro format_response(r) %}
 <span class='status'>HTTP/{{ r.version }} {{ r.status_code }} {{ r.status_phrase }}</span>
-{% for hdr in r.headers %}
+{% for hdr in r.headers.text %}
 <span data-offset='{{ loop.index0 }}' data-name='{{ hdr[0]|lower }}' class='hdr'>{{ hdr[0] }}:{{ hdr|header_present -}}
 {{- hdr[0]|header_description }}</span>
 {% endfor %}
@@ -23,12 +23,12 @@
         validate the response or check its assets (such as referenced images, stylesheets and scripts).
       </span>
 
-      <span class='option' title='How large the response headers are, including the status line'>response headers: {{ resource.response.header_length|f_num }} bytes</span>
+      <span class='option' title='How large the response headers are, including the status line'>response headers: {{ resource.response_header_length|f_num }} bytes</span>
 
-      <span class='option' title='How large the response content is'>content: {{ resource.response.payload_len|f_num }} bytes</span>
+      <span class='option' title='How large the response content is'>content: {{ resource.response.content_length|f_num }} bytes</span>
 
-      {% if resource.response.transfer_length - resource.response.payload_len > 0 -%}
-      <span class='option' title='How much using chunked encoding adds to the response size'>transfer overhead: {{ (resource.response.transfer_length - resource.response.payload_len)|f_num }} bytes</span>
+      {% if resource.response.transfer_length - resource.response.content_length > 0 -%}
+      <span class='option' title='How much using chunked encoding adds to the response size'>transfer overhead: {{ (resource.response.transfer_length - resource.response.content_length)|f_num }} bytes</span>
       {%- endif %}
 
       <br/>
@@ -78,7 +78,7 @@
       <ul>
       {% endif %}
         <li class='{{ note.level.value }} note' data-subject='{{ note.subject }}'>
-            <span>{{ note.show_summary(formatter.lang) }}<span class='tip'>{{ note.show_text(formatter.lang) }}</span></span>
+            <span>{{ note.summary }}<span class='tip'>{{ note.detail }}</span></span>
         </li>
       {% if loop.last %}
       </ul>

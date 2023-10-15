@@ -124,7 +124,7 @@ class RedFetcher(thor.events.EventEmitter):
         iri: str,
         method: str = "GET",
         headers: StrHeaderListType = None,
-        content: bytes = None,
+        content: bytes = b"",
     ) -> None:
         """
         Set the resource's request. All values are strings.
