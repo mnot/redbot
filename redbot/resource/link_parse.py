@@ -168,13 +168,14 @@ if __name__ == "__main__":
     def status(msg: str) -> None:
         print(msg)
 
-    @thor.events.on(T.response)
     def chunk(decoded_chunk: bytes) -> None:
         P.feed(
             decoded_chunk.decode(
                 P.message.character_encoding or DEFAULT_ENCODING, "ignore"
             )
         )
+
+    T.response_content_processors.append(chunk)
 
     T.check()
     thor.run()

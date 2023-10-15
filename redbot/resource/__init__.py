@@ -50,7 +50,7 @@ class HttpResource(RedFetcher):
         self.gzip_savings: int = 0
         self._task_map: Set[RedFetcher] = set([None])
         self.subreqs = {ac.check_name: ac(config, self) for ac in active_checks}
-        self.response.once("content_available", self.run_active_checks)
+        self.once("fetch_done", self.run_active_checks)
 
         def _finish_check() -> None:
             self.finish_check(None)
@@ -62,7 +62,7 @@ class HttpResource(RedFetcher):
         self._link_parser = link_parse.HTMLLinkParser(
             self.response, [self.process_link]
         )
-        self.response.on("chunk", self._link_parser.feed_bytes)
+        self.response_content_processors.append(self._link_parser.feed_bytes)
 
     #        self.show_task_map(True) # for debugging
 

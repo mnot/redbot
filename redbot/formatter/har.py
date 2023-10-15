@@ -102,12 +102,12 @@ class HarFormatter(Formatter):
             "content": {
                 "size": resource.response.decoded.length,
                 "compression": resource.response.decoded.length
-                - resource.response.content_len,
+                - resource.response.content_length,
                 "mimeType": resource.response.headers.parsed.get("content-type", ""),
             },
             "redirectURL": resource.response.headers.parsed.get("location", ""),
-            "headersSize": resource.response.header_length,
-            "bodySize": resource.response.content_len,
+            "headersSize": resource.response_header_length,
+            "bodySize": resource.response.content_length,
         }
 
         cache: Dict[None, None] = {}

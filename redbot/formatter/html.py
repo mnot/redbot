@@ -139,7 +139,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 
     def format_body_sample(self, resource: HttpResource) -> Markup:
         """show the stored body sample"""
-        sample = b"".join([chunk[1] for chunk in resource.response.decoded.sample])
+        sample = b"".join(resource.response_decoded_sample)
         try:
             uni_sample = sample.decode(resource.response.character_encoding, "ignore")
         except (TypeError, LookupError):
@@ -174,7 +174,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                         )
                     )
         message = ""
-        if not resource.response.decoded.sample_complete:
+        if not resource.response_decoded_complete:
             message = "<p class='btw'>REDbot isn't showing all content, because it's so big!</p>"
         return Markup(f"<pre class='prettyprint'>{safe_sample}</pre>\n{message}")
 

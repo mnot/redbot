@@ -112,8 +112,8 @@ class Formatter(EventEmitter):
             if display_resource.request.complete:
                 self.start_output()
             else:
-                display_resource.request.on("headers_available", self.start_output)
-            display_resource.response.on("chunk", self.feed)
+                display_resource.on("response_headers_available", self.start_output)
+            display_resource.response_content_processors.append(self.feed)
             display_resource.on("status", self.status)
             display_resource.on("debug", self.debug)
 

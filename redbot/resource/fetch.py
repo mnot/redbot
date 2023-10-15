@@ -8,7 +8,7 @@ based upon the provided headers.
 
 from configparser import SectionProxy
 import time
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Callable
 
 from httplint import HttpRequestLinter, HttpResponseLinter
 from httplint.note import Notes, Note, categories, levels
@@ -31,6 +31,7 @@ class RedHttpClient(thor.http.HttpClient):
         thor.http.HttpClient.__init__(self, loop)
         self.connect_timeout = 10
         self.read_timeout = 15
+        self.idle_timeout = 5
         self.retry_delay = 1
         self.careful = False
 
@@ -50,7 +51,6 @@ class RedFetcher(thor.events.EventEmitter):
     check_name = "undefined"
     response_phrase = "undefined"
     client = RedHttpClient()
-    client.idle_timeout = 5
 
     def __init__(self, config: SectionProxy) -> None:
         thor.events.EventEmitter.__init__(self)
@@ -58,9 +58,18 @@ class RedFetcher(thor.events.EventEmitter):
         self.notes = Notes()
         self.transfer_in = 0
         self.transfer_out = 0
-        self.request = HttpRequestLinter(max_sample_size=0)
+        self.request_content: bytes
+        self.response_header_length: int
+        self.response_content_processors: List[Callable[[bytes], None]] = []
+        self.response_content_sample: List[Tuple[int, bytes]] = []
+        self.response_decoded_sample: List[bytes] = []
+        self.response_decoded_complete: bool = True
+        self.max_sample_size = 1024 * 10
+
+        self.request = HttpRequestLinter()
         self.nonfinal_responses: List[HttpResponseLinter] = []
         self.response = HttpResponseLinter()
+        self.response.decoded.processors.append(self.sample_decoded)
         self.exchange: HttpClientExchange
         self.fetch_started = False
         self.fetch_error: httperr.HttpError
@@ -128,7 +137,9 @@ class RedFetcher(thor.events.EventEmitter):
             self.fetch_error = why
         self.response.base_uri = self.request.uri
         if headers:
-            self.request.process_headers(headers)
+            bheaders = [(n.encode("utf-8"), v.encode("utf-8")) for (n, v) in headers]
+            self.request.process_headers(bheaders)
+        self.request_content = content
         self.request.feed_content(content)
         self.request.complete = True  # cheating a bit
 
@@ -166,10 +177,9 @@ class RedFetcher(thor.events.EventEmitter):
             req_hdrs,
         )
         if not self.fetch_done:  # the request could have immediately failed.
-            if self.request.content_sample:
-                for chunk in self.request.content_sample:
-                    self.exchange.request_body(chunk[1])
-                    self.transfer_out += len(chunk[1])
+            if self.request_content:
+                self.exchange.request_body(self.request_content)
+                self.transfer_out += len(self.request_content)
         if not self.fetch_done:  # the request could have immediately failed.
             self.exchange.request_done([])
 
@@ -192,19 +202,40 @@ class RedFetcher(thor.events.EventEmitter):
             self.exchange.res_version, status, phrase
         )
         self.response.process_headers(res_headers)
+        self.emit("response_headers_available")
 
     def _response_body(self, chunk: bytes) -> None:
         "Process a chunk of the response body."
         self.transfer_in += len(chunk)
         self.response.feed_content(chunk)
+        for processor in self.response_content_processors:
+            processor(chunk)
 
     def _response_done(self, trailers: List[Tuple[bytes, bytes]]) -> None:
         "Finish analysing the response, handling any parse errors."
         self.emit("debug", f"fetched {self.request.uri} ({self.check_name})")
         self.response.transfer_length = self.exchange.input_transfer_length
-        self.response.header_length = self.exchange.input_header_length
+        self.response_header_length = self.exchange.input_header_length
         self.response.finish_content(True, trailers)
         self._fetch_done()
+
+    def sample_response(self, chunk: bytes) -> None:
+        "Sample the response content."
+        if (
+            self.max_sample_size == 0
+            or self.response.content_length < self.max_sample_size
+        ):
+            self.response_content_sample.append((self.response.content_length, chunk))
+
+    def sample_decoded(self, decoded_chunk: bytes) -> None:
+        "Sample the decoded response content."
+        if (
+            self.max_sample_size == 0
+            or self.response.decoded.length < self.max_sample_size
+        ):
+            self.response_decoded_sample.append(decoded_chunk)
+        else:
+            self.response_decoded_complete = False
 
     def _response_error(self, error: httperr.HttpError) -> None:
         "Handle an error encountered while fetching the response."

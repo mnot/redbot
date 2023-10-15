@@ -31,12 +31,12 @@ class RangeRequest(SubRequest):
     def modify_request_headers(
         self, base_headers: StrHeaderListType
     ) -> StrHeaderListType:
-        if self.base.response.content_sample:
-            sample_num = random.randint(0, len(self.base.response.content_sample) - 1)
-            sample_len = min(96, len(self.base.response.content_sample[sample_num][1]))
-            self.range_start = self.base.response.content_sample[sample_num][0]
+        if self.base.response_content_sample:
+            sample_num = random.randint(0, len(self.base.response_content_sample) - 1)
+            sample_len = min(96, len(self.base.response_content_sample[sample_num][1]))
+            self.range_start = self.base.response_content_sample[sample_num][0]
             self.range_end = self.range_start + sample_len
-            self.range_target = self.base.response.content_sample[sample_num][1][
+            self.range_target = self.base.response_content_sample[sample_num][1][
                 : sample_len + 1
             ]
             base_headers.append(("Range", f"bytes={self.range_start}-{self.range_end}"))
@@ -48,7 +48,7 @@ class RangeRequest(SubRequest):
         if self.base.response.status_code == 206:
             return False
         if "bytes" in self.base.response.headers.parsed.get("accept-ranges", []):
-            if not self.base.response.content_sample:
+            if not self.base.response_content_sample:
                 return False
             if self.range_start == self.range_end:
                 # wow, that's a small body.
@@ -90,7 +90,7 @@ class RangeRequest(SubRequest):
                 "etag", None
             ) == self.base.response.headers.parsed.get("etag", None):
                 content = b"".join(
-                    [chunk[1] for chunk in self.response.content_sample]
+                    [chunk[1] for chunk in self.response_content_sample]
                 )  # FIXME: we are sampling
                 if content == self.range_target:
                     self.base.partial_support = True
@@ -105,7 +105,7 @@ class RangeRequest(SubRequest):
                         range_expected=display_bytes(self.range_target),
                         range_expected_bytes=f_num(len(self.range_target)),
                         range_received=display_bytes(content),
-                        range_received_bytes=f_num(self.response.content_len),
+                        range_received_bytes=f_num(self.response.content_length),
                     )
             else:
                 self.add_base_note("header-accept-ranges", RANGE_CHANGED)

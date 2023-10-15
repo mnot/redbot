@@ -101,15 +101,15 @@ class ConnegCheck(SubRequest):
                     self.add_base_note("header-etag", VARY_ETAG_DOESNT_CHANGE)
 
             # check compression efficiency
-            if negotiated.content_len > 0 and bare.content_len > 0:
+            if negotiated.content_length > 0 and bare.content_length > 0:
                 savings = int(
                     100
                     * (
-                        (float(bare.content_len) - negotiated.content_len)
-                        / bare.content_len
+                        (float(bare.content_length) - negotiated.content_length)
+                        / bare.content_length
                     )
                 )
-            elif negotiated.content_len > 0 and bare.content_len == 0:
+            elif negotiated.content_length > 0 and bare.content_length == 0:
                 # weird.
                 return
             else:
@@ -121,16 +121,16 @@ class ConnegCheck(SubRequest):
                     "header-content-encoding",
                     CONNEG_GZIP_GOOD,
                     savings=savings,
-                    orig_size=f_num(bare.content_len),
-                    gzip_size=f_num(negotiated.content_len),
+                    orig_size=f_num(bare.content_length),
+                    gzip_size=f_num(negotiated.content_length),
                 )
             else:
                 self.add_base_note(
                     "header-content-encoding",
                     CONNEG_GZIP_BAD,
                     savings=abs(savings),
-                    orig_size=f_num(bare.content_len),
-                    gzip_size=f_num(negotiated.content_len),
+                    orig_size=f_num(bare.content_length),
+                    gzip_size=f_num(negotiated.content_length),
                 )
 
 
