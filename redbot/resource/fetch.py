@@ -68,7 +68,7 @@ class RedFetcher(thor.events.EventEmitter):
 
         self.request = HttpRequestLinter()
         self.nonfinal_responses: List[HttpResponseLinter] = []
-        self.response = HttpResponseLinter()
+        self.response = HttpResponseLinter(notes=self.notes)
         self.response.decoded.processors.append(self.sample_decoded)
         self.exchange: HttpClientExchange
         self.fetch_started = False
@@ -197,7 +197,7 @@ class RedFetcher(thor.events.EventEmitter):
         self, status: bytes, phrase: bytes, res_headers: RawHeaderListType
     ) -> None:
         "Process the response start-line and headers."
-        self.response.start_time = int(time.time())
+        self.response.start_time = time.time()
         self.response.process_response_topline(
             self.exchange.res_version, status, phrase
         )

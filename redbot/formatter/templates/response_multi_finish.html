@@ -53,11 +53,11 @@
     {% else %}
     <td>{{ resource.response.status_code }}</td>
     {% endif %}
-    <td>{{ resource.response.payload_len|f_num(by1024=True) }}</td>
-    <td>{{ yes_no(resource.response.store_shared) }}</td>
-    <td>{{ yes_no(resource.response.store_private) }}</td>
-    <td>{{ resource.response.age|relative_time(0,0) or '-' }}</td>
-    <td>{{ resource.response.freshness_lifetime|relative_time(0,0) or '-' }}</td>
+    <td>{{ resource.response.content_length|f_num(by1024=True) }}</td>
+    <td>{{ yes_no(resource.response.caching.store_shared) }}</td>
+    <td>{{ yes_no(resource.response.caching.store_private) }}</td>
+    <td>{{ resource.response.caching.age|relative_time(0,0) or '-' }}</td>
+    <td>{{ resource.response.caching.freshness_lifetime|relative_time(0,0) or '-' }}</td>
     <td>{{ yes_no(resource.ims_support) }}</td>
     <td>{{ yes_no(resource.inm_support) }}</td>
     {% if resource.gzip_support %}
@@ -68,7 +68,7 @@
     <td>{{ yes_no(resource.partial_support) }}</td>
     <td>
     {% for problem in resource.notes if problem.level in [levels.WARN, levels.BAD] %}
-      <span class='prob_num'>{{ problem|index_problem }}<span class='hidden'><span class='tip'>{{ problem.show_text(formatter.lang) }}</span></span></span>
+      <span class='prob_num'>{{ problem|index_problem }}<span class='hidden'><span class='tip'>{{ problem.detail }}</span></span></span>
     {% endfor %}
     </td>
   {% else %}
@@ -104,7 +104,7 @@
   <ol>
   {% for problem in problems %}
     <li class='{{ problem.level.value }} {{ problem.subject }} note' data-offset='{{ loop.index }}'>
-      {{ loop.index }}. <span>{{ problem.show_summary(lang) }}</span>
+      {{ loop.index }}. <span>{{ problem.summary }}</span>
     </li>
   {% endfor %}
   </ol>
