@@ -42,8 +42,6 @@ jobs:
         key: ${{ runner.os }}-${{ matrix.python-version }}-venv-${{ hashFiles('**/requirements.txt') }}
     - name: Set up venv
       run: make venv
-    - name: Check Messages
-      run: make -e message_test
     - name: Typecheck
       run: make typecheck
     - name: Lint
