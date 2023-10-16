@@ -62,7 +62,7 @@ If you want to allow people to save test results, create the directory reference
 
 If you wish to run REDbot using [Docker](https://www.docker.com), get a local copy of the repository, then:
 
-> docker build -t redbot .
+> make docker-image
 
 Start the webserver:
 
@@ -73,10 +73,6 @@ Or, just:
 > make docker
 
 to run REDbot on port 8000.
-
-Run REDbot in cli mode:
-
-> docker run --rm redbot redbot/cli.py https://redbot.org/
 
 
 ## Credits
