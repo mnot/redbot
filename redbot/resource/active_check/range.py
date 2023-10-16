@@ -26,6 +26,7 @@ class RangeRequest(SubRequest):
         self.range_start: int = None
         self.range_end: int = None
         self.range_target: bytes = None
+        self.max_sample_size = 0  # unlimited
         SubRequest.__init__(self, config, resource)
 
     def modify_request_headers(
@@ -89,9 +90,7 @@ class RangeRequest(SubRequest):
             if self.response.headers.parsed.get(
                 "etag", None
             ) == self.base.response.headers.parsed.get("etag", None):
-                content = b"".join(
-                    [chunk[1] for chunk in self.response_content_sample]
-                )  # FIXME: we are sampling
+                content = b"".join([chunk[1] for chunk in self.response_content_sample])
                 if content == self.range_target:
                     self.base.partial_support = True
                     self.add_base_note("header-accept-ranges", RANGE_CORRECT)
