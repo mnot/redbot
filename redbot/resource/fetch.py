@@ -79,6 +79,7 @@ class RedFetcher(thor.events.EventEmitter):
     def __getstate__(self) -> Dict[str, Any]:
         state: Dict[str, Any] = thor.events.EventEmitter.__getstate__(self)
         del state["exchange"]
+        del state["response_content_processors"]
         return state
 
     def __repr__(self) -> str:
