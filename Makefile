@@ -6,8 +6,6 @@ WEBPACK=$(NPX) webpack-cli
 CSSMIN=$(NPX) cssmin
 SASS=$(NPX) node-sass
 
-GITHUB_STEP_SUMMARY ?= throwaway
-
 MODULES = src/node_modules
 JS_ENTRIES = ./src/js/red_script.js ./src/js/red_request.js ./src/js/red_response.js ./src/js/red_response_multi.js
 CSSFILES = redbot/assets/red_style.css $(MODULES)/google-code-prettify/src/prettify.css
@@ -38,17 +36,13 @@ tidy: tidy_py
 ## Tests
 
 .PHONY: test
-test: message_test webui_test
+test: webui_test
 
 .PHONY: webui_test
 webui_test: venv
 	$(VENV)/playwright install chromium
 	PYTHONPATH=.:$(VENV) $(VENV)/python test/test_webui.py
 
-.PHONY: message_test
-message_test: venv
-	PYTHONPATH=.:$(VENV) $(VENV)/pytest --md $(GITHUB_STEP_SUMMARY) redbot/message/*.py redbot/message/headers/*.py
-	rm -f throwaway
 
 #############################################################################
 ## Local test server / cli
