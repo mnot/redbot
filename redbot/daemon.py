@@ -38,19 +38,6 @@ else:
     notify = Notification = None  # pylint: disable=invalid-name
 
 _loop.precision = 0.2
-_loop.debug = True
-
-
-def print_debug(message: str, profile: Optional[cProfile.Profile]) -> None:
-    sys.stderr.write(f"WARNING: {message}\n\n")
-    if profile:
-        st = io.StringIO()
-        ps = Stats(profile, stream=st).sort_stats("cumulative")
-        ps.print_stats(15)
-        sys.stderr.write(f"{st.getvalue()}\n")
-
-
-_loop.debug_out = print_debug  # type: ignore
 
 # dump stack on faults
 faulthandler.enable()
@@ -230,8 +217,27 @@ in standalone server mode. Details follow.
         self.exchange.response_done([])
 
 
+def print_debug(message: str, profile: Optional[cProfile.Profile]) -> None:
+    sys.stderr.write(f"WARNING: {message}\n\n")
+    if profile:
+        st = io.StringIO()
+        ps = Stats(profile, stream=st).sort_stats("cumulative")
+        ps.print_stats(15)
+        sys.stderr.write(f"{st.getvalue()}\n")
+
+
+_loop.debug_out = print_debug  # type: ignore
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="REDbot daemon")
+    parser.add_argument(
+        "-d",
+        "--debug",
+        action="store_true",
+        dest="debug",
+        help="Dump slow operations to STDERR",
+    )
     parser.add_argument(
         "config_file", type=argparse.FileType("r"), help="configuration file"
     )
@@ -244,6 +250,9 @@ def main() -> None:
     except locale.Error:  # Catch more general locale-related error
         print("Warning: Failed to set locale from config. Using default 'en' locale.")
         locale.setlocale(locale.LC_ALL, "en_US.UTF-8")  # Default to English locale
+
+    if args.debug:
+        _loop.debug = True
 
     sys.stderr.write(
         f"Starting on PID {os.getpid()}... (thor {thor.__version__})\n"
