@@ -71,6 +71,8 @@ def clean_saved_tests(config: SectionProxy) -> Tuple[int, int, int]:
     """Clean old files from the saved tests directory."""
     now = time.time()
     state_dir = config["save_dir"]
+    if not os.path.exists(state_dir):
+        return (0, 0, 0)
     save_secs = config.getint("no_save_mins", fallback=20) * 60
     files = [
         os.path.join(state_dir, f)
