@@ -12,19 +12,20 @@ RUN apt-get update && \
     build-essential \
     openssl \
     locales \
+    pipx \
     && sed -i '/^# *en_US/s/^# *//' /etc/locale.gen \
     && locale-gen \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /redbot
-COPY requirements.txt requirements.txt
-RUN pip install --no-cache-dir --trusted-host pypi.python.org -r requirements.txt
 COPY . /redbot
+ENV PIPX_HOME /usr/local/share/pipx
+ENV PIPX_BIN_DIR /usr/local/bin
+RUN pipx install /redbot
 
 EXPOSE 8000
 
-ENV PYTHONPATH /redbot
 ENV PYTHONUNBUFFERED true
-ENTRYPOINT ["python"] 
-CMD ["redbot/daemon.py", "extra/config-docker.txt"]
+ENTRYPOINT ["/usr/local/bin/redbot_daemon"]
+CMD ["extra/config-docker.txt"]

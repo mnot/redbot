@@ -1,11 +1,12 @@
 [project]
 name = "redbot"
-dynamic = ["version", "readme"]
+dynamic = ["version"]
 authors = [
     {name="Mark Nottingham", email="mnot@mnot.net"}
 ]
 description = "REDbot is lint for HTTP."
 requires-python = ">=3.9"
+readme = "README.md"
 license = {file = "LICENSE.md"}
 classifiers = [
     "Operating System :: OS Independent",
@@ -52,7 +53,6 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.dynamic]
 version = {attr = "redbot.__version__"}
-readme = {file = ["README.md"], content-type = "text/markdown"}
 
 [tool.setuptools.packages.find]
 where = ["."]
