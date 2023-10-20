@@ -19,11 +19,13 @@
 #     Run mypy on $PROJECT
 # bump-calver
 #     Bump the __version__ in $PROJECT/__init__.py using calver (https://calver.org/)
-# bump-semver-[major,minor,micro]
+# bump-semver[-major,-minor,-micro]
 #     Bump the __version__ in $PROJECT/__init__.py using semver (https://semver.org/)
+# version <<< COMMITS TO GIT
+#     Bump the version according to $VERSIONING (default: semver-micro).
 # build
 #     Build the project
-# release
+# release <<< TAGS AND PUSHES TO GITHUB
 #     Release the project on Pypi and Github releases (requires /.github/workflows/release.yml)
 #
 # See also Makefile.venv.
@@ -36,10 +38,12 @@
 # - build
 # - validate-pyproject
 
-
+PY?=python
+VERSIONING?=semver-micro
 YEAR=`date +%Y`
 MONTH=`date +%m`
 
+# Python-specific targets
 
 .PHONY: clean_py
 clean_py: clean-venv
@@ -59,10 +63,10 @@ lint_py: venv
 typecheck_py: venv
 	PYTHONPATH=$(VENV) $(VENV)/python -m mypy $(PROJECT)
 
-## Distribution
+## Release
 
-.PHONY: version_py
-version_py: venv
+.PHONY: py_version
+py_version: venv
 	$(eval VERSION=$(shell $(VENV)/python -c "import $(PROJECT); print($(PROJECT).__version__)"))
 	$(eval VER_MAJOR=$(shell echo $(VERSION) | cut -d. -f1))
 	$(eval VER_MINOR=$(shell echo $(VERSION) | cut -d. -f2))
@@ -87,21 +91,25 @@ version_py: venv
 	))
 
 .PHONY: bump-calver
-bump-calver: version_py
+bump-calver: py_version
 	sed -i "" -e "s/$(VERSION)/$(YEAR).$(MONTH).$(NEXT_CALMICRO)/" $(PROJECT)/__init__.py
 
 .PHONY: bump-semver-micro
-bump-semver-micro: version_py
+bump-semver-micro: py_version
 	sed -i "" -e "s/$(VERSION)/$(VER_MAJOR).$(VER_MINOR).$(NEXT_SEMMICRO)/" $(PROJECT)/__init__.py
 
 .PHONY: bump-semver-minor
-bump-semver-minor: version_py
+bump-semver-minor: py_version
 	sed -i "" -e "s/$(VERSION)/$(VER_MAJOR).$(NEXT_SEMMINOR).0/" $(PROJECT)/__init__.py
 
 .PHONY: bump-semver-major
-bump-semver-major: version_py
+bump-semver-major: py_version
 	sed -i "" -e "s/$(VERSION)/$(NEXT_SEMMAJOR).0.0/" $(PROJECT)/__init__.py
 
+.PHONY: version
+version: typecheck lint test bump-$(VERSIONING)
+	git add $(PROJECT)/__init__.py
+	git commit -m 'bump version'
 
 .PHONY: build
 build: clean venv
@@ -109,10 +117,17 @@ build: clean venv
 
 # requires /.github/workflows/release.yml
 .PHONY: release
-release: typecheck_py lint_py test version_py
+release: py_version
 	git tag -a "v$(VERSION)" -m "v$(VERSION)"
 	git push
 	git push --tags origin  # github action will push to pypi and create a release
 
 
 include Makefile.venv
+
+## Patch venv to install from pyproject.toml
+
+venv: | $(VENV)/$(MARKER)-dev
+$(VENV)/$(MARKER)-dev: $(VENV)/$(MARKER)
+	$(VENV)/pip install -e .[dev]
+	touch $@

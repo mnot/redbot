@@ -90,10 +90,6 @@ docker-image:
 docker: docker-image
 	docker run --rm --name redbot -p 8000:8000 redbot
 
-.PHONY: docker-cli
-docker-cli: docker-image
-	docker run --rm --name redbot redbot redbot/cli.py https://redbot.org/
-
 #############################################################################
 ## Create new headers
 
