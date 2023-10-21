@@ -15,7 +15,6 @@
 </tr>
 {%- endmacro %}
 
-
 {% macro yes_no(value) %}
     {% if value == True %}
         <span class="yes"><img src="{{ static }}/icons/check-circle.svg"/></span>
@@ -25,7 +24,6 @@
         <span class="maybe"><img src="{{ static }}/icons/question-circle.svg"/></span>
     {% endif %}
 {%- endmacro %}
-
 
 <table id='summary'>
     {% for heading, droids in droid_lists %}

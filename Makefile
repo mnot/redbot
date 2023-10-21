@@ -31,7 +31,6 @@ typecheck: typecheck_py
 tidy: tidy_py
 	$(STANDARD) --fix "src/js/*.js"
 
-
 #############################################################################
 ## Tests
 
@@ -42,7 +41,6 @@ test: webui_test
 webui_test: venv
 	$(VENV)/playwright install chromium
 	PYTHONPATH=.:$(VENV) $(VENV)/python test/test_webui.py
-
 
 #############################################################################
 ## Local test server / cli
@@ -94,6 +92,5 @@ clean-assets:
 
 $(MODULES):
 	npm i --prefix=./src/
-
 
 include Makefile.pyproject

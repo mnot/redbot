@@ -1,4 +1,3 @@
-
 # Contributing to REDbot
 
 Contributions - in the form of code, bugs, or ideas - are very welcome!
@@ -8,7 +7,6 @@ Contributions - in the form of code, bugs, or ideas - are very welcome!
 The [issues list](https://github.com/mnot/redbot/issues) is the best place to report
 problems or suggest new features. Before you submit something, it would be great if you had a look
 through the current issues to see if it's already there.
-
 
 ## Making code contributions
 
@@ -39,20 +37,17 @@ created for each of them. When it's all done, the "root" `HTTPResource` will be 
 If you plan to support a new HTTP header in REDbot (a common task), see the [guide for Header
 Development](https://github.com/mnot/redbot/blob/master/redbot/message/headers/README.md).
 
-
 ### Coding conventions
 
 We use [black](https://pypi.org/project/black/) for Python formatting, and [standard](https://standardjs.com) for JavaScript; both can be run with `make tidy`.
 
 All Python functions and methods need to have type annotations. See `pyproject.toml` for specific pylint and mypy settings.
 
-
 ### Setting up a development environment
 
 It should be possible to develop REDbot on any modern Unix-like environment, provided that recent releases of Python and NodeJS are installed.
 
 Thanks to [Makefile.venv](https://github.com/sio/Makefile.venv), a Python virtual environment is set up and run each time you use `make`. As long as you use `make`, Python dependencies will be installed automatically. `make` will also install npm dependencies for a few development tools into a local `node_modules` directory.
-
 
 #### Helpful Make targets
 
@@ -65,7 +60,6 @@ Thanks to [Makefile.venv](https://github.com/sio/Makefile.venv), a Python virtua
 * `make server` - run a local standalong Web server on port 8000 for testing
 * `make test` - run the tests
 
-
 ### Before you submit
 
 The best way to submit changes to REDbot is through a pull request. A few things to keep in mind when you're doing so:
@@ -77,7 +71,6 @@ The best way to submit changes to REDbot is through a pull request. A few things
 
 If you're not sure how to dig in, feel free to ask for help, or sketch out an idea in an issue
 first.
-
 
 ### Intellectual property
 
