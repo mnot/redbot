@@ -219,8 +219,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 class HeaderPresenter:
     """
     Present a HTTP header in the Web UI. By default, it will:
-       - Escape HTML sequences to avoid XSS attacks
-       - Wrap long lines
+        - Escape HTML sequences to avoid XSS attacks
+        - Wrap long lines
     However if a method is present that corresponds to the header's
     field-name, that method will be run instead to represent the value.
     """

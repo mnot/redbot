@@ -37,7 +37,7 @@ homepage = "https://redbot.org/project/"
 [project.optional-dependencies]
 systemd = ["cysystemd"]
 dev = ["mypy", "black", "pylint", "pytest", "pytest-md", "validate-pyproject", "build",
-       "playwright", "types-Markdown"]
+    "playwright", "types-Markdown"]
 
 
 [project.scripts]
