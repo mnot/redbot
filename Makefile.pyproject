@@ -115,10 +115,16 @@ version: typecheck lint test bump-$(VERSIONING)
 build: clean venv
 	$(VENV)/python -m build
 
+.PHONY: changelog.md
+changelog.md:
+	$(eval PREV_RELEASE=$(shell git tag -l v* | tail -1))
+	$(shell git log --pretty="- %s" $(PREV_RELEASE)..HEAD --grep "^Changed:" --grep "^Fixed:" --grep "^Added:" --grep "^Changed:" --grep "^Removed:" --output=changelog.md)
+
 # requires /.github/workflows/release.yml
 .PHONY: release
 release: py_version
-	git tag -a "v$(VERSION)" -m "v$(VERSION)"
+	git tag -a "v$(VERSION)" -F changelog.md
+	rm -f changelog.md
 	git push
 	git push --tags origin  # github action will push to pypi and create a release
 
