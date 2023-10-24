@@ -78,6 +78,7 @@
 #    <http://www.apache.org/licenses/LICENSE-2.0>
 #
 
+
 #
 # Configuration variables
 #
@@ -90,6 +91,7 @@ SETUP_CFG?=$(foreach s,$(SETUP_PY),$(wildcard $(patsubst %setup.py,%setup.cfg,$(
 PYPROJECT_TOML?=$(wildcard pyproject.toml)
 VENV_LOCAL_PACKAGE?=$(SETUP_PY) $(SETUP_CFG) $(PYPROJECT_TOML)
 MARKER=.initialized-with-Makefile.venv
+
 
 #
 # Python interpreter detection
@@ -150,6 +152,7 @@ endef
 $(error $(_PY_AUTODETECT_ERR))
 endif
 
+
 #
 # Internal variable resolution
 #
@@ -174,6 +177,7 @@ RMDIR:=rd /s /q
 else
 RMDIR:=$(RM) -r
 endif
+
 
 #
 # Virtual environment
@@ -205,6 +209,7 @@ debug-venv:
 	$(info VENVDEPENDS="$(VENVDEPENDS)")
 	$(info WORKDIR="$(WORKDIR)")
 
+
 #
 # Dependencies
 #
@@ -230,6 +235,7 @@ ifneq ($(strip $(VENV_LOCAL_PACKAGE)),)
 endif
 	$(call touch,$(VENV)/$(MARKER))
 
+
 #
 # Interactive shells
 #
@@ -249,6 +255,7 @@ shell: venv
 .PHONY: bash zsh
 bash zsh: venv
 	. $(VENV)/activate && exec $@
+
 
 #
 # Commandline tools (wildcard rule, executable name must match package name)

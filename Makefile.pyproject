@@ -122,6 +122,7 @@ release: py_version
 	git push
 	git push --tags origin  # github action will push to pypi and create a release
 
+
 include Makefile.venv
 
 ## Patch venv to install from pyproject.toml

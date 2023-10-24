@@ -8,10 +8,12 @@ even self-host your own Web checker.
 
 [![Test](https://github.com/mnot/redbot/actions/workflows/test.yml/badge.svg)](https://github.com/mnot/redbot/actions/workflows/test.yml)
 
+
 ## Contributing to REDbot
 
 Your ideas, questions and other contributions are most welcome. See
 [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
 
 ## Setting Up Your Own REDbot
 
@@ -31,6 +33,7 @@ Both of these methods will install the following programs into your [pipx binary
 
 * `redbot` - the command-line interface
 * `redbot_daemon` - Web interface as a standalone daemon
+
 
 ### Running REDbot as a systemd Service
 
@@ -54,6 +57,7 @@ By default, REDbot will listen on localhost port 8000. This can be adjusted in `
 
 If you want to allow people to save test results, create the directory referenced by the 'save_dir' configuration variable, and make sure that it's writable to the REDbot process.
 
+
 ### Running REDbot with Docker
 
 If you wish to run REDbot using [Docker](https://www.docker.com), get a local copy of the repository, then:
@@ -69,6 +73,7 @@ Or, just:
 > make docker
 
 to run REDbot on port 8000.
+
 
 ## Credits
 

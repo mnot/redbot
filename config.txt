@@ -14,6 +14,7 @@ lang = en_US.UTF-8
 # Output character set. No real reason to change from UTF-8.
 charset = utf-8
 
+
 ## Test configuration
 
 # How many seconds to allow a check to run for.
@@ -21,6 +22,7 @@ max_runtime = 60
 
 # Limit on how many links to check in a page when descending
 max_links = 100
+
 
 ## Web server configuration
 
@@ -53,6 +55,7 @@ debug = False
 # expensive, and may cause redbot_daemon to be unresponsive.
 content_links = no
 
+
 ## Saved Tests
 
 # Where to keep files when users `save` them. Note that files will be automatically
@@ -70,6 +73,7 @@ no_save_mins = 20
 # How often to garbage collect save files, in minutes. Only occurs when save_dir
 # is uncommented.
 gc_mins = 2
+
 
 ## Web abuse controls
 
@@ -100,6 +104,7 @@ log_traffic = 8192
 # Domains which we reject requests for when they're in the referer. Whitespace-separated.
 referer_spam_domains = www.youtube.com
 
+
 ## Web test rate limiting
 
 # Number of tests to allow per period, per client. Comment out to disable.
@@ -128,6 +133,7 @@ limit_slack_team_tests = 300
 
 # Period of time those requests are allowed within, in hours.
 limit_slack_team_period = 1
+
 
 ## Slack integration
 
