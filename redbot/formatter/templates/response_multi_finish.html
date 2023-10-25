@@ -1,113 +1,111 @@
 {% macro table_header(heading) %}
 <tr>
-  <th title="The URI tested. Click to run a detailed analysis.">{{ heading or "URI" }}</th>
-  <th title="The HTTP status code returned.">status</th>
-  <th title="The size of the response content, in bytes.">size</th>
-  <th title="Whether a shared (e.g., proxy) cache can store the response.">shared</th>
-  <th title="Whether a private (e.g., browser) cache can store the response.">private</th>
-  <th title="How long the response had been cached before REDbot got it.">age</th>
-  <th title="How long a cache can treat the response as fresh.">freshness</th>
-  <th title="Whether If-Modified-Since validation is supported, using Last-Modified.">IMS</th>
-  <th title="Whether If-None-Match validation is supported, using ETags.">INM</th>
-  <th title="Whether negotiation for gzip compression is supported; if so, the percent of the original size saved.">gzip</th>
-  <th title="Whether partial responses are supported.">partial</th>
-  <th title="Issues encountered.">notes</th>
+    <th title="The URI tested. Click to run a detailed analysis.">{{ heading or "URI" }}</th>
+    <th title="The HTTP status code returned.">status</th>
+    <th title="The size of the response content, in bytes.">size</th>
+    <th title="Whether a shared (e.g., proxy) cache can store the response.">shared</th>
+    <th title="Whether a private (e.g., browser) cache can store the response.">private</th>
+    <th title="How long the response had been cached before REDbot got it.">age</th>
+    <th title="How long a cache can treat the response as fresh.">freshness</th>
+    <th title="Whether If-Modified-Since validation is supported, using Last-Modified.">IMS</th>
+    <th title="Whether If-None-Match validation is supported, using ETags.">INM</th>
+    <th title="Whether negotiation for gzip compression is supported; if so, the percent of the original size saved.">gzip</th>
+    <th title="Whether partial responses are supported.">partial</th>
+    <th title="Issues encountered.">notes</th>
 </tr>
 {%- endmacro %}
 
-
 {% macro yes_no(value) %}
-  {% if value == True %}
-    <span class="yes"><img src="{{ static }}/icons/check-circle.svg"/></span>
-  {% elif value == False %}
-    <span class="no"><img src="{{ static }}/icons/times-circle.svg"/></span>
-  {% elif value == None %}
-    <span class="maybe"><img src="{{ static }}/icons/question-circle.svg"/></span>
-  {% endif %}
+    {% if value == True %}
+        <span class="yes"><img src="{{ static }}/icons/check-circle.svg"/></span>
+    {% elif value == False %}
+        <span class="no"><img src="{{ static }}/icons/times-circle.svg"/></span>
+    {% elif value == None %}
+        <span class="maybe"><img src="{{ static }}/icons/question-circle.svg"/></span>
+    {% endif %}
 {%- endmacro %}
 
-
 <table id='summary'>
-  {% for heading, droids in droid_lists %}
-  {% if heading != "" %}
-  {% set heading_w_count = heading + " (" + droids|length|string + ")" %}
-  {{ table_header(heading_w_count) }}
-  {% else %}
-  {{ table_header(heading) }}
-  {% endif %}
-  {% for resource in droids %}
-  <tr class="droid">
-    <td class="uri">
-        {% set pclass = " preview" if resource.response.headers.parsed.get('content-type', [''])[0][:6] == "image/" else "" %}
-        {% set fclass = " fade" if resource.request.uri| length > 80 else "" %}
-        {% set class = pclass + fclass %}
-        {% set display_uri = resource.request.uri[:80] %}
-        {{ resource.request.uri|redbot_link(display_uri, use_stored=False, css_class=class, title=resource.request.uri, referer=True) }}
-        </a>
-    </td>
-  {% if resource.response.complete %}
-    {% if resource.response.status_code in ["301", "302", "303", "307", "308"] and "location" in resource.response.headers.parsed %}
-    <td>{{ resource.response.headers.parsed['location']|redbot_link(resource.response.status_code, use_stored=False, descend=True, referer=True) }}</td>
-    {% elif resource.response.status_code in ["400", "404", "410"] %}
-    <td class="bad">{{ resource.response.status_code }}</td>
+    {% for heading, droids in droid_lists %}
+    {% if heading != "" %}
+    {% set heading_w_count = heading + " (" + droids|length|string + ")" %}
+    {{ table_header(heading_w_count) }}
     {% else %}
-    <td>{{ resource.response.status_code }}</td>
+    {{ table_header(heading) }}
     {% endif %}
-    <td>{{ resource.response.content_length|f_num(by1024=True) }}</td>
-    <td>{{ yes_no(resource.response.caching.store_shared) }}</td>
-    <td>{{ yes_no(resource.response.caching.store_private) }}</td>
-    <td>{{ resource.response.caching.age|relative_time(0,0) or '-' }}</td>
-    <td>{{ resource.response.caching.freshness_lifetime|relative_time(0,0) or '-' }}</td>
-    <td>{{ yes_no(resource.ims_support) }}</td>
-    <td>{{ yes_no(resource.inm_support) }}</td>
-    {% if resource.gzip_support %}
-    <td>{{ resource.gzip_savings }}%</td>
+    {% for resource in droids %}
+    <tr class="droid">
+        <td class="uri">
+                {% set pclass = " preview" if resource.response.headers.parsed.get('content-type', [''])[0][:6] == "image/" else "" %}
+                {% set fclass = " fade" if resource.request.uri| length > 80 else "" %}
+                {% set class = pclass + fclass %}
+                {% set display_uri = resource.request.uri[:80] %}
+                {{ resource.request.uri|redbot_link(display_uri, use_stored=False, css_class=class, title=resource.request.uri, referer=True) }}
+                </a>
+        </td>
+    {% if resource.response.complete %}
+        {% if resource.response.status_code in ["301", "302", "303", "307", "308"] and "location" in resource.response.headers.parsed %}
+        <td>{{ resource.response.headers.parsed['location']|redbot_link(resource.response.status_code, use_stored=False, descend=True, referer=True) }}</td>
+        {% elif resource.response.status_code in ["400", "404", "410"] %}
+        <td class="bad">{{ resource.response.status_code }}</td>
+        {% else %}
+        <td>{{ resource.response.status_code }}</td>
+        {% endif %}
+        <td>{{ resource.response.content_length|f_num(by1024=True) }}</td>
+        <td>{{ yes_no(resource.response.caching.store_shared) }}</td>
+        <td>{{ yes_no(resource.response.caching.store_private) }}</td>
+        <td>{{ resource.response.caching.age|relative_time(0,0) or '-' }}</td>
+        <td>{{ resource.response.caching.freshness_lifetime|relative_time(0,0) or '-' }}</td>
+        <td>{{ yes_no(resource.ims_support) }}</td>
+        <td>{{ yes_no(resource.inm_support) }}</td>
+        {% if resource.gzip_support %}
+        <td>{{ resource.gzip_savings }}%</td>
+        {% else %}
+        <td>{{ yes_no(resource.gzip_support) }}</td>
+        {% endif %}
+        <td>{{ yes_no(resource.partial_support) }}</td>
+        <td>
+        {% for problem in resource.notes if problem.level in [levels.WARN, levels.BAD] %}
+            <span class='prob_num'>{{ problem|index_problem }}<span class='hidden'><span class='tip'>{{ problem.detail }}</span></span></span>
+        {% endfor %}
+        </td>
     {% else %}
-    <td>{{ yes_no(resource.gzip_support) }}</td>
+        <td colspan="11">
+        {% if resource.response.http_error == None %}
+        response incomplete
+        {% else %}
+        {{ resource.response.http_error.desc or "unknown problem" }}
+        {% endif %}
+        </td>
     {% endif %}
-    <td>{{ yes_no(resource.partial_support) }}</td>
-    <td>
-    {% for problem in resource.notes if problem.level in [levels.WARN, levels.BAD] %}
-      <span class='prob_num'>{{ problem|index_problem }}<span class='hidden'><span class='tip'>{{ problem.detail }}</span></span></span>
+    </tr>
     {% endfor %}
-    </td>
-  {% else %}
-     <td colspan="11">
-     {% if resource.response.http_error == None %}
-     response incomplete
-     {% else %}
-     {{ resource.response.http_error.desc or "unknown problem" }}
-     {% endif %}
-     </td>
-  {% endif %}
-  </tr>
-  {% endfor %}
-  {% endfor %}
+    {% endfor %}
 </table>
 
 <div class="options">
-  <div class='option'>
-    {{ har_link }}
-  </div>
-  {% if not is_saved %}
-  {% if allow_save %}
-  <div class='option' title='Save these results for future reference'>
-    <a href='#' id='save' accesskey='s'>save</a>
-  </div>
-  {% endif %}
-  {% endif %}
+    <div class='option'>
+        {{ har_link }}
+    </div>
+    {% if not is_saved %}
+    {% if allow_save %}
+    <div class='option' title='Save these results for future reference'>
+        <a href='#' id='save' accesskey='s'>save</a>
+    </div>
+    {% endif %}
+    {% endif %}
 </div>
 
 <div id='details'>
-  <br />
-  <h2>Notes</h2>
-  <ol>
-  {% for problem in problems %}
-    <li class='{{ problem.level.value }} {{ problem.subject }} note' data-offset='{{ loop.index }}'>
-      {{ loop.index }}. <span>{{ problem.summary }}</span>
-    </li>
-  {% endfor %}
-  </ol>
+    <br />
+    <h2>Notes</h2>
+    <ol>
+    {% for problem in problems %}
+        <li class='{{ problem.level.value }} {{ problem.subject }} note' data-offset='{{ loop.index }}'>
+            {{ loop.index }}. <span>{{ problem.summary }}</span>
+        </li>
+    {% endfor %}
+    </ol>
 </div>
 
 {% include 'footer.html' %}

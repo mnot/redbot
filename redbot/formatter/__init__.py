@@ -188,9 +188,9 @@ def relative_time(utime: float, now: float = None, show_sign: int = 1) -> str:
     """
     Given two times, return a string that explains how far apart they are.
     show_sign can be:
-      0 - don't show
-      1 - ago / from now  [DEFAULT]
-      2 - early / late
+        0 - don't show
+        1 - ago / from now  [DEFAULT]
+        2 - early / late
     """
 
     signs = {

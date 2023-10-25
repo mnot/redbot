@@ -200,9 +200,9 @@ console.log("{time.time() - self.start:3.3f} {e_js(message)}");
         """
         Show extra content from the extra_dir, if any. MUST be UTF-8.
         Type controls the extension included; currently supported:
-          - '.html': shown only on start page, after input block
-          - '.js': javascript block (with script tag surrounding)
-            included on every page view.
+            - '.html': shown only on start page, after input block
+            - '.js': javascript block (with script tag surrounding)
+                included on every page view.
         """
         out = []
         if self.config.get("extra_dir", "") and os.path.isdir(self.config["extra_dir"]):
