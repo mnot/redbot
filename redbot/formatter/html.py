@@ -8,7 +8,7 @@ import textwrap
 from typing import Any, List, Match, Tuple
 from urllib.parse import urljoin
 
-from httplint.field_section import FieldSection
+from httplint import get_field_description
 from httplint.note import Note, levels, categories
 import thor.http.error as httperr
 
@@ -204,7 +204,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         return Markup(self.header_presenter.show(header[0], header[1]))
 
     def format_header_description(self, header_name: str) -> Markup:
-        description = FieldSection.find_handler(header_name).description
+        description = get_field_description(header_name)
         if description:
             return Markup(
                 '<span class="tip">'
@@ -332,7 +332,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         return self.problems.index(problem) + 1
 
     def format_note_description(self, header_name: str) -> Markup:
-        description = FieldSection.find_handler(header_name).description
+        description = get_field_description(header_name)
         if description:
             return Markup(
                 self._markdown.reset().convert(

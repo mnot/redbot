@@ -9,7 +9,7 @@ import codecs
 from html.parser import HTMLParser
 from typing import Any, Callable, Dict, List, Tuple
 
-from httplint.fields._utils import split_string, unquote_string
+from httplint.field.utils import split_string, unquote_string
 from httplint.message import HttpMessageLinter
 from httplint.syntax import rfc7231
 
