@@ -122,7 +122,7 @@ changelog.md:
 
 # requires /.github/workflows/release.yml
 .PHONY: release
-release: py_version
+release: py_version changelog.md
 	git tag -a "v$(VERSION)" -F changelog.md
 	rm -f changelog.md
 	git push
