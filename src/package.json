@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.3",
-    "google-code-prettify": "^1.0.5",
+    "highlight.js": "^11.9.0",
     "tippy.js": "^6.3.1"
   }
 }

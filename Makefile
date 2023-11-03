@@ -10,7 +10,7 @@ GITHUB_STEP_SUMMARY ?= throwaway
 
 MODULES = src/node_modules
 JS_ENTRIES = ./src/js/red_script.js ./src/js/red_request.js ./src/js/red_response.js ./src/js/red_response_multi.js
-CSSFILES = redbot/assets/red_style.css $(MODULES)/google-code-prettify/src/prettify.css
+CSSFILES = redbot/assets/red_style.css
 
 ICONS = solid/check-circle solid/times-circle solid/question-circle solid/exclamation-circle solid/info-circle
 ICON_FILES = $(foreach i, $(ICONS),$(MODULES)/@fortawesome/fontawesome-free/svgs/$(i).svg)
@@ -20,7 +20,7 @@ ICON_FILES = $(foreach i, $(ICONS),$(MODULES)/@fortawesome/fontawesome-free/svgs
 
 .PHONY: clean
 clean: clean_py
-	rm -rf .npx-cache throwaway
+	rm -rf .npx-cache throwaway $(MODULES)
 
 .PHONY: lint
 lint: lint_py
@@ -101,16 +101,16 @@ redbot/message/headers/%.py:
 ## Assets
 
 .PHONY: redbot/assets
-redbot/assets: redbot/assets/script.js redbot/assets/prettify.js redbot/assets/style.css redbot/assets/icons
+redbot/assets: redbot/assets/script.js redbot/assets/highlight.js redbot/assets/style.css redbot/assets/icons
 
-redbot/assets/prettify.js: $(MODULES)
-	$(WEBPACK) --entry ./$(MODULES)/google-code-prettify/src/prettify.js --config ./src/js/webpack.config.js --mode production --output-path . --output-filename $@
+redbot/assets/highlight.js: $(MODULES)
+	$(WEBPACK) --entry ./$(MODULES)/highlight.js/lib/minimal.js --config ./src/js/webpack.config.js --mode production --output-path . --output-filename $@
 
 redbot/assets/script.js: $(MODULES) src/js/*.js
 	$(WEBPACK) $(JS_ENTRIES) --config ./src/js/webpack.config.js --mode production --output-path . --output-filename $@
 
 redbot/assets/red_style.css: src/scss/*.scss
-	$(SASS) src/scss/red_style.scss $@
+	$(SASS) src/scss/red_style.scss src/node_modules/highlight.js/scss/idea.scss $@
 
 redbot/assets/style.css: $(MODULES) $(CSSFILES)
 	cat $(CSSFILES) | $(CSSMIN) > $@

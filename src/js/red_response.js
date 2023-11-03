@@ -1,7 +1,8 @@
-/* global prettyPrint */
+/* global hljs */
 
 import { qs, qsa, docReady, toggleHidden } from './red_util.js'
 import tippy from 'tippy.js'
+import hljs from 'highlight.js'
 
 docReady(function () {
   /* single response display - header hover */
@@ -105,7 +106,9 @@ docReady(function () {
       toggleHidden(qs('#details'))
       if (!showingBody) {
         qs('#body_view').textContent = 'view notes'
-        prettyPrint()
+        document.querySelectorAll('pre.prettyprint').forEach(el => {
+          hljs.highlightElement(el);
+        });
       } else {
         qs('#body_view').textContent = 'view body'
       }
