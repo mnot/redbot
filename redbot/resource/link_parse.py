@@ -26,10 +26,10 @@ class HTMLLinkParser(HTMLParser):
 
     When links are found, link_procs will be called for each with the
     following arguments;
-      - base (base URI for the link, in a unicode string)
-      - link (URI as it appeared in document, in a unicode string)
-      - tag (name of the element that contained it)
-      - title (title attribute as a unicode string, if any)
+        - base (base URI for the link, in a unicode string)
+        - link (URI as it appeared in document, in a unicode string)
+        - tag (name of the element that contained it)
+        - title (title attribute as a unicode string, if any)
     """
 
     link_parseable_types = [

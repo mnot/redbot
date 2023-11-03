@@ -7,91 +7,91 @@
 {%- endmacro %}
 
 <div id="left_column">
-  {% for nonfinal_response in resource.nonfinal_responses %}
-    <pre class='nonfinal_response'>{{ format_response(nonfinal_response) }}</pre>
-  {% endfor %}
-
-  <span class="help hidden">
-    These are the response headers; hover over each one for an explanation of what it does.
-  </span>
-
-  <pre id='response'>{{ format_response(resource.response) }}</pre>
-
-    <div class="options">
-      <span class='help hidden'>
-        Here, you can see the response body, a HAR document for the request, and when appropriate,
-        validate the response or check its assets (such as referenced images, stylesheets and scripts).
-      </span>
-
-      <span class='option' title='How large the response headers are, including the status line'>response headers: {{ resource.response_header_length|f_num }} bytes</span>
-
-      <span class='option' title='How large the response content is'>content: {{ resource.response.content_length|f_num }} bytes</span>
-
-      {% if resource.response.transfer_length - resource.response.content_length > 0 -%}
-      <span class='option' title='How much using chunked encoding adds to the response size'>transfer overhead: {{ (resource.response.transfer_length - resource.response.content_length)|f_num }} bytes</span>
-      {%- endif %}
-
-      <br/>
-
-      <div class='option' title='View this response content (with any gzip compression removed)'>
-        <script type="text/javascript" nonce="{{ nonce }}">
-          document.write("<a href='#' id='body_view' accesskey='b'>view content</a>")
-        </script>
-      </div>
-
-      {% if is_resource %}
-      <div class='option'>
-        {{ har_link }}
-      </div>
-      {% endif %}
-
-      {% if not is_saved %}
-      {% if allow_save %}
-      <div class='option' title='Save these results for future reference'>
-        <a href='#' id='save' accesskey='s'>save</a>
-      </div>
-      {% endif %}
-
-      {% if validator_link %}
-      <div class='option' title='Validate the response body with a third party service'>
-        <a href='{{ validator_link }}' accesskey='v'>validate content</a>
-      </div>
-      {% endif %}
-
-      {% if is_resource and resource.link_count > 0 %}
-      <div class='option'>
-        {{ descend_link }}
-      </div>
-      {% endif %}
-      {% endif %}
-    </div>
-  </div>
-
-  <div id="right_column">
-    <div id='details'>
-      <span class='help right hidden'>These notes explain what REDbot has found about your URL; hover over each one for a detailed explanation.</span>
-
-      {% for category in formatter.note_categories %}
-      {% for note in resource.notes if note.category == category %}
-      {% if loop.first %}
-      <h3>{{ category.value }}{{ category|subrequest_messages }}</h3>
-      <ul>
-      {% endif %}
-        <li class='{{ note.level.value }} note' data-subject='{{ note.subject }}'>
-            <span>{{ note.summary }}<span class='tip'>{{ note.detail }}</span></span>
-        </li>
-      {% if loop.last %}
-      </ul>
-      {% endif %}
+    {% for nonfinal_response in resource.nonfinal_responses %}
+        <pre class='nonfinal_response'>{{ format_response(nonfinal_response) }}</pre>
     {% endfor %}
-    {% endfor %}
+
+    <span class="help hidden">
+        These are the response headers; hover over each one for an explanation of what it does.
+    </span>
+
+    <pre id='response'>{{ format_response(resource.response) }}</pre>
+
+        <div class="options">
+            <span class='help hidden'>
+                Here, you can see the response body, a HAR document for the request, and when appropriate,
+                validate the response or check its assets (such as referenced images, stylesheets and scripts).
+            </span>
+
+            <span class='option' title='How large the response headers are, including the status line'>response headers: {{ resource.response_header_length|f_num }} bytes</span>
+
+            <span class='option' title='How large the response content is'>content: {{ resource.response.content_length|f_num }} bytes</span>
+
+            {% if resource.response.transfer_length - resource.response.content_length > 0 -%}
+            <span class='option' title='How much using chunked encoding adds to the response size'>transfer overhead: {{ (resource.response.transfer_length - resource.response.content_length)|f_num }} bytes</span>
+            {%- endif %}
+
+            <br/>
+
+            <div class='option' title='View this response content (with any gzip compression removed)'>
+                <script type="text/javascript" nonce="{{ nonce }}">
+                    document.write("<a href='#' id='body_view' accesskey='b'>view content</a>")
+                </script>
+            </div>
+
+            {% if is_resource %}
+            <div class='option'>
+                {{ har_link }}
+            </div>
+            {% endif %}
+
+            {% if not is_saved %}
+            {% if allow_save %}
+            <div class='option' title='Save these results for future reference'>
+                <a href='#' id='save' accesskey='s'>save</a>
+            </div>
+            {% endif %}
+
+            {% if validator_link %}
+            <div class='option' title='Validate the response body with a third party service'>
+                <a href='{{ validator_link }}' accesskey='v'>validate content</a>
+            </div>
+            {% endif %}
+
+            {% if is_resource and resource.link_count > 0 %}
+            <div class='option'>
+                {{ descend_link }}
+            </div>
+            {% endif %}
+            {% endif %}
+        </div>
     </div>
 
-    <span class="help hidden">If something doesn't seem right, feel free to <a href="https://github.com/mnot/redbot/issues/new">file an issue</a>!</span>
-  </div>
+    <div id="right_column">
+        <div id='details'>
+            <span class='help right hidden'>These notes explain what REDbot has found about your URL; hover over each one for a detailed explanation.</span>
 
-  <br />
+            {% for category in formatter.note_categories %}
+            {% for note in resource.notes if note.category == category %}
+            {% if loop.first %}
+            <h3>{{ category.value }}{{ category|subrequest_messages }}</h3>
+            <ul>
+            {% endif %}
+                <li class='{{ note.level.value }} note' data-subject='{{ note.subject }}'>
+                    <span>{{ note.summary }}<span class='tip'>{{ note.detail }}</span></span>
+                </li>
+            {% if loop.last %}
+            </ul>
+            {% endif %}
+        {% endfor %}
+        {% endfor %}
+        </div>
 
-  <div id='body' class="hidden">{{ body }}</div>
+        <span class="help hidden">If something doesn't seem right, feel free to <a href="https://github.com/mnot/redbot/issues/new">file an issue</a>!</span>
+    </div>
+
+    <br />
+
+    <div id='body' class="hidden">{{ body }}</div>
 
 {% include 'footer.html' %}

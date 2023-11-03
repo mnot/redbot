@@ -24,7 +24,7 @@ README.md
 Dockerfile
 LICENSE
 
-# From .gitingore 
+# From .gitingore
 *.pyc
 __pycache__
 .DS_Store

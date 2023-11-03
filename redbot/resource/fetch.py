@@ -41,8 +41,8 @@ class RedFetcher(thor.events.EventEmitter):
     Abstract class for a fetcher.
 
     Fetches the given URI (with the provided method, headers and content) and:
-      - emits 'status' and 'debug' as it progresses
-      - emits 'fetch_done' when the fetch is finished.
+        - emits 'status' and 'debug' as it progresses
+        - emits 'fetch_done' when the fetch is finished.
 
     If provided, 'name' indicates the type of the request, and is used to
     help set notes and status events appropriately.

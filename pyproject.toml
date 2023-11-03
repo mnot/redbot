@@ -37,8 +37,7 @@ homepage = "https://redbot.org/project/"
 [project.optional-dependencies]
 systemd = ["cysystemd"]
 dev = ["mypy", "black", "pylint", "pytest", "pytest-md", "validate-pyproject", "build",
-       "playwright", "types-Markdown"]
-
+    "playwright", "types-Markdown"]
 
 [project.scripts]
 redbot = "redbot.cli:main"
@@ -72,7 +71,6 @@ warn_return_any = true
 warn_unreachable = true
 strict_optional = false
 show_error_codes = true
-
 
 [tool.pylint.basic]
 function-rgx = "[a-z_][a-z0-9_]{1,30}$"
