@@ -5,7 +5,7 @@
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="ROBOTS" content="INDEX, NOFOLLOW" />
-    <link rel="stylesheet" type="text/css" href="{{ static }}/style.css?{{ version }}">
+    <link rel="stylesheet" type="text/css" href="{{ static }}/style.css?{{ redbot_version }}">
     <script type="text/javascript" nonce="{{ nonce }}">
         var errorsReported = 0
         window.onerror = function (message, url, line, col, errorObj) {
@@ -64,7 +64,7 @@
     </form>
 </div>
 <div id="red_status"></div>
-<script src="{{ static }}/script.js?{{ version }}" type="text/javascript" nonce="{{ nonce }}" async></script>
+<script src="{{ static }}/script.js?{{ redbot_version }}" type="text/javascript" nonce="{{ nonce }}" async></script>
 {% if captcha_provider != "" %}
 <div id="captcha_popup" data-size="invisible"></div>
 <script type="text/javascript" nonce="{{ nonce }}">

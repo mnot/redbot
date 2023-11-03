@@ -6,10 +6,11 @@ import time
 from typing import Any, List, Tuple
 from urllib.parse import urljoin, urlencode, quote as urlquote
 
+import httplint
 from jinja2 import Environment, PackageLoader, select_autoescape
 from markupsafe import Markup, escape
 
-from redbot import __version__
+import redbot
 from redbot.formatter import Formatter, relative_time, f_num
 from redbot.webui.captcha import CAPTCHA_PROVIDERS
 
@@ -77,7 +78,8 @@ class BaseHtmlFormatter(Formatter):
         captcha_data = CAPTCHA_PROVIDERS.get(captcha_provider, {})
         self.template_vars = {
             "formatter": self,
-            "version": __version__,
+            "redbot_version": redbot.__version__,
+            "httplint_version": httplint.__version__,
             "baseuri": self.config["ui_uri"],
             "static": self.config["static_root"],
             "captcha_provider": captcha_provider,
@@ -123,7 +125,8 @@ class BaseHtmlFormatter(Formatter):
                                 {
                                     "redbot_uri": e_js(uri),
                                     "redbot_req_hdrs": req_headers,
-                                    "redbot_version": __version__,
+                                    "redbot_version": redbot.__version__,
+                                    "httplint_version": httplint.__version__,
                                     "captcha_provider": self.config.get(
                                         "captcha_provider", ""
                                     ),
