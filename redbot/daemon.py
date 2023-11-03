@@ -20,10 +20,11 @@ from urllib.parse import urlsplit
 
 from importlib_resources import files as resource_files
 
+import httplint
 import thor
 from thor.loop import _loop
 
-from redbot import __version__
+import redbot
 from redbot.type import RawHeaderListType
 from redbot.webui import RedWebUi
 from redbot.webui.saved_tests import clean_saved_tests
@@ -255,7 +256,8 @@ def main() -> None:
         _loop.debug = True
 
     sys.stderr.write(
-        f"Starting on PID {os.getpid()}... (thor {thor.__version__})\n"
+        f"Starting REDbot {redbot.__version__} on PID {os.getpid()}"
+        + f" (thor {thor.__version__}; httplint {httplint.__version__})\n"
         + f"http://{conf['redbot'].get('host', '')}:{conf['redbot']['port']}/\n"
     )
 
