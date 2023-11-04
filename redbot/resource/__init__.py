@@ -17,7 +17,7 @@ from urllib.parse import urljoin
 import thor
 
 from redbot.formatter import f_num
-from redbot.message import link_parse
+from redbot.resource import link_parse
 from redbot.resource.fetch import RedFetcher
 from redbot.resource.active_check import active_checks
 
@@ -48,9 +48,9 @@ class HttpResource(RedFetcher):
         self.ims_support: bool = None
         self.gzip_support: bool = None
         self.gzip_savings: int = 0
-        self._task_map: Set[RedFetcher] = set([None])
+        self._task_map: Set[RedFetcher] = set([])
         self.subreqs = {ac.check_name: ac(config, self) for ac in active_checks}
-        self.response.once("content_available", self.run_active_checks)
+        self.once("fetch_done", self.run_active_checks)
 
         def _finish_check() -> None:
             self.finish_check(None)
@@ -62,7 +62,7 @@ class HttpResource(RedFetcher):
         self._link_parser = link_parse.HTMLLinkParser(
             self.response, [self.process_link]
         )
-        self.response.on("chunk", self._link_parser.feed_bytes)
+        self.response_content_processors.append(self._link_parser.feed_bytes)
 
     #        self.show_task_map(True) # for debugging
 
@@ -131,7 +131,7 @@ class HttpResource(RedFetcher):
             and self.link_count <= (self.config.getint("max_links", fallback=100))
         ):
             linked = HttpResource(self.config)
-            linked.set_request(urljoin(base, link), req_hdrs=self.request.headers)
+            linked.set_request(urljoin(base, link), headers=self.request.headers.text)
             self.linked.append((linked, tag))
             self.add_check(linked)
             linked.check()

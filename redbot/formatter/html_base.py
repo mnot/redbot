@@ -6,10 +6,11 @@ import time
 from typing import Any, List, Tuple
 from urllib.parse import urljoin, urlencode, quote as urlquote
 
+import httplint
 from jinja2 import Environment, PackageLoader, select_autoescape
 from markupsafe import Markup, escape
 
-from redbot import __version__
+import redbot
 from redbot.formatter import Formatter, relative_time, f_num
 from redbot.webui.captcha import CAPTCHA_PROVIDERS
 
@@ -77,7 +78,8 @@ class BaseHtmlFormatter(Formatter):
         captcha_data = CAPTCHA_PROVIDERS.get(captcha_provider, {})
         self.template_vars = {
             "formatter": self,
-            "version": __version__,
+            "redbot_version": redbot.__version__,
+            "httplint_version": httplint.__version__,
             "baseuri": self.config["ui_uri"],
             "static": self.config["static_root"],
             "captcha_provider": captcha_provider,
@@ -94,7 +96,7 @@ class BaseHtmlFormatter(Formatter):
     def start_output(self) -> None:
         if self.resource:
             uri = self.resource.request.uri or ""
-            req_headers = self.resource.request.headers
+            req_headers = self.resource.request.headers.text
         else:
             uri = ""
             req_headers = []
@@ -123,7 +125,8 @@ class BaseHtmlFormatter(Formatter):
                                 {
                                     "redbot_uri": e_js(uri),
                                     "redbot_req_hdrs": req_headers,
-                                    "redbot_version": __version__,
+                                    "redbot_version": redbot.__version__,
+                                    "httplint_version": httplint.__version__,
                                     "captcha_provider": self.config.get(
                                         "captcha_provider", ""
                                     ),
@@ -200,9 +203,9 @@ console.log("{time.time() - self.start:3.3f} {e_js(message)}");
         """
         Show extra content from the extra_dir, if any. MUST be UTF-8.
         Type controls the extension included; currently supported:
-          - '.html': shown only on start page, after input block
-          - '.js': javascript block (with script tag surrounding)
-            included on every page view.
+            - '.html': shown only on start page, after input block
+            - '.js': javascript block (with script tag surrounding)
+                included on every page view.
         """
         out = []
         if self.config.get("extra_dir", "") and os.path.isdir(self.config["extra_dir"]):
@@ -273,7 +276,7 @@ console.log("{time.time() - self.start:3.3f} {e_js(message)}");
                 f"class='{css_class}' title='{title}'>{link_value}</a>"
             )
         args.append(("uri", urljoin(uri, link or "")))
-        for name, val in self.resource.request.headers:
+        for name, val in self.resource.request.headers.text:
             if referer and name.lower() == "referer":
                 continue
             args.append(("req_hdr", f"{name}:{val}"))

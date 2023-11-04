@@ -18,7 +18,6 @@ import thor
 import thor.http.common
 from thor.http import get_header
 from redbot import __version__
-from redbot.message import HttpRequest
 from redbot.webui.captcha import CaptchaHandler
 from redbot.webui.ratelimit import ratelimiter
 from redbot.webui.saved_tests import (
@@ -130,7 +129,7 @@ class RedWebUi:
         """Test a URI."""
         self.test_id = init_save_file(self)
         top_resource = HttpResource(self.config, descend=self.descend)
-        top_resource.set_request(self.test_uri, req_hdrs=self.req_hdrs)
+        top_resource.set_request(self.test_uri, headers=self.req_hdrs)
         formatter = find_formatter(self.format, "html", self.descend)(
             self.config,
             top_resource,
@@ -274,7 +273,7 @@ class RedWebUi:
         )
         if self.test_uri:
             top_resource = HttpResource(self.config, descend=self.descend)
-            top_resource.set_request(self.test_uri, req_hdrs=self.req_hdrs)
+            top_resource.set_request(self.test_uri, headers=self.req_hdrs)
             if self.check_name:
                 formatter.resource = cast(
                     HttpResource,

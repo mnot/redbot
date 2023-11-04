@@ -1,21 +1,22 @@
-  <br/>
+    <br/>
 
-  <div class="footer">
-    <p class="navigation">
-      <a href="https://REDbot.org/about/">about</a> |
-      <script type="text/javascript" nonce="{{ nonce }}">
-         document.write('<a href="#help" id="help"><strong>help</strong></a> |')
-      </script>
-      <span class="help hidden">Drag the bookmarklet to your bookmark bar - it makes checking easy!</span>
-      <a href="javascript:(function(){window.open('{{ baseuri }}?uri='+encodeURIComponent(location))})();"
-       title="drag me to your toolbar to use REDbot any time.">REDbot</a> bookmarklet
-    </p>
+    <div class="footer">
+        <p class="navigation">
+            version {{ redbot_version }} (httplint {{ httplint_version }}) |
+            <a href="https://REDbot.org/about/">about</a> |
+            <script type="text/javascript" nonce="{{ nonce }}">
+                document.write('<a href="#help" id="help"><strong>help</strong></a> |')
+            </script>
+            <span class="help hidden">Drag the bookmarklet to your bookmark bar - it makes checking easy!</span>
+            <a href="javascript:(function(){window.open('{{ baseuri }}?uri='+encodeURIComponent(location))})();"
+                title="drag me to your toolbar to use REDbot any time.">REDbot</a> bookmarklet
+        </p>
 
-    {% if captcha_provider == "hcaptcha" %}
-    <p class="btw">This site is protected by hCaptcha and its
-    <a href="https://hcaptcha.com/privacy">Privacy Policy</a> and
-    <a href="https://hcaptcha.com/terms">Terms of Service</a> apply.</p>
-    {% endif %}
-  </div>
+        {% if captcha_provider == "hcaptcha" %}
+        <p class="btw">This site is protected by hCaptcha and its
+        <a href="https://hcaptcha.com/privacy">Privacy Policy</a> and
+        <a href="https://hcaptcha.com/terms">Terms of Service</a> apply.</p>
+        {% endif %}
+    </div>
 
 </body></html>

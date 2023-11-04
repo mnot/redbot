@@ -1,4 +1,3 @@
-
 # Contributing to REDbot
 
 Contributions - in the form of code, bugs, or ideas - are very welcome!

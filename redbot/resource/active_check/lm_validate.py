@@ -4,8 +4,9 @@ Subrequest for Last-Modified validation checks.
 
 from datetime import datetime
 
+from httplint.note import Note, categories, levels
+
 from redbot.resource.active_check.base import SubRequest, MISSING_HDRS_304
-from redbot.speak import Note, categories, levels
 from redbot.type import StrHeaderListType
 
 
@@ -33,11 +34,11 @@ class LmValidate(SubRequest):
     def modify_request_headers(
         self, base_headers: StrHeaderListType
     ) -> StrHeaderListType:
-        lm_value = self.base.response.parsed_headers.get("last-modified", None)
+        lm_value = self.base.response.headers.parsed.get("last-modified", None)
         if lm_value:
             try:
                 l_m = datetime.utcfromtimestamp(
-                    self.base.response.parsed_headers["last-modified"]
+                    self.base.response.headers.parsed["last-modified"]
                 )
             except ValueError:
                 return base_headers  # this shouldn't really happen
@@ -57,23 +58,23 @@ class LmValidate(SubRequest):
         return base_headers
 
     def preflight(self) -> bool:
-        if self.base.response.status_code[0] == "3":
+        if 300 <= self.base.response.status_code <= 399:
             return False
-        if self.base.response.parsed_headers.get("last-modified", None):
+        if self.base.response.headers.parsed.get("last-modified", None):
             return True
         self.base.ims_support = False
         return False
 
     def done(self) -> None:
         if not self.response.complete:
-            if self.response.http_error:
-                problem = self.response.http_error.desc
+            if self.fetch_error:
+                problem = self.fetch_error.desc
             else:
                 problem = ""
             self.add_base_note("", LM_SUBREQ_PROBLEM, problem=problem)
             return
 
-        if self.response.status_code == "304":
+        if self.response.status_code == 304:
             self.base.ims_support = True
             self.add_base_note("header-last-modified", IMS_304)
             self.check_missing_hdrs(
@@ -81,7 +82,7 @@ class LmValidate(SubRequest):
                 MISSING_HDRS_304,
             )
         elif self.response.status_code == self.base.response.status_code:
-            if self.response.payload_md5 == self.base.response.payload_md5:
+            if self.response.content_hash == self.base.response.content_hash:
                 self.base.ims_support = False
                 self.add_base_note("header-last-modified", IMS_FULL)
             else:
@@ -98,8 +99,8 @@ class LmValidate(SubRequest):
 class LM_SUBREQ_PROBLEM(Note):
     category = categories.VALIDATION
     level = levels.INFO
-    summary = "There was a problem checking for Last-Modified validation support."
-    text = """\
+    _summary = "There was a problem checking for Last-Modified validation support."
+    _text = """\
 When REDbot tried to check the resource for Last-Modified validation support, there was a problem:
 
 `%(problem)s`
@@ -110,8 +111,8 @@ Trying again might fix it."""
 class IMS_304(Note):
     category = categories.VALIDATION
     level = levels.GOOD
-    summary = "If-Modified-Since conditional requests are supported."
-    text = """\
+    _summary = "If-Modified-Since conditional requests are supported."
+    _text = """\
 HTTP allows clients to make conditional requests to see if a copy that they hold is still valid.
 Since this response has a `Last-Modified` header, clients should be able to use an
 `If-Modified-Since` request header for validation.
@@ -123,10 +124,10 @@ that it supports `Last-Modified` validation."""
 class IMS_FULL(Note):
     category = categories.VALIDATION
     level = levels.WARN
-    summary = (
+    _summary = (
         "An If-Modified-Since conditional request returned the full content unchanged."
     )
-    text = """\
+    _text = """\
 HTTP allows clients to make conditional requests to see if a copy that they hold is still valid.
 Since this response has a `Last-Modified` header, clients should be able to use an
 `If-Modified-Since` request header for validation.
@@ -138,11 +139,11 @@ changed, indicating that it doesn't support `Last-Modified` validation."""
 class IMS_UNKNOWN(Note):
     category = categories.VALIDATION
     level = levels.INFO
-    summary = (
+    _summary = (
         "An If-Modified-Since conditional request returned the full content, "
         "but it had changed."
     )
-    text = """\
+    _text = """\
 HTTP allows clients to make conditional requests to see if a copy that they hold is still valid.
 Since this response has a `Last-Modified` header, clients should be able to use an
 `If-Modified-Since` request header for validation.
@@ -154,10 +155,10 @@ request, so REDbot can't tell whether or not `Last-Modified` validation is suppo
 class IMS_STATUS(Note):
     category = categories.VALIDATION
     level = levels.INFO
-    summary = (
+    _summary = (
         "An If-Modified-Since conditional request returned a %(ims_status)s status."
     )
-    text = """\
+    _text = """\
 HTTP allows clients to make conditional requests to see if a copy that they hold is still valid.
 Since this response has a `Last-Modified` header, clients should be able to use an
 `If-Modified-Since` request header for validation.

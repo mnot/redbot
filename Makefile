@@ -6,8 +6,6 @@ WEBPACK=$(NPX) webpack-cli
 CSSMIN=$(NPX) cssmin
 SASS=$(NPX) node-sass
 
-GITHUB_STEP_SUMMARY ?= throwaway
-
 MODULES = src/node_modules
 JS_ENTRIES = ./src/js/red_script.js ./src/js/red_request.js ./src/js/red_response.js ./src/js/red_response_multi.js
 CSSFILES = redbot/assets/red_style.css $(MODULES)/google-code-prettify/src/prettify.css
@@ -33,40 +31,18 @@ typecheck: typecheck_py
 tidy: tidy_py
 	$(STANDARD) --fix "src/js/*.js"
 
-.PHONY: syntax
-syntax: venv
-	PYTHONPATH=$(VENV) $(VENV)/python redbot/syntax/__init__.py
-
 
 #############################################################################
 ## Tests
 
 .PHONY: test
-test: message_test webui_test
+test: webui_test
 
 .PHONY: webui_test
 webui_test: venv
 	$(VENV)/playwright install chromium
 	PYTHONPATH=.:$(VENV) $(VENV)/python test/test_webui.py
 
-.PHONY: message_test
-message_test: venv
-	PYTHONPATH=.:$(VENV) $(VENV)/pytest --md $(GITHUB_STEP_SUMMARY) redbot/message/*.py redbot/message/headers/*.py
-	rm -f throwaway
-
-#############################################################################
-### Coverage
-
-.PHONY: coverage
-coverage: header_coverage note_coverage
-
-.PHONY: header_coverage
-header_coverage: venv
-	PYTHONPATH=$(VENV) $(VENV)/python test/header_coverage.py test/registries/message-headers.xml
-
-.PHONY: note_coverage
-note_coverage: venv
-	PYTHONPATH=$(VENV) $(VENV)/python test/note_coverage.py
 
 #############################################################################
 ## Local test server / cli
@@ -89,13 +65,6 @@ docker-image:
 .PHONY: docker
 docker: docker-image
 	docker run --rm --name redbot -p 8000:8000 redbot
-
-#############################################################################
-## Create new headers
-
-redbot/message/headers/%.py:
-	cp redbot/message/headers/_header.tpl $@
-	sed -i '' -e "s/SHORT_NAME/$*/g" $@
 
 #############################################################################
 ## Assets

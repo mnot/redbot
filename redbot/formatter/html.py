@@ -8,6 +8,8 @@ import textwrap
 from typing import Any, List, Match, Tuple
 from urllib.parse import urljoin
 
+from httplint import get_field_description
+from httplint.note import Note, levels, categories
 import thor.http.error as httperr
 
 from redbot import __version__
@@ -19,8 +21,6 @@ from redbot.formatter.html_base import (
     NL,
 )
 from redbot.resource import HttpResource, active_check
-from redbot.message.headers import HeaderProcessor
-from redbot.speak import Note, levels, categories
 
 
 class SingleEntryHtmlFormatter(BaseHtmlFormatter):
@@ -90,7 +90,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 
     def finish_output(self) -> None:
         self.final_status()
-        media_type = self.resource.response.parsed_headers.get("content-type", [""])[0]
+        media_type = self.resource.response.headers.parsed.get("content-type", [""])[0]
         if self.resource.response.complete:
             validator_link = self.validators.get(media_type, None)
             if validator_link:
@@ -124,7 +124,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 )
             )
         else:
-            http_error = self.resource.response.http_error
+            http_error = self.resource.fetch_error
             if http_error is None:
                 pass  # usually a global timeout...
             elif isinstance(http_error, httperr.HttpError):
@@ -134,15 +134,12 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     self.error_output(http_error.desc)
             else:
                 raise AssertionError(
-                    f"Unknown incomplete response error {self.resource.response.http_error}"
+                    f"Unknown incomplete response error {self.resource.fetch_error}"
                 )
 
     def format_body_sample(self, resource: HttpResource) -> Markup:
         """show the stored body sample"""
-        if resource.response.status_code == "206":
-            sample = resource.response.payload
-        else:
-            sample = resource.response.decoded_sample
+        sample = b"".join(resource.response_decoded_sample)
         try:
             uni_sample = sample.decode(resource.response.character_encoding, "ignore")
         except (TypeError, LookupError):
@@ -177,7 +174,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                         )
                     )
         message = ""
-        if not resource.response.decoded_sample_complete:
+        if not resource.response_decoded_complete:
             message = "<p class='btw'>REDbot isn't showing all content, because it's so big!</p>"
         return Markup(f"<pre class='prettyprint'>{safe_sample}</pre>\n{message}")
 
@@ -207,7 +204,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         return Markup(self.header_presenter.show(header[0], header[1]))
 
     def format_header_description(self, header_name: str) -> Markup:
-        description = HeaderProcessor.find_header_handler(header_name).description
+        description = get_field_description(header_name)
         if description:
             return Markup(
                 '<span class="tip">'
@@ -222,8 +219,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 class HeaderPresenter:
     """
     Present a HTTP header in the Web UI. By default, it will:
-       - Escape HTML sequences to avoid XSS attacks
-       - Wrap long lines
+        - Escape HTML sequences to avoid XSS attacks
+        - Wrap long lines
     However if a method is present that corresponds to the header's
     field-name, that method will be run instead to represent the value.
     """
@@ -335,7 +332,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         return self.problems.index(problem) + 1
 
     def format_note_description(self, header_name: str) -> Markup:
-        description = HeaderProcessor.find_header_handler(header_name).description
+        description = get_field_description(header_name)
         if description:
             return Markup(
                 self._markdown.reset().convert(

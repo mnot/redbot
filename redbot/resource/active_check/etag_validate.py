@@ -2,9 +2,9 @@
 Subrequest for ETag validation checks.
 """
 
+from httplint.note import Note, categories, levels
 
 from redbot.resource.active_check.base import SubRequest, MISSING_HDRS_304
-from redbot.speak import Note, categories, levels
 from redbot.type import StrHeaderListType
 
 
@@ -16,7 +16,7 @@ class ETagValidate(SubRequest):
     def modify_request_headers(
         self, base_headers: StrHeaderListType
     ) -> StrHeaderListType:
-        etag_value = self.base.response.parsed_headers.get("etag", None)
+        etag_value = self.base.response.headers.parsed.get("etag", None)
         if etag_value:
             weak, etag = etag_value
             if weak:
@@ -29,9 +29,9 @@ class ETagValidate(SubRequest):
         return base_headers
 
     def preflight(self) -> bool:
-        if self.base.response.status_code[0] == "3":
+        if 300 <= self.base.response.status_code <= 399:
             return False
-        etag = self.base.response.parsed_headers.get("etag", None)
+        etag = self.base.response.headers.parsed.get("etag", None)
         if etag:
             return True
         self.base.inm_support = False
@@ -39,14 +39,14 @@ class ETagValidate(SubRequest):
 
     def done(self) -> None:
         if not self.response.complete:
-            if self.response.http_error:
-                problem = self.response.http_error.desc
+            if self.fetch_error:
+                problem = self.fetch_error.desc
             else:
                 problem = ""
             self.add_base_note("", ETAG_SUBREQ_PROBLEM, problem=problem)
             return
 
-        if self.response.status_code == "304":
+        if self.response.status_code == 304:
             self.base.inm_support = True
             self.add_base_note("header-etag", INM_304)
             self.check_missing_hdrs(
@@ -54,20 +54,20 @@ class ETagValidate(SubRequest):
                 MISSING_HDRS_304,
             )
         elif self.response.status_code == self.base.response.status_code:
-            if self.response.payload_md5 == self.base.response.payload_md5:
+            if self.response.content_hash == self.base.response.content_hash:
                 self.base.inm_support = False
                 self.add_base_note("header-etag", INM_FULL)
             else:  # bodies are different
-                if self.base.response.parsed_headers[
+                if self.base.response.headers.parsed[
                     "etag"
-                ] == self.response.parsed_headers.get("etag", 1):
-                    if self.base.response.parsed_headers["etag"][0]:  # weak
+                ] == self.response.headers.parsed.get("etag", 1):
+                    if self.base.response.headers.parsed["etag"][0]:  # weak
                         self.add_base_note("header-etag", INM_DUP_ETAG_WEAK)
                     else:  # strong
                         self.add_base_note(
                             "header-etag",
                             INM_DUP_ETAG_STRONG,
-                            etag=self.base.response.parsed_headers["etag"],
+                            etag=self.base.response.headers.parsed["etag"],
                         )
                 else:
                     self.add_base_note("header-etag", INM_UNKNOWN)
@@ -83,8 +83,8 @@ class ETagValidate(SubRequest):
 class ETAG_SUBREQ_PROBLEM(Note):
     category = categories.VALIDATION
     level = levels.INFO
-    summary = "There was a problem checking for ETag validation support."
-    text = """\
+    _summary = "There was a problem checking for ETag validation support."
+    _text = """\
 When REDbot tried to check the resource for ETag validation support, there was a problem:
 
 `%(problem)s`
@@ -95,8 +95,8 @@ Trying again might fix it."""
 class INM_304(Note):
     category = categories.VALIDATION
     level = levels.GOOD
-    summary = "If-None-Match conditional requests are supported."
-    text = """\
+    _summary = "If-None-Match conditional requests are supported."
+    _text = """\
 HTTP allows clients to make conditional requests to see if a copy that they hold is still valid.
 Since this response has an `ETag`, clients should be able to use an `If-None-Match` request header
 for validation. REDbot has done this and found that the resource sends a `304 Not Modified`
@@ -106,9 +106,9 @@ response, indicating that it supports `ETag` validation."""
 class INM_FULL(Note):
     category = categories.VALIDATION
     level = levels.WARN
-    summary = "An If-None-Match conditional request returned the full content \
+    _summary = "An If-None-Match conditional request returned the full content \
 unchanged."
-    text = """\
+    _text = """\
 HTTP allows clients to make conditional requests to see if a copy that they hold is still valid.
 Since this response has an `ETag`, clients should be able to use an `If-None-Match` request header
 for validation.
@@ -120,8 +120,8 @@ changed, indicating that it doesn't support `ETag` validation."""
 class INM_DUP_ETAG_WEAK(Note):
     category = categories.VALIDATION
     level = levels.INFO
-    summary = "During validation, the ETag didn't change, even though the response content did."
-    text = """\
+    _summary = "During validation, the ETag didn't change, even though the response content did."
+    _text = """\
 `ETag`s are supposed to uniquely identify the response representation; if the content changes, so
 should the ETag.
 
@@ -137,8 +137,8 @@ If the changes are important, a different `ETag` should be used."""
 class INM_DUP_ETAG_STRONG(Note):
     category = categories.VALIDATION
     level = levels.BAD
-    summary = "During validation, the ETag didn't change, even though the response content did."
-    text = """\
+    _summary = "During validation, the ETag didn't change, even though the response content did."
+    _text = """\
 `ETag`s are supposed to uniquely identify the response representation; if the content changes, so
 should the ETag.
 
@@ -153,8 +153,8 @@ interchangeably), they can share a "weak" ETag; to do that, just prepend `W/`, t
 class INM_UNKNOWN(Note):
     category = categories.VALIDATION
     level = levels.INFO
-    summary = "An If-None-Match conditional request returned the full content, but it had changed."
-    text = """\
+    _summary = "An If-None-Match conditional request returned the full content, but it had changed."
+    _text = """\
 HTTP allows clients to make conditional requests to see if a copy that they hold is still valid.
 Since this response has an `ETag`, clients should be able to use an `If-None-Match` request header
 for validation.
@@ -166,8 +166,8 @@ request, so REDbot can't tell whether or not `ETag` validation is supported."""
 class INM_STATUS(Note):
     category = categories.VALIDATION
     level = levels.INFO
-    summary = "An If-None-Match conditional request returned a %(inm_status)s status."
-    text = """\
+    _summary = "An If-None-Match conditional request returned a %(inm_status)s status."
+    _text = """\
 HTTP allows clients to make conditional requests to see if a copy that they hold is still valid.
 Since this response has an `ETag`, clients should be able to use an `If-None-Match` request header
 for validation. REDbot has done this, but the response had a %(enc_inm_status)s status code, so RED

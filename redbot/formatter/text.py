@@ -8,12 +8,12 @@ import re
 import textwrap
 from typing import Any, List
 
+from httplint import HttpResponseLinter
+from httplint.note import Note, levels, categories
 import thor.http.error as httperr
 
 from redbot.formatter import Formatter
-from redbot.message import HttpResponse
 from redbot.resource import HttpResource
-from redbot.speak import Note, levels, categories
 
 NL = "\n"
 
@@ -70,12 +70,10 @@ class BaseTextFormatter(Formatter):
             self.output(self.format_headers(self.resource.response) + NL + NL)
             self.output(self.format_recommendations(self.resource) + NL)
         else:
-            if self.resource.response.http_error is None:
+            if self.resource.fetch_error is None:
                 pass
-            elif isinstance(self.resource.response.http_error, httperr.HttpError):
-                self.output(
-                    self.error_template % self.resource.response.http_error.desc
-                )
+            elif isinstance(self.resource.fetch_error, httperr.HttpError):
+                self.output(self.error_template % self.resource.fetch_error.desc)
             else:
                 raise AssertionError("Unknown incomplete response error.")
 
@@ -83,11 +81,11 @@ class BaseTextFormatter(Formatter):
         self.output(self.error_template % message)
 
     @staticmethod
-    def format_headers(response: HttpResponse) -> str:
+    def format_headers(response: HttpResponseLinter) -> str:
         out = [
             f"HTTP/{response.version} {response.status_code} {response.status_phrase}"
         ]
-        return NL.join(out + [f"{h[0]}:{h[1]}" for h in response.headers])
+        return NL.join(out + [f"{h[0]}:{h[1]}" for h in response.headers.text])
 
     def format_recommendations(self, resource: HttpResource) -> str:
         return "".join(
@@ -107,7 +105,7 @@ class BaseTextFormatter(Formatter):
         if list(notes):
             out.append(f"* {category.value}:")
         for note in notes:
-            out.append(f"  * {self.colorize(note.level, note.show_summary('en'))}")
+            out.append(f"  * {self.colorize(note.level, note.summary)}")
             if self.verbose:
                 out.append("")
                 out.extend("    " + line for line in self.format_text(note))
@@ -117,9 +115,7 @@ class BaseTextFormatter(Formatter):
 
     @staticmethod
     def format_text(note: Note) -> List[str]:
-        return textwrap.wrap(
-            strip_tags(re.sub(r"(?m)\s\s+", " ", note.show_text("en")))
-        )
+        return textwrap.wrap(strip_tags(re.sub(r"(?m)\s\s+", " ", note.detail)))
 
     def colorize(self, level: levels, instr: str) -> str:
         if self.kw.get("tty_out", False):

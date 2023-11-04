@@ -1,55 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>REDbot: &lt;{{ html_uri }}&gt;</title>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-	<meta name="ROBOTS" content="INDEX, NOFOLLOW" />
-  <link rel="stylesheet" type="text/css" href="{{ static }}/style.css?{{ version }}">
-  <script type="text/javascript" nonce="{{ nonce }}">
-    var errorsReported = 0
-    window.onerror = function (message, url, line, col, errorObj) {
-      if (window.XMLHttpRequest) {
-        if (errorsReported > 4) { return }
-        if (url.startsWith("chrome-extension://")) { return }
-        var xhr = new XMLHttpRequest()
-        var data = `${message} at ${url}, ${line}:${col}`
-        xhr.open('POST', '?client_error=1', true)
-        xhr.send(data)
-        errorsReported += 1
-      }
-    }
-  </script>
-  <script id="config" type="application/json" nonce="{{ nonce }}">{{ config }}</script>
-  <link rel="apple-touch-icon-precomposed" sizes="144x144"
-   href="{{ static }}/logo/apple-touch-icon-144x144.png" />
-  <link rel="apple-touch-icon-precomposed" sizes="152x152"
-   href="{{ static }}/logo/apple-touch-icon-152x152.png" />
-  <link rel="icon" href="{{ static }}/logo/favicon.ico"/>
-  <link rel="icon" type="image/png" href="{{ static }}/logo/favicon-32x32.png" sizes="32x32" />
-  <link rel="icon" type="image/png" href="{{ static }}/logo/favicon-16x16.png" sizes="16x16" />
-  <meta name="description" content="REDbot is lint for your HTTP resources.">
-  <meta name="application-name" content="REDbot"/>
-  <meta name="msapplication-TileColor" content="#FFFFFF" />
-  <meta name="msapplication-TileImage" content="{{ static }}/logo/mstile-144x144.png" />
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="REDbot">
-  <meta property="og:description" content="Lint for your HTTP resources">
-  <meta property="og:url" content="https://redbot.org/">
-  <meta property="og:site_name" content="REDbot">
-  <meta property="og:image" content="https://redbot.org/static/logo/redbot-sq.png">
-  <link rel="prefetch" href="{{ static }}/icons/check-circle.svg" />
-  <link rel="prefetch" href="{{ static }}/icons/exclamation-circle.svg" />
-  <link rel="prefetch" href="{{ static }}/icons/info-circle.svg" />
-  <link rel="prefetch" href="{{ static }}/icons/question-circle.svg" />
-  <link rel="prefetch" href="{{ static }}/icons/times-circle.svg" />
-  {{ extra_js }}
+    <title>REDbot: &lt;{{ html_uri }}&gt;</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="ROBOTS" content="INDEX, NOFOLLOW" />
+    <link rel="stylesheet" type="text/css" href="{{ static }}/style.css?{{ redbot_version }}">
+    <script type="text/javascript" nonce="{{ nonce }}">
+        var errorsReported = 0
+        window.onerror = function (message, url, line, col, errorObj) {
+            if (window.XMLHttpRequest) {
+                if (errorsReported > 4) { return }
+                if (url.startsWith("chrome-extension://")) { return }
+                var xhr = new XMLHttpRequest()
+                var data = `${message} at ${url}, ${line}:${col}`
+                xhr.open('POST', '?client_error=1', true)
+                xhr.send(data)
+                errorsReported += 1
+            }
+        }
+    </script>
+    <script id="config" type="application/json" nonce="{{ nonce }}">{{ config }}</script>
+    <link rel="apple-touch-icon-precomposed" sizes="144x144"
+        href="{{ static }}/logo/apple-touch-icon-144x144.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="152x152"
+        href="{{ static }}/logo/apple-touch-icon-152x152.png" />
+    <link rel="icon" href="{{ static }}/logo/favicon.ico"/>
+    <link rel="icon" type="image/png" href="{{ static }}/logo/favicon-32x32.png" sizes="32x32" />
+    <link rel="icon" type="image/png" href="{{ static }}/logo/favicon-16x16.png" sizes="16x16" />
+    <meta name="description" content="REDbot is lint for your HTTP resources.">
+    <meta name="application-name" content="REDbot"/>
+    <meta name="msapplication-TileColor" content="#FFFFFF" />
+    <meta name="msapplication-TileImage" content="{{ static }}/logo/mstile-144x144.png" />
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="REDbot">
+    <meta property="og:description" content="Lint for your HTTP resources">
+    <meta property="og:url" content="https://redbot.org/">
+    <meta property="og:site_name" content="REDbot">
+    <meta property="og:image" content="https://redbot.org/static/logo/redbot-sq.png">
+    <link rel="prefetch" href="{{ static }}/icons/check-circle.svg" />
+    <link rel="prefetch" href="{{ static }}/icons/exclamation-circle.svg" />
+    <link rel="prefetch" href="{{ static }}/icons/info-circle.svg" />
+    <link rel="prefetch" href="{{ static }}/icons/question-circle.svg" />
+    <link rel="prefetch" href="{{ static }}/icons/times-circle.svg" />
+    {{ extra_js }}
 </head>
 
 <body class="{{ extra_body_class }}">
 
 <form method="POST" id="save_form"
- action="?id={{ test_id }}&save=True{{ descend }}">
+    action="?id={{ test_id }}&save=True{{ descend }}">
 </form>
 
 <div id="request">
@@ -58,17 +58,17 @@
     <form method="POST" id="request_form">
         <span class="help right hidden">Type in a URI here and press 'return' to check it. You can also specify request headers by clicking 'add a request header.'</span>
         <input type="url" name="uri" value="{{ html_uri }}" id="uri" autocomplete="off" autofocus
-         placeholder="Enter a http:// or https:// URL to check"/><input type="submit" id="go" value="➤"/>
-         <br />
+            placeholder="Enter a http:// or https:// URL to check"/><input type="submit" id="go" value="➤"/>
+        <br />
         <div id="req_hdrs"></div>
     </form>
 </div>
 <div id="red_status"></div>
-<script src="{{ static }}/script.js?{{ version }}" type="text/javascript" nonce="{{ nonce }}" async></script>
+<script src="{{ static }}/script.js?{{ redbot_version }}" type="text/javascript" nonce="{{ nonce }}" async></script>
 {% if captcha_provider != "" %}
 <div id="captcha_popup" data-size="invisible"></div>
 <script type="text/javascript" nonce="{{ nonce }}">
-  function loadDone () {}
+    function loadDone () {}
 </script>
 <script src="{{ captcha_script_url }}" nonce="{{ nonce }}" async defer></script>
 {% endif %}

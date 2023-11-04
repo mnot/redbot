@@ -8,7 +8,7 @@ const knownReqHdrs = {
   Cookie: null,
   Referer: null,
   'User-Agent': [
-    'RED/1 (http://redbot.org/about)',
+    'RED/1 (https://redbot.org/about)',
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:74.0) Gecko/20100101 Firefox/74.0'
   ]
 }

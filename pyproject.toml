@@ -21,6 +21,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License"
 ]
 dependencies = [
+    "httplint >= 2023.11.1",
     "importlib_resources",
     "Jinja2 >= 3.1.2",
     "markdown >= 3.4.4",
@@ -36,8 +37,7 @@ homepage = "https://redbot.org/project/"
 [project.optional-dependencies]
 systemd = ["cysystemd"]
 dev = ["mypy", "black", "pylint", "pytest", "pytest-md", "validate-pyproject", "build",
-       "playwright", "types-Markdown"]
-
+    "playwright", "types-Markdown"]
 
 [project.scripts]
 redbot = "redbot.cli:main"
@@ -72,7 +72,6 @@ warn_unreachable = true
 strict_optional = false
 show_error_codes = true
 
-
 [tool.pylint.basic]
 function-rgx = "[a-z_][a-z0-9_]{1,30}$"
 variable-rgx = "[a-z_][a-z0-9_]{1,30}$"
@@ -83,7 +82,7 @@ method-rgx = "[a-z_][a-z0-9_]{1,30}$"
 class-rgx = "[a-zA-Z0-9_]+$"
 
 [tool.pylint.messages_control]
-disable = "C0114,C0115,C0116,W0613"
+disable = "C0114,C0115,C0116,W0613,R0903"
 
 [tool.pylint.reports]
 reports = false

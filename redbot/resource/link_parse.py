@@ -9,8 +9,9 @@ import codecs
 from html.parser import HTMLParser
 from typing import Any, Callable, Dict, List, Tuple
 
-from redbot.message import headers, HttpMessage
-from redbot.syntax import rfc7231
+from httplint.field.utils import split_string, unquote_string
+from httplint.message import HttpMessageLinter
+from httplint.syntax import rfc7231
 
 
 DEFAULT_ENCODING = "utf-8"
@@ -20,15 +21,15 @@ class HTMLLinkParser(HTMLParser):
     """
     Parse the links out of an HTML document in a very forgiving way.
 
-    feed() accepts a HttpMessage object and a chunk of the document at a
+    feed() accepts a HttpMessageLinter object and a chunk of the document at a
     time.
 
     When links are found, link_procs will be called for each with the
     following arguments;
-      - base (base URI for the link, in a unicode string)
-      - link (URI as it appeared in document, in a unicode string)
-      - tag (name of the element that contained it)
-      - title (title attribute as a unicode string, if any)
+        - base (base URI for the link, in a unicode string)
+        - link (URI as it appeared in document, in a unicode string)
+        - tag (name of the element that contained it)
+        - title (title attribute as a unicode string, if any)
     """
 
     link_parseable_types = [
@@ -39,7 +40,7 @@ class HTMLLinkParser(HTMLParser):
 
     def __init__(
         self,
-        message: HttpMessage,
+        message: HttpMessageLinter,
         link_procs: List[Callable[[str, str, str, str], None]],
         err: Callable[[str], int] = None,
     ) -> None:
@@ -74,7 +75,7 @@ class HTMLLinkParser(HTMLParser):
         if not self.ok:
             return
         if (
-            self.message.parsed_headers.get("content-type", [None])[0]
+            self.message.headers.parsed.get("content-type", [None])[0]
             in self.link_parseable_types
         ):
             try:
@@ -111,12 +112,10 @@ class HTMLLinkParser(HTMLParser):
                     media_type, params = ct, ""
                 media_type = media_type.lower()
                 param_dict = {}
-                for param in headers.split_string(
-                    params, rfc7231.parameter, r"\s*;\s*"
-                ):
+                for param in split_string(params, rfc7231.parameter, r"\s*;\s*"):
                     try:
                         attr, val = param.split("=", 1)
-                        param_dict[attr.lower()] = headers.unquote_string(val)
+                        param_dict[attr.lower()] = unquote_string(val)
                     except ValueError:
                         param_dict[param.lower()] = None
                 enc = (
@@ -153,7 +152,7 @@ if __name__ == "__main__":
     from redbot.resource.fetch import RedFetcher  # pylint: disable=ungrouped-imports
 
     T = RedFetcher(ConfigParser()["DEFAULT"])
-    T.set_request(sys.argv[1], req_hdrs=[("Accept-Encoding", "gzip")])
+    T.set_request(sys.argv[1], headers=[("Accept-Encoding", "gzip")])
 
     def show_link(base: str, link: str, tag: str, _: str) -> None:
         print(f"* [{tag}] {base} -- {link}")
@@ -169,13 +168,14 @@ if __name__ == "__main__":
     def status(msg: str) -> None:
         print(msg)
 
-    @thor.events.on(T.response)
     def chunk(decoded_chunk: bytes) -> None:
         P.feed(
             decoded_chunk.decode(
                 P.message.character_encoding or DEFAULT_ENCODING, "ignore"
             )
         )
+
+    T.response_content_processors.append(chunk)
 
     T.check()
     thor.run()
