@@ -117,7 +117,7 @@ build: clean venv
 
 .PHONY: changelog.md
 changelog.md:
-	$(eval PREV_RELEASE=$(shell git tag -l v* | tail -1))
+	$(eval PREV_RELEASE=$(shell git tag --sort=-taggerdate -l v* | head -1))
 	$(shell git log --pretty="- %s" $(PREV_RELEASE)..HEAD --grep "^Changed:" --grep "^Fixed:" --grep "^Added:" --grep "^Changed:" --grep "^Removed:" --output=changelog.md)
 
 # requires /.github/workflows/release.yml
