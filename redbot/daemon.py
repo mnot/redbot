@@ -148,9 +148,7 @@ class RedHandler:
     def request_done(self, trailers: RawHeaderListType) -> None:
         p_uri = urlsplit(self.uri)
         if p_uri.path == b"/":
-            client_ip = self.exchange.http_conn.tcp_conn.socket.getpeername()[0].encode(
-                "idna"
-            )
+            client_ip = self.exchange.http_conn.tcp_conn.socket.getpeername()[0]
             try:
                 RedWebUi(
                     self.server.config,
