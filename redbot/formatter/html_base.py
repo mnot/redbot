@@ -160,9 +160,7 @@ class BaseHtmlFormatter(Formatter):
         """
         self.output(f"<p class='error'>{message}</p>")
         tpl = self.templates.get_template("footer.html")
-        self.output(
-            tpl.render(dict(self.template_vars, **{"baseuri": self.config["ui_uri"]}))
-        )
+        self.output(tpl.render(self.template_vars))
 
     def status(self, status: str) -> None:
         "Update the status bar of the browser"
