@@ -5,7 +5,7 @@ A Web UI for RED, the Resource Expert Droid.
 from base64 import standard_b64encode
 from collections import defaultdict
 from configparser import SectionProxy
-from functools import partial
+from functools import partial, update_wrapper
 import os
 from random import getrandbits
 import string
@@ -149,10 +149,12 @@ class RedWebUi:
         )
         continue_test = partial(self.continue_test, top_resource, formatter)
         error_response = partial(self.error_response, formatter)
+        timeout_error = partial(self.timeout_error, formatter)
+        update_wrapper(timeout_error, self.timeout_error)
 
         self.timeout = thor.schedule(
             int(self.config["max_runtime"]),
-            self.timeout_error,
+            timeout_error,
             top_resource.show_task_map,
         )
 
@@ -337,7 +339,9 @@ class RedWebUi:
     def output(self, chunk: str) -> None:
         self.exchange.response_body(chunk.encode(self.charset, "replace"))
 
-    def timeout_error(self, detail: Callable[[], str] = None) -> None:
+    def timeout_error(
+        self, formatter: Formatter, detail: Callable[[], str] = None
+    ) -> None:
         """Max runtime reached."""
         details = ""
         if detail:
@@ -345,7 +349,7 @@ class RedWebUi:
         self.error_log(
             f"{self.get_client_id()} timeout: <{self.test_uri}> descend={self.descend} {details}"
         )
-        self.output("<p class='error'>REDbot timeout.</p>")
+        formatter.error_output("REDbot timeout.")
         self.exchange.response_done([])
 
     def get_client_id(self) -> str:
