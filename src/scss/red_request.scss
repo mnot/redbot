@@ -79,7 +79,7 @@ option[value="other..."] {
   font-weight: normal;
 }
 
-@media only screen and (max-device-width : 1024px) {
+@media screen and (max-width : $break_width) {
   .req_hdr, .add_req_hdr { width: 100%; }
   input#uri { width: calc(100% - 40px);}
 }

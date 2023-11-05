@@ -4,7 +4,7 @@ body {
   background-color: #fcfcfc;
   color: $text_colour;
   font: 12pt/14pt "Helvetica Neue", Helvetica, Arial, sans-serif;
-  margin: 1em 50px;
+  margin: 1em $column_spacing;
   max-width: $max_width;
   &.blank {
     margin: $vertical_space * 2 auto $vertical_space auto;
@@ -26,22 +26,13 @@ body {
   padding: 0;
 }
 
-@media screen and (max-width: $max_width + ($column_spacing * 2.5)) {
+@media screen and (max-width: $max_width + (2 * $column_spacing)) {
   #left_column, #right_column {
     width: $left_width;
     margin: 0;
     padding: 0;
     float: left;
     clear: both;
-  }
-}
-
-@media only screen and (max-device-width : 1024px) {
-  #left_column, #right_column {
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    float: left;
   }
 }
 
