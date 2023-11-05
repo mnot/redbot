@@ -219,7 +219,9 @@ option[value="other..."] {
 
 @media only screen and (max-device-width: 1024px) {
   .req_hdr, .add_req_hdr {
-    width: 100%; } }
+    width: 100%; }
+  input#uri {
+    width: calc(100% - 40px); } }
 
 /* response detail */
 #response, .nonfinal_response {
