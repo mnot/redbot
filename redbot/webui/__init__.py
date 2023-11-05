@@ -363,5 +363,5 @@ class RedWebUi:
                 self.req_headers, self.remote_ip_header
             )
             if remote_ip:
-                return str(remote_ip[-1].decode("ascii", errors="replace"))
+                return remote_ip[-1].decode("ascii", errors="replace")
         return self.client_ip
