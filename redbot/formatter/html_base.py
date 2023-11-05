@@ -94,12 +94,12 @@ class BaseHtmlFormatter(Formatter):
         pass
 
     def start_output(self) -> None:
-        if self.resource:
-            uri = self.resource.request.uri or ""
-            req_headers = self.resource.request.headers.text
-        else:
+        if self.resource is None:
             uri = ""
             req_headers = []
+        else:
+            uri = self.resource.request.uri or ""
+            req_headers = self.resource.request.headers.text
         extra_title = " <span class='save'>"
         if self.kw.get("is_saved", None):
             extra_title += " saved "
