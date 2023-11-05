@@ -84,13 +84,13 @@ class RedFetcher(thor.events.EventEmitter):
 
     def __repr__(self) -> str:
         out = [self.__class__.__name__]
-        if self.request.uri:
-            out.append(f"{self.request.uri}")
+        if hasattr(self.request, "uri") and self.request.uri:
+            out.append(self.request.uri)
         if self.fetch_started:
             out.append("fetch_started")
         if self.fetch_done:
             out.append("fetch_done")
-        return f"{', '.join(out)} at {id(self):#x}>"
+        return f"<{', '.join(out)} at {id(self):#x}>"
 
     def preflight(self) -> bool:
         """
