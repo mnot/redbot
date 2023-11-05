@@ -14,4 +14,5 @@ geckodriver.log
 /redbot.egg-info
 /.npx-cache
 /src/node_modules
+/src/package-lock.json
 /throwaway
