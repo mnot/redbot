@@ -148,15 +148,10 @@ class RedHandler:
     def request_done(self, trailers: RawHeaderListType) -> None:
         p_uri = urlsplit(self.uri)
         if p_uri.path == b"/":
+            client_ip = self.exchange.http_conn.tcp_conn.socket.getpeername()[0].encode(
+                "idna"
+            )
             try:
-                self.req_hdrs.append(
-                    (
-                        b"client-ip",
-                        self.exchange.http_conn.tcp_conn.socket.getpeername()[0].encode(
-                            "idna"
-                        ),
-                    )
-                )
                 RedWebUi(
                     self.server.config,
                     self.method.decode(self.server.config["charset"]),
@@ -164,6 +159,7 @@ class RedHandler:
                     self.req_hdrs,
                     self.req_body,
                     self.exchange,
+                    client_ip,
                     self.server.console,
                 )
                 return None

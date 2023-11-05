@@ -36,12 +36,12 @@ class CaptchaHandler:
     def __init__(
         self,
         webui: "RedWebUi",
-        client_id: str,
+        client_ip: str,
         continue_test: Callable,
         error_response: Callable,
     ) -> None:
         self.webui = webui
-        self.client_id = client_id
+        self.client_ip = client_ip
         self.continue_test = continue_test
         self.error_response = error_response
         self.provider = webui.config.get("captcha_provider", "")
@@ -153,7 +153,7 @@ class CaptchaHandler:
         request_form = {
             "secret": self.secret,
             "response": presented_token,
-            "remoteip": self.client_id,
+            "remoteip": self.client_ip,
         }
         exchange.request_start(
             b"POST",

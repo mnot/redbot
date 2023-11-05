@@ -55,6 +55,7 @@ class RedWebUi:
         req_headers: RawHeaderListType,
         req_body: bytes,
         exchange: HttpResponseExchange,
+        client_ip: str,
         error_log: Callable[[str], int] = sys.stderr.write,
     ) -> None:
         self.config: SectionProxy = config
@@ -65,7 +66,13 @@ class RedWebUi:
         self.req_body = req_body
         self.body_args = {}
         self.exchange = exchange
+        self.client_ip = client_ip
         self.error_log = error_log  # function to log errors to
+
+        # stash the remote IP header name
+        self.remote_ip_header = (
+            self.config.get("remote_ip_header", "").lower().encode("ascii")
+        )
 
         # query processing
         self.test_uri = self.query_string.get("uri", [""])[0]
@@ -183,7 +190,7 @@ class RedWebUi:
         # Captcha
         captcha = CaptchaHandler(
             self,
-            self.get_client_id(),
+            self.get_client_ip(),
             continue_test,
             error_response,
         )
@@ -343,13 +350,18 @@ class RedWebUi:
 
     def get_client_id(self) -> str:
         """
-        Figure out an identifier for the client.
+        Return as unique an identifier for the client as possible.
         """
-        xff = thor.http.common.get_header(self.req_headers, b"x-forwarded-for")
-        if xff:
-            return str(xff[-1].decode("idna"))
-        return str(
-            thor.http.common.get_header(self.req_headers, b"client-ip")[-1].decode(
-                "idna"
+        return self.get_client_ip()
+
+    def get_client_ip(self) -> str:
+        """
+        Return what we believe to be the client's IP address.
+        """
+        if self.remote_ip_header:
+            remote_ip = thor.http.common.get_header(
+                self.req_headers, self.remote_ip_header
             )
-        )
+            if remote_ip:
+                return str(remote_ip[-1].decode("ascii", errors="replace"))
+        return self.client_ip

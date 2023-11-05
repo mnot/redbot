@@ -55,6 +55,12 @@ ui_uri = https://redbot.org/
 # URI root for static assets (absolute or relative, but no trailing '/').
 static_root = static
 
+# The name of a HTTP request header that will contain the client's IP address. Used for
+# logging, rate limiting, and CAPTCHA identification.
+# DO NOT SET this unless you trust the value of this header (e.g., it is under control of
+# your infrastructure). Comment out to disable.
+# remote_ip_header = X-Forwarded-For
+
 
 ## Saved Tests
 
