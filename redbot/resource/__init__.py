@@ -52,10 +52,6 @@ class HttpResource(RedFetcher):
         self.subreqs = {ac.check_name: ac(config, self) for ac in active_checks}
         self.once("fetch_done", self.run_active_checks)
 
-        def _finish_check() -> None:
-            self.finish_check(None)
-
-        self.on("fetch_done", _finish_check)
         self.links: Dict[str, Set[str]] = {}
         self.link_count: int = 0
         self.linked: List[Tuple[HttpResource, str]] = []  # linked HttpResources
@@ -63,8 +59,6 @@ class HttpResource(RedFetcher):
             self.response, [self.process_link]
         )
         self.response_content_processors.append(self._link_parser.feed_bytes)
-
-    #        self.show_task_map(True) # for debugging
 
     def run_active_checks(self) -> None:
         """
@@ -74,6 +68,8 @@ class HttpResource(RedFetcher):
             for active_check in list(self.subreqs.values()):
                 self.add_check(active_check)
                 active_check.check()
+        else:
+            self.finish_check()
 
     def add_check(self, *resources: RedFetcher) -> None:
         "Remember a subordinate check on one or more HttpResource instance."
@@ -95,14 +91,15 @@ class HttpResource(RedFetcher):
 
         # pylint: enable=cell-var-from-loop
 
-    def finish_check(self, resource: RedFetcher) -> None:
+    def finish_check(self, resource: RedFetcher = None) -> None:
         "A check is done. Was that the last one?"
-        try:
-            self._task_map.remove(resource)
-        except KeyError:
-            raise KeyError(  # pylint: disable=raise-missing-from
-                f"* Can't find {resource} in task map: {self._task_map}"
-            )
+        if resource:
+            try:
+                self._task_map.remove(resource)
+            except KeyError:
+                raise KeyError(  # pylint: disable=raise-missing-from
+                    f"* Can't find {resource} in task map: {self._task_map}"
+                )
         tasks_left = len(self._task_map)
         #        self.emit("debug", "%s checks remaining: %i" % (repr(self), tasks_left))
         if tasks_left == 0:
