@@ -18,7 +18,7 @@ ICON_FILES = $(foreach i, $(ICONS),$(MODULES)/@fortawesome/fontawesome-free/svgs
 
 .PHONY: clean
 clean: clean_py
-	rm -rf .npx-cache throwaway
+	rm -rf .npx-cache throwaway $(MODULES)
 
 .PHONY: lint
 lint: lint_py
