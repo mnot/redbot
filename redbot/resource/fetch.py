@@ -70,7 +70,7 @@ class RedFetcher(thor.events.EventEmitter):
         self.nonfinal_responses: List[HttpResponseLinter] = []
         self.response = HttpResponseLinter(notes=self.notes)
         self.response.decoded.processors.append(self.sample_decoded)
-        self.exchange: HttpClientExchange
+        self.exchange: HttpClientExchange = None
         self.fetch_started = False
         self.fetch_error: httperr.HttpError
         self.fetch_done = False
