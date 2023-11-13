@@ -39,7 +39,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: .venv
-        key: ${{ runner.os }}-${{ matrix.python-version }}-venv-${{ hashFiles('**/requirements.txt') }}
+        key: ${{ runner.os }}-${{ matrix.python-version }}-venv-${{ hashFiles('pyproject.toml') }}
     - name: Set up venv
       run: make venv
     - name: Typecheck
