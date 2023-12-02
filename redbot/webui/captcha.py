@@ -36,12 +36,11 @@ class CaptchaHandler:
     def __init__(
         self,
         webui: "RedWebUi",
-        client_ip: str,
         continue_test: Callable,
         error_response: Callable,
     ) -> None:
         self.webui = webui
-        self.client_ip = client_ip
+        self.client_ip = webui.get_client_ip()
         self.continue_test = continue_test
         self.error_response = error_response
         self.provider = webui.config.get("captcha_provider", "")

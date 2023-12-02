@@ -56,7 +56,7 @@ class RedWebUi:
         req_body: bytes,
         exchange: HttpResponseExchange,
         client_ip: str,
-        error_log: Callable[[str], int] = sys.stderr.write,
+        console: Callable[[str], int] = sys.stderr.write,
     ) -> None:
         self.config: SectionProxy = config
         self.charset = self.config["charset"]
@@ -67,7 +67,7 @@ class RedWebUi:
         self.body_args = {}
         self.exchange = exchange
         self.client_ip = client_ip
-        self.error_log = error_log  # function to log errors to
+        self.console = console  # function to log errors to
 
         # stash the remote IP header name
         self.remote_ip_header = (
@@ -192,7 +192,6 @@ class RedWebUi:
         # Captcha
         captcha = CaptchaHandler(
             self,
-            self.get_client_ip(),
             continue_test,
             error_response,
         )
@@ -231,7 +230,6 @@ class RedWebUi:
             )
             if ti + to > int(self.config["log_traffic"]) * 1024:
                 self.error_log(
-                    f"{self.get_client_id()} "
                     f"{ti / 1024:n}K in "
                     f"{to / 1024:n}K out "
                     f"for <{e_url(self.test_uri)}> "
@@ -263,7 +261,7 @@ class RedWebUi:
         """Dump a client error."""
         body = self.req_body.decode("ascii", "replace")[:255].replace("\n", "")
         body_safe = "".join([x for x in body if x in string.printable])
-        self.error_log(f"{self.get_client_id()} Client JS -> {body_safe}")
+        self.error_log(f"Client JS -> {body_safe}")
         self.exchange.response_start(
             b"204",
             b"No Content",
@@ -334,10 +332,13 @@ class RedWebUi:
         formatter.error_output(message)
         self.exchange.response_done([])
         if log_message:
-            self.error_log(f"{self.get_client_id()} {log_message}")
+            self.error_log(log_message)
 
     def output(self, chunk: str) -> None:
         self.exchange.response_body(chunk.encode(self.charset, "replace"))
+
+    def error_log(self, message: str) -> None:
+        self.console(f"{self.get_client_ip()}: {message}")
 
     def timeout_error(
         self, formatter: Formatter, detail: Callable[[], str] = None
@@ -346,9 +347,7 @@ class RedWebUi:
         details = ""
         if detail:
             details = f"detail={detail()}"
-        self.error_log(
-            f"{self.get_client_id()} timeout: <{self.test_uri}> descend={self.descend} {details}"
-        )
+        self.error_log(f"timeout <{self.test_uri}> descend={self.descend} {details}")
         formatter.error_output("REDbot timeout.")
         self.exchange.response_done([])
 
