@@ -11,7 +11,7 @@ import time
 from typing import Any, Dict, List, Tuple, Callable
 
 from httplint import HttpRequestLinter, HttpResponseLinter
-from httplint.note import Notes, Note, categories, levels
+from httplint.note import Note, categories, levels
 from netaddr import IPAddress  # type: ignore
 import thor
 from thor.http.client import HttpClientExchange
@@ -55,7 +55,6 @@ class RedFetcher(thor.events.EventEmitter):
     def __init__(self, config: SectionProxy) -> None:
         thor.events.EventEmitter.__init__(self)
         self.config = config
-        self.notes = Notes()
         self.transfer_in = 0
         self.transfer_out = 0
         self.request_content: bytes
@@ -68,7 +67,7 @@ class RedFetcher(thor.events.EventEmitter):
 
         self.request = HttpRequestLinter()
         self.nonfinal_responses: List[HttpResponseLinter] = []
-        self.response = HttpResponseLinter(notes=self.notes)
+        self.response = HttpResponseLinter(message_ref=self.response_phrase)
         self.response.decoded.processors.append(self.sample_decoded)
         self.exchange: HttpClientExchange = None
         self.fetch_started = False
@@ -188,7 +187,7 @@ class RedFetcher(thor.events.EventEmitter):
         self, status: bytes, phrase: bytes, res_headers: RawHeaderListType
     ) -> None:
         "Got a non-final response."
-        nfres = HttpResponseLinter(notes=self.notes)
+        nfres = HttpResponseLinter(message_ref="A non-final response")
         nfres.process_response_topline(self.exchange.res_version, status, phrase)
         nfres.process_headers(res_headers)
         nfres.finish_content(True)
@@ -247,16 +246,18 @@ class RedFetcher(thor.events.EventEmitter):
         err_sample = error.detail[:40] or ""
         if isinstance(error, httperr.ExtraDataError):
             if self.response.status_code == 304:
-                self.notes.add("body", BODY_NOT_ALLOWED, sample=err_sample)
+                self.response.notes.add("body", BODY_NOT_ALLOWED, sample=err_sample)
             else:
-                self.notes.add("body", EXTRA_DATA, sample=err_sample)
+                self.response.notes.add("body", EXTRA_DATA, sample=err_sample)
         elif isinstance(error, httperr.ChunkError):
-            self.notes.add(
+            self.response.notes.add(
                 "header-transfer-encoding", BAD_CHUNK, chunk_sample=err_sample
             )
         elif isinstance(error, httperr.HeaderSpaceError):
             subject = f"header-{error.detail.lower().strip()}"
-            self.notes.add(subject, HEADER_NAME_SPACE, header_name=error.detail)
+            self.response.notes.add(
+                subject, HEADER_NAME_SPACE, header_name=error.detail
+            )
         else:
             self.fetch_error = error
         self._fetch_done()
@@ -272,12 +273,12 @@ class RedFetcher(thor.events.EventEmitter):
 class BODY_NOT_ALLOWED(Note):
     category = categories.CONNECTION
     level = levels.BAD
-    _summary = "%(response)s has content."
+    _summary = "%(message)s has content."
     _text = """\
 HTTP defines a few special situations where a response does not allow content. This includes 101,
 204 and 304 responses, as well as responses to the `HEAD` method.
 
-%(response)s had data after the headers ended, despite it being disallowed. Clients receiving it
+%(message)s had data after the headers ended, despite it being disallowed. Clients receiving it
 may treat the content as the next response in the connection, leading to interoperability and
 security issues.
 
@@ -290,7 +291,7 @@ The extra data started with:
 class EXTRA_DATA(Note):
     category = categories.CONNECTION
     level = levels.BAD
-    _summary = "%(response)s has extra data after it."
+    _summary = "%(message)s has extra data after it."
     _text = """\
 The server sent data after the message ended. This can be caused by an incorrect `Content-Length`
 header, or by a programming error in the server itself.
@@ -304,7 +305,7 @@ The extra data started with:
 class BAD_CHUNK(Note):
     category = categories.CONNECTION
     level = levels.BAD
-    _summary = "%(response)s has chunked encoding errors."
+    _summary = "%(message)s has chunked encoding errors."
     _text = """\
 The response indicates it uses HTTP chunked encoding, but there was a problem decoding the
 chunking.
@@ -327,7 +328,7 @@ This issue is often caused by sending an integer chunk size instead of one in he
 class HEADER_NAME_SPACE(Note):
     category = categories.CONNECTION
     level = levels.BAD
-    _summary = "%(response)s has whitespace at the end of the '%(header_name)s' header field name."
+    _summary = "%(message)s has whitespace at the end of the '%(header_name)s' header field name."
     _text = """\
 HTTP specifically bans whitespace between header field names and the colon, because they can easily
 be confused by recipients; some will strip it, and others won't, leading to a variety of attacks.

@@ -188,14 +188,12 @@ a compressed response, the resource did not provide one."""
 class CONNEG_NO_VARY(Note):
     category = categories.CONNEG
     level = levels.BAD
-    _summary = (
-        "%(response)s is negotiated, but doesn't have an appropriate Vary header."
-    )
+    _summary = "%(message)s is negotiated, but doesn't have an appropriate Vary header."
     _text = """\
 All content negotiated responses need to have a `Vary` header that reflects the header(s) used to
 select the response.
 
-%(response)s was negotiated for `gzip` content encoding, so the `Vary` header needs to contain
+%(message)s was negotiated for `gzip` content encoding, so the `Vary` header needs to contain
 `Accept-Encoding`, the request header used."""
 
 

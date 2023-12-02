@@ -98,7 +98,7 @@ class BaseTextFormatter(Formatter):
     def format_recommendation(
         self, resource: HttpResource, category: categories
     ) -> str:
-        notes = [note for note in resource.notes if note.category == category]
+        notes = [note for note in resource.response.notes if note.category == category]
         if not notes:
             return ""
         out = []

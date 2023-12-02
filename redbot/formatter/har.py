@@ -151,7 +151,7 @@ class HarFormatter(Formatter):
 
     def format_notes(self, resource: HttpResource) -> List[Dict[str, str]]:
         out = []
-        for note in resource.notes:
+        for note in resource.response.notes:
             msg = {
                 "note_id": note.__class__.__name__,
                 "subject": note.subject,

@@ -136,7 +136,7 @@ Trying again might fix it."""
 class UNKNOWN_RANGE(Note):
     category = categories.RANGE
     level = levels.WARN
-    _summary = "%(response)s advertises support for non-standard range-units."
+    _summary = "%(message)s advertises support for non-standard range-units."
     _text = """\
 The `Accept-Ranges` response header tells clients what `range-unit`s a resource is willing to
 process in future requests. HTTP only defines two: `bytes` and `none`.
@@ -225,12 +225,12 @@ partial response is expressed as a byte range, and compression changes the bytes
 class MISSING_HDRS_206(Note):
     category = categories.VALIDATION
     level = levels.WARN
-    _summary = "%(response)s is missing required headers."
+    _summary = "%(message)s is missing required headers."
     _text = """\
 HTTP requires `206 Partial Content` responses to have certain headers, if they are also present in
 a normal (e.g., `200 OK` response).
 
-%(response)s is missing the following headers: `%(missing_hdrs)s`.
+%(message)s is missing the following headers: `%(missing_hdrs)s`.
 
 This can affect cache operation; because the headers are missing, caches might remove them from
 their stored copies."""

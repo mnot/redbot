@@ -71,8 +71,8 @@ class SubRequest(RedFetcher, metaclass=ABCMeta):
         self, subject: str, note: Type[Note], **kw: Union[str, int]
     ) -> None:
         "Add a Note to the base resource."
-        kw["response"] = self.response_phrase
-        self.base.notes.add(subject, note, **kw)
+        kw["message"] = self.response_phrase
+        self.base.response.notes.add(subject, note, **kw)
 
     def check_missing_hdrs(self, hdrs: List[str], note: Type[Note]) -> None:
         """
@@ -87,19 +87,21 @@ class SubRequest(RedFetcher, metaclass=ABCMeta):
             ):
                 missing_hdrs.append(hdr)
         if missing_hdrs:
-            self.base.notes.add("headers", note, missing_hdrs=", ".join(missing_hdrs))
-            self.notes.add("headers", note, missing_hdrs=", ".join(missing_hdrs))
+            self.add_base_note("headers", note, missing_hdrs=", ".join(missing_hdrs))
+            self.response.notes.add(
+                "headers", note, missing_hdrs=", ".join(missing_hdrs)
+            )
 
 
 class MISSING_HDRS_304(Note):
     category = categories.VALIDATION
     level = levels.WARN
-    _summary = "%(response)s is missing required headers."
+    _summary = "%(message)s is missing required headers."
     _text = """\
 HTTP requires `304 Not Modified` responses to have certain headers, if they are also present in a
 normal (e.g., `200 OK` response).
 
-%(response)s is missing the following headers: `%(missing_hdrs)s`.
+%(message)s is missing the following headers: `%(missing_hdrs)s`.
 
 This can affect cache operation; because the headers are missing, caches might remove them from
 their cached copies."""

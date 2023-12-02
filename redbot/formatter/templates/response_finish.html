@@ -72,7 +72,7 @@
             <span class='help right hidden'>These notes explain what REDbot has found about your URL; hover over each one for a detailed explanation.</span>
 
             {% for category in formatter.note_categories %}
-            {% for note in resource.notes if note.category == category %}
+            {% for note in resource.response.notes if note.category == category %}
             {% if loop.first %}
             <h3>{{ category.value }}{{ category|subrequest_messages }}</h3>
             <ul>

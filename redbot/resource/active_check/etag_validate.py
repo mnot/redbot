@@ -11,7 +11,7 @@ from redbot.type import StrHeaderListType
 class ETagValidate(SubRequest):
     "If an ETag is present, see if it will validate."
     check_name = "ETag Validation"
-    response_phrase = "The 304 response"
+    response_phrase = "The ETag validation response"
 
     def modify_request_headers(
         self, base_headers: StrHeaderListType

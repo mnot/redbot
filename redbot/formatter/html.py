@@ -190,8 +190,11 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 )
                 smsgs = [
                     note
-                    for note in getattr(self.resource.subreqs[check_name], "notes", [])
-                    if note.level in [levels.BAD] and note not in self.resource.notes
+                    for note in getattr(
+                        self.resource.subreqs[check_name].response, "notes", []
+                    )
+                    if note.level in [levels.BAD]
+                    and note not in self.resource.response.notes
                 ]
                 if len(smsgs) == 1:
                     out.append(f" - {len(smsgs)} problem\n")
