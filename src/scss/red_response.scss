@@ -42,10 +42,9 @@
 /* response body */
 
 #body {
-  position: absolute;
-  right: 3em;
-  left: 3em;
+  position: relative;
   .prettyprint {
+    position: absolute;
     font: 0.80/1.00 Consolas, "Lucida Console", Monaco, monospace;
     overflow-x: auto;
     overflow-y: hidden;
@@ -53,5 +52,6 @@
     @include rounded_corners(1em);
     border: 1px solid #ccc;
     padding: 9px;
+    width: 100%;
   }
 }
