@@ -254,10 +254,9 @@ option[value="other..."] {
 
 /* response body */
 #body {
-  position: absolute;
-  right: 3em;
-  left: 3em; }
+  position: relative; }
   #body .prettyprint {
+    position: absolute;
     font: 0.80/1.00 Consolas, "Lucida Console", Monaco, monospace;
     overflow-x: auto;
     overflow-y: hidden;
@@ -267,7 +266,8 @@ option[value="other..."] {
     -ms-border-radius: 1em;
     border-radius: 1em;
     border: 1px solid #ccc;
-    padding: 9px; }
+    padding: 9px;
+    width: 100%; }
 
 /* summary table for multiple responses */
 table#summary {
