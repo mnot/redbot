@@ -97,7 +97,9 @@ class SlackFormatter(Formatter):
 
     def format_headers(self, response: HttpResponseLinter) -> List:
         status_line = (
-            f"HTTP/{response.version} {response.status_code} {response.status_phrase}\n"
+            f"HTTP/{response.version} "
+            f"{response.status_code_str} "
+            f"{response.status_phrase}\n"
         )
         headers = NL.join(
             [f"{name}:{value}" for (name, value) in response.headers.text]

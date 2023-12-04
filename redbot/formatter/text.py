@@ -83,7 +83,7 @@ class BaseTextFormatter(Formatter):
     @staticmethod
     def format_headers(response: HttpResponseLinter) -> str:
         out = [
-            f"HTTP/{response.version} {response.status_code} {response.status_phrase}"
+            f"HTTP/{response.version} {response.status_code_str} {response.status_phrase}"
         ]
         return NL.join(out + [f"{h[0]}:{h[1]}" for h in response.headers.text])
 

@@ -49,13 +49,13 @@
         {% elif resource.response.status_code in ["400", "404", "410"] %}
         <td class="bad">{{ resource.response.status_code }}</td>
         {% else %}
-        <td>{{ resource.response.status_code }}</td>
+        <td>{{ resource.response.status_code_str }}</td>
         {% endif %}
         <td>{{ resource.response.content_length|f_num(by1024=True) }}</td>
         <td>{{ yes_no(resource.response.caching.store_shared) }}</td>
         <td>{{ yes_no(resource.response.caching.store_private) }}</td>
         <td>{{ resource.response.caching.age|relative_time(0,0) or '-' }}</td>
-        <td>{{ resource.response.caching.freshness_lifetime|relative_time(0,0) or '-' }}</td>
+        <td>{{ resource.response.caching.freshness_lifetime_shared|relative_time(0,0) or '-' }}</td>
         <td>{{ yes_no(resource.ims_support) }}</td>
         <td>{{ yes_no(resource.inm_support) }}</td>
         {% if resource.gzip_support %}
