@@ -89,16 +89,20 @@ class ConnegCheck(SubRequest):
                     no_conneg_vary=", ".join(no_conneg_vary_headers) or "-",
                 )
 
-            # check body
-            if bare.content_hash != negotiated.decoded.hash:
-                self.add_base_note("body", VARY_BODY_MISMATCH)
-
             # check ETag
             if bare.headers.parsed.get("etag", 1) == negotiated.headers.parsed.get(
                 "etag", 2
             ):
                 if not self.base.response.headers.parsed["etag"][0]:  # strong
                     self.add_base_note("header-etag", VARY_ETAG_DOESNT_CHANGE)
+
+            # bail if decode didn't complete.
+            if not negotiated.decoded.decode_ok:
+                return
+
+            # check body
+            if bare.content_hash != negotiated.decoded.hash:
+                self.add_base_note("body", VARY_BODY_MISMATCH)
 
             # check compression efficiency
             if negotiated.content_length > 0 and bare.content_length > 0:
