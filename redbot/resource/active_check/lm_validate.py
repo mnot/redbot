@@ -58,7 +58,10 @@ class LmValidate(SubRequest):
         return base_headers
 
     def preflight(self) -> bool:
-        if 300 <= self.base.response.status_code <= 399:
+        if (
+            self.base.response.status_code
+            and 300 <= self.base.response.status_code <= 399
+        ):
             return False
         if self.base.response.headers.parsed.get("last-modified", None):
             return True
