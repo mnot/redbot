@@ -238,10 +238,10 @@ class HeaderPresenter:
         """
         name = name.lower()
         name_token = name.replace("-", "_")
-        if name_token[0] != "_" and hasattr(self, name_token):
+        if name_token[0] != "_" and name_token != "show" and hasattr(self, name_token):
             content: Markup = getattr(self, name_token)(name, value)
             return content
-        return Markup(self.wrap(escape(value), len(name)))
+        return Markup(self._wrap(escape(value), len(name)))
 
     def bare_uri(self, name: str, value: str) -> str:
         "Present a bare URI header value"
@@ -249,17 +249,17 @@ class HeaderPresenter:
         svalue = value.lstrip()
         space = len(value) - len(svalue)
         link = self.formatter.redbot_link(
-            self.wrap(escape(svalue), len(name), 0),
+            self._wrap(escape(svalue), len(name), 0),
             svalue,
             use_stored=False,
             referer=True,
         )
-        return f"{' ' * space}{link}"
+        return Markup(f"{' ' * space}{link}")
 
     content_location = location = x_xrds_location = bare_uri
 
     @staticmethod
-    def wrap(value: str, sub_width: int, indent_amount: int = 8) -> str:
+    def _wrap(value: str, sub_width: int, indent_amount: int = 8) -> str:
         "wrap a line to fit in the header box"
         hdr_sz = 75
         sw = hdr_sz - min(hdr_sz - 1, sub_width)
