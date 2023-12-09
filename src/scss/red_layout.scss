@@ -96,6 +96,10 @@ br {
   clear:both;
 }
 
+abbr {
+  text-decoration: none;
+}
+
 #red_status {
   color: $detail_text_colour;
   font-size: $detail_font_size;
