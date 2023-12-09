@@ -1,13 +1,14 @@
 /* layout, major elements */
 
 body {
+  --width: 650px;
   background-color: #fcfcfc;
   color: $text_colour;
   font: 12pt/14pt "Helvetica Neue", Helvetica, Arial, sans-serif;
   margin: 1em $column_spacing;
   &.blank {
     margin: $vertical_space * 2 auto $vertical_space auto;
-    width: $left_width;
+    width: var(--width);
   }
 }
 
@@ -17,7 +18,7 @@ body {
 }
 
 #left_column {
-  width: $left_width;
+  width: var(--width);
   margin: 0;
   padding: 0;
 }
@@ -28,9 +29,10 @@ body {
   padding: 0;
 }
 
-@media screen and (max-width: $left_width) {
+@media screen and (max-width: 650px) {
   body {
     @include flex-flow(column wrap);
+    --width: calc(100% - 4px);
   }
 
   #right_column {
@@ -99,7 +101,7 @@ br {
   font-size: $detail_font_size;
   margin-top: 1em;
   @include centered-detail;
-  width: $left_width;
+  width: var(--width);
 }
 
 #final_status {
@@ -131,7 +133,7 @@ body.blank > .footer {
   position: absolute;
   margin: 0 auto;
   bottom: 15%;
-  width: $left_width;
+  width: var(--width);
 }
 
 /* news */
@@ -140,7 +142,7 @@ body.blank > .footer {
   text-align: center;
   font-size: 1.0;
   font-weight: normal;
-  width: $left_width;
+  width: var(--width);
 }
 .news-banner {
   color: $detail_text_colour;
@@ -155,7 +157,7 @@ body.blank > .footer {
   padding: 0.5em;
   font-weight: bold;
   font-size: 1.1em;
-  width: $left_width;
+  width: var(--width);
   box-sizing: content-box;
 }
 

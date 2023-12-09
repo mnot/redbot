@@ -14,11 +14,11 @@ input#uri, input#go {
 }
 
 #request_form {
-  width: $left_width;
+  width: var(--width);
 }
 
 input#uri {
-  width: $left_width - 40px;
+  width: calc(var(--width) - 40px);
   color: $text_colour;
   border-right: none;
   &::placeholder {
@@ -40,7 +40,7 @@ input#go {
   -moz-border-radius-bottomleft: 0.5em;
   -moz-border-radius-bottomright: 0.5em;
   background-color: $input_colour;
-  width: $left_width;
+  width: var(--width);
   margin: 0;
 }
 
@@ -58,7 +58,7 @@ input#go {
 
 .req_hdr {
   background-color: $input_colour;
-  width: $left_width;
+  width: var(--width);
   white-space: nowrap;
 }
 
@@ -68,7 +68,7 @@ input.hdr_name, select.hdr_name {
 }
 
 input.hdr_val, select.hdr_val {
-  width: $left_width - 130px - 40px;
+  width: calc(var(--width) - 130px - 40px);
   box-sizing: border-box;
 }
 
