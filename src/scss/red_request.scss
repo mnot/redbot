@@ -13,6 +13,10 @@ input#uri, input#go {
   box-sizing: border-box;
 }
 
+#request_form {
+  width: $left_width;
+}
+
 input#uri {
   width: $left_width - 40px;
   color: $text_colour;
@@ -79,7 +83,3 @@ option[value="other..."] {
   font-weight: normal;
 }
 
-@media screen and (max-width : $break_width) {
-  .req_hdr, .add_req_hdr { width: 100%; }
-  input#uri { width: calc(100% - 40px);}
-}
