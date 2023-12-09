@@ -21,6 +21,8 @@ input#uri {
   width: calc(var(--width) - 40px);
   color: $text_colour;
   border-right: none;
+  padding-left: 0.5em;
+  border-radius: 0.5em 0 0 0;
   &::placeholder {
     color: lighten($text_colour, 70%);
   }
@@ -29,16 +31,13 @@ input#uri {
 input#go {
   width: 40px;
   border-left: none;
-  border-right: none;
   background-color: #d33;
   color: white;
+  border-radius: 0 0.5em 0 0;
 }
 
 .add_req_hdr {
-  -webkit-border-bottom-right-radius: 0.5em;
-  -webkit-border-bottom-left-radius: 0.5em;
-  -moz-border-radius-bottomleft: 0.5em;
-  -moz-border-radius-bottomright: 0.5em;
+  border-radius: 0 0 0.5em 0.5em;
   background-color: $input_colour;
   width: var(--width);
   margin: 0;
