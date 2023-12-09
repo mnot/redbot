@@ -4,8 +4,6 @@
 CLI interface to REDbot
 """
 
-__author__ = "Jerome Renard <jerome.renard@gmail.com>"
-
 from configparser import ConfigParser
 from argparse import ArgumentParser
 import sys
