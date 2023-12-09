@@ -11,18 +11,15 @@ body {
 
 #columns {
   display: -webkit-box;
-  display: -moz-box;
   display: -ms-flexbox;
   display: -webkit-flex;
   display: flex;
   width: 100%;
   height: 100%;
   -webkit-flex-wrap: wrap;
-  -moz-flex-wrap: wrap;
   -ms-flex-wrap: wrap;
   flex-wrap: wrap;
   -webkit-flex-flow: row wrap;
-  -moz-flex-flow: row wrap;
   -ms-flex-flow: row wrap;
   flex-flow: row wrap; }
 
@@ -33,7 +30,6 @@ body {
 
 #right_column {
   -webkit-box-ordinal-group: 1;
-  -moz-box-ordinal-group: 1;
   -ms-flex-order: 1;
   -webkit-order: 1;
   order: 1;
@@ -43,7 +39,6 @@ body {
 @media screen and (max-width: 650px) {
   body {
     -webkit-flex-flow: column wrap;
-    -moz-flex-flow: column wrap;
     -ms-flex-flow: column wrap;
     flex-flow: column wrap;
     --width: calc(100% - 4px); }
@@ -100,6 +95,9 @@ h3 {
 br {
   clear: both; }
 
+abbr {
+  text-decoration: none; }
+
 #red_status {
   color: #737373;
   font-size: 0.8em;
@@ -151,9 +149,6 @@ body.blank > .footer {
 .error {
   color: #eaeaea;
   background-color: #a33;
-  -webkit-border-radius: 0.5em;
-  -moz-border-radius: 0.5em;
-  -ms-border-radius: 0.5em;
   border-radius: 0.5em;
   padding: 0.5em;
   font-weight: bold;
@@ -182,22 +177,21 @@ input#uri, input#go {
 input#uri {
   width: calc(var(--width) - 40px);
   color: #111;
-  border-right: none; }
+  border-right: none;
+  padding-left: 0.5em;
+  border-radius: 0.5em 0 0 0; }
   input#uri::placeholder {
     color: #c4c4c4; }
 
 input#go {
   width: 40px;
   border-left: none;
-  border-right: none;
   background-color: #d33;
-  color: white; }
+  color: white;
+  border-radius: 0 0.5em 0 0; }
 
 .add_req_hdr {
-  -webkit-border-bottom-right-radius: 0.5em;
-  -webkit-border-bottom-left-radius: 0.5em;
-  -moz-border-radius-bottomleft: 0.5em;
-  -moz-border-radius-bottomright: 0.5em;
+  border-radius: 0 0 0.5em 0.5em;
   background-color: #72726E;
   width: var(--width);
   margin: 0; }
@@ -239,9 +233,6 @@ option[value="other..."] {
   font-family: Courier, monospace;
   background-color: #111;
   color: #ddd;
-  -webkit-border-radius: 0.75em;
-  -moz-border-radius: 0.75em;
-  -ms-border-radius: 0.75em;
   border-radius: 0.75em;
   border: 1px solid black;
   padding: 1em 1.5em;
@@ -278,9 +269,6 @@ option[value="other..."] {
     overflow-x: auto;
     overflow-y: hidden;
     background-color: #fff;
-    -webkit-border-radius: 1em;
-    -moz-border-radius: 1em;
-    -ms-border-radius: 1em;
     border-radius: 1em;
     border: 1px solid #ccc;
     padding: 9px;
@@ -293,9 +281,6 @@ table#summary {
   border-spacing: 0;
   background-color: #111;
   color: #ddd;
-  -webkit-border-radius: 1em;
-  -moz-border-radius: 1em;
-  -ms-border-radius: 1em;
   border-radius: 1em;
   border: 1px solid black;
   padding: 1em;
@@ -344,9 +329,6 @@ table#summary a.fade {
   display: none; }
 
 .tippy-box[data-theme~='redbot'] {
-  -webkit-border-radius: 0.5em;
-  -moz-border-radius: 0.5em;
-  -ms-border-radius: 0.5em;
   border-radius: 0.5em;
   background-color: #679;
   opacity: 0.95;
@@ -456,7 +438,6 @@ li.info:before {
 /* help bubbles */
 /* http://konigi.com/tools/css-sticky-notes */
 .help {
-  -webkit-box-shadow: #DDD 0px 1px 2px;
   position: absolute;
   background-color: #F4F39E;
   border-color: #DEE184;
@@ -464,8 +445,6 @@ li.info:before {
   text-align: center;
   margin: 3.5em 0 2.5em 0;
   padding: 1.25em 1em;
-  -webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25);
-  -moz-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25);
   box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25);
   font-family: Chalkboard, 'Comic Sans';
   font-size: 14px;
@@ -484,6 +463,4 @@ li.info:before {
   left: 30%;
   border: 1px solid #fff;
   background: rgba(254, 254, 254, 0.6);
-  -webkit-box-shadow: 0px 0 3px rgba(0, 0, 0, 0.1);
-  -moz-box-shadow: 0px 0 3px rgba(0, 0, 0, 0.1);
   box-shadow: 0px 0 3px rgba(0, 0, 0, 0.1); }
