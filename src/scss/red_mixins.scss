@@ -10,3 +10,72 @@
   color: $detail_text_colour;
   font-size: $detail_font_size;
 }
+
+@mixin flexbox() {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  -webkit-flex-wrap: wrap;
+  -moz-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+}
+
+@mixin flex($values) {
+  -webkit-box-flex: $values;
+  -moz-box-flex:  $values;
+  -webkit-flex:  $values;
+  -ms-flex:  $values;
+  flex:  $values;
+}
+
+@mixin order($value) {
+  -webkit-box-ordinal-group: $value;
+  -moz-box-ordinal-group: $value;
+  -ms-flex-order: $value;
+  -webkit-order: $value;
+  order: $value;
+}
+
+@mixin align-items($value) {
+  -webkit-box-align: $value;
+  -moz-box-align: $value;
+  -ms-flex-align: $value;
+  -webkit-align-items: $value;
+  align-items: $value;
+}
+
+@mixin box-pack($value) {
+  -webkit-box-pack: $value;
+  -moz-box-pack: $value;
+  -ms-box-pack: $value;
+  box-pack: $value;
+}
+
+@mixin justify-content() {
+  -webkit-box-pack: justify;
+  -moz-box-pack: justify;
+  -ms-flex-pack: justify;
+  -webkit-justify-content: space-between;
+  box-pack: justify;
+  flex-pack: justify;
+  justify-content: space-between;
+}
+
+@mixin columns($cols) {
+	-webkit-column-count: $cols;
+	-moz-column-count: $cols;
+  -ms-column-count: $cols;
+  column-count: $cols;
+}
+
+@mixin flex-flow($value) {
+  -webkit-flex-flow: $value;
+  -moz-flex-flow: $value;
+  -ms-flex-flow: $value;
+  flex-flow: $value;
+}

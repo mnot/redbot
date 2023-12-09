@@ -5,34 +5,36 @@ body {
   color: $text_colour;
   font: 12pt/14pt "Helvetica Neue", Helvetica, Arial, sans-serif;
   margin: 1em $column_spacing;
-  max-width: $max_width;
   &.blank {
     margin: $vertical_space * 2 auto $vertical_space auto;
     width: $left_width;
   }
 }
 
+#columns {
+  @include flexbox();
+  @include flex-flow(row wrap);
+}
+
 #left_column {
   width: $left_width;
-  float: left;
   margin: 0;
   padding: 0;
 }
 
 #right_column {
-  width: $right_width;
-  float: right;
+  @include order(1);
   margin: 1em 0 0 $column_spacing;
   padding: 0;
 }
 
-@media screen and (max-width: $max_width + (2 * $column_spacing)) {
-  #left_column, #right_column {
-    width: $left_width;
+@media screen and (max-width: $left_width) {
+  body {
+    @include flex-flow(column wrap);
+  }
+
+  #right_column {
     margin: 0;
-    padding: 0;
-    float: left;
-    clear: both;
   }
 }
 
@@ -46,7 +48,6 @@ h1 {
   padding: 0;
   margin: 10px 0px;
   font-size: 1.8em;
-  width: 100%;
   a {
     color: #444;
     text-decoration: none;

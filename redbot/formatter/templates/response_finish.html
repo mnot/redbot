@@ -6,6 +6,7 @@
 {% endfor %}
 {%- endmacro %}
 
+<div id="columns">
 <div id="left_column">
     {% for nonfinal_response in resource.nonfinal_responses %}
         <pre class='nonfinal_response'>{{ format_response(nonfinal_response) }}</pre>
@@ -88,6 +89,7 @@
         </div>
 
         <span class="help hidden">If something doesn't seem right, feel free to <a href="https://github.com/mnot/redbot/issues/new">file an issue</a>!</span>
+    </div>
     </div>
 
     <br />
