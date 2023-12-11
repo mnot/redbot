@@ -187,7 +187,9 @@ class RedFetcher(thor.events.EventEmitter):
         self, status: bytes, phrase: bytes, res_headers: RawHeaderListType
     ) -> None:
         "Got a non-final response."
-        nfres = HttpResponseLinter(message_ref="A non-final response" start_time=time.time())
+        nfres = HttpResponseLinter(
+            message_ref="A non-final response", start_time=time.time()
+        )
         nfres.process_response_topline(self.exchange.res_version, status, phrase)
         nfres.process_headers(res_headers)
         nfres.finish_content(True)
