@@ -263,12 +263,14 @@ console.log("{time.time() - self.start:3.3f} {e_js(message)}");
         """
         uri = self.resource.request.uri
         args: List[Tuple[str, str]] = []
+        if check_name:
+            args.append(("check_name", check_name))
+        elif self.resource.check_name is not None:
+            args.append(("check_name", self.resource.check_name))
+        if res_format:
+            args.append(("format", res_format))
         if use_stored and self.kw.get("test_id", None):
             args.append(("id", self.kw["test_id"]))
-            if check_name:
-                args.append(("check_name", check_name))
-            elif self.resource.check_name is not None:
-                args.append(("check_name", self.resource.check_name))
             return Markup(
                 f"<a href='?{urlencode(args, doseq=True)}'"
                 f"class='{css_class}' title='{title}'>{link_value}</a>"
@@ -280,12 +282,6 @@ console.log("{time.time() - self.start:3.3f} {e_js(message)}");
             args.append(("req_hdr", f"{name}:{val}"))
         if referer:
             args.append(("req_hdr", f"Referer:{uri}"))
-        if check_name:
-            args.append(("check_name", check_name))
-        elif self.resource.check_name is not None:
-            args.append(("check_name", self.resource.check_name))
-        if res_format:
-            args.append(("format", res_format))
         if descend:
             args.append(("descend", "1"))
         argstring = "".join(
