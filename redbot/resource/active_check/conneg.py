@@ -63,8 +63,8 @@ class ConnegCheck(SubRequest):
                 self.add_base_note(
                     "status",
                     VARY_STATUS_MISMATCH,
-                    neg_status=negotiated.status_code,
-                    noneg_status=bare.status_code,
+                    neg_status=negotiated.status_code or 0,
+                    noneg_status=bare.status_code or 0,
                 )
                 return  # Can't be sure what's going on...
 

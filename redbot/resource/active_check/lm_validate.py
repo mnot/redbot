@@ -94,7 +94,7 @@ class LmValidate(SubRequest):
             self.add_base_note(
                 "header-last-modified",
                 IMS_STATUS,
-                ims_status=self.response.status_code,
+                ims_status=self.response.status_code or 0,
                 enc_ims_status=self.response.status_code or "(unknown)",
             )
 

@@ -131,6 +131,9 @@ class RedHandler:
         self.uri = b""
         self.req_hdrs: RawHeaderListType = []
         self.req_body = b""
+        if not exchange.http_conn.tcp_conn:
+            return
+        self.client_ip = exchange.http_conn.tcp_conn.socket.getpeername()[0]
         exchange.on("request_start", self.request_start)
         exchange.on("request_body", self.request_body)
         exchange.on("request_done", self.request_done)
@@ -148,7 +151,7 @@ class RedHandler:
     def request_done(self, trailers: RawHeaderListType) -> None:
         p_uri = urlsplit(self.uri)
         if p_uri.path == b"/":
-            client_ip = self.exchange.http_conn.tcp_conn.socket.getpeername()[0]
+            client_ip = self.client_ip
             try:
                 RedWebUi(
                     self.server.config,

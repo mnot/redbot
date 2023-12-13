@@ -53,8 +53,8 @@ class SubRequest(RedFetcher, metaclass=ABCMeta):
         )
         RedFetcher.set_request(
             self,
-            self.base.request.uri,
-            self.base.request.method,
+            self.base.request.uri or "",
+            self.base.request.method or "",
             modified_headers,
             self.base.request_content,
         )

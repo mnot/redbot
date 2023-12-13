@@ -11,7 +11,7 @@ from random import getrandbits
 import string
 import sys
 import time
-from typing import Any, Callable, Dict, List, Tuple, Union, cast
+from typing import Optional, Callable, Dict, List, Tuple, Union, cast
 from urllib.parse import parse_qs, urlsplit, urlencode
 
 import thor
@@ -56,7 +56,7 @@ class RedWebUi:
         req_body: bytes,
         exchange: HttpResponseExchange,
         client_ip: str,
-        console: Callable[[str], int] = sys.stderr.write,
+        console: Callable[[str], Optional[int]] = sys.stderr.write,
     ) -> None:
         self.config: SectionProxy = config
         self.charset = self.config["charset"]
@@ -84,12 +84,12 @@ class RedWebUi:
         ]
         self.format = self.query_string.get("format", ["html"])[0]
         self.descend = "descend" in self.query_string
-        self.check_name: str = None
+        self.check_name: Optional[str] = None
         if not self.descend:
             self.check_name = self.query_string.get("check_name", [None])[0]
 
-        self.save_path: str = None
-        self.timeout: Any = None
+        self.save_path: str
+        self.timeout: Optional[thor.loop.ScheduledEvent] = None
 
         self.nonce: str = standard_b64encode(
             getrandbits(128).to_bytes(16, "big")
@@ -125,7 +125,10 @@ class RedWebUi:
         else:
             self.error_response(
                 find_formatter("html")(
-                    self.config, None, self.output, nonce=self.nonce
+                    self.config,
+                    HttpResource(self.config),
+                    self.output,
+                    nonce=self.nonce,
                 ),
                 b"405",
                 b"Method Not Allowed",
@@ -204,7 +207,7 @@ class RedWebUi:
         self,
         top_resource: HttpResource,
         formatter: Formatter,
-        extra_headers: RawHeaderListType = None,
+        extra_headers: Optional[RawHeaderListType] = None,
     ) -> None:
         "Preliminary checks are done; actually run the test."
 
@@ -271,23 +274,21 @@ class RedWebUi:
 
     def show_default(self) -> None:
         """Show the default page."""
+        resource = HttpResource(self.config, descend=self.descend)
+        if self.test_uri:
+            resource.set_request(self.test_uri, headers=self.req_hdrs)
         formatter = html.BaseHtmlFormatter(
             self.config,
-            None,
+            resource,
             self.output,
             is_blank=self.test_uri == "",
             nonce=self.nonce,
         )
-        if self.test_uri:
-            top_resource = HttpResource(self.config, descend=self.descend)
-            top_resource.set_request(self.test_uri, headers=self.req_hdrs)
-            if self.check_name:
-                formatter.resource = cast(
-                    HttpResource,
-                    top_resource.subreqs.get(self.check_name, top_resource),
-                )
-            else:
-                formatter.resource = top_resource
+        if self.check_name:
+            formatter.resource = cast(
+                HttpResource,
+                resource.subreqs.get(self.check_name, resource),
+            )
         self.exchange.response_start(
             b"200",
             b"OK",
@@ -310,7 +311,7 @@ class RedWebUi:
         status_code: bytes,
         status_phrase: bytes,
         message: str,
-        log_message: str = None,
+        log_message: Optional[str] = None,
     ) -> None:
         """Send an error response."""
         if self.timeout:
@@ -341,7 +342,7 @@ class RedWebUi:
         self.console(f"{self.get_client_ip()}: {message}")
 
     def timeout_error(
-        self, formatter: Formatter, detail: Callable[[], str] = None
+        self, formatter: Formatter, detail: Optional[Callable[[], str]] = None
     ) -> None:
         """Max runtime reached."""
         details = ""

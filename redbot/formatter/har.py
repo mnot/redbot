@@ -5,7 +5,7 @@ HAR Formatter for REDbot.
 
 import datetime
 import json
-from typing import Any, Dict, List
+from typing import Optional, Any, Dict, List
 from typing_extensions import TypedDict
 
 from redbot import __version__
@@ -71,7 +71,12 @@ class HarFormatter(Formatter):
     def error_output(self, message: str) -> None:
         self.output(message)
 
-    def add_entry(self, resource: HttpResource, page_ref: int = None) -> None:
+    def add_entry(self, resource: HttpResource, page_ref: Optional[int] = None) -> None:
+        assert resource.request.start_time, "request.start_time not set in add_entry"
+        assert resource.response.start_time, "response.start_time not set in add_entry"
+        assert (
+            resource.response.finish_time
+        ), "response.finish_time not set in add_entry"
         entry = {
             "startedDateTime": isoformat(resource.request.start_time),
             "time": int(
@@ -135,6 +140,7 @@ class HarFormatter(Formatter):
         self.har["log"]["entries"].append(entry)
 
     def add_page(self, resource: HttpResource) -> int:
+        assert resource.request.start_time, "request.start_time not set in add_page"
         page_id = self.last_id + 1
         page = {
             "startedDateTime": isoformat(resource.request.start_time),

@@ -3,7 +3,7 @@ from functools import partial
 import json
 import os
 import time
-from typing import Any, List, Tuple
+from typing import Optional, Any, List, Tuple
 from urllib.parse import urljoin, urlencode, quote as urlquote
 
 import httplint
@@ -94,12 +94,8 @@ class BaseHtmlFormatter(Formatter):
         pass
 
     def start_output(self) -> None:
-        if self.resource is None:
-            uri = ""
-            req_headers = []
-        else:
-            uri = self.resource.request.uri or ""
-            req_headers = self.resource.request.headers.text
+        uri = self.resource.request.uri or ""
+        req_headers = self.resource.request.headers.text
         extra_title = " <span class='save'>"
         if self.kw.get("is_saved", None):
             extra_title += " saved "
@@ -229,9 +225,9 @@ console.log("{time.time() - self.start:3.3f} {e_js(message)}");
     def redbot_link(
         self,
         link_value: str,
-        link: str = None,
-        check_name: str = None,
-        res_format: str = None,
+        link: Optional[str] = None,
+        check_name: Optional[str] = None,
+        res_format: Optional[str] = None,
         use_stored: bool = True,
         descend: bool = False,
         referer: bool = False,
@@ -261,6 +257,7 @@ console.log("{time.time() - self.start:3.3f} {e_js(message)}");
 
         Request headers are copied over from the current context.
         """
+        assert self.resource.request.uri, "resource.request.uri not set in redbot_link"
         uri = self.resource.request.uri
         args: List[Tuple[str, str]] = []
         if check_name:

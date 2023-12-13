@@ -4,7 +4,7 @@ import os
 import pickle
 import tempfile
 import time
-from typing import TYPE_CHECKING, cast, IO, Tuple
+from typing import TYPE_CHECKING, cast, IO, Tuple, Optional
 import zlib
 
 import thor
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from redbot.webui import RedWebUi  # pylint: disable=cyclic-import,unused-import
 
 
-def init_save_file(webui: "RedWebUi") -> str:
+def init_save_file(webui: "RedWebUi") -> Optional[str]:
     if webui.config.get("save_dir", "") and os.path.exists(webui.config["save_dir"]):
         try:
             fd, webui.save_path = tempfile.mkstemp(
@@ -42,6 +42,7 @@ def save_test(webui: "RedWebUi", top_resource: HttpResource) -> None:
 
 def extend_saved_test(webui: "RedWebUi") -> None:
     """Extend the expiry time of a previously run test_id."""
+    assert webui.test_id, "test_id not set in extend_saved_test"
     try:
         # touch the save file so it isn't deleted.
         now = time.time()
@@ -99,6 +100,7 @@ def clean_saved_tests(config: SectionProxy) -> Tuple[int, int, int]:
 
 def load_saved_test(webui: "RedWebUi") -> None:
     """Load a saved test by test_id."""
+    assert webui.test_id, "test_id not set in load_saved_test"
     try:
         with cast(
             IO[bytes],

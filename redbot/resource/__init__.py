@@ -11,7 +11,7 @@ See webui.py for the Web front-end.
 
 from configparser import SectionProxy
 import sys
-from typing import List, Dict, Set, Tuple, Union
+from typing import Optional, List, Dict, Set, Tuple, Union
 from urllib.parse import urljoin
 
 import thor
@@ -43,10 +43,10 @@ class HttpResource(RedFetcher):
         RedFetcher.__init__(self, config)
         self.descend: bool = descend
         self.check_done: bool = False
-        self.partial_support: bool = None
-        self.inm_support: bool = None
-        self.ims_support: bool = None
-        self.gzip_support: bool = None
+        self.partial_support: bool = False
+        self.inm_support: bool = False
+        self.ims_support: bool = False
+        self.gzip_support: bool = False
         self.gzip_savings: int = 0
         self._task_map: Set[RedFetcher] = set([])
         self.subreqs = {ac.check_name: ac(config, self) for ac in active_checks}
@@ -91,7 +91,7 @@ class HttpResource(RedFetcher):
 
         # pylint: enable=cell-var-from-loop
 
-    def finish_check(self, resource: RedFetcher = None) -> None:
+    def finish_check(self, resource: Optional[RedFetcher] = None) -> None:
         "A check is done. Was that the last one?"
         if resource:
             try:

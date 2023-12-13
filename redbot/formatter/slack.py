@@ -3,7 +3,7 @@ Slack Formatter for REDbot.
 """
 
 import json
-from typing import Any, List, Dict, Union
+from typing import Optional, Any, List, Dict, Union
 
 from httplint import HttpResponseLinter
 from httplint.note import categories, levels
@@ -59,12 +59,7 @@ class SlackFormatter(Formatter):
                 + self.link_saved()
             )
         else:
-            if self.resource.fetch_error is None:
-                notification = "No response error."
-            else:
-                notification = (
-                    f"Sorry, I can't do that; {self.resource.fetch_error.desc}"
-                )
+            notification = f"Sorry, I can't do that; {self.resource.fetch_error.desc}"
             blocks = [self.markdown_block(f"_{notification}_")]
         self.send_slack_message(blocks, notification)
 
@@ -74,7 +69,9 @@ class SlackFormatter(Formatter):
     def timeout(self) -> None:
         self.send_slack_message([self.markdown_block("_Timed out._")], "Timed out.")
 
-    def send_slack_message(self, blocks: List[Dict], notification: str = None) -> None:
+    def send_slack_message(
+        self, blocks: List[Dict], notification: Optional[str] = None
+    ) -> None:
         data: Dict[str, Any] = {"blocks": blocks}
         if notification:
             data["text"] = notification

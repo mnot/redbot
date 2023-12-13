@@ -23,9 +23,9 @@ class RangeRequest(SubRequest):
     response_phrase = "The partial response"
 
     def __init__(self, config: SectionProxy, resource: "HttpResource") -> None:
-        self.range_start: int = None
-        self.range_end: int = None
-        self.range_target: bytes = None
+        self.range_start: int
+        self.range_end: int
+        self.range_target: bytes
         self.max_sample_size = 0  # unlimited
         SubRequest.__init__(self, config, resource)
 
@@ -119,7 +119,7 @@ class RangeRequest(SubRequest):
             self.add_base_note(
                 "header-accept-ranges",
                 RANGE_STATUS,
-                range_status=self.response.status_code,
+                range_status=self.response.status_code or 0,
                 enc_range_status=self.response.status_code or "(unknown)",
             )
 

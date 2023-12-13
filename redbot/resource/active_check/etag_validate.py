@@ -78,7 +78,7 @@ class ETagValidate(SubRequest):
             self.add_base_note(
                 "header-etag",
                 INM_STATUS,
-                inm_status=self.response.status_code,
+                inm_status=self.response.status_code or 0,
                 enc_inm_status=self.response.status_code or "(unknown)",
             )
 

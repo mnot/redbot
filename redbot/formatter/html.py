@@ -141,7 +141,9 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         """show the stored body sample"""
         sample = b"".join(resource.response_decoded_sample)
         try:
-            uni_sample = sample.decode(resource.response.character_encoding, "ignore")
+            uni_sample = sample.decode(
+                resource.response.character_encoding or "utf-8", "ignore"
+            )
         except (TypeError, LookupError):
             uni_sample = sample.decode("utf-8", "replace")
         safe_sample = escape(uni_sample)

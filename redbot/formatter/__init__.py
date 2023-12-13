@@ -9,7 +9,7 @@ import inspect
 import locale
 import sys
 import time
-from typing import Any, Callable, List, Dict, Type, TYPE_CHECKING
+from typing import Optional, Any, Callable, List, Dict, Type, TYPE_CHECKING
 import unittest
 
 from markdown import Markdown
@@ -75,8 +75,8 @@ class Formatter(EventEmitter):
     Is available to UIs based upon the 'name' attribute.
     """
 
-    media_type: str = None  # the media type of the format.
-    name: str = None  # the name of the format.
+    media_type: str  # the media type of the format.
+    name: str = "base class"  # the name of the format.
     can_multiple = False  # formatter can represent multiple responses.
 
     def __init__(
@@ -184,7 +184,7 @@ def f_num(i: int, by1024: bool = False) -> str:
     return locale.format_string("%d", i, grouping=True)
 
 
-def relative_time(utime: float, now: float = None, show_sign: int = 1) -> str:
+def relative_time(utime: float, now: Optional[float] = None, show_sign: int = 1) -> str:
     """
     Given two times, return a string that explains how far apart they are.
     show_sign can be:
@@ -199,8 +199,6 @@ def relative_time(utime: float, now: float = None, show_sign: int = 1) -> str:
         2: ("none", "behind", "ahead"),
     }
 
-    if utime is None:
-        return None
     if now is None:
         now = time.time()
     age = round(now - utime)

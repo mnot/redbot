@@ -6,7 +6,7 @@ from html.parser import HTMLParser
 import operator
 import re
 import textwrap
-from typing import Any, List
+from typing import Any, List, Optional
 
 from httplint import HttpResponseLinter
 from httplint.note import Note, levels, categories
@@ -117,7 +117,7 @@ class BaseTextFormatter(Formatter):
     def format_text(note: Note) -> List[str]:
         return textwrap.wrap(strip_tags(re.sub(r"(?m)\s\s+", " ", note.detail)))
 
-    def colorize(self, level: levels, instr: str) -> str:
+    def colorize(self, level: Optional[levels], instr: str) -> str:
         if self.kw.get("tty_out", False):
             # info
             color_start = "\033[0;32m"
@@ -188,7 +188,7 @@ class TextListFormatter(BaseTextFormatter):
                     self.output(self.format_recommendations(subresource) + NL + NL)
 
     def format_uri(self, resource: HttpResource) -> str:
-        return self.colorize(None, resource.request.uri)
+        return self.colorize(None, resource.request.uri or "")
 
 
 class VerboseTextListFormatter(TextListFormatter):

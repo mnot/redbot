@@ -168,7 +168,7 @@ def url_to_origin(url: str) -> Union[str, None]:
         p_url = urlsplit(url)
         origin = (
             f"{p_url.scheme.lower()}://"
-            f"{p_url.hostname.lower()}:"
+            f"{(p_url.hostname or '').lower()}:"
             f"{p_url.port or default_port.get(p_url.scheme, 0)}"
         )
     except (AttributeError, ValueError):

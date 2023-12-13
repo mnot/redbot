@@ -2,6 +2,7 @@ import gzip
 import os
 from os import path
 import time
+from typing import Optional
 import zlib
 
 
@@ -14,7 +15,7 @@ class CacheFile:
     def __init__(self, my_path: str) -> None:
         self.path = my_path
 
-    def read(self) -> bytes:
+    def read(self) -> Optional[bytes]:
         """
         Read the file, returning its contents. If it does not exist or
         cannot be read, returns None.

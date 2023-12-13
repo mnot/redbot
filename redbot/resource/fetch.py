@@ -8,7 +8,7 @@ based upon the provided headers.
 
 from configparser import SectionProxy
 import time
-from typing import Any, Dict, List, Tuple, Callable
+from typing import Optional, Any, Dict, List, Tuple, Callable
 
 from httplint import HttpRequestLinter, HttpResponseLinter
 from httplint.note import Note, categories, levels
@@ -27,7 +27,7 @@ UA_STRING = f"RED/{__version__} (https://redbot.org/)".encode("ascii")
 class RedHttpClient(thor.http.HttpClient):
     "Thor HttpClient for RedFetcher"
 
-    def __init__(self, loop: thor.loop.LoopBase = None) -> None:
+    def __init__(self, loop: Optional[thor.loop.LoopBase] = None) -> None:
         thor.http.HttpClient.__init__(self, loop)
         self.connect_timeout = 10
         self.read_timeout = 15
@@ -69,7 +69,7 @@ class RedFetcher(thor.events.EventEmitter):
         self.nonfinal_responses: List[HttpResponseLinter] = []
         self.response = HttpResponseLinter(message_ref=self.response_phrase)
         self.response.decoded.processors.append(self.sample_decoded)
-        self.exchange: HttpClientExchange = None
+        self.exchange: HttpClientExchange
         self.fetch_started = False
         self.fetch_error: httperr.HttpError
         self.fetch_done = False
@@ -77,7 +77,10 @@ class RedFetcher(thor.events.EventEmitter):
 
     def __getstate__(self) -> Dict[str, Any]:
         state: Dict[str, Any] = thor.events.EventEmitter.__getstate__(self)
-        del state["exchange"]
+        try:
+            del state["exchange"]
+        except KeyError:
+            pass
         del state["response_content_processors"]
         return state
 
@@ -123,7 +126,7 @@ class RedFetcher(thor.events.EventEmitter):
         self,
         iri: str,
         method: str = "GET",
-        headers: StrHeaderListType = None,
+        headers: Optional[StrHeaderListType] = None,
         content: bytes = b"",
     ) -> None:
         """
@@ -135,7 +138,8 @@ class RedFetcher(thor.events.EventEmitter):
             self.request.set_uri(iri)
         except httperr.UrlError as why:
             self.fetch_error = why
-        self.response.base_uri = self.request.uri
+        if self.request.uri:
+            self.response.base_uri = self.request.uri
         if headers:
             bheaders = [(n.encode("utf-8"), v.encode("utf-8")) for (n, v) in headers]
             self.request.process_headers(bheaders)
@@ -155,6 +159,8 @@ class RedFetcher(thor.events.EventEmitter):
             return
 
         self.fetch_started = True
+        assert self.request.method, "method not set in check"
+        assert self.request.uri, "uri not set in check"
 
         if "user-agent" not in [i[0].lower() for i in self.request.headers.text]:
             self.request.headers.process([(b"User-Agent", UA_STRING)])
@@ -190,6 +196,9 @@ class RedFetcher(thor.events.EventEmitter):
         nfres = HttpResponseLinter(
             message_ref="A non-final response", start_time=time.time()
         )
+        assert (
+            self.exchange.res_version
+        ), "exchange.res_version not set in _response_nonfinal"
         nfres.process_response_topline(self.exchange.res_version, status, phrase)
         nfres.process_headers(res_headers)
         nfres.finish_content(True)
@@ -200,6 +209,9 @@ class RedFetcher(thor.events.EventEmitter):
     ) -> None:
         "Process the response start-line and headers."
         self.response.start_time = time.time()
+        assert (
+            self.exchange.res_version
+        ), "exchange.res_version not set in _response_start"
         self.response.process_response_topline(
             self.exchange.res_version, status, phrase
         )
@@ -245,6 +257,7 @@ class RedFetcher(thor.events.EventEmitter):
             "debug",
             f"fetch error {self.request.uri} ({self.check_name}) - {error.desc}",
         )
+        assert error.detail, "detail not set in _response_error"
         err_sample = error.detail[:40] or ""
         if isinstance(error, httperr.ExtraDataError):
             if self.response.status_code == 304:
@@ -256,6 +269,7 @@ class RedFetcher(thor.events.EventEmitter):
                 "header-transfer-encoding", BAD_CHUNK, chunk_sample=err_sample
             )
         elif isinstance(error, httperr.HeaderSpaceError):
+            assert error.detail, "error.detail not set in _response_error"
             subject = f"header-{error.detail.lower().strip()}"
             self.response.notes.add(
                 subject, HEADER_NAME_SPACE, header_name=error.detail
@@ -268,7 +282,10 @@ class RedFetcher(thor.events.EventEmitter):
         self.response.finish_time = time.time()
         if not self.fetch_done:
             self.fetch_done = True
-            self.exchange = None
+            try:
+                delattr(self, "exchange")
+            except AttributeError:
+                pass
             self.emit("fetch_done")
 
 

@@ -7,7 +7,7 @@ Parse links from a stream of HTML data.
 import codecs
 
 from html.parser import HTMLParser
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Optional, Any, Callable, Dict, List, Tuple
 
 from httplint.field.utils import split_string, unquote_string
 from httplint.message import HttpMessageLinter
@@ -42,12 +42,12 @@ class HTMLLinkParser(HTMLParser):
         self,
         message: HttpMessageLinter,
         link_procs: List[Callable[[str, str, str, str], None]],
-        err: Callable[[str], int] = None,
+        err: Optional[Callable[[str], int]] = None,
     ) -> None:
         self.message = message
         self.link_procs = link_procs
         self.err = err
-        self.link_types: Dict[str, Tuple[str, List[str]]] = {
+        self.link_types: Dict[str, Tuple[str, Optional[List[str]]]] = {
             "link": ("href", ["stylesheet"]),
             "a": ("href", None),
             "img": ("src", None),
@@ -56,7 +56,7 @@ class HTMLLinkParser(HTMLParser):
             "iframe": ("src", None),
         }
         self.errors = 0
-        self.last_err_pos: int = None
+        self.last_err_pos: int = 0
         self.ok = True
         HTMLParser.__init__(self)
 
@@ -89,9 +89,9 @@ class HTMLLinkParser(HTMLParser):
         else:
             self.ok = False
 
-    def handle_starttag(self, tag: str, attrs: List[Tuple[str, str]]) -> None:
+    def handle_starttag(self, tag: str, attrs: List[Tuple[str, Optional[str]]]) -> None:
         attr_d = dict(attrs)
-        title = attr_d.get("title", "").strip()
+        title = (attr_d.get("title", "") or "").strip()
         if tag in self.link_types:
             url_attr, rels = self.link_types[tag]
             if not rels or attr_d.get("rel", None) in rels:
@@ -102,8 +102,11 @@ class HTMLLinkParser(HTMLParser):
                     for proc in self.link_procs:
                         proc(self.message.base_uri, target, tag, title)
         elif tag == "base":
-            self.message.base_uri = attr_d.get("href", self.message.base_uri)
-        elif tag == "meta" and attr_d.get("http-equiv", "").lower() == "content-type":
+            self.message.base_uri = attr_d.get("href", self.message.base_uri) or ""
+        elif (
+            tag == "meta"
+            and (attr_d.get("http-equiv", "") or "").lower() == "content-type"
+        ):
             ct = attr_d.get("content", None)
             if ct:
                 try:
@@ -111,7 +114,7 @@ class HTMLLinkParser(HTMLParser):
                 except ValueError:
                     media_type, params = ct, ""
                 media_type = media_type.lower()
-                param_dict = {}
+                param_dict: Dict[str, Optional[str]] = {}
                 for param in split_string(params, rfc7231.parameter, r"\s*;\s*"):
                     try:
                         attr, val = param.split("=", 1)
