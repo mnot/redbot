@@ -6,13 +6,14 @@ from html.parser import HTMLParser
 import operator
 import re
 import textwrap
-from typing import Any, List, Optional
+from typing import List, Optional
+from typing_extensions import Unpack
 
 from httplint import HttpResponseLinter
 from httplint.note import Note, levels, categories
 import thor.http.error as httperr
 
-from redbot.formatter import Formatter
+from redbot.formatter import Formatter, FormatterArgs
 from redbot.resource import HttpResource
 
 NL = "\n"
@@ -44,8 +45,8 @@ class BaseTextFormatter(Formatter):
 
     error_template = "Error: %s\n"
 
-    def __init__(self, *args: Any, **kw: Any) -> None:
-        Formatter.__init__(self, *args, **kw)
+    def __init__(self, *args: Unpack[FormatterArgs]) -> None:
+        Formatter.__init__(self, *args)
         self.verbose = False
 
     def start_output(self) -> None:
@@ -146,9 +147,6 @@ class TextFormatter(BaseTextFormatter):
     name = "txt"
     media_type = "text/plain"
 
-    def __init__(self, *args: Any, **kw: Any) -> None:
-        BaseTextFormatter.__init__(self, *args, **kw)
-
     def finish_output(self) -> None:
         BaseTextFormatter.finish_output(self)
 
@@ -156,8 +154,8 @@ class TextFormatter(BaseTextFormatter):
 class VerboseTextFormatter(TextFormatter):
     name = "txt_verbose"
 
-    def __init__(self, *args: Any, **kw: Any) -> None:
-        TextFormatter.__init__(self, *args, **kw)
+    def __init__(self, *args: Unpack[FormatterArgs]) -> None:
+        TextFormatter.__init__(self, *args)
         self.verbose = True
 
 
@@ -170,8 +168,8 @@ class TextListFormatter(BaseTextFormatter):
     media_type = "text/plain"
     can_multiple = True
 
-    def __init__(self, *args: Any, **kw: Any) -> None:
-        BaseTextFormatter.__init__(self, *args, **kw)
+    def __init__(self, *args: Unpack[FormatterArgs]) -> None:
+        BaseTextFormatter.__init__(self, *args)
 
     def finish_output(self) -> None:
         "Fill in the template with RED's results."
@@ -194,8 +192,8 @@ class TextListFormatter(BaseTextFormatter):
 class VerboseTextListFormatter(TextListFormatter):
     name = "txt_verbose"
 
-    def __init__(self, *args: Any, **kw: Any) -> None:
-        TextListFormatter.__init__(self, *args, **kw)
+    def __init__(self, *args: Unpack[FormatterArgs]) -> None:
+        TextListFormatter.__init__(self, *args)
         self.verbose = True
 
 

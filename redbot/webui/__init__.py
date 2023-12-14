@@ -128,7 +128,9 @@ class RedWebUi:
                     self.config,
                     HttpResource(self.config),
                     self.output,
-                    nonce=self.nonce,
+                    {
+                        "nonce": self.nonce,
+                    },
                 ),
                 b"405",
                 b"Method Not Allowed",
@@ -144,11 +146,13 @@ class RedWebUi:
             self.config,
             top_resource,
             self.output,
-            allow_save=self.test_id,
-            is_saved=False,
-            test_id=self.test_id,
-            descend=self.descend,
-            nonce=self.nonce,
+            {
+                "allow_save": self.test_id,
+                "is_saved": False,
+                "test_id": self.test_id,
+                "descend": self.descend,
+                "nonce": self.nonce,
+            },
         )
         continue_test = partial(self.continue_test, top_resource, formatter)
         error_response = partial(self.error_response, formatter)
@@ -281,8 +285,10 @@ class RedWebUi:
             self.config,
             resource,
             self.output,
-            is_blank=self.test_uri == "",
-            nonce=self.nonce,
+            {
+                "is_blank": self.test_uri == "",
+                "nonce": self.nonce,
+            },
         )
         if self.check_name:
             formatter.resource = cast(

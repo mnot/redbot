@@ -49,7 +49,10 @@ def main() -> None:
     resource.set_request(args.url)
 
     formatter = find_formatter(args.output_format, "text", args.descend)(
-        config, resource, output, tty_out=sys.stdout.isatty(), descend=args.descend
+        config,
+        resource,
+        output,
+        {"tty_out": sys.stdout.isatty(), "descend": args.descend},
     )
 
     formatter.bind_resource(resource)

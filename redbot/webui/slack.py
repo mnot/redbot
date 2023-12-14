@@ -21,12 +21,15 @@ def slack_run(webui: "RedWebUi") -> None:
     webui.test_uri = webui.body_args.get("text", [""])[0].strip()
     webui.test_id = init_save_file(webui)
     slack_response_uri = webui.body_args.get("response_url", [""])[0].strip()
+    resource = HttpResource(webui.config)
     formatter = slack.SlackFormatter(
         webui.config,
-        None,
+        resource,
         webui.output,
-        slack_uri=slack_response_uri,
-        test_id=webui.test_id,
+        {
+            "slack_uri": slack_response_uri,
+            "test_id": webui.test_id,
+        },
     )
 
     webui.exchange.response_start(

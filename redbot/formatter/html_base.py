@@ -3,15 +3,16 @@ from functools import partial
 import json
 import os
 import time
-from typing import Optional, Any, List, Tuple
+from typing import Optional, List, Tuple
 from urllib.parse import urljoin, urlencode, quote as urlquote
 
 import httplint
 from jinja2 import Environment, PackageLoader, select_autoescape
 from markupsafe import Markup, escape
+from typing_extensions import Unpack
 
 import redbot
-from redbot.formatter import Formatter, relative_time, f_num
+from redbot.formatter import Formatter, FormatterArgs, relative_time, f_num
 from redbot.webui.captcha import CAPTCHA_PROVIDERS
 
 NL = "\n"
@@ -65,8 +66,8 @@ class BaseHtmlFormatter(Formatter):
         ),
     )
 
-    def __init__(self, *args: Any, **kw: Any) -> None:
-        Formatter.__init__(self, *args, **kw)
+    def __init__(self, *args: Unpack[FormatterArgs]) -> None:
+        Formatter.__init__(self, *args)
         self.templates.filters.update(
             {
                 "f_num": f_num,

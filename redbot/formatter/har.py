@@ -6,10 +6,10 @@ HAR Formatter for REDbot.
 import datetime
 import json
 from typing import Optional, Any, Dict, List
-from typing_extensions import TypedDict
+from typing_extensions import TypedDict, Unpack
 
 from redbot import __version__
-from redbot.formatter import Formatter
+from redbot.formatter import Formatter, FormatterArgs
 from redbot.resource import HttpResource
 from redbot.type import StrHeaderListType
 
@@ -35,8 +35,8 @@ class HarFormatter(Formatter):
     name = "har"
     media_type = "application/json"
 
-    def __init__(self, *args: Any, **kw: Any) -> None:
-        Formatter.__init__(self, *args, **kw)
+    def __init__(self, *args: Unpack[FormatterArgs]) -> None:
+        Formatter.__init__(self, *args)
         self.har: HarDict = {
             "log": {
                 "version": "1.1",

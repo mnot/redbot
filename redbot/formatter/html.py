@@ -8,11 +8,13 @@ import textwrap
 from typing import Any, List, Match, Tuple
 from urllib.parse import urljoin
 
+from typing_extensions import Unpack
 from httplint import get_field_description
 from httplint.note import Note, levels, categories
 import thor.http.error as httperr
 
 from redbot import __version__
+from redbot.formatter import FormatterArgs
 from redbot.formatter.html_base import (
     BaseHtmlFormatter,
     e_query_arg,
@@ -77,8 +79,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 
     name = "html"
 
-    def __init__(self, *args: Any, **kw: Any) -> None:
-        BaseHtmlFormatter.__init__(self, *args, **kw)
+    def __init__(self, *args: Unpack[FormatterArgs]) -> None:
+        BaseHtmlFormatter.__init__(self, *args)
         self.templates.filters.update(
             {
                 "header_present": self.format_header,

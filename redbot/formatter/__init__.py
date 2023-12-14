@@ -9,12 +9,13 @@ import inspect
 import locale
 import sys
 import time
-from typing import Optional, Any, Callable, List, Dict, Type, TYPE_CHECKING
+from typing import Optional, Any, Callable, List, Dict, Tuple, Type, TYPE_CHECKING
 import unittest
 
 from markdown import Markdown
 import thor
 from thor.events import EventEmitter
+from typing_extensions import TypedDict
 
 if TYPE_CHECKING:
     from redbot.resource import HttpResource  # pylint: disable=cyclic-import
@@ -68,6 +69,18 @@ def available_formatters() -> List[str]:
     return _formatters
 
 
+class FormatterParams(TypedDict):
+    config: SectionProxy
+    resource: "HttpResource"
+    output: Callable[[str], None]
+    params: Dict[str, Any]
+
+
+FormatterArgs = Tuple[
+    SectionProxy, "HttpResource", Callable[[str], None], Dict[str, Any]
+]
+
+
 class Formatter(EventEmitter):
     """
     A formatter for HttpResources.
@@ -84,7 +97,7 @@ class Formatter(EventEmitter):
         config: SectionProxy,
         resource: "HttpResource",
         output: Callable[[str], None],
-        **kw: Any,
+        params: Dict[str, Any],
     ) -> None:
         """
         Formatter for the given URI, writing
@@ -96,7 +109,7 @@ class Formatter(EventEmitter):
         self.resource = resource
         self.lang = config["lang"]
         self.output = output  # output file object
-        self.kw = kw  # extra keyword arguments
+        self.kw = params
         self._markdown = Markdown(output_format="html")
 
     def bind_resource(self, display_resource: "HttpResource") -> None:

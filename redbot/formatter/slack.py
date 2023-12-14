@@ -4,11 +4,12 @@ Slack Formatter for REDbot.
 
 import json
 from typing import Optional, Any, List, Dict, Union
+from typing_extensions import Unpack
 
 from httplint import HttpResponseLinter
 from httplint.note import categories, levels
 
-from redbot.formatter import Formatter
+from redbot.formatter import Formatter, FormatterArgs
 from redbot.resource import HttpResource
 from redbot.resource.fetch import RedHttpClient
 
@@ -37,8 +38,8 @@ class SlackFormatter(Formatter):
         levels.INFO: ":information_source:",
     }
 
-    def __init__(self, *args: Any, **kw: Any) -> None:
-        Formatter.__init__(self, *args, **kw)
+    def __init__(self, *args: Unpack[FormatterArgs]) -> None:
+        Formatter.__init__(self, *args)
 
     def start_output(self) -> None:
         pass
