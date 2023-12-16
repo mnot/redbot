@@ -2,7 +2,7 @@
 This is the Resource Expert Droid.
 """
 
-__version__ = "2.0.6"
+__version__ = "2.0.7"
 __author__ = "Mark Nottingham <mnot@mnot.net>"
 __copyright__ = """\
 Copyright (c) 2008- Mark Nottingham
