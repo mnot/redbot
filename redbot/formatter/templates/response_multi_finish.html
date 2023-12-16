@@ -71,10 +71,10 @@
         </td>
     {% else %}
         <td colspan="11">
-        {% if resource.response.fetch_error == None %}
+        {% if resource.fetch_error == None %}
         response incomplete
         {% else %}
-        {{ resource.response.fetch_error.desc or "unknown problem" }}
+        {{ resource.fetch_error.desc or "unknown problem" }}
         {% endif %}
         </td>
     {% endif %}
