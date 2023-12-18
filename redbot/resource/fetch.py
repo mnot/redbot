@@ -63,7 +63,7 @@ class RedFetcher(thor.events.EventEmitter):
         self.response_content_sample: List[Tuple[int, bytes]] = []
         self.response_decoded_sample: List[bytes] = []
         self.response_decoded_complete: bool = True
-        self.max_sample_size = 1024 * 10
+        self.max_sample_size = config.getint("max_sample_size", fallback=8192)
 
         self.request = HttpRequestLinter()
         self.nonfinal_responses: List[HttpResponseLinter] = []

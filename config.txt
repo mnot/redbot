@@ -30,6 +30,9 @@ max_links = 100
 # expensive, and may cause redbot_daemon to be unresponsive.
 content_links = no
 
+# The largest response content sample size. Default 8K; set to zero to disable limit.
+# Note that making this too large can cause issues.
+max_sample_size = 8192
 
 ## Web server configuration
 
@@ -89,7 +92,7 @@ enable_local_access = False
 
 # Captcha provider; must be one of:
 # - hcaptcha -- see: https://www.hcaptcha.com
-* - turnstile -- see: https://www.cloudflare.com/products/turnstile/
+# - turnstile -- see: https://www.cloudflare.com/products/turnstile/
 # Comment out to disable.
 # captcha_provider = turnstile
 
