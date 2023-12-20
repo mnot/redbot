@@ -25,6 +25,8 @@
 #     Bump the version according to $VERSIONING (default: semver-micro).
 # build
 #     Build the project
+# pypi-pub
+#     Publish the project to pypi
 # release <<< TAGS AND PUSHES TO GITHUB
 #     Release the project on Pypi and Github releases (requires /.github/workflows/release.yml)
 #
@@ -112,15 +114,20 @@ version: typecheck lint test bump-$(VERSIONING)
 	git commit -m 'bump version'
 
 .PHONY: build
-build: clean venv
+build: venv
 	$(VENV)/python -m build
 
 changelog.md:
 	$(eval PREV_RELEASE=$(shell git tag --sort=-taggerdate -l v* | head -1))
-	git log --pretty="- %s" $(PREV_RELEASE)..HEAD --grep "^Changed:" --grep "^Fixed:" --grep "^Added:" --grep "^Changed:" --grep "^Removed:" --output=$@
+	git --no-pager log --pretty="- %s" $(PREV_RELEASE)..HEAD --grep "^Changed:" --grep "^Fixed:" --grep "^Added:" --grep "^Changed:" --grep "^Removed:" --output=$@
 	sed -i "" -e "1s/^/\n\n/" $@
 
-# requires /.github/workflows/release.yml
+# Manual pypi publication; no GitHub release
+.PHONY: pypi-pub
+pypi-pub: venv build
+	$(VENV)/python -m twine upload dist/*
+
+# Github release with Pypi publication; requires /.github/workflows/release.yml
 .PHONY: release
 release: py_version changelog.md
 	git tag -a "v$(VERSION)" -F changelog.md
