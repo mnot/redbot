@@ -71,7 +71,7 @@ class RedFetcher(thor.events.EventEmitter):
         self.response.decoded.processors.append(self.sample_decoded)
         self.exchange: HttpClientExchange
         self.fetch_started = False
-        self.fetch_error: httperr.HttpError
+        self.fetch_error: Optional[httperr.HttpError] = None
         self.fetch_done = False
         self.setup_check_ip()
 

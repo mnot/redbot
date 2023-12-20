@@ -60,7 +60,12 @@ class SlackFormatter(Formatter):
                 + self.link_saved()
             )
         else:
-            notification = f"Sorry, I can't do that; {self.resource.fetch_error.desc}"
+            reason = (
+                self.resource.fetch_error
+                and self.resource.fetch_error.desc
+                or "please try again."
+            )
+            notification = f"Sorry, I can't do that; {reason}"
             blocks = [self.markdown_block(f"_{notification}_")]
         self.send_slack_message(blocks, notification)
 
