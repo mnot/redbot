@@ -3,6 +3,10 @@
 import { qs, qsa, docReady, toggleHidden, config } from './red_util.js'
 
 docReady(function () {
+  qsa('.js', function (item) {
+    item.style.display = 'unset'
+  })
+
   qsa('#request_form, form.link', function (form) {
     form.onsubmit = captchaLink
   })

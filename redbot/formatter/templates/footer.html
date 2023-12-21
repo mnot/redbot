@@ -4,11 +4,9 @@
         <p class="navigation">
             version {{ redbot_version }} (httplint {{ httplint_version }}) |
             <a href="https://REDbot.org/about/">about</a> |
-            <script type="text/javascript" nonce="{{ nonce }}">
-                document.write('<a href="#help" id="help"><strong>help</strong></a> |')
-            </script>
+            <span class="js"><a href="#help" id="help"><strong>help</strong></a> |</span>
             <span class="help hidden">Drag the bookmarklet to your bookmark bar - it makes checking easy!</span>
-            <a href="javascript:(function(){window.open('{{ baseuri }}?uri='+encodeURIComponent(location))})();"
+            <a class="js" href="javascript:(function(){window.open('{{ baseuri }}?uri='+encodeURIComponent(location))})();"
                 title="drag me to your toolbar to use REDbot any time.">REDbot</a> bookmarklet
         </p>
 
