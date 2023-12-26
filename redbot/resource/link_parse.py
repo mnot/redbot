@@ -38,6 +38,15 @@ class HTMLLinkParser(HTMLParser):
         "application/atom+xml",
     ]
 
+    link_types: Dict[str, Tuple[str, Optional[List[str]]]] = {
+        "link": ("href", ["stylesheet"]),
+        "a": ("href", None),
+        "img": ("src", None),
+        "script": ("src", None),
+        "frame": ("src", None),
+        "iframe": ("src", None),
+    }
+
     def __init__(
         self,
         message: HttpMessageLinter,
@@ -47,14 +56,6 @@ class HTMLLinkParser(HTMLParser):
         self.message = message
         self.link_procs = link_procs
         self.err = err
-        self.link_types: Dict[str, Tuple[str, Optional[List[str]]]] = {
-            "link": ("href", ["stylesheet"]),
-            "a": ("href", None),
-            "img": ("src", None),
-            "script": ("src", None),
-            "frame": ("src", None),
-            "iframe": ("src", None),
-        }
         self.errors = 0
         self.last_err_pos: int = 0
         self.ok = True
@@ -90,23 +91,23 @@ class HTMLLinkParser(HTMLParser):
             self.ok = False
 
     def handle_starttag(self, tag: str, attrs: List[Tuple[str, Optional[str]]]) -> None:
-        attr_d = dict(attrs)
-        title = (attr_d.get("title", "") or "").strip()
         if tag in self.link_types:
+            attr_d = dict(attrs)
             url_attr, rels = self.link_types[tag]
             if not rels or attr_d.get("rel", None) in rels:
                 target = attr_d.get(url_attr, "")
                 if target:
                     if "#" in target:
                         target = target[: target.index("#")]
+                    title = (attr_d.get("title", "") or "").strip()
                     for proc in self.link_procs:
                         proc(self.message.base_uri, target, tag, title)
         elif tag == "base":
-            self.message.base_uri = attr_d.get("href", self.message.base_uri) or ""
-        elif (
-            tag == "meta"
-            and (attr_d.get("http-equiv", "") or "").lower() == "content-type"
-        ):
+            self.message.base_uri = dict(attrs).get("href", self.message.base_uri) or ""
+        elif tag == "meta":
+            attr_d = dict(attrs)
+            if (attr_d.get("http-equiv", "") or "").lower() != "content-type":
+                return
             ct = attr_d.get("content", None)
             if ct:
                 try:
