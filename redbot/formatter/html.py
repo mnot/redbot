@@ -149,9 +149,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         except (TypeError, LookupError):
             uni_sample = sample.decode("utf-8", "replace")
         safe_sample = escape(uni_sample)
-        if self.config.getboolean("content_links", False) and hasattr(
-            resource, "links"
-        ):
+        if self.config.getboolean("content_links", False):
             for _, link_set in list(resource.links.items()):
                 for link in link_set:
                     if len(link) > 8000:  # avoid processing inline assets through regex

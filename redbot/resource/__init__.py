@@ -58,7 +58,8 @@ class HttpResource(RedFetcher):
         self._link_parser = link_parse.HTMLLinkParser(
             self.response, [self.process_link]
         )
-        self.response_content_processors.append(self._link_parser.feed_bytes)
+        if self.descend or config.getboolean("content_links", False):
+            self.response_content_processors.append(self._link_parser.feed_bytes)
 
     def run_active_checks(self) -> None:
         """
@@ -70,6 +71,15 @@ class HttpResource(RedFetcher):
                 active_check.check()
         else:
             self.finish_check()
+
+    def descendable(self) -> bool:
+        """
+        Return whether this resource can be descended.
+        """
+        return (
+            self.response.headers.parsed.get("content-type", [None])[0]
+            in self._link_parser.link_parseable_types
+        )
 
     def add_check(self, *resources: RedFetcher) -> None:
         "Remember a subordinate check on one or more HttpResource instance."

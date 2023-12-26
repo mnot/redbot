@@ -57,7 +57,7 @@
             </div>
             {% endif %}
 
-            {% if is_resource and resource.link_count > 0 %}
+            {% if is_resource and resource.descendable() %}
             <div class='option'>
                 {{ descend_link }}
             </div>
