@@ -12,6 +12,7 @@
             if (window.XMLHttpRequest) {
                 if (errorsReported > 4) { return }
                 if (url.startsWith("chrome-extension://")) { return }
+                if (line == 0 && col == 0) { return }
                 var xhr = new XMLHttpRequest()
                 var data = `${message} at ${url}, ${line}:${col}`
                 xhr.open('POST', '?client_error=1', true)
