@@ -82,7 +82,6 @@ class CaptchaHandler:
                     b"403",
                     b"Forbidden",
                     "I need to double-check that you're human; please resubmit.",
-                    "Invalid human token",
                 )
         elif captcha_token:
             self.verify_captcha(captcha_token)
@@ -91,7 +90,6 @@ class CaptchaHandler:
                 b"403",
                 b"Forbidden",
                 "I need to double-check that you're human; please resubmit.",
-                "Invalid captcha.",
             )
 
     def verify_captcha(self, presented_token: str) -> None:
