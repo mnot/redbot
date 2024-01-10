@@ -135,7 +135,7 @@ class CaptchaHandler:
                     e_str,
                 )
                 return
-            if results["success"]:
+            if results.get("success", False):
                 self.continue_test(self.issue_human())
             else:
                 e_str = (
