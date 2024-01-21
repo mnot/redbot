@@ -149,7 +149,10 @@ class RedHandler:
         self.req_body += chunk
 
     def request_done(self, trailers: RawHeaderListType) -> None:
-        p_uri = urlsplit(self.uri)
+        try:
+            p_uri = urlsplit(self.uri)
+        except UnicodeDecodeError:
+            return self.bad_request(b"That's not a URL.")
         if p_uri.path == b"/":
             client_ip = self.client_ip
             try:
@@ -212,6 +215,13 @@ in standalone server mode. Details follow.
         headers.append((b"Cache-Control", b"max-age=3600"))
         self.exchange.response_start(b"404", b"Not Found", headers)
         self.exchange.response_body(b"'%s' not found." % path)
+        self.exchange.response_done([])
+
+    def bad_request(self, why: bytes = b"bad request") -> None:
+        headers = []
+        headers.append((b"Content-Type", b"text/plain"))
+        self.exchange.response_start(b"400", b"Bad Request", headers)
+        self.exchange.response_body(why)
         self.exchange.response_done([])
 
 
