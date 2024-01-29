@@ -13,9 +13,11 @@ import io
 import locale
 import os
 from pstats import Stats
+import signal
 import sys
 import traceback
-from typing import Dict, Optional
+from types import FrameType
+from typing import Dict, Optional, Any
 from urllib.parse import urlsplit
 
 from importlib_resources import files as resource_files
@@ -27,7 +29,7 @@ from thor.loop import _loop
 import redbot
 from redbot.type import RawHeaderListType
 from redbot.webui import RedWebUi
-from redbot.webui.saved_tests import clean_saved_tests
+from redbot.webui.saved_tests import SavedTests
 
 if os.environ.get("SYSTEMD_WATCHDOG"):
     try:
@@ -64,6 +66,14 @@ class RedBotServer:
         if self.config.get("extra_base_dir"):
             self.extra_files = self.walk_files(self.config["extra_base_dir"])
 
+        # Set up signal handlers
+        signal.signal(signal.SIGINT, self.shutdown_handler)
+        signal.signal(signal.SIGABRT, self.shutdown_handler)
+        signal.signal(signal.SIGTERM, self.shutdown_handler)
+
+        # open the save db
+        self.saved = SavedTests(config, self.console)
+
         # Start garbage collection
         if config.get("save_dir", ""):
             thor.schedule(10, self.gc_state)
@@ -74,19 +84,21 @@ class RedBotServer:
             self.config.getint("port", fallback=8000),
         )
         server.on("exchange", self.handler)
-        try:
-            thor.run()
-        except KeyboardInterrupt:
-            self.console("Stopping...")
-            thor.stop()
+        thor.run()
 
     def watchdog_ping(self) -> None:
         notify(Notification.WATCHDOG)
         thor.schedule(self.watchdog_freq, self.watchdog_ping)
 
     def gc_state(self) -> None:
-        clean_saved_tests(self.config)
+        self.saved.clean()
         thor.schedule(self.config.getint("gc_mins", fallback=2) * 60, self.gc_state)
+
+    def shutdown_handler(self, sig: int, frame: FrameType | None) -> Any:
+        self.console("Stopping...")
+        thor.stop()
+        self.saved.shutdown()
+        sys.exit(0)
 
     def walk_files(self, dir_name: str, uri_base: bytes = b"") -> Dict[bytes, bytes]:
         out: Dict[bytes, bytes] = {}
@@ -158,6 +170,7 @@ class RedHandler:
             try:
                 RedWebUi(
                     self.server.config,
+                    self.server.saved,
                     self.method.decode(self.server.config["charset"]),
                     p_uri.query,
                     self.req_hdrs,
@@ -179,6 +192,7 @@ in standalone server mode. Details follow.
                 dump = traceback.format_exc()
                 thor.stop()
                 self.server.console(dump)
+                self.server.saved.shutdown()
                 sys.exit(1)
         else:
             return self.serve_static(p_uri.path)

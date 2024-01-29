@@ -48,6 +48,7 @@ class HttpResource(RedFetcher):
         self.ims_support: bool = False
         self.gzip_support: bool = False
         self.gzip_savings: int = 0
+        self.save_expires: float = 0.0
         self._task_map: Set[RedFetcher] = set([])
         self.subreqs = {ac.check_name: ac(config, self) for ac in active_checks}
         self.once("fetch_done", self.run_active_checks)

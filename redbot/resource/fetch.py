@@ -81,7 +81,10 @@ class RedFetcher(thor.events.EventEmitter):
             del state["exchange"]
         except KeyError:
             pass
-        del state["response_content_processors"]
+        try:
+            del state["response_content_processors"]
+        except KeyError:
+            pass
         return state
 
     def __repr__(self) -> str:

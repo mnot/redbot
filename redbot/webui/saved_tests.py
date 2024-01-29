@@ -1,169 +1,87 @@
 from configparser import SectionProxy
-import gzip
 import os
-import pickle
-import tempfile
+import random
+import shelve
+import string
 import time
-from typing import TYPE_CHECKING, cast, IO, Tuple, Optional
-import zlib
+from typing import TYPE_CHECKING, Tuple, Optional, Callable, cast
 
-import thor
-
-from redbot.formatter import find_formatter
 from redbot.resource import HttpResource
 
 if TYPE_CHECKING:
-    from redbot.webui import RedWebUi  # pylint: disable=cyclic-import,unused-import
+    from redbot.webui import RedWebUi
 
 
-def init_save_file(webui: "RedWebUi") -> Optional[str]:
-    if webui.config.get("save_dir", "") and os.path.exists(webui.config["save_dir"]):
+class SavedTests:
+    """
+    Save test results for later display.
+    """
+
+    def __init__(self, config: SectionProxy, console: Callable[[str], None]) -> None:
+        self.config = config
+        self.console = console
+        self.save_db: Optional[shelve.Shelf] = None
+        save_dir = config.get("save_dir", "")
+        if not save_dir:
+            return
+        if not os.path.exists(save_dir):
+            self.console(f"WARNING: Save directory '{save_dir}' does not exist.")
+            return
         try:
-            fd, webui.save_path = tempfile.mkstemp(
-                prefix="", dir=webui.config["save_dir"]
+            self.save_db = shelve.open(f"{save_dir}/redbot_saved_tests")
+        except (OSError, IOError) as why:
+            self.console(f"WARNING: Save DB not initialised: {why}")
+
+    def shutdown(self) -> None:
+        if self.save_db is not None:
+            self.save_db.close()
+
+    def get_test_id(self) -> str:
+        """Get a unique test id."""
+        test_id = "".join(random.choice(string.ascii_lowercase) for i in range(16))
+        if self.save_db is None:
+            return test_id
+        if test_id in self.save_db.keys():
+            return self.get_test_id()
+        return test_id
+
+    def save(self, webui: "RedWebUi", top_resource: HttpResource) -> None:
+        """Save a test by test_id."""
+        if webui.test_id and self.save_db is not None:
+            top_resource.save_expires = (
+                time.time() + self.config.getint("no_save_mins", fallback=20) * 60
             )
-            os.close(fd)
-            return os.path.split(webui.save_path)[1]
-        except OSError:
-            # Don't try to store it.
-            pass
-    return None  # should already be None, but make sure
+            self.save_db[webui.test_id] = top_resource
 
+    def extend(self, test_id: str) -> None:
+        """Extend the expiry time of a previously run test_id."""
+        if self.save_db is None:
+            return
+        entry = self.save_db[test_id]
+        entry.save_expires = (
+            time.time() + self.config.getint("save_days", fallback=30) * 24 * 60 * 60
+        )
+        self.save_db[test_id] = entry
 
-def save_test(webui: "RedWebUi", top_resource: HttpResource) -> None:
-    """Save a test by test_id."""
-    if webui.test_id:
-        try:
-            with cast(IO[bytes], gzip.open(webui.save_path, "w")) as tmp_file:
-                pickle.dump(top_resource, tmp_file)
-        except (OSError, zlib.error, pickle.PickleError):
-            pass  # we don't cry if we can't store it.
-
-
-def extend_saved_test(webui: "RedWebUi") -> None:
-    """Extend the expiry time of a previously run test_id."""
-    assert webui.test_id, "test_id not set in extend_saved_test"
-    try:
-        # touch the save file so it isn't deleted.
+    def clean(self) -> Tuple[int, int, int]:
+        """Clean old files from the saved tests directory."""
+        if self.save_db is None:
+            return (0, 0, 0)
         now = time.time()
-        os.utime(
-            os.path.join(webui.config["save_dir"], webui.test_id),
-            (
-                now,
-                now + (webui.config.getint("save_days", fallback=30) * 24 * 60 * 60),
-            ),
-        )
-        location = b"?id=%s" % webui.test_id.encode("ascii")
-        if webui.descend:
-            location = b"%s&descend=True" % location
-        webui.exchange.response_start(b"303", b"See Other", [(b"Location", location)])
-        webui.output("Redirecting to the saved test page...")
-    except OSError:
-        webui.exchange.response_start(
-            b"500",
-            b"Internal Server Error",
-            [(b"Content-Type", b"text/html; charset=%s" % webui.charset_bytes)],
-        )
-        webui.output("Sorry, I couldn't save that.")
-    webui.exchange.response_done([])
+        count = removed = errors = 0
+        for test_id in self.save_db:
+            count += 1
+            entry = self.save_db[test_id]
+            if entry.save_expires < now:
+                try:
+                    del self.save_db[test_id]
+                    removed += 1
+                except KeyError:
+                    errors += 1
+        return (count, removed, errors)
 
-
-def clean_saved_tests(config: SectionProxy) -> Tuple[int, int, int]:
-    """Clean old files from the saved tests directory."""
-    now = time.time()
-    state_dir = config["save_dir"]
-    if not os.path.exists(state_dir):
-        return (0, 0, 0)
-    save_secs = config.getint("no_save_mins", fallback=20) * 60
-    files = [
-        os.path.join(state_dir, f)
-        for f in os.listdir(state_dir)
-        if os.path.isfile(os.path.join(state_dir, f))
-    ]
-    removed = 0
-    errors = 0
-    for path in files:
-        try:
-            mtime = os.path.getmtime(path)
-        except OSError:
-            errors += 1
-            continue
-        if now - mtime > save_secs:
-            try:
-                os.remove(path)
-                removed += 1
-            except OSError:
-                errors += 1
-                continue
-    return (len(files), removed, errors)
-
-
-def load_saved_test(webui: "RedWebUi") -> None:
-    """Load a saved test by test_id."""
-    assert webui.test_id, "test_id not set in load_saved_test"
-    try:
-        with cast(
-            IO[bytes],
-            gzip.open(
-                os.path.join(webui.config["save_dir"], os.path.basename(webui.test_id))
-            ),
-        ) as fd:
-            mtime = os.fstat(fd.fileno()).st_mtime
-            is_saved = mtime > time.time()
-            top_resource = pickle.load(fd)
-    except (OSError, TypeError):
-        webui.exchange.response_start(
-            b"404",
-            b"Not Found",
-            [
-                (b"Content-Type", b"text/html; charset=%s" % webui.charset_bytes),
-                (b"Cache-Control", b"max-age=600, must-revalidate"),
-            ],
-        )
-        webui.output("I'm sorry, I can't find that saved response.")
-        webui.exchange.response_done([])
-        return
-    except (pickle.PickleError, zlib.error, EOFError):
-        webui.exchange.response_start(
-            b"500",
-            b"Internal Server Error",
-            [
-                (b"Content-Type", b"text/html; charset=%s" % webui.charset_bytes),
-                (b"Cache-Control", b"max-age=600, must-revalidate"),
-            ],
-        )
-        webui.output("I'm sorry, I had a problem loading that.")
-        webui.exchange.response_done([])
-        return
-
-    if webui.check_name:
-        display_resource = top_resource.subreqs.get(webui.check_name, top_resource)
-    else:
-        display_resource = top_resource
-
-    formatter = find_formatter(webui.format, "html", top_resource.descend)(
-        webui.config,
-        display_resource,
-        webui.output,
-        {
-            "allow_save": (not is_saved),
-            "is_saved": True,
-            "test_id": webui.test_id,
-            "nonce": webui.nonce,
-        },
-    )
-
-    webui.exchange.response_start(
-        b"200",
-        b"OK",
-        [
-            (b"Content-Type", formatter.content_type()),
-            (b"Cache-Control", b"max-age=3600, must-revalidate"),
-        ],
-    )
-
-    @thor.events.on(formatter)
-    def formatter_done() -> None:
-        webui.exchange.response_done([])
-
-    formatter.bind_resource(display_resource)
+    def load(self, webui: "RedWebUi") -> HttpResource:
+        """Return a saved test by test_id."""
+        if not webui.test_id or self.save_db is None:
+            raise ValueError
+        return cast(HttpResource, self.save_db[webui.test_id])
