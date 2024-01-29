@@ -22,7 +22,7 @@ jobs:
       with:
         node-version: "16.x"
     - name: Cache playwright binaries
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       id: playwright-cache
       with:
         path: |
@@ -36,7 +36,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Cache venv
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: .venv
         key: ${{ runner.os }}-${{ matrix.python-version }}-venv-${{ hashFiles('pyproject.toml') }}
