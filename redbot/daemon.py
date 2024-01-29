@@ -17,7 +17,7 @@ import signal
 import sys
 import traceback
 from types import FrameType
-from typing import Dict, Optional, Any
+from typing import Dict, Optional, Any, Union
 from urllib.parse import urlsplit
 
 from importlib_resources import files as resource_files
@@ -94,7 +94,7 @@ class RedBotServer:
         self.saved.clean()
         thor.schedule(self.config.getint("gc_mins", fallback=2) * 60, self.gc_state)
 
-    def shutdown_handler(self, sig: int, frame: FrameType | None) -> Any:
+    def shutdown_handler(self, sig: int, frame: Union[FrameType, None]) -> Any:
         self.console("Stopping...")
         thor.stop()
         self.saved.shutdown()
