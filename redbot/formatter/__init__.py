@@ -2,7 +2,6 @@
 Formatters for REDbot output.
 """
 
-
 from collections import defaultdict
 from configparser import SectionProxy
 import inspect
