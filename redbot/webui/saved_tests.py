@@ -4,7 +4,7 @@ import random
 import shelve
 import string
 import time
-from typing import TYPE_CHECKING, Tuple, Optional, Callable, cast
+from typing import TYPE_CHECKING, Tuple, Optional, Callable, Dict, cast
 
 from redbot.resource import HttpResource
 
@@ -21,6 +21,7 @@ class SavedTests:
         self.config = config
         self.console = console
         self.save_db: Optional[shelve.Shelf] = None
+        self.expiry_cache: Dict[str, float] = {}
         save_dir = config.get("save_dir", "")
         if not save_dir:
             return
@@ -35,6 +36,7 @@ class SavedTests:
     def shutdown(self) -> None:
         if self.save_db is not None:
             self.save_db.close()
+        self.expiry_cache.clear()
 
     def get_test_id(self) -> str:
         """Get a unique test id."""
@@ -52,6 +54,7 @@ class SavedTests:
                 time.time() + self.config.getint("no_save_mins", fallback=20) * 60
             )
             self.save_db[webui.test_id] = top_resource
+            self.expiry_cache[webui.test_id] = top_resource.save_expires
 
     def extend(self, test_id: str) -> None:
         """Extend the expiry time of a previously run test_id."""
@@ -62,6 +65,7 @@ class SavedTests:
             time.time() + self.config.getint("save_days", fallback=30) * 24 * 60 * 60
         )
         self.save_db[test_id] = entry
+        self.expiry_cache[test_id] = entry.save_expires
 
     def clean(self) -> Tuple[int, int, int]:
         """Clean old files from the saved tests directory."""
@@ -71,10 +75,13 @@ class SavedTests:
         count = removed = errors = 0
         for test_id in self.save_db:
             count += 1
-            entry = self.save_db[test_id]
-            if entry.save_expires < now:
+            if not test_id in self.expiry_cache:
+                entry = self.save_db[test_id]
+                self.expiry_cache[test_id] = entry.save_expires
+            if self.expiry_cache[test_id] < now:
                 try:
                     del self.save_db[test_id]
+                    del self.expiry_cache[test_id]
                     removed += 1
                 except KeyError:
                     errors += 1
