@@ -20,16 +20,17 @@ from types import FrameType
 from typing import Dict, Optional, Any, Union
 from urllib.parse import urlsplit
 
-from importlib_resources import files as resource_files
-
 import httplint
 import thor
 from thor.loop import _loop
 
 import redbot
 from redbot.type import RawHeaderListType
+from redbot.util.linux import enable_seccomp
+from redbot.util.python import module_files
 from redbot.webui import RedWebUi
 from redbot.webui.saved_tests import SavedTests
+from redbot.formatter import *  # pylint: disable=wildcard-import,unused-wildcard-import
 
 if os.environ.get("SYSTEMD_WATCHDOG"):
     try:
@@ -61,7 +62,7 @@ class RedBotServer:
 
         # Read static files
         self.static_root = os.path.join("/", config["static_root"]).encode("ascii")
-        self.static_files = resource_files("redbot.assets")
+        self.static_files = module_files("redbot.assets")
         self.extra_files = {}
         if self.config.get("extra_base_dir"):
             self.extra_files = self.walk_files(self.config["extra_base_dir"])
@@ -73,6 +74,11 @@ class RedBotServer:
 
         # open the save db
         self.saved = SavedTests(config, self.console)
+
+        # turn on seccomp
+        seccomp_enabled = enable_seccomp(True)
+        if seccomp_enabled:
+            self.console("Seccomp enabled.")
 
         # Start garbage collection
         if config.get("save_dir", ""):
@@ -202,11 +208,8 @@ in standalone server mode. Details follow.
         if path.startswith(self.server.static_root + b"/"):
             path = b"/".join(path.split(b"/")[2:])
             try:
-                with self.server.static_files.joinpath(path.decode("ascii")).open(
-                    mode="rb"
-                ) as fh:
-                    content = fh.read()
-            except OSError:
+                content = self.server.static_files[path.decode("ascii")]
+            except KeyError:
                 return self.not_found(path)
         else:
             try:
@@ -266,6 +269,7 @@ def main() -> None:
     args = parser.parse_args()
     conf = ConfigParser()
     conf.read_file(args.config_file)
+    args.config_file.close()
 
     try:
         locale.setlocale(locale.LC_ALL, locale.normalize(conf["redbot"]["lang"]))

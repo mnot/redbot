@@ -13,6 +13,7 @@ import thor
 from redbot import __version__
 from redbot.formatter import find_formatter, available_formatters
 from redbot.resource import HttpResource
+from redbot.formatter import *  # pylint: disable=wildcard-import,unused-wildcard-import
 
 
 def main() -> None:

@@ -19,7 +19,12 @@ from typing_extensions import TypedDict
 if TYPE_CHECKING:
     from redbot.resource import HttpResource  # pylint: disable=cyclic-import
 
-_formatters = ["html", "text", "har"]
+_formatters = [
+    "html",
+    "text",
+    "har",
+]
+__all__ = ["html", "text", "har", "slack"]
 
 
 def find_formatter(
@@ -36,9 +41,8 @@ def find_formatter(
         name = default
     try:
         module_name = f"redbot.formatter.{name}"
-        __import__(module_name)
         module = sys.modules[module_name]
-    except (ImportError, KeyError, TypeError):
+    except (KeyError, TypeError):
         return find_formatter(default)
     formatter_candidates = [
         v

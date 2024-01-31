@@ -7,12 +7,13 @@ from typing import Optional, List, Tuple
 from urllib.parse import urljoin, urlencode, quote as urlquote
 
 import httplint
-from jinja2 import Environment, PackageLoader, select_autoescape
+from jinja2 import Environment, DictLoader, select_autoescape
 from markupsafe import Markup, escape
 from typing_extensions import Unpack
 
 import redbot
 from redbot.formatter import Formatter, FormatterArgs, relative_time, f_num
+from redbot.util.python import module_files
 from redbot.webui.captcha import CAPTCHA_PROVIDERS
 
 NL = "\n"
@@ -58,7 +59,13 @@ class BaseHtmlFormatter(Formatter):
 
     media_type = "text/html"
     templates = Environment(
-        loader=PackageLoader("redbot.formatter"),
+        loader=DictLoader(
+            {
+                k: v.decode("utf-8")
+                for (k, v) in module_files("redbot.formatter.templates").items()
+            }
+        ),
+        auto_reload=False,
         trim_blocks=True,
         autoescape=select_autoescape(
             enabled_extensions=("html", "xml"),

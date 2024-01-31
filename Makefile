@@ -51,6 +51,10 @@ webui_test: venv
 server: venv
 	PYTHONPATH=.:$(VENV) $(VENV)/python -u redbot/daemon.py config.txt
 
+.PHONY: trace
+trace: venv
+	PYTHONPATH=.:$(VENV) strace -qqq -f -e openat $(VENV)/python -u redbot/daemon.py config.txt
+
 .PHONY: cli
 cli: venv
 	PYTHONPATH=.:$(VENV) $(VENV)/python redbot/cli.py $(filter-out $@,$(MAKECMDGOALS))

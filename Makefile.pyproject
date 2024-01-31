@@ -63,7 +63,7 @@ lint_py: venv
 
 .PHONY: typecheck_py
 typecheck_py: venv
-	PYTHONPATH=$(VENV) $(VENV)/python -m mypy $(PROJECT)
+	PYTHONPATH=$(VENV) $(VENV)/python -m mypy --platform=linux $(PROJECT)
 
 ## Release
 
