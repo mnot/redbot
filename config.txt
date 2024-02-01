@@ -37,7 +37,7 @@ max_sample_size = 8192
 ## Web server configuration
 
 # Hostname to listen on. Comment out to listen on all interfaces.
-host = localhost
+# host = localhost
 
 # Port to listen on.
 port = 8000
