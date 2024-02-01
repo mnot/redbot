@@ -8,8 +8,9 @@ import sys
 from types import ModuleType
 from typing import List, Dict, Union, Optional
 
+import dns
+import dns.rdtypes
 from importlib_resources import files as resource_files
-
 import thor
 
 if sys.platform == "linux":
@@ -67,12 +68,17 @@ def prep_seccomp() -> None:
     Prepare for turning on seccomp.
     """
 
-    # load encodings
+    # load modules that we'll later need
     load_modules(encodings, ["encodings.mbcs", "encodings.oem"])
+    load_modules(dns, ["dns._trio_backend"])
+    load_modules(dns.rdtypes, [])
+    load_modules(dns.rdtypes.ANY, [])
 
-    # do a DNS lookup to load /etc/gai.conf
+    # do a DNS lookup to load /etc/resolv.conf into dnspython
     thor.dns.lookup(b"example.com", 80, socket.SOCK_STREAM, lambda a: None)
 
+    # do a DNS lookup to prime socket.getaddrinfo
+    _ = socket.getaddrinfo("example.com", 80)
 
 def add_rules(
     filt: "seccomp.SyscallFilter",
