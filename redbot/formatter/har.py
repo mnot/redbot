@@ -2,7 +2,6 @@
 HAR Formatter for REDbot.
 """
 
-
 import datetime
 import json
 from typing import Optional, Any, Dict, List

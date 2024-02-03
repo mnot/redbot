@@ -20,12 +20,7 @@ from thor.http import get_header
 from redbot import __version__
 from redbot.webui.captcha import CaptchaHandler
 from redbot.webui.ratelimit import ratelimiter
-from redbot.webui.saved_tests import (
-    init_save_file,
-    save_test,
-    extend_saved_test,
-    load_saved_test,
-)
+from redbot.webui.saved_tests import SavedTests
 from redbot.webui.slack import slack_run, slack_auth
 from redbot.resource import HttpResource
 from redbot.formatter import find_formatter, html, Formatter
@@ -50,6 +45,7 @@ class RedWebUi:
     def __init__(
         self,
         config: SectionProxy,
+        saved: SavedTests,
         method: str,
         query_string: bytes,
         req_headers: RawHeaderListType,
@@ -58,13 +54,15 @@ class RedWebUi:
         client_ip: str,
         console: Callable[[str], Optional[int]] = sys.stderr.write,
     ) -> None:
-        self.config: SectionProxy = config
+        self.config = config
+        self.saved = saved
+        self.method = method
         self.charset = self.config["charset"]
         self.charset_bytes = self.charset.encode("ascii")
         self.query_string = parse_qs(query_string.decode(self.charset, "replace"))
         self.req_headers = req_headers
         self.req_body = req_body
-        self.body_args = {}
+        self.body_args: Dict[str, list[str]] = {}
         self.exchange = exchange
         self.client_ip = client_ip
         self.console = console  # function to log errors to
@@ -88,25 +86,38 @@ class RedWebUi:
         if not self.descend:
             self.check_name = self.query_string.get("check_name", [None])[0]
 
-        self.save_path: str
         self.timeout: Optional[thor.loop.ScheduledEvent] = None
 
         self.nonce: str = standard_b64encode(
             getrandbits(128).to_bytes(16, "big")
         ).decode("ascii")
         self.start = time.time()
+        self.handle_request()
 
-        if method == "POST":
+    def handle_request(self) -> None:
+        if self.method == "POST":
             req_ct = get_header(self.req_headers, b"content-type")
             if req_ct and req_ct[-1].lower() == b"application/x-www-form-urlencoded":
-                self.body_args = parse_qs(req_body.decode(self.charset, "replace"))
+                self.body_args = parse_qs(self.req_body.decode(self.charset, "replace"))
 
             if (
                 "save" in self.query_string
                 and self.config.get("save_dir", "")
                 and self.test_id
             ):
-                extend_saved_test(self)
+                try:
+                    self.saved.extend(self.test_id)
+                except KeyError:
+                    return self.error_response(
+                        None,
+                        b"404",
+                        b"Not Found",
+                        f"Can't find the test ID {self.test_id}",
+                    )
+                location = b"?id=%s" % self.test_id.encode("ascii")
+                if self.descend:
+                    location = b"%s&descend=True" % location
+                self.redirect_response(location)
             elif "slack" in self.query_string:
                 slack_run(self)
             elif "client_error" in self.query_string:
@@ -115,31 +126,78 @@ class RedWebUi:
                 self.run_test()
             else:
                 self.show_default()
-        elif method in ["GET", "HEAD"]:
+        elif self.method in ["GET", "HEAD"]:
             if self.test_id:
-                load_saved_test(self)
+                self.show_saved_test()
             elif "code" in self.query_string:
                 slack_auth(self)
             else:
                 self.show_default()
         else:
             self.error_response(
-                find_formatter("html")(
-                    self.config,
-                    HttpResource(self.config),
-                    self.output,
-                    {
-                        "nonce": self.nonce,
-                    },
-                ),
+                None,
                 b"405",
                 b"Method Not Allowed",
                 "Method Not Allowed",
             )
+        return None
+
+    def show_saved_test(self) -> None:
+        """Show a saved test."""
+        try:
+            top_resource = self.saved.load(self)
+        except ValueError:
+            return self.error_response(
+                None,
+                b"400",
+                b"Bad Request",
+                "Saved tests are not available.",
+            )
+        except KeyError:
+            return self.error_response(
+                None,
+                b"404",
+                b"Not Found",
+                f"Can't find the test ID {self.test_id}",
+            )
+
+        if self.check_name:
+            display_resource = cast(
+                HttpResource, top_resource.subreqs.get(self.check_name, top_resource)
+            )
+        else:
+            display_resource = top_resource
+
+        formatter = find_formatter(self.format, "html", top_resource.descend)(
+            self.config,
+            display_resource,
+            self.output,
+            {
+                "allow_save": True,
+                "is_saved": True,
+                "test_id": self.test_id,
+                "nonce": self.nonce,
+            },
+        )
+        self.exchange.response_start(
+            b"200",
+            b"OK",
+            [
+                (b"Content-Type", formatter.content_type()),
+                (b"Cache-Control", b"max-age=3600, must-revalidate"),
+            ],
+        )
+
+        @thor.events.on(formatter)
+        def formatter_done() -> None:
+            self.exchange.response_done([])
+
+        formatter.bind_resource(display_resource)
+        return None
 
     def run_test(self) -> None:
         """Test a URI."""
-        self.test_id = init_save_file(self)
+        self.test_id = self.saved.get_test_id()
         top_resource = HttpResource(self.config, descend=self.descend)
         top_resource.set_request(self.test_uri, headers=self.req_hdrs)
         formatter = find_formatter(self.format, "html", self.descend)(
@@ -224,7 +282,7 @@ class RedWebUi:
                 self.timeout.delete()
                 self.timeout = None
             self.exchange.response_done([])
-            save_test(self, top_resource)
+            self.saved.save(self, top_resource)
 
             # log excessive traffic
             ti = sum(
@@ -313,7 +371,7 @@ class RedWebUi:
 
     def error_response(
         self,
-        formatter: Formatter,
+        formatter: Optional[Formatter],
         status_code: bytes,
         status_phrase: bytes,
         message: str,
@@ -323,6 +381,15 @@ class RedWebUi:
         if self.timeout:
             self.timeout.delete()
             self.timeout = None
+        if formatter is None:
+            formatter = find_formatter("html")(
+                self.config,
+                HttpResource(self.config),
+                self.output,
+                {
+                    "nonce": self.nonce,
+                },
+            )
         self.exchange.response_start(
             status_code,
             status_phrase,
@@ -340,6 +407,11 @@ class RedWebUi:
         self.exchange.response_done([])
         if log_message:
             self.error_log(log_message)
+
+    def redirect_response(self, location: bytes) -> None:
+        self.exchange.response_start(b"303", b"See Other", [(b"Location", location)])
+        self.output("Redirecting...")
+        self.exchange.response_done([])
 
     def output(self, chunk: str) -> None:
         self.exchange.response_body(chunk.encode(self.charset, "replace"))

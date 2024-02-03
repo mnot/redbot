@@ -13,12 +13,12 @@ import io
 import locale
 import os
 from pstats import Stats
+import signal
 import sys
 import traceback
-from typing import Dict, Optional
+from types import FrameType
+from typing import Dict, Optional, Any, Union
 from urllib.parse import urlsplit
-
-from importlib_resources import files as resource_files
 
 import httplint
 import thor
@@ -26,8 +26,11 @@ from thor.loop import _loop
 
 import redbot
 from redbot.type import RawHeaderListType
+from redbot.util.linux import enable_seccomp
+from redbot.util.python import module_files
 from redbot.webui import RedWebUi
-from redbot.webui.saved_tests import clean_saved_tests
+from redbot.webui.saved_tests import SavedTests
+from redbot.formatter import *  # pylint: disable=wildcard-import,unused-wildcard-import
 
 if os.environ.get("SYSTEMD_WATCHDOG"):
     try:
@@ -59,10 +62,23 @@ class RedBotServer:
 
         # Read static files
         self.static_root = os.path.join("/", config["static_root"]).encode("ascii")
-        self.static_files = resource_files("redbot.assets")
+        self.static_files = module_files("redbot.assets")
         self.extra_files = {}
         if self.config.get("extra_base_dir"):
             self.extra_files = self.walk_files(self.config["extra_base_dir"])
+
+        # Set up signal handlers
+        signal.signal(signal.SIGINT, self.shutdown_handler)
+        signal.signal(signal.SIGABRT, self.shutdown_handler)
+        signal.signal(signal.SIGTERM, self.shutdown_handler)
+
+        # open the save db
+        self.saved = SavedTests(config, self.console)
+
+        # turn on seccomp
+        seccomp_enabled = enable_seccomp(True)
+        if seccomp_enabled:
+            self.console("Seccomp enabled.")
 
         # Start garbage collection
         if config.get("save_dir", ""):
@@ -74,19 +90,21 @@ class RedBotServer:
             self.config.getint("port", fallback=8000),
         )
         server.on("exchange", self.handler)
-        try:
-            thor.run()
-        except KeyboardInterrupt:
-            self.console("Stopping...")
-            thor.stop()
+        thor.run()
 
     def watchdog_ping(self) -> None:
         notify(Notification.WATCHDOG)
         thor.schedule(self.watchdog_freq, self.watchdog_ping)
 
     def gc_state(self) -> None:
-        clean_saved_tests(self.config)
+        self.saved.clean()
         thor.schedule(self.config.getint("gc_mins", fallback=2) * 60, self.gc_state)
+
+    def shutdown_handler(self, sig: int, frame: Union[FrameType, None]) -> Any:
+        self.console("Stopping...")
+        thor.stop()
+        self.saved.shutdown()
+        sys.exit(0)
 
     def walk_files(self, dir_name: str, uri_base: bytes = b"") -> Dict[bytes, bytes]:
         out: Dict[bytes, bytes] = {}
@@ -158,6 +176,7 @@ class RedHandler:
             try:
                 RedWebUi(
                     self.server.config,
+                    self.server.saved,
                     self.method.decode(self.server.config["charset"]),
                     p_uri.query,
                     self.req_hdrs,
@@ -179,6 +198,7 @@ in standalone server mode. Details follow.
                 dump = traceback.format_exc()
                 thor.stop()
                 self.server.console(dump)
+                self.server.saved.shutdown()
                 sys.exit(1)
         else:
             return self.serve_static(p_uri.path)
@@ -188,11 +208,8 @@ in standalone server mode. Details follow.
         if path.startswith(self.server.static_root + b"/"):
             path = b"/".join(path.split(b"/")[2:])
             try:
-                with self.server.static_files.joinpath(path.decode("ascii")).open(
-                    mode="rb"
-                ) as fh:
-                    content = fh.read()
-            except OSError:
+                content = self.server.static_files[path.decode("ascii")]
+            except KeyError:
                 return self.not_found(path)
         else:
             try:
@@ -252,6 +269,7 @@ def main() -> None:
     args = parser.parse_args()
     conf = ConfigParser()
     conf.read_file(args.config_file)
+    args.config_file.close()
 
     try:
         locale.setlocale(locale.LC_ALL, locale.normalize(conf["redbot"]["lang"]))
