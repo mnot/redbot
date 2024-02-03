@@ -80,6 +80,7 @@ def prep_seccomp() -> None:
     # do a DNS lookup to prime socket.getaddrinfo
     _ = socket.getaddrinfo("example.com", 80)
 
+
 def add_rules(
     filt: "seccomp.SyscallFilter",
     rule: Union[int, "seccomp.ERRNO"],
