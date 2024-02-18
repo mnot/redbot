@@ -111,12 +111,7 @@ class RedFetcher(thor.events.EventEmitter):
 
             def check_ip(dns_result: str) -> bool:
                 addr = IPAddress(dns_result)
-                if (
-                    (not addr.is_unicast())
-                    or addr.is_private()
-                    or addr.is_loopback()
-                    or addr.is_link_local()
-                ):
+                if not addr.is_global():
                     return False
                 return True
 
