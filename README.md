@@ -58,21 +58,15 @@ By default, REDbot will listen on localhost port 8000. This can be adjusted in `
 If you want to allow people to save test results, create the directory referenced by the 'save_dir' configuration variable, and make sure that it's writable to the REDbot process.
 
 
-### Running REDbot with Docker
+### Running REDbot in a Container
 
-If you wish to run REDbot using [Docker](https://www.docker.com), get a local copy of the repository, then:
+[OCI](https://opencontainers.org)-compliant containers are [available on Github](https://github.com/mnot/redbot/pkgs/container/redbot), and it's easy to run REDbot one using a tool like [Docker](https://www.docker.com) or [Podman](https://podman.io). For example:
 
-> make docker-image
+> docker run --rm -p 8000:8000 ghcr.io/mnot/redbot
 
-Start the webserver:
+or
 
-> docker run -p 8000:8000 redbot
-
-Or, just:
-
-> make docker
-
-to run REDbot on port 8000.
+> podman run --rm -p 8000:8000 ghcr.io/mnot/redbot
 
 
 ## Credits

@@ -56,17 +56,6 @@ cli: venv
 	PYTHONPATH=.:$(VENV) $(VENV)/python redbot/cli.py $(filter-out $@,$(MAKECMDGOALS))
 
 #############################################################################
-## Docker
-
-.PHONY: docker-image
-docker-image:
-	docker build -t redbot .
-
-.PHONY: docker
-docker: docker-image
-	docker run --rm --name redbot -p 8000:8000 redbot
-
-#############################################################################
 ## Assets
 
 .PHONY: redbot/assets
