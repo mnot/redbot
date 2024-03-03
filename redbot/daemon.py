@@ -25,6 +25,7 @@ from importlib_resources import files as resource_files
 import httplint
 import thor
 from thor.loop import _loop
+from thor.tcp import TcpConnection
 
 import redbot
 from redbot.type import RawHeaderListType
@@ -50,7 +51,7 @@ class RedBotServer:
 
     def __init__(self, config: SectionProxy) -> None:
         self.config = config
-        self.handler = partial(RedHandler, server=self)
+        self.handler = partial(RedRequestHandler, server=self)
 
         # Set up the watchdog
         if notify is not None:
@@ -68,11 +69,23 @@ class RedBotServer:
             thor.schedule(10, self.gc_state)
 
         # Set up the server
-        server = thor.http.HttpServer(
+        self.http_server = thor.http.HttpServer(
             self.config.get("host", "").encode("utf-8"),
             self.config.getint("port", fallback=8000),
         )
-        server.on("exchange", self.handler)
+        self.http_server.on("exchange", self.handler)
+
+        # Install signal handlers
+        for signum in [
+            signal.SIGSEGV,
+            signal.SIGABRT,
+            signal.SIGFPE,
+            signal.SIGBUS,
+            signal.SIGILL,
+        ]:
+            signal.signal(signum, self.handle_signal)
+
+    def run(self) -> None:
         try:
             thor.run()
         except KeyboardInterrupt:
@@ -86,6 +99,28 @@ class RedBotServer:
     def gc_state(self) -> None:
         clean_saved_tests(self.config)
         thor.schedule(self.config.getint("gc_mins", fallback=2) * 60, self.gc_state)
+
+    def handle_signal(
+        self, sig: int, frame: Optional[FrameType] = None
+    ) -> signal.Handlers:
+        self.console(f"*** {signal.strsignal(sig)}\n")
+        current_frame = inspect.currentframe()
+        assert current_frame
+        frame = current_frame.f_back
+        assert frame
+        traceback.print_stack(frame, limit=1)
+        self.console("  * Local Variables")
+        for key, val in frame.f_locals.items():
+            self.console(f"    {key}: {val}")
+        handlers = self.http_server.loop.registered_fd_handlers()
+        self.console("  * TCP Connections")
+        for handler in handlers:
+            if isinstance(handler, TcpConnection):
+                self.console(f"    {repr(handler)}")
+        self.console("  * Scheduled Events")
+        for when, event in self.http_server.loop.scheduled_events():
+            self.console(f"    {when:.2f} - {repr(event)}")
+        sys.exit(1)
 
     def walk_files(self, dir_name: str, uri_base: bytes = b"") -> Dict[bytes, bytes]:
         out: Dict[bytes, bytes] = {}
@@ -108,7 +143,7 @@ class RedBotServer:
         sys.stderr.write(f"{message}\n")
 
 
-class RedHandler:
+class RedRequestHandler:
     static_types = {
         b".html": b"text/html",
         b".js": b"text/javascript",
@@ -224,29 +259,6 @@ in standalone server mode. Details follow.
         self.exchange.response_done([])
 
 
-# dump stack on faults
-def handle_signal(sig: int, frame: Optional[FrameType] = None) -> signal.Handlers:
-    sys.stderr.write(f"*** {signal.strsignal(sig)}\n")
-    current_frame = inspect.currentframe()
-    assert current_frame
-    frame = current_frame.f_back
-    assert frame
-    traceback.print_stack(frame, limit=1)
-    for key, val in frame.f_locals.items():
-        sys.stderr.write(f"    {key}: {val}\n")
-    sys.exit(1)
-
-
-for signum in [
-    signal.SIGSEGV,
-    signal.SIGABRT,
-    signal.SIGFPE,
-    signal.SIGBUS,
-    signal.SIGILL,
-]:
-    signal.signal(signum, handle_signal)
-
-
 # debugging output
 def print_debug(message: str, profile: Optional[cProfile.Profile]) -> None:
     sys.stderr.write(f"WARNING: {message}\n\n")
@@ -291,7 +303,8 @@ def main() -> None:
         + f"http://{conf['redbot'].get('host', '')}:{conf['redbot']['port']}/\n"
     )
 
-    RedBotServer(conf["redbot"])
+    server = RedBotServer(conf["redbot"])
+    server.run()
 
 
 if __name__ == "__main__":

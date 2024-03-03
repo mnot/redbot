@@ -41,7 +41,8 @@ def redbot_run():
     conf = ConfigParser()
     conf.read("config.txt")
     redconf = conf["redbot"]
-    redbot.daemon.RedBotServer(redconf)
+    server = redbot.daemon.RedBotServer(redconf)
+    server.run()
 
 
 if __name__ == "__main__":
