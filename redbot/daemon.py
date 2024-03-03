@@ -7,14 +7,16 @@ Run REDbot as a daemon.
 import argparse
 from configparser import ConfigParser, SectionProxy
 import cProfile
-import faulthandler
 from functools import partial
 import io
+import inspect
 import locale
 import os
 from pstats import Stats
+import signal
 import sys
 import traceback
+from types import FrameType
 from typing import Dict, Optional
 from urllib.parse import urlsplit
 
@@ -39,9 +41,6 @@ else:
     notify = Notification = None  # pylint: disable=invalid-name
 
 _loop.precision = 0.2
-
-# dump stack on faults
-faulthandler.enable()
 
 
 class RedBotServer:
@@ -225,6 +224,30 @@ in standalone server mode. Details follow.
         self.exchange.response_done([])
 
 
+# dump stack on faults
+def handle_signal(sig: int, frame: Optional[FrameType] = None) -> signal.Handlers:
+    sys.stderr.write(f"*** {signal.strsignal(sig)}\n")
+    current_frame = inspect.currentframe()
+    assert current_frame
+    frame = current_frame.f_back
+    assert frame
+    traceback.print_stack(frame, limit=1)
+    for key, val in frame.f_locals.items():
+        sys.stderr.write(f"    {key}: {val}\n")
+    sys.exit(1)
+
+
+for signum in [
+    signal.SIGSEGV,
+    signal.SIGABRT,
+    signal.SIGFPE,
+    signal.SIGBUS,
+    signal.SIGILL,
+]:
+    signal.signal(signum, handle_signal)
+
+
+# debugging output
 def print_debug(message: str, profile: Optional[cProfile.Profile]) -> None:
     sys.stderr.write(f"WARNING: {message}\n\n")
     if profile:
