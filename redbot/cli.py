@@ -42,7 +42,7 @@ def main() -> None:
     args = parser.parse_args()
 
     config_parser = ConfigParser()
-    config_parser.read_dict({"redbot": {"lang": "en", "charset": "utf-8"}})
+    config_parser.read_dict({"redbot": {}})
     config = config_parser["redbot"]
 
     resource = HttpResource(config, descend=args.descend)

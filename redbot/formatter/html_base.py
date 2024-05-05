@@ -81,8 +81,8 @@ class BaseHtmlFormatter(Formatter):
             "formatter": self,
             "redbot_version": redbot.__version__,
             "httplint_version": httplint.__version__,
-            "baseuri": self.config["ui_uri"],
-            "static": self.config["static_root"],
+            "baseuri": self.config.get("ui_uri", "https://redbot.org/"),
+            "static": self.config.get("static_root", "static"),
             "captcha_provider": captcha_provider,
             "captcha_script_url": Markup(
                 captcha_data.get("script_url", b"").decode("ascii")
@@ -203,14 +203,13 @@ console.log("{time.time() - self.start:3.3f} {e_js(message)}");
                 included on every page view.
         """
         out = []
-        if self.config.get("extra_dir", "") and os.path.isdir(self.config["extra_dir"]):
+        extra_dir = self.config.get("extra_dir", None)
+        if extra_dir and os.path.isdir(extra_dir):
             extra_files = [
-                p
-                for p in os.listdir(self.config["extra_dir"])
-                if os.path.splitext(p)[1] == etype
+                p for p in os.listdir(extra_dir) if os.path.splitext(p)[1] == etype
             ]
             for extra_file in extra_files:
-                extra_path = os.path.join(self.config["extra_dir"], extra_file)
+                extra_path = os.path.join(extra_dir, extra_file)
                 try:
                     with codecs.open(
                         extra_path,

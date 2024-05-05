@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 
 def init_save_file(webui: "RedWebUi") -> Optional[str]:
-    if webui.config.get("save_dir", "") and os.path.exists(webui.config["save_dir"]):
+    if webui.config.get("save_dir", None) and os.path.exists(webui.config["save_dir"]):
         try:
             fd, webui.save_path = tempfile.mkstemp(
                 prefix="", dir=webui.config["save_dir"]
@@ -46,8 +46,11 @@ def extend_saved_test(webui: "RedWebUi") -> None:
     try:
         # touch the save file so it isn't deleted.
         now = time.time()
+        state_dir = webui.config.get("save_dir", "")
+        if not os.path.exists(state_dir):
+            raise OSError
         os.utime(
-            os.path.join(webui.config["save_dir"], webui.test_id),
+            os.path.join(state_dir, webui.test_id),
             (
                 now,
                 now + (webui.config.getint("save_days", fallback=30) * 24 * 60 * 60),
@@ -71,7 +74,7 @@ def extend_saved_test(webui: "RedWebUi") -> None:
 def clean_saved_tests(config: SectionProxy) -> Tuple[int, int, int]:
     """Clean old files from the saved tests directory."""
     now = time.time()
-    state_dir = config["save_dir"]
+    state_dir = config.get("save_dir", "")
     if not os.path.exists(state_dir):
         return (0, 0, 0)
     save_secs = config.getint("no_save_mins", fallback=20) * 60
@@ -101,12 +104,23 @@ def clean_saved_tests(config: SectionProxy) -> Tuple[int, int, int]:
 def load_saved_test(webui: "RedWebUi") -> None:
     """Load a saved test by test_id."""
     assert webui.test_id, "test_id not set in load_saved_test"
+    state_dir = webui.config.get("save_dir", "")
+    if not os.path.exists(state_dir):
+        webui.exchange.response_start(
+            b"404",
+            b"Not Found",
+            [
+                (b"Content-Type", b"text/html; charset=%s" % webui.charset_bytes),
+                (b"Cache-Control", b"max-age=600, must-revalidate"),
+            ],
+        )
+        webui.output("Saving not configured.")
+        webui.exchange.response_done([])
+        return
     try:
         with cast(
             IO[bytes],
-            gzip.open(
-                os.path.join(webui.config["save_dir"], os.path.basename(webui.test_id))
-            ),
+            gzip.open(os.path.join(state_dir, os.path.basename(webui.test_id))),
         ) as fd:
             mtime = os.fstat(fd.fileno()).st_mtime
             is_saved = mtime > time.time()

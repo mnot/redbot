@@ -61,8 +61,9 @@ class RedBotServer:
         self.static_root = os.path.join("/", config["static_root"]).encode("ascii")
         self.static_files = resource_files("redbot.assets")
         self.extra_files = {}
-        if self.config.get("extra_base_dir"):
-            self.extra_files = self.walk_files(self.config["extra_base_dir"])
+        extra_base_dir = self.config.get("extra_base_dir", None)
+        if extra_base_dir:
+            self.extra_files = self.walk_files(extra_base_dir)
 
         # Start garbage collection
         if config.get("save_dir", ""):
@@ -192,7 +193,7 @@ class RedRequestHandler:
             try:
                 RedWebUi(
                     self.server.config,
-                    self.method.decode(self.server.config["charset"]),
+                    self.method.decode(self.server.config.get("charset", "utf-8")),
                     p_uri.query,
                     self.req_hdrs,
                     self.req_body,

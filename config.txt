@@ -145,6 +145,10 @@ limit_slack_team_period = 1
 
 
 ## Slack integration
+#
+# See https://redbot.org/slack/
+#
+# You MUST set ui_uri above to your instance's URI to make Slack integration work properly.
 
 # Signing secret from Slack. Comment out to disable Slack integration.
 # slack_signing_secret =

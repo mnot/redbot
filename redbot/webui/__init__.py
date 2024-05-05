@@ -59,7 +59,7 @@ class RedWebUi:
         console: Callable[[str], Optional[int]] = sys.stderr.write,
     ) -> None:
         self.config: SectionProxy = config
-        self.charset = self.config["charset"]
+        self.charset = self.config.get("charset", "utf-8")
         self.charset_bytes = self.charset.encode("ascii")
         self.query_string = parse_qs(query_string.decode(self.charset, "replace"))
         self.req_headers = req_headers
@@ -160,7 +160,7 @@ class RedWebUi:
         update_wrapper(timeout_error, self.timeout_error)
 
         self.timeout = thor.schedule(
-            int(self.config["max_runtime"]),
+            int(self.config.get("max_runtime", "60")),
             timeout_error,
             top_resource.show_task_map,
         )
@@ -227,21 +227,23 @@ class RedWebUi:
             save_test(self, top_resource)
 
             # log excessive traffic
-            ti = sum(
-                [i.transfer_in for i, t in top_resource.linked],
-                top_resource.transfer_in,
-            )
-            to = sum(
-                [i.transfer_out for i, t in top_resource.linked],
-                top_resource.transfer_out,
-            )
-            if ti + to > int(self.config["log_traffic"]) * 1024:
-                self.error_log(
-                    f"{ti / 1024:n}K in "
-                    f"{to / 1024:n}K out "
-                    f"for <{e_url(self.test_uri)}> "
-                    f"(descend {self.descend})"
+            log_traffic = self.config.getint("log_traffic", None)
+            if log_traffic:
+                ti = sum(
+                    [i.transfer_in for i, t in top_resource.linked],
+                    top_resource.transfer_in,
                 )
+                to = sum(
+                    [i.transfer_out for i, t in top_resource.linked],
+                    top_resource.transfer_out,
+                )
+                if ti + to > log_traffic * 1024:
+                    self.error_log(
+                        f"{ti / 1024:n}K in "
+                        f"{to / 1024:n}K out "
+                        f"for <{e_url(self.test_uri)}> "
+                        f"(descend {self.descend})"
+                    )
 
         self.exchange.response_start(
             b"200",

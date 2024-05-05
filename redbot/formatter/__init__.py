@@ -106,7 +106,7 @@ class Formatter(EventEmitter):
         EventEmitter.__init__(self)
         self.config = config
         self.resource = resource
-        self.lang = config["lang"]
+        self.lang = config.get("lang", "en")
         self.output = output  # output file object
         self.kw = params
         self._markdown = Markdown(output_format="html")
@@ -178,7 +178,11 @@ class Formatter(EventEmitter):
         """
         Return binary suitable for the value of a Content-Type header field.
         """
-        return f"{self.media_type}; charset={self.config['charset']}".encode("ascii")
+        return (
+            f"{self.media_type}; charset={self.config.get('charset', 'utf-8')}".encode(
+                "ascii"
+            )
+        )
 
 
 def f_num(i: int, by1024: bool = False) -> str:

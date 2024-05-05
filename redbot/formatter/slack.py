@@ -134,6 +134,7 @@ class SlackFormatter(Formatter):
     def link_saved(self) -> List:
         test_id = self.kw.get("test_id", None)
         if test_id:
-            saved_link = f"{self.config['ui_uri']}?id={test_id}"
+            ui_uri = self.config.get("ui_uri", "https://redbot.org/")
+            saved_link = f"{ui_uri}?id={test_id}"
             return [self.markdown_block(f"_See more detail <{saved_link}|here>._")]
         return []
