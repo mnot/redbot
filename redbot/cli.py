@@ -42,7 +42,7 @@ def main() -> None:
     args = parser.parse_args()
 
     config_parser = ConfigParser()
-    config_parser.read_dict({"redbot": {}})
+    config_parser.read_dict({"redbot": {"enable_local_access": "True"}})
     config = config_parser["redbot"]
 
     resource = HttpResource(config, descend=args.descend)
