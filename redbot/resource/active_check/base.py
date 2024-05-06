@@ -51,10 +51,12 @@ class SubRequest(RedFetcher, metaclass=ABCMeta):
         modified_headers = self.modify_request_headers(
             list(self.base.request.headers.text)
         )
+        assert self.base.request.uri, "Base URI not set in SubRequest.check"
+        assert self.base.request.method, "Base method not set in SubRequest.check"
         RedFetcher.set_request(
             self,
-            self.base.request.uri or "",
-            self.base.request.method or "",
+            self.base.request.uri,
+            self.base.request.method,
             modified_headers,
             self.base.request_content,
         )
