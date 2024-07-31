@@ -257,8 +257,9 @@ console.log("{time.time() - self.start:3.3f} {e_js(message)}");
 
         Request headers are copied over from the current context.
         """
-        assert self.resource.request.uri, "resource.request.uri not set in redbot_link"
         uri = self.resource.request.uri
+        if not uri:
+            return Markup("-")
         args: List[Tuple[str, str]] = []
         if check_name:
             args.append(("check_name", check_name))
