@@ -96,7 +96,9 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         if self.resource.response.complete:
             validator_link = self.validators.get(media_type, None)
             if validator_link:
-                validator_link = validator_link % e_query_arg(self.resource.request.uri)
+                validator_link = validator_link % e_query_arg(
+                    self.resource.request.uri or ""
+                )
             tpl = self.templates.get_template("response_finish.html")
             self.output(
                 tpl.render(

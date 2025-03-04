@@ -12,6 +12,7 @@ from redbot.type import StrHeaderListType
 
 class LmValidate(SubRequest):
     "If Last-Modified is present, see if it will validate."
+
     check_name = "Last-Modified Validation"
     response_phrase = "The Last-Modified validation response"
     _weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]

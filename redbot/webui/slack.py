@@ -94,9 +94,8 @@ def slack_run(webui: "RedWebUi") -> None:
 
 def verify_slack_secret(webui: "RedWebUi") -> bool:
     """Verify the slack secret."""
-    slack_signing_secret = webui.config.get("slack_signing_secret", fallback="").encode(
-        "utf-8"
-    )
+    config_secret = webui.config.get("slack_signing_secret") or ""
+    slack_signing_secret = config_secret.encode("utf-8")
     timestamps = get_header(webui.req_headers, b"x-slack-request-timestamp")
     if not timestamps or not timestamps[0].isdigit():
         return False

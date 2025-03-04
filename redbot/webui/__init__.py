@@ -103,7 +103,7 @@ class RedWebUi:
 
             if (
                 "save" in self.query_string
-                and self.config.get("save_dir", "")
+                and self.config.get("save_dir")
                 and self.test_id
             ):
                 extend_saved_test(self)
@@ -175,10 +175,8 @@ class RedWebUi:
         if len(referers) > 1:
             referer_error = "Multiple referers not allowed."
 
-        referer_spam_domains = [
-            i.strip()
-            for i in self.config.get("referer_spam_domains", fallback="").split()
-        ]
+        config_spam_domains = self.config.get("referer_spam_domains") or ""
+        referer_spam_domains = [i.strip() for i in config_spam_domains.split()]
         if (
             referer_spam_domains
             and referers

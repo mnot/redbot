@@ -51,7 +51,7 @@ class CaptchaHandler:
         if (
             CAPTCHA_PROVIDERS.get(self.provider, "")
             and self.secret
-            and self.webui.config.get("captcha_sitekey", "")
+            and self.webui.config.get("captcha_sitekey")
         ):
             return True
         return False

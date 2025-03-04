@@ -19,6 +19,7 @@ if TYPE_CHECKING:
 
 class RangeRequest(SubRequest):
     "Check for partial content support (if advertised)"
+
     check_name = "Partial Content"
     response_phrase = "The partial response"
 
