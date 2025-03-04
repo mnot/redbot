@@ -2,9 +2,7 @@
 
 REDbot is lint for HTTP resources.
 
-It checks HTTP resources for feature support and common protocol problems. You can use the public
-instance on <https://redbot.org/>, or you can install it locally and use it on the command line, or
-even self-host your own Web checker.
+It checks HTTP resources for feature support and common protocol problems at the HTTP semantic and caching layers. You can use the public instance on <https://redbot.org/>, or you can install it locally.
 
 [![Test](https://github.com/mnot/redbot/actions/workflows/test.yml/badge.svg)](https://github.com/mnot/redbot/actions/workflows/test.yml)
 
