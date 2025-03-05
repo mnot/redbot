@@ -92,6 +92,7 @@ dummy-variables-rgx = "response_start|response_body|response_done|error|formatte
 
 [tool.pylint.design]
 max-args=10
+max-positional-arguments=10
 max-locals=35
 max-branches=25
 max-statements=100
