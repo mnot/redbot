@@ -245,7 +245,7 @@ class HeaderPresenter:
         if name_token[0] != "_" and name_token != "show" and hasattr(self, name_token):
             content: Markup = getattr(self, name_token)(name, value)
             return content
-        return Markup(self._wrap(escape(value), len(name)))
+        return escape(self._wrap(value, len(name)))
 
     def bare_uri(self, name: str, value: str) -> str:
         "Present a bare URI header value"
