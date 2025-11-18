@@ -252,7 +252,7 @@ class RedFetcher(thor.events.EventEmitter):
             "debug",
             f"fetch error {self.request.uri} ({self.check_name}) - {error.desc}",
         )
-        assert error.detail, "detail not set in _response_error"
+        assert error.detail is not None, "detail not set in _response_error"
         err_sample = error.detail[:40] or ""
         if isinstance(error, httperr.ExtraDataError):
             if self.response.status_code == 304:
