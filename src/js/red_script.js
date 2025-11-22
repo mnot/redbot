@@ -39,7 +39,7 @@ docReady(function () {
   })
 })
 
-function getCaptchaObject () {
+function getCaptchaObject() {
   switch (config.captcha_provider) {
     case 'hcaptcha': return hcaptcha
     case 'turnstile': return turnstile
@@ -47,12 +47,13 @@ function getCaptchaObject () {
   }
 }
 
-function captchaLink (e) {
+function captchaLink(e) {
   const form = e.target.closest('form')
   const captcha = getCaptchaObject()
   if (captcha && !document.cookie.split(';').some((item) =>
     item.trim().startsWith('human_hmac='))) {
     qs('#captcha_popup').style.display = 'block'
+    qs('#captcha_popup').innerHTML = ''
     const size = (config.captcha_provider === 'hcaptcha') ? 'invisible' : 'compact'
     const widgetId = captcha.render('#captcha_popup', {
       size,
@@ -76,7 +77,7 @@ function captchaLink (e) {
   e.preventDefault()
 }
 
-function submitForm (form) {
+function submitForm(form) {
   if (config.captcha_provider) {
     qs('#captcha_popup').style.display = 'none'
   }
@@ -87,7 +88,7 @@ function submitForm (form) {
 
 const secrets = ['captcha_token']
 
-function serializeForm (form) {
+function serializeForm(form) {
   const q = []
   for (let i = form.elements.length - 1; i >= 0; i = i - 1) {
     const element = form.elements[i]
