@@ -119,7 +119,7 @@ build: venv
 
 changelog.md:
 	$(eval PREV_RELEASE=$(shell git tag --sort=-taggerdate -l v* | head -1))
-	git --no-pager log --pretty="- %s" $(PREV_RELEASE)..HEAD --grep "^Changed:" --grep "^Fixed:" --grep "^Added:" --grep "^Changed:" --grep "^Removed:" --output=$@
+	git --no-pager log --pretty="- %s" $(PREV_RELEASE)..HEAD --grep "^Changed:" --grep "^Fixed:" --grep "^Added:" --grep "^Removed:" --output=$@
 	sed -i "" -e "1s/^/\n\n/" $@
 
 # Manual pypi publication; no GitHub release
