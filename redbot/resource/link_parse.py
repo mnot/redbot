@@ -11,7 +11,7 @@ from typing import Optional, Any, Callable, Dict, List, Tuple
 
 from httplint.field.utils import split_string, unquote_string
 from httplint.message import HttpMessageLinter
-from httplint.syntax import rfc7231
+from httplint.syntax import rfc9110
 
 
 DEFAULT_ENCODING = "utf-8"
@@ -116,7 +116,7 @@ class HTMLLinkParser(HTMLParser):
                     media_type, params = ct, ""
                 media_type = media_type.lower()
                 param_dict: Dict[str, Optional[str]] = {}
-                for param in split_string(params, rfc7231.parameter, r"\s*;\s*"):
+                for param in split_string(params, rfc9110.parameter, r"\s*;\s*"):
                     try:
                         attr, val = param.split("=", 1)
                         param_dict[attr.lower()] = unquote_string(val)
