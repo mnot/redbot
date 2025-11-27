@@ -128,6 +128,8 @@ class SlackFormatter(Formatter):
             out.append(f"*{category.value}*")
         for thing in notes:
             out.append(f" {self.emoji.get(thing.level, '•')} {thing.summary}")
+            for subnote in thing.subnotes:
+                out.append(f"   {self.emoji.get(subnote.level, '•')} {subnote.summary}")
         out.append(NL)
         return self.markdown_block(NL.join(out))
 

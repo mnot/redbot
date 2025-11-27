@@ -111,6 +111,12 @@ class BaseTextFormatter(Formatter):
                 out.append("")
                 out.extend("    " + line for line in self.format_text(note))
                 out.append("")
+            for subnote in note.subnotes:
+                out.append(f"    * {self.colorize(subnote.level, subnote.summary)}")
+                if self.verbose:
+                    out.append("")
+                    out.extend("      " + line for line in self.format_text(subnote))
+                    out.append("")
         out.append(NL)
         return NL.join(out)
 

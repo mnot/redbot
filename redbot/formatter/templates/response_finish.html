@@ -78,6 +78,15 @@
             {% endif %}
                 <li class='{{ note.level.value }} note' data-subject='{{ note.subject }}'>
                     <span>{{ note.summary }}<span class='tip'>{{ note.detail }}</span></span>
+                    {% if note.subnotes %}
+                    <ul>
+                        {% for subnote in note.subnotes %}
+                        <li class='{{ subnote.level.value }} note' data-subject='{{ subnote.subject }}'>
+                            <span>{{ subnote.summary }}<span class='tip'>{{ subnote.detail }}</span></span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
                 </li>
             {% if loop.last %}
             </ul>

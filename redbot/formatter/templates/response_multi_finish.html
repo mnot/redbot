@@ -9,20 +9,21 @@
     <th title="How long a cache can treat the response as fresh.">freshness</th>
     <th title="Whether If-Modified-Since validation is supported, using Last-Modified.">IMS</th>
     <th title="Whether If-None-Match validation is supported, using ETags.">INM</th>
-    <th title="Whether negotiation for gzip compression is supported; if so, the percent of the original size saved.">gzip</th>
+    <th title="Whether negotiation for gzip compression is supported; if so, the percent of the original size saved.">
+        gzip</th>
     <th title="Whether partial responses are supported.">partial</th>
     <th title="Issues encountered.">notes</th>
 </tr>
 {%- endmacro %}
 
 {% macro yes_no(value) %}
-    {% if value == True %}
-        <span class="yes"><img src="{{ static }}/icons/check-circle.svg"/></span>
-    {% elif value == False %}
-        <span class="no"><img src="{{ static }}/icons/times-circle.svg"/></span>
-    {% elif value == None %}
-        <span class="maybe"><img src="{{ static }}/icons/question-circle.svg"/></span>
-    {% endif %}
+{% if value == True %}
+<span class="yes"><img src="{{ static }}/icons/check-circle.svg" /></span>
+{% elif value == False %}
+<span class="no"><img src="{{ static }}/icons/times-circle.svg" /></span>
+{% elif value == None %}
+<span class="maybe"><img src="{{ static }}/icons/question-circle.svg" /></span>
+{% endif %}
 {%- endmacro %}
 
 <table id='summary'>
@@ -36,16 +37,20 @@
     {% for resource in droids %}
     <tr class="droid">
         <td class="uri">
-                {% set pclass = " preview" if resource.response.headers.parsed.get('content-type', [''])[0][:6] == "image/" else "" %}
-                {% set fclass = " fade" if resource.request.uri| length > 80 else "" %}
-                {% set class = pclass + fclass %}
-                {% set display_uri = resource.request.uri[:80] %}
-                {{ resource.request.uri|redbot_link(display_uri, use_stored=False, css_class=class, title=resource.request.uri, referer=True) }}
-                </a>
+            {% set pclass = " preview" if resource.response.headers.parsed.get('content-type', [''])[0][:6] == "image/"
+            else "" %}
+            {% set fclass = " fade" if resource.request.uri| length > 80 else "" %}
+            {% set class = pclass + fclass %}
+            {% set display_uri = resource.request.uri[:80] %}
+            {{ resource.request.uri|redbot_link(display_uri, use_stored=False, css_class=class,
+            title=resource.request.uri, referer=True) }}
+            </a>
         </td>
-    {% if resource.response.complete %}
-        {% if resource.response.status_code in ["301", "302", "303", "307", "308"] and "location" in resource.response.headers.parsed %}
-        <td>{{ resource.response.headers.parsed['location']|redbot_link(resource.response.status_code, use_stored=False, descend=True, referer=True) }}</td>
+        {% if resource.response.complete %}
+        {% if resource.response.status_code in ["301", "302", "303", "307", "308"] and "location" in
+        resource.response.headers.parsed %}
+        <td>{{ resource.response.headers.parsed['location']|redbot_link(resource.response.status_code, use_stored=False,
+            descend=True, referer=True) }}</td>
         {% elif resource.response.status_code in ["400", "404", "410"] %}
         <td class="bad">{{ resource.response.status_code }}</td>
         {% else %}
@@ -65,19 +70,20 @@
         {% endif %}
         <td>{{ yes_no(resource.partial_support) }}</td>
         <td>
-        {% for problem in resource.notes if problem.level in [levels.WARN, levels.BAD] %}
-            <span class='prob_num'>{{ problem|index_problem }}<span class='hidden'><span class='tip'>{{ problem.detail }}</span></span></span>
-        {% endfor %}
+            {% for problem in resource.notes if problem.level in [levels.WARN, levels.BAD] %}
+            <span class='prob_num'>{{ problem|index_problem }}<span class='hidden'><span class='tip'>{{ problem.detail
+                        }}</span></span></span>
+            {% endfor %}
         </td>
-    {% else %}
-        <td colspan="11">
-        {% if resource.fetch_error == None %}
-        response incomplete
         {% else %}
-        {{ resource.fetch_error.desc or "unknown problem" }}
-        {% endif %}
+        <td colspan="11">
+            {% if resource.fetch_error == None %}
+            response incomplete
+            {% else %}
+            {{ resource.fetch_error.desc or "unknown problem" }}
+            {% endif %}
         </td>
-    {% endif %}
+        {% endif %}
     </tr>
     {% endfor %}
     {% endfor %}
@@ -100,11 +106,20 @@
     <br />
     <h2>Notes</h2>
     <ol>
-    {% for problem in problems %}
+        {% for problem in problems %}
         <li class='{{ problem.level.value }} {{ problem.subject }} note' data-offset='{{ loop.index }}'>
             {{ loop.index }}. <span>{{ problem.summary }}</span>
+            {% if problem.subnotes %}
+            <ul>
+                {% for subnote in problem.subnotes %}
+                <li class='{{ subnote.level.value }} {{ subnote.subject }} note'>
+                    <span>{{ subnote.summary }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
         </li>
-    {% endfor %}
+        {% endfor %}
     </ol>
 </div>
 

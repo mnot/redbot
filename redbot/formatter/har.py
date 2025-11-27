@@ -154,18 +154,20 @@ class HarFormatter(Formatter):
     def format_headers(hdrs: StrHeaderListType) -> List[Dict[str, str]]:
         return [{"name": n, "value": v} for n, v in hdrs]
 
-    def format_notes(self, resource: HttpResource) -> List[Dict[str, str]]:
-        out = []
-        for note in resource.response.notes:
-            msg = {
-                "note_id": note.__class__.__name__,
-                "subject": note.subject,
-                "category": note.category.name,
-                "level": note.level.name,
-                "summary": note.summary,
-            }
-            out.append(msg)
-        return out
+    def format_notes(self, resource: HttpResource) -> List[Dict[str, Any]]:
+        return [self.format_note(note) for note in resource.response.notes]
+
+    def format_note(self, note: Any) -> Dict[str, Any]:
+        msg = {
+            "note_id": note.__class__.__name__,
+            "subject": note.subject,
+            "category": note.category.name,
+            "level": note.level.name,
+            "summary": note.summary,
+        }
+        if note.subnotes:
+            msg["subnotes"] = [self.format_note(subnote) for subnote in note.subnotes]
+        return msg
 
 
 def isoformat(timestamp: float) -> str:
