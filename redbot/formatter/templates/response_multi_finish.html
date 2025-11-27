@@ -70,7 +70,7 @@
         {% endif %}
         <td>{{ yes_no(resource.partial_support) }}</td>
         <td>
-            {% for problem in resource.notes if problem.level in [levels.WARN, levels.BAD] %}
+            {% for problem in resource.response.notes if problem.level in [levels.WARN, levels.BAD] %}
             <span class='prob_num'>{{ problem|index_problem }}<span class='hidden'><span class='tip'>{{ problem.detail
                         }}</span></span></span>
             {% endfor %}
