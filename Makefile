@@ -4,7 +4,7 @@ NPX=npx --cache .npx-cache -y
 STANDARD=$(NPX) standard
 WEBPACK=$(NPX) webpack-cli
 CSSMIN=$(NPX) cssmin
-SASS=$(NPX) node-sass
+SASS=$(NPX) sass
 
 MODULES = src/node_modules
 JS_ENTRIES = ./src/js/red_script.js ./src/js/red_request.js ./src/js/red_response.js ./src/js/red_response_multi.js
