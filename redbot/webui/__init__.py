@@ -84,7 +84,10 @@ class RedWebUi:
             val_list = [item for sublist in val_list_list for item in sublist]
             # Ought to be sorted by q-value, but we don't do that.
             al_values = [
-                item.strip().split(b";", 1)[0].decode("ascii", "replace")
+                item.strip()
+                .split(b";", 1)[0]
+                .decode("ascii", "replace")
+                .replace("-", "_")
                 for item in val_list
             ]
             self.locale = (
