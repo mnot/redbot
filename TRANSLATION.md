@@ -1,20 +1,38 @@
-# Translation Workflow
+# Translation
 
 This document outlines the process for adding and updating translations in `redbot`.
 
-## Prerequisites
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-Ensure you have the development environment set up:
+- [Guidelines for Translators](#guidelines-for-translators)
+- [Guidelines for Code](#guidelines-for-code)
+- [Translation Workflow](#translation-workflow)
+  - [1. Extract Messages](#1-extract-messages)
+  - [2. Update PO Files](#2-update-po-files)
+  - [3. Translate](#3-translate)
+  - [4. Compile](#4-compile)
+  - [5. Verify](#5-verify)
+- [Adding a New Language](#adding-a-new-language)
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -e .[dev]
-```
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-## Coding Guidelines
 
-*   **Note Classes**: Strings assigned to `_summary` and `_text` in `Note` subclasses are automatically extracted.
+## Guidelines for Translators
+
+Suggestions and corrections for the translations in `redbot/translations` are welcome as GitHub Pull Requests. A few guidelines for doing so:
+
+* Assume a technical audience, but prioritise clarity, accuracy, and brevity. Do not assume deep domain-specific knowledge about HTTP.
+* Keep "%(foo)s" style variable in your content.
+* Line endings are not important.
+
+In your PR, please do not modify any file except for the .po. Making multiple suggestions in the same PR is fine.
+
+## Guidelines for Code
+
+Code that contains user-facing strings should follow these guidelines:
+
+*   **Note Classes**: Strings assigned to `_summary` and `_text` in `Note` and `RedbotNote` subclasses are automatically extracted.
 *   **Other Strings**: For other strings (e.g., class attributes, global constants), use the `_` lazy translation marker from `redbot.i18n`.
     ```python
     from redbot.i18n import _
@@ -29,7 +47,7 @@ pip install -e .[dev]
     msg = ngettext("%(num)s item", "%(num)s items", count) % {"num": count}
     ```
 
-## Workflow
+## Translation Workflow
 
 ### 1. Extract Messages
 
@@ -95,4 +113,4 @@ To add a new language (e.g., Spanish `es`):
 ```bash
 make i18n-init LANG=es
 ```
-Then follow steps 2-7 above.
+Then follow steps 2-5 above.
