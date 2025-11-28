@@ -4,3 +4,4 @@ include redbot/assets/*.map
 include redbot/assets/logo/*
 include redbot/assets/icons/*
 include redbot/formatter/templates/*
+recursive-include redbot/translations *.mo *.po *.pot
