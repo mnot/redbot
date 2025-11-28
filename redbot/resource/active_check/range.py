@@ -14,15 +14,19 @@ from redbot.resource.active_check.base import SubRequest
 from redbot.formatter import f_num
 from redbot.type import StrHeaderListType
 
+from redbot.i18n import _
+
 if TYPE_CHECKING:
     from redbot.resource import HttpResource  # pylint: disable=cyclic-import
 
 
 class RangeRequest(SubRequest):
-    "Check for partial content support (if advertised)"
+    """
+    Check for partial content support.
+    """
 
-    check_name = "Partial Content"
-    response_phrase = "The partial response"
+    check_name = _("Partial Content")
+    response_phrase = _("The partial response")
 
     def __init__(self, config: SectionProxy, resource: "HttpResource") -> None:
         self.range_start: int

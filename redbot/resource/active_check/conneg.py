@@ -5,6 +5,7 @@ Subrequest for content negotiation checks.
 from httplint.note import categories, levels
 from redbot.note import RedbotNote
 
+from redbot.i18n import _
 from redbot.resource.active_check.base import SubRequest
 from redbot.formatter import f_num
 from redbot.type import StrHeaderListType
@@ -15,8 +16,8 @@ class ConnegCheck(SubRequest):
     See if content negotiation for compression is supported, and how.
     """
 
-    check_name = "Content Negotiation"
-    response_phrase = "The compressed response"
+    check_name = _("Content Negotiation")
+    response_phrase = _("The compressed response")
 
     def modify_request_headers(
         self, base_headers: StrHeaderListType

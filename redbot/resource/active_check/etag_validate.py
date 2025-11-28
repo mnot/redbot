@@ -5,15 +5,18 @@ Subrequest for ETag validation checks.
 from httplint.note import categories, levels
 from redbot.note import RedbotNote
 
+from redbot.i18n import _
 from redbot.resource.active_check.base import SubRequest, MISSING_HDRS_304
 from redbot.type import StrHeaderListType
 
 
 class ETagValidate(SubRequest):
-    "If an ETag is present, see if it will validate."
+    """
+    If the response has an ETag, try to validate it.
+    """
 
-    check_name = "ETag Validation"
-    response_phrase = "The ETag validation response"
+    check_name = _("ETag Validation")
+    response_phrase = _("The ETag validation response")
 
     def modify_request_headers(
         self, base_headers: StrHeaderListType

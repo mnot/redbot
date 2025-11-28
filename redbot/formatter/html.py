@@ -23,7 +23,7 @@ from redbot.formatter.html_base import (
     NL,
 )
 from redbot.resource import HttpResource, active_check
-from redbot.i18n import _, LazyProxy
+from redbot.i18n import _, LazyProxy, ngettext
 
 
 class SingleEntryHtmlFormatter(BaseHtmlFormatter):
@@ -197,7 +197,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     continue
                 out.append(
                     f'<span class="req_link">'
-                    f'({self.redbot_link(f"{check_name} response", check_name=check_name)}'
+                    f'({self.redbot_link(_("%s response") % _(check_name), check_name=check_name)}'
                 )
                 smsgs = [
                     note
@@ -207,10 +207,11 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     if note.level in [levels.BAD]
                     and note not in self.resource.response.notes
                 ]
-                if len(smsgs) == 1:
-                    out.append(f" - {len(smsgs)} problem\n")
-                elif smsgs:
-                    out.append(f" - {len(smsgs)} problems\n")
+                if smsgs:
+                    out.append(
+                        ngettext(" - %d problem\n", " - %d problems\n", len(smsgs))
+                        % len(smsgs)
+                    )
                 out.append(")</span>")
         return Markup(NL.join(out))
 

@@ -7,15 +7,18 @@ from datetime import datetime
 from httplint.note import categories, levels
 from redbot.note import RedbotNote
 
+from redbot.i18n import _
 from redbot.resource.active_check.base import SubRequest, MISSING_HDRS_304
 from redbot.type import StrHeaderListType
 
 
 class LmValidate(SubRequest):
-    "If Last-Modified is present, see if it will validate."
+    """
+    If the response has a Last-Modified, try to validate it.
+    """
 
-    check_name = "Last-Modified Validation"
-    response_phrase = "The Last-Modified validation response"
+    check_name = _("Last-Modified Validation")
+    response_phrase = _("The Last-Modified validation response")
     _weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     _months = [
         None,

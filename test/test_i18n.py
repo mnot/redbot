@@ -211,5 +211,55 @@ class TestI18n(unittest.TestCase):
             self.assertIn("Cette réponse a du contenu.", note.summary)
             self.assertIn("HTTP définit quelques situations spéciales", note.detail)
 
+
+    def test_problem_pluralization(self):
+        from redbot.formatter.html import SingleEntryHtmlFormatter
+        from redbot.resource import active_check, HttpResource
+        from httplint.note import Note, levels, categories
+        from redbot.i18n import ngettext
+
+        # Mock resource and subrequests
+        resource = MagicMock(spec=HttpResource)
+        resource.response = MagicMock()
+        resource.request = MagicMock()
+        resource.subreqs = {}
+        
+        # Mock a subrequest with notes
+        check_name = active_check.ConnegCheck.check_name
+        subreq = MagicMock()
+        subreq.fetch_started = True
+        
+        # Create a mock note
+        note = MagicMock(spec=Note)
+        note.level = levels.BAD
+        
+        subreq.response.notes = [note]
+        resource.subreqs[check_name] = subreq
+        resource.response.notes = [] # Ensure note is not in main response
+        
+        formatter = SingleEntryHtmlFormatter(MagicMock(), resource, MagicMock(), {"nonce": "test"})
+        
+        # Test singular
+        with patch("redbot.formatter.html.ngettext") as mock_ngettext, \
+             patch("redbot.formatter.html._") as mock_gettext:
+            mock_ngettext.side_effect = lambda s, p, n: s if n == 1 else p
+            mock_gettext.side_effect = lambda s: s
+            formatter.format_subrequest_messages(categories.CONNEG)
+            mock_ngettext.assert_called_with(" - %d problem\n", " - %d problems\n", 1)
+            # Check calls to gettext
+            # We expect calls for "%s response" and check_name (e.g. "Content Negotiation")
+            # Since check_name is dynamic in the code, we just check if it was called.
+            self.assertTrue(mock_gettext.call_count >= 2)
+            
+        # Test plural
+        subreq.response.notes = [note, note]
+        with patch("redbot.formatter.html.ngettext") as mock_ngettext, \
+             patch("redbot.formatter.html._") as mock_gettext:
+            mock_ngettext.side_effect = lambda s, p, n: s if n == 1 else p
+            mock_gettext.side_effect = lambda s: s
+            formatter.format_subrequest_messages(categories.CONNEG)
+            mock_ngettext.assert_called_with(" - %d problem\n", " - %d problems\n", 2)
+            self.assertTrue(mock_gettext.call_count >= 2)
+
 if __name__ == "__main__":
     unittest.main()

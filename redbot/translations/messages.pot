@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-11-28 18:36+1100\n"
+"POT-Creation-Date: 2025-11-29 09:04+1100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -37,19 +37,29 @@ msgstr ""
 msgid "<p class='btw'>REDbot isn't showing all content, because it's so big!</p>"
 msgstr ""
 
-#: redbot/formatter/html_base.py:137
+#: redbot/formatter/html.py:200
+#, python-format
+msgid "%s response"
+msgstr ""
+
+#: redbot/formatter/html.py:212
+#, python-format
+msgid " - %d problem\n"
+msgstr ""
+
+#: redbot/formatter/html_base.py:136
 msgid "add a request header"
 msgstr ""
 
-#: redbot/formatter/html_base.py:138
+#: redbot/formatter/html_base.py:137
 msgid "view notes"
 msgstr ""
 
-#: redbot/formatter/html_base.py:139
+#: redbot/formatter/html_base.py:138
 msgid "view body"
 msgstr ""
 
-#: redbot/formatter/html_base.py:142
+#: redbot/formatter/html_base.py:141
 #, python-format
 msgid "Setting the %s request header can lead to unpredictable results."
 msgstr ""
@@ -441,11 +451,11 @@ msgid ""
 "their cached copies."
 msgstr ""
 
-#: redbot/resource/active_check/conneg.py:145
+#: redbot/resource/active_check/conneg.py:146
 msgid "There was a problem checking for Content Negotiation support."
 msgstr ""
 
-#: redbot/resource/active_check/conneg.py:146
+#: redbot/resource/active_check/conneg.py:147
 #, python-format
 msgid ""
 "When REDbot tried to check the resource for content negotiation support, "
@@ -456,14 +466,14 @@ msgid ""
 "Trying again might fix it."
 msgstr ""
 
-#: redbot/resource/active_check/conneg.py:157
+#: redbot/resource/active_check/conneg.py:158
 #, python-format
 msgid ""
 "Content negotiation for gzip compression is supported, saving "
 "%(savings)s%%."
 msgstr ""
 
-#: redbot/resource/active_check/conneg.py:160
+#: redbot/resource/active_check/conneg.py:161
 #, python-format
 msgid ""
 "HTTP supports compression of responses by negotiating for `Content-"
@@ -475,14 +485,14 @@ msgid ""
 "The compressed response's headers are displayed."
 msgstr ""
 
-#: redbot/resource/active_check/conneg.py:171
+#: redbot/resource/active_check/conneg.py:172
 #, python-format
 msgid ""
 "Content negotiation for gzip compression makes the response %(savings)s%%"
 " larger."
 msgstr ""
 
-#: redbot/resource/active_check/conneg.py:172
+#: redbot/resource/active_check/conneg.py:173
 #, python-format
 msgid ""
 "HTTP supports compression of responses by negotiating for `Content-"
@@ -501,24 +511,24 @@ msgid ""
 "The compressed response's headers are displayed."
 msgstr ""
 
-#: redbot/resource/active_check/conneg.py:187
+#: redbot/resource/active_check/conneg.py:188
 msgid "Content negotiation for gzip compression isn't supported."
 msgstr ""
 
-#: redbot/resource/active_check/conneg.py:188
+#: redbot/resource/active_check/conneg.py:189
 msgid ""
 "HTTP supports compression of responses by negotiating for `Content-"
 "Encoding`. When REDbot asked for\n"
 "a compressed response, the resource did not provide one."
 msgstr ""
 
-#: redbot/resource/active_check/conneg.py:196
+#: redbot/resource/active_check/conneg.py:197
 msgid ""
 "The compressed response is negotiated, but doesn't have an appropriate "
 "Vary header."
 msgstr ""
 
-#: redbot/resource/active_check/conneg.py:197
+#: redbot/resource/active_check/conneg.py:198
 msgid ""
 "All content negotiated responses need to have a `Vary` header that "
 "reflects the header(s) used to\n"
@@ -529,11 +539,11 @@ msgid ""
 "`Accept-Encoding`, the request header used."
 msgstr ""
 
-#: redbot/resource/active_check/conneg.py:208
+#: redbot/resource/active_check/conneg.py:209
 msgid "A gzip-compressed response was sent when it wasn't asked for."
 msgstr ""
 
-#: redbot/resource/active_check/conneg.py:209
+#: redbot/resource/active_check/conneg.py:210
 msgid ""
 "HTTP supports compression of responses by negotiating for `Content-"
 "Encoding`. Even though RED\n"
@@ -544,11 +554,11 @@ msgid ""
 "expecting a compressed response."
 msgstr ""
 
-#: redbot/resource/active_check/conneg.py:220
+#: redbot/resource/active_check/conneg.py:221
 msgid "The resource doesn't send Vary consistently."
 msgstr ""
 
-#: redbot/resource/active_check/conneg.py:221
+#: redbot/resource/active_check/conneg.py:222
 #, python-format
 msgid ""
 "HTTP requires that the `Vary` response header be sent consistently for "
@@ -568,11 +578,11 @@ msgid ""
 "cache key for a given URI is."
 msgstr ""
 
-#: redbot/resource/active_check/conneg.py:238
+#: redbot/resource/active_check/conneg.py:239
 msgid "The response status is different when content negotiation happens."
 msgstr ""
 
-#: redbot/resource/active_check/conneg.py:239
+#: redbot/resource/active_check/conneg.py:240
 #, python-format
 msgid ""
 "When content negotiation is used, the response status shouldn't change "
@@ -587,12 +597,12 @@ msgid ""
 "this."
 msgstr ""
 
-#: redbot/resource/active_check/conneg.py:252
+#: redbot/resource/active_check/conneg.py:253
 #, python-format
 msgid "The %(header)s header is different when content negotiation happens."
 msgstr ""
 
-#: redbot/resource/active_check/conneg.py:253
+#: redbot/resource/active_check/conneg.py:254
 #, python-format
 msgid ""
 "When content negotiation is used, the %(header)s response header "
@@ -600,11 +610,11 @@ msgid ""
 "negotiated and non-negotiated responses."
 msgstr ""
 
-#: redbot/resource/active_check/conneg.py:261
+#: redbot/resource/active_check/conneg.py:262
 msgid "The response content is different when content negotiation happens."
 msgstr ""
 
-#: redbot/resource/active_check/conneg.py:262
+#: redbot/resource/active_check/conneg.py:263
 msgid ""
 "When content negotiation is used, the response content typically "
 "shouldn't change between negotiated\n"
@@ -615,11 +625,11 @@ msgid ""
 "requests. However, RED's output may be skewed as a result."
 msgstr ""
 
-#: redbot/resource/active_check/conneg.py:273
+#: redbot/resource/active_check/conneg.py:274
 msgid "The ETag doesn't change between negotiated representations."
 msgstr ""
 
-#: redbot/resource/active_check/conneg.py:274
+#: redbot/resource/active_check/conneg.py:275
 msgid ""
 "HTTP requires that the `ETag`s for two different responses associated "
 "with the same URI be\n"
@@ -636,11 +646,20 @@ msgid ""
 "bug](https://issues.apache.org/bugzilla/show_bug.cgi?id=39727)."
 msgstr ""
 
-#: redbot/resource/active_check/etag_validate.py:91
+#: redbot/resource/active_check/conneg.py:19
+#: redbot/translations/extra_strings.py:10
+msgid "Content Negotiation"
+msgstr ""
+
+#: redbot/resource/active_check/conneg.py:20
+msgid "The compressed response"
+msgstr ""
+
+#: redbot/resource/active_check/etag_validate.py:94
 msgid "There was a problem checking for ETag validation support."
 msgstr ""
 
-#: redbot/resource/active_check/etag_validate.py:92
+#: redbot/resource/active_check/etag_validate.py:95
 #, python-format
 msgid ""
 "When REDbot tried to check the resource for ETag validation support, "
@@ -651,11 +670,11 @@ msgid ""
 "Trying again might fix it."
 msgstr ""
 
-#: redbot/resource/active_check/etag_validate.py:103
+#: redbot/resource/active_check/etag_validate.py:106
 msgid "If-None-Match conditional requests are supported."
 msgstr ""
 
-#: redbot/resource/active_check/etag_validate.py:104
+#: redbot/resource/active_check/etag_validate.py:107
 msgid ""
 "HTTP allows clients to make conditional requests to see if a copy that "
 "they hold is still valid.\n"
@@ -666,11 +685,11 @@ msgid ""
 "response, indicating that it supports `ETag` validation."
 msgstr ""
 
-#: redbot/resource/active_check/etag_validate.py:114
+#: redbot/resource/active_check/etag_validate.py:117
 msgid "An If-None-Match conditional request returned the full content unchanged."
 msgstr ""
 
-#: redbot/resource/active_check/etag_validate.py:116
+#: redbot/resource/active_check/etag_validate.py:119
 msgid ""
 "HTTP allows clients to make conditional requests to see if a copy that "
 "they hold is still valid.\n"
@@ -683,14 +702,14 @@ msgid ""
 "changed, indicating that it doesn't support `ETag` validation."
 msgstr ""
 
-#: redbot/resource/active_check/etag_validate.py:128
-#: redbot/resource/active_check/etag_validate.py:145
+#: redbot/resource/active_check/etag_validate.py:131
+#: redbot/resource/active_check/etag_validate.py:148
 msgid ""
 "During validation, the ETag didn't change, even though the response "
 "content did."
 msgstr ""
 
-#: redbot/resource/active_check/etag_validate.py:129
+#: redbot/resource/active_check/etag_validate.py:132
 msgid ""
 "`ETag`s are supposed to uniquely identify the response representation; if"
 " the content changes, so\n"
@@ -707,7 +726,7 @@ msgid ""
 "If the changes are important, a different `ETag` should be used."
 msgstr ""
 
-#: redbot/resource/active_check/etag_validate.py:146
+#: redbot/resource/active_check/etag_validate.py:149
 #, python-format
 msgid ""
 "`ETag`s are supposed to uniquely identify the response representation; if"
@@ -725,13 +744,13 @@ msgid ""
 "`W/%(etag)s`. Otherwise, they need to use different `ETag`s."
 msgstr ""
 
-#: redbot/resource/active_check/etag_validate.py:161
+#: redbot/resource/active_check/etag_validate.py:164
 msgid ""
 "An If-None-Match conditional request returned the full content, but it "
 "had changed."
 msgstr ""
 
-#: redbot/resource/active_check/etag_validate.py:162
+#: redbot/resource/active_check/etag_validate.py:165
 msgid ""
 "HTTP allows clients to make conditional requests to see if a copy that "
 "they hold is still valid.\n"
@@ -745,12 +764,12 @@ msgid ""
 "supported."
 msgstr ""
 
-#: redbot/resource/active_check/etag_validate.py:174
+#: redbot/resource/active_check/etag_validate.py:177
 #, python-format
 msgid "An If-None-Match conditional request returned a %(inm_status)s status."
 msgstr ""
 
-#: redbot/resource/active_check/etag_validate.py:175
+#: redbot/resource/active_check/etag_validate.py:178
 #, python-format
 msgid ""
 "HTTP allows clients to make conditional requests to see if a copy that "
@@ -762,11 +781,19 @@ msgid ""
 "can't tell whether or not `ETag` validation is supported."
 msgstr ""
 
-#: redbot/resource/active_check/lm_validate.py:107
+#: redbot/resource/active_check/etag_validate.py:18
+msgid "ETag Validation"
+msgstr ""
+
+#: redbot/resource/active_check/etag_validate.py:19
+msgid "The ETag validation response"
+msgstr ""
+
+#: redbot/resource/active_check/lm_validate.py:110
 msgid "There was a problem checking for Last-Modified validation support."
 msgstr ""
 
-#: redbot/resource/active_check/lm_validate.py:108
+#: redbot/resource/active_check/lm_validate.py:111
 #, python-format
 msgid ""
 "When REDbot tried to check the resource for Last-Modified validation "
@@ -777,11 +804,11 @@ msgid ""
 "Trying again might fix it."
 msgstr ""
 
-#: redbot/resource/active_check/lm_validate.py:119
+#: redbot/resource/active_check/lm_validate.py:122
 msgid "If-Modified-Since conditional requests are supported."
 msgstr ""
 
-#: redbot/resource/active_check/lm_validate.py:120
+#: redbot/resource/active_check/lm_validate.py:123
 msgid ""
 "HTTP allows clients to make conditional requests to see if a copy that "
 "they hold is still valid.\n"
@@ -794,13 +821,13 @@ msgid ""
 "that it supports `Last-Modified` validation."
 msgstr ""
 
-#: redbot/resource/active_check/lm_validate.py:132
+#: redbot/resource/active_check/lm_validate.py:135
 msgid ""
 "An If-Modified-Since conditional request returned the full content "
 "unchanged."
 msgstr ""
 
-#: redbot/resource/active_check/lm_validate.py:135
+#: redbot/resource/active_check/lm_validate.py:138
 msgid ""
 "HTTP allows clients to make conditional requests to see if a copy that "
 "they hold is still valid.\n"
@@ -813,13 +840,13 @@ msgid ""
 "changed, indicating that it doesn't support `Last-Modified` validation."
 msgstr ""
 
-#: redbot/resource/active_check/lm_validate.py:147
+#: redbot/resource/active_check/lm_validate.py:150
 msgid ""
 "An If-Modified-Since conditional request returned the full content, but "
 "it had changed."
 msgstr ""
 
-#: redbot/resource/active_check/lm_validate.py:151
+#: redbot/resource/active_check/lm_validate.py:154
 msgid ""
 "HTTP allows clients to make conditional requests to see if a copy that "
 "they hold is still valid.\n"
@@ -833,12 +860,12 @@ msgid ""
 "is supported."
 msgstr ""
 
-#: redbot/resource/active_check/lm_validate.py:163
+#: redbot/resource/active_check/lm_validate.py:166
 #, python-format
 msgid "An If-Modified-Since conditional request returned a %(ims_status)s status."
 msgstr ""
 
-#: redbot/resource/active_check/lm_validate.py:166
+#: redbot/resource/active_check/lm_validate.py:169
 #, python-format
 msgid ""
 "HTTP allows clients to make conditional requests to see if a copy that "
@@ -852,11 +879,19 @@ msgid ""
 "whether or not `Last-Modified` validation is supported."
 msgstr ""
 
-#: redbot/resource/active_check/range.py:132
+#: redbot/resource/active_check/lm_validate.py:20
+msgid "Last-Modified Validation"
+msgstr ""
+
+#: redbot/resource/active_check/lm_validate.py:21
+msgid "The Last-Modified validation response"
+msgstr ""
+
+#: redbot/resource/active_check/range.py:136
 msgid "There was a problem checking for Partial Content support."
 msgstr ""
 
-#: redbot/resource/active_check/range.py:133
+#: redbot/resource/active_check/range.py:137
 #, python-format
 msgid ""
 "When REDbot tried to check the resource for partial content support, "
@@ -867,11 +902,11 @@ msgid ""
 "Trying again might fix it."
 msgstr ""
 
-#: redbot/resource/active_check/range.py:144
+#: redbot/resource/active_check/range.py:148
 msgid "The resource advertises support for non-standard range-units."
 msgstr ""
 
-#: redbot/resource/active_check/range.py:145
+#: redbot/resource/active_check/range.py:149
 msgid ""
 "The `Accept-Ranges` response header tells clients what `range-unit`s a "
 "resource is willing to\n"
@@ -881,11 +916,11 @@ msgid ""
 " to use it."
 msgstr ""
 
-#: redbot/resource/active_check/range.py:155
+#: redbot/resource/active_check/range.py:159
 msgid "A ranged request returned the correct partial content."
 msgstr ""
 
-#: redbot/resource/active_check/range.py:156
+#: redbot/resource/active_check/range.py:160
 msgid ""
 "This resource advertises support for ranged requests with `Accept-"
 "Ranges`; that is, it allows\n"
@@ -894,11 +929,11 @@ msgid ""
 "this response, which was returned correctly."
 msgstr ""
 
-#: redbot/resource/active_check/range.py:165
+#: redbot/resource/active_check/range.py:169
 msgid "A ranged request returned partial content, but it was incorrect."
 msgstr ""
 
-#: redbot/resource/active_check/range.py:166
+#: redbot/resource/active_check/range.py:170
 #, python-format
 msgid ""
 "This resource advertises support for ranged requests with `Accept-"
@@ -926,22 +961,22 @@ msgid ""
 "_(showing samples of up to 100 characters)_"
 msgstr ""
 
-#: redbot/resource/active_check/range.py:191
+#: redbot/resource/active_check/range.py:195
 msgid "A ranged request returned another representation."
 msgstr ""
 
-#: redbot/resource/active_check/range.py:192
+#: redbot/resource/active_check/range.py:196
 msgid ""
 "A new representation was retrieved when checking support of ranged "
 "request. This is not an error,\n"
 "it just indicates that REDbot cannot draw any conclusion at this time."
 msgstr ""
 
-#: redbot/resource/active_check/range.py:200
+#: redbot/resource/active_check/range.py:204
 msgid "A ranged request returned the full rather than partial content."
 msgstr ""
 
-#: redbot/resource/active_check/range.py:201
+#: redbot/resource/active_check/range.py:205
 msgid ""
 "This resource advertises support for ranged requests with `Accept-"
 "Ranges`; that is, it allows\n"
@@ -953,12 +988,12 @@ msgid ""
 " actually do so."
 msgstr ""
 
-#: redbot/resource/active_check/range.py:211
+#: redbot/resource/active_check/range.py:215
 #, python-format
 msgid "A ranged request returned a %(range_status)s status."
 msgstr ""
 
-#: redbot/resource/active_check/range.py:212
+#: redbot/resource/active_check/range.py:216
 #, python-format
 msgid ""
 "This resource advertises support for ranged requests; that is, it allows "
@@ -969,13 +1004,13 @@ msgid ""
 "REDbot was not expecting."
 msgstr ""
 
-#: redbot/resource/active_check/range.py:221
+#: redbot/resource/active_check/range.py:225
 msgid ""
 "Partial responses don't have the same support for compression that full "
 "ones do."
 msgstr ""
 
-#: redbot/resource/active_check/range.py:222
+#: redbot/resource/active_check/range.py:226
 msgid ""
 "This resource supports ranged requests and also supports negotiation for "
 "gzip compression, but\n"
@@ -987,11 +1022,11 @@ msgid ""
 "the bytes."
 msgstr ""
 
-#: redbot/resource/active_check/range.py:233
+#: redbot/resource/active_check/range.py:237
 msgid "The partial response is missing required headers."
 msgstr ""
 
-#: redbot/resource/active_check/range.py:234
+#: redbot/resource/active_check/range.py:238
 #, python-format
 msgid ""
 "HTTP requires `206 Partial Content` responses to have certain headers, if"
@@ -1006,16 +1041,21 @@ msgid ""
 "their stored copies."
 msgstr ""
 
+#: redbot/resource/active_check/range.py:28
+#: redbot/translations/extra_strings.py:14
+msgid "Partial Content"
+msgstr ""
+
+#: redbot/resource/active_check/range.py:29
+msgid "The partial response"
+msgstr ""
+
 #: redbot/translations/extra_strings.py:8
 msgid "General"
 msgstr ""
 
 #: redbot/translations/extra_strings.py:9
 msgid "Browser Security"
-msgstr ""
-
-#: redbot/translations/extra_strings.py:10
-msgid "Content Negotiation"
 msgstr ""
 
 #: redbot/translations/extra_strings.py:11
@@ -1028,9 +1068,5 @@ msgstr ""
 
 #: redbot/translations/extra_strings.py:13
 msgid "Connection"
-msgstr ""
-
-#: redbot/translations/extra_strings.py:14
-msgid "Partial Content"
 msgstr ""
 

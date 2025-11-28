@@ -296,7 +296,7 @@ console.log("{time.time() - self.start:3.3f} {e_js(message)}");
         if descend:
             args.append(("descend", "1"))
         argstring = "".join(
-            f"""<input type='hidden' name='{arg[0]}' value='{arg[1].replace("'", '"')}' />"""
+            f"""<input type='hidden' name='{arg[0]}' value='{str(arg[1]).replace("'", '"')}' />"""
             for arg in args
         )
         return Markup(
