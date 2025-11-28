@@ -111,7 +111,7 @@ class TestI18n(unittest.TestCase):
         past = now - 3600 # 1 hour ago
         
         with patch("redbot.formatter.get_locale", return_value="en"):
-            self.assertEqual(relative_time(past, now), "60 minutes ago")
+            self.assertEqual(str(relative_time(past, now)), "60 minutes ago")
             
         with patch("redbot.formatter.get_locale", return_value="fr"):
             # Babel's output for 1 hour ago in French
@@ -119,8 +119,88 @@ class TestI18n(unittest.TestCase):
             # We should check what Babel actually returns or just that it's different/valid.
             # For now, let's just check it runs without error and returns a string.
             res = relative_time(past, now)
-            self.assertIsInstance(res, str)
-            self.assertTrue("heure" in res or "minute" in res) # Assuming 'heure' or 'minute' is in the output
+            # self.assertIsInstance(res, str) # No longer a string
+            res_str = str(res)
+            self.assertTrue("heure" in res_str or "minute" in res_str) # Assuming 'heure' or 'minute' is in the output
+
+    def test_fetcher_locale_propagation(self):
+        """
+        Verify that RedFetcher captures the locale at check() time and applies it
+        during callbacks, ensuring httplint notes use the correct locale.
+        """
+        from redbot.resource.fetch import RedFetcher
+        from redbot.i18n import set_locale
+        
+        class MockExchange:
+            def __init__(self):
+                self.callbacks = {}
+                self.res_version = b"1.1"
+                self.input_transfer_length = 0
+                self.input_header_length = 0
+
+            def on(self, event, callback):
+                self.callbacks[event] = callback
+
+            def once(self, event, callback):
+                self.callbacks[event] = callback
+                
+            def request_start(self, method, uri, headers):
+                pass
+                
+            def request_body(self, chunk):
+                pass
+                
+            def request_done(self, trailers):
+                pass
+
+            def trigger_response(self):
+                # Simulate response
+                # 604800 seconds = 1 week
+                if "response_start" in self.callbacks:
+                    self.callbacks["response_start"](b"200", b"OK", [
+                        (b"Date", time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime()).encode('ascii')),
+                        (b"Age", b"604800"), 
+                        (b"Cache-Control", b"max-age=2000000")
+                    ])
+                if "response_done" in self.callbacks:
+                    self.callbacks["response_done"]([])
+
+        class MockClient:
+            def __init__(self):
+                self.check_ip = None
+                
+            def exchange(self):
+                return MockExchange()
+
+        config = MagicMock()
+        config.getint.return_value = 1000
+        config.getboolean.return_value = False
+        
+        fetcher = RedFetcher(config)
+        fetcher.client = MockClient()
+        fetcher.set_request("http://example.com/")
+        
+        # Run check() within a French locale context
+        with set_locale("fr"):
+            fetcher.check()
+            
+        # Trigger response callbacks OUTSIDE the locale context
+        # This simulates the async behavior where callbacks run on the loop without the context
+        fetcher.exchange.trigger_response()
+            
+        # Check notes for French content
+        # "1 week" in French is "1 semaine".
+        # We need to set the locale to 'fr' when converting to string, simulating the formatter's behavior.
+        with set_locale("fr"):
+            found = False
+            for note in fetcher.response.notes:
+                if note.__class__.__name__ == "CURRENT_AGE":
+                    # note.vars['age'] is now a RelativeTime object, so we convert to str
+                    age_str = str(note.vars['age'])
+                    if "semaine" in age_str or "jours" in age_str:
+                        found = True
+        
+        self.assertTrue(found, "Did not find French 'semaine' in CURRENT_AGE note, lazy localization failed.")
 
 if __name__ == "__main__":
     unittest.main()
