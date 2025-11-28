@@ -23,6 +23,7 @@ clean: clean_py
 .PHONY: lint
 lint: lint_py
 	$(STANDARD) "src/js/*.js"
+	$(J2LINT) "redbot/formatter/templates/"
 
 .PHONY: typecheck
 typecheck: typecheck_py
