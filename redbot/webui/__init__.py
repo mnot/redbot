@@ -270,6 +270,7 @@ class RedWebUi:
                     f"{CSP} 'strict-dynamic' 'nonce-{self.nonce}'".encode("ascii"),
                 ),
                 (b"Content-Language", self.locale.encode("ascii")),
+                (b"Vary", b"Accept-Language"),
             ]
             + extra_headers,
         )
@@ -325,6 +326,7 @@ class RedWebUi:
                     f"{CSP} 'strict-dynamic' 'nonce-{self.nonce}'".encode("ascii"),
                 ),
                 (b"Content-Language", self.locale.encode("ascii")),
+                (b"Vary", b"Accept-Language"),
             ],
         )
         with set_locale(self.locale):
@@ -355,6 +357,8 @@ class RedWebUi:
                     f"{CSP} 'strict-dynamic' 'nonce-{self.nonce}'".encode("ascii"),
                 ),
                 (b"Content-Language", self.locale.encode("ascii")),
+                (b"Vary", b"Accept-Language"),
+
             ],
         )
         with set_locale(self.locale):
