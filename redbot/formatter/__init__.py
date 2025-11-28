@@ -219,7 +219,7 @@ def f_num(i: int, by1024: bool = False) -> str:
     return format_decimal(i, locale=current_locale)
 
 
-def relative_time(utime: float, now: Optional[float] = None, show_sign: int = 1) -> str:
+def relative_time(utime: float, now: Optional[float] = None, show_sign: int = 1) -> Any:
     """
     Given two times, return a string that explains how far apart they are.
     show_sign can be:
