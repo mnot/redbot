@@ -1,4 +1,4 @@
-import codecs
+
 from functools import partial
 import json
 import os
@@ -225,7 +225,7 @@ console.log("{time.time() - self.start:3.3f} {e_js(message)}");
             for extra_file in extra_files:
                 extra_path = os.path.join(extra_dir, extra_file)
                 try:
-                    with codecs.open(
+                    with open(
                         extra_path,
                         mode="r",
                         encoding="utf-8",

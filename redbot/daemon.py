@@ -282,11 +282,11 @@ def main() -> None:
         help="Dump slow operations to STDERR",
     )
     parser.add_argument(
-        "config_file", type=argparse.FileType("r"), help="configuration file"
+        "config_file", type=str, help="configuration file"
     )
     args = parser.parse_args()
     conf = ConfigParser()
-    conf.read_file(args.config_file)
+    conf.read(args.config_file)
 
     if args.debug:
         _loop.debug = True
