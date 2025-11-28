@@ -80,9 +80,16 @@ class RedWebUi:
         # locale negotiation
         accept_language = get_header(self.req_headers, b"accept-language")
         if accept_language:
+            val_list_list = [fline.split(b",") for fline in accept_language]
+            val_list = [item for sublist in val_list_list for item in sublist]
+            # Ought to be sorted by q-value, but we don't do that.
+            al_values = [
+                item.strip().split(b";", 1)[0].decode("ascii", "replace")
+                for item in val_list
+            ]
             self.locale = (
                 negotiate_locale(
-                    [lang.decode(self.charset, "replace") for lang in accept_language],
+                    al_values,
                     AVAILABLE_LOCALES,
                 )
                 or DEFAULT_LOCALE
@@ -358,7 +365,6 @@ class RedWebUi:
                 ),
                 (b"Content-Language", self.locale.encode("ascii")),
                 (b"Vary", b"Accept-Language"),
-
             ],
         )
         with set_locale(self.locale):
