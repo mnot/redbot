@@ -202,5 +202,14 @@ class TestI18n(unittest.TestCase):
         
         self.assertTrue(found, "Did not find French 'semaine' in CURRENT_AGE note, lazy localization failed.")
 
+
+    def test_redbot_note_detail_translation(self):
+        from redbot.resource.fetch import BODY_NOT_ALLOWED
+        from redbot.i18n import set_locale
+        with set_locale("fr"):
+            note = BODY_NOT_ALLOWED("subject", sample="test sample")
+            self.assertIn("Cette réponse a du contenu.", note.summary)
+            self.assertIn("HTTP définit quelques situations spéciales", note.detail)
+
 if __name__ == "__main__":
     unittest.main()

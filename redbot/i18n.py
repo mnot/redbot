@@ -11,6 +11,7 @@ from httplint.i18n import set_locale as httplint_set_locale
 
 _LOCALE: ContextVar[str] = ContextVar("locale", default="en")
 LOCALE_DIR = os.path.join(os.path.dirname(__file__), "translations")
+_translations_cache: dict[str, Union[Translations, NullTranslations]] = {}
 
 AVAILABLE_LOCALES = ["en", "fr"]
 DEFAULT_LOCALE = "en"
@@ -69,5 +70,6 @@ def get_translator() -> Union[Translations, NullTranslations]:
     Get the translator for the current locale.
     """
     locale = get_locale()
-    # In a real implementation, we would cache these
-    return Translations.load(LOCALE_DIR, [locale])
+    if locale not in _translations_cache:
+        _translations_cache[locale] = Translations.load(LOCALE_DIR, [locale])
+    return _translations_cache[locale]
