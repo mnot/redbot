@@ -11,10 +11,14 @@ import time
 from typing import Optional, Any, Callable, List, Dict, Tuple, Type, TYPE_CHECKING
 import unittest
 
+from babel.numbers import format_decimal
 from markdown import Markdown
 import thor
 from thor.events import EventEmitter
 from typing_extensions import TypedDict
+from httplint.util import relative_time as _relative_time
+
+from redbot.i18n import get_locale, set_locale
 
 if TYPE_CHECKING:
     from redbot.resource import HttpResource  # pylint: disable=cyclic-import
@@ -106,10 +110,17 @@ class Formatter(EventEmitter):
         EventEmitter.__init__(self)
         self.config = config
         self.resource = resource
-        self.lang = config.get("lang", "en")
         self.output = output  # output file object
         self.kw = params
         self._markdown = Markdown(output_format="html")
+        self.locale = params.get("locale", "en")
+
+    def _wrap_context(self, func: Callable[..., Any]) -> Callable[..., Any]:
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            with set_locale(self.locale):
+                return func(*args, **kwargs)
+
+        return wrapper
 
     def bind_resource(self, display_resource: "HttpResource") -> None:
         """
@@ -118,15 +129,21 @@ class Formatter(EventEmitter):
         """
         self.resource = display_resource
         if display_resource.check_done:
-            self.start_output()
+            with set_locale(self.locale):
+                self.start_output()
             self._done()
         else:
             if display_resource.request.complete:
-                self.start_output()
+                with set_locale(self.locale):
+                    self.start_output()
             else:
-                display_resource.on("response_headers_available", self.start_output)
-            display_resource.response_content_processors.append(self.feed)
-            display_resource.on("status", self.status)
+                display_resource.on(
+                    "response_headers_available", self._wrap_context(self.start_output)
+                )
+            display_resource.response_content_processors.append(
+                self._wrap_context(self.feed)
+            )
+            display_resource.on("status", self._wrap_context(self.status))
             display_resource.on("debug", self.debug)
 
             # we want to wait just a little bit, for extra data.
@@ -135,7 +152,8 @@ class Formatter(EventEmitter):
                 thor.schedule(0.1, self._done)
 
     def _done(self) -> None:
-        self.finish_output()
+        with set_locale(self.locale):
+            self.finish_output()
         self.emit("formatter_done")
 
     def start_output(self) -> None:
@@ -158,7 +176,7 @@ class Formatter(EventEmitter):
 
     def debug(self, message: str) -> None:
         """
-        Debug output.
+        Debug to console.
         """
         return
 
@@ -187,17 +205,18 @@ class Formatter(EventEmitter):
 
 def f_num(i: int, by1024: bool = False) -> str:
     "Format a number according to the locale."
+    current_locale = get_locale()
     if by1024:
         kilo = int(i / 1024)
         mega = int(kilo / 1024)
         giga = int(mega / 1024)
         if giga:
-            return locale.format_string("%d", giga, grouping=True) + "g"
+            return format_decimal(giga, locale=current_locale) + "g"
         if mega:
-            return locale.format_string("%d", mega, grouping=True) + "m"
+            return format_decimal(mega, locale=current_locale) + "m"
         if kilo:
-            return locale.format_string("%d", kilo, grouping=True) + "k"
-    return locale.format_string("%d", i, grouping=True)
+            return format_decimal(kilo, locale=current_locale) + "k"
+    return format_decimal(i, locale=current_locale)
 
 
 def relative_time(utime: float, now: Optional[float] = None, show_sign: int = 1) -> str:
@@ -208,73 +227,6 @@ def relative_time(utime: float, now: Optional[float] = None, show_sign: int = 1)
         1 - ago / from now  [DEFAULT]
         2 - early / late
     """
-
-    signs = {
-        0: ("0", "", ""),
-        1: ("now", "ago", "from now"),
-        2: ("none", "behind", "ahead"),
-    }
-
     if now is None:
         now = time.time()
-    age = round(now - utime)
-    if age == 0:
-        return signs[show_sign][0]
-
-    aa = abs(age)
-    yrs = int(aa / 60 / 60 / 24 / 365)
-    day = int(aa / 60 / 60 / 24) % 365
-    hrs = int(aa / 60 / 60) % 24
-    mnt = int(aa / 60) % 60
-    sec = int(aa % 60)
-
-    if age > 0:
-        sign = signs[show_sign][1]
-    else:
-        sign = signs[show_sign][2]
-    if not sign:
-        sign = signs[show_sign][0]
-
-    arr = []
-    if yrs == 1:
-        arr.append(str(yrs) + " year")
-    elif yrs > 1:
-        arr.append(str(yrs) + " years")
-    if day == 1:
-        arr.append(str(day) + " day")
-    elif day > 1:
-        arr.append(str(day) + " days")
-    if hrs:
-        arr.append(str(hrs) + " hr")
-    if mnt:
-        arr.append(str(mnt) + " min")
-    if sec:
-        arr.append(str(sec) + " sec")
-    arr = arr[:2]  # resolution
-    if show_sign:
-        arr.append(sign)
-    return " ".join(arr)
-
-
-class RelativeTimeTester(unittest.TestCase):
-    minute = 60
-    hour = minute * 60
-    day = hour * 24
-    year = day * 365
-    cases = [
-        (+year, "1 year from now"),
-        (-year, "1 year ago"),
-        (+year + 1, "1 year 1 sec from now"),
-        (+year + 0.9, "1 year 1 sec from now"),
-        (+year + day, "1 year 1 day from now"),
-        (+year + (10 * day), "1 year 10 days from now"),
-        (+year + (90 * day) + (3 * hour), "1 year 90 days from now"),
-        (+(13 * day) - 0.4, "13 days from now"),
-    ]
-
-    def setUp(self) -> None:
-        self.now = time.time()
-
-    def test_relative_time(self) -> None:
-        for delta, result in self.cases:
-            self.assertEqual(relative_time(self.now + delta, self.now), result)
+    return _relative_time(utime, now, show_sign)

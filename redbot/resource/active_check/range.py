@@ -6,8 +6,9 @@ from configparser import SectionProxy
 import random
 from typing import TYPE_CHECKING
 
-from httplint.note import Note, categories, levels
 from httplint.util import display_bytes
+from httplint.note import categories, levels
+from redbot.note import RedbotNote
 
 from redbot.resource.active_check.base import SubRequest
 from redbot.formatter import f_num
@@ -125,7 +126,7 @@ class RangeRequest(SubRequest):
             )
 
 
-class RANGE_SUBREQ_PROBLEM(Note):
+class RANGE_SUBREQ_PROBLEM(RedbotNote):
     category = categories.RANGE
     level = levels.INFO
     _summary = "There was a problem checking for Partial Content support."
@@ -137,10 +138,10 @@ When REDbot tried to check the resource for partial content support, there was a
 Trying again might fix it."""
 
 
-class UNKNOWN_RANGE(Note):
+class UNKNOWN_RANGE(RedbotNote):
     category = categories.RANGE
     level = levels.WARN
-    _summary = "%(message)s advertises support for non-standard range-units."
+    _summary = "The resource advertises support for non-standard range-units."
     _text = """\
 The `Accept-Ranges` response header tells clients what `range-unit`s a resource is willing to
 process in future requests. HTTP only defines two: `bytes` and `none`.
@@ -148,7 +149,7 @@ process in future requests. HTTP only defines two: `bytes` and `none`.
 Clients who don't know about the non-standard range-unit will not be able to use it."""
 
 
-class RANGE_CORRECT(Note):
+class RANGE_CORRECT(RedbotNote):
     category = categories.RANGE
     level = levels.GOOD
     _summary = "A ranged request returned the correct partial content."
@@ -158,7 +159,7 @@ clients to specify that only part of it should be sent. REDbot has tested this b
 this response, which was returned correctly."""
 
 
-class RANGE_INCORRECT(Note):
+class RANGE_INCORRECT(RedbotNote):
     category = categories.RANGE
     level = levels.BAD
     _summary = "A ranged request returned partial content, but it was incorrect."
@@ -184,7 +185,7 @@ REDbot received %(range_received_bytes)s bytes:
 _(showing samples of up to 100 characters)_"""
 
 
-class RANGE_CHANGED(Note):
+class RANGE_CHANGED(RedbotNote):
     category = categories.RANGE
     level = levels.WARN
     _summary = "A ranged request returned another representation."
@@ -193,7 +194,7 @@ A new representation was retrieved when checking support of ranged request. This
 it just indicates that REDbot cannot draw any conclusion at this time."""
 
 
-class RANGE_FULL(Note):
+class RANGE_FULL(RedbotNote):
     category = categories.RANGE
     level = levels.WARN
     _summary = "A ranged request returned the full rather than partial content."
@@ -204,7 +205,7 @@ requesting part of this response, but the entire response was returned. In other
 the resource advertises support for partial content, it doesn't appear to actually do so."""
 
 
-class RANGE_STATUS(Note):
+class RANGE_STATUS(RedbotNote):
     category = categories.RANGE
     level = levels.INFO
     _summary = "A ranged request returned a %(range_status)s status."
@@ -214,7 +215,7 @@ only part of the response should be sent. REDbot has tested this by requesting p
 response, but a %(enc_range_status)s response code was returned, which REDbot was not expecting."""
 
 
-class RANGE_NEG_MISMATCH(Note):
+class RANGE_NEG_MISMATCH(RedbotNote):
     category = categories.RANGE
     level = levels.BAD
     _summary = "Partial responses don't have the same support for compression that full ones do."
@@ -226,15 +227,15 @@ This can cause problems for clients when they compare the partial and full respo
 partial response is expressed as a byte range, and compression changes the bytes."""
 
 
-class MISSING_HDRS_206(Note):
+class MISSING_HDRS_206(RedbotNote):
     category = categories.VALIDATION
     level = levels.WARN
-    _summary = "%(message)s is missing required headers."
+    _summary = "The partial response is missing required headers."
     _text = """\
 HTTP requires `206 Partial Content` responses to have certain headers, if they are also present in
 a normal (e.g., `200 OK` response).
 
-%(message)s is missing the following headers: `%(missing_hdrs)s`.
+The partial response is missing the following headers: `%(missing_hdrs)s`.
 
 This can affect cache operation; because the headers are missing, caches might remove them from
 their stored copies."""

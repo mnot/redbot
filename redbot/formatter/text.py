@@ -15,6 +15,7 @@ import thor.http.error as httperr
 
 from redbot.formatter import Formatter, FormatterArgs
 from redbot.resource import HttpResource
+from redbot.i18n import _
 
 NL = "\n"
 
@@ -36,14 +37,14 @@ class BaseTextFormatter(Formatter):
     ]
 
     link_order = [
-        ("link", "Head Links"),
-        ("script", "Script Links"),
-        ("frame", "Frame Links"),
-        ("iframe", "IFrame Links"),
-        ("img", "Image Links"),
+        ("link", _("Head Links")),
+        ("script", _("Script Links")),
+        ("frame", _("Frame Links")),
+        ("iframe", _("IFrame Links")),
+        ("img", _("Image Links")),
     ]
 
-    error_template = "Error: %s\n"
+    error_template = _("Error: %s\n")
 
     def __init__(self, *args: Unpack[FormatterArgs]) -> None:
         Formatter.__init__(self, *args)

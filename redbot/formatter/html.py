@@ -5,7 +5,7 @@ HTML Formatter for REDbot.
 import operator
 import re
 import textwrap
-from typing import Any, List, Match, Tuple
+from typing import Any, List, Match, Tuple, Union
 from urllib.parse import urljoin
 
 from typing_extensions import Unpack
@@ -23,6 +23,7 @@ from redbot.formatter.html_base import (
     NL,
 )
 from redbot.resource import HttpResource, active_check
+from redbot.i18n import _, LazyProxy
 
 
 class SingleEntryHtmlFormatter(BaseHtmlFormatter):
@@ -111,16 +112,20 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                             "is_saved": self.kw.get("is_saved", False),
                             "allow_save": self.kw.get("allow_save", False),
                             "har_link": self.redbot_link(
-                                "view har",
+                                _("view HAR"),
                                 res_format="har",
-                                title="View a HAR (HTTP ARchive, a JSON format) file for this test",
+                                title=_(
+                                    "View a HAR (HTTP ARchive, a JSON format) file for this test"
+                                ),
                             ),
                             "descend_link": self.redbot_link(
-                                "check embedded",
+                                _("check embedded"),
                                 use_stored=False,
                                 descend=True,
                                 referer=True,
-                                title="Run REDbot on images, frames and embedded links",
+                                title=_(
+                                    "Run REDbot on images, frames and embedded links"
+                                ),
                             ),
                             "validator_link": validator_link,
                         },
@@ -152,7 +157,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             uni_sample = sample.decode("utf-8", "replace")
         safe_sample = escape(uni_sample)
         if self.config.getboolean("content_links", False):
-            for _, link_set in list(resource.links.items()):
+            for __, link_set in list(resource.links.items()):
                 for link in link_set:
                     if len(link) > 8000:  # avoid processing inline assets through regex
                         continue
@@ -177,9 +182,11 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                             rf"(&#34;|&#39;){re.escape(link)}\1", link_to, safe_sample
                         )
                     )
-        message = ""
+        message: Union[str, LazyProxy] = ""
         if not resource.response_decoded_complete:
-            message = "<p class='btw'>REDbot isn't showing all content, because it's so big!</p>"
+            message = _(
+                "<p class='btw'>REDbot isn't showing all content, because it's so big!</p>"
+            )
         return Markup(f"<pre class='prettyprint'>{safe_sample}</pre>\n{message}")
 
     def format_subrequest_messages(self, category: categories) -> Markup:

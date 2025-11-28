@@ -4,7 +4,8 @@ Subrequest for Last-Modified validation checks.
 
 from datetime import datetime
 
-from httplint.note import Note, categories, levels
+from httplint.note import categories, levels
+from redbot.note import RedbotNote
 
 from redbot.resource.active_check.base import SubRequest, MISSING_HDRS_304
 from redbot.type import StrHeaderListType
@@ -100,7 +101,7 @@ class LmValidate(SubRequest):
             )
 
 
-class LM_SUBREQ_PROBLEM(Note):
+class LM_SUBREQ_PROBLEM(RedbotNote):
     category = categories.VALIDATION
     level = levels.INFO
     _summary = "There was a problem checking for Last-Modified validation support."
@@ -112,7 +113,7 @@ When REDbot tried to check the resource for Last-Modified validation support, th
 Trying again might fix it."""
 
 
-class IMS_304(Note):
+class IMS_304(RedbotNote):
     category = categories.VALIDATION
     level = levels.GOOD
     _summary = "If-Modified-Since conditional requests are supported."
@@ -125,7 +126,7 @@ REDbot has done this and found that the resource sends a `304 Not Modified` resp
 that it supports `Last-Modified` validation."""
 
 
-class IMS_FULL(Note):
+class IMS_FULL(RedbotNote):
     category = categories.VALIDATION
     level = levels.WARN
     _summary = (
@@ -140,7 +141,7 @@ REDbot has done this and found that the resource sends a full response even thou
 changed, indicating that it doesn't support `Last-Modified` validation."""
 
 
-class IMS_UNKNOWN(Note):
+class IMS_UNKNOWN(RedbotNote):
     category = categories.VALIDATION
     level = levels.INFO
     _summary = (
@@ -156,7 +157,7 @@ REDbot has done this, but the response changed between the original request and 
 request, so REDbot can't tell whether or not `Last-Modified` validation is supported."""
 
 
-class IMS_STATUS(Note):
+class IMS_STATUS(RedbotNote):
     category = categories.VALIDATION
     level = levels.INFO
     _summary = (

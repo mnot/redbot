@@ -14,10 +14,13 @@ import time
 from typing import Optional, Callable, Dict, List, Tuple, Union, cast
 from urllib.parse import parse_qs, urlsplit, urlencode
 
+from babel.core import negotiate_locale
 import thor
 import thor.http.common
 from thor.http import get_header
+
 from redbot import __version__
+from redbot.i18n import set_locale, AVAILABLE_LOCALES, DEFAULT_LOCALE
 from redbot.webui.captcha import CaptchaHandler
 from redbot.webui.ratelimit import ratelimiter
 from redbot.webui.saved_tests import (
@@ -73,6 +76,19 @@ class RedWebUi:
         self.remote_ip_header = (
             self.config.get("remote_ip_header", "").lower().encode("ascii")
         )
+
+        # locale negotiation
+        accept_language = get_header(self.req_headers, b"accept-language")
+        if accept_language:
+            self.locale = (
+                negotiate_locale(
+                    [lang.decode(self.charset, "replace") for lang in accept_language],
+                    AVAILABLE_LOCALES,
+                )
+                or DEFAULT_LOCALE
+            )
+        else:
+            self.locale = DEFAULT_LOCALE
 
         # query processing
         self.test_uri = self.query_string.get("uri", [""])[0]
@@ -152,6 +168,7 @@ class RedWebUi:
                 "test_id": self.test_id,
                 "descend": self.descend,
                 "nonce": self.nonce,
+                "locale": self.locale,
             },
         )
         continue_test = partial(self.continue_test, top_resource, formatter)
@@ -252,6 +269,7 @@ class RedWebUi:
                     b"Content-Security-Policy",
                     f"{CSP} 'strict-dynamic' 'nonce-{self.nonce}'".encode("ascii"),
                 ),
+                (b"Content-Language", self.locale.encode("ascii")),
             ]
             + extra_headers,
         )
@@ -288,6 +306,7 @@ class RedWebUi:
             {
                 "is_blank": self.test_uri == "",
                 "nonce": self.nonce,
+                "locale": self.locale,
             },
         )
         if self.check_name:
@@ -305,10 +324,12 @@ class RedWebUi:
                     b"Content-Security-Policy",
                     f"{CSP} 'strict-dynamic' 'nonce-{self.nonce}'".encode("ascii"),
                 ),
+                (b"Content-Language", self.locale.encode("ascii")),
             ],
         )
-        formatter.start_output()
-        formatter.finish_output()
+        with set_locale(self.locale):
+            formatter.start_output()
+            formatter.finish_output()
         self.exchange.response_done([])
 
     def error_response(
@@ -333,10 +354,12 @@ class RedWebUi:
                     b"Content-Security-Policy",
                     f"{CSP} 'strict-dynamic' 'nonce-{self.nonce}'".encode("ascii"),
                 ),
+                (b"Content-Language", self.locale.encode("ascii")),
             ],
         )
-        formatter.start_output()
-        formatter.error_output(message)
+        with set_locale(self.locale):
+            formatter.start_output()
+            formatter.error_output(message)
         self.exchange.response_done([])
         if log_message:
             self.error_log(log_message)

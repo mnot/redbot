@@ -3,7 +3,7 @@ from functools import partial
 import json
 import os
 import time
-from typing import Optional, List, Tuple
+from typing import List, Tuple, Union, Optional
 from urllib.parse import urljoin, urlencode, quote as urlquote
 
 import httplint
@@ -13,6 +13,7 @@ from typing_extensions import Unpack
 
 import redbot
 from redbot.formatter import Formatter, FormatterArgs, relative_time, f_num
+from redbot.i18n import LazyProxy, _, ngettext
 from redbot.webui.captcha import CAPTCHA_PROVIDERS
 
 NL = "\n"
@@ -59,12 +60,14 @@ class BaseHtmlFormatter(Formatter):
     media_type = "text/html"
     templates = Environment(
         loader=PackageLoader("redbot.formatter"),
+        extensions=["jinja2.ext.i18n"],
         trim_blocks=True,
         autoescape=select_autoescape(
             enabled_extensions=("html", "xml"),
             default_for_string=True,
         ),
     )
+    templates.install_gettext_callables(_, ngettext, newstyle=True)  # type: ignore[attr-defined]  # pylint: disable=no-member
 
     def __init__(self, *args: Unpack[FormatterArgs]) -> None:
         Formatter.__init__(self, *args)
@@ -130,6 +133,17 @@ class BaseHtmlFormatter(Formatter):
                                     "captcha_sitekey": self.config.get(
                                         "captcha_sitekey", None
                                     ),
+                                    "i18n": {
+                                        "add_req_hdr": str(_("add a request header")),
+                                        "view_notes": str(_("view notes")),
+                                        "view_body": str(_("view body")),
+                                        "header_warning": str(
+                                            _(
+                                                "Setting the %s request header can "
+                                                "lead to unpredictable results."
+                                            )
+                                        ),
+                                    },
                                 },
                                 ensure_ascii=True,
                             ).replace("<", "\\u003c")
@@ -224,7 +238,7 @@ console.log("{time.time() - self.start:3.3f} {e_js(message)}");
 
     def redbot_link(
         self,
-        link_value: str,
+        link_value: Union[str, LazyProxy],
         link: Optional[str] = None,
         check_name: Optional[str] = None,
         res_format: Optional[str] = None,
@@ -232,7 +246,7 @@ console.log("{time.time() - self.start:3.3f} {e_js(message)}");
         descend: bool = False,
         referer: bool = False,
         css_class: str = "",
-        title: str = "",
+        title: Union[str, LazyProxy] = "",
     ) -> Markup:
         """
         Format an HTML form to refer to another REDbot resource. If it can be, it will be linked

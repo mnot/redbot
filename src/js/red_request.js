@@ -113,7 +113,7 @@ function installNameChangeHandler (reqHdr) {
     } else {
       newName = escapeHtml(content.value)
       if (redReqHdrs.indexOf(newName.toLowerCase()) > -1) {
-        alert(`Setting the ${newName} request header can lead to unpredictable results.`)
+        alert(config.i18n.header_warning.replace('%s', newName))
       }
       hdrName.setAttribute('data-name', newName)
     }
@@ -153,7 +153,7 @@ addButton.className = 'add_req_hdr'
 const addLink = document.createElement('a')
 addLink.href = '#'
 addLink.id = 'add_req_hdr'
-addLink.appendChild(document.createTextNode('add a request header'))
+addLink.appendChild(document.createTextNode(config.i18n.add_req_hdr))
 addButton.appendChild(addLink)
 qs('#request_form').appendChild(addButton)
 

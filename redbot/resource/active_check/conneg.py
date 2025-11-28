@@ -2,7 +2,8 @@
 Subrequest for content negotiation checks.
 """
 
-from httplint.note import Note, categories, levels
+from httplint.note import categories, levels
+from redbot.note import RedbotNote
 
 from redbot.resource.active_check.base import SubRequest
 from redbot.formatter import f_num
@@ -138,7 +139,7 @@ class ConnegCheck(SubRequest):
                 )
 
 
-class CONNEG_SUBREQ_PROBLEM(Note):
+class CONNEG_SUBREQ_PROBLEM(RedbotNote):
     category = categories.CONNEG
     level = levels.INFO
     _summary = "There was a problem checking for Content Negotiation support."
@@ -150,7 +151,7 @@ When REDbot tried to check the resource for content negotiation support, there w
 Trying again might fix it."""
 
 
-class CONNEG_GZIP_GOOD(Note):
+class CONNEG_GZIP_GOOD(RedbotNote):
     category = categories.CONNEG
     level = levels.GOOD
     _summary = (
@@ -164,7 +165,7 @@ a compressed response, the resource provided one, saving %(savings)s%% of its or
 The compressed response's headers are displayed."""
 
 
-class CONNEG_GZIP_BAD(Note):
+class CONNEG_GZIP_BAD(RedbotNote):
     category = categories.CONNEG
     level = levels.WARN
     _summary = "Content negotiation for gzip compression makes the response %(savings)s%% larger."
@@ -180,7 +181,7 @@ since gzip compression has some overhead, it can make the response larger. Turni
 The compressed response's headers are displayed."""
 
 
-class CONNEG_NO_GZIP(Note):
+class CONNEG_NO_GZIP(RedbotNote):
     category = categories.CONNEG
     level = levels.INFO
     _summary = "Content negotiation for gzip compression isn't supported."
@@ -189,19 +190,19 @@ HTTP supports compression of responses by negotiating for `Content-Encoding`. Wh
 a compressed response, the resource did not provide one."""
 
 
-class CONNEG_NO_VARY(Note):
+class CONNEG_NO_VARY(RedbotNote):
     category = categories.CONNEG
     level = levels.BAD
-    _summary = "%(message)s is negotiated, but doesn't have an appropriate Vary header."
+    _summary = "The compressed response is negotiated, but doesn't have an appropriate Vary header."
     _text = """\
 All content negotiated responses need to have a `Vary` header that reflects the header(s) used to
 select the response.
 
-%(message)s was negotiated for `gzip` content encoding, so the `Vary` header needs to contain
+The compressed response was negotiated for `gzip` content encoding, so the `Vary` header needs to contain
 `Accept-Encoding`, the request header used."""
 
 
-class CONNEG_GZIP_WITHOUT_ASKING(Note):
+class CONNEG_GZIP_WITHOUT_ASKING(RedbotNote):
     category = categories.CONNEG
     level = levels.WARN
     _summary = "A gzip-compressed response was sent when it wasn't asked for."
@@ -213,7 +214,7 @@ It could be that the response is always compressed, but doing so can break clien
 expecting a compressed response."""
 
 
-class VARY_INCONSISTENT(Note):
+class VARY_INCONSISTENT(RedbotNote):
     category = categories.CONNEG
     level = levels.BAD
     _summary = "The resource doesn't send Vary consistently."
@@ -231,7 +232,7 @@ This can cause problems for downstream caches, because they cannot consistently 
 cache key for a given URI is."""
 
 
-class VARY_STATUS_MISMATCH(Note):
+class VARY_STATUS_MISMATCH(RedbotNote):
     category = categories.CONNEG
     level = levels.WARN
     _summary = "The response status is different when content negotiation happens."
@@ -245,7 +246,7 @@ didn't, it got `%(noneg_status)s`.
 REDbot hasn't checked other aspects of content negotiation because of this."""
 
 
-class VARY_HEADER_MISMATCH(Note):
+class VARY_HEADER_MISMATCH(RedbotNote):
     category = categories.CONNEG
     level = levels.BAD
     _summary = "The %(header)s header is different when content negotiation happens."
@@ -254,7 +255,7 @@ When content negotiation is used, the %(header)s response header shouldn't chang
 negotiated and non-negotiated responses."""
 
 
-class VARY_BODY_MISMATCH(Note):
+class VARY_BODY_MISMATCH(RedbotNote):
     category = categories.CONNEG
     level = levels.INFO
     _summary = "The response content is different when content negotiation happens."
@@ -266,7 +267,7 @@ There might be legitimate reasons for this; e.g., because different servers hand
 requests. However, RED's output may be skewed as a result."""
 
 
-class VARY_ETAG_DOESNT_CHANGE(Note):
+class VARY_ETAG_DOESNT_CHANGE(RedbotNote):
     category = categories.CONNEG
     level = levels.BAD
     _summary = "The ETag doesn't change between negotiated representations."

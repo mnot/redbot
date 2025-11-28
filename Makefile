@@ -36,13 +36,44 @@ tidy: tidy_py
 ## Tests
 
 .PHONY: test
-test: webui_test
+test: webui_test i18n_test
 
 .PHONY: webui_test
 webui_test: venv
 	$(VENV)/playwright install chromium
 	PYTHONPATH=.:$(VENV) $(VENV)/python test/test_webui.py
 
+.PHONY: i18n_test
+i18n_test: venv
+	PYTHONPATH=.:$(VENV) $(VENV)/python test/test_i18n.py
+
+
+#############################################################################
+## i18n
+
+.PHONY: i18n-extract
+i18n-extract: venv
+	PYTHONPATH=. $(VENV)/pybabel extract -F tools/i18n/babel.cfg -o redbot/translations/messages.pot .
+
+.PHONY: i18n-update
+i18n-update: i18n-extract venv
+	$(VENV)/pybabel update -i redbot/translations/messages.pot -d redbot/translations
+
+.PHONY: i18n-autotranslate
+i18n-autotranslate: venv
+	$(VENV)/python -m tools.i18n.autotranslate --locale_dir redbot/translations --model $(or $(MODEL),gemini-2.5-flash-lite) --rpm $(or $(RPM),15)
+
+.PHONY: i18n-compile
+i18n-compile: venv
+	$(VENV)/pybabel compile -d redbot/translations
+
+.PHONY: translations
+translations: i18n-update i18n-compile
+
+.PHONY: i18n-init
+i18n-init: venv
+	@if [ -z "$(LOCALE)" ]; then echo "Usage: make init_locale LOCALE=xx"; exit 1; fi
+	$(VENV)/pybabel init -i redbot/translations/messages.pot -d redbot/translations -l $(LOCALE)
 
 #############################################################################
 ## Local test server / cli

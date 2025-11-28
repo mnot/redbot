@@ -2,18 +2,18 @@
 
     <div class="footer">
         <p class="navigation">
-            version {{ redbot_version }} (httplint {{ httplint_version }}) |
-            <a href="https://REDbot.org/about/">about</a> |
-            <span class="js"><a href="#help" id="help"><strong>help</strong></a> |</span>
-            <span class="help hidden">Drag the bookmarklet to your bookmark bar - it makes checking easy!</span>
+            {{ _("version") }} {{ redbot_version }} (httplint {{ httplint_version }}) |
+            <a href="https://REDbot.org/about/">{{ _("about") }}</a> |
+            <span class="js"><a href="#help" id="help"><strong>{{ _("help") }}</strong></a> |</span>
+            <span class="help hidden">{{ _("Drag the bookmarklet to your bookmark bar - it makes checking easy!") }}</span>
             <a class="js" href="javascript:(function(){window.open('{{ baseuri }}?uri='+encodeURIComponent(location))})();"
-                title="drag me to your toolbar to use REDbot any time.">REDbot</a> bookmarklet
+                title="{{ _('drag me to your toolbar to use REDbot any time.') }}">REDbot</a> {{ _("bookmarklet") }}
         </p>
 
         {% if captcha_provider == "hcaptcha" %}
-        <p class="btw">This site is protected by hCaptcha and its
-        <a href="https://hcaptcha.com/privacy">Privacy Policy</a> and
-        <a href="https://hcaptcha.com/terms">Terms of Service</a> apply.</p>
+        <p class="btw">{% trans %}This site is protected by hCaptcha and its{% endtrans %}
+        <a href="https://hcaptcha.com/privacy">{% trans %}Privacy Policy{% endtrans %}</a> {% trans %}and{% endtrans %}
+        <a href="https://hcaptcha.com/terms">{% trans %}Terms of Service{% endtrans %}</a> {% trans %}apply.{% endtrans %}</p>
         {% endif %}
     </div>
 

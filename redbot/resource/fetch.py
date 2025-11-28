@@ -10,16 +10,18 @@ from configparser import SectionProxy
 import time
 from typing import Optional, Any, Dict, List, Tuple, Callable
 
-from httplint import HttpRequestLinter, HttpResponseLinter
-from httplint.note import Note, categories, levels
 from netaddr import IPAddress  # type: ignore
 import thor
 from thor.http.client import HttpClientExchange
 import thor.http.error as httperr
 
+from httplint import HttpRequestLinter, HttpResponseLinter
+from httplint.note import categories, levels
+from redbot.note import RedbotNote
+
 from redbot import __version__
 from redbot.type import StrHeaderListType, RawHeaderListType
-
+from redbot.i18n import _
 
 UA_STRING = f"RED/{__version__} (https://redbot.org/)".encode("ascii")
 
@@ -49,7 +51,6 @@ class RedFetcher(thor.events.EventEmitter):
     """
 
     check_name = "undefined"
-    response_phrase = "undefined"
     client = RedHttpClient()
 
     def __init__(self, config: SectionProxy) -> None:
@@ -67,7 +68,7 @@ class RedFetcher(thor.events.EventEmitter):
 
         self.request = HttpRequestLinter()
         self.nonfinal_responses: List[HttpResponseLinter] = []
-        self.response = HttpResponseLinter(message_ref=self.response_phrase)
+        self.response = HttpResponseLinter()
         self.response.decoded.processors.append(self.sample_decoded)
         self.exchange: HttpClientExchange
         self.fetch_started = False
@@ -165,7 +166,11 @@ class RedFetcher(thor.events.EventEmitter):
         self.exchange.on("response_body", self._response_body)
         self.exchange.once("response_done", self._response_done)
         self.exchange.on("error", self._response_error)
-        self.emit("status", f"fetching {self.request.uri} ({self.check_name})")
+        self.emit(
+            "status",
+            _("fetching %(uri)s (%(check_name)s)")
+            % {"uri": self.request.uri, "check_name": self.check_name},
+        )
         self.emit("debug", f"fetching {self.request.uri} ({self.check_name})")
         req_hdrs = [
             (k.encode("ascii", "replace"), v.encode("ascii", "replace"))
@@ -188,9 +193,7 @@ class RedFetcher(thor.events.EventEmitter):
         self, status: bytes, phrase: bytes, res_headers: RawHeaderListType
     ) -> None:
         "Got a non-final response."
-        nfres = HttpResponseLinter(
-            message_ref="A non-final response", start_time=time.time()
-        )
+        nfres = HttpResponseLinter(start_time=time.time())
         assert (
             self.exchange.res_version
         ), "exchange.res_version not set in _response_nonfinal"
@@ -284,15 +287,15 @@ class RedFetcher(thor.events.EventEmitter):
             self.emit("fetch_done")
 
 
-class BODY_NOT_ALLOWED(Note):
+class BODY_NOT_ALLOWED(RedbotNote):
     category = categories.CONNECTION
     level = levels.BAD
-    _summary = "%(message)s has content."
+    _summary = "This response has content."
     _text = """\
 HTTP defines a few special situations where a response does not allow content. This includes 101,
 204 and 304 responses, as well as responses to the `HEAD` method.
 
-%(message)s had data after the headers ended, despite it being disallowed. Clients receiving it
+This response had data after the headers ended, despite it being disallowed. Clients receiving it
 may treat the content as the next response in the connection, leading to interoperability and
 security issues.
 
@@ -302,10 +305,10 @@ The extra data started with:
 """
 
 
-class EXTRA_DATA(Note):
+class EXTRA_DATA(RedbotNote):
     category = categories.CONNECTION
     level = levels.BAD
-    _summary = "%(message)s has extra data after it."
+    _summary = "This response has extra data after it."
     _text = """\
 The server sent data after the message ended. This can be caused by an incorrect `Content-Length`
 header, or by a programming error in the server itself.
@@ -316,10 +319,10 @@ The extra data started with:
 """
 
 
-class BAD_CHUNK(Note):
+class BAD_CHUNK(RedbotNote):
     category = categories.CONNECTION
     level = levels.BAD
-    _summary = "%(message)s has chunked encoding errors."
+    _summary = "This response has chunked encoding errors."
     _text = """\
 The response indicates it uses HTTP chunked encoding, but there was a problem decoding the
 chunking.
@@ -339,10 +342,10 @@ This issue is often caused by sending an integer chunk size instead of one in he
 `Transfer-Encoding: chunked` without actually chunking the response body."""
 
 
-class HEADER_NAME_SPACE(Note):
+class HEADER_NAME_SPACE(RedbotNote):
     category = categories.CONNECTION
     level = levels.BAD
-    _summary = "%(message)s has whitespace at the end of the '%(header_name)s' header field name."
+    _summary = "This response has whitespace at the end of the '%(header_name)s' header field name."
     _text = """\
 HTTP specifically bans whitespace between header field names and the colon, because they can easily
 be confused by recipients; some will strip it, and others won't, leading to a variety of attacks.

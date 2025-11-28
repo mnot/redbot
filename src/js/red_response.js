@@ -1,6 +1,6 @@
 /* global prettyPrint */
 
-import { qs, qsa, docReady, toggleHidden } from './red_util.js'
+import { qs, qsa, docReady, toggleHidden, config } from './red_util.js'
 import tippy from 'tippy.js'
 
 docReady(function () {
@@ -104,10 +104,10 @@ docReady(function () {
       toggleHidden(qs('#body'))
       toggleHidden(qs('#details'))
       if (!showingBody) {
-        qs('#body_view').textContent = 'view notes'
+        qs('#body_view').textContent = config.i18n.view_notes
         prettyPrint()
       } else {
-        qs('#body_view').textContent = 'view body'
+        qs('#body_view').textContent = config.i18n.view_body
       }
       showingBody = !showingBody
     }

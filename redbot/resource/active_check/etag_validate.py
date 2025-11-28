@@ -2,7 +2,8 @@
 Subrequest for ETag validation checks.
 """
 
-from httplint.note import Note, categories, levels
+from httplint.note import categories, levels
+from redbot.note import RedbotNote
 
 from redbot.resource.active_check.base import SubRequest, MISSING_HDRS_304
 from redbot.type import StrHeaderListType
@@ -84,7 +85,7 @@ class ETagValidate(SubRequest):
             )
 
 
-class ETAG_SUBREQ_PROBLEM(Note):
+class ETAG_SUBREQ_PROBLEM(RedbotNote):
     category = categories.VALIDATION
     level = levels.INFO
     _summary = "There was a problem checking for ETag validation support."
@@ -96,7 +97,7 @@ When REDbot tried to check the resource for ETag validation support, there was a
 Trying again might fix it."""
 
 
-class INM_304(Note):
+class INM_304(RedbotNote):
     category = categories.VALIDATION
     level = levels.GOOD
     _summary = "If-None-Match conditional requests are supported."
@@ -107,7 +108,7 @@ for validation. REDbot has done this and found that the resource sends a `304 No
 response, indicating that it supports `ETag` validation."""
 
 
-class INM_FULL(Note):
+class INM_FULL(RedbotNote):
     category = categories.VALIDATION
     level = levels.WARN
     _summary = "An If-None-Match conditional request returned the full content \
@@ -121,7 +122,7 @@ REDbot has done this and found that the resource sends the same, full response e
 changed, indicating that it doesn't support `ETag` validation."""
 
 
-class INM_DUP_ETAG_WEAK(Note):
+class INM_DUP_ETAG_WEAK(RedbotNote):
     category = categories.VALIDATION
     level = levels.INFO
     _summary = "During validation, the ETag didn't change, even though the response content did."
@@ -138,7 +139,7 @@ the page, you can use the same weak `ETag` to identify both versions.
 If the changes are important, a different `ETag` should be used."""
 
 
-class INM_DUP_ETAG_STRONG(Note):
+class INM_DUP_ETAG_STRONG(RedbotNote):
     category = categories.VALIDATION
     level = levels.BAD
     _summary = "During validation, the ETag didn't change, even though the response content did."
@@ -154,7 +155,7 @@ interchangeably), they can share a "weak" ETag; to do that, just prepend `W/`, t
 `W/%(etag)s`. Otherwise, they need to use different `ETag`s."""
 
 
-class INM_UNKNOWN(Note):
+class INM_UNKNOWN(RedbotNote):
     category = categories.VALIDATION
     level = levels.INFO
     _summary = "An If-None-Match conditional request returned the full content, but it had changed."
@@ -167,7 +168,7 @@ REDbot has done this, but the response changed between the original request and 
 request, so REDbot can't tell whether or not `ETag` validation is supported."""
 
 
-class INM_STATUS(Note):
+class INM_STATUS(RedbotNote):
     category = categories.VALIDATION
     level = levels.INFO
     _summary = "An If-None-Match conditional request returned a %(inm_status)s status."

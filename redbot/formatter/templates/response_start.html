@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <title>REDbot: &lt;{{ html_uri }}&gt;</title>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
@@ -22,20 +23,18 @@
         }
     </script>
     <script id="config" type="application/json" nonce="{{ nonce }}">{{ config }}</script>
-    <link rel="apple-touch-icon-precomposed" sizes="144x144"
-        href="{{ static }}/logo/apple-touch-icon-144x144.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="152x152"
-        href="{{ static }}/logo/apple-touch-icon-152x152.png" />
-    <link rel="icon" href="{{ static }}/logo/favicon.ico"/>
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="{{ static }}/logo/apple-touch-icon-144x144.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="{{ static }}/logo/apple-touch-icon-152x152.png" />
+    <link rel="icon" href="{{ static }}/logo/favicon.ico" />
     <link rel="icon" type="image/png" href="{{ static }}/logo/favicon-32x32.png" sizes="32x32" />
     <link rel="icon" type="image/png" href="{{ static }}/logo/favicon-16x16.png" sizes="16x16" />
-    <meta name="description" content="REDbot is lint for your HTTP resources.">
-    <meta name="application-name" content="REDbot"/>
+    <meta name="description" content="{{ _('REDbot is lint for your HTTP resources.') }}">
+    <meta name="application-name" content="REDbot" />
     <meta name="msapplication-TileColor" content="#FFFFFF" />
     <meta name="msapplication-TileImage" content="{{ static }}/logo/mstile-144x144.png" />
     <meta property="og:type" content="website">
     <meta property="og:title" content="REDbot">
-    <meta property="og:description" content="Lint for your HTTP resources">
+    <meta property="og:description" content="{{ _('Lint for your HTTP resources') }}">
     <meta property="og:url" content="https://redbot.org/">
     <meta property="og:site_name" content="REDbot">
     <meta property="og:image" content="https://redbot.org/static/logo/redbot-sq.png">
@@ -49,28 +48,29 @@
 
 <body class="{{ extra_body_class }}">
 
-<form method="POST" id="save_form"
-    action="?id={{ test_id }}&save=True{{ descend }}">
-</form>
-
-<div id="request">
-    <h1><a href="?"><span class="hilight"><abbr title="Resource Expert Droid">RED</abbr></span>bot</a>{{ extra_title }}</h1>
-
-    <form method="POST" id="request_form">
-        <span class="help right hidden">Type in a URI here and press 'return' to check it. You can also specify request headers by clicking 'add a request header.'</span>
-        <input type="url" name="uri" value="{{ html_uri }}" id="uri" autocomplete="off" autofocus
-            placeholder="Enter a http:// or https:// URL to check"/><input type="submit" id="go" value="➤"/>
-        <br />
-        <div id="req_hdrs"></div>
+    <form method="POST" id="save_form" action="?id={{ test_id }}&save=True{{ descend }}">
     </form>
-</div>
-<div id="red_status"></div>
-<script src="{{ static }}/script.js?{{ redbot_version }}" type="text/javascript" nonce="{{ nonce }}" async></script>
-{% if captcha_provider != "" %}
-<div id="captcha_popup" data-size="invisible"></div>
-<script type="text/javascript" nonce="{{ nonce }}">
-    function loadDone () {}
-</script>
-<script src="{{ captcha_script_url }}" nonce="{{ nonce }}" async defer></script>
-{% endif %}
-<script src="{{ static }}/prettify.js" nonce="{{ nonce }}" type="text/javascript" defer></script>
+
+    <div id="request">
+        <h1><a href="?"><span class="hilight"><abbr title="Resource Expert Droid">RED</abbr></span>bot</a>{{ extra_title
+            }}</h1>
+
+        <form method="POST" id="request_form">
+            <span class="help right hidden">{{ _("Type in a URI here and press 'return' to check it. You can also specify request headers by clicking 'add a request header.'") }}</span>
+            <input type="url" name="uri" value="{{ html_uri }}" id="uri" autocomplete="off" autofocus
+                placeholder="{{ _('Enter a http:// or https:// URL to check') }}" /><input type="submit" id="go"
+                value="➤" />
+            <br />
+            <div id="req_hdrs"></div>
+        </form>
+    </div>
+    <div id="red_status"></div>
+    <script src="{{ static }}/script.js?{{ redbot_version }}" type="text/javascript" nonce="{{ nonce }}" async></script>
+    {% if captcha_provider != "" %}
+    <div id="captcha_popup" data-size="invisible"></div>
+    <script type="text/javascript" nonce="{{ nonce }}">
+        function loadDone() { }
+    </script>
+    <script src="{{ captcha_script_url }}" nonce="{{ nonce }}" async defer></script>
+    {% endif %}
+    <script src="{{ static }}/prettify.js" nonce="{{ nonce }}" type="text/javascript" defer></script>

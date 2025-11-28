@@ -37,7 +37,6 @@ class HttpResource(RedFetcher):
     """
 
     check_name = "default"
-    response_phrase = "This response"
 
     def __init__(self, config: SectionProxy, descend: bool = False) -> None:
         RedFetcher.__init__(self, config)

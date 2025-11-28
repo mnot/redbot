@@ -10,7 +10,6 @@ import cProfile
 from functools import partial
 import io
 import inspect
-import locale
 import os
 from pstats import Stats
 import signal
@@ -288,12 +287,6 @@ def main() -> None:
     args = parser.parse_args()
     conf = ConfigParser()
     conf.read_file(args.config_file)
-
-    try:
-        locale.setlocale(locale.LC_ALL, locale.normalize(conf["redbot"]["lang"]))
-    except locale.Error:  # Catch more general locale-related error
-        print("Warning: Failed to set locale from config. Using default 'en' locale.")
-        locale.setlocale(locale.LC_ALL, "en_US.UTF-8")  # Default to English locale
 
     if args.debug:
         _loop.debug = True
