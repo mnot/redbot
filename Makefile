@@ -5,6 +5,7 @@ STANDARD=$(NPX) standard
 WEBPACK=$(NPX) webpack-cli
 CSSMIN=$(NPX) cssmin
 SASS=$(NPX) sass
+J2LINT=$(VENV)/j2lint
 
 MODULES = src/node_modules
 JS_ENTRIES = ./src/js/red_script.js ./src/js/red_request.js ./src/js/red_response.js ./src/js/red_response_multi.js
@@ -23,7 +24,7 @@ clean: clean_py
 .PHONY: lint
 lint: lint_py
 	$(STANDARD) "src/js/*.js"
-	$(J2LINT) "redbot/formatter/templates/"
+	$(J2LINT) redbot/formatter/templates/
 
 .PHONY: typecheck
 typecheck: typecheck_py
