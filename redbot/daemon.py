@@ -281,9 +281,7 @@ def main() -> None:
         dest="debug",
         help="Dump slow operations to STDERR",
     )
-    parser.add_argument(
-        "config_file", type=str, help="configuration file"
-    )
+    parser.add_argument("config_file", type=str, help="configuration file")
     args = parser.parse_args()
     conf = ConfigParser()
     conf.read(args.config_file)
