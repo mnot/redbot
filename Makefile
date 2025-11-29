@@ -55,7 +55,7 @@ i18n_test: venv
 
 .PHONY: i18n-extract
 i18n-extract: venv
-	PYTHONPATH=. $(VENV)/pybabel extract -F tools/i18n/babel.cfg -o redbot/translations/messages.pot .
+	PYTHONPATH=. $(VENV)/pybabel extract --omit-header -F tools/i18n/babel.cfg -o redbot/translations/messages.pot .
 
 .PHONY: i18n-update
 i18n-update: i18n-extract venv
