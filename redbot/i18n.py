@@ -50,6 +50,14 @@ class LazyProxy:
     def __repr__(self) -> str:
         return f"LazyProxy({self.message!r})"
 
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, LazyProxy):
+            return self.message == other.message
+        return NotImplemented
+
+    def __hash__(self) -> int:
+        return hash(self.message)
+
 
 def _(message: str) -> Any:
     """
