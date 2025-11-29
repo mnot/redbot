@@ -113,4 +113,7 @@ To add a new language (e.g., Spanish `es`):
 ```bash
 make i18n-init LANG=es
 ```
-Then follow steps 2-5 above.
+Then follow steps 2-5 above. Once the language is ready, make sure to
+
+1. Update the `httplint` dependency in `pyproject.toml` to a version that supports that language
+2. Update `redbot/18n.py` to list the language in `AVAILABLE_LOCALES`
