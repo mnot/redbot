@@ -110,6 +110,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                             "body": self.format_body_sample(self.resource),
                             "is_resource": isinstance(self.resource, HttpResource),
                             "is_saved": self.kw.get("is_saved", False),
+                            "save_mtime": self.kw.get("save_mtime", None),
                             "allow_save": self.kw.get("allow_save", False),
                             "har_link": self.redbot_link(
                                 _("view HAR"),
@@ -311,6 +312,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                         "problems": self.problems,
                         "levels": levels,
                         "is_saved": self.kw.get("is_saved", False),
+                        "save_mtime": self.kw.get("save_mtime", None),
                         "allow_save": self.kw.get("allow_save", False),
                         "har_link": self.redbot_link(
                             "view har",

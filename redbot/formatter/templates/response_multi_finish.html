@@ -100,6 +100,12 @@
         <a href='#' id='save' accesskey='s'>{{ _("save") }}</a>
     </div>
     {% endif %}
+    {% else %}
+    {% if save_mtime %}
+    <div class='option' title='{{ _("This result is saved") }}'>
+        {{ _("Saved until {0} for now").format(save_mtime|relative_time) }}
+    </div>
+    {% endif %}
     {% endif %}
 </div>
 

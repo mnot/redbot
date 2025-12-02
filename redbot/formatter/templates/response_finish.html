@@ -48,6 +48,12 @@
             </div>
             {% endif %}
 
+            {% if is_saved and save_mtime %}
+            <div class='option' title='{{ _("This result is saved") }}'>
+                {{ _("Saved until {0} for now").format(save_mtime|relative_time) }}
+            </div>
+            {% endif %}
+
             {% if not is_saved %}
             {% if allow_save %}
             <div class='option' title='{{ _("Save these results for future reference") }}'>

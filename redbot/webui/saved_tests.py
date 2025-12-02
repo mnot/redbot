@@ -162,6 +162,7 @@ def load_saved_test(webui: "RedWebUi") -> None:
         {
             "allow_save": (not is_saved),
             "is_saved": True,
+            "save_mtime": mtime,
             "test_id": webui.test_id,
             "nonce": webui.nonce,
         },
