@@ -72,11 +72,15 @@ class ConnegCheck(SubRequest):
 
             # check headers that should be invariant
             for hdr in ["content-type"]:
-                if bare.headers.parsed.get(hdr) != negotiated.headers.parsed.get(
-                    hdr, None
-                ):
+                bare_val = bare.headers.parsed.get(hdr)
+                negotiated_val = negotiated.headers.parsed.get(hdr, None)
+                if bare_val != negotiated_val:
                     self.add_base_note(
-                        f"header-{hdr}", VARY_HEADER_MISMATCH, header=hdr
+                        f"header-{hdr}",
+                        VARY_HEADER_MISMATCH,
+                        header=hdr,
+                        bare_val=str(bare_val),
+                        negotiated_val=str(negotiated_val),
                     )
 
             # check Vary headers
@@ -253,7 +257,10 @@ class VARY_HEADER_MISMATCH(RedbotNote):
     _summary = "The %(header)s header is different when content negotiation happens."
     _text = """\
 When content negotiation is used, the %(header)s response header shouldn't change between
-negotiated and non-negotiated responses."""
+negotiated and non-negotiated responses.
+
+* Negotiated: `%(negotiated_val)s`
+* Non-negotiated: `%(bare_val)s`"""
 
 
 class VARY_BODY_MISMATCH(RedbotNote):
