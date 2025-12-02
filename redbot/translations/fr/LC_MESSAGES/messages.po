@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-12-02 12:05+1100\n"
+"POT-Creation-Date: 2025-12-02 16:43+1100\n"
 "PO-Revision-Date: 2025-11-28 11:50+1100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -18,34 +18,34 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: redbot/formatter/html.py:115
+#: redbot/formatter/html.py:116
 msgid "view HAR"
 msgstr "voir le fichier HAR"
 
-#: redbot/formatter/html.py:118
+#: redbot/formatter/html.py:119
 msgid "View a HAR (HTTP ARchive, a JSON format) file for this test"
 msgstr "Visualiser un fichier HAR (HTTP Archive, un format JSON) pour ce test"
 
-#: redbot/formatter/html.py:122
+#: redbot/formatter/html.py:123
 msgid "check embedded"
 msgstr "vérifier intégré"
 
-#: redbot/formatter/html.py:127
+#: redbot/formatter/html.py:128
 msgid "Run REDbot on images, frames and embedded links"
 msgstr "Exécuter REDbot sur les images, les cadres et les liens intégrés"
 
-#: redbot/formatter/html.py:188
+#: redbot/formatter/html.py:189
 msgid "<p class='btw'>REDbot isn't showing all content, because it's so big!</p>"
 msgstr ""
 "<p class='btw'>REDbot ne montre pas tout le contenu, car il est si "
 "volumineux !</p>"
 
-#: redbot/formatter/html.py:200
+#: redbot/formatter/html.py:201
 #, python-format
 msgid "%s response"
 msgstr "Réponse %s"
 
-#: redbot/formatter/html.py:212
+#: redbot/formatter/html.py:213
 #, python-format
 msgid " - %d problem\n"
 msgstr "- %d problème"
@@ -202,25 +202,36 @@ msgstr "Afficher le contenu de cette réponse (sans compression gzip)"
 msgid "view content"
 msgstr "voir le contenu"
 
+#: redbot/formatter/templates/response_finish.html:52
+#: redbot/formatter/templates/response_multi_finish.html:105
+msgid "This result is saved"
+msgstr "Ce résultat est enregistré"
+
 #: redbot/formatter/templates/response_finish.html:53
+#: redbot/formatter/templates/response_multi_finish.html:106
+#, python-brace-format
+msgid "Saved until {0} for now"
+msgstr "Sauvegardé jusqu'à %(0)s pour l'instant"
+
+#: redbot/formatter/templates/response_finish.html:59
 #: redbot/formatter/templates/response_multi_finish.html:99
 msgid "Save these results for future reference"
 msgstr "Enregistrer ces résultats pour référence future"
 
-#: redbot/formatter/templates/response_finish.html:54
+#: redbot/formatter/templates/response_finish.html:60
 #: redbot/formatter/templates/response_multi_finish.html:100
 msgid "save"
 msgstr "sauvegarder"
 
-#: redbot/formatter/templates/response_finish.html:59
+#: redbot/formatter/templates/response_finish.html:65
 msgid "Validate the response body with a third party service"
 msgstr "Valider le corps de la réponse avec un service tiers"
 
-#: redbot/formatter/templates/response_finish.html:60
+#: redbot/formatter/templates/response_finish.html:66
 msgid "validate content"
 msgstr "valider le contenu"
 
-#: redbot/formatter/templates/response_finish.html:75
+#: redbot/formatter/templates/response_finish.html:81
 msgid ""
 "These notes explain what REDbot has found about your URL; hover over\n"
 "                each one for a detailed explanation."
@@ -229,11 +240,11 @@ msgstr ""
 "survolez\n"
 "                chacune d'elles pour une explication détaillée."
 
-#: redbot/formatter/templates/response_finish.html:103
+#: redbot/formatter/templates/response_finish.html:109
 msgid "If something doesn't seem right, feel free to"
 msgstr "Si quelque chose ne semble pas correct, n'hésitez pas à"
 
-#: redbot/formatter/templates/response_finish.html:104
+#: redbot/formatter/templates/response_finish.html:110
 msgid "file an issue"
 msgstr "signaler un problème"
 
@@ -351,7 +362,7 @@ msgstr "réponse incomplète"
 msgid "unknown problem"
 msgstr "problème inconnu"
 
-#: redbot/formatter/templates/response_multi_finish.html:108
+#: redbot/formatter/templates/response_multi_finish.html:114
 msgid "Notes"
 msgstr "Remarques"
 
@@ -532,13 +543,13 @@ msgstr ""
 "sont manquants, les caches pourraient les supprimer de leurs copies mises"
 " en cache."
 
-#: redbot/resource/active_check/conneg.py:146
+#: redbot/resource/active_check/conneg.py:150
 msgid "There was a problem checking for Content Negotiation support."
 msgstr ""
 "Il y a eu un problème lors de la vérification de la prise en charge de la"
 " négociation de contenu."
 
-#: redbot/resource/active_check/conneg.py:147
+#: redbot/resource/active_check/conneg.py:151
 #, python-format
 msgid ""
 "When REDbot tried to check the resource for content negotiation support, "
@@ -555,7 +566,7 @@ msgstr ""
 "\n"
 "Réessayer pourrait résoudre le problème."
 
-#: redbot/resource/active_check/conneg.py:158
+#: redbot/resource/active_check/conneg.py:162
 #, python-format
 msgid ""
 "Content negotiation for gzip compression is supported, saving "
@@ -564,7 +575,7 @@ msgstr ""
 "La négociation de contenu pour la compression gzip est prise en charge, "
 "économisant %(savings)s%%."
 
-#: redbot/resource/active_check/conneg.py:161
+#: redbot/resource/active_check/conneg.py:165
 #, python-format
 msgid ""
 "HTTP supports compression of responses by negotiating for `Content-"
@@ -582,7 +593,7 @@ msgstr ""
 "\n"
 "Les en-têtes de la réponse compressée sont affichés."
 
-#: redbot/resource/active_check/conneg.py:172
+#: redbot/resource/active_check/conneg.py:176
 #, python-format
 msgid ""
 "Content negotiation for gzip compression makes the response %(savings)s%%"
@@ -591,7 +602,7 @@ msgstr ""
 "La négociation de contenu pour la compression gzip rend la réponse "
 "%(savings)s%% plus grande."
 
-#: redbot/resource/active_check/conneg.py:173
+#: redbot/resource/active_check/conneg.py:177
 #, python-format
 msgid ""
 "HTTP supports compression of responses by negotiating for `Content-"
@@ -622,13 +633,13 @@ msgstr ""
 "\n"
 "Les en-têtes de la réponse compressée sont affichés."
 
-#: redbot/resource/active_check/conneg.py:188
+#: redbot/resource/active_check/conneg.py:192
 msgid "Content negotiation for gzip compression isn't supported."
 msgstr ""
 "La négociation de contenu pour la compression gzip n'est pas prise en "
 "charge."
 
-#: redbot/resource/active_check/conneg.py:189
+#: redbot/resource/active_check/conneg.py:193
 msgid ""
 "HTTP supports compression of responses by negotiating for `Content-"
 "Encoding`. When REDbot asked for\n"
@@ -638,7 +649,7 @@ msgstr ""
 "Encoding`. Lorsque REDbot a demandé une réponse compressée, la ressource "
 "n'en a pas fourni."
 
-#: redbot/resource/active_check/conneg.py:197
+#: redbot/resource/active_check/conneg.py:201
 msgid ""
 "The compressed response is negotiated, but doesn't have an appropriate "
 "Vary header."
@@ -646,7 +657,7 @@ msgstr ""
 "La réponse compressée est négociée, mais n'a pas un en-tête Vary "
 "approprié."
 
-#: redbot/resource/active_check/conneg.py:198
+#: redbot/resource/active_check/conneg.py:202
 msgid ""
 "All content negotiated responses need to have a `Vary` header that "
 "reflects the header(s) used to\n"
@@ -662,13 +673,13 @@ msgstr ""
 "L'en-tête `Vary` doit contenir `Accept-Encoding`, l'en-tête de requête "
 "utilisé."
 
-#: redbot/resource/active_check/conneg.py:209
+#: redbot/resource/active_check/conneg.py:213
 msgid "A gzip-compressed response was sent when it wasn't asked for."
 msgstr ""
 "Une réponse compressée gzip a été envoyée alors qu'elle n'était pas "
 "demandée."
 
-#: redbot/resource/active_check/conneg.py:210
+#: redbot/resource/active_check/conneg.py:214
 msgid ""
 "HTTP supports compression of responses by negotiating for `Content-"
 "Encoding`. Even though RED\n"
@@ -687,11 +698,11 @@ msgstr ""
 " les clients qui ne sont pas\n"
 "en train d'attendre une réponse compressée."
 
-#: redbot/resource/active_check/conneg.py:221
+#: redbot/resource/active_check/conneg.py:225
 msgid "The resource doesn't send Vary consistently."
 msgstr "La ressource n'envoie pas Vary de manière cohérente."
 
-#: redbot/resource/active_check/conneg.py:222
+#: redbot/resource/active_check/conneg.py:226
 #, python-format
 msgid ""
 "HTTP requires that the `Vary` response header be sent consistently for "
@@ -725,13 +736,13 @@ msgstr ""
 " déterminer de manière cohérente quelle est la clé de cache pour un URI "
 "donné."
 
-#: redbot/resource/active_check/conneg.py:239
+#: redbot/resource/active_check/conneg.py:243
 msgid "The response status is different when content negotiation happens."
 msgstr ""
 "Le statut de la réponse est différent lorsque la négociation de contenu a"
 " lieu."
 
-#: redbot/resource/active_check/conneg.py:240
+#: redbot/resource/active_check/conneg.py:244
 #, python-format
 msgid ""
 "When content negotiation is used, the response status shouldn't change "
@@ -756,29 +767,35 @@ msgstr ""
 "REDbot n'a pas vérifié d'autres aspects de la négociation de contenu en "
 "raison de cela."
 
-#: redbot/resource/active_check/conneg.py:253
+#: redbot/resource/active_check/conneg.py:257
 #, python-format
 msgid "The %(header)s header is different when content negotiation happens."
 msgstr "L'en-tête %(header)s est différent lors de la négociation de contenu."
 
-#: redbot/resource/active_check/conneg.py:254
+#: redbot/resource/active_check/conneg.py:258
 #, python-format
 msgid ""
 "When content negotiation is used, the %(header)s response header "
 "shouldn't change between\n"
-"negotiated and non-negotiated responses."
+"negotiated and non-negotiated responses.\n"
+"\n"
+"* Negotiated: `%(negotiated_val)s`\n"
+"* Non-negotiated: `%(bare_val)s`"
 msgstr ""
 "Lorsque la négociation de contenu est utilisée, l'en-tête de réponse "
-"%(header)s ne devrait pas changer entre les réponses négociées et non "
-"négociées."
+"%(header)s ne devrait pas changer entre\n"
+"les réponses négociées et non négociées.\n"
+"\n"
+"* Négociée : `%(negotiated_val)s`\n"
+"* Non négociée : `%(bare_val)s`"
 
-#: redbot/resource/active_check/conneg.py:262
+#: redbot/resource/active_check/conneg.py:269
 msgid "The response content is different when content negotiation happens."
 msgstr ""
 "Le contenu de la réponse est différent lorsque la négociation de contenu "
 "a lieu."
 
-#: redbot/resource/active_check/conneg.py:263
+#: redbot/resource/active_check/conneg.py:270
 msgid ""
 "When content negotiation is used, the response content typically "
 "shouldn't change between negotiated\n"
@@ -796,11 +813,11 @@ msgstr ""
 "différents serveurs ont traité les deux requêtes. Cependant, la sortie de"
 " RED peut en être faussée."
 
-#: redbot/resource/active_check/conneg.py:274
+#: redbot/resource/active_check/conneg.py:281
 msgid "The ETag doesn't change between negotiated representations."
 msgstr "L'ETag ne change pas entre les représentations négociées."
 
-#: redbot/resource/active_check/conneg.py:275
+#: redbot/resource/active_check/conneg.py:282
 msgid ""
 "HTTP requires that the `ETag`s for two different responses associated "
 "with the same URI be\n"
@@ -1195,13 +1212,13 @@ msgstr "Validation de Last-Modified"
 msgid "The Last-Modified validation response"
 msgstr "La réponse de validation Last-Modified"
 
-#: redbot/resource/active_check/range.py:136
+#: redbot/resource/active_check/range.py:148
 msgid "There was a problem checking for Partial Content support."
 msgstr ""
 "Il y a eu un problème lors de la vérification de la prise en charge de "
 "Partial Content."
 
-#: redbot/resource/active_check/range.py:137
+#: redbot/resource/active_check/range.py:149
 #, python-format
 msgid ""
 "When REDbot tried to check the resource for partial content support, "
@@ -1218,11 +1235,11 @@ msgstr ""
 "\n"
 "Réessayer pourrait le résoudre."
 
-#: redbot/resource/active_check/range.py:148
+#: redbot/resource/active_check/range.py:160
 msgid "The resource advertises support for non-standard range-units."
 msgstr "La ressource annonce la prise en charge d'unités de plage non standard."
 
-#: redbot/resource/active_check/range.py:149
+#: redbot/resource/active_check/range.py:161
 msgid ""
 "The `Accept-Ranges` response header tells clients what `range-unit`s a "
 "resource is willing to\n"
@@ -1238,11 +1255,11 @@ msgstr ""
 "Les clients qui ne connaissent pas la `range-unit` non standard ne "
 "pourront pas l'utiliser."
 
-#: redbot/resource/active_check/range.py:159
+#: redbot/resource/active_check/range.py:171
 msgid "A ranged request returned the correct partial content."
 msgstr "Une requête avec plage a renvoyé le contenu partiel correct."
 
-#: redbot/resource/active_check/range.py:160
+#: redbot/resource/active_check/range.py:172
 msgid ""
 "This resource advertises support for ranged requests with `Accept-"
 "Ranges`; that is, it allows\n"
@@ -1256,13 +1273,13 @@ msgstr ""
 "cela en demandant une partie de cette réponse, qui a été renvoyée "
 "correctement."
 
-#: redbot/resource/active_check/range.py:169
+#: redbot/resource/active_check/range.py:181
 msgid "A ranged request returned partial content, but it was incorrect."
 msgstr ""
 "Une requête avec plage a renvoyé un contenu partiel, mais il était "
 "incorrect."
 
-#: redbot/resource/active_check/range.py:170
+#: redbot/resource/active_check/range.py:182
 #, python-format
 msgid ""
 "This resource advertises support for ranged requests with `Accept-"
@@ -1311,11 +1328,11 @@ msgstr ""
 "\n"
 "_(affichage d'échantillons allant jusqu'à 100 caractères)_"
 
-#: redbot/resource/active_check/range.py:195
+#: redbot/resource/active_check/range.py:207
 msgid "A ranged request returned another representation."
 msgstr "Une requête de plage a renvoyé une autre représentation."
 
-#: redbot/resource/active_check/range.py:196
+#: redbot/resource/active_check/range.py:208
 msgid ""
 "A new representation was retrieved when checking support of ranged "
 "request. This is not an error,\n"
@@ -1325,11 +1342,11 @@ msgstr ""
 "support des requêtes par plages. Ceci n'est pas une erreur, cela indique "
 "simplement que REDbot ne peut tirer aucune conclusion pour le moment."
 
-#: redbot/resource/active_check/range.py:204
+#: redbot/resource/active_check/range.py:216
 msgid "A ranged request returned the full rather than partial content."
 msgstr "Une requête de plage a renvoyé le contenu complet plutôt que partiel."
 
-#: redbot/resource/active_check/range.py:205
+#: redbot/resource/active_check/range.py:217
 msgid ""
 "This resource advertises support for ranged requests with `Accept-"
 "Ranges`; that is, it allows\n"
@@ -1347,12 +1364,12 @@ msgstr ""
 "renvoyée. En d'autres termes, bien que la ressource annonce la prise en "
 "charge du contenu partiel, elle ne semble pas le faire réellement."
 
-#: redbot/resource/active_check/range.py:215
+#: redbot/resource/active_check/range.py:227
 #, python-format
 msgid "A ranged request returned a %(range_status)s status."
 msgstr "Une requête partielle a renvoyé un statut %(range_status)s."
 
-#: redbot/resource/active_check/range.py:216
+#: redbot/resource/active_check/range.py:228
 #, python-format
 msgid ""
 "This resource advertises support for ranged requests; that is, it allows "
@@ -1368,7 +1385,7 @@ msgstr ""
 "partie de cette réponse, mais un code de réponse %(enc_range_status)s a "
 "été renvoyé, ce que REDbot n'attendait pas."
 
-#: redbot/resource/active_check/range.py:225
+#: redbot/resource/active_check/range.py:237
 msgid ""
 "Partial responses don't have the same support for compression that full "
 "ones do."
@@ -1376,7 +1393,7 @@ msgstr ""
 "Les réponses partielles n'ont pas le même support pour la compression que"
 " les réponses complètes."
 
-#: redbot/resource/active_check/range.py:226
+#: redbot/resource/active_check/range.py:238
 msgid ""
 "This resource supports ranged requests and also supports negotiation for "
 "gzip compression, but\n"
@@ -1397,11 +1414,11 @@ msgstr ""
 "est exprimée sous la forme d'une plage d'octets, et que la compression "
 "modifie les octets."
 
-#: redbot/resource/active_check/range.py:237
+#: redbot/resource/active_check/range.py:249
 msgid "The partial response is missing required headers."
 msgstr "La réponse partielle manque d'en-têtes obligatoires."
 
-#: redbot/resource/active_check/range.py:238
+#: redbot/resource/active_check/range.py:250
 #, python-format
 msgid ""
 "HTTP requires `206 Partial Content` responses to have certain headers, if"
@@ -1425,6 +1442,41 @@ msgstr ""
 "Cela peut affecter le fonctionnement du cache ; du fait de l'absence de "
 "ces en-têtes, les caches pourraient les supprimer de leurs copies "
 "stockées."
+
+#: redbot/resource/active_check/range.py:263
+msgid "The partial response has a Content-Length equal to the full response."
+msgstr "La réponse partielle a une Content-Length égale à la réponse complète."
+
+#: redbot/resource/active_check/range.py:264
+msgid ""
+"The `Content-Length` header in a 206 response should indicate the size of"
+" the partial content, not\n"
+"the full response. This response has a `Content-Length` that matches the "
+"full size of the response,\n"
+"which suggests it might be incorrect."
+msgstr ""
+"L'en-tête `Content-Length` dans une réponse 206 doit indiquer la taille "
+"du contenu partiel, et non pas la réponse complète. Cette réponse a un "
+"`Content-Length` qui correspond à la taille complète de la réponse, ce "
+"qui suggère qu'elle pourrait être incorrecte."
+
+#: redbot/resource/active_check/range.py:273
+msgid "The Content-Range header indicates an incorrect total length."
+msgstr "L'en-tête Content-Range indique une longueur totale incorrecte."
+
+#: redbot/resource/active_check/range.py:274
+msgid ""
+"The `Content-Range` header in a 206 response indicates the total length "
+"of the response. In this\n"
+"case, it doesn't match the `Content-Length` of the full response, which "
+"suggests one of them is\n"
+"incorrect."
+msgstr ""
+"L'en-tête `Content-Range` dans une réponse 206 indique la longueur totale"
+" de la réponse. Dans ce\n"
+"cas, elle ne correspond pas à la `Content-Length` de la réponse complète,"
+" ce qui suggère que l'une des deux est\n"
+"incorrecte."
 
 #: redbot/resource/active_check/range.py:28
 #: redbot/translations/extra_strings.py:14
