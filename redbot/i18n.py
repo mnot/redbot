@@ -13,7 +13,7 @@ _LOCALE: ContextVar[str] = ContextVar("locale", default="en")
 LOCALE_DIR = os.path.join(os.path.dirname(__file__), "translations")
 _translations_cache: dict[str, Union[Translations, NullTranslations]] = {}
 
-AVAILABLE_LOCALES = ["en", "fr"]
+AVAILABLE_LOCALES = ["en", "fr", "ja", "zh", "es"]
 DEFAULT_LOCALE = "en"
 
 
