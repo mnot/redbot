@@ -96,6 +96,18 @@ class RangeRequest(SubRequest):
                 ],
                 MISSING_HDRS_206,
             )
+
+            if self.response.content_length == self.base.response.content_length:
+                self.add_base_note("header-content-length", RANGE_CL_FULL)
+
+            content_range = self.response.headers.parsed.get("content-range", None)
+            if content_range:
+                if (
+                    content_range[2] is not None
+                    and content_range[2] != self.base.response.content_length
+                ):
+                    self.add_base_note("header-content-range", RANGE_INCORRECT_LENGTH)
+
             if self.response.headers.parsed.get(
                 "etag", None
             ) == self.base.response.headers.parsed.get("etag", None):
@@ -243,3 +255,23 @@ The partial response is missing the following headers: `%(missing_hdrs)s`.
 
 This can affect cache operation; because the headers are missing, caches might remove them from
 their stored copies."""
+
+
+class RANGE_CL_FULL(RedbotNote):
+    category = categories.RANGE
+    level = levels.WARN
+    _summary = "The partial response has a Content-Length equal to the full response."
+    _text = """\
+The `Content-Length` header in a 206 response should indicate the size of the partial content, not
+the full response. This response has a `Content-Length` that matches the full size of the response,
+which suggests it might be incorrect."""
+
+
+class RANGE_INCORRECT_LENGTH(RedbotNote):
+    category = categories.RANGE
+    level = levels.WARN
+    _summary = "The Content-Range header indicates an incorrect total length."
+    _text = """\
+The `Content-Range` header in a 206 response indicates the total length of the response. In this
+case, it doesn't match the `Content-Length` of the full response, which suggests one of them is
+incorrect."""
