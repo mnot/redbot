@@ -23,10 +23,12 @@ This document outlines the process for adding and updating translations in `redb
 Suggestions and corrections for the translations in `redbot/translations` are welcome as GitHub Pull Requests. A few guidelines for doing so:
 
 * Assume a technical audience, but prioritise clarity, accuracy, and brevity. Do not assume deep domain-specific knowledge about HTTP.
-* Keep "%(foo)s" style variable in your content.
+* Keep "%(foo)s" style variables in your content.
 * Line endings are not important.
 
 In your PR, please do not modify any file except for the .po. Making multiple suggestions in the same PR is fine.
+
+Note that many of REDbot's messages come from the [httplint library](https://github.com/mnot/httplint/blob/main/TRANSLATION.md), which takes i18n PRs too.
 
 ## Guidelines for Code
 
