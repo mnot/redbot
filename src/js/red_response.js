@@ -88,7 +88,7 @@ docReady(function () {
           element.classList.toggle('hilight')
         })
       } else if (subject.indexOf('field-') === 0) {
-        qsa(`span.hdr[data-name='${subject.slice(7)}']`, function (element) {
+        qsa(`span.hdr[data-name='${subject.slice(6)}']`, function (element) {
           element.classList.toggle('hilight')
         })
       }
