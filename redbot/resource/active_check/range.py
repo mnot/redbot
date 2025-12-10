@@ -82,7 +82,7 @@ class RangeRequest(SubRequest):
                 "gzip" not in self.response.headers.parsed.get(c_e, [])
             ):
                 self.add_base_note(
-                    "header-accept-ranges header-content-encoding", RANGE_NEG_MISMATCH
+                    "field-accept-ranges field-content-encoding", RANGE_NEG_MISMATCH
                 )
                 return
             self.check_missing_hdrs(
@@ -98,7 +98,7 @@ class RangeRequest(SubRequest):
             )
 
             if self.response.content_length == self.base.response.content_length:
-                self.add_base_note("header-content-length", RANGE_CL_FULL)
+                self.add_base_note("field-content-length", RANGE_CL_FULL)
 
             content_range = self.response.headers.parsed.get("content-range", None)
             if content_range:
@@ -106,7 +106,7 @@ class RangeRequest(SubRequest):
                     content_range[2] is not None
                     and content_range[2] != self.base.response.content_length
                 ):
-                    self.add_base_note("header-content-range", RANGE_INCORRECT_LENGTH)
+                    self.add_base_note("field-content-range", RANGE_INCORRECT_LENGTH)
 
             if self.response.headers.parsed.get(
                 "etag", None
@@ -114,12 +114,12 @@ class RangeRequest(SubRequest):
                 content = b"".join([chunk[1] for chunk in self.response_content_sample])
                 if content == self.range_target:
                     self.base.partial_support = True
-                    self.add_base_note("header-accept-ranges", RANGE_CORRECT)
+                    self.add_base_note("field-accept-ranges", RANGE_CORRECT)
                 else:
                     # the body samples are just bags of bits
                     self.base.partial_support = False
                     self.add_base_note(
-                        "header-accept-ranges",
+                        "field-accept-ranges",
                         RANGE_INCORRECT,
                         range=f"bytes={self.range_start}-{self.range_end}",
                         range_expected=display_bytes(self.range_target),
@@ -128,14 +128,14 @@ class RangeRequest(SubRequest):
                         range_received_bytes=f_num(self.response.content_length),
                     )
             else:
-                self.add_base_note("header-accept-ranges", RANGE_CHANGED)
+                self.add_base_note("field-accept-ranges", RANGE_CHANGED)
 
         elif self.response.status_code == self.base.response.status_code:
             self.base.partial_support = False
-            self.add_base_note("header-accept-ranges", RANGE_FULL)
+            self.add_base_note("field-accept-ranges", RANGE_FULL)
         else:
             self.add_base_note(
-                "header-accept-ranges",
+                "field-accept-ranges",
                 RANGE_STATUS,
                 range_status=self.response.status_code or 0,
                 enc_range_status=self.response.status_code or "(unknown)",

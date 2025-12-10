@@ -53,7 +53,7 @@ class ConnegCheck(SubRequest):
             "content-encoding", []
         ) or "x-gzip" in bare.headers.parsed.get("content-encoding", []):
             self.add_base_note(
-                "header-vary header-content-encoding", CONNEG_GZIP_WITHOUT_ASKING
+                "field-vary field-content-encoding", CONNEG_GZIP_WITHOUT_ASKING
             )
         if "gzip" not in negotiated.headers.parsed.get(
             "content-encoding", []
@@ -76,7 +76,7 @@ class ConnegCheck(SubRequest):
                 negotiated_val = negotiated.headers.parsed.get(hdr, None)
                 if bare_val != negotiated_val:
                     self.add_base_note(
-                        f"header-{hdr}",
+                        f"field-{hdr}",
                         VARY_HEADER_MISMATCH,
                         header=hdr,
                         bare_val=str(bare_val),
@@ -86,10 +86,10 @@ class ConnegCheck(SubRequest):
             # check Vary headers
             vary_headers = negotiated.headers.parsed.get("vary", [])
             if (not "accept-encoding" in vary_headers) and (not "*" in vary_headers):
-                self.add_base_note("header-vary", CONNEG_NO_VARY)
+                self.add_base_note("field-vary", CONNEG_NO_VARY)
             if no_conneg_vary_headers != vary_headers:
                 self.add_base_note(
-                    "header-vary",
+                    "field-vary",
                     VARY_INCONSISTENT,
                     conneg_vary=", ".join(vary_headers),
                     no_conneg_vary=", ".join(no_conneg_vary_headers) or "-",
@@ -100,7 +100,7 @@ class ConnegCheck(SubRequest):
                 "etag", 2
             ):
                 if not self.base.response.headers.parsed["etag"][0]:  # strong
-                    self.add_base_note("header-etag", VARY_ETAG_DOESNT_CHANGE)
+                    self.add_base_note("field-etag", VARY_ETAG_DOESNT_CHANGE)
 
             # bail if decode didn't complete.
             if not negotiated.decoded.decode_ok:
@@ -128,7 +128,7 @@ class ConnegCheck(SubRequest):
             self.base.gzip_savings = savings
             if savings >= 0:
                 self.add_base_note(
-                    "header-content-encoding",
+                    "field-content-encoding",
                     CONNEG_GZIP_GOOD,
                     savings=savings,
                     orig_size=f_num(bare.content_length),
@@ -136,7 +136,7 @@ class ConnegCheck(SubRequest):
                 )
             else:
                 self.add_base_note(
-                    "header-content-encoding",
+                    "field-content-encoding",
                     CONNEG_GZIP_BAD,
                     savings=abs(savings),
                     orig_size=f_num(bare.content_length),

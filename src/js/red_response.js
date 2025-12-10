@@ -40,7 +40,7 @@ docReady(function () {
       let noteInteresting = false
       const subjects = element.getAttribute('data-subject').split(' ')
       subjects.forEach(subject => {
-        if (subject === `header-${headerName}`) {
+        if (subject === `field-${headerName}`) {
           noteInteresting = true
         }
         if (subject === `offset-${offset}`) {
@@ -48,7 +48,7 @@ docReady(function () {
         }
       })
       if (!noteInteresting) {
-        element.style.opacity = direction ? 0.3 : 1.0
+        element.style.opacity = direction ? 0.2 : 1.0
       }
     })
   }
@@ -87,7 +87,7 @@ docReady(function () {
         qsa(`span.hdr[data-offset='${subject.slice(7)}']`, function (element) {
           element.classList.toggle('hilight')
         })
-      } else if (subject.indexOf('header-') === 0) {
+      } else if (subject.indexOf('field-') === 0) {
         qsa(`span.hdr[data-name='${subject.slice(7)}']`, function (element) {
           element.classList.toggle('hilight')
         })

@@ -264,11 +264,11 @@ class RedFetcher(thor.events.EventEmitter):
                 self.response.notes.add("body", EXTRA_DATA, sample=err_sample)
         elif isinstance(error, httperr.ChunkError):
             self.response.notes.add(
-                "header-transfer-encoding", BAD_CHUNK, chunk_sample=err_sample
+                "field-transfer-encoding", BAD_CHUNK, chunk_sample=err_sample
             )
         elif isinstance(error, httperr.HeaderSpaceError):
             assert error.detail, "error.detail not set in _response_error"
-            subject = f"header-{error.detail.lower().strip()}"
+            subject = f"field-{error.detail.lower().strip()}"
             self.response.notes.add(
                 subject, HEADER_NAME_SPACE, header_name=error.detail
             )
