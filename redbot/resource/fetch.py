@@ -206,6 +206,8 @@ class RedFetcher(thor.events.EventEmitter):
         self, status: bytes, phrase: bytes, res_headers: RawHeaderListType
     ) -> None:
         "Process the response start-line and headers."
+        if self.fetch_done:
+            return
         self.response.start_time = time.time()
         assert (
             self.exchange.res_version
@@ -272,6 +274,7 @@ class RedFetcher(thor.events.EventEmitter):
             self.response.notes.add(
                 subject, HEADER_NAME_SPACE, header_name=error.detail
             )
+            return
         else:
             self.fetch_error = error
         self._fetch_done()
