@@ -59,7 +59,7 @@ class RedFetcher(thor.events.EventEmitter):
         self.transfer_in = 0
         self.transfer_out = 0
         self.request_content: bytes
-        self.response_header_length: int
+        self.response_header_length: int = 0
         self.response_content_processors: List[Callable[[bytes], None]] = []
         self.response_content_sample: List[Tuple[int, bytes]] = []
         self.response_decoded_sample: List[bytes] = []
@@ -201,6 +201,21 @@ class RedFetcher(thor.events.EventEmitter):
         nfres.process_headers(res_headers)
         nfres.finish_content(True)
         self.nonfinal_responses.append(nfres)
+
+        for wire_name, _ in res_headers:
+            name = wire_name.lower()
+            if name in [
+                b"content-length",
+                b"transfer-encoding",
+                b"content-range",
+                b"trailer",
+            ]:
+                self.response.notes.add(
+                    f"header-{name.decode('ascii')}",
+                    ONE_XX_BAD_HEADER,
+                    response=status.decode("ascii", "replace").split()[0],
+                    header_name=wire_name.decode("ascii"),
+                )
 
     def _response_start(
         self, status: bytes, phrase: bytes, res_headers: RawHeaderListType
@@ -354,4 +369,15 @@ HTTP specifically bans whitespace between header field names and the colon, beca
 be confused by recipients; some will strip it, and others won't, leading to a variety of attacks.
 
 Most HTTP implementations will refuse to process this message.
+"""
+
+
+class ONE_XX_BAD_HEADER(RedbotNote):
+    category = categories.CONNECTION
+    level = levels.BAD
+    _summary = "The %(response)s response contains a %(header_name)s header."
+    _text = """\
+RFC 9110 requires that 1xx responses not contain a `%(header_name)s` header.
+
+Clients receiving this response will either fail to process it or behave unexpectedly.
 """

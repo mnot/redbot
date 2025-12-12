@@ -12,11 +12,19 @@
         <pre class='nonfinal_response'>{{ format_response(nonfinal_response) }}</pre>
         {% endfor %}
 
+        {% if resource.fetch_error %}
+        <p class='error'>
+            {{ resource.fetch_error.desc }}
+        </p>
+        {% endif %}
+
         <span class="help hidden">
             {{ _("These are the response headers; hover over each one for an explanation of what it does.") }}
         </span>
 
+        {% if resource.response.version %}
         <pre id='response'>{{ format_response(resource.response) }}</pre>
+        {% endif %}
 
         <div class="options">
             <span class='help hidden'>

@@ -61,15 +61,20 @@ class BaseTextFormatter(Formatter):
 
     def finish_output(self) -> None:
         "Fill in the template with RED's results."
-        if self.resource.response.complete:
-            self.output(
-                NL.join(
-                    [self.format_headers(r) for r in self.resource.nonfinal_responses]
+        if self.resource.response.complete or self.resource.nonfinal_responses:
+            if self.resource.nonfinal_responses:
+                self.output(
+                    NL.join(
+                        [self.format_headers(r) for r in self.resource.nonfinal_responses]
+                    )
+                    + NL
+                    + NL
                 )
-                + NL
-                + NL
-            )
-            self.output(self.format_headers(self.resource.response) + NL + NL)
+            if self.resource.response.complete:
+                self.output(self.format_headers(self.resource.response) + NL + NL)
+            elif isinstance(self.resource.fetch_error, httperr.HttpError):
+                self.output(self.error_template % self.resource.fetch_error.desc)
+
             self.output(self.format_recommendations(self.resource) + NL)
         else:
             if self.resource.fetch_error is None:

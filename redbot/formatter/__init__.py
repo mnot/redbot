@@ -216,7 +216,7 @@ def f_num(i: int, by1024: bool = False) -> str:
             return format_decimal(mega, locale=current_locale) + "m"
         if kilo:
             return format_decimal(kilo, locale=current_locale) + "k"
-    return format_decimal(i, locale=current_locale)
+    return format_decimal(i or 0, locale=current_locale)
 
 
 def relative_time(utime: float, now: Optional[float] = None, show_sign: int = 1) -> Any:

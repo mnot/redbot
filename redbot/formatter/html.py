@@ -94,12 +94,14 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     def finish_output(self) -> None:
         self.final_status()
         media_type = self.resource.response.headers.parsed.get("content-type", [""])[0]
-        if self.resource.response.complete:
+        if self.resource.response.complete or self.resource.nonfinal_responses:
             validator_link = self.validators.get(media_type, None)
-            if validator_link:
+            if validator_link and self.resource.response.complete:
                 validator_link = validator_link % e_query_arg(
                     self.resource.request.uri or ""
                 )
+            else:
+                validator_link = None
             tpl = self.templates.get_template("response_finish.html")
             self.output(
                 tpl.render(
