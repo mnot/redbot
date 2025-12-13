@@ -65,7 +65,10 @@ class BaseTextFormatter(Formatter):
             if self.resource.nonfinal_responses:
                 self.output(
                     NL.join(
-                        [self.format_headers(r) for r in self.resource.nonfinal_responses]
+                        [
+                            self.format_headers(r)
+                            for r in self.resource.nonfinal_responses
+                        ]
                     )
                     + NL
                     + NL

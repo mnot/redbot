@@ -239,7 +239,7 @@ in standalone server mode. Details follow.
         path = os.path.normpath(path)
         if path.startswith(self.server.static_root + b"/"):
             # Strip the static root from the path to get relative file path
-            path = path[len(self.server.static_root) + 1:]
+            path = path[len(self.server.static_root) + 1 :]
             try:
                 with self.server.static_files.joinpath(path.decode("ascii")).open(
                     mode="rb"
