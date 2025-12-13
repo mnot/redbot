@@ -64,6 +64,13 @@ class RedBotServer:
         if extra_base_dir:
             self.extra_files = self.walk_files(extra_base_dir)
 
+        # Get the UI path we're being served from
+        ui_uri_config = self.config.get("ui_uri", "/")
+        ui_uri_parsed = urlsplit(ui_uri_config)
+        self.ui_path = ui_uri_parsed.path.encode("utf-8")
+        if not self.ui_path.endswith(b"/"):
+            self.ui_path += b"/"
+
         # Start garbage collection
         if config.get("save_dir", ""):
             thor.schedule(10, self.gc_state)
@@ -187,12 +194,23 @@ class RedRequestHandler:
             p_uri = urlsplit(self.uri)
         except UnicodeDecodeError:
             return self.bad_request(b"That's not a URL.")
-        if p_uri.path == b"/":
+        if (
+            p_uri.path.startswith(self.server.static_root + b"/")
+            or p_uri.path in self.server.extra_files
+        ):
+            return self.serve_static(p_uri.path)
+
+        if p_uri.path.startswith(self.server.ui_path):
+            # The path effective relative to the UI URI
+            # e.g., /red/foo/bar -> foo/bar
+            # defaults to empty string
+            ui_path = p_uri.path[len(self.server.ui_path) :]
             client_ip = self.client_ip
             try:
                 RedWebUi(
                     self.server.config,
                     self.method.decode(self.server.config.get("charset", "utf-8")),
+                    ui_path,
                     p_uri.query,
                     self.req_hdrs,
                     self.req_body,
@@ -215,12 +233,13 @@ in standalone server mode. Details follow.
                 self.server.console(dump)
                 sys.exit(1)
         else:
-            return self.serve_static(p_uri.path)
+            return self.not_found(p_uri.path)
 
     def serve_static(self, path: bytes) -> None:
         path = os.path.normpath(path)
         if path.startswith(self.server.static_root + b"/"):
-            path = b"/".join(path.split(b"/")[2:])
+            # Strip the static root from the path to get relative file path
+            path = path[len(self.server.static_root) + 1:]
             try:
                 with self.server.static_files.joinpath(path.decode("ascii")).open(
                     mode="rb"

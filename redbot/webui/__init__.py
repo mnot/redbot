@@ -54,6 +54,7 @@ class RedWebUi:
         self,
         config: SectionProxy,
         method: str,
+        path: bytes,
         query_string: bytes,
         req_headers: RawHeaderListType,
         req_body: bytes,
@@ -64,6 +65,7 @@ class RedWebUi:
         self.config: SectionProxy = config
         self.charset = self.config.get("charset", "utf-8")
         self.charset_bytes = self.charset.encode("ascii")
+        self.path = path.decode(self.charset, "replace")
         self.query_string = parse_qs(query_string.decode(self.charset, "replace"))
         self.req_headers = req_headers
         self.req_body = req_body
@@ -130,19 +132,26 @@ class RedWebUi:
                 and self.config.get("save_dir")
                 and self.test_id
             ):
+                # Triggered by saving a test result; see response_start.html -> #save_form
                 extend_saved_test(self)
             elif "slack" in self.query_string:
+                # Triggered by Slack slash command
                 slack_run(self)
             elif "client_error" in self.query_string:
+                # Triggered by JS error reporting; see response_start.html -> window.onerror
                 self.dump_client_error()
             elif self.test_uri:
+                # Triggered by main form submission (see response_start.html -> #request_form)
+                # and by recursive tests/links (see redbot_link in html_base.py)
                 self.run_test()
             else:
                 self.show_default()
         elif method in ["GET", "HEAD"]:
             if self.test_id:
+                # Triggered by viewing a saved test; see redbot_link in html_base.py
                 load_saved_test(self)
             elif "code" in self.query_string:
+                # Triggered by Slack OAuth callback
                 slack_auth(self)
             else:
                 self.show_default()
