@@ -21,6 +21,7 @@ class TestI18n(unittest.TestCase):
             ui = RedWebUi(
                 config, 
                 "GET", 
+                b"",
                 b"", 
                 req_headers, 
                 b"", 
@@ -39,6 +40,7 @@ class TestI18n(unittest.TestCase):
             ui = RedWebUi(
                 config, 
                 "GET", 
+                b"",
                 b"", 
                 req_headers, 
                 b"", 
