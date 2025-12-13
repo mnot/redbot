@@ -125,14 +125,6 @@ class RedWebUi:
             req_ct = get_header(self.req_headers, b"content-type")
             if req_ct and req_ct[-1].lower() == b"application/x-www-form-urlencoded":
                 self.body_args = parse_qs(req_body.decode(self.charset, "replace"))
-
-            if (
-                "save" in self.query_string
-                and self.config.get("save_dir")
-                and self.test_id
-            ):
-                # Triggered by saving a test result; see response_start.html -> #save_form
-                extend_saved_test(self)
             if (
                 "save" in self.query_string
                 and self.config.get("save_dir")
@@ -149,10 +141,6 @@ class RedWebUi:
                 self.run_test()
             else:
                 self.show_default()
-        elif method in ["GET", "HEAD"]:
-            if self.test_id:
-                # Triggered by viewing a saved test; see redbot_link in html_base.py
-                load_saved_test(self)
         elif method in ["GET", "HEAD"]:
             if self.test_id:
                 # Triggered by viewing a saved test; see redbot_link in html_base.py
