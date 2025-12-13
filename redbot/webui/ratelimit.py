@@ -23,7 +23,9 @@ class RateLimiter:
     def __init__(self) -> None:
         self.loop = thor.loop
 
-    def process(self, webui: "RedWebUi", error_response: Callable) -> None:
+    def process(
+        self, webui: "RedWebUi", test_uri: str, error_response: Callable
+    ) -> None:
         """Enforce limits on webui."""
         if not self.running:
             self.setup(webui.config)
@@ -43,7 +45,7 @@ class RateLimiter:
                 raise ValueError  # pylint: disable=raise-missing-from
 
         # enforce origin limits
-        origin = url_to_origin(webui.test_uri)
+        origin = url_to_origin(test_uri)
         if origin:
             try:
                 self.increment("origin", origin)
@@ -55,8 +57,6 @@ class RateLimiter:
                     f"origin over limit: {origin}",
                 )
                 raise ValueError  # pylint: disable=raise-missing-from
-
-
 
     def setup(self, config: SectionProxy) -> None:
         """Set up the counters for config."""
@@ -73,8 +73,6 @@ class RateLimiter:
         if origin_limit:
             origin_period = config.getfloat("limit_origin_period", fallback=1) * 3600
             self._setup("origin", origin_limit, origin_period)
-
-
 
         self.running = True
 

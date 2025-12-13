@@ -99,20 +99,6 @@ class RedWebUi:
         else:
             self.locale = DEFAULT_LOCALE
 
-        # query processing
-        self.test_uri = self.query_string.get("uri", [""])[0]
-        self.test_id = self.query_string.get("id", [None])[0]
-        self.req_hdrs: StrHeaderListType = [
-            tuple(h.split(":", 1))  # type: ignore
-            for h in self.query_string.get("req_hdr", [])
-            if ":" in h
-        ]
-        self.format = self.query_string.get("format", ["html"])[0]
-        self.descend = "descend" in self.query_string
-        self.check_name: Optional[str] = None
-        if not self.descend:
-            self.check_name = self.query_string.get("check_name", [None])[0]
-
         self.save_path: str
         self.timeout: Optional[thor.loop.ScheduledEvent] = None
 
@@ -128,21 +114,21 @@ class RedWebUi:
             if (
                 "save" in self.query_string
                 and self.config.get("save_dir")
-                and self.test_id
+                and "id" in self.query_string
             ):
                 # Triggered by saving a test result; see response_start.html -> #save_form
                 extend_saved_test(self)
             elif "client_error" in self.query_string:
                 # Triggered by JS error reporting; see response_start.html -> window.onerror
                 self.dump_client_error()
-            elif self.test_uri:
+            elif "uri" in self.query_string:
                 # Triggered by main form submission (see response_start.html -> #request_form)
                 # and by recursive tests/links (see redbot_link in html_base.py)
                 self.run_test()
             else:
                 self.show_default()
         elif method in ["GET", "HEAD"]:
-            if self.test_id:
+            if "id" in self.query_string:
                 # Triggered by viewing a saved test; see redbot_link in html_base.py
                 load_saved_test(self)
             else:
@@ -164,18 +150,27 @@ class RedWebUi:
 
     def run_test(self) -> None:
         """Test a URI."""
-        self.test_id = init_save_file(self)
-        top_resource = HttpResource(self.config, descend=self.descend)
-        top_resource.set_request(self.test_uri, headers=self.req_hdrs)
-        formatter = find_formatter(self.format, "html", self.descend)(
+        test_id = init_save_file(self)
+        test_uri = self.query_string.get("uri", [""])[0]
+        test_req_hdrs: StrHeaderListType = [
+            tuple(h.split(":", 1))  # type: ignore
+            for h in self.query_string.get("req_hdr", [])
+            if ":" in h
+        ]
+        descend = "descend" in self.query_string
+
+        top_resource = HttpResource(self.config, descend=descend)
+        top_resource.set_request(test_uri, headers=test_req_hdrs)
+        format_ = self.query_string.get("format", ["html"])[0]
+        formatter = find_formatter(format_, "html", descend)(
             self.config,
             top_resource,
             self.output,
             {
-                "allow_save": self.test_id,
+                "allow_save": test_id,
                 "is_saved": False,
-                "test_id": self.test_id,
-                "descend": self.descend,
+                "test_id": test_id,
+                "descend": descend,
                 "nonce": self.nonce,
                 "locale": self.locale,
             },
@@ -193,7 +188,7 @@ class RedWebUi:
 
         # referer limiting
         referers = []
-        for hdr, value in self.req_hdrs:
+        for hdr, value in test_req_hdrs:
             if hdr.lower() == "referer":
                 referers.append(value)
         referer_error = None
@@ -216,7 +211,7 @@ class RedWebUi:
 
         # enforce client limits
         try:
-            ratelimiter.process(self, error_response)
+            ratelimiter.process(self, test_uri, error_response)
         except ValueError:
             return  # over limit, don't continue.
 
@@ -265,8 +260,7 @@ class RedWebUi:
                     self.error_log(
                         f"{ti / 1024:n}K in "
                         f"{to / 1024:n}K out "
-                        f"for <{e_url(self.test_uri)}> "
-                        f"(descend {self.descend})"
+                        f"for <{e_url(str(top_resource.request.uri))}> "
                     )
 
         self.exchange.response_start(
@@ -283,9 +277,10 @@ class RedWebUi:
             ]
             + extra_headers,
         )
-        if self.check_name:
+        if "check_name" in self.query_string:
+            check_name = self.query_string.get("check_name", [None])[0]
             display_resource = cast(
-                HttpResource, top_resource.subreqs.get(self.check_name, top_resource)
+                HttpResource, top_resource.subreqs.get(check_name, top_resource)
             )
         else:
             display_resource = top_resource
@@ -306,23 +301,31 @@ class RedWebUi:
 
     def show_default(self) -> None:
         """Show the default page."""
-        resource = HttpResource(self.config, descend=self.descend)
-        if self.test_uri:
-            resource.set_request(self.test_uri, headers=self.req_hdrs)
+        descend = "descend" in self.query_string
+        resource = HttpResource(self.config, descend=descend)
+        test_uri = self.query_string.get("uri", [""])[0]
+        test_req_hdrs: StrHeaderListType = [
+            tuple(h.split(":", 1))  # type: ignore
+            for h in self.query_string.get("req_hdr", [])
+            if ":" in h
+        ]
+        if test_uri:
+            resource.set_request(test_uri, headers=test_req_hdrs)
         formatter = html.BaseHtmlFormatter(
             self.config,
             resource,
             self.output,
             {
-                "is_blank": self.test_uri == "",
+                "is_blank": test_uri == "",
                 "nonce": self.nonce,
                 "locale": self.locale,
             },
         )
-        if self.check_name:
+        if "check_name" in self.query_string:
+            check_name = self.query_string.get("check_name", [None])[0]
             formatter.resource = cast(
                 HttpResource,
-                resource.subreqs.get(self.check_name, resource),
+                resource.subreqs.get(check_name, resource),
             )
         self.exchange.response_start(
             b"200",
@@ -389,7 +392,9 @@ class RedWebUi:
         details = ""
         if detail:
             details = f"detail={detail()}"
-        self.error_log(f"timeout <{self.test_uri}> descend={self.descend} {details}")
+        self.error_log(
+            f"timeout <{formatter.resource.request.uri}> {details}"
+        )
         formatter.error_output("REDbot timeout.")
         self.exchange.response_done([])
 

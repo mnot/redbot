@@ -32,7 +32,7 @@ def init_save_file(webui: "RedWebUi") -> Optional[str]:
 
 def save_test(webui: "RedWebUi", top_resource: HttpResource) -> None:
     """Save a test by test_id."""
-    if webui.test_id:
+    if "id" in webui.query_string:
         try:
             with cast(IO[bytes], gzip.open(webui.save_path, "w")) as tmp_file:
                 pickle.dump(top_resource, tmp_file)
@@ -42,7 +42,8 @@ def save_test(webui: "RedWebUi", top_resource: HttpResource) -> None:
 
 def extend_saved_test(webui: "RedWebUi") -> None:
     """Extend the expiry time of a previously run test_id."""
-    assert webui.test_id, "test_id not set in extend_saved_test"
+    test_id = webui.query_string.get("id", [None])[0]
+    assert test_id, "test_id not set in extend_saved_test"
     try:
         # touch the save file so it isn't deleted.
         now = time.time()
@@ -50,14 +51,14 @@ def extend_saved_test(webui: "RedWebUi") -> None:
         if not os.path.exists(state_dir):
             raise OSError
         os.utime(
-            os.path.join(state_dir, webui.test_id),
+            os.path.join(state_dir, test_id),
             (
                 now,
                 now + (webui.config.getint("save_days", fallback=30) * 24 * 60 * 60),
             ),
         )
-        location = b"?id=%s" % webui.test_id.encode("ascii")
-        if webui.descend:
+        location = b"?id=%s" % test_id.encode("ascii")
+        if "descend" in webui.query_string:
             location = b"%s&descend=True" % location
         webui.exchange.response_start(b"303", b"See Other", [(b"Location", location)])
         webui.output("Redirecting to the saved test page...")
@@ -103,7 +104,8 @@ def clean_saved_tests(config: SectionProxy) -> Tuple[int, int, int]:
 
 def load_saved_test(webui: "RedWebUi") -> None:
     """Load a saved test by test_id."""
-    assert webui.test_id, "test_id not set in load_saved_test"
+    test_id = webui.query_string.get("id", [None])[0]
+    assert test_id, "test_id not set in load_saved_test"
     state_dir = webui.config.get("save_dir", "")
     if not os.path.exists(state_dir):
         webui.exchange.response_start(
@@ -120,7 +122,7 @@ def load_saved_test(webui: "RedWebUi") -> None:
     try:
         with cast(
             IO[bytes],
-            gzip.open(os.path.join(state_dir, os.path.basename(webui.test_id))),
+            gzip.open(os.path.join(state_dir, os.path.basename(test_id))),
         ) as fd:
             mtime = os.fstat(fd.fileno()).st_mtime
             is_saved = mtime > time.time()
@@ -150,12 +152,14 @@ def load_saved_test(webui: "RedWebUi") -> None:
         webui.exchange.response_done([])
         return
 
-    if webui.check_name:
-        display_resource = top_resource.subreqs.get(webui.check_name, top_resource)
+    if "check_name" in webui.query_string:
+        check_name = webui.query_string.get("check_name", [None])[0]
+        display_resource = top_resource.subreqs.get(check_name, top_resource)
     else:
         display_resource = top_resource
 
-    formatter = find_formatter(webui.format, "html", top_resource.descend)(
+    format_ = webui.query_string.get("format", ["html"])[0]
+    formatter = find_formatter(format_, "html", top_resource.descend)(
         webui.config,
         display_resource,
         webui.output,
@@ -163,7 +167,7 @@ def load_saved_test(webui: "RedWebUi") -> None:
             "allow_save": (not is_saved),
             "is_saved": True,
             "save_mtime": mtime,
-            "test_id": webui.test_id,
+            "test_id": test_id,
             "nonce": webui.nonce,
         },
     )
