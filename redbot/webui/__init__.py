@@ -29,7 +29,6 @@ from redbot.webui.saved_tests import (
     extend_saved_test,
     load_saved_test,
 )
-from redbot.webui.slack import slack_run, slack_auth
 from redbot.resource import HttpResource
 from redbot.formatter import find_formatter, html, Formatter
 from redbot.formatter.html_base import e_url
@@ -134,9 +133,13 @@ class RedWebUi:
             ):
                 # Triggered by saving a test result; see response_start.html -> #save_form
                 extend_saved_test(self)
-            elif "slack" in self.query_string:
-                # Triggered by Slack slash command
-                slack_run(self)
+            if (
+                "save" in self.query_string
+                and self.config.get("save_dir")
+                and self.test_id
+            ):
+                # Triggered by saving a test result; see response_start.html -> #save_form
+                extend_saved_test(self)
             elif "client_error" in self.query_string:
                 # Triggered by JS error reporting; see response_start.html -> window.onerror
                 self.dump_client_error()
@@ -150,9 +153,10 @@ class RedWebUi:
             if self.test_id:
                 # Triggered by viewing a saved test; see redbot_link in html_base.py
                 load_saved_test(self)
-            elif "code" in self.query_string:
-                # Triggered by Slack OAuth callback
-                slack_auth(self)
+        elif method in ["GET", "HEAD"]:
+            if self.test_id:
+                # Triggered by viewing a saved test; see redbot_link in html_base.py
+                load_saved_test(self)
             else:
                 self.show_default()
         else:

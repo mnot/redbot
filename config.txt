@@ -131,30 +131,4 @@ limit_origin_tests = 180
 # Period of time those requests are allowed within, in hours.
 limit_origin_period = 1
 
-# Number of tests to allow per period, per Slack user. Comment out to disable.
-limit_slack_user_tests = 60
 
-# Period of time they are allowed within, in hours.
-limit_slack_user_period = 1
-
-# Number of tests to allow per period, per Slack team. Comment out to disable.
-limit_slack_team_tests = 300
-
-# Period of time those requests are allowed within, in hours.
-limit_slack_team_period = 1
-
-
-## Slack integration
-#
-# See https://redbot.org/slack/
-#
-# You MUST set ui_uri above to your instance's URI to make Slack integration work properly.
-
-# Signing secret from Slack. Comment out to disable Slack integration.
-# slack_signing_secret =
-
-# Client secret from Slack. Only necessary if you're publishing an app.
-# slack_client_secret =
-
-# Client ID. Only necessary if you're publishing an app.
-# slack_client_id =
