@@ -40,7 +40,16 @@ msgstr ""
 msgid "view body"
 msgstr ""
 
-#: redbot/formatter/html_base.py:141
+#: redbot/formatter/html_base.py:139
+#: redbot/formatter/templates/response_finish.html:86
+msgid "sort by alpha"
+msgstr ""
+
+#: redbot/formatter/html_base.py:140
+msgid "show wire order"
+msgstr ""
+
+#: redbot/formatter/html_base.py:143
 #, python-format
 msgid "Setting the %s request header can lead to unpredictable results."
 msgstr ""
@@ -195,17 +204,21 @@ msgstr ""
 msgid "validate content"
 msgstr ""
 
-#: redbot/formatter/templates/response_finish.html:89
+#: redbot/formatter/templates/response_finish.html:85
+msgid "Header sorting"
+msgstr ""
+
+#: redbot/formatter/templates/response_finish.html:93
 msgid ""
 "These notes explain what REDbot has found about your URL; hover over\n"
 "                each one for a detailed explanation."
 msgstr ""
 
-#: redbot/formatter/templates/response_finish.html:117
+#: redbot/formatter/templates/response_finish.html:121
 msgid "If something doesn't seem right, feel free to"
 msgstr ""
 
-#: redbot/formatter/templates/response_finish.html:118
+#: redbot/formatter/templates/response_finish.html:122
 msgid "file an issue"
 msgstr ""
 

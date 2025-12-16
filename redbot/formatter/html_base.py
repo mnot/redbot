@@ -136,6 +136,8 @@ class BaseHtmlFormatter(Formatter):
                                         "add_req_hdr": str(_("add a request header")),
                                         "view_notes": str(_("view notes")),
                                         "view_body": str(_("view body")),
+                                        "sort_alpha": str(_("sort by alpha")),
+                                        "wire_order": str(_("show wire order")),
                                         "header_warning": str(
                                             _(
                                                 "Setting the %s request header can "

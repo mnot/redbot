@@ -121,4 +121,56 @@ docReady(function () {
       qs('#save_form').submit()
     }
   }
+
+  /* single response display - sort headers */
+  const sortButton = qs('#sort_headers')
+  let sorted = false
+  if (sortButton !== null) {
+    sortButton.onclick = function (e) {
+      e.preventDefault()
+      const response = qs('#response')
+      const status = qs('.status', response)
+      const headers = []
+      qsa('.hdr', function (element) {
+        headers.push(element)
+      }, response)
+      headers.sort(function (a, b) {
+        if (!sorted) {
+          const aName = a.getAttribute('data-name')
+          const bName = b.getAttribute('data-name')
+          if (aName < bName) {
+            return -1
+          }
+          if (aName > bName) {
+            return 1
+          }
+          return 0
+        } else {
+          const aOffset = parseInt(a.getAttribute('data-offset'), 10)
+          const bOffset = parseInt(b.getAttribute('data-offset'), 10)
+          return aOffset - bOffset
+        }
+      })
+
+      while (response.firstChild) {
+        response.removeChild(response.firstChild)
+      }
+
+      response.appendChild(status)
+      response.appendChild(document.createTextNode('\n'))
+      headers.forEach(function (element) {
+        response.appendChild(element)
+        response.appendChild(document.createTextNode('\n'))
+      })
+
+      if (!sorted) {
+        // We just sorted by alpha
+        sortButton.textContent = config.i18n.wire_order
+      } else {
+        // We just sorted by wire order
+        sortButton.textContent = config.i18n.sort_alpha
+      }
+      sorted = !sorted
+    }
+  }
 })
