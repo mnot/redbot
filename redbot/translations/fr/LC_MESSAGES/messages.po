@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-12-16 14:05+1100\n"
+"POT-Creation-Date: 2025-12-17 09:00+1100\n"
 "PO-Revision-Date: 2025-11-28 11:50+1100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -62,7 +62,16 @@ msgstr "voir les notes"
 msgid "view body"
 msgstr "voir le corps"
 
-#: redbot/formatter/html_base.py:141
+#: redbot/formatter/html_base.py:139
+#: redbot/formatter/templates/response_finish.html:86
+msgid "sort by alpha"
+msgstr "trier par ordre alpha"
+
+#: redbot/formatter/html_base.py:140
+msgid "show wire order"
+msgstr "Montrer la commande de fil"
+
+#: redbot/formatter/html_base.py:143
 #, python-format
 msgid "Setting the %s request header can lead to unpredictable results."
 msgstr ""
@@ -231,7 +240,11 @@ msgstr "Valider le corps de la réponse avec un service tiers"
 msgid "validate content"
 msgstr "valider le contenu"
 
-#: redbot/formatter/templates/response_finish.html:89
+#: redbot/formatter/templates/response_finish.html:85
+msgid "Header sorting"
+msgstr "Tri des en-têtes"
+
+#: redbot/formatter/templates/response_finish.html:93
 msgid ""
 "These notes explain what REDbot has found about your URL; hover over\n"
 "                each one for a detailed explanation."
@@ -240,11 +253,11 @@ msgstr ""
 "survolez\n"
 "                chacune d'elles pour une explication détaillée."
 
-#: redbot/formatter/templates/response_finish.html:117
+#: redbot/formatter/templates/response_finish.html:121
 msgid "If something doesn't seem right, feel free to"
 msgstr "Si quelque chose ne semble pas correct, n'hésitez pas à"
 
-#: redbot/formatter/templates/response_finish.html:118
+#: redbot/formatter/templates/response_finish.html:122
 msgid "file an issue"
 msgstr "signaler un problème"
 

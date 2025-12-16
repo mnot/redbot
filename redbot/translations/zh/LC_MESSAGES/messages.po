@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-12-16 14:05+1100\n"
+"POT-Creation-Date: 2025-12-17 09:00+1100\n"
 "PO-Revision-Date: 2025-11-30 12:05+1100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh\n"
@@ -60,7 +60,16 @@ msgstr "查看注释"
 msgid "view body"
 msgstr "查看正文"
 
-#: redbot/formatter/html_base.py:141
+#: redbot/formatter/html_base.py:139
+#: redbot/formatter/templates/response_finish.html:86
+msgid "sort by alpha"
+msgstr "按字母排序"
+
+#: redbot/formatter/html_base.py:140
+msgid "show wire order"
+msgstr "显示线序"
+
+#: redbot/formatter/html_base.py:143
 #, python-format
 msgid "Setting the %s request header can lead to unpredictable results."
 msgstr "设置 %s 请求头可能导致不可预测的结果。"
@@ -217,7 +226,11 @@ msgstr "使用第三方服务验证响应正文"
 msgid "validate content"
 msgstr "验证内容"
 
-#: redbot/formatter/templates/response_finish.html:89
+#: redbot/formatter/templates/response_finish.html:85
+msgid "Header sorting"
+msgstr "Header 排序"
+
+#: redbot/formatter/templates/response_finish.html:93
 msgid ""
 "These notes explain what REDbot has found about your URL; hover over\n"
 "                each one for a detailed explanation."
@@ -225,11 +238,11 @@ msgstr ""
 "这些注释解释了 REDbot 发现的关于您 URL 的信息；将鼠标悬停在\n"
 "                每个注释上可获取详细说明。"
 
-#: redbot/formatter/templates/response_finish.html:117
+#: redbot/formatter/templates/response_finish.html:121
 msgid "If something doesn't seem right, feel free to"
 msgstr "如果有什么不对劲，请随时"
 
-#: redbot/formatter/templates/response_finish.html:118
+#: redbot/formatter/templates/response_finish.html:122
 msgid "file an issue"
 msgstr "提交问题"
 
