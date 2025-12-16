@@ -22,6 +22,7 @@ from redbot.resource.fetch import RedFetcher
 from redbot.resource.active_check import active_checks
 
 
+
 class HttpResource(RedFetcher):
     """
     Given a URI (optionally with method, request headers and content), examine the URI for issues
@@ -54,7 +55,7 @@ class HttpResource(RedFetcher):
         self.links: Dict[str, Set[str]] = {}
         self.link_count: int = 0
         self.linked: List[Tuple[HttpResource, str]] = []  # linked HttpResources
-        self._link_parsers = [
+        self._link_parsers: List[link_parse.LinkParser] = [
             link_parse.HTMLLinkParser(self.response, [self.process_link]),
             link_parse.CSSLinkParser(self.response, [self.process_link]),
         ]

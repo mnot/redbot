@@ -7,15 +7,24 @@ Parse links from a stream of HTML data.
 import codecs
 
 from html.parser import HTMLParser
-from typing import Optional, Any, Callable, Dict, List, Tuple
+from typing import Optional, Any, Callable, Dict, List, Tuple, Protocol
 
 from httplint.field.utils import split_string, unquote_string
 from httplint.message import HttpMessageLinter
 from httplint.syntax import rfc9110
-import tinycss2
+import tinycss2  # type: ignore
 
 
 DEFAULT_ENCODING = "utf-8"
+
+
+class LinkParser(Protocol):
+    """
+    Protocol for link parsers.
+    """
+    link_parseable_types: List[str]
+    def feed_bytes(self, bchunk: bytes) -> None: ...
+    def close(self) -> None: ...
 
 
 class HTMLLinkParser(HTMLParser):
