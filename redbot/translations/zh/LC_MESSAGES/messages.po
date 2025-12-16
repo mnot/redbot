@@ -239,7 +239,7 @@ msgstr "测试的 URI。单击以运行详细分析。"
 
 #: redbot/formatter/templates/response_multi_finish.html:3
 msgid "URI"
-msgstr ""
+msgstr "URI"
 
 #: redbot/formatter/templates/response_multi_finish.html:4
 msgid "The HTTP status code returned."

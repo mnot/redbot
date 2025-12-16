@@ -120,7 +120,7 @@ msgstr ""
 
 #: redbot/formatter/templates/footer.html:10
 msgid "bookmarklet"
-msgstr ""
+msgstr "marca de posición"
 
 #: redbot/formatter/templates/footer.html:14
 msgid "This site is protected by hCaptcha and its"
@@ -207,9 +207,9 @@ msgstr "Este resultado se ha guardado"
 
 #: redbot/formatter/templates/response_finish.html:61
 #: redbot/formatter/templates/response_multi_finish.html:106
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "Saved until {0} from now"
-msgstr "Guardado por ahora hasta el % (0)s"
+msgstr "Guardado hasta {0} de ahora"
 
 #: redbot/formatter/templates/response_finish.html:67
 #: redbot/formatter/templates/response_multi_finish.html:99
@@ -251,7 +251,7 @@ msgstr "La URI probada. Haga clic para ejecutar un análisis detallado."
 
 #: redbot/formatter/templates/response_multi_finish.html:3
 msgid "URI"
-msgstr ""
+msgstr "URI"
 
 #: redbot/formatter/templates/response_multi_finish.html:4
 msgid "The HTTP status code returned."
@@ -515,7 +515,7 @@ msgstr ""
 #: redbot/resource/fetch.py:378
 #, python-format
 msgid "The %(response)s response contains a %(header_name)s header."
-msgstr ""
+msgstr "La respuesta %(response)s contiene un encabezado %(header_name)s."
 
 #: redbot/resource/fetch.py:379
 #, python-format
@@ -526,6 +526,11 @@ msgid ""
 "Clients receiving this response will either fail to process it or behave "
 "unexpectedly.\n"
 msgstr ""
+"RFC 9110 requiere que las respuestas 1xx no contengan el encabezado "
+"`%(header_name)s`.\n"
+"\n"
+"Los clientes que reciban esta respuesta pueden fallar al procesarla o "
+"comportarse de manera inesperada."
 
 #: redbot/resource/fetch.py:171
 #, python-format

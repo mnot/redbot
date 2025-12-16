@@ -515,7 +515,7 @@ msgstr ""
 #: redbot/resource/fetch.py:378
 #, python-format
 msgid "The %(response)s response contains a %(header_name)s header."
-msgstr ""
+msgstr "La réponse %(response)s contient un en-tête %(header_name)s."
 
 #: redbot/resource/fetch.py:379
 #, python-format
@@ -526,6 +526,11 @@ msgid ""
 "Clients receiving this response will either fail to process it or behave "
 "unexpectedly.\n"
 msgstr ""
+"RFC 9110 exige que les réponses 1xx n'incluent pas l'en-tête "
+"`%(header_name)s`.\n"
+"\n"
+"Les clients qui reçoivent cette réponse peuvent ne pas être en mesure de "
+"la traiter correctement ou peuvent se comporter de manière inattendue."
 
 #: redbot/resource/fetch.py:171
 #, python-format
@@ -549,14 +554,15 @@ msgid ""
 "might remove them from\n"
 "their cached copies."
 msgstr ""
-"HTTP exige que les réponses `304 Not Modified` aient certains en-têtes, "
-"s'ils sont également présents dans une réponse normale (par exemple, `200"
-" OK`).\n"
+"HTTP exige que les réponses « 304 Not Modified » possèdent certains en-"
+"têtes, s'ils sont également présents dans une réponse « 200 OK » normale,"
+" par exemple.\n"
 "\n"
+"La réponse manquant des en-têtes suivants : `%(missing_hdrs)s`.\n"
 "\n"
-"Cela peut affecter le fonctionnement du cache ; parce que les en-têtes "
-"sont manquants, les caches pourraient les supprimer de leurs copies mises"
-" en cache."
+"Cela peut affecter l'opération de cache ; comme les en-têtes sont "
+"manquants, les caches pourraient les supprimer de leurs copies mises en "
+"cache."
 
 #: redbot/resource/active_check/conneg.py:150
 msgid "There was a problem checking for Content Negotiation support."
