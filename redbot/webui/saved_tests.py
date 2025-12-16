@@ -32,7 +32,7 @@ def init_save_file(webui: "RedWebUi") -> Optional[str]:
 
 def save_test(webui: "RedWebUi", top_resource: HttpResource) -> None:
     """Save a test by test_id."""
-    if "id" in webui.query_string:
+    if webui.config.get("save_dir", None) and os.path.exists(webui.config["save_dir"]):
         try:
             with cast(IO[bytes], gzip.open(webui.save_path, "w")) as tmp_file:
                 pickle.dump(top_resource, tmp_file)
