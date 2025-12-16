@@ -84,7 +84,7 @@ Use an LLM (via the `llm` package) to automatically translate missing strings. Y
 ```bash
 make i18n-autotranslate MODEL=gemini-2.5-flash-lite RPM=15
 ```
-*Note: You must have the `llm` package configured with valid API keys (e.g., `./.venv/bin/llm keys set gemini`).*
+*Note: You must have the `llm` package configured with valid API keys (e.g., `./.venv/bin/llm keys set gemini`; see <https://ai.google.dev/gemini-api/docs/api-key>).*
 
 ### 4. Compile
 
