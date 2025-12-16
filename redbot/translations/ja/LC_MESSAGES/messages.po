@@ -239,7 +239,7 @@ msgstr "テストされたURI。詳細な分析を実行するにはクリック
 
 #: redbot/formatter/templates/response_multi_finish.html:3
 msgid "URI"
-msgstr ""
+msgstr "URI"
 
 #: redbot/formatter/templates/response_multi_finish.html:4
 msgid "The HTTP status code returned."
@@ -295,7 +295,7 @@ msgstr "Last-Modified を使用して、If-Modified-Since 検証がサポート�
 
 #: redbot/formatter/templates/response_multi_finish.html:10
 msgid "IMS"
-msgstr ""
+msgstr "IMS"
 
 #: redbot/formatter/templates/response_multi_finish.html:11
 msgid "Whether If-None-Match validation is supported, using ETags."
@@ -303,7 +303,7 @@ msgstr "ETag を使用して、If-None-Match 検証がサポートされてい�
 
 #: redbot/formatter/templates/response_multi_finish.html:11
 msgid "INM"
-msgstr ""
+msgstr "INM"
 
 #: redbot/formatter/templates/response_multi_finish.html:13
 msgid ""
@@ -313,7 +313,7 @@ msgstr "gzip圧縮のネゴシエーションがサポートされているか�
 
 #: redbot/formatter/templates/response_multi_finish.html:14
 msgid "gzip"
-msgstr ""
+msgstr "gzip"
 
 #: redbot/formatter/templates/response_multi_finish.html:15
 msgid "Whether partial responses are supported."

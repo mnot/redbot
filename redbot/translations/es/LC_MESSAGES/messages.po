@@ -174,7 +174,7 @@ msgstr "cabeceras de respuesta"
 #: redbot/formatter/templates/response_finish.html:39
 #: redbot/formatter/templates/response_finish.html:44
 msgid "bytes"
-msgstr ""
+msgstr "bytes"
 
 #: redbot/formatter/templates/response_finish.html:38
 msgid "How large the response content is"
@@ -311,7 +311,7 @@ msgstr "Si se admite la validación If-Modified-Since, utilizando Last-Modified.
 
 #: redbot/formatter/templates/response_multi_finish.html:10
 msgid "IMS"
-msgstr ""
+msgstr "IMS"
 
 #: redbot/formatter/templates/response_multi_finish.html:11
 msgid "Whether If-None-Match validation is supported, using ETags."
@@ -319,7 +319,7 @@ msgstr "Si la validación If-None-Match es compatible, utilizando ETags."
 
 #: redbot/formatter/templates/response_multi_finish.html:11
 msgid "INM"
-msgstr ""
+msgstr "INM"
 
 #: redbot/formatter/templates/response_multi_finish.html:13
 msgid ""
@@ -331,7 +331,7 @@ msgstr ""
 
 #: redbot/formatter/templates/response_multi_finish.html:14
 msgid "gzip"
-msgstr ""
+msgstr "gzip"
 
 #: redbot/formatter/templates/response_multi_finish.html:15
 msgid "Whether partial responses are supported."
@@ -1500,7 +1500,7 @@ msgstr "La respuesta parcial"
 
 #: redbot/translations/extra_strings.py:8
 msgid "General"
-msgstr ""
+msgstr "General"
 
 #: redbot/translations/extra_strings.py:9
 msgid "Browser Security"
