@@ -1,29 +1,29 @@
-#: redbot/formatter/html.py:116
+#: redbot/formatter/html.py:118
 msgid "view HAR"
 msgstr ""
 
-#: redbot/formatter/html.py:119
+#: redbot/formatter/html.py:121
 msgid "View a HAR (HTTP ARchive, a JSON format) file for this test"
 msgstr ""
 
-#: redbot/formatter/html.py:123
+#: redbot/formatter/html.py:125
 msgid "check embedded"
 msgstr ""
 
-#: redbot/formatter/html.py:128
+#: redbot/formatter/html.py:130
 msgid "Run REDbot on images, frames and embedded links"
 msgstr ""
 
-#: redbot/formatter/html.py:189
+#: redbot/formatter/html.py:191
 msgid "<p class='btw'>REDbot isn't showing all content, because it's so big!</p>"
 msgstr ""
 
-#: redbot/formatter/html.py:201
+#: redbot/formatter/html.py:203
 #, python-format
 msgid "%s response"
 msgstr ""
 
-#: redbot/formatter/html.py:213
+#: redbot/formatter/html.py:215
 #, python-format
 msgid " - %d problem\n"
 msgstr ""
@@ -114,13 +114,13 @@ msgstr ""
 msgid "apply."
 msgstr ""
 
-#: redbot/formatter/templates/response_finish.html:16
+#: redbot/formatter/templates/response_finish.html:22
 msgid ""
 "These are the response headers; hover over each one for an explanation of"
 " what it does."
 msgstr ""
 
-#: redbot/formatter/templates/response_finish.html:23
+#: redbot/formatter/templates/response_finish.html:31
 msgid ""
 "Here, you can see the response body, a HAR document for the request, and "
 "when appropriate,\n"
@@ -128,84 +128,84 @@ msgid ""
 "referenced images, stylesheets and scripts)."
 msgstr ""
 
-#: redbot/formatter/templates/response_finish.html:27
+#: redbot/formatter/templates/response_finish.html:35
 msgid "How large the response headers are, including the status line"
 msgstr ""
 
-#: redbot/formatter/templates/response_finish.html:28
+#: redbot/formatter/templates/response_finish.html:36
 msgid "response headers"
 msgstr ""
 
-#: redbot/formatter/templates/response_finish.html:28
-#: redbot/formatter/templates/response_finish.html:31
 #: redbot/formatter/templates/response_finish.html:36
+#: redbot/formatter/templates/response_finish.html:39
+#: redbot/formatter/templates/response_finish.html:44
 msgid "bytes"
 msgstr ""
 
-#: redbot/formatter/templates/response_finish.html:30
+#: redbot/formatter/templates/response_finish.html:38
 msgid "How large the response content is"
 msgstr ""
 
-#: redbot/formatter/templates/response_finish.html:30
+#: redbot/formatter/templates/response_finish.html:38
 msgid "content"
 msgstr ""
 
-#: redbot/formatter/templates/response_finish.html:34
+#: redbot/formatter/templates/response_finish.html:42
 msgid "How much using chunked encoding adds to the response size"
 msgstr ""
 
-#: redbot/formatter/templates/response_finish.html:35
+#: redbot/formatter/templates/response_finish.html:43
 msgid "transfer overhead"
 msgstr ""
 
-#: redbot/formatter/templates/response_finish.html:41
+#: redbot/formatter/templates/response_finish.html:49
 msgid "View this response content (with any gzip compression removed)"
 msgstr ""
 
-#: redbot/formatter/templates/response_finish.html:42
+#: redbot/formatter/templates/response_finish.html:50
 msgid "view content"
 msgstr ""
 
-#: redbot/formatter/templates/response_finish.html:52
+#: redbot/formatter/templates/response_finish.html:60
 #: redbot/formatter/templates/response_multi_finish.html:105
 msgid "This result is saved"
 msgstr ""
 
-#: redbot/formatter/templates/response_finish.html:53
+#: redbot/formatter/templates/response_finish.html:61
 #: redbot/formatter/templates/response_multi_finish.html:106
 #, python-brace-format
-msgid "Saved until {0} for now"
+msgid "Saved until {0} from now"
 msgstr ""
 
-#: redbot/formatter/templates/response_finish.html:59
+#: redbot/formatter/templates/response_finish.html:67
 #: redbot/formatter/templates/response_multi_finish.html:99
 msgid "Save these results for future reference"
 msgstr ""
 
-#: redbot/formatter/templates/response_finish.html:60
+#: redbot/formatter/templates/response_finish.html:68
 #: redbot/formatter/templates/response_multi_finish.html:100
 msgid "save"
 msgstr ""
 
-#: redbot/formatter/templates/response_finish.html:65
+#: redbot/formatter/templates/response_finish.html:73
 msgid "Validate the response body with a third party service"
 msgstr ""
 
-#: redbot/formatter/templates/response_finish.html:66
+#: redbot/formatter/templates/response_finish.html:74
 msgid "validate content"
 msgstr ""
 
-#: redbot/formatter/templates/response_finish.html:81
+#: redbot/formatter/templates/response_finish.html:89
 msgid ""
 "These notes explain what REDbot has found about your URL; hover over\n"
 "                each one for a detailed explanation."
 msgstr ""
 
-#: redbot/formatter/templates/response_finish.html:109
+#: redbot/formatter/templates/response_finish.html:117
 msgid "If something doesn't seem right, feel free to"
 msgstr ""
 
-#: redbot/formatter/templates/response_finish.html:110
+#: redbot/formatter/templates/response_finish.html:118
 msgid "file an issue"
 msgstr ""
 
@@ -337,11 +337,11 @@ msgstr ""
 msgid "Enter a http:// or https:// URL to check"
 msgstr ""
 
-#: redbot/resource/fetch.py:293
+#: redbot/resource/fetch.py:311
 msgid "This response has content."
 msgstr ""
 
-#: redbot/resource/fetch.py:294
+#: redbot/resource/fetch.py:312
 #, python-format
 msgid ""
 "HTTP defines a few special situations where a response does not allow "
@@ -359,11 +359,11 @@ msgid ""
 "    %(sample)s\n"
 msgstr ""
 
-#: redbot/resource/fetch.py:311
+#: redbot/resource/fetch.py:329
 msgid "This response has extra data after it."
 msgstr ""
 
-#: redbot/resource/fetch.py:312
+#: redbot/resource/fetch.py:330
 #, python-format
 msgid ""
 "The server sent data after the message ended. This can be caused by an "
@@ -375,11 +375,11 @@ msgid ""
 "    %(sample)s\n"
 msgstr ""
 
-#: redbot/resource/fetch.py:325
+#: redbot/resource/fetch.py:343
 msgid "This response has chunked encoding errors."
 msgstr ""
 
-#: redbot/resource/fetch.py:326
+#: redbot/resource/fetch.py:344
 #, python-format
 msgid ""
 "The response indicates it uses HTTP chunked encoding, but there was a "
@@ -403,14 +403,14 @@ msgid ""
 "`Transfer-Encoding: chunked` without actually chunking the response body."
 msgstr ""
 
-#: redbot/resource/fetch.py:348
+#: redbot/resource/fetch.py:366
 #, python-format
 msgid ""
 "This response has whitespace at the end of the '%(header_name)s' header "
 "field name."
 msgstr ""
 
-#: redbot/resource/fetch.py:349
+#: redbot/resource/fetch.py:367
 msgid ""
 "HTTP specifically bans whitespace between header field names and the "
 "colon, because they can easily\n"
@@ -418,6 +418,21 @@ msgid ""
 "to a variety of attacks.\n"
 "\n"
 "Most HTTP implementations will refuse to process this message.\n"
+msgstr ""
+
+#: redbot/resource/fetch.py:378
+#, python-format
+msgid "The %(response)s response contains a %(header_name)s header."
+msgstr ""
+
+#: redbot/resource/fetch.py:379
+#, python-format
+msgid ""
+"RFC 9110 requires that 1xx responses not contain a `%(header_name)s` "
+"header.\n"
+"\n"
+"Clients receiving this response will either fail to process it or behave "
+"unexpectedly.\n"
 msgstr ""
 
 #: redbot/resource/fetch.py:171

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-12-02 16:43+1100\n"
+"POT-Creation-Date: 2025-12-16 14:05+1100\n"
 "PO-Revision-Date: 2025-12-02 12:04+1100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ja\n"
@@ -18,32 +18,32 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: redbot/formatter/html.py:116
+#: redbot/formatter/html.py:118
 msgid "view HAR"
 msgstr "HAR を表示"
 
-#: redbot/formatter/html.py:119
+#: redbot/formatter/html.py:121
 msgid "View a HAR (HTTP ARchive, a JSON format) file for this test"
 msgstr "このテストのHAR (HTTP ARchive、JSON形式) ファイルを表示"
 
-#: redbot/formatter/html.py:123
+#: redbot/formatter/html.py:125
 msgid "check embedded"
 msgstr "埋め込みチェック"
 
-#: redbot/formatter/html.py:128
+#: redbot/formatter/html.py:130
 msgid "Run REDbot on images, frames and embedded links"
 msgstr "画像、フレーム、埋め込みリンクでREDbotを実行"
 
-#: redbot/formatter/html.py:189
+#: redbot/formatter/html.py:191
 msgid "<p class='btw'>REDbot isn't showing all content, because it's so big!</p>"
 msgstr "<p class='btw'>REDbot は、コンテンツが非常に大きいため、すべてを表示できていません！</p>"
 
-#: redbot/formatter/html.py:201
+#: redbot/formatter/html.py:203
 #, python-format
 msgid "%s response"
 msgstr "%s レスポンス"
 
-#: redbot/formatter/html.py:213
+#: redbot/formatter/html.py:215
 #, python-format
 msgid " - %d problem\n"
 msgstr "- %d 件の問題"
@@ -134,13 +134,13 @@ msgstr "利用規約"
 msgid "apply."
 msgstr "適用"
 
-#: redbot/formatter/templates/response_finish.html:16
+#: redbot/formatter/templates/response_finish.html:22
 msgid ""
 "These are the response headers; hover over each one for an explanation of"
 " what it does."
 msgstr "これはレスポンスヘッダーです。各ヘッダーにマウスカーソルを合わせると、その機能の説明が表示されます。"
 
-#: redbot/formatter/templates/response_finish.html:23
+#: redbot/formatter/templates/response_finish.html:31
 msgid ""
 "Here, you can see the response body, a HAR document for the request, and "
 "when appropriate,\n"
@@ -150,74 +150,74 @@ msgstr ""
 "ここで、レスポンスボディ、リクエストのHARドキュメントを確認できます。また、必要に応じて、\n"
 "                レスポンスを検証したり、アセット（参照されている画像、スタイルシート、スクリプトなど）をチェックしたりできます。"
 
-#: redbot/formatter/templates/response_finish.html:27
+#: redbot/formatter/templates/response_finish.html:35
 msgid "How large the response headers are, including the status line"
 msgstr "レスポンスヘッダーのサイズ（ステータスラインを含む）"
 
-#: redbot/formatter/templates/response_finish.html:28
+#: redbot/formatter/templates/response_finish.html:36
 msgid "response headers"
 msgstr "レスポンスヘッダー"
 
-#: redbot/formatter/templates/response_finish.html:28
-#: redbot/formatter/templates/response_finish.html:31
 #: redbot/formatter/templates/response_finish.html:36
+#: redbot/formatter/templates/response_finish.html:39
+#: redbot/formatter/templates/response_finish.html:44
 msgid "bytes"
 msgstr "バイト"
 
-#: redbot/formatter/templates/response_finish.html:30
+#: redbot/formatter/templates/response_finish.html:38
 msgid "How large the response content is"
 msgstr "レスポンスコンテンツのサイズ"
 
-#: redbot/formatter/templates/response_finish.html:30
+#: redbot/formatter/templates/response_finish.html:38
 msgid "content"
 msgstr "コンテンツ"
 
-#: redbot/formatter/templates/response_finish.html:34
+#: redbot/formatter/templates/response_finish.html:42
 msgid "How much using chunked encoding adds to the response size"
 msgstr "チャンクエンコーディングを使用すると、レスポンスサイズはどのくらい増加しますか"
 
-#: redbot/formatter/templates/response_finish.html:35
+#: redbot/formatter/templates/response_finish.html:43
 msgid "transfer overhead"
 msgstr "転送オーバーヘッド"
 
-#: redbot/formatter/templates/response_finish.html:41
+#: redbot/formatter/templates/response_finish.html:49
 msgid "View this response content (with any gzip compression removed)"
 msgstr "このレスポンスコンテンツを表示します（gzip圧縮は解除されます）"
 
-#: redbot/formatter/templates/response_finish.html:42
+#: redbot/formatter/templates/response_finish.html:50
 msgid "view content"
 msgstr "コンテンツを表示"
 
-#: redbot/formatter/templates/response_finish.html:52
+#: redbot/formatter/templates/response_finish.html:60
 #: redbot/formatter/templates/response_multi_finish.html:105
 msgid "This result is saved"
 msgstr "この結果は保存されました"
 
-#: redbot/formatter/templates/response_finish.html:53
+#: redbot/formatter/templates/response_finish.html:61
 #: redbot/formatter/templates/response_multi_finish.html:106
 #, python-brace-format
-msgid "Saved until {0} for now"
-msgstr "一時的に{0}まで保存します"
+msgid "Saved until {0} from now"
+msgstr "{0} 後まで保存"
 
-#: redbot/formatter/templates/response_finish.html:59
+#: redbot/formatter/templates/response_finish.html:67
 #: redbot/formatter/templates/response_multi_finish.html:99
 msgid "Save these results for future reference"
 msgstr "これらの結果を今後の参照のために保存します"
 
-#: redbot/formatter/templates/response_finish.html:60
+#: redbot/formatter/templates/response_finish.html:68
 #: redbot/formatter/templates/response_multi_finish.html:100
 msgid "save"
 msgstr "保存"
 
-#: redbot/formatter/templates/response_finish.html:65
+#: redbot/formatter/templates/response_finish.html:73
 msgid "Validate the response body with a third party service"
 msgstr "サードパーティサービスでレスポンスボディを検証します"
 
-#: redbot/formatter/templates/response_finish.html:66
+#: redbot/formatter/templates/response_finish.html:74
 msgid "validate content"
 msgstr "コンテンツを検証"
 
-#: redbot/formatter/templates/response_finish.html:81
+#: redbot/formatter/templates/response_finish.html:89
 msgid ""
 "These notes explain what REDbot has found about your URL; hover over\n"
 "                each one for a detailed explanation."
@@ -225,11 +225,11 @@ msgstr ""
 "これらの注釈は、REDBot があなたの URL "
 "について見つけたことを説明しています。各注釈にマウスカーソルを合わせると、詳細な説明が表示されます。"
 
-#: redbot/formatter/templates/response_finish.html:109
+#: redbot/formatter/templates/response_finish.html:117
 msgid "If something doesn't seem right, feel free to"
 msgstr "何か問題があるようでしたら、お気軽にご"
 
-#: redbot/formatter/templates/response_finish.html:110
+#: redbot/formatter/templates/response_finish.html:118
 msgid "file an issue"
 msgstr "問題を報告する"
 
@@ -361,11 +361,11 @@ msgstr "URIをここに入力し、「Enter」キーを押してチェックし�
 msgid "Enter a http:// or https:// URL to check"
 msgstr "http:// または https:// URL を入力してチェックしてください"
 
-#: redbot/resource/fetch.py:293
+#: redbot/resource/fetch.py:311
 msgid "This response has content."
 msgstr "このレスポンスにはコンテンツがあります。"
 
-#: redbot/resource/fetch.py:294
+#: redbot/resource/fetch.py:312
 #, python-format
 msgid ""
 "HTTP defines a few special situations where a response does not allow "
@@ -392,11 +392,11 @@ msgstr ""
 "\n"
 "    %(sample)s"
 
-#: redbot/resource/fetch.py:311
+#: redbot/resource/fetch.py:329
 msgid "This response has extra data after it."
 msgstr "このレスポンスには、余分なデータが含まれています。"
 
-#: redbot/resource/fetch.py:312
+#: redbot/resource/fetch.py:330
 #, python-format
 msgid ""
 "The server sent data after the message ended. This can be caused by an "
@@ -414,11 +414,11 @@ msgstr ""
 "\n"
 "    %(sample)s"
 
-#: redbot/resource/fetch.py:325
+#: redbot/resource/fetch.py:343
 msgid "This response has chunked encoding errors."
 msgstr "このレスポンスにはチャンクエンコーディングエラーがあります。"
 
-#: redbot/resource/fetch.py:326
+#: redbot/resource/fetch.py:344
 #, python-format
 msgid ""
 "The response indicates it uses HTTP chunked encoding, but there was a "
@@ -457,14 +457,14 @@ msgstr ""
 "この問題は、16進数ではなく整数でチャンクサイズを送信したり、レスポンスボディを実際にはチャンク化せずに `Transfer-Encoding: "
 "chunked` を送信したりすることが原因で発生することがよくあります。"
 
-#: redbot/resource/fetch.py:348
+#: redbot/resource/fetch.py:366
 #, python-format
 msgid ""
 "This response has whitespace at the end of the '%(header_name)s' header "
 "field name."
 msgstr "このレスポンスの「%(header_name)s」ヘッダーフィールド名には末尾に空白があります。"
 
-#: redbot/resource/fetch.py:349
+#: redbot/resource/fetch.py:367
 msgid ""
 "HTTP specifically bans whitespace between header field names and the "
 "colon, because they can easily\n"
@@ -477,6 +477,24 @@ msgstr ""
 "\n"
 "\n"
 "ほとんどのHTTP実装では、このメッセージの処理を拒否します。"
+
+#: redbot/resource/fetch.py:378
+#, python-format
+msgid "The %(response)s response contains a %(header_name)s header."
+msgstr "%(response)s レスポンスには %(header_name)s ヘッダーが含まれています。"
+
+#: redbot/resource/fetch.py:379
+#, python-format
+msgid ""
+"RFC 9110 requires that 1xx responses not contain a `%(header_name)s` "
+"header.\n"
+"\n"
+"Clients receiving this response will either fail to process it or behave "
+"unexpectedly.\n"
+msgstr ""
+"RFC 9110 では、1xx レスポンスに `%(header_name)s` ヘッダーを含めることはできません。\n"
+"\n"
+"このレスポンスを受信するクライアントは、処理に失敗するか、予期しない動作をする可能性があります。"
 
 #: redbot/resource/fetch.py:171
 #, python-format

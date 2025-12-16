@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-12-02 16:43+1100\n"
+"POT-Creation-Date: 2025-12-16 14:05+1100\n"
 "PO-Revision-Date: 2025-11-30 12:05+1100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh\n"
@@ -18,32 +18,32 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: redbot/formatter/html.py:116
+#: redbot/formatter/html.py:118
 msgid "view HAR"
 msgstr "查看 HAR"
 
-#: redbot/formatter/html.py:119
+#: redbot/formatter/html.py:121
 msgid "View a HAR (HTTP ARchive, a JSON format) file for this test"
 msgstr "查看此测试的 HAR (HTTP ARchive，一种 JSON 格式) 文件"
 
-#: redbot/formatter/html.py:123
+#: redbot/formatter/html.py:125
 msgid "check embedded"
 msgstr "检查嵌入式"
 
-#: redbot/formatter/html.py:128
+#: redbot/formatter/html.py:130
 msgid "Run REDbot on images, frames and embedded links"
 msgstr "在图片、框架和嵌入式链接上运行 REDbot"
 
-#: redbot/formatter/html.py:189
+#: redbot/formatter/html.py:191
 msgid "<p class='btw'>REDbot isn't showing all content, because it's so big!</p>"
 msgstr "<p class='btw'>REDbot 没有显示所有内容，因为它太大了！</p>"
 
-#: redbot/formatter/html.py:201
+#: redbot/formatter/html.py:203
 #, python-format
 msgid "%s response"
 msgstr "%s 回复"
 
-#: redbot/formatter/html.py:213
+#: redbot/formatter/html.py:215
 #, python-format
 msgid " - %d problem\n"
 msgstr "%d 个问题"
@@ -134,13 +134,13 @@ msgstr "服务条款"
 msgid "apply."
 msgstr "应用"
 
-#: redbot/formatter/templates/response_finish.html:16
+#: redbot/formatter/templates/response_finish.html:22
 msgid ""
 "These are the response headers; hover over each one for an explanation of"
 " what it does."
 msgstr "这些是响应头；将鼠标悬停在每个标题上以了解其功能。"
 
-#: redbot/formatter/templates/response_finish.html:23
+#: redbot/formatter/templates/response_finish.html:31
 msgid ""
 "Here, you can see the response body, a HAR document for the request, and "
 "when appropriate,\n"
@@ -150,74 +150,74 @@ msgstr ""
 "在此，您可以查看响应正文，这是一个请求的 HAR 文档，并在适当时，\n"
 "                验证响应或检查其资源（如引用的图片、样式表和脚本）。"
 
-#: redbot/formatter/templates/response_finish.html:27
+#: redbot/formatter/templates/response_finish.html:35
 msgid "How large the response headers are, including the status line"
 msgstr "响应头的大小，包括状态行"
 
-#: redbot/formatter/templates/response_finish.html:28
+#: redbot/formatter/templates/response_finish.html:36
 msgid "response headers"
 msgstr "响应头"
 
-#: redbot/formatter/templates/response_finish.html:28
-#: redbot/formatter/templates/response_finish.html:31
 #: redbot/formatter/templates/response_finish.html:36
+#: redbot/formatter/templates/response_finish.html:39
+#: redbot/formatter/templates/response_finish.html:44
 msgid "bytes"
 msgstr "字节"
 
-#: redbot/formatter/templates/response_finish.html:30
+#: redbot/formatter/templates/response_finish.html:38
 msgid "How large the response content is"
 msgstr "响应内容的尺寸"
 
-#: redbot/formatter/templates/response_finish.html:30
+#: redbot/formatter/templates/response_finish.html:38
 msgid "content"
 msgstr "内容"
 
-#: redbot/formatter/templates/response_finish.html:34
+#: redbot/formatter/templates/response_finish.html:42
 msgid "How much using chunked encoding adds to the response size"
 msgstr "分块编码会增加响应多少大小"
 
-#: redbot/formatter/templates/response_finish.html:35
+#: redbot/formatter/templates/response_finish.html:43
 msgid "transfer overhead"
 msgstr "传输开销"
 
-#: redbot/formatter/templates/response_finish.html:41
+#: redbot/formatter/templates/response_finish.html:49
 msgid "View this response content (with any gzip compression removed)"
 msgstr "查看此响应内容（已移除任何 gzip 压缩）"
 
-#: redbot/formatter/templates/response_finish.html:42
+#: redbot/formatter/templates/response_finish.html:50
 msgid "view content"
 msgstr "查看内容"
 
-#: redbot/formatter/templates/response_finish.html:52
+#: redbot/formatter/templates/response_finish.html:60
 #: redbot/formatter/templates/response_multi_finish.html:105
 msgid "This result is saved"
 msgstr "此结果已保存"
 
-#: redbot/formatter/templates/response_finish.html:53
+#: redbot/formatter/templates/response_finish.html:61
 #: redbot/formatter/templates/response_multi_finish.html:106
 #, python-brace-format
-msgid "Saved until {0} for now"
-msgstr "暂时保存到 {0}"
+msgid "Saved until {0} from now"
+msgstr "将在 {0} 后保存"
 
-#: redbot/formatter/templates/response_finish.html:59
+#: redbot/formatter/templates/response_finish.html:67
 #: redbot/formatter/templates/response_multi_finish.html:99
 msgid "Save these results for future reference"
 msgstr "为日后参考保存这些结果"
 
-#: redbot/formatter/templates/response_finish.html:60
+#: redbot/formatter/templates/response_finish.html:68
 #: redbot/formatter/templates/response_multi_finish.html:100
 msgid "save"
 msgstr "保存"
 
-#: redbot/formatter/templates/response_finish.html:65
+#: redbot/formatter/templates/response_finish.html:73
 msgid "Validate the response body with a third party service"
 msgstr "使用第三方服务验证响应正文"
 
-#: redbot/formatter/templates/response_finish.html:66
+#: redbot/formatter/templates/response_finish.html:74
 msgid "validate content"
 msgstr "验证内容"
 
-#: redbot/formatter/templates/response_finish.html:81
+#: redbot/formatter/templates/response_finish.html:89
 msgid ""
 "These notes explain what REDbot has found about your URL; hover over\n"
 "                each one for a detailed explanation."
@@ -225,11 +225,11 @@ msgstr ""
 "这些注释解释了 REDbot 发现的关于您 URL 的信息；将鼠标悬停在\n"
 "                每个注释上可获取详细说明。"
 
-#: redbot/formatter/templates/response_finish.html:109
+#: redbot/formatter/templates/response_finish.html:117
 msgid "If something doesn't seem right, feel free to"
 msgstr "如果有什么不对劲，请随时"
 
-#: redbot/formatter/templates/response_finish.html:110
+#: redbot/formatter/templates/response_finish.html:118
 msgid "file an issue"
 msgstr "提交问题"
 
@@ -361,11 +361,11 @@ msgstr "在此处键入 URI，然后按“回车键”进行检查。您还可�
 msgid "Enter a http:// or https:// URL to check"
 msgstr "请输入一个 http:// 或 https:// 网址进行检查"
 
-#: redbot/resource/fetch.py:293
+#: redbot/resource/fetch.py:311
 msgid "This response has content."
 msgstr "此响应包含内容。"
 
-#: redbot/resource/fetch.py:294
+#: redbot/resource/fetch.py:312
 #, python-format
 msgid ""
 "HTTP defines a few special situations where a response does not allow "
@@ -390,11 +390,11 @@ msgstr ""
 "\n"
 "    %(sample)s"
 
-#: redbot/resource/fetch.py:311
+#: redbot/resource/fetch.py:329
 msgid "This response has extra data after it."
 msgstr "此响应之后有额外数据。"
 
-#: redbot/resource/fetch.py:312
+#: redbot/resource/fetch.py:330
 #, python-format
 msgid ""
 "The server sent data after the message ended. This can be caused by an "
@@ -411,11 +411,11 @@ msgstr ""
 "\n"
 "    %(sample)s"
 
-#: redbot/resource/fetch.py:325
+#: redbot/resource/fetch.py:343
 msgid "This response has chunked encoding errors."
 msgstr "此响应存在分块编码错误。"
 
-#: redbot/resource/fetch.py:326
+#: redbot/resource/fetch.py:344
 #, python-format
 msgid ""
 "The response indicates it uses HTTP chunked encoding, but there was a "
@@ -453,14 +453,14 @@ msgstr ""
 "此问题通常是由于发送了整数块大小而不是十六进制块大小，或者在发送 `Transfer-Encoding: chunked` "
 "时实际上并未对响应正文进行分块而引起的。"
 
-#: redbot/resource/fetch.py:348
+#: redbot/resource/fetch.py:366
 #, python-format
 msgid ""
 "This response has whitespace at the end of the '%(header_name)s' header "
 "field name."
 msgstr "此响应在 '%(header_name)s' 标头字段名称的末尾包含空格。"
 
-#: redbot/resource/fetch.py:349
+#: redbot/resource/fetch.py:367
 msgid ""
 "HTTP specifically bans whitespace between header field names and the "
 "colon, because they can easily\n"
@@ -472,6 +472,24 @@ msgstr ""
 "HTTP 明确禁止在标头字段名和冒号之间出现空格，因为接收者很容易混淆；一些接收者会将其删除，而另一些则不会，这会导致各种攻击。\n"
 "\n"
 "大多数 HTTP 实现将拒绝处理此消息。"
+
+#: redbot/resource/fetch.py:378
+#, python-format
+msgid "The %(response)s response contains a %(header_name)s header."
+msgstr "%(response)s 响应包含一个 %(header_name)s 标头。"
+
+#: redbot/resource/fetch.py:379
+#, python-format
+msgid ""
+"RFC 9110 requires that 1xx responses not contain a `%(header_name)s` "
+"header.\n"
+"\n"
+"Clients receiving this response will either fail to process it or behave "
+"unexpectedly.\n"
+msgstr ""
+"RFC 9110 要求 1xx 响应不得包含 `%(header_name)s` 报头。\n"
+"\n"
+"收到此响应的客户端将无法处理它或表现出异常行为。"
 
 #: redbot/resource/fetch.py:171
 #, python-format
