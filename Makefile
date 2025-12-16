@@ -63,7 +63,7 @@ i18n-update: i18n-extract venv
 
 .PHONY: i18n-autotranslate
 i18n-autotranslate: venv
-	$(VENV)/python -m tools.i18n.autotranslate --locale_dir redbot/translations --model $(or $(MODEL),gemini-2.5-flash-lite) --rpm $(or $(RPM),10)
+	$(VENV)/python -m tools.i18n.autotranslate --locale_dir redbot/translations --model $(or $(MODEL), 'mlx-community/aya-23-8B-4bit') #--rpm $(or $(RPM),10)
 
 .PHONY: i18n-compile
 i18n-compile: venv
@@ -71,6 +71,10 @@ i18n-compile: venv
 
 .PHONY: translations
 translations: i18n-update i18n-compile
+
+.PHONY: i18n-check
+i18n-check: venv
+	PYTHONPATH=. $(VENV)/python -m tools.i18n.check
 
 .PHONY: i18n-init
 i18n-init: venv
