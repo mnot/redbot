@@ -103,7 +103,7 @@
     {% else %}
     {% if save_mtime %}
     <div class='option' title='{{ _("This result is saved") }}'>
-        {{ _("Saved until {0} for now").format(save_mtime|relative_time) }}
+        {{ _("Saved until {0} from now").format(save_mtime|relative_time(None,0)) }}
     </div>
     {% endif %}
     {% endif %}
