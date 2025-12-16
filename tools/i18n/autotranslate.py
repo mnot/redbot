@@ -26,7 +26,7 @@ def autotranslate_file(po_file, lang, model_id, rpm):
             if i > 0 and sleep_time > 0:
                 time.sleep(sleep_time)
 
-            prompt = f"You are translating short strings and messages for use in a HTTP linting tool. Translate the following text to language code '{lang}'. Retain embeddded variables (in the form '%(foo)s') as they are. Do not translate HTTP protocol element names (such as header field names). Return only the translation, no other text:\n\n{message.id}"
+            prompt = f"You are translating short strings and messages for use in a HTTP linting tool. Translate the following text to language code '{lang}'. When they appear, retain embeddded variables as they are. Do not translate HTTP protocol element names (such as header field names). Return ONLY the translation, NO OTHER TEXT AT ALL. Here is the text to translate:\n\n{message.id}"
             response = model.prompt(prompt)
             translation = response.text().strip()
             exception_count = 0
