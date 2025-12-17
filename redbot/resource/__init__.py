@@ -22,6 +22,7 @@ from redbot.resource.fetch import RedFetcher
 from redbot.resource.active_check import active_checks
 
 
+
 class HttpResource(RedFetcher):
     """
     Given a URI (optionally with method, request headers and content), examine the URI for issues
@@ -55,17 +56,22 @@ class HttpResource(RedFetcher):
         self.links: Dict[str, Set[str]] = {}
         self.link_count: int = 0
         self.linked: List[Tuple[HttpResource, str]] = []  # linked HttpResources
-        self._link_parser = link_parse.HTMLLinkParser(
-            self.response, [self.process_link]
-        )
+        self._link_parsers: List[link_parse.LinkParser] = [
+            link_parse.HTMLLinkParser(self.response, [self.process_link]),
+            link_parse.CSSLinkParser(self.response, [self.process_link]),
+        ]
         if self.descend or config.getboolean("content_links", False):
-            self.response_content_processors.append(self._link_parser.feed_bytes)
+            for parser in self._link_parsers:
+                self.response_content_processors.append(parser.feed_bytes)
 
     def run_active_checks(self) -> None:
         """
         Response is available; perform subordinate requests (e.g., conneg check).
         """
         if self.response.complete:
+            if self.descend or self.config.getboolean("content_links", False):
+                for parser in self._link_parsers:
+                    parser.close()
             for active_check in list(self.subreqs.values()):
                 self.add_check(active_check)
                 active_check.check()
@@ -76,10 +82,11 @@ class HttpResource(RedFetcher):
         """
         Return whether this resource can be descended.
         """
-        return (
-            self.response.headers.parsed.get("content-type", [None])[0]
-            in self._link_parser.link_parseable_types
-        )
+        content_type = self.response.headers.parsed.get("content-type", [None])[0]
+        for parser in self._link_parsers:
+            if content_type in parser.link_parseable_types:
+                return True
+        return False
 
     def add_check(self, *resources: RedFetcher) -> None:
         "Remember a subordinate check on one or more HttpResource instance."

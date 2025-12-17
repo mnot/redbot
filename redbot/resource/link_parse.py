@@ -7,14 +7,24 @@ Parse links from a stream of HTML data.
 import codecs
 
 from html.parser import HTMLParser
-from typing import Optional, Any, Callable, Dict, List, Tuple
+from typing import Optional, Any, Callable, Dict, List, Tuple, Protocol
 
 from httplint.field.utils import split_string, unquote_string
 from httplint.message import HttpMessageLinter
 from httplint.syntax import rfc9110
+import tinycss2  # type: ignore
 
 
 DEFAULT_ENCODING = "utf-8"
+
+
+class LinkParser(Protocol):
+    """
+    Protocol for link parsers.
+    """
+    link_parseable_types: List[str]
+    def feed_bytes(self, bchunk: bytes) -> None: ...
+    def close(self) -> None: ...
 
 
 class HTMLLinkParser(HTMLParser):
@@ -132,6 +142,7 @@ class HTMLLinkParser(HTMLParser):
                 except LookupError:
                     pass
 
+
     def error(self, message: str) -> None:
         self.errors += 1
         if self.getpos() == self.last_err_pos:
@@ -143,6 +154,103 @@ class HTMLLinkParser(HTMLParser):
         self.last_err_pos, _ = self.getpos()
         if self.err:
             self.err(message)
+
+    def close(self) -> None:
+        if self.ok:
+            HTMLParser.close(self)
+
+
+class CSSLinkParser:
+    """
+    Parse links out of a CSS document.
+    """
+
+    link_parseable_types = [
+        "text/css",
+    ]
+
+    def __init__(
+        self,
+        message: HttpMessageLinter,
+        link_procs: List[Callable[[str, str, str, str], None]],
+        err: Optional[Callable[[str], int]] = None,
+    ) -> None:
+        self.message = message
+        self.link_procs = link_procs
+        self.err = err
+        self.ok = True
+        self._buffer = ""
+
+    def feed_bytes(self, bchunk: bytes) -> None:
+        if self.ok:
+            encoding = self.message.character_encoding or DEFAULT_ENCODING
+            try:
+                decoded = bchunk.decode(encoding, "ignore")
+                self.feed(decoded)
+            except LookupError:
+                pass
+
+    def feed(self, data: str) -> None:
+        if not self.ok:
+            return
+        if (
+            self.message.headers.parsed.get("content-type", [None])[0]
+            in self.link_parseable_types
+        ):
+            self._buffer += data
+        else:
+            self.ok = False
+
+    def close(self) -> None:
+        if not self.ok or not self._buffer:
+            return
+
+        try:
+            rules = tinycss2.parse_stylesheet(
+                self._buffer, skip_comments=True, skip_whitespace=True
+            )
+            self._process_rules(rules)
+        except Exception as why:  # pylint: disable=broad-except
+            if self.err:
+                self.err(f"CSS parse problem: {why}")
+
+    def _process_rules(self, rules: List[Any]) -> None:
+        for rule in rules:
+            if rule.type == "at-rule":
+                if rule.lower_at_keyword == "import":
+                    # @import "url" ...;
+                    # @import url("url") ...;
+                    self._process_import_prelude(rule.prelude)
+                if rule.content:
+                    self._process_rules(rule.content)
+            elif rule.type == "qualified-rule":
+                if rule.content:
+                    self._scan_for_urls(rule.content)
+
+    def _process_import_prelude(self, tokens: List[Any]) -> None:
+        for token in tokens:
+            if token.type == "string":
+                self._emit(token.value, "css_import")
+            elif token.type == "url":
+                self._emit(token.value, "css_import")
+            elif token.type == "function" and token.lower_name == "url":
+                self._process_url_function(token, "css_import")
+
+    def _scan_for_urls(self, tokens: List[Any]) -> None:
+        for token in tokens:
+            if token.type == "url":
+                self._emit(token.value, "css_resource")
+            elif token.type == "function" and token.lower_name == "url":
+                self._process_url_function(token, "css_resource")
+
+    def _process_url_function(self, token: Any, tag: str) -> None:
+        for arg in token.arguments:
+            if arg.type == "string":
+                self._emit(arg.value, tag)
+
+    def _emit(self, link: str, tag: str) -> None:
+        for proc in self.link_procs:
+            proc(self.message.base_uri, link, tag, "")
 
 
 class BadErrorIReallyMeanIt(Exception):
