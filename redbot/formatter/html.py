@@ -11,6 +11,7 @@ from urllib.parse import urljoin
 from typing_extensions import Unpack
 from httplint import get_field_description
 from httplint.note import Note, levels, categories
+import thor
 import thor.http.error as httperr
 
 from redbot import __version__
@@ -102,6 +103,13 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 )
             else:
                 validator_link = None
+            is_saved = self.kw.get("is_saved", False)
+            save_mtime = self.kw.get("save_mtime", None)
+            allow_save = self.kw.get("allow_save", False)
+            if is_saved and save_mtime and (float(save_mtime) - thor.time() < 3600):
+                is_saved = False
+                allow_save = True
+
             tpl = self.templates.get_template("response_finish.html")
             self.output(
                 tpl.render(
@@ -111,9 +119,9 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                             "resource": self.resource,
                             "body": self.format_body_sample(self.resource),
                             "is_resource": isinstance(self.resource, HttpResource),
-                            "is_saved": self.kw.get("is_saved", False),
-                            "save_mtime": self.kw.get("save_mtime", None),
-                            "allow_save": self.kw.get("allow_save", False),
+                            "is_saved": is_saved,
+                            "save_mtime": save_mtime,
+                            "allow_save": allow_save,
                             "har_link": self.redbot_link(
                                 _("view HAR"),
                                 res_format="har",
@@ -305,6 +313,13 @@ class TableHtmlFormatter(BaseHtmlFormatter):
 
     def finish_output(self) -> None:
         self.final_status()
+        is_saved = self.kw.get("is_saved", False)
+        save_mtime = self.kw.get("save_mtime", None)
+        allow_save = self.kw.get("allow_save", False)
+        if is_saved and save_mtime and (float(save_mtime) - thor.time() < 3600):
+            is_saved = False
+            allow_save = True
+
         tpl = self.templates.get_template("response_multi_finish.html")
         self.output(
             tpl.render(
@@ -314,9 +329,9 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                         "droid_lists": self.make_droid_lists(self.resource),
                         "problems": self.problems,
                         "levels": levels,
-                        "is_saved": self.kw.get("is_saved", False),
-                        "save_mtime": self.kw.get("save_mtime", None),
-                        "allow_save": self.kw.get("allow_save", False),
+                        "is_saved": is_saved,
+                        "save_mtime": save_mtime,
+                        "allow_save": allow_save,
                         "har_link": self.redbot_link(
                             "view har",
                             res_format="har",
