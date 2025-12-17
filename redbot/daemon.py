@@ -90,14 +90,25 @@ class RedBotServer:
             signal.SIGBUS,
             signal.SIGILL,
         ]:
-            signal.signal(signum, self.handle_signal)
+            signal.signal(signum, self.handle_crash_signal)
+        signal.signal(signal.SIGINT, self.shutdown_signal)
+        signal.signal(signal.SIGTERM, self.shutdown_signal)
 
     def run(self) -> None:
         try:
             thor.run()
         except KeyboardInterrupt:
-            self.console("Stopping...")
-            thor.stop()
+            # this should be handled by the signal handler, but just in case
+            self.shutdown()
+            thor.run()
+
+    def shutdown_signal(self, sig: int, frame: Optional[FrameType]) -> None:
+        self.console("Shutting down...")
+        self.shutdown()
+
+    def shutdown(self) -> None:
+        self.http_server.on("stop", thor.stop)
+        self.http_server.graceful_shutdown()
 
     def watchdog_ping(self) -> None:
         notify(Notification.WATCHDOG)
@@ -107,7 +118,7 @@ class RedBotServer:
         clean_saved_tests(self.config)
         thor.schedule(self.config.getint("gc_mins", fallback=2) * 60, self.gc_state)
 
-    def handle_signal(
+    def handle_crash_signal(
         self, sig: int, frame: Optional[FrameType] = None
     ) -> signal.Handlers:
         self.console(f"*** {signal.strsignal(sig)}\n")
