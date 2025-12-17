@@ -263,6 +263,11 @@ class RedWebUi:
                         f"for <{e_url(str(top_resource.request.uri))}> "
                     )
 
+        # Stop the resource if the client disconnects
+        @thor.events.on(cast(thor.events.EventEmitter, self.exchange))
+        def close() -> None:
+            top_resource.stop()
+
         self.exchange.response_start(
             b"200",
             b"OK",
@@ -395,6 +400,7 @@ class RedWebUi:
         self.error_log(
             f"timeout <{formatter.resource.request.uri}> {details}"
         )
+        formatter.resource.stop()
         formatter.error_output("REDbot timeout.")
         self.exchange.response_done([])
 

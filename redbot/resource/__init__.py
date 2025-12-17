@@ -145,3 +145,9 @@ class HttpResource(RedFetcher):
         self.links[tag].add(link)
         if not self.response.base_uri:
             self.response.base_uri = base
+
+    def stop(self) -> None:
+        "Stop the resource and any sub-resources."
+        for task in list(self._task_map):
+            task.stop()
+        RedFetcher.stop(self)

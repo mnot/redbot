@@ -304,6 +304,13 @@ class RedFetcher(thor.events.EventEmitter):
                 pass
             self.emit("fetch_done")
 
+    def stop(self) -> None:
+        "Stop the fetcher."
+        if hasattr(self, "exchange"):
+            if self.exchange.tcp_conn:
+                self.exchange.tcp_conn.close()
+        self._fetch_done()
+
 
 class BODY_NOT_ALLOWED(RedbotNote):
     category = categories.CONNECTION
