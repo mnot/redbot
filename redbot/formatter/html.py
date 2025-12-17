@@ -44,12 +44,12 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 
     # associating categories with subrequests
     note_responses = {
-        categories.CONNEG: [active_check.ConnegCheck.check_name],
+        categories.CONNEG: [active_check.ConnegCheck.check_id],
         categories.VALIDATION: [
-            active_check.ETagValidate.check_name,
-            active_check.LmValidate.check_name,
+            active_check.ETagValidate.check_id,
+            active_check.LmValidate.check_id,
         ],
-        categories.RANGE: [active_check.RangeRequest.check_name],
+        categories.RANGE: [active_check.RangeRequest.check_id],
     }
 
     # Media types that browsers can view natively
@@ -195,17 +195,18 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     def format_subrequest_messages(self, category: categories) -> Markup:
         out = []
         if isinstance(self.resource, HttpResource) and category in self.note_responses:
-            for check_name in self.note_responses[category]:
-                if not self.resource.subreqs[check_name].fetch_started:
+            for check_id in self.note_responses[category]:
+                if not self.resource.subreqs[check_id].fetch_started:
                     continue
+                check_name = self.resource.subreqs[check_id].check_name
                 out.append(
                     f'<span class="req_link">'
-                    f'({self.redbot_link(_("%s response") % _(check_name), check_name=check_name)}'
+                    f'({self.redbot_link(_("%s response") % check_name, check_name=check_id)}'
                 )
                 smsgs = [
                     note
                     for note in getattr(
-                        self.resource.subreqs[check_name].response, "notes", []
+                        self.resource.subreqs[check_id].response, "notes", []
                     )
                     if note.level in [levels.BAD]
                     and note not in self.resource.response.notes

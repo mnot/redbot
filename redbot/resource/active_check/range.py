@@ -26,6 +26,7 @@ class RangeRequest(SubRequest):
     """
 
     check_name = _("Partial Content")
+    check_id = "range"
     response_phrase = _("The partial response")
 
     def __init__(self, config: SectionProxy, resource: "HttpResource") -> None:

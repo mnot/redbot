@@ -37,6 +37,7 @@ class HttpResource(RedFetcher):
     """
 
     check_name = "default"
+    check_id = "default"
 
     def __init__(self, config: SectionProxy, descend: bool = False) -> None:
         RedFetcher.__init__(self, config)
@@ -48,7 +49,7 @@ class HttpResource(RedFetcher):
         self.gzip_support: bool = False
         self.gzip_savings: int = 0
         self._task_map: Set[RedFetcher] = set([])
-        self.subreqs = {ac.check_name: ac(config, self) for ac in active_checks}
+        self.subreqs = {ac.check_id: ac(config, self) for ac in active_checks}
         self.once("fetch_done", self.run_active_checks)
 
         self.links: Dict[str, Set[str]] = {}

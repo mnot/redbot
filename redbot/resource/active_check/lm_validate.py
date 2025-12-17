@@ -18,6 +18,7 @@ class LmValidate(SubRequest):
     """
 
     check_name = _("Last-Modified Validation")
+    check_id = "lm_validate"
     response_phrase = _("The Last-Modified validation response")
     _weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     _months = [

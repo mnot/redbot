@@ -17,6 +17,7 @@ class ConnegCheck(SubRequest):
     """
 
     check_name = _("Content Negotiation")
+    check_id = "conneg"
     response_phrase = _("The compressed response")
 
     def modify_request_headers(

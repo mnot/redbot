@@ -278,7 +278,7 @@ class RedWebUi:
             + extra_headers,
         )
         if "check_name" in self.query_string:
-            check_name = self.query_string.get("check_name", [None])[0]
+            check_name = self.query_string.get("check_name", [""])[0]
             display_resource = cast(
                 HttpResource, top_resource.subreqs.get(check_name, top_resource)
             )
@@ -322,7 +322,7 @@ class RedWebUi:
             },
         )
         if "check_name" in self.query_string:
-            check_name = self.query_string.get("check_name", [None])[0]
+            check_name = self.query_string.get("check_name", [""])[0]
             formatter.resource = cast(
                 HttpResource,
                 resource.subreqs.get(check_name, resource),

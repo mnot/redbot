@@ -278,8 +278,8 @@ console.log("{time.time() - self.start:3.3f} {e_js(message)}");
         args: List[Tuple[str, str]] = []
         if check_name:
             args.append(("check_name", check_name))
-        elif self.resource.check_name is not None:
-            args.append(("check_name", self.resource.check_name))
+        elif self.resource.check_id is not None:
+            args.append(("check_name", self.resource.check_id))
         if res_format:
             args.append(("format", res_format))
         if use_stored and self.kw.get("test_id", None):

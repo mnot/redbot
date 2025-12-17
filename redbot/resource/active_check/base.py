@@ -26,6 +26,7 @@ class SubRequest(RedFetcher, metaclass=ABCMeta):
     """
 
     check_name = "undefined"
+    check_id = "undefined"
 
     def __init__(self, config: SectionProxy, base_resource: "HttpResource") -> None:
         self.config = config

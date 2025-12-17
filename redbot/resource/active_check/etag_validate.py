@@ -16,6 +16,7 @@ class ETagValidate(SubRequest):
     """
 
     check_name = _("ETag Validation")
+    check_id = "etag_validate"
     response_phrase = _("The ETag validation response")
 
     def modify_request_headers(
