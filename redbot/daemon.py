@@ -208,6 +208,7 @@ class RedRequestHandler:
         if (
             p_uri.path.startswith(self.server.static_root + b"/")
             or p_uri.path in self.server.extra_files
+            or p_uri.path.rstrip(b"/") in self.server.extra_files
         ):
             return self.serve_static(p_uri.path)
 
