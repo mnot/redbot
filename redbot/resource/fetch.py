@@ -306,9 +306,8 @@ class RedFetcher(thor.events.EventEmitter):
 
     def stop(self) -> None:
         "Stop the fetcher."
-        if hasattr(self, "exchange"):
-            if self.exchange.tcp_conn:
-                self.exchange.tcp_conn.close()
+        if hasattr(self, "exchange") and self.exchange.conn:
+            self.exchange.conn.close()
         self._fetch_done()
 
 
