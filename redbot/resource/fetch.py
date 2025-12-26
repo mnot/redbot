@@ -61,6 +61,7 @@ class RedFetcher(thor.events.EventEmitter):
         self.request_content: bytes
         self.response_header_length: int = 0
         self.response_content_processors: List[Callable[[bytes], None]] = []
+        self.response_content_processors.append(self.sample_response)
         self.response_content_sample: List[Tuple[int, bytes]] = []
         self.response_decoded_sample: List[bytes] = []
         self.response_decoded_complete: bool = True
