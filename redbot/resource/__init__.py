@@ -83,23 +83,24 @@ class HttpResource(RedFetcher):
 
     def add_check(self, *resources: RedFetcher) -> None:
         "Remember a subordinate check on one or more HttpResource instance."
-        # pylint: disable=cell-var-from-loop
         for resource in resources:
-            self._task_map.add(resource)
+            self._bind_events(resource)
 
-            @thor.events.on(resource)
-            def status(message: str) -> None:
-                self.emit("status", message)
+    def _bind_events(self, resource: RedFetcher) -> None:
+        "Bind events for a subordinate check."
+        self._task_map.add(resource)
 
-            @thor.events.on(resource)
-            def debug(message: str) -> None:
-                self.emit("debug", message)
+        @thor.events.on(resource)
+        def status(message: str) -> None:
+            self.emit("status", message)
 
-            @thor.events.on(resource)
-            def check_done() -> None:
-                self.finish_check(resource)
+        @thor.events.on(resource)
+        def debug(message: str) -> None:
+            self.emit("debug", message)
 
-        # pylint: enable=cell-var-from-loop
+        @thor.events.on(resource)
+        def check_done() -> None:
+            self.finish_check(resource)
 
     def finish_check(self, resource: Optional[RedFetcher] = None) -> None:
         "A check is done. Was that the last one?"
@@ -107,9 +108,9 @@ class HttpResource(RedFetcher):
             try:
                 self._task_map.remove(resource)
             except KeyError:
-                raise KeyError(  # pylint: disable=raise-missing-from
+                raise KeyError(
                     f"* Can't find {resource} in task map: {self._task_map}"
-                )
+                ) from None
         tasks_left = len(self._task_map)
         #        self.emit("debug", "%s checks remaining: %i" % (repr(self), tasks_left))
         if tasks_left == 0:

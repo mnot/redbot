@@ -17,7 +17,7 @@ from redbot.type import StrHeaderListType
 from redbot.i18n import _
 
 if TYPE_CHECKING:
-    from redbot.resource import HttpResource  # pylint: disable=cyclic-import
+    from redbot.resource import HttpResource
 
 
 class RangeRequest(SubRequest):

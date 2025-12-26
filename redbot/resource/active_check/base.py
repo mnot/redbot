@@ -16,7 +16,7 @@ from redbot.type import StrHeaderListType
 from redbot.note import RedbotNote
 
 if TYPE_CHECKING:
-    from redbot.resource import HttpResource  # pylint: disable=cyclic-import
+    from redbot.resource import HttpResource
 
 
 class SubRequest(RedFetcher, metaclass=ABCMeta):
@@ -30,9 +30,7 @@ class SubRequest(RedFetcher, metaclass=ABCMeta):
 
     def __init__(self, config: SectionProxy, base_resource: "HttpResource") -> None:
         self.config = config
-        self.base: HttpResource = (  # pylint: disable=used-before-assignment
-            base_resource
-        )
+        self.base: "HttpResource" = base_resource
         RedFetcher.__init__(self, config)
         self.check_done = False
         self.on("fetch_done", self._check_done)

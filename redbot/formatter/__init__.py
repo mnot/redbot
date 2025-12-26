@@ -21,7 +21,7 @@ from httplint.util import relative_time as _relative_time
 from redbot.i18n import get_locale, set_locale
 
 if TYPE_CHECKING:
-    from redbot.resource import HttpResource  # pylint: disable=cyclic-import
+    from redbot.resource import HttpResource
 
 _formatters = ["html", "text", "har"]
 
