@@ -111,8 +111,9 @@ class RedBotServer:
         self.http_server.graceful_shutdown()
 
     def watchdog_ping(self) -> None:
-        notify(Notification.WATCHDOG)
-        thor.schedule(self.watchdog_freq, self.watchdog_ping)
+        if notify:
+            notify(Notification.WATCHDOG)
+            thor.schedule(self.watchdog_freq, self.watchdog_ping)
 
     def gc_state(self) -> None:
         clean_saved_tests(self.config)
@@ -300,7 +301,7 @@ def print_debug(message: str, profile: Optional[cProfile.Profile]) -> None:
         sys.stderr.write(f"{st.getvalue()}\n")
 
 
-_loop.debug_out = print_debug  # type: ignore
+_loop.debug_out = print_debug  # type: ignore[method-assign]
 
 
 def main() -> None:
