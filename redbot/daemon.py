@@ -9,6 +9,7 @@ from configparser import ConfigParser, SectionProxy
 import cProfile
 from functools import partial
 import io
+import importlib
 import inspect
 import os
 from pstats import Stats
@@ -16,7 +17,7 @@ import signal
 import sys
 import traceback
 from types import FrameType
-from typing import Dict, Optional
+from typing import Dict, Optional, Any, Callable
 from urllib.parse import urlsplit
 
 from importlib_resources import files as resource_files
@@ -31,14 +32,17 @@ from redbot.type import RawHeaderListType
 from redbot.webui import RedWebUi
 from redbot.webui.saved_tests import clean_saved_tests
 
+SYSTEMD_NOTIFIER: Optional[Callable[[Any], None]] = None
+SYSTEMD_NOTIFICATION: Optional[Any] = None
+
 if os.environ.get("SYSTEMD_WATCHDOG"):
     try:
-        from cysystemd.daemon import notify, Notification  # type: ignore
+        _daemon = importlib.import_module("cysystemd.daemon")
+        SYSTEMD_NOTIFIER = _daemon.notify
+        SYSTEMD_NOTIFICATION = _daemon.Notification
     except ImportError:
         sys.stderr.write("WARNING: watchdog enabled, but csystemd not available.\n")
-        notify = Notification = None  # pylint: disable=invalid-name
-else:
-    notify = Notification = None  # pylint: disable=invalid-name
+
 
 _loop.precision = 0.2
 
@@ -53,7 +57,7 @@ class RedBotServer:
         self.handler = partial(RedRequestHandler, server=self)
 
         # Set up the watchdog
-        if notify is not None:
+        if SYSTEMD_NOTIFIER is not None:
             thor.schedule(self.watchdog_freq, self.watchdog_ping)
 
         # Read static files
@@ -111,8 +115,8 @@ class RedBotServer:
         self.http_server.graceful_shutdown()
 
     def watchdog_ping(self) -> None:
-        if notify:
-            notify(Notification.WATCHDOG)
+        if SYSTEMD_NOTIFIER and SYSTEMD_NOTIFICATION:
+            SYSTEMD_NOTIFIER(SYSTEMD_NOTIFICATION.WATCHDOG)
             thor.schedule(self.watchdog_freq, self.watchdog_ping)
 
     def gc_state(self) -> None:
