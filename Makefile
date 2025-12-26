@@ -37,17 +37,23 @@ tidy: tidy_py
 #############################################################################
 ## Tests
 
-.PHONY: test
-test: webui_test i18n_test
 
-.PHONY: webui_test
-webui_test: venv
+# Auto-discover test files
+TEST_SOURCES = $(wildcard test/test_*.py)
+TEST_TARGETS = $(patsubst test/%.py,%,$(TEST_SOURCES))
+
+.PHONY: test
+test: $(TEST_TARGETS)
+
+# Generic rule for running tests
+test_%: venv
+	PYTHONPATH=.:$(VENV) $(VENV)/python test/$@.py
+
+# Specific rule for webui (needs dependencies)
+.PHONY: test_webui
+test_webui: venv
 	$(VENV)/playwright install chromium
 	PYTHONPATH=.:$(VENV) $(VENV)/python test/test_webui.py
-
-.PHONY: i18n_test
-i18n_test: venv
-	PYTHONPATH=.:$(VENV) $(VENV)/python test/test_i18n.py
 
 
 #############################################################################
