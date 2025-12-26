@@ -49,16 +49,9 @@ class LmValidate(SubRequest):
             except ValueError:
                 return base_headers  # this shouldn't really happen
             date_str = (
-                "%s, %.2d %s %.4d %.2d:%.2d:%.2d GMT"  # pylint: disable=consider-using-f-string
-                % (
-                    self._weekdays[l_m.weekday()],
-                    l_m.day,
-                    self._months[l_m.month],
-                    l_m.year,
-                    l_m.hour,
-                    l_m.minute,
-                    l_m.second,
-                )
+                f"{self._weekdays[l_m.weekday()]}, {l_m.day:02d} "
+                f"{self._months[l_m.month]} {l_m.year:04d} "
+                f"{l_m.hour:02d}:{l_m.minute:02d}:{l_m.second:02d} GMT"
             )
             base_headers.append(("If-Modified-Since", date_str))
         return base_headers
