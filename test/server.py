@@ -7,6 +7,7 @@ import sys
 import time
 import gzip
 import signal
+import socket
 
 class Colors:
     CYAN = '\033[96m'
@@ -136,12 +137,16 @@ class QuietThreadingHTTPServer(http.server.ThreadingHTTPServer):
              pass
         super().handle_error(request, client_address)
 
+    def server_bind(self):
+        self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        super().server_bind()
+
 
 class TestServer(threading.Thread):
     def __init__(self):
         super().__init__()
         self.port = 8001  # Different from redbot port
-        http.server.ThreadingHTTPServer.request_queue_size = 50
+        http.server.ThreadingHTTPServer.request_queue_size = 100
         self.server = QuietThreadingHTTPServer(('127.0.0.1', self.port), TestHandler)
         self.server.daemon_threads = True
         self.server.allow_reuse_address = True
