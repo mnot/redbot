@@ -60,8 +60,6 @@ class RedBotServer:
         if SYSTEMD_NOTIFIER is not None:
             thor.schedule(self.watchdog_freq, self.watchdog_ping)
 
-        # Read static files
-        self.static_root = os.path.join("/", config["static_root"]).encode("ascii")
         self.static_files = resource_files("redbot.assets")
         self.extra_files = {}
         extra_base_dir = self.config.get("extra_base_dir", None)
@@ -74,6 +72,11 @@ class RedBotServer:
         self.ui_path = ui_uri_parsed.path.encode("utf-8")
         if not self.ui_path.endswith(b"/"):
             self.ui_path += b"/"
+
+        # Read static files
+        self.static_root = os.path.normpath(
+            os.path.join(self.ui_path.decode("ascii"), config["static_root"])
+        ).encode("ascii")
 
         # Start garbage collection
         if config.get("save_dir", ""):
