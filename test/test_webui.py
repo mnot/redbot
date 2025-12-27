@@ -186,8 +186,8 @@ def write_github_summary(tests):
 
     with open(summary_path, "a", encoding="utf-8") as f:
         f.write("## WebUI Test Results\n\n")
-        f.write("| Test | Status | Details |\n")
-        f.write("| --- | --- | --- |\n")
+        f.write("| Test | Status |\n")
+        f.write("| --- | --- |\n")
 
         # unittest.TestResult.successes is only available if we use a runner that tracks it.
         # Standard unittest.TestResult doesn't store successes by default in all versions,
@@ -210,7 +210,7 @@ def write_github_summary(tests):
                 status = "❌ Fail"
             else:
                 status = "✅ Pass"
-            f.write(f"| {test_name} | {status} | |\n")
+            f.write(f"| {test_name} | {status} |\n")
 
         f.write("\n")
 
