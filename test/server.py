@@ -17,6 +17,7 @@ REQUEST_COUNT = 0
 ACTIVE_CONNECTIONS = 0
 MAX_ACTIVE_CONNECTIONS = 0
 COUNTER_LOCK = threading.Lock()
+LOG_BUFFER = []
 
 def colorize(text, color):
     if sys.stdout.isatty():
@@ -103,11 +104,12 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
         try:
             with COUNTER_LOCK:
                 REQUEST_COUNT += 1
-            print(colorize(f"SERVER: TestHandler GET {self.path}", Colors.GREEN))
+                LOG_BUFFER.append(colorize(f"SERVER: TestHandler GET {self.path}", Colors.GREEN))
             content = self.prepare_response()
             self.wfile.write(content)
         except Exception as e:
-            print(colorize(f"SERVER ERROR: {e}", Colors.RED))
+            with COUNTER_LOCK:
+                LOG_BUFFER.append(colorize(f"SERVER ERROR: {e}", Colors.RED))
         finally:
             self.close_connection = True
 
@@ -116,10 +118,11 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
         try:
             with COUNTER_LOCK:
                 REQUEST_COUNT += 1
-            print(colorize(f"SERVER: TestHandler HEAD {self.path}", Colors.GREEN))
+                LOG_BUFFER.append(colorize(f"SERVER: TestHandler HEAD {self.path}", Colors.GREEN))
             self.prepare_response()
         except Exception as e:
-            print(colorize(f"SERVER ERROR: {e}", Colors.RED))
+            with COUNTER_LOCK:
+                LOG_BUFFER.append(colorize(f"SERVER ERROR: {e}", Colors.RED))
         finally:
             self.close_connection = True
 
@@ -140,6 +143,8 @@ class TestServer(threading.Thread):
     def stop(self):
         self.server.shutdown()
         self.server.server_close()
+        for line in LOG_BUFFER:
+            print(line)
         print(colorize(f"SERVER STATS: Requests: {REQUEST_COUNT}, Max Active Connections: {MAX_ACTIVE_CONNECTIONS}, Leaked Connections: {ACTIVE_CONNECTIONS}", Colors.CYAN))
 
 if __name__ == "__main__":
