@@ -6,7 +6,7 @@ import unittest
 import sys
 import os
 from multiprocessing import Process
-from test.server import TestServer, Colors, colorize
+from test.server import Colors, colorize
 
 
 TIMEOUT = 30 * 1000
@@ -268,14 +268,6 @@ if __name__ == "__main__":
     p.start()
     
     try:
-        # Start local test server
-        try:
-            test_server = TestServer()
-            test_server.start()
-        except OSError as e:
-            print(f"{Colors.RED}FATAL: Could not start test server: {e}{Colors.RESET}")
-            sys.exit(1)
-
         with sync_playwright() as pw:
             browser = pw.chromium.launch()
             # Hook up console log
@@ -292,9 +284,6 @@ if __name__ == "__main__":
             print("Terminating process forcefully...")
             p.kill()
             p.join()
-
-        if 'test_server' in locals():
-            test_server.stop()
 
         if 'tests' in locals() and (len(tests.result.errors) > 0 or len(tests.result.failures) > 0):
             sys.exit(1)

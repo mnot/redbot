@@ -6,6 +6,7 @@ import threading
 import sys
 import time
 import gzip
+import signal
 
 class Colors:
     CYAN = '\033[96m'
@@ -104,7 +105,6 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
         try:
             with COUNTER_LOCK:
                 REQUEST_COUNT += 1
-                LOG_BUFFER.append(colorize(f"SERVER: TestHandler GET {self.path}", Colors.GREEN))
             content = self.prepare_response()
             self.wfile.write(content)
         except Exception as e:
@@ -118,7 +118,6 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
         try:
             with COUNTER_LOCK:
                 REQUEST_COUNT += 1
-                LOG_BUFFER.append(colorize(f"SERVER: TestHandler HEAD {self.path}", Colors.GREEN))
             self.prepare_response()
         except Exception as e:
             with COUNTER_LOCK:
@@ -126,13 +125,24 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
         finally:
             self.close_connection = True
 
+class QuietThreadingHTTPServer(http.server.ThreadingHTTPServer):
+    def handle_error(self, request, client_address):
+        # Suppress expected socket errors during tests
+        try:
+             _, exc, _ = sys.exc_info()
+             if isinstance(exc, (ConnectionResetError, BrokenPipeError)):
+                 return
+        except Exception:
+             pass
+        super().handle_error(request, client_address)
+
 
 class TestServer(threading.Thread):
     def __init__(self):
         super().__init__()
         self.port = 8001  # Different from redbot port
         http.server.ThreadingHTTPServer.request_queue_size = 30
-        self.server = http.server.ThreadingHTTPServer(('127.0.0.1', self.port), TestHandler)
+        self.server = QuietThreadingHTTPServer(('127.0.0.1', self.port), TestHandler)
         self.server.daemon_threads = True
         self.server.allow_reuse_address = True
         self.daemon = True
@@ -151,9 +161,16 @@ if __name__ == "__main__":
     server = TestServer()
     server.start()
     print(colorize(f"Test server running on port {server.port}", Colors.CYAN))
+    def signal_handler(sig, frame):
+        print(colorize("\nStopping server (signal)...", Colors.RED))
+        server.stop()
+        sys.exit(0)
+
+    signal.signal(signal.SIGTERM, signal_handler)
+
     try:
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        print(colorize("Stopping server...", Colors.RED))
+        print(colorize("\nStopping server...", Colors.RED))
         server.stop()

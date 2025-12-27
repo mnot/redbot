@@ -53,6 +53,11 @@ test_%: venv
 .PHONY: test_webui
 test_webui: venv
 	$(VENV)/playwright install chromium
+	@echo "Starting test server..."
+	@PYTHONPATH=.:$(VENV) $(VENV)/python -u test/server.py > server.log 2>&1 & PID=$$!; \
+	trap "kill $$PID; wait $$PID; cat server.log; rm server.log" EXIT; \
+	echo "Waiting for test server..."; \
+	while ! nc -z localhost 8001; do sleep 0.1; done; \
 	PYTHONPATH=.:$(VENV) $(VENV)/python test/test_webui.py
 
 
