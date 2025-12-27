@@ -39,8 +39,8 @@ class SaveHandler(RequestHandler):
         """
         return (
             self.ui.method == "POST"
-            and "save" in self.ui.query_string
-            and "id" in self.ui.query_string
+            and len(self.ui.path) == 2
+            and self.ui.path[0] == "saved"
         )
 
     def handle(self) -> None:
@@ -55,7 +55,7 @@ class SaveHandler(RequestHandler):
             self.ui.error_response(b"404", b"Not Found", "Saving not configured.")
             return
 
-        test_id = self.ui.query_string.get("id", [None])[0]
+        test_id = self.ui.path[1]
         if not test_id:
             self.ui.error_response(b"400", b"Bad Request", "test_id not provided.")
             return
@@ -115,13 +115,11 @@ class SaveHandler(RequestHandler):
         test_id = kwargs.get("id", "")
         descend = kwargs.get("descend", "")
 
-        params = {"save": "True"}
-        if test_id:
-            params["id"] = test_id
+        params = {}
         if descend == "True":
             params["descend"] = "True"
 
-        action = f"{base_uri}?{urlencode(params)}"
+        action = f"{base_uri}saved/{test_id}?{urlencode(params)}"
         form_parts = [f'<form method="POST" id="save_form" action="{escape(action)}">']
         form_parts.append("</form>")
 
@@ -142,7 +140,11 @@ class LoadSavedTestHandler(RequestHandler):
 
         Handles GET/HEAD requests with 'id' in query string.
         """
-        return self.ui.method in ["GET", "HEAD"] and "id" in self.ui.query_string
+        return (
+            self.ui.method in ["GET", "HEAD"]
+            and len(self.ui.path) == 2
+            and self.ui.path[0] == "saved"
+        )
 
     def handle(self) -> None:
         """
@@ -151,7 +153,7 @@ class LoadSavedTestHandler(RequestHandler):
         Loads the pickled test data from disk, creates the appropriate formatter,
         and displays the results.
         """
-        test_id = self.ui.query_string.get("id", [None])[0]
+        test_id = self.ui.path[1]
         if not test_id:
             self.ui.error_response(b"400", b"Bad Request", "test_id not provided.")
             return
@@ -242,8 +244,6 @@ class LoadSavedTestHandler(RequestHandler):
         """
         base_uri = self.get_base_uri(absolute)
         params = []
-        if test_id:
-            params.append(("id", test_id))
         if output_format:
             params.append(("format", output_format))
         if check_name:
@@ -251,7 +251,7 @@ class LoadSavedTestHandler(RequestHandler):
         if descend:
             params.append(("descend", "True"))
 
-        return f"{base_uri}?{urlencode(params)}"
+        return f"{base_uri}saved/{test_id}?{urlencode(params)}"
 
     def render_form(self, **kwargs: str) -> str:
         """
