@@ -41,7 +41,8 @@ class BasicWebUiTest(unittest.TestCase):
     test_uri = "http://127.0.0.1:8001/"
 
     def setUp(self):
-        self.page = browser.new_page()
+        self.context = browser.new_context()
+        self.page = self.context.new_page()
         self.page.set_default_timeout(ACTION_TIMEOUT)
         self.page.on(
             "console",
@@ -65,6 +66,7 @@ class BasicWebUiTest(unittest.TestCase):
                 )
             )
         self.page.close()
+        self.context.close()
 
     def test_multi(self):
         self.page.click('input[value="check embedded"]')
@@ -146,7 +148,8 @@ class BasicWebUiTest(unittest.TestCase):
 
 class WebUiErrorTest(unittest.TestCase):
     def setUp(self):
-        self.page = browser.new_page()
+        self.context = browser.new_context()
+        self.page = self.context.new_page()
 
     def tearDown(self):
         import os
@@ -160,6 +163,7 @@ class WebUiErrorTest(unittest.TestCase):
                 )
             )
         self.page.close()
+        self.context.close()
 
     def test_unsupported_method(self):
         response = self.page.request.put(redbot_uri)
@@ -235,7 +239,6 @@ if __name__ == "__main__":
         with sync_playwright() as pw:
             browser = pw.chromium.launch()
             # Hook up console log
-            context = browser.new_context()
             
             tests = unittest.main(exit=False, verbosity=2, testRunner=NewlineTextTestRunner)
             write_github_summary(tests)
