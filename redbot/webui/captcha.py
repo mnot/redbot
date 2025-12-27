@@ -2,14 +2,14 @@ import hmac
 from http import cookies
 import json
 import time
-from typing import Callable, Dict, TYPE_CHECKING
-from urllib.parse import urlencode
+from typing import Callable, Dict
+from urllib.parse import urlencode, parse_qs
 
 import thor
 from thor.http import HttpClient, get_header
 from thor.http.error import HttpError
 
-from redbot.type import RawHeaderListType
+from redbot.type import RawHeaderListType, RedWebUiProtocol
 
 token_client = HttpClient()
 token_client.idle_timeout = 30
@@ -17,8 +17,6 @@ token_client.connect_timeout = 10
 token_client.read_timeout = 10
 token_client.max_server_conn = 30
 
-if TYPE_CHECKING:
-    from redbot.webui import RedWebUi  # pylint: disable=cyclic-import,unused-import
 
 CAPTCHA_PROVIDERS: Dict[str, Dict[str, bytes]] = {
     "hcaptcha": {
@@ -35,7 +33,7 @@ CAPTCHA_PROVIDERS: Dict[str, Dict[str, bytes]] = {
 class CaptchaHandler:
     def __init__(
         self,
-        webui: "RedWebUi",
+        webui: RedWebUiProtocol,
         continue_test: Callable,
         error_response: Callable,
     ) -> None:
@@ -57,7 +55,13 @@ class CaptchaHandler:
         return False
 
     def run(self) -> None:
-        captcha_token = self.webui.body_args.get("captcha_token", [None])[0]
+        captcha_token = None
+        req_ct = get_header(self.webui.req_headers, b"content-type")
+        if req_ct and req_ct[-1].lower() == b"application/x-www-form-urlencoded":
+            raw_body = self.webui.req_body.decode(self.webui.charset, "replace")
+            body_args = parse_qs(raw_body, keep_blank_values=True)
+            captcha_token = body_args.get("captcha_token", [None])[0]
+
         cookie_str = b", ".join(get_header(self.webui.req_headers, b"cookie"))
         try:
             cookiejar: cookies.SimpleCookie = cookies.SimpleCookie(
@@ -84,7 +88,8 @@ class CaptchaHandler:
                     "I need to double-check that you're human; please resubmit.",
                 )
         elif captcha_token:
-            self.verify_captcha(captcha_token)
+            if captcha_token:
+                self.verify_captcha(captcha_token)
         else:
             self.error_response(
                 b"403",
@@ -94,6 +99,8 @@ class CaptchaHandler:
 
     def verify_captcha(self, presented_token: str) -> None:
         exchange = token_client.exchange()
+        captcha_status: bytes = b""
+        captcha_body: bytes = b""
 
         @thor.events.on(exchange)
         def error(err_msg: HttpError) -> None:
@@ -108,21 +115,21 @@ class CaptchaHandler:
         def response_start(
             status: bytes, phrase: bytes, headers: RawHeaderListType
         ) -> None:
-            exchange.tmp_status = status  # type: ignore[attr-defined]
-
-        exchange.tmp_res_body = b""  # type: ignore[attr-defined]
+            nonlocal captcha_status
+            captcha_status = status
 
         @thor.events.on(exchange)
         def response_body(chunk: bytes) -> None:
-            exchange.tmp_res_body += chunk  # type: ignore[attr-defined]
+            nonlocal captcha_body
+            captcha_body += chunk
 
         @thor.events.on(exchange)
         def response_done(_: RawHeaderListType) -> None:
             try:
-                results = json.loads(exchange.tmp_res_body)  # type: ignore[attr-defined]
+                results = json.loads(captcha_body)
             except ValueError:
-                if exchange.tmp_status != b"200":  # type: ignore[attr-defined]
-                    status = exchange.tmp_status.decode("utf-8")  # type: ignore[attr-defined]
+                if captcha_status != b"200":
+                    status = captcha_status.decode("utf-8")
                     e_str = f"Captcha server returned {status} status code"
                 else:
                     e_str = "Captcha server response error"

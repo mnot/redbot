@@ -4,13 +4,12 @@ Rate Limiting for RED, the Resource Expert Droid.
 
 from collections import defaultdict
 from configparser import SectionProxy
-from typing import Dict, Set, Union, Callable, TYPE_CHECKING
+from typing import Dict, Set, Union, Callable
 from urllib.parse import urlsplit
 
 import thor.loop
 
-if TYPE_CHECKING:
-    from redbot.webui import RedWebUi  # pylint: disable=cyclic-import,unused-import
+from redbot.type import RedWebUiProtocol
 
 
 class RateLimiter:
@@ -24,7 +23,7 @@ class RateLimiter:
         self.loop = thor.loop
 
     def process(
-        self, webui: "RedWebUi", test_uri: str, error_response: Callable
+        self, webui: RedWebUiProtocol, test_uri: str, error_response: Callable
     ) -> None:
         """Enforce limits on webui."""
         if not self.running:
@@ -36,27 +35,27 @@ class RateLimiter:
             try:
                 self.increment("client_id", client_id)
                 self.increment("instant", client_id)
-            except RateLimitViolation:
+            except RateLimitViolation as exc:
                 error_response(
                     b"429",
                     b"Too Many Requests",
                     "Your client is over limit. Please try later.",
                 )
-                raise ValueError  # pylint: disable=raise-missing-from
+                raise ValueError from exc
 
         # enforce origin limits
         origin = url_to_origin(test_uri)
         if origin:
             try:
                 self.increment("origin", origin)
-            except RateLimitViolation:
+            except RateLimitViolation as exc:
                 error_response(
                     b"429",
                     b"Too Many Requests",
                     "Origin is over limit. Please try later.",
                     f"origin over limit: {origin}",
                 )
-                raise ValueError  # pylint: disable=raise-missing-from
+                raise ValueError from exc
 
     def setup(self, config: SectionProxy) -> None:
         """Set up the counters for config."""

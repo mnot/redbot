@@ -16,7 +16,7 @@
                 if (line == 0 && col == 0) { return }
                 var xhr = new XMLHttpRequest()
                 var data = `${message} at ${url}, ${line}:${col}`
-                xhr.open('POST', '?client_error=1', true)
+                xhr.open('POST', '{{ links.client_error_link() }}', true)
                 xhr.send(data)
                 errorsReported += 1
             }
@@ -48,11 +48,10 @@
 
 <body class="{{ extra_body_class }}">
 
-    <form method="POST" id="save_form" action="?id={{ test_id }}&save=True{{ descend }}">
-    </form>
+    {{ links.save_form(test_id, descend) | safe }}
 
     <div id="request">
-        <h1><a href="?"><span class="hilight"><abbr title="Resource Expert Droid">RED</abbr></span>bot</a>{{ extra_title
+        <h1><a href="{{ links.home_link() }}"><span class="hilight"><abbr title="Resource Expert Droid">RED</abbr></span>bot</a>{{ extra_title
             }}</h1>
 
         <form method="POST" id="request_form">

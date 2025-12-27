@@ -122,21 +122,27 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                             "is_saved": is_saved,
                             "save_mtime": save_mtime,
                             "allow_save": allow_save,
-                            "har_link": self.redbot_link(
-                                _("view HAR"),
-                                res_format="har",
-                                title=_(
-                                    "View a HAR (HTTP ARchive, a JSON format) file for this test"
-                                ),
+                            "har_link": Markup(
+                                self.links.har_link(
+                                    self.resource,
+                                    _("view HAR"),
+                                    title=_(
+                                        "View a HAR (HTTP ARchive, a JSON format) "
+                                        "file for this test"
+                                    ),
+                                )
                             ),
-                            "descend_link": self.redbot_link(
-                                _("check embedded"),
-                                use_stored=False,
-                                descend=True,
-                                referer=True,
-                                title=_(
-                                    "Run REDbot on images, frames and embedded links"
-                                ),
+                            "descend_link": Markup(
+                                self.links.resource_link(
+                                    self.resource,
+                                    "",
+                                    _("check embedded"),
+                                    use_stored=False,
+                                    descend=True,
+                                    title=_(
+                                        "Run REDbot on images, frames and embedded links"
+                                    ),
+                                )
                             ),
                             "validator_link": validator_link,
                         },
@@ -177,16 +183,18 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     except ValueError:
                         continue  # we're not interested in raising these upstream
 
-                    link_str = self.redbot_link(
-                        escape(link),
-                        abs_link,
-                        use_stored=False,
-                        css_class="nocode",
-                        referer=True,
+                    link_str = Markup(
+                        self.links.resource_link(
+                            resource,
+                            abs_link,
+                            escape(link),
+                            use_stored=False,
+                            css_class="nocode",
+                        )
                     )
 
-                    def link_to(matchobj: Match) -> str:
-                        return rf"{matchobj.group(1)}{link_str}{matchobj.group(1)}"  # pylint: disable=cell-var-from-loop
+                    def link_to(matchobj: Match, link_str: Markup = link_str) -> str:
+                        return rf"{matchobj.group(1)}{link_str}{matchobj.group(1)}"
 
                     safe_sample = Markup(
                         re.sub(
@@ -207,10 +215,15 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 if not self.resource.subreqs[check_id].fetch_started:
                     continue
                 check_name = self.resource.subreqs[check_id].check_name
-                out.append(
-                    f'<span class="req_link">'
-                    f'({self.redbot_link(_("%s response") % check_name, check_name=check_id)}'
+                link = Markup(
+                    self.links.check_link(
+                        self.resource,
+                        _("%s response") % check_name,
+                        check_name=check_name,
+                        check_id=check_id,
+                    )
                 )
+                out.append(f'<span class="req_link">({link}')
                 smsgs = [
                     note
                     for note in getattr(
@@ -272,11 +285,13 @@ class HeaderPresenter:
         value = value.rstrip()
         svalue = value.lstrip()
         space = len(value) - len(svalue)
-        link = self.formatter.redbot_link(
-            self._wrap(escape(svalue), len(name), 0),
-            svalue,
-            use_stored=False,
-            referer=True,
+        link = Markup(
+            self.formatter.links.resource_link(
+                self.formatter.resource,
+                svalue,
+                self._wrap(escape(svalue), len(name), 0),
+                use_stored=False,
+            )
         )
         return Markup(f"{' ' * space}{link}")
 
@@ -332,10 +347,12 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                         "is_saved": is_saved,
                         "save_mtime": save_mtime,
                         "allow_save": allow_save,
-                        "har_link": self.redbot_link(
-                            "view har",
-                            res_format="har",
-                            title="View a HAR (HTTP ARchive, a JSON format) file for this test",
+                        "har_link": Markup(
+                            self.links.har_link(
+                                self.resource,
+                                "view har",
+                                title="View a HAR (HTTP ARchive, a JSON format) file for this test",
+                            )
                         ),
                     },
                 )

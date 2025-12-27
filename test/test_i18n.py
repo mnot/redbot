@@ -47,7 +47,6 @@ class TestI18n(unittest.TestCase):
                 exchange, 
                 "127.0.0.1"
             )
-            ui.show_default()
             
             # Check if response_start was called with Content-Language header
             args, _ = exchange.response_start.call_args
