@@ -30,7 +30,7 @@ class RedWebUiProtocol(Protocol):
     req_body: bytes
     method: str
     query_string: Dict[str, List[str]]
-    path: str
+    path: List[str]
     nonce: str
     locale: str
     timeout: Optional["thor.loop.ScheduledEvent"]

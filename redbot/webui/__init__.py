@@ -67,7 +67,8 @@ class RedWebUi:
         self.method = method
         self.charset = self.config.get("charset", "utf-8")
         self.charset_bytes = self.charset.encode("ascii")
-        self.path = path.decode(self.charset, "replace")
+        req_path = path.decode(self.charset, "replace")
+        self.path = [p for p in req_path.split("/") if p]
         self.query_string = parse_qs(query_string.decode(self.charset, "replace"))
         self.req_headers = req_headers
         self.req_body = req_body

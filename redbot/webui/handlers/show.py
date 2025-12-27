@@ -36,7 +36,7 @@ class ShowHandler(RequestHandler):
         query_string = self.ui.query_string
         return (
             self.ui.method in ["GET", "HEAD"]
-            and self.ui.path == ""
+            and self.ui.path == []
             and "uri" not in query_string
             and "id" not in query_string
             and "save" not in query_string
