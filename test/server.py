@@ -13,6 +13,11 @@ class Colors:
     RED = '\033[91m'
     RESET = '\033[0m'
 
+REQUEST_COUNT = 0
+ACTIVE_CONNECTIONS = 0
+MAX_ACTIVE_CONNECTIONS = 0
+COUNTER_LOCK = threading.Lock()
+
 def colorize(text, color):
     if sys.stdout.isatty():
         return f"{color}{text}{Colors.RESET}"
@@ -21,6 +26,20 @@ def colorize(text, color):
 
 class TestHandler(http.server.BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.0"
+
+    def setup(self):
+        super().setup()
+        global ACTIVE_CONNECTIONS, MAX_ACTIVE_CONNECTIONS
+        with COUNTER_LOCK:
+            ACTIVE_CONNECTIONS += 1
+            if ACTIVE_CONNECTIONS > MAX_ACTIVE_CONNECTIONS:
+                MAX_ACTIVE_CONNECTIONS = ACTIVE_CONNECTIONS
+
+    def finish(self):
+        super().finish()
+        global ACTIVE_CONNECTIONS
+        with COUNTER_LOCK:
+            ACTIVE_CONNECTIONS -= 1
 
     def prepare_response(self):
         resp_hdrs = {
@@ -80,7 +99,10 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
         pass
 
     def do_GET(self):
+        global REQUEST_COUNT
         try:
+            with COUNTER_LOCK:
+                REQUEST_COUNT += 1
             print(colorize(f"SERVER: TestHandler GET {self.path}", Colors.GREEN))
             content = self.prepare_response()
             self.wfile.write(content)
@@ -90,7 +112,10 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
             self.close_connection = True
 
     def do_HEAD(self):
+        global REQUEST_COUNT
         try:
+            with COUNTER_LOCK:
+                REQUEST_COUNT += 1
             print(colorize(f"SERVER: TestHandler HEAD {self.path}", Colors.GREEN))
             self.prepare_response()
         except Exception as e:
@@ -115,6 +140,7 @@ class TestServer(threading.Thread):
     def stop(self):
         self.server.shutdown()
         self.server.server_close()
+        print(colorize(f"SERVER STATS: Requests: {REQUEST_COUNT}, Max Active Connections: {MAX_ACTIVE_CONNECTIONS}, Leaked Connections: {ACTIVE_CONNECTIONS}", Colors.CYAN))
 
 if __name__ == "__main__":
     server = TestServer()
