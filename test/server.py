@@ -126,6 +126,8 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
             self.close_connection = True
 
 class QuietThreadingHTTPServer(http.server.ThreadingHTTPServer):
+    allow_reuse_address = True
+
     def handle_error(self, request, client_address):
         # Suppress expected socket errors during tests
         try:
@@ -144,7 +146,6 @@ class TestServer(threading.Thread):
         http.server.ThreadingHTTPServer.request_queue_size = 30
         self.server = QuietThreadingHTTPServer(('127.0.0.1', self.port), TestHandler)
         self.server.daemon_threads = True
-        self.server.allow_reuse_address = True
         self.daemon = True
 
     def run(self):
