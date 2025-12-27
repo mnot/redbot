@@ -31,8 +31,8 @@ class RedHttpClient(thor.http.HttpClient):
 
     def __init__(self, loop: Optional[thor.loop.LoopBase] = None) -> None:
         thor.http.HttpClient.__init__(self, loop)
-        self.connect_timeout = 15
-        self.read_timeout = 20
+        self.connect_timeout = 30
+        self.read_timeout = 60
         self.idle_timeout = 5
         self.retry_delay = 1
         self.careful = False
