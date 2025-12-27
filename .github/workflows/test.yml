@@ -48,3 +48,10 @@ jobs:
       run: make lint
     - name: WebUI Test
       run: make test_webui
+    - name: Upload screenshots
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: webui-screenshots
+        path: fail_*.png
+        if-no-files-found: ignore

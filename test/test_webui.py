@@ -5,7 +5,6 @@ from playwright.sync_api import sync_playwright, TimeoutError, Response, APIResp
 import unittest
 import sys
 import os
-import base64
 from multiprocessing import Process
 from test.server import TestServer, Colors, colorize
 
@@ -221,13 +220,7 @@ def write_github_summary(tests):
                 f.write(f"```python\n{err}\n```\n\n")
                 screenshot_path = os.path.abspath(f"fail_{test_name}.png")
                 if os.path.exists(screenshot_path):
-                    with open(screenshot_path, "rb") as image_file:
-                        encoded_string = base64.b64encode(image_file.read()).decode()
-                        f.write(f"<details><summary>Screenshot</summary>\n\n")
-                        f.write(
-                            f"![{test_name}](data:image/png;base64,{encoded_string})\n\n"
-                        )
-                        f.write("</details>\n\n")
+                    f.write("*Screenshot available in job artifacts.*\n\n")
 
 
 def redbot_run():
