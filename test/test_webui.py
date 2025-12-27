@@ -248,6 +248,7 @@ def redbot_run():
         del conf["redbot"]["instant_limit"]
     redconf = conf["redbot"]
     redconf["save_dir"] = save_dir
+    redconf["host"] = "127.0.0.1"
     server = redbot.daemon.RedBotServer(redconf)
     try:
         server.run()
@@ -256,7 +257,7 @@ def redbot_run():
 
 
 if __name__ == "__main__":
-    test_host = "localhost"
+    test_host = "127.0.0.1"
     test_port = 8000
     redbot_uri = "http://%s:%s/" % (test_host, test_port)
     
