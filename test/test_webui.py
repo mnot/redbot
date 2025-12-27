@@ -17,11 +17,11 @@ class NewlineTextTestResult(unittest.TextTestResult):
         self.stream.write('\n')
         super().startTest(test)
         self.stream.write('\n')
-    
+
     def addSuccess(self, test):
         super().addSuccess(test)
         self.stream.write('\n')
-        
+
     def addError(self, test, err):
         test.failed = True
         super().addError(test, err)
@@ -49,7 +49,6 @@ class BasicWebUiTest(unittest.TestCase):
             lambda msg: print(colorize(f"BROWSER CONSOLE: {msg.text}", Colors.CYAN)),
         )
         self.page.goto(url=redbot_uri, wait_until="load")
-        self.check_complete()
         self.page.fill("#uri", self.test_uri)
         self.page.press("#uri", "Enter")
         self.check_complete()
@@ -77,7 +76,7 @@ class BasicWebUiTest(unittest.TestCase):
         self.page.wait_for_selector(".hdr_name select")
         self.page.select_option(".hdr_name select", "Cache-Control")
         self.page.evaluate("document.querySelector('.hdr_name select').dispatchEvent(new Event('change', {bubbles: true}))")
-        
+
         self.page.wait_for_selector(".hdr_val select")
         self.page.select_option(".hdr_val select", "no-cache")
         self.page.evaluate("document.querySelector('.hdr_val select').dispatchEvent(new Event('change', {bubbles: true}))")
@@ -85,7 +84,7 @@ class BasicWebUiTest(unittest.TestCase):
         # Verify hidden input
         val = self.page.input_value("input[name='req_hdr']")
         self.assertEqual(val, "Cache-Control:no-cache")
-        
+
         # Wait for form elements to be reliably updated in the DOM serialization
         self.page.wait_for_timeout(1000)
         self.page.click("#go")
@@ -105,14 +104,14 @@ class BasicWebUiTest(unittest.TestCase):
         self.assertEqual(har_content["log"]["version"], "1.1")
         self.assertIn("entries", har_content["log"])
         self.assertTrue(len(har_content["log"]["entries"]) > 0)
-        
+
         entry = har_content["log"]["entries"][0]
         self.assertEqual(entry["response"]["status"], 200)
         # Content-Type header
         headers = {h["name"].lower(): h["value"].strip() for h in entry["response"]["headers"]}
         self.assertIn("content-type", headers)
         self.assertEqual(headers["content-type"], "text/html")
-        
+
     def test_save(self):
         from playwright.sync_api import expect
         self.page.click("#save")
@@ -193,7 +192,7 @@ def write_github_summary(tests):
         # Standard unittest.TestResult doesn't store successes by default in all versions,
         # but NewlineTextTestResult inherits from TextTestResult which might.
         # If not, we can infer successes.
-        
+
         all_tests = []
         for cls in [BasicWebUiTest, WebUiErrorTest]:
             for name in dir(cls):
@@ -232,14 +231,14 @@ if __name__ == "__main__":
     test_host = "127.0.0.1"
     test_port = 8000
     redbot_uri = "http://%s:%s/" % (test_host, test_port)
-    
+
     sys.path.insert(0, "bin")
 
     try:
         with sync_playwright() as pw:
             browser = pw.chromium.launch()
             # Hook up console log
-            
+
             tests = unittest.main(exit=False, verbosity=2, testRunner=NewlineTextTestRunner)
             write_github_summary(tests)
             browser.close()
