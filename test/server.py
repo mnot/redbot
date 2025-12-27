@@ -5,6 +5,7 @@ import http.server
 import threading
 import sys
 import time
+import gzip
 
 class Colors:
     CYAN = '\033[96m'
@@ -57,7 +58,6 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
 
             # Content Negotiation (Gzip)
             elif "gzip" in ae_hdr:
-                import gzip
                 content = gzip.compress(content)
                 resp_hdrs["Content-Encoding"] = "gzip"
 
@@ -81,6 +81,7 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
         if status != 304:
              self.send_header("Content-Length", str(len(content)))
 
+        # Explicitly close connection to simplify state
         self.send_header("Connection", "close")
         self.end_headers()
         return content
@@ -88,14 +89,16 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         print(colorize(f"SERVER: TestHandler GET {self.path}", Colors.GREEN))
         content = self.prepare_response()
-        self.wfile.flush()
-        self.wfile.write(content)
-        self.wfile.flush()
+        try:
+            self.wfile.write(content)
+            # flush is typically not needed for wfile as it auto-flushes on close/buffer fill
+            # but usually harmless. However, removing it reduces syscalls
+        except BrokenPipeError:
+            pass  # Client disconnected
         self.close_connection = True
 
     def do_HEAD(self):
         self.prepare_response()
-        self.wfile.flush()
         self.close_connection = True
 
 
