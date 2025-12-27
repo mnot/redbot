@@ -221,6 +221,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                         _("%s response") % check_name,
                         check_name=check_name,
                         check_id=check_id,
+                        test_id=self.kw.get("test_id", None),
                     )
                 )
                 out.append(f'<span class="req_link">({link}')
