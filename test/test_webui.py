@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # coding=UTF-8
 
-from playwright.sync_api import sync_playwright, TimeoutError
+from playwright.sync_api import sync_playwright, TimeoutError, Response, APIResponse
 import unittest
 import sys
+import os
+import base64
 from multiprocessing import Process
 from test.server import TestServer, Colors, colorize
 
@@ -164,13 +166,68 @@ class WebUiErrorTest(unittest.TestCase):
     def test_unsupported_method(self):
         response = self.page.request.put(redbot_uri)
         self.assertIsNotNone(response)
+        assert isinstance(response, APIResponse)
         self.assertEqual(response.status, 404)
 
     def test_non_existent_resource(self):
         response = self.page.goto(redbot_uri + "does_not_exist")
         self.assertIsNotNone(response)
+        assert isinstance(response, Response)
         self.assertEqual(response.status, 404)
         self.assertIn("The requested resource was not found", self.page.content())
+
+
+def write_github_summary(tests):
+    summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if not summary_path:
+        return
+
+    with open(summary_path, "a", encoding="utf-8") as f:
+        f.write("## WebUI Test Results\n\n")
+        f.write("| Test | Status | Details |\n")
+        f.write("| --- | --- | --- |\n")
+
+        # unittest.TestResult.successes is only available if we use a runner that tracks it.
+        # Standard unittest.TestResult doesn't store successes by default in all versions,
+        # but NewlineTextTestResult inherits from TextTestResult which might.
+        # If not, we can infer successes.
+        
+        all_tests = []
+        for cls in [BasicWebUiTest, WebUiErrorTest]:
+            for name in dir(cls):
+                if name.startswith("test_") and callable(getattr(cls, name)):
+                    all_tests.append(name)
+
+        failed_names = {t._testMethodName: err for t, err in tests.result.failures}
+        error_names = {t._testMethodName: err for t, err in tests.result.errors}
+
+        for test_name in sorted(all_tests):
+            if test_name in error_names:
+                status = "💥 Error"
+            elif test_name in failed_names:
+                status = "❌ Fail"
+            else:
+                status = "✅ Pass"
+            f.write(f"| {test_name} | {status} | |\n")
+
+        f.write("\n")
+
+        all_failures = tests.result.failures + tests.result.errors
+        if all_failures:
+            f.write("### Failure Details\n\n")
+            for test, err in all_failures:
+                test_name = test._testMethodName
+                f.write(f"#### {test_name}\n\n")
+                f.write(f"```python\n{err}\n```\n\n")
+                screenshot_path = os.path.abspath(f"fail_{test_name}.png")
+                if os.path.exists(screenshot_path):
+                    with open(screenshot_path, "rb") as image_file:
+                        encoded_string = base64.b64encode(image_file.read()).decode()
+                        f.write(f"<details><summary>Screenshot</summary>\n\n")
+                        f.write(
+                            f"![{test_name}](data:image/png;base64,{encoded_string})\n\n"
+                        )
+                        f.write("</details>\n\n")
 
 
 def redbot_run():
@@ -231,6 +288,7 @@ if __name__ == "__main__":
             context = browser.new_context()
             
             tests = unittest.main(exit=False, verbosity=2, testRunner=NewlineTextTestRunner)
+            write_github_summary(tests)
             browser.close()
             print("done webui test...")
     finally:
