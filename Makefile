@@ -94,6 +94,10 @@ i18n-init: venv
 server: venv
 	PYTHONPATH=.:$(VENV) $(VENV)/python -u redbot/daemon.py config.txt
 
+.PHONY: test_server
+test_server: venv
+	PYTHONPATH=.:$(VENV) $(VENV)/python -u test/server.py
+
 .PHONY: cli
 cli: venv
 	PYTHONPATH=.:$(VENV) $(VENV)/python redbot/cli.py $(filter-out $@,$(MAKECMDGOALS))

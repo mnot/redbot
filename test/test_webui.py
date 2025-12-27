@@ -2,61 +2,37 @@
 # coding=UTF-8
 
 from playwright.sync_api import sync_playwright, TimeoutError
-import http.server
-import threading
-import time
 import unittest
 import sys
 from multiprocessing import Process
+from test.server import TestServer, Colors, colorize
 
 
 TIMEOUT = 30 * 1000
-
-class TestHandler(http.server.BaseHTTPRequestHandler):
-    protocol_version = "HTTP/1.1"
-
-    def prepare_response(self):
-        if self.path == "/img.png":
-            content = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82"
-            ctype = "image/png"
-        else:
-            content = b"<html><body><h1>Hello World</h1><img src='img.png'></body></html>"
-            ctype = "text/html"
-
-        self.send_response(200)
-        self.send_header("Content-type", ctype)
-        self.send_header("Content-Length", str(len(content)))
-        self.send_header("Cache-Control", "max-age=3600")
-        self.send_header("Connection", "close")
-        self.end_headers()
-        return content
-
-    def do_GET(self):
-        content = self.prepare_response()
-        self.wfile.write(content)
-        self.wfile.flush()
-        self.close_connection = True
-
-    def do_HEAD(self):
-        self.prepare_response()
-        self.wfile.flush()
-        self.close_connection = True
+ACTION_TIMEOUT = 10 * 1000
 
 
-class TestServer(threading.Thread):
-    def __init__(self):
-        super().__init__()
-        self.port = 8001  # Different from redbot port
-        self.server = http.server.ThreadingHTTPServer(('127.0.0.1', self.port), TestHandler)
-        self.server.allow_reuse_address = True
-        self.daemon = True
+class NewlineTextTestResult(unittest.TextTestResult):
+    def startTest(self, test):
+        self.stream.write('\n')
+        super().startTest(test)
+        self.stream.write('\n')
+    
+    def addSuccess(self, test):
+        super().addSuccess(test)
+        self.stream.write('\n')
+        
+    def addError(self, test, err):
+        super().addError(test, err)
+        self.stream.write('\n')
 
-    def run(self):
-        self.server.serve_forever()
+    def addFailure(self, test, err):
+        super().addFailure(test, err)
+        self.stream.write('\n')
 
-    def stop(self):
-        self.server.shutdown()
-        self.server.server_close()
+
+class NewlineTextTestRunner(unittest.TextTestRunner):
+    resultclass = NewlineTextTestResult
 
 
 class BasicWebUiTest(unittest.TestCase):
@@ -64,33 +40,141 @@ class BasicWebUiTest(unittest.TestCase):
 
     def setUp(self):
         self.page = browser.new_page()
+        self.page.set_default_timeout(ACTION_TIMEOUT)
+        self.page.on("console", lambda msg: print(colorize(f"BROWSER CONSOLE: {msg.text}", Colors.CYAN)))
         self.page.goto(url=redbot_uri, wait_until="load")
         self.check_complete()
         self.page.fill("#uri", self.test_uri)
         self.page.press("#uri", "Enter")
+        self.check_complete()
 
     def test_multi(self):
         self.page.click('input[value="check embedded"]')
         self.check_complete()
+
+    def test_request_header(self):
+        self.page.click("#add_req_hdr")
+        self.page.wait_for_selector(".hdr_name select")
+        self.page.select_option(".hdr_name select", "Cache-Control")
+        self.page.evaluate("document.querySelector('.hdr_name select').dispatchEvent(new Event('change', {bubbles: true}))")
         
+        self.page.wait_for_selector(".hdr_val select")
+        self.page.select_option(".hdr_val select", "no-cache")
+        self.page.evaluate("document.querySelector('.hdr_val select').dispatchEvent(new Event('change', {bubbles: true}))")
+
+        # Verify hidden input
+        val = self.page.input_value("input[name='req_hdr']")
+        self.assertEqual(val, "Cache-Control:no-cache")
+        
+        # Wait for form elements to be reliably updated in the DOM serialization
+        self.page.wait_for_timeout(1000)
+        self.page.click("#go")
+        self.check_complete()
+        self.assertIn("Cache-Control", self.page.content())
+        self.assertIn("no-cache", self.page.content())
+
+    def test_view_har(self):
+        with self.page.expect_response(lambda response: "format=har" in response.url) as response_info:
+            self.page.click("input[value='view HAR']")
+        response = response_info.value
+        self.assertTrue(response.ok)
+        har_content = response.json()
+
+        self.assertIn("log", har_content)
+        self.assertIn("version", har_content["log"])
+        self.assertEqual(har_content["log"]["version"], "1.1")
+        self.assertIn("entries", har_content["log"])
+        self.assertTrue(len(har_content["log"]["entries"]) > 0)
+        
+        entry = har_content["log"]["entries"][0]
+        self.assertEqual(entry["response"]["status"], 200)
+        # Content-Type header
+        headers = {h["name"].lower(): h["value"].strip() for h in entry["response"]["headers"]}
+        self.assertIn("content-type", headers)
+        self.assertEqual(headers["content-type"], "text/html")
+        
+    def test_save(self):
+        from playwright.sync_api import expect
+        self.page.click("#save")
+        save_indicator = self.page.locator("span.save")
+        expect(save_indicator).to_contain_text("saved")
+
+    def test_active_check_range(self):
+        self.page.click("text='Partial Content response'")
+        self.check_complete()
+        self.assertIn("Partial Content response", self.page.locator("h1").text_content() or "")
+
+    def test_active_check_conneg(self):
+        self.page.click("text='Content Negotiation response'")
+        self.check_complete()
+        self.assertIn("Content Negotiation response", self.page.locator("h1").text_content() or "")
+
+    def test_active_check_etag(self):
+        self.page.click("text='ETag Validation response'")
+        self.check_complete()
+        self.assertIn("ETag Validation response", self.page.locator("h1").text_content() or "")
+
+    def test_active_check_lm(self):
+        self.page.click("text='Last-Modified Validation response'")
+        self.check_complete()
+        self.assertIn("Last-Modified Validation response", self.page.locator("h1").text_content() or "")
+
     def check_complete(self):
         try:
             self.page.wait_for_selector("div.footer", timeout=TIMEOUT)
         except TimeoutError:
-            self.page.screenshot(path="error.png", full_page=True)
+            import os
+            print(colorize(f"DEBUG: Timeout waiting for completion.", Colors.RED))
+            path = os.path.abspath("error.png")
+            print(colorize(f"Saving screenshot to {path}", Colors.RED))
+            self.page.screenshot(path=path, full_page=True)
             raise AssertionError("Timeout")
+
+
+class WebUiErrorTest(unittest.TestCase):
+    def setUp(self):
+        self.page = browser.new_page()
+
+    def test_unsupported_method(self):
+        response = self.page.request.put(redbot_uri)
+        self.assertEqual(response.status, 404)
+
+    def test_non_existent_resource(self):
+        response = self.page.goto(redbot_uri + "does_not_exist")
+        self.assertEqual(response.status, 404)
+        self.assertIn("The requested resource was not found", self.page.content())
 
 
 def redbot_run():
     import redbot.daemon
     from configparser import ConfigParser
+    import tempfile
+    import shutil
+    import atexit
+
+
+    save_dir = tempfile.mkdtemp()
+    
+    def cleanup():
+        shutil.rmtree(save_dir, ignore_errors=True)
+        
+    atexit.register(cleanup)
 
     conf = ConfigParser()
     conf.read("config.txt")
     conf["redbot"]["enable_local_access"] = "true"
+    # Disable rate limits for tests
+    if "limit_client_tests" in conf["redbot"]:
+        del conf["redbot"]["limit_client_tests"]
+    if "instant_limit" in conf["redbot"]:
+        del conf["redbot"]["instant_limit"]
     redconf = conf["redbot"]
+    redconf["save_dir"] = save_dir
     server = redbot.daemon.RedBotServer(redconf)
-    server.run()
+    try:
+        server.run()
+    except KeyboardInterrupt:
+        pass
 
 
 if __name__ == "__main__":
@@ -104,18 +188,33 @@ if __name__ == "__main__":
     p = Process(target=redbot_run)
     p.start()
     
-    # Start local test server
-    test_server = TestServer()
-    test_server.start()
-    
     try:
+        # Start local test server
+        try:
+            test_server = TestServer()
+            test_server.start()
+        except OSError as e:
+            print(f"{Colors.RED}FATAL: Could not start test server: {e}{Colors.RESET}")
+            sys.exit(1)
+
         with sync_playwright() as pw:
             browser = pw.chromium.launch()
-            tests = unittest.main(exit=False, verbosity=2)
+            # Hook up console log
+            context = browser.new_context()
+            
+            tests = unittest.main(exit=False, verbosity=2, testRunner=NewlineTextTestRunner)
             browser.close()
             print("done webui test...")
     finally:
         p.terminate()
-        # test_server.stop() # daemon thread dies with main
+        p.join(timeout=2)
+        if p.is_alive():
+            print("Terminating process forcefully...")
+            p.kill()
+            p.join()
+
+        if 'test_server' in locals():
+            test_server.stop()
+
         if 'tests' in locals() and (len(tests.result.errors) > 0 or len(tests.result.failures) > 0):
             sys.exit(1)
