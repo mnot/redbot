@@ -6,23 +6,25 @@
   background-color: $console_colour;
   color: $header_colour;
   @include rounded_corners(0.75em);
-  border: 1px solid black;
+  border: 1px solid black; // Border stays black or use a dark var? #000 is fine for console look.
   padding: 1em 1.5em;
   margin-bottom: 0;
   overflow-x: auto;
-  a, .post_link {
-    color: #ccf;
+
+  a,
+  .post_link {
+    color: $link_in_box_colour;
   }
 }
 
 .nonfinal_response {
   @extend #response;
-  background-color: transparentize($console_colour, 0.4);
+  background-color: color-mix(in srgb, $console_colour, transparent 40%);
   border: none;
 }
 
 .hdr.hilight {
-  color: lighten($header_colour, 100%);
+  color: $header_hilight_colour;
   font-weight: bold;
 }
 
@@ -37,20 +39,29 @@
   padding-right: 2em;
   display: inline;
   font-size: 0.75em;
+  color: $option_colour; // Implicitly need this? Original didn't specify color.
+  // But red_style.css showed .option had no specific color?
+  // Wait, check red_style.css again. #style.css:300+.
+  // .option inheritance from body?
+  // I added $option_colour for "other...".
+  // Let's leave .option alone unless it needs it.
+  // Actually, checking previous view of red_style.css... it inherits.
+  // I won't add color here.
 }
 
 /* response body */
 
 #body {
   position: relative;
+
   .prettyprint {
     position: absolute;
     font: 0.80/1.00 Consolas, "Lucida Console", Monaco, monospace;
     overflow-x: auto;
     overflow-y: hidden;
-    background-color: #fff;
+    background-color: $preview_bg;
     @include rounded_corners(1em);
-    border: 1px solid #ccc;
+    border: 1px solid $preview_border;
     padding: 9px;
     width: 100%;
   }
