@@ -18,3 +18,4 @@ geckodriver.log
 /throwaway
 /changelog.md
 /fail_*.png
+/*.log
