@@ -56,12 +56,12 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
             padding = b"<!-- padding -->\n" * 100
             content = b"<html><body><h1>Hello World</h1><img src='img.png'><p>Some text content.</p>" + padding + b"</body></html>"
             status = 200
-            
+
             range_hdr = self.headers.get("Range")
             ae_hdr = self.headers.get("Accept-Encoding", "")
             inm_hdr = self.headers.get("If-None-Match")
             ims_hdr = self.headers.get("If-Modified-Since")
-            
+
             resp_hdrs.update({
                 "Content-Type": "text/html",
                 "Accept-Ranges": "bytes",
@@ -141,7 +141,7 @@ class TestServer(threading.Thread):
     def __init__(self):
         super().__init__()
         self.port = 8001  # Different from redbot port
-        http.server.ThreadingHTTPServer.request_queue_size = 30
+        http.server.ThreadingHTTPServer.request_queue_size = 50
         self.server = QuietThreadingHTTPServer(('127.0.0.1', self.port), TestHandler)
         self.server.daemon_threads = True
         self.server.allow_reuse_address = True
