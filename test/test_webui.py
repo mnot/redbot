@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=UTF-8
 
-from playwright.sync_api import sync_playwright, TimeoutError, Response, APIResponse
+from playwright.sync_api import sync_playwright, TimeoutError, Response, APIResponse, expect
 import unittest
 import sys
 import os
@@ -113,34 +113,33 @@ class BasicWebUiTest(unittest.TestCase):
         self.assertEqual(headers["content-type"], "text/html")
 
     def test_save(self):
-        from playwright.sync_api import expect
         self.page.click("#save")
         save_indicator = self.page.locator("span.save")
         expect(save_indicator).to_contain_text("saved")
 
     def test_active_check_range(self):
-        self.page.click("text='Partial Content response'")
+        self.page.click('text="Partial Content response"')
         self.check_complete()
         self.assertIn("Partial Content response", self.page.locator("h1").text_content() or "")
 
     def test_active_check_conneg(self):
-        self.page.click("text='Content Negotiation response'")
+        self.page.click('text="Content Negotiation response"')
         self.check_complete()
         self.assertIn("Content Negotiation response", self.page.locator("h1").text_content() or "")
 
     def test_active_check_etag(self):
-        self.page.click("text='ETag Validation response'")
+        self.page.click('text="ETag Validation response"')
         self.check_complete()
         self.assertIn("ETag Validation response", self.page.locator("h1").text_content() or "")
 
     def test_active_check_lm(self):
-        self.page.click("text='Last-Modified Validation response'")
+        self.page.click('text="Last-Modified Validation response"')
         self.check_complete()
         self.assertIn("Last-Modified Validation response", self.page.locator("h1").text_content() or "")
 
     def check_complete(self):
         try:
-            self.page.wait_for_selector("div.footer", timeout=TIMEOUT)
+            self.page.wait_for_selector("div.footer", timeout=ACTION_TIMEOUT)
         except TimeoutError:
             raise AssertionError("Timeout waiting for completion")
 
