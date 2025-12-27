@@ -55,9 +55,13 @@ test_webui: venv
 	$(VENV)/playwright install chromium
 	@echo "Starting test server..."
 	@PYTHONPATH=.:$(VENV) $(VENV)/python -u test/server.py > server.log 2>&1 & PID=$$!; \
-	trap "kill $$PID; wait $$PID; cat server.log; rm server.log" EXIT; \
+	echo "Starting REDbot server..."; \
+	PYTHONPATH=.:$(VENV) $(VENV)/python -u test/run_redbot.py > redbot.log 2>&1 & RPID=$$!; \
+	trap "kill $$PID $$RPID; wait $$PID $$RPID; echo '--- Test Server Log ---'; cat server.log; rm server.log; echo '--- REDbot Server Log ---'; cat redbot.log; rm redbot.log" EXIT; \
 	echo "Waiting for test server..."; \
 	while ! nc -z localhost 8001; do sleep 0.1; done; \
+	echo "Waiting for REDbot server..."; \
+	while ! nc -z localhost 8000; do sleep 0.1; done; \
 	PYTHONPATH=.:$(VENV) $(VENV)/python test/test_webui.py
 
 

@@ -5,7 +5,6 @@ from playwright.sync_api import sync_playwright, TimeoutError, Response, APIResp
 import unittest
 import sys
 import os
-from multiprocessing import Process
 from test.server import Colors, colorize
 
 
@@ -223,37 +222,6 @@ def write_github_summary(tests):
                     f.write("*Screenshot available in job artifacts.*\n\n")
 
 
-def redbot_run():
-    import redbot.daemon
-    from configparser import ConfigParser
-    import tempfile
-    import shutil
-    import atexit
-
-
-    save_dir = tempfile.mkdtemp()
-    
-    def cleanup():
-        shutil.rmtree(save_dir, ignore_errors=True)
-        
-    atexit.register(cleanup)
-
-    conf = ConfigParser()
-    conf.read("config.txt")
-    conf["redbot"]["enable_local_access"] = "true"
-    # Disable rate limits for tests
-    if "limit_client_tests" in conf["redbot"]:
-        del conf["redbot"]["limit_client_tests"]
-    if "instant_limit" in conf["redbot"]:
-        del conf["redbot"]["instant_limit"]
-    redconf = conf["redbot"]
-    redconf["save_dir"] = save_dir
-    redconf["host"] = "127.0.0.1"
-    server = redbot.daemon.RedBotServer(redconf)
-    try:
-        server.run()
-    except KeyboardInterrupt:
-        pass
 
 
 if __name__ == "__main__":
@@ -263,10 +231,6 @@ if __name__ == "__main__":
     
     sys.path.insert(0, "bin")
 
-    # Start REDbot server
-    p = Process(target=redbot_run)
-    p.start()
-    
     try:
         with sync_playwright() as pw:
             browser = pw.chromium.launch()
@@ -278,12 +242,5 @@ if __name__ == "__main__":
             browser.close()
             print("done webui test...")
     finally:
-        p.terminate()
-        p.join(timeout=2)
-        if p.is_alive():
-            print("Terminating process forcefully...")
-            p.kill()
-            p.join()
-
         if 'tests' in locals() and (len(tests.result.errors) > 0 or len(tests.result.failures) > 0):
             sys.exit(1)
