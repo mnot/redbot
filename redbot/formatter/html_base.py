@@ -3,7 +3,7 @@ import json
 import os
 import time
 from typing import TYPE_CHECKING
-from urllib.parse import quote as urlquote, urljoin
+from urllib.parse import quote as urlquote, urljoin, urlparse
 
 import httplint
 from jinja2 import Environment, PackageLoader, select_autoescape
@@ -91,7 +91,7 @@ class BaseHtmlFormatter(Formatter):
             "httplint_version": httplint.__version__,
             "baseuri": self.config.get("ui_uri", "https://redbot.org/"),
             "static": urljoin(
-                self.config.get("ui_uri", "/"),
+                urlparse(self.config.get("ui_uri", "/")).path,
                 self.config.get("static_root", "static"),
             ),
             "captcha_provider": captcha_provider,
