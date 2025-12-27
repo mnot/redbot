@@ -139,7 +139,8 @@ class BasicWebUiTest(unittest.TestCase):
 
     def check_complete(self):
         try:
-            self.page.wait_for_selector("div.footer", timeout=TIMEOUT)
+            footer = self.page.locator("div.footer")
+            footer.wait_for(state="attached", timeout=TIMEOUT)
         except TimeoutError:
             raise AssertionError("Timeout waiting for completion")
 
