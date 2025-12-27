@@ -113,7 +113,7 @@ class BaseHtmlFormatter(Formatter):
             extra_title += " saved "
         if self.resource and self.resource.check_name != "default":
             extra_title += f"{escape(self.resource.check_name)} response"
-        elif self.kw.get("check_name"):
+        elif self.kw.get("check_name") and self.kw["check_name"] != "default":
             extra_title += f"{escape(self.kw['check_name'])} response"
         extra_title += "</span>"
         extra_body_class = ""
