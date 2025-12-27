@@ -23,10 +23,12 @@ class NewlineTextTestResult(unittest.TextTestResult):
         self.stream.write('\n')
         
     def addError(self, test, err):
+        test.failed = True
         super().addError(test, err)
         self.stream.write('\n')
 
     def addFailure(self, test, err):
+        test.failed = True
         super().addFailure(test, err)
         self.stream.write('\n')
 
@@ -41,12 +43,28 @@ class BasicWebUiTest(unittest.TestCase):
     def setUp(self):
         self.page = browser.new_page()
         self.page.set_default_timeout(ACTION_TIMEOUT)
-        self.page.on("console", lambda msg: print(colorize(f"BROWSER CONSOLE: {msg.text}", Colors.CYAN)))
+        self.page.on(
+            "console",
+            lambda msg: print(colorize(f"BROWSER CONSOLE: {msg.text}", Colors.CYAN)),
+        )
         self.page.goto(url=redbot_uri, wait_until="load")
         self.check_complete()
         self.page.fill("#uri", self.test_uri)
         self.page.press("#uri", "Enter")
         self.check_complete()
+
+    def tearDown(self):
+        import os
+        if getattr(self, "failed", False):
+            path = os.path.abspath(f"fail_{self._testMethodName}.png")
+            self.page.screenshot(path=path, full_page=True)
+            sys.stderr.write(
+                colorize(
+                    f"DEBUG: Test failed. Screenshot saved to {path}\n",
+                    Colors.RED,
+                )
+            )
+        self.page.close()
 
     def test_multi(self):
         self.page.click('input[value="check embedded"]')
@@ -123,24 +141,34 @@ class BasicWebUiTest(unittest.TestCase):
         try:
             self.page.wait_for_selector("div.footer", timeout=TIMEOUT)
         except TimeoutError:
-            import os
-            print(colorize(f"DEBUG: Timeout waiting for completion.", Colors.RED))
-            path = os.path.abspath("error.png")
-            print(colorize(f"Saving screenshot to {path}", Colors.RED))
-            self.page.screenshot(path=path, full_page=True)
-            raise AssertionError("Timeout")
+            raise AssertionError("Timeout waiting for completion")
 
 
 class WebUiErrorTest(unittest.TestCase):
     def setUp(self):
         self.page = browser.new_page()
 
+    def tearDown(self):
+        import os
+        if getattr(self, "failed", False):
+            path = os.path.abspath(f"fail_{self._testMethodName}.png")
+            self.page.screenshot(path=path, full_page=True)
+            sys.stderr.write(
+                colorize(
+                    f"DEBUG: Test failed. Screenshot saved to {path}\n",
+                    Colors.RED,
+                )
+            )
+        self.page.close()
+
     def test_unsupported_method(self):
         response = self.page.request.put(redbot_uri)
+        self.assertIsNotNone(response)
         self.assertEqual(response.status, 404)
 
     def test_non_existent_resource(self):
         response = self.page.goto(redbot_uri + "does_not_exist")
+        self.assertIsNotNone(response)
         self.assertEqual(response.status, 404)
         self.assertIn("The requested resource was not found", self.page.content())
 
