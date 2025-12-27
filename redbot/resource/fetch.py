@@ -251,11 +251,12 @@ class RedFetcher(thor.events.EventEmitter):
 
     def sample_response(self, chunk: bytes) -> None:
         "Sample the response content."
+        start_offset = self.response.content_length - len(chunk)
         if (
             self.max_sample_size == 0
-            or self.response.content_length < self.max_sample_size
+            or start_offset < self.max_sample_size
         ):
-            self.response_content_sample.append((self.response.content_length, chunk))
+            self.response_content_sample.append((start_offset, chunk))
 
     def sample_decoded(self, decoded_chunk: bytes) -> None:
         "Sample the decoded response content."

@@ -58,11 +58,9 @@ class RangeRequest(SubRequest):
             return False
         if self.base.response.status_code == 206:
             return False
+
         if "bytes" in self.base.response.headers.parsed.get("accept-ranges", []):
             if not self.base.response_content_sample:
-                return False
-            if self.range_start == self.range_end:
-                # wow, that's a small body.
                 return False
             return True
         self.base.partial_support = False
