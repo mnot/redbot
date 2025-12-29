@@ -240,7 +240,9 @@ class TestI18n(unittest.TestCase):
         resource.subreqs[check_id] = subreq
         resource.response.notes = [] # Ensure note is not in main response
         
-        formatter = SingleEntryHtmlFormatter(MagicMock(), resource, MagicMock(), {"nonce": "test"})
+        config = MagicMock()
+        config.get.return_value = "/"
+        formatter = SingleEntryHtmlFormatter(config, resource, MagicMock(), {"nonce": "test"})
         
         # Test singular
         with patch("redbot.formatter.html.ngettext") as mock_ngettext, \
