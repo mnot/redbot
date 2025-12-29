@@ -42,7 +42,7 @@ class RunTestHandler(RequestHandler):
 
         Handles POST requests with 'uri' in query string.
         """
-        return self.ui.method == "POST" and "uri" in self.ui.query_string
+        return self.ui.method == "POST" and len(self.ui.path) > 0 and self.ui.path[0] == "check" and "uri" in self.ui.query_string
 
     def handle(self) -> None:
         """
@@ -240,7 +240,7 @@ class RunTestHandler(RequestHandler):
         if kwargs.get("check_name"):
             params.append(("check_name", kwargs["check_name"]))
 
-        return f"{base_uri}?{urlencode(params)}"
+        return f"{base_uri}check?{urlencode(params)}"
 
     def render_form(
         self,
@@ -279,7 +279,7 @@ class RunTestHandler(RequestHandler):
         if kwargs.get("check_name"):
             query_params.append(("check_name", kwargs["check_name"]))
 
-        action = e_url(base_uri)
+        action = f"{base_uri}check"
         if query_params:
             action += "?" + urlencode(query_params)
 
