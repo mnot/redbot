@@ -35,8 +35,13 @@ class RequestHandler(ABC):
 
         If absolute is True, returns the full URI from config.
         Otherwise, returns just the path component.
+
+        The returned string is always terminated by '/'.
         """
         ui_uri = self.ui.config.get("ui_uri", "")
+        if not ui_uri.endswith("/"):
+            ui_uri += "/"
+
         if absolute:
             return ui_uri
         return urlparse(ui_uri).path

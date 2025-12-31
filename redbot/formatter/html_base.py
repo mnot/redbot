@@ -84,14 +84,17 @@ class BaseHtmlFormatter(Formatter):
         captcha_provider = self.config.get("captcha_provider", "")
         captcha_data = CAPTCHA_PROVIDERS.get(captcha_provider, {})
         self.links: LinkGenerator = self.kw.get("link_generator") or NullLinkGenerator()
+        ui_uri = self.config.get("ui_uri", "https://redbot.org/")
+        if not ui_uri.endswith("/"):
+            ui_uri += "/"
         self.template_vars = {
             "formatter": self,
             "links": self.links,
             "redbot_version": redbot.__version__,
             "httplint_version": httplint.__version__,
-            "baseuri": self.config.get("ui_uri", "https://redbot.org/"),
+            "baseuri": ui_uri,
             "static": urljoin(
-                urlparse(self.config.get("ui_uri", "/")).path,
+                urlparse(ui_uri).path,
                 self.config.get("static_root", "static"),
             ),
             "captcha_provider": captcha_provider,
