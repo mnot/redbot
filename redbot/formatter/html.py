@@ -130,6 +130,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                                         "View a HAR (HTTP ARchive, a JSON format) "
                                         "file for this test"
                                     ),
+                                    test_id=self.kw.get("test_id"),
                                 )
                             ),
                             "descend_link": Markup(
@@ -353,6 +354,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                                 self.resource,
                                 "view har",
                                 title="View a HAR (HTTP ARchive, a JSON format) file for this test",
+                                test_id=self.kw.get("test_id"),
                             )
                         ),
                     },
