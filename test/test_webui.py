@@ -94,7 +94,7 @@ class BasicWebUiTest(unittest.TestCase):
 
     def test_view_har(self):
         with self.page.expect_response(lambda response: "format=har" in response.url) as response_info:
-            self.page.click("input[value='view HAR']")
+            self.page.click("text='view HAR'")
         response = response_info.value
         self.assertTrue(response.ok)
         har_content = response.json()
@@ -116,6 +116,18 @@ class BasicWebUiTest(unittest.TestCase):
         self.page.click("#save")
         save_indicator = self.page.locator("span.save")
         expect(save_indicator).to_contain_text("saved")
+
+    def test_saved_view_har(self):
+        self.page.click("#save")
+        save_indicator = self.page.locator("span.save")
+        expect(save_indicator).to_contain_text("saved")
+
+        with self.page.expect_response(lambda response: "format=har" in response.url and "saved/" in response.url) as response_info:
+            self.page.click("text='view HAR'")
+        response = response_info.value
+        self.assertTrue(response.ok)
+        har_content = response.json()
+        self.assertIn("log", har_content)
 
     def test_active_check_range(self):
         self.page.click('text="Partial Content response"')
