@@ -28,7 +28,7 @@ class ClientErrorHandler(RequestHandler):
 
         Handles POST requests with 'client_error' in query string.
         """
-        return self.ui.method == "POST" and "client_error" in self.ui.query_string
+        return self.ui.method == "POST" and self.ui.path[0] == "client_error"
 
     def handle(self) -> None:
         """
@@ -63,7 +63,7 @@ class ClientErrorHandler(RequestHandler):
         Returns:
             URI for the client error endpoint
         """
-        return f"{self.get_base_uri(absolute)}?client_error"
+        return f"{self.get_base_uri(absolute)}client_error"
 
     def render_form(self, **kwargs: str) -> str:
         """
