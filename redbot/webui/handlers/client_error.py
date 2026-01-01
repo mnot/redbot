@@ -8,6 +8,7 @@ import string
 from typing import TYPE_CHECKING
 
 from redbot.webui.handlers.base import RequestHandler
+from redbot.type import RedWebUiProtocol
 
 if TYPE_CHECKING:
     from redbot.webui import RedWebUi
@@ -22,19 +23,21 @@ class ClientErrorHandler(RequestHandler):
     response.
     """
 
-    def can_handle(self) -> bool:
+    @classmethod
+    def can_handle(cls, ui: RedWebUiProtocol) -> bool:
         """
         Determine if this handler should process the request.
 
         Handles POST requests with 'client_error' in query string.
         """
         return (
-            self.ui.method == "POST"
-            and len(self.ui.path) > 0
-            and self.ui.path[0] == "client_error"
+            ui.method == "POST"
+            and len(ui.path) > 0
+            and ui.path[0] == "client_error"
         )
 
-    def handle(self) -> None:
+    @classmethod
+    def handle(cls, ui: RedWebUiProtocol) -> None:
         """
         Handle the client error by logging it.
 
@@ -42,34 +45,37 @@ class ClientErrorHandler(RequestHandler):
         and logs it to the console. Returns a 204 No Content response.
         """
         # Extract and sanitize the error message
-        body = self.ui.req_body.decode("ascii", "replace")[:255].replace("\n", "")
+        body = ui.req_body.decode("ascii", "replace")[:255].replace("\n", "")
         body_safe = "".join([x for x in body if x in string.printable])
 
         # Log the error
-        self.ui.error_log(f"Client JS -> {body_safe}")
+        ui.error_log(f"Client JS -> {body_safe}")
 
         # Return 204 No Content
-        self.ui.exchange.response_start(
+        ui.exchange.response_start(
             b"204",
             b"No Content",
             [],
         )
-        self.ui.exchange.response_done([])
+        ui.exchange.response_done([])
 
-    def render_link(self, absolute: bool = False, **kwargs: str) -> str:
+    @classmethod
+    def render_link(cls, ui: RedWebUiProtocol, absolute: bool = False, **kwargs: str) -> str:
         """
         Generate a URI for reporting client errors.
 
         Args:
+            ui: The WebUI instance
             absolute: If True, return absolute URI
             **kwargs: Not used for this handler
 
         Returns:
             URI for the client error endpoint
         """
-        return f"{self.get_base_uri(absolute)}client_error"
+        return f"{cls.get_base_uri(ui, absolute)}client_error"
 
-    def render_form(self, **kwargs: str) -> str:
+    @classmethod
+    def render_form(cls, ui: RedWebUiProtocol, **kwargs: str) -> str:
         """
         Client error reporting doesn't use forms.
 

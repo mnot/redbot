@@ -9,7 +9,7 @@ from urllib.parse import urlencode
 
 from redbot.i18n import set_locale
 from redbot.resource import HttpResource
-from redbot.type import StrHeaderListType
+from redbot.type import StrHeaderListType, RedWebUiProtocol
 from redbot.webui.handlers.base import RequestHandler
 from redbot.formatter import html
 
@@ -25,49 +25,51 @@ class ShowHandler(RequestHandler):
     It can pre-fill the form with URI and headers from the query string.
     """
 
-    def can_handle(self) -> bool:
+    @classmethod
+    def can_handle(cls, ui: RedWebUiProtocol) -> bool:
         """
         Determine if this handler should process the request.
         """
         return (
-            self.ui.method in ["GET", "HEAD"]
+            ui.method in ["GET", "HEAD"]
             and (
-                self.ui.path == []
-                or self.ui.path[0] == "check"
+                ui.path == []
+                or ui.path[0] == "check"
             )
         )
 
-    def handle(self) -> None:
+    @classmethod
+    def handle(cls, ui: RedWebUiProtocol) -> None:
         """
         Handle the default page request.
 
         Displays the main REDbot interface with optional pre-filled URI.
         """
-        descend = "descend" in self.ui.query_string
-        test_uri = self.ui.query_string.get("uri", [""])[0]
+        descend = "descend" in ui.query_string
+        test_uri = ui.query_string.get("uri", [""])[0]
         test_req_hdrs: StrHeaderListType = [
             cast(Tuple[str, str], tuple(h.split(":", 1)))
-            for h in self.ui.query_string.get("req_hdr", [])
+            for h in ui.query_string.get("req_hdr", [])
             if ":" in h
         ]
 
-        resource = HttpResource(self.ui.config, descend=descend)
+        resource = HttpResource(ui.config, descend=descend)
         if test_uri:
             resource.set_request(test_uri, headers=test_req_hdrs)
 
         check_name = None
-        if "check_name" in self.ui.query_string:
-            check_name = self.ui.query_string.get("check_name", [""])[0]
+        if "check_name" in ui.query_string:
+            check_name = ui.query_string.get("check_name", [""])[0]
 
         formatter = html.BaseHtmlFormatter(
-            self.ui.config,
+            ui.config,
             resource,
-            self.ui.output,
+            ui.output,
             {
                 "is_blank": test_uri == "",
-                "nonce": self.ui.nonce,
-                "locale": self.ui.locale,
-                "link_generator": self.ui.link_generator,
+                "nonce": ui.nonce,
+                "locale": ui.locale,
+                "link_generator": ui.link_generator,
                 "check_name": check_name,
             },
         )
@@ -78,7 +80,7 @@ class ShowHandler(RequestHandler):
                 resource.subreqs.get(check_name, resource),
             )
 
-        self.ui.exchange.response_start(
+        ui.exchange.response_start(
             b"200",
             b"OK",
             [
@@ -86,23 +88,25 @@ class ShowHandler(RequestHandler):
                 (b"Cache-Control", b"max-age=5"),
                 (
                     b"Content-Security-Policy",
-                    f"script-src 'strict-dynamic' 'nonce-{self.ui.nonce}'".encode(
+                    f"script-src 'strict-dynamic' 'nonce-{ui.nonce}'".encode(
                         "ascii"
                     ),
                 ),
-                (b"Content-Language", self.ui.locale.encode("ascii")),
+                (b"Content-Language", ui.locale.encode("ascii")),
                 (b"Vary", b"Accept-Language"),
             ],
         )
 
-        with set_locale(self.ui.locale):
+        with set_locale(ui.locale):
             formatter.start_output()
             formatter.finish_output()
 
-        self.ui.exchange.response_done([])
+        ui.exchange.response_done([])
 
+    @classmethod
     def render_link(
-        self,
+        cls,
+        ui: RedWebUiProtocol,
         uri: str = "",
         req_hdr: str = "",
         descend: bool = False,
@@ -114,6 +118,7 @@ class ShowHandler(RequestHandler):
         Generate a URI for the main UI page.
 
         Args:
+            ui: The WebUI instance
             uri: URI to pre-fill (optional)
             req_hdr: Request header as "Name:Value" (optional)
             descend: If True, enable descend mode
@@ -123,7 +128,7 @@ class ShowHandler(RequestHandler):
         Returns:
             URI for the main UI page
         """
-        base_uri = self.get_base_uri(absolute)
+        base_uri = cls.get_base_uri(ui, absolute)
         params = []
         if uri:
             params.append(("uri", uri))
@@ -138,7 +143,8 @@ class ShowHandler(RequestHandler):
             return f"{base_uri}?{urlencode(params)}"
         return base_uri
 
-    def render_form(self, **kwargs: str) -> str:
+    @classmethod
+    def render_form(cls, ui: RedWebUiProtocol, **kwargs: str) -> str:
         """
         The default page itself is the form interface.
 
@@ -155,32 +161,35 @@ class RedirectHandler(RequestHandler):
     at the root path, redirecting them to the check handler.
     """
 
-    def can_handle(self) -> bool:
+    @classmethod
+    def can_handle(cls, ui: RedWebUiProtocol) -> bool:
         """
         Determine if this handler should process the request.
         """
         return (
-            self.ui.method in ["GET", "HEAD"]
-            and self.ui.path == []
-            and "uri" in self.ui.query_string
+            ui.method in ["GET", "HEAD"]
+            and ui.path == []
+            and "uri" in ui.query_string
         )
 
-    def handle(self) -> None:
+    @classmethod
+    def handle(cls, ui: RedWebUiProtocol) -> None:
         """
         Handle the redirect request.
         """
-        base_uri = self.get_base_uri()
-        uri = self.ui.query_string.get("uri", [""])[0]
+        base_uri = cls.get_base_uri(ui)
+        uri = ui.query_string.get("uri", [""])[0]
         params = [("uri", uri)]
         location = f"{base_uri}check?{urlencode(params)}"
 
-        self.ui.exchange.response_start(
+        ui.exchange.response_start(
             b"303", b"See Other", [(b"Location", location.encode("ascii"))]
         )
-        self.ui.output("Redirecting to the validation page...")
-        self.ui.exchange.response_done([])
+        ui.output("Redirecting to the validation page...")
+        ui.exchange.response_done([])
 
-    def render_link(self, **kwargs: Any) -> str:
+    @classmethod
+    def render_link(cls, ui: RedWebUiProtocol, **kwargs: Any) -> str:
         """
         No link generation needed.
         """

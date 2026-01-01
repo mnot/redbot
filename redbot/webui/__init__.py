@@ -52,6 +52,16 @@ class RedWebUi:
     If descend is true, spider the links and present a summary.
     """
 
+    handlers = [
+        SaveHandler,
+        LoadSavedTestHandler,
+        ClientErrorHandler,
+        RunTestHandler,
+        RedirectHandler,
+        ShowHandler,
+        ErrorHandler,  # Final fallback for 404/405
+    ]
+
     def __init__(
         self,
         config: SectionProxy,
@@ -114,19 +124,9 @@ class RedWebUi:
         self.link_generator: LinkGenerator = WebUiLinkGenerator(self)
 
         # Dispatch through handler chain
-        handlers = [
-            SaveHandler(self),
-            LoadSavedTestHandler(self),
-            ClientErrorHandler(self),
-            RunTestHandler(self),
-            RedirectHandler(self),
-            ShowHandler(self),
-            ErrorHandler(self),  # Final fallback for 404/405
-        ]
-
-        for handler in handlers:
-            if handler.can_handle():
-                handler.handle()
+        for handler in self.handlers:
+            if handler.can_handle(self):
+                handler.handle(self)
                 break
 
     def error_response(

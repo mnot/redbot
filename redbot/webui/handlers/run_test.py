@@ -13,7 +13,7 @@ import thor.events
 from markupsafe import escape
 
 from redbot.resource import HttpResource
-from redbot.type import RawHeaderListType, StrHeaderListType
+from redbot.type import RawHeaderListType, StrHeaderListType, RedWebUiProtocol
 from redbot.webui.captcha import CaptchaHandler
 from redbot.webui.handlers.base import RequestHandler
 from redbot.webui.ratelimit import ratelimiter
@@ -36,40 +36,42 @@ class RunTestHandler(RequestHandler):
     executes the HTTP test and streams the results.
     """
 
-    def can_handle(self) -> bool:
+    @classmethod
+    def can_handle(cls, ui: RedWebUiProtocol) -> bool:
         """
         Determine if this handler should process the request.
 
         Handles POST requests with 'uri' in query string.
         """
         return (
-            self.ui.method == "POST"
-            and len(self.ui.path) > 0
-            and self.ui.path[0] == "check"
-            and "uri" in self.ui.query_string
+            ui.method == "POST"
+            and len(ui.path) > 0
+            and ui.path[0] == "check"
+            and "uri" in ui.query_string
         )
 
-    def handle(self) -> None:
+    @classmethod
+    def handle(cls, ui: RedWebUiProtocol) -> None:
         """
         Handle the test execution request.
 
         Performs validation, creates the resource and formatter,
         then executes the test with proper rate limiting and captcha checks.
         """
-        test_id = init_save_file(self.ui)
-        test_uri = self.ui.query_string.get("uri", [""])[0]
+        test_id = init_save_file(ui)
+        test_uri = ui.query_string.get("uri", [""])[0]
         test_req_hdrs: StrHeaderListType = [
             cast(Tuple[str, str], tuple(h.split(":", 1)))
-            for h in self.ui.query_string.get("req_hdr", [])
+            for h in ui.query_string.get("req_hdr", [])
             if ":" in h
         ]
-        descend = "descend" in self.ui.query_string
+        descend = "descend" in ui.query_string
 
-        top_resource = HttpResource(self.ui.config, descend=descend)
+        top_resource = HttpResource(ui.config, descend=descend)
         top_resource.set_request(test_uri, headers=test_req_hdrs)
-        format_ = self.ui.query_string.get("format", ["html"])[0]
+        format_ = ui.query_string.get("format", ["html"])[0]
 
-        check_name = self.ui.query_string.get("check_name", [""])[0]
+        check_name = ui.query_string.get("check_name", [""])[0]
 
         check_title = check_name
         for check in active_checks:
@@ -78,26 +80,26 @@ class RunTestHandler(RequestHandler):
                 break
 
         formatter = find_formatter(format_, "html", descend)(
-            self.ui.config,
+            ui.config,
             top_resource,
-            self.ui.output,
+            ui.output,
             {
                 "allow_save": test_id,
                 "is_saved": False,
                 "test_id": test_id,
                 "descend": descend,
-                "nonce": self.ui.nonce,
-                "locale": self.ui.locale,
-                "link_generator": self.ui.link_generator,
+                "nonce": ui.nonce,
+                "locale": ui.locale,
+                "link_generator": ui.link_generator,
                 "check_name": check_title or check_name,
             },
         )
-        continue_test = partial(self._continue_test, top_resource, formatter)
-        timeout_error = partial(self.ui.timeout_error, formatter)
-        update_wrapper(timeout_error, self.ui.timeout_error)
+        continue_test = partial(cls._continue_test, ui, top_resource, formatter)
+        timeout_error = partial(ui.timeout_error, formatter)
+        update_wrapper(timeout_error, ui.timeout_error)
 
-        self.ui.timeout = thor.schedule(
-            int(self.ui.config.get("max_runtime", "60")),
+        ui.timeout = thor.schedule(
+            int(ui.config.get("max_runtime", "60")),
             timeout_error,
             top_resource.show_task_map,
         )
@@ -112,7 +114,7 @@ class RunTestHandler(RequestHandler):
         if len(referers) > 1:
             referer_error = "Multiple referers not allowed."
 
-        config_spam_domains = self.ui.config.get("referer_spam_domains") or ""
+        config_spam_domains = ui.config.get("referer_spam_domains") or ""
         referer_spam_domains = [i.strip() for i in config_spam_domains.split()]
         if (
             referer_spam_domains
@@ -122,28 +124,30 @@ class RunTestHandler(RequestHandler):
             referer_error = "Referer not allowed."
 
         if referer_error:
-            self.ui.error_response(b"403", b"Forbidden", referer_error)
+            ui.error_response(b"403", b"Forbidden", referer_error)
             return
 
         # enforce client limits
         try:
-            ratelimiter.process(self.ui, test_uri, self.ui.error_response)
+            ratelimiter.process(ui, test_uri, ui.error_response)
         except ValueError:
             return  # over limit, don't continue.
 
         # Captcha
         captcha = CaptchaHandler(
-            self.ui,
+            ui,
             continue_test,
-            self.ui.error_response,
+            ui.error_response,
         )
         if captcha.configured():
             captcha.run()
         else:
             continue_test()
 
+    @classmethod
     def _continue_test(
-        self,
+        cls,
+        ui: RedWebUiProtocol,
         top_resource: HttpResource,
         formatter: "Formatter",
         extra_headers: Optional[RawHeaderListType] = None,
@@ -155,14 +159,14 @@ class RunTestHandler(RequestHandler):
 
         @thor.events.on(formatter)
         def formatter_done() -> None:
-            if self.ui.timeout:
-                self.ui.timeout.delete()
-                self.ui.timeout = None
-            self.ui.exchange.response_done([])
-            save_test(self.ui, top_resource)
+            if ui.timeout:
+                ui.timeout.delete()
+                ui.timeout = None
+            ui.exchange.response_done([])
+            save_test(ui, top_resource)
 
             # log excessive traffic
-            log_traffic = self.ui.config.getint("log_traffic", None)
+            log_traffic = ui.config.getint("log_traffic", None)
             if log_traffic:
                 ti = sum(
                     [i.transfer_in for i, t in top_resource.linked],
@@ -174,35 +178,35 @@ class RunTestHandler(RequestHandler):
                 )
                 if ti + to > log_traffic * 1024:
 
-                    self.ui.error_log(
+                    ui.error_log(
                         f"{ti / 1024:n}K in "
                         f"{to / 1024:n}K out "
                         f"for <{e_url(str(top_resource.request.uri))}> "
                     )
 
         # Stop the resource if the client disconnects
-        @thor.events.on(cast(thor.events.EventEmitter, self.ui.exchange))
+        @thor.events.on(cast(thor.events.EventEmitter, ui.exchange))
         def close() -> None:
             top_resource.stop()
 
-        self.ui.exchange.response_start(
+        ui.exchange.response_start(
             b"200",
             b"OK",
             [
                 (b"Content-Type", formatter.content_type()),
                 (
                     b"Content-Security-Policy",
-                    (f"script-src 'strict-dynamic' 'nonce-{self.ui.nonce}'").encode(
+                    (f"script-src 'strict-dynamic' 'nonce-{ui.nonce}'").encode(
                         "ascii"
                     ),
                 ),
-                (b"Content-Language", self.ui.locale.encode("ascii")),
+                (b"Content-Language", ui.locale.encode("ascii")),
                 (b"Vary", b"Accept-Language"),
             ]
             + extra_headers,
         )
-        if "check_name" in self.ui.query_string:
-            check_name = self.ui.query_string.get("check_name", [""])[0]
+        if "check_name" in ui.query_string:
+            check_name = ui.query_string.get("check_name", [""])[0]
             display_resource = cast(
                 HttpResource, top_resource.subreqs.get(check_name, top_resource)
             )
@@ -211,11 +215,13 @@ class RunTestHandler(RequestHandler):
         formatter.bind_resource(display_resource)
         top_resource.check()
 
-    def render_link(self, absolute: bool = False, **kwargs: str) -> str:
+    @classmethod
+    def render_link(cls, ui: RedWebUiProtocol, absolute: bool = False, **kwargs: str) -> str:
         """
         Generate a URI for running a test.
 
         Args:
+            ui: The WebUI instance
             absolute: If True, return absolute URI
             **kwargs: Supported keys:
                 - uri (str): URI to test
@@ -227,7 +233,7 @@ class RunTestHandler(RequestHandler):
         Returns:
             URI for the test endpoint
         """
-        base_uri = self.get_base_uri(absolute)
+        base_uri = cls.get_base_uri(ui, absolute)
         params = []
         if "uri" in kwargs:
             params.append(("uri", kwargs["uri"]))
@@ -247,8 +253,10 @@ class RunTestHandler(RequestHandler):
 
         return f"{base_uri}check?{urlencode(params)}"
 
+    @classmethod
     def render_form(
-        self,
+        cls,
+        ui: RedWebUiProtocol,
         link_text: str = "Test",
         headers: Optional[List[str]] = None,
         **kwargs: Any,
@@ -257,6 +265,7 @@ class RunTestHandler(RequestHandler):
         Generate an HTML form for running a test.
 
         Args:
+            ui: The WebUI instance
             link_text: Text for the submit button
             headers: List of headers as "Name:Value" strings
             **kwargs: Supported keys:
@@ -270,7 +279,7 @@ class RunTestHandler(RequestHandler):
         Returns:
             HTML form string
         """
-        base_uri = self.get_base_uri()
+        base_uri = cls.get_base_uri(ui)
         title = kwargs.get("title", "")
         uri = kwargs.get("uri", "")
         css_class = kwargs.get("css_class", "")

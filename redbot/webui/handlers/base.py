@@ -26,10 +26,8 @@ class RequestHandler(ABC):
     3. Generating URIs and HTML forms for accessing the handler
     """
 
-    def __init__(self, ui: RedWebUiProtocol) -> None:
-        self.ui = ui
-
-    def get_base_uri(self, absolute: bool = False) -> str:
+    @classmethod
+    def get_base_uri(cls, ui: RedWebUiProtocol, absolute: bool = False) -> str:
         """
         Get the base URI for links.
 
@@ -38,7 +36,7 @@ class RequestHandler(ABC):
 
         The returned string is always terminated by '/'.
         """
-        ui_uri = self.ui.config.get("ui_uri", "")
+        ui_uri = ui.config.get("ui_uri", "")
         if not ui_uri.endswith("/"):
             ui_uri += "/"
 
@@ -46,8 +44,9 @@ class RequestHandler(ABC):
             return ui_uri
         return urlparse(ui_uri).path
 
+    @classmethod
     @abstractmethod
-    def can_handle(self) -> bool:
+    def can_handle(cls, ui: RedWebUiProtocol) -> bool:
         """
         Determine if this handler should process the request.
 
@@ -57,20 +56,22 @@ class RequestHandler(ABC):
             True if this handler should process the request, False otherwise
         """
 
+    @classmethod
     @abstractmethod
-    def handle(self) -> None:
+    def handle(cls, ui: RedWebUiProtocol) -> None:
         """
         Handle the request and generate a response.
 
         This method is responsible for:
         - Processing the request
         - Generating appropriate response headers and body
-        - Calling self.ui.exchange.response_start(), self.ui.output(), and
-          self.ui.exchange.response_done()
+        - Calling ui.exchange.response_start(), ui.output(), and
+          ui.exchange.response_done()
         """
 
+    @classmethod
     @abstractmethod
-    def render_link(self, **kwargs: Any) -> str:
+    def render_link(cls, ui: RedWebUiProtocol, **kwargs: Any) -> str:
         """
         Generate a URI for this handler.
 
@@ -78,6 +79,7 @@ class RequestHandler(ABC):
         parameters required. It uses the `ui_uri` from the configuration.
 
         Args:
+            ui: The WebUI instance
             **kwargs: Arguments for the link (handler-specific)
 
         Returns:
@@ -85,7 +87,8 @@ class RequestHandler(ABC):
         """
         raise NotImplementedError
 
-    def render_form(self, **kwargs: Any) -> str:
+    @classmethod
+    def render_form(cls, ui: RedWebUiProtocol, **kwargs: Any) -> str:
         """
         Generate an HTML form for accessing this handler.
 
@@ -94,6 +97,7 @@ class RequestHandler(ABC):
         return a complete HTML <form> element.
 
         Args:
+            ui: The WebUI instance
             **kwargs: Handler-specific parameters for the form
 
         Returns:

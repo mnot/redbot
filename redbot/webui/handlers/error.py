@@ -7,6 +7,7 @@ This module provides a fallback handler for unsupported methods (405) and unknow
 from typing import TYPE_CHECKING
 
 from redbot.webui.handlers.base import RequestHandler
+from redbot.type import RedWebUiProtocol
 
 if TYPE_CHECKING:
     from redbot.webui import RedWebUi
@@ -20,7 +21,8 @@ class ErrorHandler(RequestHandler):
     and returns appropriate error responses.
     """
 
-    def can_handle(self) -> bool:
+    @classmethod
+    def can_handle(cls, ui: RedWebUiProtocol) -> bool:
         """
         Determine if this handler should process the request.
 
@@ -29,7 +31,8 @@ class ErrorHandler(RequestHandler):
         """
         return True  # Always matches as the final fallback
 
-    def handle(self) -> None:
+    @classmethod
+    def handle(cls, ui: RedWebUiProtocol) -> None:
         """
         Handle the error by returning 405 or 404 as appropriate.
 
@@ -38,13 +41,14 @@ class ErrorHandler(RequestHandler):
         """
         # Get the HTTP method from the request
         # For now, we'll treat everything as 404 since we're the final fallback
-        self.ui.error_response(
+        ui.error_response(
             b"404",
             b"Not Found",
             "The requested resource was not found",
         )
 
-    def render_link(self, **kwargs: str) -> str:
+    @classmethod
+    def render_link(cls, ui: RedWebUiProtocol, **kwargs: str) -> str:
         """
         Error handler doesn't generate links.
 
@@ -53,7 +57,8 @@ class ErrorHandler(RequestHandler):
         """
         return ""
 
-    def render_form(self, **kwargs: str) -> str:
+    @classmethod
+    def render_form(cls, ui: RedWebUiProtocol, **kwargs: str) -> str:
         """
         Error handler doesn't generate forms.
 

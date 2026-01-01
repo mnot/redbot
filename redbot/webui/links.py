@@ -24,8 +24,8 @@ class WebUiLinkGenerator:
 
     def save_form(self, test_id: str, descend: bool = False) -> str:
         """Generate a form to save a test."""
-        return SaveHandler(self.ui).render_form(
-            id=test_id, descend="True" if descend else ""
+        return SaveHandler.render_form(
+            self.ui, id=test_id, descend="True" if descend else ""
         )
 
     def load_link(
@@ -36,7 +36,8 @@ class WebUiLinkGenerator:
         descend: bool = False,
     ) -> str:
         """Generate a link to load a saved test."""
-        return LoadSavedTestHandler(self.ui).render_link(
+        return LoadSavedTestHandler.render_link(
+            self.ui,
             test_id=test_id,
             output_format=output_format,
             check_name=check_name,
@@ -45,11 +46,11 @@ class WebUiLinkGenerator:
 
     def client_error_link(self) -> str:
         """Generate a link for client error reporting."""
-        return ClientErrorHandler(self.ui).render_link()
+        return ClientErrorHandler.render_link(self.ui)
 
     def home_link(self, absolute: bool = False) -> str:
         """Generate a link to the home page."""
-        return ShowHandler(self.ui).render_link(absolute=absolute)
+        return ShowHandler.render_link(self.ui, absolute=absolute)
 
     def test_form(
         self,
@@ -63,7 +64,8 @@ class WebUiLinkGenerator:
         title: str = "",
     ) -> str:
         """Generate a form for running a test."""
-        return RunTestHandler(self.ui).render_form(
+        return RunTestHandler.render_form(
+            self.ui,
             link_text=link_value,
             headers=headers,
             uri=uri,
