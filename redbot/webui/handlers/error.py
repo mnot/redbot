@@ -42,7 +42,6 @@ class ErrorHandler(RequestHandler):
             b"404",
             b"Not Found",
             "The requested resource was not found",
-            log_message="404",
         )
 
     def render_link(self, **kwargs: str) -> str:
