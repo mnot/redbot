@@ -28,19 +28,13 @@ class ShowHandler(RequestHandler):
     def can_handle(self) -> bool:
         """
         Determine if this handler should process the request.
-
-        Handles requests that don't have specific actions
-        (no 'uri', 'id', 'save', or 'client_error').
         """
-        # Show the form when no specific action is requested
-        query_string = self.ui.query_string
         return (
             self.ui.method in ["GET", "HEAD"]
-            and self.ui.path == []
-            and "uri" not in query_string
-            and "id" not in query_string
-            and "save" not in query_string
-            and "client_error" not in query_string
+            and (
+                self.ui.path == []
+                or self.ui.path[0] == "check"
+            )
         )
 
     def handle(self) -> None:
