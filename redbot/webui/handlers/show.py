@@ -179,7 +179,7 @@ class RedirectHandler(RequestHandler):
         uri = self.ui.query_string.get("uri", [""])[0]
         params = [("uri", uri)]
         location = f"{base_uri}check?{urlencode(params)}"
-        
+
         self.ui.exchange.response_start(
             b"303", b"See Other", [(b"Location", location.encode("ascii"))]
         )

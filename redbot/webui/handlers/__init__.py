@@ -10,7 +10,6 @@ from redbot.webui.handlers.error import ErrorHandler
 from redbot.webui.handlers.run_test import RunTestHandler
 from redbot.webui.handlers.save import SaveHandler, LoadSavedTestHandler
 from redbot.webui.handlers.show import ShowHandler, RedirectHandler
-from redbot.webui.handlers.error import ErrorHandler
 
 __all__ = [
     "SaveHandler",
