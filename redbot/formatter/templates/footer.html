@@ -6,7 +6,7 @@
             <a href="https://REDbot.org/about/">{{ _("about") }}</a> |
             <span class="js"><a href="#help" id="help"><strong>{{ _("help") }}</strong></a> |</span>
             <span class="help hidden">{{ _("Drag the bookmarklet to your bookmark bar - it makes checking easy!") }}</span>
-            <a class="js" href="javascript:(function(){window.open('{{ baseuri }}?uri='+encodeURIComponent(location))})();"
+            <a class="js" href="javascript:(function(){window.open('{{ baseuri }}check?uri='+encodeURIComponent(location))})();"
                 title="{{ _('drag me to your toolbar to use REDbot any time.') }}">REDbot</a> {{ _("bookmarklet") }}
         </p>
 
