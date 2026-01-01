@@ -28,7 +28,11 @@ class ClientErrorHandler(RequestHandler):
 
         Handles POST requests with 'client_error' in query string.
         """
-        return self.ui.method == "POST" and self.ui.path[0] == "client_error"
+        return (
+            self.ui.method == "POST"
+            and len(self.ui.path) > 0
+            and self.ui.path[0] == "client_error"
+        )
 
     def handle(self) -> None:
         """
