@@ -149,6 +149,19 @@ class BasicWebUiTest(unittest.TestCase):
         self.check_complete()
         self.assertIn("Last-Modified Validation response", self.page.locator("h1").text_content() or "")
 
+    def test_bookmarklet_redirect(self):
+        # Visit the root with a URI parameter (old bookmarklet style)
+        response = self.page.goto(f"{redbot_uri}?uri={self.test_uri}", wait_until="load")
+        
+        # Should redirect to /check
+        self.assertIn("/check", self.page.url)
+        self.assertTrue(response.ok)
+        
+        # Should verify the page loaded and ran the check
+        self.check_complete()
+        # The page title usually contains the URI or some indication
+        self.assertIn("REDbot", self.page.title())
+
     def check_complete(self):
         try:
             footer = self.page.locator("div.footer")

@@ -27,6 +27,7 @@ from redbot.webui.handlers import (
     ClientErrorHandler,
     RunTestHandler,
     ShowHandler,
+    RedirectHandler,
     ErrorHandler,
 )
 from redbot.webui.saved_tests import init_save_file, save_test
@@ -118,6 +119,7 @@ class RedWebUi:
             LoadSavedTestHandler(self),
             ClientErrorHandler(self),
             RunTestHandler(self),
+            RedirectHandler(self),
             ShowHandler(self),
             ErrorHandler(self),  # Final fallback for 404/405
         ]

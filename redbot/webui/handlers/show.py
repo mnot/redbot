@@ -152,3 +152,42 @@ class ShowHandler(RequestHandler):
             Empty string (the page itself contains the form)
         """
         return ""
+
+class RedirectHandler(RequestHandler):
+    """
+    Handler for redirecting legacy bookmarklets.
+    
+    This handler responds to GET/HEAD requests with 'uri' in the query string
+    at the root path, redirecting them to the check handler.
+    """
+
+    def can_handle(self) -> bool:
+        """
+        Determine if this handler should process the request.
+        """
+        return (
+            self.ui.method in ["GET", "HEAD"]
+            and self.ui.path == []
+            and "uri" in self.ui.query_string
+        )
+
+    def handle(self) -> None:
+        """
+        Handle the redirect request.
+        """
+        base_uri = self.get_base_uri()
+        uri = self.ui.query_string.get("uri", [""])[0]
+        params = [("uri", uri)]
+        location = f"{base_uri}check?{urlencode(params)}"
+        
+        self.ui.exchange.response_start(
+            b"303", b"See Other", [(b"Location", location.encode("ascii"))]
+        )
+        self.ui.output("Redirecting to the validation page...")
+        self.ui.exchange.response_done([])
+
+    def render_link(self, **kwargs: Any) -> str:
+        """
+        No link generation needed.
+        """
+        return ""

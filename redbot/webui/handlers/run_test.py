@@ -43,7 +43,7 @@ class RunTestHandler(RequestHandler):
         Handles POST requests with 'uri' in query string.
         """
         return (
-            self.ui.method == "POST"
+            self.ui.method in ["GET", "POST"]
             and len(self.ui.path) > 0
             and self.ui.path[0] == "check"
             and "uri" in self.ui.query_string
