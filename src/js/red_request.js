@@ -1,6 +1,6 @@
 /* global alert */
 
-import { qs, escapeHtml, config } from './red_util.js'
+import { qs, qsa, escapeHtml, config, docReady } from './red_util.js'
 
 const knownReqHdrs = {
   'Accept-Language': ['', 'en', 'en-us', 'en-uk', 'fr'],
@@ -241,3 +241,53 @@ qs('#request_form').appendChild(addButton)
 qs('#add_req_hdr').onclick = function () {
   addReqHdr()
 }
+
+/* handle 'copy cookies' button */
+docReady(function () {
+  const setCookieHdrs = []
+  qsa("span.hdr[data-name='set-cookie']", function (element) {
+    setCookieHdrs.push(element)
+  })
+
+  if (setCookieHdrs.length > 0) {
+    const addButton = qs('.add_req_hdr')
+    if (addButton) {
+      const copyLink = document.createElement('a')
+      copyLink.href = '#'
+      copyLink.id = 'copy_cookies'
+      copyLink.appendChild(document.createTextNode('copy cookies to request'))
+      addButton.appendChild(copyLink)
+
+      copyLink.onclick = function (e) {
+        e.preventDefault()
+        /* remove existing cookies */
+        qsa('.req_hdr', function (element) {
+          const hdrName = qs('.hdr_name', element).getAttribute('data-name')
+          if (hdrName && hdrName.toLowerCase() === 'cookie') {
+            qs('.delete_req_hdr', element).click() // trigger delete click
+          }
+        })
+        setCookieHdrs.forEach(function (element) {
+          const fullText = element.textContent
+          const colonIndex = fullText.indexOf(':')
+          if (colonIndex > -1) {
+            const val = fullText.substring(colonIndex + 1).trim()
+            const parts = val.split(';')
+            if (parts.length > 0) {
+              let cookiePair = parts[0].trim()
+              const eqIndex = cookiePair.indexOf('=')
+              if (eqIndex > -1) {
+                const name = cookiePair.substring(0, eqIndex).trim().replace(/\s+/g, '')
+                const value = cookiePair.substring(eqIndex + 1).trim().replace(/\s+/g, '')
+                cookiePair = `${name}=${value}`
+              } else {
+                cookiePair = cookiePair.replace(/\s+/g, '')
+              }
+              addReqHdr('Cookie', cookiePair)
+            }
+          }
+        })
+      }
+    }
+  }
+})

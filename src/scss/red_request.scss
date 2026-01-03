@@ -101,3 +101,10 @@ option[value="other..."] {
   margin-left: 0.75em;
   font-weight: normal;
 }
+
+#copy_cookies {
+  @extend #add_req_hdr;
+  float: right;
+  margin-right: 2em;
+  margin-left: 0;
+}
