@@ -314,7 +314,7 @@ input#go {
   margin: 0;
 }
 
-#add_req_hdr, .delete_req_hdr {
+#add_req_hdr, #copy_cookies, .delete_req_hdr {
   font-size: 0.65em;
   margin-left: 2em;
   color: white;
@@ -354,6 +354,12 @@ option[value="other..."] {
   font-size: 75%;
   margin-left: 0.75em;
   font-weight: normal;
+}
+
+#copy_cookies {
+  float: right;
+  margin-right: 2em;
+  margin-left: 0;
 }
 
 /* response detail */
