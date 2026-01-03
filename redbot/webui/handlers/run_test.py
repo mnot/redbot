@@ -196,9 +196,7 @@ class RunTestHandler(RequestHandler):
                 (b"Content-Type", formatter.content_type()),
                 (
                     b"Content-Security-Policy",
-                    (f"script-src 'strict-dynamic' 'nonce-{ui.nonce}'").encode(
-                        "ascii"
-                    ),
+                    (f"script-src 'strict-dynamic' 'nonce-{ui.nonce}'").encode("ascii"),
                 ),
                 (b"Content-Language", ui.locale.encode("ascii")),
                 (b"Vary", b"Accept-Language"),
@@ -216,7 +214,9 @@ class RunTestHandler(RequestHandler):
         top_resource.check()
 
     @classmethod
-    def render_link(cls, ui: RedWebUiProtocol, absolute: bool = False, **kwargs: str) -> str:
+    def render_link(
+        cls, ui: RedWebUiProtocol, absolute: bool = False, **kwargs: str
+    ) -> str:
         """
         Generate a URI for running a test.
 

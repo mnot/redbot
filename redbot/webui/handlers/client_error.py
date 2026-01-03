@@ -30,11 +30,7 @@ class ClientErrorHandler(RequestHandler):
 
         Handles POST requests with 'client_error' in query string.
         """
-        return (
-            ui.method == "POST"
-            and len(ui.path) > 0
-            and ui.path[0] == "client_error"
-        )
+        return ui.method == "POST" and len(ui.path) > 0 and ui.path[0] == "client_error"
 
     @classmethod
     def handle(cls, ui: RedWebUiProtocol) -> None:
@@ -60,7 +56,9 @@ class ClientErrorHandler(RequestHandler):
         ui.exchange.response_done([])
 
     @classmethod
-    def render_link(cls, ui: RedWebUiProtocol, absolute: bool = False, **kwargs: str) -> str:
+    def render_link(
+        cls, ui: RedWebUiProtocol, absolute: bool = False, **kwargs: str
+    ) -> str:
         """
         Generate a URI for reporting client errors.
 

@@ -30,13 +30,7 @@ class ShowHandler(RequestHandler):
         """
         Determine if this handler should process the request.
         """
-        return (
-            ui.method in ["GET", "HEAD"]
-            and (
-                ui.path == []
-                or ui.path[0] == "check"
-            )
-        )
+        return ui.method in ["GET", "HEAD"] and (ui.path == [] or ui.path[0] == "check")
 
     @classmethod
     def handle(cls, ui: RedWebUiProtocol) -> None:
@@ -88,9 +82,7 @@ class ShowHandler(RequestHandler):
                 (b"Cache-Control", b"max-age=5"),
                 (
                     b"Content-Security-Policy",
-                    f"script-src 'strict-dynamic' 'nonce-{ui.nonce}'".encode(
-                        "ascii"
-                    ),
+                    f"script-src 'strict-dynamic' 'nonce-{ui.nonce}'".encode("ascii"),
                 ),
                 (b"Content-Language", ui.locale.encode("ascii")),
                 (b"Vary", b"Accept-Language"),
@@ -153,10 +145,11 @@ class ShowHandler(RequestHandler):
         """
         return ""
 
+
 class RedirectHandler(RequestHandler):
     """
     Handler for redirecting legacy bookmarklets.
-    
+
     This handler responds to GET/HEAD requests with 'uri' in the query string
     at the root path, redirecting them to the check handler.
     """
@@ -167,9 +160,7 @@ class RedirectHandler(RequestHandler):
         Determine if this handler should process the request.
         """
         return (
-            ui.method in ["GET", "HEAD"]
-            and ui.path == []
-            and "uri" in ui.query_string
+            ui.method in ["GET", "HEAD"] and ui.path == [] and "uri" in ui.query_string
         )
 
     @classmethod

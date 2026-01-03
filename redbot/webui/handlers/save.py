@@ -39,11 +39,7 @@ class SaveHandler(RequestHandler):
 
         Handles POST requests with 'save' and 'id' in query string.
         """
-        return (
-            ui.method == "POST"
-            and len(ui.path) == 2
-            and ui.path[0] == "saved"
-        )
+        return ui.method == "POST" and len(ui.path) == 2 and ui.path[0] == "saved"
 
     @classmethod
     def handle(cls, ui: RedWebUiProtocol) -> None:
@@ -74,16 +70,13 @@ class SaveHandler(RequestHandler):
                 os.path.join(state_dir, test_id),
                 (
                     now,
-                    now
-                    + (ui.config.getint("save_days", fallback=30) * 24 * 60 * 60),
+                    now + (ui.config.getint("save_days", fallback=30) * 24 * 60 * 60),
                 ),
             )
 
             # Build redirect location
             location = LoadSavedTestHandler.render_link(
-                ui,
-                test_id,
-                descend="descend" in ui.query_string
+                ui, test_id, descend="descend" in ui.query_string
             )
 
             ui.exchange.response_start(
@@ -150,9 +143,7 @@ class LoadSavedTestHandler(RequestHandler):
         Handles GET/HEAD requests with 'id' in query string.
         """
         return (
-            ui.method in ["GET", "HEAD"]
-            and len(ui.path) == 2
-            and ui.path[0] == "saved"
+            ui.method in ["GET", "HEAD"] and len(ui.path) == 2 and ui.path[0] == "saved"
         )
 
     @classmethod
