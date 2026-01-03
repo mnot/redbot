@@ -30,6 +30,7 @@ dependencies = [
     "thor >= 0.12.5",
     "typing-extensions >= 4.8.0",
     "Babel >= 2.14.0",
+    "tinycss2 >= 1.3.0",
 ]
 
 [project.urls]
