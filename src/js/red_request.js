@@ -15,9 +15,6 @@ const knownReqHdrs = {
 }
 
 const redReqHdrs = [
-  'accept-encoding',
-  'if-modified-since',
-  'if-none-match',
   'connection',
   'transfer-encoding',
   'content-length'

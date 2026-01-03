@@ -36,6 +36,15 @@ class LmValidate(SubRequest):
         "Nov",
         "Dec",
     ]
+    _validate_hdrs = set(
+        [
+            "if-modified-since",
+            "if-none-match",
+            "if-match",
+            "if-range",
+            "if-unmodified-since",
+        ]
+    )
 
     def modify_request_headers(
         self, base_headers: StrHeaderListType
@@ -57,6 +66,10 @@ class LmValidate(SubRequest):
         return base_headers
 
     def preflight(self) -> bool:
+        if self._validate_hdrs.intersection(
+            [k.lower() for (k, v) in self.base.request.headers.text]
+        ):
+            return False
         if (
             self.base.response.status_code
             and 300 <= self.base.response.status_code <= 399

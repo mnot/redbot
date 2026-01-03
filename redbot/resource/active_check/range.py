@@ -51,6 +51,8 @@ class RangeRequest(SubRequest):
         return base_headers
 
     def preflight(self) -> bool:
+        if "range" in [k.lower() for (k, v) in self.base.request.headers.text]:
+            return False
         if (
             self.base.response.status_code
             and 300 <= self.base.response.status_code <= 399
