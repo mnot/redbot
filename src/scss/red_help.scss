@@ -1,11 +1,13 @@
+@use "red_vars";
+
 /* help bubbles */
 /* http://konigi.com/tools/css-sticky-notes */
 
 .help {
   position: absolute;
-  background-color: $help_bg_colour;
-  border-color: $help_border_colour;
-  color: $help_text_colour;
+  background-color: red_vars.$help_bg_colour;
+  border-color: red_vars.$help_border_colour;
+  color: red_vars.$help_text_colour;
   text-align: center;
   margin: 3.5em 0 2.5em 0;
   padding: 1.25em 1em;
@@ -16,7 +18,7 @@
 }
 
 .help.right {
-  margin: $vertical_space 0 2.5em 290px;
+  margin: red_vars.$vertical_space 0 2.5em 290px;
 }
 
 .help:after {

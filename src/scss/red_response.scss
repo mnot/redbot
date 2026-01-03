@@ -1,11 +1,14 @@
+@use "red_mixins";
+@use "red_vars";
+
 /* response detail */
 
 #response {
   font-size: 10pt;
   font-family: Courier, monospace;
-  background-color: $console_colour;
-  color: $header_colour;
-  @include rounded_corners(0.75em);
+  background-color: red_vars.$console_colour;
+  color: red_vars.$header_colour;
+  @include red_mixins.rounded_corners(0.75em);
   border: 1px solid black; // Border stays black or use a dark var? #000 is fine for console look.
   padding: 1em 1.5em;
   margin-bottom: 0;
@@ -13,18 +16,18 @@
 
   a,
   .post_link {
-    color: $link_in_box_colour;
+    color: red_vars.$link_in_box_colour;
   }
 }
 
 .nonfinal_response {
   @extend #response;
-  background-color: color-mix(in srgb, $console_colour, transparent 40%);
+  background-color: color-mix(in srgb, red_vars.$console_colour, transparent 40%);
   border: none;
 }
 
 .hdr.hilight {
-  color: $header_hilight_colour;
+  color: red_vars.$header_hilight_colour;
   font-weight: bold;
 }
 
@@ -39,7 +42,7 @@
   padding-right: 2em;
   display: inline;
   font-size: 0.75em;
-  color: $option_colour; // Implicitly need this? Original didn't specify color.
+  color: red_vars.$option_colour; // Implicitly need this? Original didn't specify color.
   // But red_style.css showed .option had no specific color?
   // Wait, check red_style.css again. #style.css:300+.
   // .option inheritance from body?
@@ -59,9 +62,9 @@
     font: 0.80/1.00 Consolas, "Lucida Console", Monaco, monospace;
     overflow-x: auto;
     overflow-y: hidden;
-    background-color: $preview_bg;
-    @include rounded_corners(1em);
-    border: 1px solid $preview_border;
+    background-color: red_vars.$preview_bg;
+    @include red_mixins.rounded_corners(1em);
+    border: 1px solid red_vars.$preview_border;
     padding: 9px;
     width: 100%;
   }

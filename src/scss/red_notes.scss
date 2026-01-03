@@ -1,3 +1,5 @@
+@use "red_vars";
+
 /* note lists */
 
 ul {
@@ -52,33 +54,33 @@ li.note.hilight {
 }
 
 .good {
-  color: $good_text_colour;
+  color: red_vars.$good_text_colour;
 }
 
 li.good:before {
-  @include svg-bullet('icons/check-circle.svg', $good_colour);
+  @include svg-bullet('icons/check-circle.svg', red_vars.$good_colour);
 }
 
 .warning {
-  color: $warning_text_colour;
+  color: red_vars.$warning_text_colour;
 }
 
 li.warning:before {
-  @include svg-bullet('icons/exclamation-circle.svg', $warning_colour);
+  @include svg-bullet('icons/exclamation-circle.svg', red_vars.$warning_colour);
 }
 
 .bad {
-  color: $bad_text_colour;
+  color: red_vars.$bad_text_colour;
 }
 
 li.bad:before {
-  @include svg-bullet('icons/times-circle.svg', $bad_colour);
+  @include svg-bullet('icons/times-circle.svg', red_vars.$bad_colour);
 }
 
 .info {
-  color: $text_colour;
+  color: red_vars.$text_colour;
 }
 
 li.info:before {
-  @include svg-bullet('icons/info-circle.svg', $info_colour);
+  @include svg-bullet('icons/info-circle.svg', red_vars.$info_colour);
 }

@@ -1,12 +1,15 @@
+@use "red_mixins";
+@use "red_vars";
+
 /* summary table for multiple responses */
 
 table#summary {
   font-size: 0.8em;
   width: 100%;
   border-spacing: 0;
-  background-color: $console_colour;
+  background-color: red_vars.$console_colour;
   color: #ddd;
-  @include rounded_corners(1em);
+  @include red_mixins.rounded_corners(1em);
   border: 1px solid black;
   padding: 1em;
   margin-top: 1em;
@@ -35,7 +38,7 @@ table#summary {
 }
 
 table#summary a.fade {
-  color: $console_colour;
+  color: red_vars.$console_colour;
   background: linear-gradient(90deg, rgba(204,204,255,1) 0%, rgba(204,204,255,1) 93%, rgba(204,204,255,0) 100%);
   color:transparent;
   -webkit-background-clip: text;
@@ -47,15 +50,15 @@ table#summary a.fade {
 .yes img {
   fill: #94C594;
   filter: invert(80%) sepia(25%) saturate(395%) hue-rotate(71deg) brightness(89%) contrast(88%);
-  height: $icon_size;
+  height: red_vars.$icon_size;
 }
 .no img {
   fill: #D98080;
   filter: invert(89%) sepia(22%) saturate(4693%) hue-rotate(301deg) brightness(90%) contrast(86%);
-  height: $icon_size;
+  height: red_vars.$icon_size;
 }
 .maybe img {
   fill: #AA8A22;
   filter: invert(63%) sepia(66%) saturate(5879%) hue-rotate(29deg) brightness(105%) contrast(73%);
-  height: $icon_size;
+  height: red_vars.$icon_size;
 }

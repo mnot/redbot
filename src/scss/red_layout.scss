@@ -1,21 +1,24 @@
+@use "red_mixins";
+@use "red_vars";
+
 /* layout, major elements */
 
 body {
   --width: 650px;
-  background-color: $bg_colour;
-  color: $text_colour;
+  background-color: red_vars.$bg_colour;
+  color: red_vars.$text_colour;
   font: 12pt/14pt "Helvetica Neue", Helvetica, Arial, sans-serif;
-  margin: 1em $column_spacing;
+  margin: 1em red_vars.$column_spacing;
 
   &.blank {
-    margin: $vertical_space * 2 auto $vertical_space auto;
+    margin: red_vars.$vertical_space * 2 auto red_vars.$vertical_space auto;
     width: var(--width);
   }
 }
 
 #columns {
-  @include flexbox();
-  @include flex-flow(row wrap);
+  @include red_mixins.flexbox();
+  @include red_mixins.flex-flow(row wrap);
 }
 
 #left_column {
@@ -25,14 +28,14 @@ body {
 }
 
 #right_column {
-  @include order(1);
-  margin: 1em 0 0 $column_spacing;
+  @include red_mixins.order(1);
+  margin: 1em 0 0 red_vars.$column_spacing;
   padding: 0;
 }
 
 @media screen and (max-width: 650px) {
   body {
-    @include flex-flow(column wrap);
+    @include red_mixins.flex-flow(column wrap);
     --width: calc(100% - 4px);
   }
 
@@ -43,12 +46,12 @@ body {
 
 a,
 .post_link {
-  color: $link_colour;
+  color: red_vars.$link_colour;
   text-decoration: underline;
 }
 
 h1 {
-  color: $text_colour;
+  color: red_vars.$text_colour;
   padding: 0;
   margin: 10px 0px;
   font-size: 1.8em;
@@ -61,7 +64,7 @@ h1 {
     // Wait, #444 on dark bg is bad. I should use a variable.
     // $text_colour is #111/#ddd. h1 a is #444. Maybe $console_colour?
     // Let's try explicit variable or reuse.
-    color: $detail_text_colour; // #737373 / #aaa
+    color: red_vars.$detail_text_colour; // #737373 / #aaa
     text-decoration: none;
   }
 }
@@ -85,24 +88,24 @@ h3 {
 }
 
 .hilight {
-  color: $hilight_colour;
+  color: red_vars.$hilight_colour;
 }
 
 .save {
-  color: $detail_text_colour;
+  color: red_vars.$detail_text_colour;
 }
 
 .version {
-  @include centered-detail;
+  @include red_mixins.centered-detail;
   padding-top: 5em;
 }
 
 .navigation {
-  @include centered-detail;
+  @include red_mixins.centered-detail;
 }
 
 .btw {
-  @include centered-detail;
+  @include red_mixins.centered-detail;
   font-style: italic;
 }
 
@@ -115,16 +118,16 @@ abbr {
 }
 
 #red_status {
-  color: $detail_text_colour;
-  font-size: $detail_font_size;
+  color: red_vars.$detail_text_colour;
+  font-size: red_vars.$detail_font_size;
   margin-top: 1em;
-  @include centered-detail;
+  @include red_mixins.centered-detail;
   width: var(--width);
 }
 
 #final_status {
-  color: $detail_text_colour;
-  font-size: $detail_font_size;
+  color: red_vars.$detail_text_colour;
+  font-size: red_vars.$detail_font_size;
   position: absolute;
   top: 2em;
   right: 2em;
@@ -141,7 +144,7 @@ form.link input[type='submit'] {
   cursor: pointer;
   font-family: inherit;
   font-size: inherit;
-  color: $link_colour;
+  color: red_vars.$link_colour;
   text-decoration: underline;
   text-align: left;
 }
@@ -165,15 +168,15 @@ body.blank>.footer {
 }
 
 .news-banner {
-  color: $detail_text_colour;
+  color: red_vars.$detail_text_colour;
 }
 
 /* errors */
 
 .error {
-  color: $error_text_colour;
-  background-color: $error_bg_colour;
-  @include rounded_corners(0.5em);
+  color: red_vars.$error_text_colour;
+  background-color: red_vars.$error_bg_colour;
+  @include red_mixins.rounded_corners(0.5em);
   padding: 0.5em;
   font-weight: bold;
   font-size: 1.1em;
