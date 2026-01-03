@@ -28,13 +28,6 @@ Most message-level checks are performed by the [httplint](https://pypi.org/proje
 Checking a resource involves instantiating a new `HTTPResource` object, which is a subclass of `RedFetcher`. It's in charge of making all of the HTTP requests necessary to test that resource, and feeds the results into httplint's `HttpMessageLinter` objects that then checks various aspects of the messages, especially headers. If `descend` is true, the response will be parsed for links and `HTTPResource`s will be created for each of them. When it's all done, the "root" `HTTPResource` will be fed to a `Formatter` for presentation.
 
 
-### Coding conventions
-
-We use [black](https://pypi.org/project/black/) for Python formatting, and [standard](https://standardjs.com) for JavaScript; both can be run with `make tidy`.
-
-All Python functions and methods need to have type annotations. See `pyproject.toml` for specific pylint and mypy settings. `make typecheck` and `make lint` are the relevant make targets.
-
-
 ### Setting up a development environment
 
 It should be possible to develop REDbot on any modern Unix-like environment, provided that recent releases of Python and NodeJS are installed.
@@ -62,6 +55,7 @@ The best way to submit changes to REDbot is through a pull request. A few things
 * Check your code with `make lint` and address any issues found.
 * Check your code with `make typecheck` and address any issues found.
 * Every new header and every new `Note` should have a test covering it.
+* All user-visible strings should be internationalised; see `TRANSLATION.md`.
 
 If you're not sure how to dig in, feel free to ask for help, or sketch out an idea in an issue
 first.
