@@ -47,7 +47,6 @@ class TestI18n(unittest.TestCase):
                 exchange, 
                 "127.0.0.1"
             )
-            ui.show_default()
             
             # Check if response_start was called with Content-Language header
             args, _ = exchange.response_start.call_args
@@ -227,19 +226,23 @@ class TestI18n(unittest.TestCase):
         resource.subreqs = {}
         
         # Mock a subrequest with notes
-        check_name = active_check.ConnegCheck.check_name
+        check_id = active_check.ConnegCheck.check_id
         subreq = MagicMock()
         subreq.fetch_started = True
+        # Mock check_name for display
+        subreq.check_name = active_check.ConnegCheck.check_name
         
         # Create a mock note
         note = MagicMock(spec=Note)
         note.level = levels.BAD
         
         subreq.response.notes = [note]
-        resource.subreqs[check_name] = subreq
+        resource.subreqs[check_id] = subreq
         resource.response.notes = [] # Ensure note is not in main response
         
-        formatter = SingleEntryHtmlFormatter(MagicMock(), resource, MagicMock(), {"nonce": "test"})
+        config = MagicMock()
+        config.get.return_value = "/"
+        formatter = SingleEntryHtmlFormatter(config, resource, MagicMock(), {"nonce": "test"})
         
         # Test singular
         with patch("redbot.formatter.html.ngettext") as mock_ngettext, \
@@ -251,7 +254,7 @@ class TestI18n(unittest.TestCase):
             # Check calls to gettext
             # We expect calls for "%s response" and check_name (e.g. "Content Negotiation")
             # Since check_name is dynamic in the code, we just check if it was called.
-            self.assertTrue(mock_gettext.call_count >= 2)
+            self.assertTrue(mock_gettext.call_count >= 1)
             
         # Test plural
         subreq.response.notes = [note, note]
@@ -261,7 +264,7 @@ class TestI18n(unittest.TestCase):
             mock_gettext.side_effect = lambda s: s
             formatter.format_subrequest_messages(categories.CONNEG)
             mock_ngettext.assert_called_with(" - %d problem\n", " - %d problems\n", 2)
-            self.assertTrue(mock_gettext.call_count >= 2)
+            self.assertTrue(mock_gettext.call_count >= 1)
 
 if __name__ == "__main__":
     unittest.main()

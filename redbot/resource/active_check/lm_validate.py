@@ -18,6 +18,7 @@ class LmValidate(SubRequest):
     """
 
     check_name = _("Last-Modified Validation")
+    check_id = "lm_validate"
     response_phrase = _("The Last-Modified validation response")
     _weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     _months = [
@@ -35,6 +36,15 @@ class LmValidate(SubRequest):
         "Nov",
         "Dec",
     ]
+    _validate_hdrs = set(
+        [
+            "if-modified-since",
+            "if-none-match",
+            "if-match",
+            "if-range",
+            "if-unmodified-since",
+        ]
+    )
 
     def modify_request_headers(
         self, base_headers: StrHeaderListType
@@ -48,21 +58,18 @@ class LmValidate(SubRequest):
             except ValueError:
                 return base_headers  # this shouldn't really happen
             date_str = (
-                "%s, %.2d %s %.4d %.2d:%.2d:%.2d GMT"  # pylint: disable=consider-using-f-string
-                % (
-                    self._weekdays[l_m.weekday()],
-                    l_m.day,
-                    self._months[l_m.month],
-                    l_m.year,
-                    l_m.hour,
-                    l_m.minute,
-                    l_m.second,
-                )
+                f"{self._weekdays[l_m.weekday()]}, {l_m.day:02d} "
+                f"{self._months[l_m.month]} {l_m.year:04d} "
+                f"{l_m.hour:02d}:{l_m.minute:02d}:{l_m.second:02d} GMT"
             )
             base_headers.append(("If-Modified-Since", date_str))
         return base_headers
 
     def preflight(self) -> bool:
+        if self._validate_hdrs.intersection(
+            [k.lower() for (k, v) in self.base.request.headers.text]
+        ):
+            return False
         if (
             self.base.response.status_code
             and 300 <= self.base.response.status_code <= 399

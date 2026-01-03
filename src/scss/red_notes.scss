@@ -1,35 +1,47 @@
+@use "red_vars";
+
 /* note lists */
 
 ul {
   margin-top: 0.2em;
   margin-left: 12pt;
 }
+
 ul ul {
   padding-left: 9pt;
   margin-bottom: 0.4em;
 }
+
 li {
   padding-left: 4pt;
   margin-bottom: 6px;
 }
+
 li ul {
   margin-top: 5px;
 }
 
 /* note levels */
 
-@mixin svg-bullet {
-  // add background-image
-  // get a filter from https://codepen.io/sosuke/pen/Pjoqqp
+@mixin svg-bullet($url, $color) {
   position: absolute;
   display: block;
   content: '';
   left: -1.3em;
   width: 1em;
-  height: 1.1em; /* unrelated to image height; this is so it gets snipped */
-  background-repeat: no-repeat;
-  background-size: 1em;
-  background-position: 0 .1em;
+  height: 1.1em;
+
+  // Use mask to colorize the SVG
+  -webkit-mask-image: url($url);
+  mask-image: url($url);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 1em;
+  mask-size: 1em;
+  -webkit-mask-position: 0 .1em;
+  mask-position: 0 .1em;
+
+  background-color: $color;
 }
 
 li.note {
@@ -42,37 +54,33 @@ li.note.hilight {
 }
 
 .good {
-  color: #659365;
+  color: red_vars.$good_text_colour;
 }
+
 li.good:before {
-  @include svg-bullet;
-  background-image: url('icons/check-circle.svg');
-  filter: invert(51%) sepia(37%) saturate(361%) hue-rotate(71deg) brightness(96%) contrast(88%);
+  @include svg-bullet('icons/check-circle.svg', red_vars.$good_colour);
 }
 
 .warning {
-  color: #AA8A22;
+  color: red_vars.$warning_text_colour;
 }
+
 li.warning:before {
-  @include svg-bullet;
-  background-image: url('icons/exclamation-circle.svg');
-  filter: invert(50%) sepia(100%) saturate(343%) hue-rotate(8deg) brightness(90%) contrast(90%);
+  @include svg-bullet('icons/exclamation-circle.svg', red_vars.$warning_colour);
 }
 
 .bad {
-  color: #a64029;
+  color: red_vars.$bad_text_colour;
 }
+
 li.bad:before {
-  @include svg-bullet;
-  background-image: url('icons/times-circle.svg');
-  filter: invert(22%) sepia(64%) saturate(1739%) hue-rotate(345deg) brightness(104%) contrast(84%);
+  @include svg-bullet('icons/times-circle.svg', red_vars.$bad_colour);
 }
 
 .info {
-  color: $text_colour;
+  color: red_vars.$text_colour;
 }
+
 li.info:before {
-  @include svg-bullet;
-  background-image: url('icons/info-circle.svg');
-  filter: invert(35%) sepia(28%) saturate(2614%) hue-rotate(174deg) brightness(98%) contrast(88%);
+  @include svg-bullet('icons/info-circle.svg', red_vars.$info_colour);
 }

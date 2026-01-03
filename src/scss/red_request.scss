@@ -1,11 +1,14 @@
+@use "red_vars";
+
 /* request */
 
 input:focus {
   outline: 0;
 }
 
-input#uri, input#go {
-  border: 2px solid $input_colour;
+input#uri,
+input#go {
+  border: 2px solid red_vars.$input_colour;
   font-size: 1.1em;
   height: 30px;
   padding: 1px;
@@ -19,26 +22,40 @@ input#uri, input#go {
 
 input#uri {
   width: calc(var(--width) - 40px);
-  color: $text_colour;
+  color: red_vars.$input_text_colour; // Use $input_text_colour instead of $text_colour for inputs?
+  // Original was $text_colour. But inputs might need specific color on dark bg?
+  // I defined $input_text_colour in vars.
   border-right: none;
   padding-left: 0.5em;
   border-radius: 0.5em 0 0 0;
+  background-color: red_vars.$input_bg_colour;
+
+  // Default input bg is usually white/system.
+  // Redbot theme seems to assume system or inherited?
+  // red_style.css:300 input#uri { ... } no bg set.
+  // Inherits from nothing? Browser default is white.
+  // If I switch to dark mode, browser default input bg might be dark or light.
+  // I should probably set background-color explicitly to match theme or be transparent?
+  // Using `background-color: transparent` allows global bg to show, but input borders define it.
+  // Let's set `background-color: $bg_colour` or similar?
+  // Actually, I'll stick to replacing existing properties.
+  // Original: `color: $text_colour`. I'll use `$input_text_colour`.
   &::placeholder {
-    color: lighten($text_colour, 70%);
+    color: color-mix(in srgb, red_vars.$input_text_colour, transparent 70%);
   }
 }
 
 input#go {
   width: 40px;
   border-left: none;
-  background-color: #d33;
-  color: white;
+  background-color: red_vars.$hilight_colour;
+  color: red_vars.$hilight_text_colour;
   border-radius: 0 0.5em 0 0;
 }
 
 .add_req_hdr {
   border-radius: 0 0 0.5em 0.5em;
-  background-color: $input_colour;
+  background-color: red_vars.$input_colour;
   width: var(--width);
   margin: 0;
 }
@@ -46,7 +63,8 @@ input#go {
 #add_req_hdr {
   font-size: 0.65em;
   margin-left: 2em;
-  color: white;
+  color: white; // keep white if $input_colour (grey) is dark enough.
+  // In dark mode, $input_colour is #555. White text is fine.
   text-decoration: none;
 }
 
@@ -56,23 +74,27 @@ input#go {
 }
 
 .req_hdr {
-  background-color: $input_colour;
+  background-color: red_vars.$input_colour;
   width: var(--width);
   white-space: nowrap;
 }
 
-input.hdr_name, select.hdr_name {
+input.hdr_name,
+select.hdr_name {
   width: 130px;
   box-sizing: border-box;
+  color: red_vars.$input_text_colour; // Ensure inputs reuse text color var
 }
 
-input.hdr_val, select.hdr_val {
+input.hdr_val,
+select.hdr_val {
   width: calc(var(--width) - 130px - 40px);
   box-sizing: border-box;
+  color: red_vars.$input_text_colour;
 }
 
 option[value="other..."] {
-  color: $detail_text_colour;
+  color: red_vars.$option_colour;
   font-style: italic;
 }
 
@@ -82,3 +104,9 @@ option[value="other..."] {
   font-weight: normal;
 }
 
+#copy_cookies {
+  @extend #add_req_hdr;
+  float: right;
+  margin-right: 2em;
+  margin-left: 0;
+}

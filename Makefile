@@ -19,7 +19,7 @@ ICON_FILES = $(foreach i, $(ICONS),$(MODULES)/@fortawesome/fontawesome-free/svgs
 
 .PHONY: clean
 clean: clean_py
-	rm -rf .npx-cache .pytest_cache throwaway $(MODULES)
+	rm -rf .npx-cache .pytest_cache throwaway fail_*.png test_summary.md *.log $(MODULES)
 
 .PHONY: lint
 lint: lint_py
@@ -37,17 +37,32 @@ tidy: tidy_py
 #############################################################################
 ## Tests
 
+
+# Auto-discover test files
+TEST_SOURCES = $(wildcard test/test_*.py)
+TEST_TARGETS = $(patsubst test/%.py,%,$(TEST_SOURCES))
+
 .PHONY: test
-test: webui_test i18n_test
+test: $(TEST_TARGETS)
 
-.PHONY: webui_test
-webui_test: venv
+# Generic rule for running tests
+test_%: venv
+	PYTHONPATH=.:$(VENV) $(VENV)/python test/$@.py
+
+# Specific rule for webui (needs dependencies)
+.PHONY: test_webui
+test_webui: venv
 	$(VENV)/playwright install chromium
+	@echo "Starting test server..."
+	@PYTHONPATH=.:$(VENV) $(VENV)/python -u test/server.py > server.log 2>&1 & PID=$$!; \
+	echo "Starting REDbot server..."; \
+	PYTHONPATH=.:$(VENV) $(VENV)/python -u test/run_redbot.py > redbot.log 2>&1 & RPID=$$!; \
+	trap "kill $$PID $$RPID; wait $$PID $$RPID; echo '--- Test Server Log ---'; cat server.log; rm server.log; echo '--- REDbot Server Log ---'; cat redbot.log; rm redbot.log" EXIT; \
+	echo "Waiting for test server..."; \
+	while ! nc -z localhost 8001; do sleep 0.1; done; \
+	echo "Waiting for REDbot server..."; \
+	while ! nc -z localhost 8000; do sleep 0.1; done; \
 	PYTHONPATH=.:$(VENV) $(VENV)/python test/test_webui.py
-
-.PHONY: i18n_test
-i18n_test: venv
-	PYTHONPATH=.:$(VENV) $(VENV)/python test/test_i18n.py
 
 
 #############################################################################
@@ -87,6 +102,10 @@ i18n-init: venv
 .PHONY: server
 server: venv
 	PYTHONPATH=.:$(VENV) $(VENV)/python -u redbot/daemon.py config.txt
+
+.PHONY: test_server
+test_server: venv
+	PYTHONPATH=.:$(VENV) $(VENV)/python -u test/server.py
 
 .PHONY: cli
 cli: venv

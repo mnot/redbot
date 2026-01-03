@@ -1,11 +1,13 @@
+@use "red_vars";
+
 @mixin rounded-corners($radius) {
   border-radius: $radius;
 }
 
 @mixin centered-detail {
   text-align: center;
-  color: $detail_text_colour;
-  font-size: $detail_font_size;
+  color: red_vars.$detail_text_colour;
+  font-size: red_vars.$detail_font_size;
 }
 
 @mixin flexbox() {

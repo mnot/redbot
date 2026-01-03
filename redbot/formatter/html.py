@@ -11,6 +11,7 @@ from urllib.parse import urljoin
 from typing_extensions import Unpack
 from httplint import get_field_description
 from httplint.note import Note, levels, categories
+import thor
 import thor.http.error as httperr
 
 from redbot import __version__
@@ -44,12 +45,12 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 
     # associating categories with subrequests
     note_responses = {
-        categories.CONNEG: [active_check.ConnegCheck.check_name],
+        categories.CONNEG: [active_check.ConnegCheck.check_id],
         categories.VALIDATION: [
-            active_check.ETagValidate.check_name,
-            active_check.LmValidate.check_name,
+            active_check.ETagValidate.check_id,
+            active_check.LmValidate.check_id,
         ],
-        categories.RANGE: [active_check.RangeRequest.check_name],
+        categories.RANGE: [active_check.RangeRequest.check_id],
     }
 
     # Media types that browsers can view natively
@@ -102,6 +103,13 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 )
             else:
                 validator_link = None
+            is_saved = self.kw.get("is_saved", False)
+            save_mtime = self.kw.get("save_mtime", None)
+            allow_save = self.kw.get("allow_save", False)
+            if is_saved and save_mtime and (float(save_mtime) - thor.time() < 3600):
+                is_saved = False
+                allow_save = True
+
             tpl = self.templates.get_template("response_finish.html")
             self.output(
                 tpl.render(
@@ -111,24 +119,31 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                             "resource": self.resource,
                             "body": self.format_body_sample(self.resource),
                             "is_resource": isinstance(self.resource, HttpResource),
-                            "is_saved": self.kw.get("is_saved", False),
-                            "save_mtime": self.kw.get("save_mtime", None),
-                            "allow_save": self.kw.get("allow_save", False),
-                            "har_link": self.redbot_link(
-                                _("view HAR"),
-                                res_format="har",
-                                title=_(
-                                    "View a HAR (HTTP ARchive, a JSON format) file for this test"
-                                ),
+                            "is_saved": is_saved,
+                            "save_mtime": save_mtime,
+                            "allow_save": allow_save,
+                            "har_link": Markup(
+                                self.links.har_link(
+                                    self.resource,
+                                    _("view HAR"),
+                                    title=_(
+                                        "View a HAR (HTTP ARchive, a JSON format) "
+                                        "file for this test"
+                                    ),
+                                    test_id=self.kw.get("test_id"),
+                                )
                             ),
-                            "descend_link": self.redbot_link(
-                                _("check embedded"),
-                                use_stored=False,
-                                descend=True,
-                                referer=True,
-                                title=_(
-                                    "Run REDbot on images, frames and embedded links"
-                                ),
+                            "descend_link": Markup(
+                                self.links.resource_link(
+                                    self.resource,
+                                    "",
+                                    _("check embedded"),
+                                    use_stored=False,
+                                    descend=True,
+                                    title=_(
+                                        "Run REDbot on images, frames and embedded links"
+                                    ),
+                                )
                             ),
                             "validator_link": validator_link,
                         },
@@ -169,16 +184,18 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     except ValueError:
                         continue  # we're not interested in raising these upstream
 
-                    link_str = self.redbot_link(
-                        escape(link),
-                        abs_link,
-                        use_stored=False,
-                        css_class="nocode",
-                        referer=True,
+                    link_str = Markup(
+                        self.links.resource_link(
+                            resource,
+                            abs_link,
+                            escape(link),
+                            use_stored=False,
+                            css_class="nocode",
+                        )
                     )
 
-                    def link_to(matchobj: Match) -> str:
-                        return rf"{matchobj.group(1)}{link_str}{matchobj.group(1)}"  # pylint: disable=cell-var-from-loop
+                    def link_to(matchobj: Match, link_str: Markup = link_str) -> str:
+                        return rf"{matchobj.group(1)}{link_str}{matchobj.group(1)}"
 
                     safe_sample = Markup(
                         re.sub(
@@ -195,17 +212,24 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     def format_subrequest_messages(self, category: categories) -> Markup:
         out = []
         if isinstance(self.resource, HttpResource) and category in self.note_responses:
-            for check_name in self.note_responses[category]:
-                if not self.resource.subreqs[check_name].fetch_started:
+            for check_id in self.note_responses[category]:
+                if not self.resource.subreqs[check_id].fetch_started:
                     continue
-                out.append(
-                    f'<span class="req_link">'
-                    f'({self.redbot_link(_("%s response") % _(check_name), check_name=check_name)}'
+                check_name = self.resource.subreqs[check_id].check_name
+                link = Markup(
+                    self.links.check_link(
+                        self.resource,
+                        _("%s response") % check_name,
+                        check_name=check_name,
+                        check_id=check_id,
+                        test_id=self.kw.get("test_id", None),
+                    )
                 )
+                out.append(f'<span class="req_link">({link}')
                 smsgs = [
                     note
                     for note in getattr(
-                        self.resource.subreqs[check_name].response, "notes", []
+                        self.resource.subreqs[check_id].response, "notes", []
                     )
                     if note.level in [levels.BAD]
                     and note not in self.resource.response.notes
@@ -263,11 +287,13 @@ class HeaderPresenter:
         value = value.rstrip()
         svalue = value.lstrip()
         space = len(value) - len(svalue)
-        link = self.formatter.redbot_link(
-            self._wrap(escape(svalue), len(name), 0),
-            svalue,
-            use_stored=False,
-            referer=True,
+        link = Markup(
+            self.formatter.links.resource_link(
+                self.formatter.resource,
+                svalue,
+                self._wrap(escape(svalue), len(name), 0),
+                use_stored=False,
+            )
         )
         return Markup(f"{' ' * space}{link}")
 
@@ -304,6 +330,13 @@ class TableHtmlFormatter(BaseHtmlFormatter):
 
     def finish_output(self) -> None:
         self.final_status()
+        is_saved = self.kw.get("is_saved", False)
+        save_mtime = self.kw.get("save_mtime", None)
+        allow_save = self.kw.get("allow_save", False)
+        if is_saved and save_mtime and (float(save_mtime) - thor.time() < 3600):
+            is_saved = False
+            allow_save = True
+
         tpl = self.templates.get_template("response_multi_finish.html")
         self.output(
             tpl.render(
@@ -313,13 +346,16 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                         "droid_lists": self.make_droid_lists(self.resource),
                         "problems": self.problems,
                         "levels": levels,
-                        "is_saved": self.kw.get("is_saved", False),
-                        "save_mtime": self.kw.get("save_mtime", None),
-                        "allow_save": self.kw.get("allow_save", False),
-                        "har_link": self.redbot_link(
-                            "view har",
-                            res_format="har",
-                            title="View a HAR (HTTP ARchive, a JSON format) file for this test",
+                        "is_saved": is_saved,
+                        "save_mtime": save_mtime,
+                        "allow_save": allow_save,
+                        "har_link": Markup(
+                            self.links.har_link(
+                                self.resource,
+                                "view har",
+                                title="View a HAR (HTTP ARchive, a JSON format) file for this test",
+                                test_id=self.kw.get("test_id"),
+                            )
                         ),
                     },
                 )

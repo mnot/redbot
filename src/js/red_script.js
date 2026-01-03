@@ -82,7 +82,11 @@ function submitForm (form) {
     qs('#captcha_popup').style.display = 'none'
   }
   const args = serializeForm(form)
-  form.action = `?${args}`
+  if (form.action.includes('?')) {
+    form.action += `&${args}`
+  } else {
+    form.action += `?${args}`
+  }
   form.submit()
 }
 

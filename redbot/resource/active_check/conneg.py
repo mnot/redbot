@@ -17,6 +17,7 @@ class ConnegCheck(SubRequest):
     """
 
     check_name = _("Content Negotiation")
+    check_id = "conneg"
     response_phrase = _("The compressed response")
 
     def modify_request_headers(
@@ -47,14 +48,6 @@ class ConnegCheck(SubRequest):
             self.add_base_note("", CONNEG_SUBREQ_PROBLEM, problem=problem)
             return
 
-        # see if it was compressed when not negotiated
-        no_conneg_vary_headers = bare.headers.parsed.get("vary", [])
-        if "gzip" in bare.headers.parsed.get(
-            "content-encoding", []
-        ) or "x-gzip" in bare.headers.parsed.get("content-encoding", []):
-            self.add_base_note(
-                "field-vary field-content-encoding", CONNEG_GZIP_WITHOUT_ASKING
-            )
         if "gzip" not in negotiated.headers.parsed.get(
             "content-encoding", []
         ) and "x-gzip" not in negotiated.headers.parsed.get("content-encoding", []):
@@ -85,6 +78,7 @@ class ConnegCheck(SubRequest):
 
             # check Vary headers
             vary_headers = negotiated.headers.parsed.get("vary", [])
+            no_conneg_vary_headers = bare.headers.parsed.get("vary", [])
             if (not "accept-encoding" in vary_headers) and (not "*" in vary_headers):
                 self.add_base_note("field-vary", CONNEG_NO_VARY)
             if no_conneg_vary_headers != vary_headers:
@@ -205,18 +199,6 @@ select the response.
 
 The compressed response was negotiated for `gzip` content encoding, so the `Vary` header needs to contain
 `Accept-Encoding`, the request header used."""
-
-
-class CONNEG_GZIP_WITHOUT_ASKING(RedbotNote):
-    category = categories.CONNEG
-    level = levels.WARN
-    _summary = "A gzip-compressed response was sent when it wasn't asked for."
-    _text = """\
-HTTP supports compression of responses by negotiating for `Content-Encoding`. Even though RED
-didn't ask for a compressed response, the resource provided one anyway.
-
-It could be that the response is always compressed, but doing so can break clients that aren't
-expecting a compressed response."""
 
 
 class VARY_INCONSISTENT(RedbotNote):

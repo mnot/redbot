@@ -31,8 +31,8 @@ class RedHttpClient(thor.http.HttpClient):
 
     def __init__(self, loop: Optional[thor.loop.LoopBase] = None) -> None:
         thor.http.HttpClient.__init__(self, loop)
-        self.connect_timeout = 10
-        self.read_timeout = 15
+        self.connect_timeout = 30
+        self.read_timeout = 60
         self.idle_timeout = 5
         self.retry_delay = 1
         self.careful = False
@@ -61,6 +61,7 @@ class RedFetcher(thor.events.EventEmitter):
         self.request_content: bytes
         self.response_header_length: int = 0
         self.response_content_processors: List[Callable[[bytes], None]] = []
+        self.response_content_processors.append(self.sample_response)
         self.response_content_sample: List[Tuple[int, bytes]] = []
         self.response_decoded_sample: List[bytes] = []
         self.response_decoded_complete: bool = True
@@ -250,11 +251,9 @@ class RedFetcher(thor.events.EventEmitter):
 
     def sample_response(self, chunk: bytes) -> None:
         "Sample the response content."
-        if (
-            self.max_sample_size == 0
-            or self.response.content_length < self.max_sample_size
-        ):
-            self.response_content_sample.append((self.response.content_length, chunk))
+        start_offset = self.response.content_length - len(chunk)
+        if self.max_sample_size == 0 or start_offset < self.max_sample_size:
+            self.response_content_sample.append((start_offset, chunk))
 
     def sample_decoded(self, decoded_chunk: bytes) -> None:
         "Sample the decoded response content."
@@ -303,6 +302,12 @@ class RedFetcher(thor.events.EventEmitter):
             except AttributeError:
                 pass
             self.emit("fetch_done")
+
+    def stop(self) -> None:
+        "Stop the fetcher."
+        if hasattr(self, "exchange") and self.exchange.conn:
+            self.exchange.conn.close()
+        self._fetch_done()
 
 
 class BODY_NOT_ALLOWED(RedbotNote):

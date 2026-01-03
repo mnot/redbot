@@ -17,7 +17,7 @@ from redbot.type import StrHeaderListType
 from redbot.i18n import _
 
 if TYPE_CHECKING:
-    from redbot.resource import HttpResource  # pylint: disable=cyclic-import
+    from redbot.resource import HttpResource
 
 
 class RangeRequest(SubRequest):
@@ -26,6 +26,7 @@ class RangeRequest(SubRequest):
     """
 
     check_name = _("Partial Content")
+    check_id = "range"
     response_phrase = _("The partial response")
 
     def __init__(self, config: SectionProxy, resource: "HttpResource") -> None:
@@ -50,6 +51,8 @@ class RangeRequest(SubRequest):
         return base_headers
 
     def preflight(self) -> bool:
+        if "range" in [k.lower() for (k, v) in self.base.request.headers.text]:
+            return False
         if (
             self.base.response.status_code
             and 300 <= self.base.response.status_code <= 399
@@ -57,11 +60,9 @@ class RangeRequest(SubRequest):
             return False
         if self.base.response.status_code == 206:
             return False
+
         if "bytes" in self.base.response.headers.parsed.get("accept-ranges", []):
             if not self.base.response_content_sample:
-                return False
-            if self.range_start == self.range_end:
-                # wow, that's a small body.
                 return False
             return True
         self.base.partial_support = False

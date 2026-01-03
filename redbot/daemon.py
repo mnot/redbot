@@ -9,6 +9,7 @@ from configparser import ConfigParser, SectionProxy
 import cProfile
 from functools import partial
 import io
+import importlib
 import inspect
 import os
 from pstats import Stats
@@ -16,7 +17,7 @@ import signal
 import sys
 import traceback
 from types import FrameType
-from typing import Dict, Optional
+from typing import Dict, Optional, Any, Callable
 from urllib.parse import urlsplit
 
 from importlib_resources import files as resource_files
@@ -31,14 +32,17 @@ from redbot.type import RawHeaderListType
 from redbot.webui import RedWebUi
 from redbot.webui.saved_tests import clean_saved_tests
 
+SYSTEMD_NOTIFIER: Optional[Callable[[Any], None]] = None
+SYSTEMD_NOTIFICATION: Optional[Any] = None
+
 if os.environ.get("SYSTEMD_WATCHDOG"):
     try:
-        from cysystemd.daemon import notify, Notification  # type: ignore
+        _daemon = importlib.import_module("cysystemd.daemon")
+        SYSTEMD_NOTIFIER = _daemon.notify
+        SYSTEMD_NOTIFICATION = _daemon.Notification
     except ImportError:
         sys.stderr.write("WARNING: watchdog enabled, but csystemd not available.\n")
-        notify = Notification = None  # pylint: disable=invalid-name
-else:
-    notify = Notification = None  # pylint: disable=invalid-name
+
 
 _loop.precision = 0.2
 
@@ -53,11 +57,9 @@ class RedBotServer:
         self.handler = partial(RedRequestHandler, server=self)
 
         # Set up the watchdog
-        if notify is not None:
+        if SYSTEMD_NOTIFIER is not None:
             thor.schedule(self.watchdog_freq, self.watchdog_ping)
 
-        # Read static files
-        self.static_root = os.path.join("/", config["static_root"]).encode("ascii")
         self.static_files = resource_files("redbot.assets")
         self.extra_files = {}
         extra_base_dir = self.config.get("extra_base_dir", None)
@@ -70,6 +72,11 @@ class RedBotServer:
         self.ui_path = ui_uri_parsed.path.encode("utf-8")
         if not self.ui_path.endswith(b"/"):
             self.ui_path += b"/"
+
+        # Read static files
+        self.static_root = os.path.normpath(
+            os.path.join(self.ui_path.decode("ascii"), config["static_root"])
+        ).encode("ascii")
 
         # Start garbage collection
         if config.get("save_dir", ""):
@@ -90,24 +97,36 @@ class RedBotServer:
             signal.SIGBUS,
             signal.SIGILL,
         ]:
-            signal.signal(signum, self.handle_signal)
+            signal.signal(signum, self.handle_crash_signal)
+        signal.signal(signal.SIGINT, self.shutdown_signal)
+        signal.signal(signal.SIGTERM, self.shutdown_signal)
 
     def run(self) -> None:
         try:
             thor.run()
         except KeyboardInterrupt:
-            self.console("Stopping...")
-            thor.stop()
+            # this should be handled by the signal handler, but just in case
+            self.shutdown()
+            thor.run()
+
+    def shutdown_signal(self, sig: int, frame: Optional[FrameType]) -> None:
+        self.console("Shutting down...")
+        self.shutdown()
+
+    def shutdown(self) -> None:
+        self.http_server.on("stop", thor.stop)
+        self.http_server.graceful_shutdown()
 
     def watchdog_ping(self) -> None:
-        notify(Notification.WATCHDOG)
-        thor.schedule(self.watchdog_freq, self.watchdog_ping)
+        if SYSTEMD_NOTIFIER and SYSTEMD_NOTIFICATION:
+            SYSTEMD_NOTIFIER(SYSTEMD_NOTIFICATION.WATCHDOG)
+            thor.schedule(self.watchdog_freq, self.watchdog_ping)
 
     def gc_state(self) -> None:
         clean_saved_tests(self.config)
         thor.schedule(self.config.getint("gc_mins", fallback=2) * 60, self.gc_state)
 
-    def handle_signal(
+    def handle_crash_signal(
         self, sig: int, frame: Optional[FrameType] = None
     ) -> signal.Handlers:
         self.console(f"*** {signal.strsignal(sig)}\n")
@@ -197,6 +216,7 @@ class RedRequestHandler:
         if (
             p_uri.path.startswith(self.server.static_root + b"/")
             or p_uri.path in self.server.extra_files
+            or p_uri.path.rstrip(b"/") in self.server.extra_files
         ):
             return self.serve_static(p_uri.path)
 
@@ -288,7 +308,7 @@ def print_debug(message: str, profile: Optional[cProfile.Profile]) -> None:
         sys.stderr.write(f"{st.getvalue()}\n")
 
 
-_loop.debug_out = print_debug  # type: ignore
+_loop.debug_out = print_debug  # type: ignore[method-assign]
 
 
 def main() -> None:

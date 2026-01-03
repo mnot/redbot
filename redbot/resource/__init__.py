@@ -38,6 +38,7 @@ class HttpResource(RedFetcher):
     """
 
     check_name = "default"
+    check_id = "default"
 
     def __init__(self, config: SectionProxy, descend: bool = False) -> None:
         RedFetcher.__init__(self, config)
@@ -49,7 +50,7 @@ class HttpResource(RedFetcher):
         self.gzip_support: bool = False
         self.gzip_savings: int = 0
         self._task_map: Set[RedFetcher] = set([])
-        self.subreqs = {ac.check_name: ac(config, self) for ac in active_checks}
+        self.subreqs = {ac.check_id: ac(config, self) for ac in active_checks}
         self.once("fetch_done", self.run_active_checks)
 
         self.links: Dict[str, Set[str]] = {}
@@ -89,23 +90,24 @@ class HttpResource(RedFetcher):
 
     def add_check(self, *resources: RedFetcher) -> None:
         "Remember a subordinate check on one or more HttpResource instance."
-        # pylint: disable=cell-var-from-loop
         for resource in resources:
-            self._task_map.add(resource)
+            self._bind_events(resource)
 
-            @thor.events.on(resource)
-            def status(message: str) -> None:
-                self.emit("status", message)
+    def _bind_events(self, resource: RedFetcher) -> None:
+        "Bind events for a subordinate check."
+        self._task_map.add(resource)
 
-            @thor.events.on(resource)
-            def debug(message: str) -> None:
-                self.emit("debug", message)
+        @thor.events.on(resource)
+        def status(message: str) -> None:
+            self.emit("status", message)
 
-            @thor.events.on(resource)
-            def check_done() -> None:
-                self.finish_check(resource)
+        @thor.events.on(resource)
+        def debug(message: str) -> None:
+            self.emit("debug", message)
 
-        # pylint: enable=cell-var-from-loop
+        @thor.events.on(resource)
+        def check_done() -> None:
+            self.finish_check(resource)
 
     def finish_check(self, resource: Optional[RedFetcher] = None) -> None:
         "A check is done. Was that the last one?"
@@ -113,9 +115,9 @@ class HttpResource(RedFetcher):
             try:
                 self._task_map.remove(resource)
             except KeyError:
-                raise KeyError(  # pylint: disable=raise-missing-from
+                raise KeyError(
                     f"* Can't find {resource} in task map: {self._task_map}"
-                )
+                ) from None
         tasks_left = len(self._task_map)
         #        self.emit("debug", "%s checks remaining: %i" % (repr(self), tasks_left))
         if tasks_left == 0:
@@ -151,3 +153,9 @@ class HttpResource(RedFetcher):
         self.links[tag].add(link)
         if not self.response.base_uri:
             self.response.base_uri = base
+
+    def stop(self) -> None:
+        "Stop the resource and any sub-resources."
+        for task in list(self._task_map):
+            task.stop()
+        RedFetcher.stop(self)

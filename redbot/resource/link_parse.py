@@ -255,39 +255,3 @@ class CSSLinkParser:
 
 class BadErrorIReallyMeanIt(Exception):
     """See http://bugs.python.org/issue8885 for why this is necessary."""
-
-
-if __name__ == "__main__":
-    import sys
-    from configparser import ConfigParser
-    import thor
-    from redbot.resource.fetch import RedFetcher  # pylint: disable=ungrouped-imports
-
-    T = RedFetcher(ConfigParser()["DEFAULT"])
-    T.set_request(sys.argv[1], headers=[("Accept-Encoding", "gzip")])
-
-    def show_link(base: str, link: str, tag: str, _: str) -> None:
-        print(f"* [{tag}] {base} -- {link}")
-
-    P = HTMLLinkParser(T.response, [show_link], sys.stderr.write)
-
-    @thor.events.on(T)
-    def fetch_done() -> None:
-        print("done")
-        thor.stop()
-
-    @thor.events.on(T)
-    def status(msg: str) -> None:
-        print(msg)
-
-    def chunk(decoded_chunk: bytes) -> None:
-        P.feed(
-            decoded_chunk.decode(
-                P.message.character_encoding or DEFAULT_ENCODING, "ignore"
-            )
-        )
-
-    T.response_content_processors.append(chunk)
-
-    T.check()
-    thor.run()

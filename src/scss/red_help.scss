@@ -1,22 +1,24 @@
+@use "red_vars";
+
 /* help bubbles */
 /* http://konigi.com/tools/css-sticky-notes */
 
 .help {
   position: absolute;
-  background-color: #F4F39E;
-  border-color: #DEE184;
-  color: #333;
+  background-color: red_vars.$help_bg_colour;
+  border-color: red_vars.$help_border_colour;
+  color: red_vars.$help_text_colour;
   text-align: center;
   margin: 3.5em 0 2.5em 0;
   padding: 1.25em 1em;
-  box-shadow: 0px 1px 3px rgba(0,0,0,0.25);
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25);
   font-family: Chalkboard, 'Comic Sans';
   font-size: 14px;
   width: 250px;
 }
 
 .help.right {
-  margin: $vertical_space 0 2.5em 290px;
+  margin: red_vars.$vertical_space 0 2.5em 290px;
 }
 
 .help:after {
@@ -27,7 +29,9 @@
   height: 30px;
   top: -21px;
   left: 30%;
-  border: 1px solid #fff;
+  border: 1px solid #fff; // Keep white or use var?
+  // Sticky tape effect usually looks like tape.
+  // White semi-transparent is fine for tape.
   background: rgba(254, 254, 254, .6);
-  box-shadow: 0px 0 3px rgba(0,0,0,0.1);
+  box-shadow: 0px 0 3px rgba(0, 0, 0, 0.1);
 }

@@ -46,5 +46,12 @@ jobs:
       run: make typecheck
     - name: Lint
       run: make lint
-    - name: UI Smoketest
-      run: make webui_test
+    - name: WebUI Test
+      run: make test_webui
+    - name: Upload screenshots
+      if: always()
+      uses: actions/upload-artifact@v6
+      with:
+        name: webui-screenshots
+        path: fail_*.png
+        if-no-files-found: ignore

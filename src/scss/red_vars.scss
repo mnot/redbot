@@ -1,10 +1,111 @@
+:root {
+    --text-colour: #111;
+    --bg-colour: #fcfcfc;
+    --link-colour: blue;
+    --detail-text-colour: #737373;
+    --input-colour: #72726e;
+    --input-bg-colour: #fff;
+    --input-text-colour: #111;
+    --info-colour: #3769a0;
+    --console-colour: #111;
+    --header-colour: #ddd;
+    --error-bg-colour: #a33;
+    --error-text-colour: #eaeaea;
+    --hilight-colour: #d33;
+    --hilight-text-colour: white;
+    --header-hilight-colour: white;
+    --link-in-box-colour: #ccf;
+    --help-bg-colour: #f4f39e;
+    --help-border-colour: #dee184;
+    --help-text-colour: #333;
+    --preview-bg: #fff;
+    --preview-border: #ccc;
+    --option-colour: #333;
+    --table-hover-colour: #333;
+    --table-border-colour: #666;
+    --good-colour: #659365;
+    --good-text-colour: #659365;
+    --warning-colour: #aa8a22;
+    --warning-text-colour: #aa8a22;
+    --bad-colour: #a64029;
+    --bad-text-colour: #a64029;
+    --tooltip-bg: #679;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --text-colour: #ddd;
+        --bg-colour: #222;
+        --link-colour: #88f;
+        --detail-text-colour: #aaa;
+        --input-colour: #777;
+        /* Lighter for contrast */
+        --input-bg-colour: #fff;
+        /* User requested white bg */
+        --input-text-colour: #111;
+        /* Black text on white bg */
+        --info-colour: #6ba4e7;
+        --console-colour: #444;
+        /* Lighter */
+        --header-colour: #eee;
+        --error-bg-colour: #822;
+        --error-text-colour: #ddd;
+        --hilight-colour: #f66;
+        --hilight-text-colour: #111;
+        --header-hilight-colour: #fff;
+        --link-in-box-colour: #aaf;
+        --help-bg-colour: #d4d38e;
+        --help-border-colour: #c0bf70;
+        --help-text-colour: #333;
+        --preview-bg: #e0e0e0;
+        /* Considerably lighter */
+        --preview-border: #666;
+        --option-colour: #bbb;
+        --table-hover-colour: #444;
+        --table-border-colour: #888;
+        --good-colour: #85c385;
+        --good-text-colour: #ddd;
+        --warning-colour: #dcb055;
+        --warning-text-colour: #ddd;
+        --bad-colour: #d66049;
+        --bad-text-colour: #ddd;
+        --tooltip-bg: #457;
+    }
+}
+
 $column_spacing: 40px;
-$text_colour: #111;
-$link_colour: blue;
-$detail_text_colour: #737373;
-$input_colour: #72726E;
-$console_colour: #111;
-$header_colour: #ddd;
+$text_colour: var(--text-colour);
+$bg_colour: var(--bg-colour);
+$link_colour: var(--link-colour);
+$detail_text_colour: var(--detail-text-colour);
+$input_colour: var(--input-colour);
+$input_bg_colour: var(--input-bg-colour);
+$input_text_colour: var(--input-text-colour);
+$info_colour: var(--info-colour);
+$console_colour: var(--console-colour);
+$header_colour: var(--header-colour);
+$error_bg_colour: var(--error-bg-colour);
+$error_text_colour: var(--error-text-colour);
+$hilight_colour: var(--hilight-colour);
+$hilight_text_colour: var(--hilight-text-colour);
+$header_hilight_colour: var(--header-hilight-colour);
+$link_in_box_colour: var(--link-in-box-colour);
+$help_bg_colour: var(--help-bg-colour);
+$help_border_colour: var(--help-border-colour);
+$help_text_colour: var(--help-text-colour);
+$preview_bg: var(--preview-bg);
+$preview_border: var(--preview-border);
+$option_colour: var(--option-colour);
+$table_hover_colour: var(--table-hover-colour);
+$table_border_colour: var(--table-border-colour);
+$good_colour: var(--good-colour);
+$good_text_colour: var(--good-text-colour);
+$warning_colour: var(--warning-colour);
+$warning_text_colour: var(--warning-text-colour);
+$bad_colour: var(--bad-colour);
+$bad_text_colour: var(--bad-text-colour);
+$tooltip_bg: var(--tooltip-bg);
+
 $detail_font_size: 0.8em;
 $vertical_space: 3em;
 $icon_size: 18px;

@@ -1,14 +1,18 @@
+@use "red_mixins";
+@use "red_vars";
+
 .tip {
   display: none;
 }
 
 .tippy-box[data-theme~='redbot'] {
-  @include rounded_corners(0.5em);
-  background-color: #679;
+  @include red_mixins.rounded_corners(0.5em);
+  background-color: red_vars.$tooltip_bg;
   opacity: 0.95;
   padding: 9px;
   color: white;
   font-size: 0.85em;
+
   img {
     max-width: 440px;
   }

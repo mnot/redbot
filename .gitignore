@@ -17,3 +17,6 @@ geckodriver.log
 /src/package-lock.json
 /throwaway
 /changelog.md
+/fail_*.png
+/*.log
+/test_summary.md
