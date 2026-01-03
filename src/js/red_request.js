@@ -255,7 +255,7 @@ docReady(function () {
       const copyLink = document.createElement('a')
       copyLink.href = '#'
       copyLink.id = 'copy_cookies'
-      copyLink.appendChild(document.createTextNode('copy cookies to request'))
+      copyLink.appendChild(document.createTextNode(config.i18n.copy_cookies))
       addButton.appendChild(copyLink)
 
       copyLink.onclick = function (e) {
