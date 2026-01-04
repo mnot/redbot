@@ -9,6 +9,7 @@
   --info-colour: #3769a0;
   --console-colour: #111;
   --header-colour: #ddd;
+  --header-unchecked-colour: #888;
   --error-bg-colour: #a33;
   --error-text-colour: #eaeaea;
   --hilight-colour: #d33;
@@ -48,6 +49,7 @@
     --console-colour: #444;
     /* Lighter */
     --header-colour: #eee;
+    --header-unchecked-colour: #999;
     --error-bg-colour: #822;
     --error-text-colour: #ddd;
     --hilight-colour: #f66;
@@ -388,6 +390,10 @@ option[value="other..."] {
 .hdr.hilight {
   color: var(--header-hilight-colour);
   font-weight: bold;
+}
+
+.hdr.unchecked {
+  color: var(--header-unchecked-colour);
 }
 
 .options {
