@@ -31,6 +31,10 @@
   font-weight: bold;
 }
 
+.hdr.unchecked {
+  color: red_vars.$header_unchecked_colour;
+}
+
 .options {
   margin-top: 0.2em;
   margin-bottom: 2em;

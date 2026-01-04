@@ -9,6 +9,7 @@
     --info-colour: #3769a0;
     --console-colour: #111;
     --header-colour: #ddd;
+    --header-unchecked-colour: #888;
     --error-bg-colour: #a33;
     --error-text-colour: #eaeaea;
     --hilight-colour: #d33;
@@ -48,6 +49,7 @@
         --console-colour: #444;
         /* Lighter */
         --header-colour: #eee;
+        --header-unchecked-colour: #999;
         --error-bg-colour: #822;
         --error-text-colour: #ddd;
         --hilight-colour: #f66;
@@ -84,6 +86,7 @@ $input_text_colour: var(--input-text-colour);
 $info_colour: var(--info-colour);
 $console_colour: var(--console-colour);
 $header_colour: var(--header-colour);
+$header_unchecked_colour: var(--header-unchecked-colour);
 $error_bg_colour: var(--error-bg-colour);
 $error_text_colour: var(--error-text-colour);
 $hilight_colour: var(--hilight-colour);

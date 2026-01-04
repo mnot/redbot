@@ -1,7 +1,7 @@
 {% macro format_response(r) %}
 <span class='status'>HTTP/{{ r.version }} {{ r.status_code_str }} {{ r.status_phrase }}</span>
 {% for hdr in r.headers.text %}
-<span data-offset='{{ loop.index0 }}' data-name='{{ hdr[0]|lower }}' class='hdr'>{{ hdr[0] }}:{{ hdr|header_present -}}
+<span data-offset='{{ loop.index0 }}' data-name='{{ hdr[0]|lower }}' class='hdr{% if not hdr[0]|header_description %} unchecked{% endif %}'>{{ hdr[0] }}:{{ hdr|header_present -}}
     {{- hdr[0]|header_description }}</span>
 {% endfor %}
 {%- endmacro %}
@@ -19,7 +19,7 @@
         {% endif %}
 
         <span class="help hidden">
-            {{ _("These are the response headers; hover over each one for an explanation of what it does.") }}
+            {{ _("These are the response headers; hover over each one for an explanation of what it does. Headers that REDbot hasn't checked are darker.") }}
         </span>
 
         {% if resource.response.version %}
