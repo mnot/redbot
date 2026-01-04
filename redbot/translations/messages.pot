@@ -131,7 +131,7 @@ msgstr ""
 #: redbot/formatter/templates/response_finish.html:22
 msgid ""
 "These are the response headers; hover over each one for an explanation of"
-" what it does."
+" what it does. Headers that REDbot hasn't checked are darker."
 msgstr ""
 
 #: redbot/formatter/templates/response_finish.html:31
