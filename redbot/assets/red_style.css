@@ -372,9 +372,20 @@ option[value="other..."] {
   color: var(--header-colour);
   border-radius: 0.75em;
   border: 1px solid black;
+  box-sizing: border-box;
+  width: 100%;
   padding: 1em 1.5em;
-  margin-bottom: 0;
+  margin: 0;
   overflow-x: auto;
+  list-style: none;
+}
+#response li, .nonfinal_response li {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  padding-left: 3em;
+  text-indent: -3em;
+  margin: 0;
+  line-height: 1.4;
 }
 #response a, .nonfinal_response a,
 #response .post_link,
