@@ -145,7 +145,9 @@ class BaseHtmlFormatter(Formatter):
                                     ),
                                     "i18n": {
                                         "add_req_hdr": str(_("add a request header")),
-                                        "copy_cookies": str(_("copy cookies to request")),
+                                        "copy_cookies": str(
+                                            _("copy cookies to request")
+                                        ),
                                         "view_notes": str(_("view notes")),
                                         "view_body": str(_("view content")),
                                         "sort_alpha": str(_("sort by alpha")),

@@ -9,10 +9,23 @@
   background-color: red_vars.$console_colour;
   color: red_vars.$header_colour;
   @include red_mixins.rounded_corners(0.75em);
-  border: 1px solid black; // Border stays black or use a dark var? #000 is fine for console look.
+  border: 1px solid black;
+  box-sizing: border-box;
+  width: 100%;
   padding: 1em 1.5em;
-  margin-bottom: 0;
+  margin: 0;
   overflow-x: auto;
+  list-style: none;
+
+  li {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    // hanging indent
+    padding-left: 3em;
+    text-indent: -3em;
+    margin: 0;
+    line-height: 1.4;
+  }
 
   a,
   .post_link {

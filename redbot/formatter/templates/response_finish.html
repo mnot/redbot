@@ -1,15 +1,18 @@
 {% macro format_response(r) %}
-<span class='status'>HTTP/{{ r.version }} {{ r.status_code_str }} {{ r.status_phrase }}</span>
+<li class='status'>HTTP/{{ r.version }} {{ r.status_code_str }} {{ r.status_phrase }}</li>
 {% for hdr in r.headers.text %}
-<span data-offset='{{ loop.index0 }}' data-name='{{ hdr[0]|lower }}' class='hdr{% if not hdr[0]|header_description %} unchecked{% endif %}'>{{ hdr[0] }}:{{ hdr|header_present -}}
-    {{- hdr[0]|header_description }}</span>
+<li data-offset='{{ loop.index0 }}' data-name='{{ hdr[0]|lower }}' class='hdr{% if not hdr[0]|header_description %} unchecked{% endif %}'>
+    <span class='hdr_name'>{{ hdr[0] }}:</span>
+    <span class='hdr_val'>{{ hdr|header_present -}}</span>
+    {{- hdr[0]|header_description }}
+</li>
 {% endfor %}
 {%- endmacro %}
 
 <div id="columns">
     <div id="left_column">
         {% for nonfinal_response in resource.nonfinal_responses %}
-        <pre class='nonfinal_response'>{{ format_response(nonfinal_response) }}</pre>
+        <ul class='nonfinal_response'>{{ format_response(nonfinal_response) }}</ul>
         {% endfor %}
 
         {% if resource.fetch_error %}
@@ -23,7 +26,7 @@
         </span>
 
         {% if resource.response.version %}
-        <pre id='response'>{{ format_response(resource.response) }}</pre>
+        <ul id='response'>{{ format_response(resource.response) }}</ul>
         {% endif %}
 
         <div class="options">

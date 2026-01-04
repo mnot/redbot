@@ -4,7 +4,6 @@ HTML Formatter for REDbot.
 
 import operator
 import re
-import textwrap
 from typing import Any, List, Match, Tuple, Union
 from urllib.parse import urljoin
 
@@ -280,34 +279,23 @@ class HeaderPresenter:
         if name_token[0] != "_" and name_token != "show" and hasattr(self, name_token):
             content: Markup = getattr(self, name_token)(name, value)
             return content
-        return escape(self._wrap(value, len(name)))
+        return escape(value)
 
     def bare_uri(self, name: str, value: str) -> str:
         "Present a bare URI header value"
         value = value.rstrip()
         svalue = value.lstrip()
-        space = len(value) - len(svalue)
         link = Markup(
             self.formatter.links.resource_link(
                 self.formatter.resource,
                 svalue,
-                self._wrap(escape(svalue), len(name), 0),
+                escape(svalue),
                 use_stored=False,
             )
         )
-        return Markup(f"{' ' * space}{link}")
+        return link
 
     content_location = location = x_xrds_location = bare_uri
-
-    @staticmethod
-    def _wrap(value: str, sub_width: int, indent_amount: int = 8) -> str:
-        "wrap a line to fit in the header box"
-        hdr_sz = 75
-        sw = hdr_sz - min(hdr_sz - 1, sub_width)
-        tr = textwrap.TextWrapper(
-            width=sw, subsequent_indent=" " * indent_amount, break_long_words=True
-        )
-        return tr.fill(value)
 
 
 class TableHtmlFormatter(BaseHtmlFormatter):

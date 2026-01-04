@@ -245,7 +245,7 @@ qs('#add_req_hdr').onclick = function () {
 /* handle 'copy cookies' button */
 docReady(function () {
   const setCookieHdrs = []
-  qsa("span.hdr[data-name='set-cookie']", function (element) {
+  qsa("li.hdr[data-name='set-cookie']", function (element) {
     setCookieHdrs.push(element)
   })
 
@@ -277,11 +277,11 @@ docReady(function () {
               let cookiePair = parts[0].trim()
               const eqIndex = cookiePair.indexOf('=')
               if (eqIndex > -1) {
-                const name = cookiePair.substring(0, eqIndex).trim().replace(/\s+/g, '')
-                const value = cookiePair.substring(eqIndex + 1).trim().replace(/\s+/g, '')
+                const name = cookiePair.substring(0, eqIndex).trim()
+                const value = cookiePair.substring(eqIndex + 1).trim()
                 cookiePair = `${name}=${value}`
               } else {
-                cookiePair = cookiePair.replace(/\s+/g, '')
+                cookiePair = cookiePair.trim()
               }
               addReqHdr('Cookie', cookiePair)
             }

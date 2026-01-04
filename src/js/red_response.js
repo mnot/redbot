@@ -6,7 +6,7 @@ import tippy from 'tippy.js'
 docReady(function () {
   /* single response display - header hover */
 
-  qsa('span.hdr', function (element) {
+  qsa('li.hdr', function (element) {
     const headerName = element.getAttribute('data-name')
     const offset = element.getAttribute('data-offset')
     const tooltip = qs('span.tip', element)
@@ -84,11 +84,11 @@ docReady(function () {
     const noteSubjects = note.parentNode.getAttribute('data-subject').split(' ')
     noteSubjects.forEach(subject => {
       if (subject.indexOf('offset-') === 0) {
-        qsa(`span.hdr[data-offset='${subject.slice(7)}']`, function (element) {
+        qsa(`li.hdr[data-offset='${subject.slice(7)}']`, function (element) {
           element.classList.toggle('hilight')
         })
       } else if (subject.indexOf('field-') === 0) {
-        qsa(`span.hdr[data-name='${subject.slice(6)}']`, function (element) {
+        qsa(`li.hdr[data-name='${subject.slice(6)}']`, function (element) {
           element.classList.toggle('hilight')
         })
       }
@@ -157,10 +157,8 @@ docReady(function () {
       }
 
       response.appendChild(status)
-      response.appendChild(document.createTextNode('\n'))
       headers.forEach(function (element) {
         response.appendChild(element)
-        response.appendChild(document.createTextNode('\n'))
       })
 
       if (!sorted) {
