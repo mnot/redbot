@@ -39,14 +39,13 @@ class RangeRequest(SubRequest):
     def modify_request_headers(
         self, base_headers: StrHeaderListType
     ) -> StrHeaderListType:
-        if self.base.response_content_sample:
-            sample_num = random.randint(0, len(self.base.response_content_sample) - 1)
-            sample_len = min(96, len(self.base.response_content_sample[sample_num][1]))
-            self.range_start = self.base.response_content_sample[sample_num][0]
+        samples = [s for s in self.base.response_content_sample if s[1]]
+        if samples:
+            sample_num = random.randint(0, len(samples) - 1)
+            sample_len = min(96, len(samples[sample_num][1]))
+            self.range_start = samples[sample_num][0]
             self.range_end = self.range_start + sample_len
-            self.range_target = self.base.response_content_sample[sample_num][1][
-                : sample_len + 1
-            ]
+            self.range_target = samples[sample_num][1][: sample_len + 1]
             base_headers.append(("Range", f"bytes={self.range_start}-{self.range_end}"))
         return base_headers
 
