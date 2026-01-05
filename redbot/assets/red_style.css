@@ -1,3 +1,4 @@
+@charset "UTF-8";
 :root {
   --text-colour: #111;
   --bg-colour: #fcfcfc;
@@ -405,6 +406,50 @@ option[value="other..."] {
 
 .hdr.unchecked {
   color: var(--header-unchecked-colour);
+}
+
+.hdr {
+  position: relative;
+}
+.hdr.note-good::before {
+  content: "•";
+  position: absolute;
+  left: -1em;
+  top: 0.45em;
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  background-color: var(--good-colour);
+}
+.hdr.note-warning::before {
+  content: "•";
+  position: absolute;
+  left: -1em;
+  top: 0.45em;
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  background-color: var(--warning-colour);
+}
+.hdr.note-bad::before {
+  content: "•";
+  position: absolute;
+  left: -1em;
+  top: 0.45em;
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  background-color: var(--bad-colour);
+}
+.hdr.note-info::before {
+  content: "•";
+  position: absolute;
+  left: -1em;
+  top: 0.45em;
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  background-color: var(--info-colour);
 }
 
 .options {
