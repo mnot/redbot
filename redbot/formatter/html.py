@@ -87,6 +87,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 "header_present": self.format_header,
                 "header_description": self.format_header_description,
                 "subrequest_messages": self.format_subrequest_messages,
+                "header_levels": self.determine_header_levels,
             }
         )
         self.header_presenter = HeaderPresenter(self)
@@ -255,6 +256,29 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 + "</span>"
             )
         return Markup("")
+
+    def determine_header_levels(self, response: Any) -> dict[str, levels]:
+        """
+        Return a dictionary of header names to the most severe level of note
+        that applies to them.
+        """
+        # "bad" > "warning" > "good" > "info"
+        level_order = [levels.INFO, levels.GOOD, levels.WARN, levels.BAD]
+        header_levels: dict[str, levels] = {}
+        for note in response.notes:
+            if note.subject:
+                subjects = note.subject.lower().split(" ")
+                for subject in subjects:
+                    if subject.startswith("field-"):
+                        subject = subject[6:]
+                    current_level = header_levels.get(subject, levels.INFO)
+                    if level_order.index(note.level) >= level_order.index(
+                        current_level
+                    ):
+                        header_levels[subject] = note.level
+        return {
+            k: v for k, v in header_levels.items() if v in [levels.WARN, levels.BAD]
+        }
 
 
 class HeaderPresenter:

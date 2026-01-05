@@ -48,6 +48,27 @@
   color: red_vars.$header_unchecked_colour;
 }
 
+@mixin header-level($level, $color) {
+  &.note-#{$level}::before {
+    content: "•";
+    position: absolute;
+    left: -1em;
+    top: 0.45em;
+    width: 0.5em;
+    height: 0.5em;
+    border-radius: 50%;
+    background-color: $color;
+  }
+}
+
+.hdr {
+  position: relative;
+  @include header-level('good', red_vars.$good_colour);
+  @include header-level('warning', red_vars.$warning_colour);
+  @include header-level('bad', red_vars.$bad_colour);
+  @include header-level('info', red_vars.$info_colour);
+}
+
 .options {
   margin-top: 0.2em;
   margin-bottom: 2em;
