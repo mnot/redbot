@@ -98,15 +98,20 @@ class RangeRequest(SubRequest):
             )
 
             if self.response.content_length == self.base.response.content_length:
-                self.add_base_note("field-content-length", RANGE_CL_FULL)
+                self.add_notes("field-content-length", RANGE_CL_FULL)
 
             content_range = self.response.headers.parsed.get("content-range", None)
             if content_range:
                 if (
-                    content_range[2] is not None
-                    and content_range[2] != self.base.response.content_length
+                    content_range.complete_length is not None
+                    and content_range.complete_length != self.base.response.content_length
                 ):
-                    self.add_base_note("field-content-range", RANGE_INCORRECT_LENGTH)
+                    self.add_notes(
+                        "field-content-range",
+                        RANGE_INCORRECT_LENGTH,
+                        length_206=f_num(content_range.complete_length),
+                        length_full=f_num(self.base.response.content_length),
+                    )
 
             if self.response.headers.parsed.get(
                 "etag", None
@@ -114,11 +119,11 @@ class RangeRequest(SubRequest):
                 content = b"".join([chunk[1] for chunk in self.response_content_sample])
                 if content == self.range_target:
                     self.base.partial_support = True
-                    self.add_base_note("field-accept-ranges", RANGE_CORRECT)
+                    self.add_notes("field-accept-ranges", RANGE_CORRECT)
                 else:
                     # the body samples are just bags of bits
                     self.base.partial_support = False
-                    self.add_base_note(
+                    self.add_notes(
                         "field-accept-ranges",
                         RANGE_INCORRECT,
                         range=f"bytes={self.range_start}-{self.range_end}",
@@ -128,13 +133,13 @@ class RangeRequest(SubRequest):
                         range_received_bytes=f_num(self.response.content_length),
                     )
             else:
-                self.add_base_note("field-accept-ranges", RANGE_CHANGED)
+                self.add_notes("field-accept-ranges", RANGE_CHANGED)
 
         elif self.response.status_code == self.base.response.status_code:
             self.base.partial_support = False
-            self.add_base_note("field-accept-ranges", RANGE_FULL)
+            self.add_notes("field-accept-ranges", RANGE_FULL)
         else:
-            self.add_base_note(
+            self.add_notes(
                 "field-accept-ranges",
                 RANGE_STATUS,
                 range_status=self.response.status_code or 0,
@@ -263,7 +268,7 @@ class RANGE_CL_FULL(RedbotNote):
     _summary = "The partial response has a Content-Length equal to the full response."
     _text = """\
 The `Content-Length` header in a 206 response should indicate the size of the partial content, not
-the full response. This response has a `Content-Length` that matches the full size of the response,
+the full response. The partial response has a `Content-Length` that matches the size of the full response,
 which suggests it might be incorrect."""
 
 
@@ -272,6 +277,6 @@ class RANGE_INCORRECT_LENGTH(RedbotNote):
     level = levels.WARN
     _summary = "The Content-Range header indicates an incorrect total length."
     _text = """\
-The `Content-Range` header in a 206 response indicates the total length of the response. In this
-case, it doesn't match the `Content-Length` of the full response, which suggests one of them is
-incorrect."""
+The `Content-Range` header in a 206 response indicates the total length of the response - here,
+%(length_206)s. Here, that value doesn't match the `Content-Length` of the full response
+(%(length_full)s), which suggests one of them is incorrect."""
