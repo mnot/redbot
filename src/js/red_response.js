@@ -9,44 +9,48 @@ docReady(function () {
   qsa('li.hdr', function (element) {
     const headerName = element.getAttribute('data-name')
     const offset = element.getAttribute('data-offset')
-    const tooltip = qs('span.tip', element)
-    if (tooltip === null) {
-      return
-    }
-    tippy(element, {
-      content: tooltip.innerHTML,
-      allowHTML: true,
-      theme: 'redbot',
-      delay: [10, 10],
-      interactive: true,
-      interactiveBorder: 5,
-      placement: 'bottom-end',
-      offset: [50, 5],
-      maxWidth: 460,
-      appendTo: document.body,
-      onShow: function (tippyInstance) {
-        element.classList.toggle('hilight')
-        highlightHeaderRelated(headerName, offset, true)
-      },
-      onHidden: function (tippyInstance) {
-        element.classList.toggle('hilight')
-        highlightHeaderRelated(headerName, offset, false)
-      }
+
+    element.addEventListener('mouseenter', function () {
+      element.classList.add('hilight')
+      highlightHeaderRelated(headerName, offset, true)
     })
+    element.addEventListener('mouseleave', function () {
+      element.classList.remove('hilight')
+      highlightHeaderRelated(headerName, offset, false)
+    })
+
+    const tooltip = qs('span.tip', element)
+    if (tooltip) {
+      tippy(element, {
+        content: tooltip.innerHTML,
+        allowHTML: true,
+        theme: 'redbot',
+        delay: [10, 10],
+        interactive: true,
+        interactiveBorder: 5,
+        placement: 'bottom-end',
+        offset: [50, 5],
+        maxWidth: 460,
+        appendTo: document.body
+      })
+    }
   })
 
   function highlightHeaderRelated (headerName, offset, direction) {
     qsa('li.note', function (element) {
       let noteInteresting = false
-      const subjects = element.getAttribute('data-subject').split(' ')
-      subjects.forEach(subject => {
-        if (subject === `field-${headerName}`) {
-          noteInteresting = true
-        }
-        if (subject === `offset-${offset}`) {
-          noteInteresting = true
-        }
-      })
+      const rawSubjects = element.getAttribute('data-subject')
+      if (rawSubjects) {
+        const subjects = rawSubjects.toLowerCase().split(' ')
+        subjects.forEach(subject => {
+          if (subject === `field-${headerName.toLowerCase()}`) {
+            noteInteresting = true
+          }
+          if (subject === `offset-${offset}`) {
+            noteInteresting = true
+          }
+        })
+      }
       if (!noteInteresting) {
         element.style.opacity = direction ? 0.2 : 1.0
       }
@@ -55,44 +59,56 @@ docReady(function () {
 
   /* single response display - note hover */
 
-  qsa('li.note span', function (element) {
-    const tooltip = qs('span.tip', element)
-    if (tooltip === null) {
-      return
-    }
-    tippy(element, {
-      content: tooltip.innerHTML,
-      allowHTML: true,
-      theme: 'redbot',
-      delay: [10, 10],
-      interactive: true,
-      interactiveBorder: 5,
-      placement: 'bottom-end',
-      offset: [50, 5],
-      maxWidth: 460,
-      appendTo: document.body,
-      onShow: function (tippyInstance) {
-        highlightNoteRelated(element, true)
-      },
-      onHidden: function (tippyInstance) {
-        highlightNoteRelated(element, false)
-      }
+  qsa('li.note', function (element) {
+    element.addEventListener('mouseenter', function () {
+      highlightNoteRelated(element, true)
     })
+    element.addEventListener('mouseleave', function () {
+      highlightNoteRelated(element, false)
+    })
+
+    const tooltip = qs('span.tip', element)
+    if (tooltip) {
+      tippy(element, {
+        content: tooltip.innerHTML,
+        allowHTML: true,
+        theme: 'redbot',
+        delay: [10, 10],
+        interactive: true,
+        interactiveBorder: 5,
+        placement: 'bottom-end',
+        offset: [50, 5],
+        maxWidth: 460,
+        appendTo: document.body
+      })
+    }
   })
 
   function highlightNoteRelated (note, direction) {
-    const noteSubjects = note.parentNode.getAttribute('data-subject').split(' ')
-    noteSubjects.forEach(subject => {
-      if (subject.indexOf('offset-') === 0) {
-        qsa(`li.hdr[data-offset='${subject.slice(7)}']`, function (element) {
-          element.classList.toggle('hilight')
-        })
-      } else if (subject.indexOf('field-') === 0) {
-        qsa(`li.hdr[data-name='${subject.slice(6)}']`, function (element) {
-          element.classList.toggle('hilight')
-        })
-      }
-    })
+    const rawSubject = note.getAttribute('data-subject')
+    if (rawSubject) {
+      const noteSubjects = rawSubject.toLowerCase().split(' ')
+      noteSubjects.forEach(subject => {
+        if (subject.indexOf('offset-') === 0) {
+          qsa(`li.hdr[data-offset='${subject.slice(7)}']`, function (element) {
+            if (direction) {
+              element.classList.add('hilight')
+            } else {
+              element.classList.remove('hilight')
+            }
+          })
+        } else if (subject.indexOf('field-') === 0) {
+          const fieldName = subject.slice(6)
+          qsa(`li.hdr[data-name='${fieldName}']`, function (element) {
+            if (direction) {
+              element.classList.add('hilight')
+            } else {
+              element.classList.remove('hilight')
+            }
+          })
+        }
+      })
+    }
   }
 
   /* single response display - response body */
