@@ -104,7 +104,8 @@ class RangeRequest(SubRequest):
             if content_range:
                 if (
                     content_range.complete_length is not None
-                    and content_range.complete_length != self.base.response.content_length
+                    and content_range.complete_length
+                    != self.base.response.content_length
                 ):
                     self.add_notes(
                         "field-content-range",
