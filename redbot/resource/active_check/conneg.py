@@ -55,7 +55,7 @@ class ConnegCheck(SubRequest):
         else:  # Apparently, content negotiation is happening.
             # check status
             if bare.status_code != negotiated.status_code:
-                self.add_base_note(
+                self.add_notes(
                     "status",
                     VARY_STATUS_MISMATCH,
                     neg_status=negotiated.status_code or 0,
@@ -68,7 +68,7 @@ class ConnegCheck(SubRequest):
                 bare_val = bare.headers.parsed.get(hdr)
                 negotiated_val = negotiated.headers.parsed.get(hdr, None)
                 if bare_val != negotiated_val:
-                    self.add_base_note(
+                    self.add_notes(
                         f"field-{hdr}",
                         VARY_HEADER_MISMATCH,
                         header=hdr,
@@ -80,9 +80,9 @@ class ConnegCheck(SubRequest):
             vary_headers = negotiated.headers.parsed.get("vary", [])
             no_conneg_vary_headers = bare.headers.parsed.get("vary", [])
             if (not "accept-encoding" in vary_headers) and (not "*" in vary_headers):
-                self.add_base_note("field-vary", CONNEG_NO_VARY)
+                self.add_notes("field-vary", CONNEG_NO_VARY)
             if no_conneg_vary_headers != vary_headers:
-                self.add_base_note(
+                self.add_notes(
                     "field-vary",
                     VARY_INCONSISTENT,
                     conneg_vary=", ".join(vary_headers),
@@ -94,7 +94,7 @@ class ConnegCheck(SubRequest):
                 "etag", 2
             ):
                 if not self.base.response.headers.parsed["etag"][0]:  # strong
-                    self.add_base_note("field-etag", VARY_ETAG_DOESNT_CHANGE)
+                    self.add_notes("field-etag", VARY_ETAG_DOESNT_CHANGE)
 
             # bail if decode didn't complete.
             if not negotiated.decoded.decode_ok:
@@ -102,7 +102,7 @@ class ConnegCheck(SubRequest):
 
             # check body
             if bare.content_hash != negotiated.decoded.hash:
-                self.add_base_note("body", VARY_BODY_MISMATCH)
+                self.add_notes("body", VARY_BODY_MISMATCH)
 
             # check compression efficiency
             if negotiated.content_length > 0 and bare.content_length > 0:

@@ -36,7 +36,6 @@ class ETagValidate(SubRequest):
             weak, etag = etag_value
             if weak:
                 weak_str = "W/"
-                # #65: note on weak etag
             else:
                 weak_str = ""
             etag_str = f'{weak_str}"{etag}"'
@@ -70,7 +69,7 @@ class ETagValidate(SubRequest):
 
         if self.response.status_code == 304:
             self.base.inm_support = True
-            self.add_base_note("field-etag", INM_304)
+            self.add_notes("field-etag", INM_304)
             self.check_missing_hdrs(
                 ["cache-control", "content-location", "etag", "expires", "vary"],
                 MISSING_HDRS_304,
@@ -78,23 +77,23 @@ class ETagValidate(SubRequest):
         elif self.response.status_code == self.base.response.status_code:
             if self.response.content_hash == self.base.response.content_hash:
                 self.base.inm_support = False
-                self.add_base_note("field-etag", INM_FULL)
+                self.add_notes("field-etag", INM_FULL)
             else:  # bodies are different
                 if self.base.response.headers.parsed[
                     "etag"
                 ] == self.response.headers.parsed.get("etag", 1):
                     if self.base.response.headers.parsed["etag"][0]:  # weak
-                        self.add_base_note("field-etag", INM_DUP_ETAG_WEAK)
+                        self.add_notes("field-etag", INM_DUP_ETAG_WEAK)
                     else:  # strong
-                        self.add_base_note(
+                        self.add_notes(
                             "field-etag",
                             INM_DUP_ETAG_STRONG,
                             etag=self.base.response.headers.parsed["etag"],
                         )
                 else:
-                    self.add_base_note("field-etag", INM_UNKNOWN)
+                    self.add_notes("field-etag", INM_UNKNOWN)
         else:
-            self.add_base_note(
+            self.add_notes(
                 "field-etag",
                 INM_STATUS,
                 inm_status=self.response.status_code or 0,

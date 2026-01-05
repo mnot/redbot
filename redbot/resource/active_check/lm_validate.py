@@ -91,7 +91,7 @@ class LmValidate(SubRequest):
 
         if self.response.status_code == 304:
             self.base.ims_support = True
-            self.add_base_note("field-last-modified", IMS_304)
+            self.add_notes("field-last-modified", IMS_304)
             self.check_missing_hdrs(
                 ["cache-control", "content-location", "etag", "expires", "vary"],
                 MISSING_HDRS_304,
@@ -99,11 +99,11 @@ class LmValidate(SubRequest):
         elif self.response.status_code == self.base.response.status_code:
             if self.response.content_hash == self.base.response.content_hash:
                 self.base.ims_support = False
-                self.add_base_note("field-last-modified", IMS_FULL)
+                self.add_notes("field-last-modified", IMS_FULL)
             else:
-                self.add_base_note("field-last-modified", IMS_UNKNOWN)
+                self.add_notes("field-last-modified", IMS_UNKNOWN)
         else:
-            self.add_base_note(
+            self.add_notes(
                 "field-last-modified",
                 IMS_STATUS,
                 ims_status=self.response.status_code or 0,

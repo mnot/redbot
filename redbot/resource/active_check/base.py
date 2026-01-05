@@ -74,6 +74,11 @@ class SubRequest(RedFetcher, metaclass=ABCMeta):
         "Add a Note to the base resource."
         self.base.response.notes.add(subject, note, **kw)
 
+    def add_notes(self, subject: str, note: Type[Note], **kw: Union[str, int]) -> None:
+        "Add a Note to the base resource and to the subresource."
+        self.base.response.notes.add(subject, note, **kw)
+        self.response.notes.add(subject, note, **kw)
+
     def check_missing_hdrs(self, hdrs: List[str], note: Type[Note]) -> None:
         """
         See if the listed headers are missing in the subrequest; if so,
