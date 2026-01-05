@@ -10,7 +10,7 @@
   --info-colour: #3769a0;
   --console-colour: #111;
   --header-colour: #ddd;
-  --header-unchecked-colour: #888;
+  --header-unchecked-colour: #969696;
   --error-bg-colour: #a33;
   --error-text-colour: #eaeaea;
   --hilight-colour: #d33;
@@ -50,7 +50,7 @@
     --console-colour: #444;
     /* Lighter */
     --header-colour: #eee;
-    --header-unchecked-colour: #999;
+    --header-unchecked-colour: #aaa;
     --error-bg-colour: #822;
     --error-text-colour: #ddd;
     --hilight-colour: #f66;
