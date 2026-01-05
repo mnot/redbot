@@ -257,28 +257,51 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             )
         return Markup("")
 
-    def determine_header_levels(self, response: Any) -> dict[str, levels]:
+    def determine_header_levels(self, response: Any) -> dict[int, levels]:
         """
-        Return a dictionary of header names to the most severe level of note
+        Return a dictionary of header indices to the most severe level of note
         that applies to them.
         """
         # "bad" > "warning" > "good" > "info"
         level_order = [levels.INFO, levels.GOOD, levels.WARN, levels.BAD]
-        header_levels: dict[str, levels] = {}
-        for note in response.notes:
+
+        field_max: dict[str, levels] = {}
+        offset_max: dict[int, levels] = {}
+
+        def process_note(note: Any) -> None:
             if note.subject:
                 subjects = note.subject.lower().split(" ")
                 for subject in subjects:
                     if subject.startswith("field-"):
-                        subject = subject[6:]
-                    current_level = header_levels.get(subject, levels.INFO)
-                    if level_order.index(note.level) >= level_order.index(
-                        current_level
-                    ):
-                        header_levels[subject] = note.level
-        return {
-            k: v for k, v in header_levels.items() if v in [levels.WARN, levels.BAD]
-        }
+                        name = subject[6:]
+                        current = field_max.get(name, levels.INFO)
+                        if level_order.index(note.level) > level_order.index(current):
+                            field_max[name] = note.level
+                    elif subject.startswith("offset-"):
+                        try:
+                            idx = int(subject[7:])
+                            current = offset_max.get(idx, levels.INFO)
+                            if level_order.index(note.level) > level_order.index(
+                                current
+                            ):
+                                offset_max[idx] = note.level
+                        except ValueError:
+                            pass
+            for subnote in note.subnotes:
+                process_note(subnote)
+
+        for note in response.notes:
+            process_note(note)
+
+        res: dict[int, levels] = {}
+        for i, (name, _) in enumerate(response.headers.text):
+            name_lower = name.lower()
+            l1 = field_max.get(name_lower, levels.INFO)
+            l2 = offset_max.get(i, levels.INFO)
+            final_level = l1 if level_order.index(l1) >= level_order.index(l2) else l2
+            if final_level in [levels.WARN, levels.BAD]:
+                res[i] = final_level
+        return res
 
 
 class HeaderPresenter:

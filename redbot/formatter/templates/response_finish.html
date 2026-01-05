@@ -2,7 +2,7 @@
 {% set header_levels = r|header_levels %}
 <li class='status'>HTTP/{{ r.version }} {{ r.status_code_str }} {{ r.status_phrase }}</li>
 {% for hdr in r.headers.text %}
-<li data-offset='{{ loop.index0 }}' data-name='{{ hdr[0]|lower }}' class='hdr{% if not hdr[0]|header_description %} unchecked{% endif %}{% if hdr[0]|lower in header_levels %} note-{{ header_levels[hdr[0]|lower].value }}{% endif %}'>
+<li data-offset='{{ loop.index0 }}' data-name='{{ hdr[0]|lower }}' class='hdr{% if not hdr[0]|header_description %} unchecked{% endif %}{% if loop.index0 in header_levels %} note-{{ header_levels[loop.index0].value }}{% endif %}'>
     <span class='hdr_name'>{{ hdr[0] }}:</span>
     <span class='hdr_val'>{{ hdr|header_present -}}</span>
     {{- hdr[0]|header_description }}
