@@ -322,6 +322,7 @@ class HeaderPresenter:
         presentation processing.
         """
         name = name.lower()
+        value = value.lstrip()
         name_token = name.replace("-", "_")
         if name_token[0] != "_" and name_token != "show" and hasattr(self, name_token):
             content: Markup = getattr(self, name_token)(name, value)
