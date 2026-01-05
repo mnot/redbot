@@ -451,6 +451,9 @@ option[value="other..."] {
   border-radius: 50%;
   background-color: var(--info-colour);
 }
+.hdr .hdr_name {
+  white-space: nowrap;
+}
 
 .options {
   margin-top: 0.2em;
