@@ -67,6 +67,10 @@
   @include header-level('warning', red_vars.$warning_colour);
   @include header-level('bad', red_vars.$bad_colour);
   @include header-level('info', red_vars.$info_colour);
+
+  .hdr_name {
+    white-space: nowrap;
+  }
 }
 
 .options {
