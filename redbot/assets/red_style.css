@@ -124,6 +124,7 @@ body.blank {
     -ms-flex-flow: column wrap;
     flex-flow: column wrap;
     --width: calc(100% - 4px);
+    margin: 1em 10px;
   }
   #right_column {
     margin: 0;
