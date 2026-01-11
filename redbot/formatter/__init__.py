@@ -26,9 +26,7 @@ if TYPE_CHECKING:
 _formatters = ["html", "text", "har"]
 
 
-def find_formatter(
-    name: str, default: str = "html", multiple: bool = False
-) -> Type["Formatter"]:
+def find_formatter(name: str, default: str = "html", multiple: bool = False) -> Type["Formatter"]:
     """
     Find the formatter for name, and use default if it can't be found.
     If you need to represent more than one result, set multiple to True.
@@ -47,9 +45,7 @@ def find_formatter(
     formatter_candidates = [
         v
         for k, v in list(module.__dict__.items())
-        if inspect.isclass(v)
-        and issubclass(v, Formatter)
-        and getattr(v, "name") == name
+        if inspect.isclass(v) and issubclass(v, Formatter) and getattr(v, "name") == name
     ]
     # find single-preferred formatters first
     if not multiple:
@@ -79,9 +75,7 @@ class FormatterParams(TypedDict):
     params: Dict[str, Any]
 
 
-FormatterArgs = Tuple[
-    SectionProxy, "HttpResource", Callable[[str], None], Dict[str, Any]
-]
+FormatterArgs = Tuple[SectionProxy, "HttpResource", Callable[[str], None], Dict[str, Any]]
 
 
 class Formatter(EventEmitter):
@@ -140,9 +134,7 @@ class Formatter(EventEmitter):
                 display_resource.on(
                     "response_headers_available", self._wrap_context(self.start_output)
                 )
-            display_resource.response_content_processors.append(
-                self._wrap_context(self.feed)
-            )
+            display_resource.response_content_processors.append(self._wrap_context(self.feed))
             display_resource.on("status", self._wrap_context(self.status))
             display_resource.on("debug", self.debug)
 
@@ -196,11 +188,7 @@ class Formatter(EventEmitter):
         """
         Return binary suitable for the value of a Content-Type header field.
         """
-        return (
-            f"{self.media_type}; charset={self.config.get('charset', 'utf-8')}".encode(
-                "ascii"
-            )
-        )
+        return f"{self.media_type}; charset={self.config.get('charset', 'utf-8')}".encode("ascii")
 
 
 def f_num(i: int, by1024: bool = False) -> str:

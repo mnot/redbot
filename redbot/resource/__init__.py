@@ -55,9 +55,7 @@ class HttpResource(RedFetcher):
         self.links: Dict[str, Set[str]] = {}
         self.link_count: int = 0
         self.linked: List[Tuple[HttpResource, str]] = []  # linked HttpResources
-        self._link_parser = link_parse.HTMLLinkParser(
-            self.response, [self.process_link]
-        )
+        self._link_parser = link_parse.HTMLLinkParser(self.response, [self.process_link])
         if self.descend or config.getboolean("content_links", False):
             self.response_content_processors.append(self._link_parser.feed_bytes)
 
@@ -108,9 +106,7 @@ class HttpResource(RedFetcher):
             try:
                 self._task_map.remove(resource)
             except KeyError:
-                raise KeyError(
-                    f"* Can't find {resource} in task map: {self._task_map}"
-                ) from None
+                raise KeyError(f"* Can't find {resource} in task map: {self._task_map}") from None
         tasks_left = len(self._task_map)
         #        self.emit("debug", "%s checks remaining: %i" % (repr(self), tasks_left))
         if tasks_left == 0:

@@ -88,9 +88,7 @@ class RedWebUi:
         self.console = console  # function to log errors to
 
         # stash the remote IP header name
-        self.remote_ip_header = (
-            self.config.get("remote_ip_header", "").lower().encode("ascii")
-        )
+        self.remote_ip_header = self.config.get("remote_ip_header", "").lower().encode("ascii")
 
         # locale negotiation
         accept_language = get_header(self.req_headers, b"accept-language")
@@ -99,8 +97,7 @@ class RedWebUi:
             val_list = [item for sublist in val_list_list for item in sublist]
             # Ought to be sorted by q-value, but we don't do that.
             al_values = [
-                item.strip().split(b";", 1)[0].decode("ascii", "replace")
-                for item in val_list
+                item.strip().split(b";", 1)[0].decode("ascii", "replace") for item in val_list
             ]
             self.locale = (
                 negotiate_locale(
@@ -116,9 +113,7 @@ class RedWebUi:
         self.save_path: str
         self.timeout: Optional[thor.loop.ScheduledEvent] = None
 
-        self.nonce: str = standard_b64encode(
-            getrandbits(128).to_bytes(16, "big")
-        ).decode("ascii")
+        self.nonce: str = standard_b64encode(getrandbits(128).to_bytes(16, "big")).decode("ascii")
         self.start = time.time()
 
         self.link_generator: LinkGenerator = WebUiLinkGenerator(self)
@@ -198,9 +193,7 @@ class RedWebUi:
         Return what we believe to be the client's IP address.
         """
         if self.remote_ip_header:
-            remote_ip = thor.http.common.get_header(
-                self.req_headers, self.remote_ip_header
-            )
+            remote_ip = thor.http.common.get_header(self.req_headers, self.remote_ip_header)
             if remote_ip:
                 return remote_ip[-1].decode("ascii", errors="replace")
         return self.client_ip

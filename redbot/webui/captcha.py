@@ -112,9 +112,7 @@ class CaptchaHandler:
             )
 
         @thor.events.on(exchange)
-        def response_start(
-            status: bytes, phrase: bytes, headers: RawHeaderListType
-        ) -> None:
+        def response_start(status: bytes, phrase: bytes, headers: RawHeaderListType) -> None:
             nonlocal captcha_status
             captcha_status = status
 
@@ -144,8 +142,7 @@ class CaptchaHandler:
                 self.continue_test(self.issue_human())
             else:
                 e_str = (
-                    "Captcha errors:"
-                    f"{', '.join(results.get('error-codes', ['unknown error']))}"
+                    "Captcha errors:" f"{', '.join(results.get('error-codes', ['unknown error']))}"
                 )
                 self.error_response(
                     b"403",
@@ -172,9 +169,7 @@ class CaptchaHandler:
         Return cookie headers for later verification that this is a human.
         """
         human_time = str(int(time.time()) + self.token_lifetime)
-        human_hmac = hmac.new(
-            self.secret, bytes(human_time, "ascii"), "sha512"
-        ).hexdigest()
+        human_hmac = hmac.new(self.secret, bytes(human_time, "ascii"), "sha512").hexdigest()
         return [
             (
                 b"Set-Cookie",

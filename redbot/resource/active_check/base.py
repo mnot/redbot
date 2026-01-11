@@ -47,9 +47,7 @@ class SubRequest(RedFetcher, metaclass=ABCMeta):
         self.emit("check_done")
 
     def check(self) -> None:
-        modified_headers = self.modify_request_headers(
-            list(self.base.request.headers.text)
-        )
+        modified_headers = self.modify_request_headers(list(self.base.request.headers.text))
         assert self.base.request.uri, "Base URI not set in SubRequest.check"
         assert self.base.request.method, "Base method not set in SubRequest.check"
         RedFetcher.set_request(
@@ -62,15 +60,11 @@ class SubRequest(RedFetcher, metaclass=ABCMeta):
         RedFetcher.check(self)
 
     @abstractmethod
-    def modify_request_headers(
-        self, base_headers: StrHeaderListType
-    ) -> StrHeaderListType:
+    def modify_request_headers(self, base_headers: StrHeaderListType) -> StrHeaderListType:
         """Usually overridden; modifies the request headers."""
         return base_headers
 
-    def add_base_note(
-        self, subject: str, note: Type[Note], **kw: Union[str, int]
-    ) -> None:
+    def add_base_note(self, subject: str, note: Type[Note], **kw: Union[str, int]) -> None:
         "Add a Note to the base resource."
         self.base.response.notes.add(subject, note, **kw)
 
@@ -86,16 +80,11 @@ class SubRequest(RedFetcher, metaclass=ABCMeta):
         """
         missing_hdrs = []
         for hdr in hdrs:
-            if (
-                hdr in self.base.response.headers.parsed
-                and hdr not in self.response.headers.parsed
-            ):
+            if hdr in self.base.response.headers.parsed and hdr not in self.response.headers.parsed:
                 missing_hdrs.append(hdr)
         if missing_hdrs:
             self.add_base_note("headers", note, missing_hdrs=", ".join(missing_hdrs))
-            self.response.notes.add(
-                "headers", note, missing_hdrs=", ".join(missing_hdrs)
-            )
+            self.response.notes.add("headers", note, missing_hdrs=", ".join(missing_hdrs))
 
 
 class MISSING_HDRS_304(RedbotNote):

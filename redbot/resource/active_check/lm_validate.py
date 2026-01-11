@@ -46,15 +46,11 @@ class LmValidate(SubRequest):
         ]
     )
 
-    def modify_request_headers(
-        self, base_headers: StrHeaderListType
-    ) -> StrHeaderListType:
+    def modify_request_headers(self, base_headers: StrHeaderListType) -> StrHeaderListType:
         lm_value = self.base.response.headers.parsed.get("last-modified", None)
         if lm_value:
             try:
-                l_m = datetime.utcfromtimestamp(
-                    self.base.response.headers.parsed["last-modified"]
-                )
+                l_m = datetime.utcfromtimestamp(self.base.response.headers.parsed["last-modified"])
             except ValueError:
                 return base_headers  # this shouldn't really happen
             date_str = (
@@ -70,10 +66,7 @@ class LmValidate(SubRequest):
             [k.lower() for (k, v) in self.base.request.headers.text]
         ):
             return False
-        if (
-            self.base.response.status_code
-            and 300 <= self.base.response.status_code <= 399
-        ):
+        if self.base.response.status_code and 300 <= self.base.response.status_code <= 399:
             return False
         if self.base.response.headers.parsed.get("last-modified", None):
             return True
@@ -139,9 +132,7 @@ that it supports `Last-Modified` validation."""
 class IMS_FULL(RedbotNote):
     category = categories.VALIDATION
     level = levels.WARN
-    _summary = (
-        "An If-Modified-Since conditional request returned the full content unchanged."
-    )
+    _summary = "An If-Modified-Since conditional request returned the full content unchanged."
     _text = """\
 HTTP allows clients to make conditional requests to see if a copy that they hold is still valid.
 Since this response has a `Last-Modified` header, clients should be able to use an
@@ -155,8 +146,7 @@ class IMS_UNKNOWN(RedbotNote):
     category = categories.VALIDATION
     level = levels.INFO
     _summary = (
-        "An If-Modified-Since conditional request returned the full content, "
-        "but it had changed."
+        "An If-Modified-Since conditional request returned the full content, but it had changed."
     )
     _text = """\
 HTTP allows clients to make conditional requests to see if a copy that they hold is still valid.
@@ -170,9 +160,7 @@ request, so REDbot can't tell whether or not `Last-Modified` validation is suppo
 class IMS_STATUS(RedbotNote):
     category = categories.VALIDATION
     level = levels.INFO
-    _summary = (
-        "An If-Modified-Since conditional request returned a %(ims_status)s status."
-    )
+    _summary = "An If-Modified-Since conditional request returned a %(ims_status)s status."
     _text = """\
 HTTP allows clients to make conditional requests to see if a copy that they hold is still valid.
 Since this response has a `Last-Modified` header, clients should be able to use an

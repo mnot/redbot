@@ -126,9 +126,7 @@ class RedBotServer:
         clean_saved_tests(self.config)
         thor.schedule(self.config.getint("gc_mins", fallback=2) * 60, self.gc_state)
 
-    def handle_crash_signal(
-        self, sig: int, frame: Optional[FrameType] = None
-    ) -> signal.Handlers:
+    def handle_crash_signal(self, sig: int, frame: Optional[FrameType] = None) -> signal.Handlers:
         self.console(f"*** {signal.strsignal(sig)}\n")
         current_frame = inspect.currentframe()
         assert current_frame
@@ -182,9 +180,7 @@ class RedRequestHandler:
         b".svg": b"image/svg+xml",
     }
 
-    def __init__(
-        self, exchange: thor.http.server.HttpServerExchange, server: RedBotServer
-    ) -> None:
+    def __init__(self, exchange: thor.http.server.HttpServerExchange, server: RedBotServer) -> None:
         self.exchange = exchange
         self.server = server
         self.method = b""
@@ -198,9 +194,7 @@ class RedRequestHandler:
         exchange.on("request_body", self.request_body)
         exchange.on("request_done", self.request_done)
 
-    def request_start(
-        self, method: bytes, uri: bytes, req_hdrs: RawHeaderListType
-    ) -> None:
+    def request_start(self, method: bytes, uri: bytes, req_hdrs: RawHeaderListType) -> None:
         self.method = method
         self.uri = uri
         self.req_hdrs = req_hdrs
@@ -261,9 +255,7 @@ in standalone server mode. Details follow.
             # Strip the static root from the path to get relative file path
             path = path[len(self.server.static_root) + 1 :]
             try:
-                with self.server.static_files.joinpath(path.decode("ascii")).open(
-                    mode="rb"
-                ) as fh:
+                with self.server.static_files.joinpath(path.decode("ascii")).open(mode="rb") as fh:
                     content = fh.read()
             except OSError:
                 return self.not_found(path)

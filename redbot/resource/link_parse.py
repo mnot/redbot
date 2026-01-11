@@ -75,10 +75,7 @@ class HTMLLinkParser(HTMLParser):
         "Feed a given chunk of str to the parser"
         if not self.ok:
             return
-        if (
-            self.message.headers.parsed.get("content-type", [None])[0]
-            in self.link_parseable_types
-        ):
+        if self.message.headers.parsed.get("content-type", [None])[0] in self.link_parseable_types:
             try:
                 HTMLParser.feed(self, data)
             except BadErrorIReallyMeanIt:
@@ -122,10 +119,7 @@ class HTMLLinkParser(HTMLParser):
                         param_dict[attr.lower()] = unquote_string(val)
                     except ValueError:
                         param_dict[param.lower()] = None
-                enc = (
-                    param_dict.get("charset", self.message.character_encoding)
-                    or DEFAULT_ENCODING
-                )
+                enc = param_dict.get("charset", self.message.character_encoding) or DEFAULT_ENCODING
                 try:
                     codecs.lookup(enc)
                     self.message.character_encoding = enc

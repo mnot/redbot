@@ -159,9 +159,7 @@ class RedirectHandler(RequestHandler):
         """
         Determine if this handler should process the request.
         """
-        return (
-            ui.method in ["GET", "HEAD"] and ui.path == [] and "uri" in ui.query_string
-        )
+        return ui.method in ["GET", "HEAD"] and ui.path == [] and "uri" in ui.query_string
 
     @classmethod
     def handle(cls, ui: RedWebUiProtocol) -> None:
@@ -173,9 +171,7 @@ class RedirectHandler(RequestHandler):
         params = [("uri", uri)]
         location = f"{base_uri}check?{urlencode(params)}"
 
-        ui.exchange.response_start(
-            b"303", b"See Other", [(b"Location", location.encode("ascii"))]
-        )
+        ui.exchange.response_start(b"303", b"See Other", [(b"Location", location.encode("ascii"))])
         ui.output("Redirecting to the validation page...")
         ui.exchange.response_done([])
 

@@ -14,9 +14,7 @@ from redbot.type import RedWebUiProtocol
 def init_save_file(webui: RedWebUiProtocol) -> Optional[str]:
     if webui.config.get("save_dir", None) and os.path.exists(webui.config["save_dir"]):
         try:
-            fd, webui.save_path = tempfile.mkstemp(
-                prefix="", dir=webui.config["save_dir"]
-            )
+            fd, webui.save_path = tempfile.mkstemp(prefix="", dir=webui.config["save_dir"])
             os.close(fd)
             return os.path.split(webui.save_path)[1]
         except OSError:

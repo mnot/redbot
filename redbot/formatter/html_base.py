@@ -98,9 +98,7 @@ class BaseHtmlFormatter(Formatter):
                 self.config.get("static_root", "static"),
             ),
             "captcha_provider": captcha_provider,
-            "captcha_script_url": Markup(
-                captcha_data.get("script_url", b"").decode("ascii")
-            ),
+            "captcha_script_url": Markup(captcha_data.get("script_url", b"").decode("ascii")),
             "nonce": self.kw["nonce"],
         }
         self.start = time.time()
@@ -137,17 +135,11 @@ class BaseHtmlFormatter(Formatter):
                                     "redbot_req_hdrs": req_headers,
                                     "redbot_version": redbot.__version__,
                                     "httplint_version": httplint.__version__,
-                                    "captcha_provider": self.config.get(
-                                        "captcha_provider", ""
-                                    ),
-                                    "captcha_sitekey": self.config.get(
-                                        "captcha_sitekey", None
-                                    ),
+                                    "captcha_provider": self.config.get("captcha_provider", ""),
+                                    "captcha_sitekey": self.config.get("captcha_sitekey", None),
                                     "i18n": {
                                         "add_req_hdr": str(_("add a request header")),
-                                        "copy_cookies": str(
-                                            _("copy cookies to request")
-                                        ),
+                                        "copy_cookies": str(_("copy cookies to request")),
                                         "view_notes": str(_("view notes")),
                                         "view_body": str(_("view content")),
                                         "sort_alpha": str(_("sort by alpha")),
@@ -235,9 +227,7 @@ console.log("{time.time() - self.start:3.3f} {e_js(message)}");
         out = []
         extra_dir = self.config.get("extra_dir", None)
         if extra_dir and os.path.isdir(extra_dir):
-            extra_files = [
-                p for p in os.listdir(extra_dir) if os.path.splitext(p)[1] == etype
-            ]
+            extra_files = [p for p in os.listdir(extra_dir) if os.path.splitext(p)[1] == etype]
             for extra_file in extra_files:
                 extra_path = os.path.join(extra_dir, extra_file)
                 try:

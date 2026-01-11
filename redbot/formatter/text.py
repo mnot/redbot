@@ -65,12 +65,7 @@ class BaseTextFormatter(Formatter):
         if self.resource.response.complete or self.resource.nonfinal_responses:
             if self.resource.nonfinal_responses:
                 self.output(
-                    NL.join(
-                        [
-                            self.format_headers(r)
-                            for r in self.resource.nonfinal_responses
-                        ]
-                    )
+                    NL.join([self.format_headers(r) for r in self.resource.nonfinal_responses])
                     + NL
                     + NL
                 )
@@ -93,22 +88,15 @@ class BaseTextFormatter(Formatter):
 
     @staticmethod
     def format_headers(response: HttpResponseLinter) -> str:
-        out = [
-            f"HTTP/{response.version} {response.status_code_str} {response.status_phrase}"
-        ]
+        out = [f"HTTP/{response.version} {response.status_code_str} {response.status_phrase}"]
         return NL.join(out + [f"{h[0]}:{h[1]}" for h in response.headers.text])
 
     def format_recommendations(self, resource: HttpResource) -> str:
         return "".join(
-            [
-                self.format_recommendation(resource, category)
-                for category in self.note_categories
-            ]
+            [self.format_recommendation(resource, category) for category in self.note_categories]
         )
 
-    def format_recommendation(
-        self, resource: HttpResource, category: categories
-    ) -> str:
+    def format_recommendation(self, resource: HttpResource, category: categories) -> str:
         notes = [note for note in resource.response.notes if note.category == category]
         if not notes:
             return ""

@@ -22,9 +22,7 @@ class RateLimiter:
     def __init__(self) -> None:
         self.loop = thor.loop
 
-    def process(
-        self, webui: RedWebUiProtocol, test_uri: str, error_response: Callable
-    ) -> None:
+    def process(self, webui: RedWebUiProtocol, test_uri: str, error_response: Callable) -> None:
         """Enforce limits on webui."""
         if not self.running:
             self.setup(webui.config)

@@ -214,9 +214,7 @@ class RunTestHandler(RequestHandler):
         top_resource.check()
 
     @classmethod
-    def render_link(
-        cls, ui: RedWebUiProtocol, absolute: bool = False, **kwargs: str
-    ) -> str:
+    def render_link(cls, ui: RedWebUiProtocol, absolute: bool = False, **kwargs: str) -> str:
         """
         Generate a URI for running a test.
 

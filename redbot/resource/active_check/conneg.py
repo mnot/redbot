@@ -20,17 +20,13 @@ class ConnegCheck(SubRequest):
     check_id = "conneg"
     response_phrase = _("The compressed response")
 
-    def modify_request_headers(
-        self, base_headers: StrHeaderListType
-    ) -> StrHeaderListType:
+    def modify_request_headers(self, base_headers: StrHeaderListType) -> StrHeaderListType:
         return [h for h in base_headers if h[0].lower() != "accept-encoding"] + [
             ("accept-encoding", "gzip")
         ]
 
     def preflight(self) -> bool:
-        if "accept-encoding" in [
-            k.lower() for (k, v) in self.base.request.headers.text
-        ]:
+        if "accept-encoding" in [k.lower() for (k, v) in self.base.request.headers.text]:
             return False
         if self.base.response.status_code == 206:
             return False
@@ -90,9 +86,7 @@ class ConnegCheck(SubRequest):
                 )
 
             # check ETag
-            if bare.headers.parsed.get("etag", 1) == negotiated.headers.parsed.get(
-                "etag", 2
-            ):
+            if bare.headers.parsed.get("etag", 1) == negotiated.headers.parsed.get("etag", 2):
                 if not self.base.response.headers.parsed["etag"][0]:  # strong
                     self.add_notes("field-etag", VARY_ETAG_DOESNT_CHANGE)
 
@@ -153,9 +147,7 @@ Trying again might fix it."""
 class CONNEG_GZIP_GOOD(RedbotNote):
     category = categories.CONNEG
     level = levels.GOOD
-    _summary = (
-        "Content negotiation for gzip compression is supported, saving %(savings)s%%."
-    )
+    _summary = "Content negotiation for gzip compression is supported, saving %(savings)s%%."
     _text = """\
 HTTP supports compression of responses by negotiating for `Content-Encoding`. When REDbot asked for
 a compressed response, the resource provided one, saving %(savings)s%% of its original size (from

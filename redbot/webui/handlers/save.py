@@ -84,9 +84,7 @@ class SaveHandler(RequestHandler):
             )
             ui.output("Redirecting to the saved test page...")
         except OSError:
-            ui.error_response(
-                b"500", b"Internal Server Error", "Sorry, I couldn't save that."
-            )
+            ui.error_response(b"500", b"Internal Server Error", "Sorry, I couldn't save that.")
             return
 
         ui.exchange.response_done([])
@@ -142,9 +140,7 @@ class LoadSavedTestHandler(RequestHandler):
 
         Handles GET/HEAD requests with 'id' in query string.
         """
-        return (
-            ui.method in ["GET", "HEAD"] and len(ui.path) == 2 and ui.path[0] == "saved"
-        )
+        return ui.method in ["GET", "HEAD"] and len(ui.path) == 2 and ui.path[0] == "saved"
 
     @classmethod
     def handle(cls, ui: RedWebUiProtocol) -> None:
@@ -173,9 +169,7 @@ class LoadSavedTestHandler(RequestHandler):
                 is_saved = mtime > time.time()
                 top_resource = pickle.load(fd)
         except (OSError, TypeError):
-            ui.error_response(
-                b"404", b"Not Found", "I'm sorry, I can't find that saved response."
-            )
+            ui.error_response(b"404", b"Not Found", "I'm sorry, I can't find that saved response.")
             return
         except (pickle.PickleError, zlib.error, EOFError):
             ui.error_response(

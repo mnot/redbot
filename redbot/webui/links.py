@@ -24,9 +24,7 @@ class WebUiLinkGenerator:
 
     def save_form(self, test_id: str, descend: bool = False) -> str:
         """Generate a form to save a test."""
-        return SaveHandler.render_form(
-            self.ui, id=test_id, descend="True" if descend else ""
-        )
+        return SaveHandler.render_form(self.ui, id=test_id, descend="True" if descend else "")
 
     def load_link(
         self,
@@ -156,9 +154,7 @@ class WebUiLinkGenerator:
             # If check_name passed as arg, use it (for subreq link).
             # But the logic was: check = check_name or (resource.check_id...)
             # We should preserve that logic if check_name is None.
-            check = check_name or (
-                resource.check_id if resource.check_id is not None else ""
-            )
+            check = check_name or (resource.check_id if resource.check_id is not None else "")
 
             link_uri = self.load_link(
                 test_id=test_id,
@@ -166,10 +162,7 @@ class WebUiLinkGenerator:
                 output_format=res_format or "",
                 descend=descend,
             )
-            return (
-                f"<a href='{link_uri}'"
-                f"class='{css_class}' title='{title}'>{link_value}</a>"
-            )
+            return f"<a href='{link_uri}'" f"class='{css_class}' title='{title}'>{link_value}</a>"
 
         # For new tests, gather context and delegate to RunTestHandler
         test_uri = urljoin(uri, link or "")
@@ -188,8 +181,7 @@ class WebUiLinkGenerator:
             link_value=str(link_value),
             headers=headers,
             uri=test_uri,
-            check_name=check_name
-            or (resource.check_id if resource.check_id is not None else ""),
+            check_name=check_name or (resource.check_id if resource.check_id is not None else ""),
             output_format=res_format or "",
             descend=descend,
             css_class=css_class,

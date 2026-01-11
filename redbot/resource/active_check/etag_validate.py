@@ -28,9 +28,7 @@ class ETagValidate(SubRequest):
         ]
     )
 
-    def modify_request_headers(
-        self, base_headers: StrHeaderListType
-    ) -> StrHeaderListType:
+    def modify_request_headers(self, base_headers: StrHeaderListType) -> StrHeaderListType:
         etag_value = self.base.response.headers.parsed.get("etag", None)
         if etag_value:
             weak, etag = etag_value
@@ -47,10 +45,7 @@ class ETagValidate(SubRequest):
             [k.lower() for (k, v) in self.base.request.headers.text]
         ):
             return False
-        if (
-            self.base.response.status_code
-            and 300 <= self.base.response.status_code <= 399
-        ):
+        if self.base.response.status_code and 300 <= self.base.response.status_code <= 399:
             return False
         etag = self.base.response.headers.parsed.get("etag", None)
         if etag:
@@ -79,9 +74,9 @@ class ETagValidate(SubRequest):
                 self.base.inm_support = False
                 self.add_notes("field-etag", INM_FULL)
             else:  # bodies are different
-                if self.base.response.headers.parsed[
-                    "etag"
-                ] == self.response.headers.parsed.get("etag", 1):
+                if self.base.response.headers.parsed["etag"] == self.response.headers.parsed.get(
+                    "etag", 1
+                ):
                     if self.base.response.headers.parsed["etag"][0]:  # weak
                         self.add_notes("field-etag", INM_DUP_ETAG_WEAK)
                     else:  # strong

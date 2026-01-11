@@ -113,3 +113,6 @@ min-public-methods=1
 
 [tool.pylint.similarities]
 min-similarity-lines = 10
+
+[tool.black]
+line-length = 100

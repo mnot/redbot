@@ -36,9 +36,7 @@ class RangeRequest(SubRequest):
         self.max_sample_size = 0  # unlimited
         SubRequest.__init__(self, config, resource)
 
-    def modify_request_headers(
-        self, base_headers: StrHeaderListType
-    ) -> StrHeaderListType:
+    def modify_request_headers(self, base_headers: StrHeaderListType) -> StrHeaderListType:
         samples = [s for s in self.base.response_content_sample if s[1]]
         if samples:
             sample_num = random.randint(0, len(samples) - 1)
@@ -52,10 +50,7 @@ class RangeRequest(SubRequest):
     def preflight(self) -> bool:
         if "range" in [k.lower() for (k, v) in self.base.request.headers.text]:
             return False
-        if (
-            self.base.response.status_code
-            and 300 <= self.base.response.status_code <= 399
-        ):
+        if self.base.response.status_code and 300 <= self.base.response.status_code <= 399:
             return False
         if self.base.response.status_code == 206:
             return False
@@ -81,9 +76,7 @@ class RangeRequest(SubRequest):
             if ("gzip" in self.base.response.headers.parsed.get(c_e, [])) == (
                 "gzip" not in self.response.headers.parsed.get(c_e, [])
             ):
-                self.add_base_note(
-                    "field-accept-ranges field-content-encoding", RANGE_NEG_MISMATCH
-                )
+                self.add_base_note("field-accept-ranges field-content-encoding", RANGE_NEG_MISMATCH)
                 return
             self.check_missing_hdrs(
                 [
@@ -104,8 +97,7 @@ class RangeRequest(SubRequest):
             if content_range:
                 if (
                     content_range.complete_length is not None
-                    and content_range.complete_length
-                    != self.base.response.content_length
+                    and content_range.complete_length != self.base.response.content_length
                 ):
                     self.add_notes(
                         "field-content-range",

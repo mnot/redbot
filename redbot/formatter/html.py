@@ -99,9 +99,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         if self.resource.response.complete or self.resource.nonfinal_responses:
             validator_link = self.validators.get(media_type, None)
             if validator_link and self.resource.response.complete:
-                validator_link = validator_link % e_query_arg(
-                    self.resource.request.uri or ""
-                )
+                validator_link = validator_link % e_query_arg(self.resource.request.uri or "")
             else:
                 validator_link = None
             is_saved = self.kw.get("is_saved", False)
@@ -141,9 +139,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                                     _("check embedded"),
                                     use_stored=False,
                                     descend=True,
-                                    title=_(
-                                        "Run REDbot on images, frames and embedded links"
-                                    ),
+                                    title=_("Run REDbot on images, frames and embedded links"),
                                 )
                             ),
                             "validator_link": validator_link,
@@ -169,9 +165,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         """show the stored body sample"""
         sample = b"".join(resource.response_decoded_sample)
         try:
-            uni_sample = sample.decode(
-                resource.response.character_encoding or "utf-8", "ignore"
-            )
+            uni_sample = sample.decode(resource.response.character_encoding or "utf-8", "ignore")
         except (TypeError, LookupError):
             uni_sample = sample.decode("utf-8", "replace")
         safe_sample = escape(uni_sample)
@@ -199,15 +193,11 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                         return rf"{matchobj.group(1)}{link_str}{matchobj.group(1)}"
 
                     safe_sample = Markup(
-                        re.sub(
-                            rf"(&#34;|&#39;){re.escape(link)}\1", link_to, safe_sample
-                        )
+                        re.sub(rf"(&#34;|&#39;){re.escape(link)}\1", link_to, safe_sample)
                     )
         message: Union[str, LazyProxy] = ""
         if not resource.response_decoded_complete:
-            message = _(
-                "<p class='btw'>REDbot isn't showing all content, because it's so big!</p>"
-            )
+            message = _("<p class='btw'>REDbot isn't showing all content, because it's so big!</p>")
         return Markup(f"<pre class='prettyprint'>{safe_sample}</pre>\n{message}")
 
     def format_subrequest_messages(self, category: categories) -> Markup:
@@ -229,16 +219,12 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                 out.append(f'<span class="req_link">({link}')
                 smsgs = [
                     note
-                    for note in getattr(
-                        self.resource.subreqs[check_id].response, "notes", []
-                    )
-                    if note.level in [levels.BAD]
-                    and note not in self.resource.response.notes
+                    for note in getattr(self.resource.subreqs[check_id].response, "notes", [])
+                    if note.level in [levels.BAD] and note not in self.resource.response.notes
                 ]
                 if smsgs:
                     out.append(
-                        ngettext(" - %d problem\n", " - %d problems\n", len(smsgs))
-                        % len(smsgs)
+                        ngettext(" - %d problem\n", " - %d problems\n", len(smsgs)) % len(smsgs)
                     )
                 out.append(")</span>")
         return Markup(NL.join(out))
@@ -251,9 +237,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         if description:
             return Markup(
                 '<span class="tip">'
-                + self._markdown.reset().convert(
-                    description % {"field_name": header_name}
-                )
+                + self._markdown.reset().convert(description % {"field_name": header_name})
                 + "</span>"
             )
         return Markup("")
@@ -282,9 +266,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                         try:
                             idx = int(subject[7:])
                             current = offset_max.get(idx, levels.INFO)
-                            if level_order.index(note.level) > level_order.index(
-                                current
-                            ):
+                            if level_order.index(note.level) > level_order.index(current):
                                 offset_max[idx] = note.level
                         except ValueError:
                             pass
@@ -426,9 +408,5 @@ class TableHtmlFormatter(BaseHtmlFormatter):
     def format_note_description(self, header_name: str) -> Markup:
         description = get_field_description(header_name)
         if description:
-            return Markup(
-                self._markdown.reset().convert(
-                    description % {"field_name": header_name}
-                )
-            )
+            return Markup(self._markdown.reset().convert(description % {"field_name": header_name}))
         return Markup("")

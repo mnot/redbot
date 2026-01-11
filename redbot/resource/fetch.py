@@ -195,9 +195,7 @@ class RedFetcher(thor.events.EventEmitter):
     ) -> None:
         "Got a non-final response."
         nfres = HttpResponseLinter(start_time=time.time())
-        assert (
-            self.exchange.res_version
-        ), "exchange.res_version not set in _response_nonfinal"
+        assert self.exchange.res_version, "exchange.res_version not set in _response_nonfinal"
         nfres.process_response_topline(self.exchange.res_version, status, phrase)
         nfres.process_headers(res_headers)
         nfres.finish_content(True)
@@ -218,19 +216,13 @@ class RedFetcher(thor.events.EventEmitter):
                     header_name=wire_name.decode("ascii"),
                 )
 
-    def _response_start(
-        self, status: bytes, phrase: bytes, res_headers: RawHeaderListType
-    ) -> None:
+    def _response_start(self, status: bytes, phrase: bytes, res_headers: RawHeaderListType) -> None:
         "Process the response start-line and headers."
         if self.fetch_done:
             return
         self.response.start_time = time.time()
-        assert (
-            self.exchange.res_version
-        ), "exchange.res_version not set in _response_start"
-        self.response.process_response_topline(
-            self.exchange.res_version, status, phrase
-        )
+        assert self.exchange.res_version, "exchange.res_version not set in _response_start"
+        self.response.process_response_topline(self.exchange.res_version, status, phrase)
         self.response.process_headers(res_headers)
         self.emit("response_headers_available")
 
@@ -259,10 +251,7 @@ class RedFetcher(thor.events.EventEmitter):
 
     def sample_decoded(self, decoded_chunk: bytes) -> None:
         "Sample the decoded response content."
-        if (
-            self.max_sample_size == 0
-            or self.response.decoded.length < self.max_sample_size
-        ):
+        if self.max_sample_size == 0 or self.response.decoded.length < self.max_sample_size:
             self.response_decoded_sample.append(decoded_chunk)
         else:
             self.response_decoded_complete = False
@@ -281,15 +270,11 @@ class RedFetcher(thor.events.EventEmitter):
             else:
                 self.response.notes.add("body", EXTRA_DATA, sample=err_sample)
         elif isinstance(error, httperr.ChunkError):
-            self.response.notes.add(
-                "field-transfer-encoding", BAD_CHUNK, chunk_sample=err_sample
-            )
+            self.response.notes.add("field-transfer-encoding", BAD_CHUNK, chunk_sample=err_sample)
         elif isinstance(error, httperr.HeaderSpaceError):
             assert error.detail, "error.detail not set in _response_error"
             subject = f"field-{error.detail.lower().strip()}"
-            self.response.notes.add(
-                subject, HEADER_NAME_SPACE, header_name=error.detail
-            )
+            self.response.notes.add(subject, HEADER_NAME_SPACE, header_name=error.detail)
             return
         else:
             self.fetch_error = error

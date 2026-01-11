@@ -73,14 +73,10 @@ class HarFormatter(Formatter):
     def add_entry(self, resource: HttpResource, page_ref: Optional[int] = None) -> None:
         assert resource.request.start_time, "request.start_time not set in add_entry"
         assert resource.response.start_time, "response.start_time not set in add_entry"
-        assert (
-            resource.response.finish_time
-        ), "response.finish_time not set in add_entry"
+        assert resource.response.finish_time, "response.finish_time not set in add_entry"
         entry = {
             "startedDateTime": isoformat(resource.request.start_time),
-            "time": int(
-                (resource.response.finish_time - resource.request.start_time) * 1000
-            ),
+            "time": int((resource.response.finish_time - resource.request.start_time) * 1000),
             "_red_messages": self.format_notes(resource),
         }
         if page_ref:
@@ -105,8 +101,7 @@ class HarFormatter(Formatter):
             "headers": self.format_headers(resource.response.headers.text),
             "content": {
                 "size": resource.response.decoded.length,
-                "compression": resource.response.decoded.length
-                - resource.response.content_length,
+                "compression": resource.response.decoded.length - resource.response.content_length,
                 "mimeType": resource.response.headers.parsed.get("content-type", ""),
             },
             "redirectURL": resource.response.headers.parsed.get("location", ""),
@@ -120,12 +115,8 @@ class HarFormatter(Formatter):
             "connect": -1,
             "blocked": 0,
             "send": 0,
-            "wait": int(
-                (resource.response.start_time - resource.request.start_time) * 1000
-            ),
-            "receive": int(
-                (resource.response.finish_time - resource.response.start_time) * 1000
-            ),
+            "wait": int((resource.response.start_time - resource.request.start_time) * 1000),
+            "receive": int((resource.response.finish_time - resource.response.start_time) * 1000),
         }
 
         entry.update(

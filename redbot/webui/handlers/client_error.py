@@ -56,9 +56,7 @@ class ClientErrorHandler(RequestHandler):
         ui.exchange.response_done([])
 
     @classmethod
-    def render_link(
-        cls, ui: RedWebUiProtocol, absolute: bool = False, **kwargs: str
-    ) -> str:
+    def render_link(cls, ui: RedWebUiProtocol, absolute: bool = False, **kwargs: str) -> str:
         """
         Generate a URI for reporting client errors.
 
