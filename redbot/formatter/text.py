@@ -28,8 +28,9 @@ class BaseTextFormatter(Formatter):
 
     note_categories = [
         categories.GENERAL,
-        categories.SECURITY,
         categories.CONNECTION,
+        categories.SECURITY,
+        categories.COOKIES,
         categories.CONNEG,
         categories.CACHING,
         categories.VALIDATION,

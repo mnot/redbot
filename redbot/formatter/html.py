@@ -34,8 +34,9 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     # the order of note categories to display
     note_categories = [
         categories.GENERAL,
-        categories.SECURITY,
         categories.CONNECTION,
+        categories.SECURITY,
+        categories.COOKIES,
         categories.CONNEG,
         categories.CACHING,
         categories.VALIDATION,

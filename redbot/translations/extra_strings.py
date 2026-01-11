@@ -7,6 +7,7 @@ def extra_strings() -> None:
     # httplint categories
     _("General")
     _("Browser Security")
+    _("Cookies")
     _("Content Negotiation")
     _("Caching")
     _("Validation")
