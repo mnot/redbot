@@ -21,7 +21,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License"
 ]
 dependencies = [
-    "httplint >= 2026.01.13",
+    "httplint >= 2026.01.15",
     "importlib_resources",
     "Jinja2 >= 3.1.2",
     "markdown >= 3.4.4",
