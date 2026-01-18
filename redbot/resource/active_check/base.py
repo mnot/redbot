@@ -66,12 +66,12 @@ class SubRequest(RedFetcher, metaclass=ABCMeta):
 
     def add_base_note(self, subject: str, note: Type[Note], **kw: Union[str, int]) -> None:
         "Add a Note to the base resource."
-        self.base.response.notes.add(subject, note, **kw)
+        self.base.response.notes.add(subject, note, category=None, **kw)
 
     def add_notes(self, subject: str, note: Type[Note], **kw: Union[str, int]) -> None:
         "Add a Note to the base resource and to the subresource."
-        self.base.response.notes.add(subject, note, **kw)
-        self.response.notes.add(subject, note, **kw)
+        self.base.response.notes.add(subject, note, category=None, **kw)
+        self.response.notes.add(subject, note, category=None, **kw)
 
     def check_missing_hdrs(self, hdrs: List[str], note: Type[Note]) -> None:
         """

@@ -26,16 +26,7 @@ class BaseTextFormatter(Formatter):
 
     media_type = "text/plain"
 
-    note_categories = [
-        categories.GENERAL,
-        categories.CONNECTION,
-        categories.SECURITY,
-        categories.COOKIES,
-        categories.CONNEG,
-        categories.CACHING,
-        categories.VALIDATION,
-        categories.RANGE,
-    ]
+    note_categories = list(categories)
 
     link_order = [
         ("link", _("Head Links")),

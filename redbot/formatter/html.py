@@ -32,16 +32,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     """
 
     # the order of note categories to display
-    note_categories = [
-        categories.GENERAL,
-        categories.CONNECTION,
-        categories.SECURITY,
-        categories.COOKIES,
-        categories.CONNEG,
-        categories.CACHING,
-        categories.VALIDATION,
-        categories.RANGE,
-    ]
+    # the order of note categories to display
+    note_categories = list(categories)
 
     # associating categories with subrequests
     note_responses = {

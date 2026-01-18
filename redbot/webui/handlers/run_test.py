@@ -19,7 +19,7 @@ from redbot.webui.handlers.base import RequestHandler
 from redbot.webui.ratelimit import ratelimiter
 from redbot.webui.saved_tests import init_save_file, save_test
 from redbot.formatter import find_formatter
-from redbot.formatter.html_base import e_url
+from redbot.utils import e_url
 from redbot.resource.active_check import active_checks
 
 if TYPE_CHECKING:
