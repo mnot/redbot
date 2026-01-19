@@ -376,8 +376,7 @@ def main() -> None:
 
     if args.debug:
         _loop.debug = True
-
-    tracemalloc.start(25)
+        tracemalloc.start(25)
 
     sys.stderr.write(
         f"Starting REDbot {redbot.__version__} on PID {os.getpid()}"
