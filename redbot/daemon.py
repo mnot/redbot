@@ -15,6 +15,7 @@ import os
 from pstats import Stats
 import signal
 import sys
+import tracemalloc
 import traceback
 from types import FrameType
 from typing import Dict, Optional, Any, Callable
@@ -99,7 +100,7 @@ class RedBotServer:
         ]:
             signal.signal(signum, self.handle_crash_signal)
         signal.signal(signal.SIGINT, self.shutdown_signal)
-        signal.signal(signal.SIGTERM, self.shutdown_signal)
+        signal.signal(signal.SIGTERM, self.handle_sigterm)
 
     def run(self) -> None:
         try:
@@ -111,6 +112,62 @@ class RedBotServer:
 
     def shutdown_signal(self, sig: int, frame: Optional[FrameType]) -> None:
         self.console("Shutting down...")
+        self.shutdown()
+
+    def handle_sigterm(self, sig: int, frame: Optional[FrameType]) -> None:
+        self.console("Caught SIGTERM, dumping memory stats...")
+        try:
+            snapshot = tracemalloc.take_snapshot()
+            top_stats = snapshot.statistics("lineno")
+
+            self.console("Top 20 Memory Allocations (by file/line):")
+            self.console(f"{'Size':>12}  {'Count':>8}  {'Avg':>8}  {'Location'}")
+            self.console(f"{'-'*12}  {'-'*8}  {'-'*8}  {'-'*40}")
+            printed = 0
+            for stat in top_stats:
+                if printed >= 20:
+                    break
+                tm_frame = stat.traceback[0]
+                filename = tm_frame.filename
+
+                if "<frozen" in filename:
+                    continue
+
+                if "site-packages" in filename:
+                    filename = filename.split("site-packages/")[-1]
+                else:
+                    try:
+                        filename = os.path.relpath(filename)
+                    except ValueError:
+                        # On some systems (e.g. Windows) relpath might fail across drives
+                        pass
+
+                count = stat.count
+                size = stat.size
+                avg = size / count
+
+                # Format size
+                if size < 1024:
+                    size_str = f"{size} B"
+                elif size < 1024 * 1024:
+                    size_str = f"{size / 1024:.1f} KiB"
+                else:
+                    size_str = f"{size / 1024 / 1024:.1f} MiB"
+
+                # Format avg
+                if avg < 1024:
+                    avg_str = f"{avg:.0f} B"
+                else:
+                    avg_str = f"{avg / 1024:.1f} KiB"
+
+                self.console(
+                    f"{size_str:>12}  {count:>8}  {avg_str:>8}  {filename}:{tm_frame.lineno}"
+                )
+                printed += 1
+        except Exception:  # pylint: disable=broad-except
+            dump = traceback.format_exc()
+            self.console(f"Error dumping memory stats:\n{dump}")
+
         self.shutdown()
 
     def shutdown(self) -> None:
@@ -319,6 +376,8 @@ def main() -> None:
 
     if args.debug:
         _loop.debug = True
+
+    tracemalloc.start(25)
 
     sys.stderr.write(
         f"Starting REDbot {redbot.__version__} on PID {os.getpid()}"
