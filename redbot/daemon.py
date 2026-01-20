@@ -14,6 +14,8 @@ import inspect
 import os
 from pstats import Stats
 import signal
+import re
+import pkgutil
 import sys
 import tracemalloc
 import traceback
@@ -24,6 +26,9 @@ from urllib.parse import urlsplit
 from importlib_resources import files as resource_files
 
 import httplint
+import httplint.field.parsers
+from httplint.field.utils import RE_FLAGS
+from httplint.syntax import rfc9110
 import thor
 from thor.loop import _loop
 from thor.tcp import TcpConnection
@@ -46,6 +51,41 @@ if os.environ.get("SYSTEMD_WATCHDOG"):
 
 
 _loop.precision = 0.2
+
+
+def warmup_regex() -> None:
+    """
+    Pre-compiles regexes in httplint to avoid tracemalloc overhead.
+    """
+    for _, name, _ in pkgutil.iter_modules(httplint.field.parsers.__path__):
+        module_name = f"httplint.field.parsers.{name}"
+        try:
+            module = importlib.import_module(module_name)
+        except ImportError:
+            continue
+
+        cls = getattr(module, name, None)
+        if not cls:
+            for item_name in dir(module):
+                item = getattr(module, item_name)
+                # Check for SingletonField or HttpListField essentially, but duck typing is fine
+                if (
+                    hasattr(item, "canonical_name")
+                    and hasattr(item, "syntax")
+                    and item.__module__ == module_name
+                ):
+                    cls = item
+                    break
+
+        if cls and hasattr(cls, "syntax") and cls.syntax:
+            syntax = cls.syntax
+            if isinstance(syntax, rfc9110.list_rule):
+                element_syntax = syntax.element
+                pattern = rf"^\s*(?:{element_syntax})\s*$"
+            else:
+                pattern = rf"^\s*(?:{syntax})\s*$"
+
+            re.compile(pattern, RE_FLAGS)
 
 
 class RedBotServer:
@@ -376,6 +416,7 @@ def main() -> None:
 
     if args.debug:
         _loop.debug = True
+        warmup_regex()
         tracemalloc.start(25)
 
     sys.stderr.write(
