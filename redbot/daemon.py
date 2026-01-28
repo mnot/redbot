@@ -430,7 +430,6 @@ def main() -> None:
 
     if args.debug or conf["redbot"].getboolean("debug", fallback=False):
         conf["redbot"]["debug"] = "true"
-        _loop.debug = True
         warmup_regex()
         tracemalloc.start(25)
 
