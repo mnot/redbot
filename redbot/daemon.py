@@ -217,8 +217,11 @@ class RedBotServer:
             self.console(f"Error dumping memory stats:\n{dump}")
 
     def handle_sigterm(self, sig: int, frame: Optional[FrameType]) -> None:
-        self.console("Caught SIGTERM, dumping memory stats...")
-        self.dump_memory_stats()
+        if self.debug:
+            self.console("Caught SIGTERM, dumping memory stats...")
+            self.dump_memory_stats()
+        else:
+            self.console("Caught SIGTERM, shutting down...")
         self.shutdown()
 
     def shutdown(self) -> None:
