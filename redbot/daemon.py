@@ -95,6 +95,7 @@ class RedBotServer:
 
     def __init__(self, config: SectionProxy) -> None:
         self.config = config
+        self.debug = self.config.getboolean("debug", fallback=False)
         self.handler = partial(RedRequestHandler, server=self)
 
         # Set up the watchdog
@@ -122,6 +123,9 @@ class RedBotServer:
         # Start garbage collection
         if config.get("save_dir", ""):
             thor.schedule(10, self.gc_state)
+
+        if self.debug:
+            thor.schedule(3600, self.periodic_memory_dump)
 
         # Set up the server
         self.http_server = thor.http.HttpServer(
@@ -154,8 +158,12 @@ class RedBotServer:
         self.console("Shutting down...")
         self.shutdown()
 
-    def handle_sigterm(self, sig: int, frame: Optional[FrameType]) -> None:
-        self.console("Caught SIGTERM, dumping memory stats...")
+    def periodic_memory_dump(self) -> None:
+        self.console("Hourly memory stats dump:")
+        self.dump_memory_stats()
+        thor.schedule(3600, self.periodic_memory_dump)
+
+    def dump_memory_stats(self) -> None:
         try:
             snapshot = tracemalloc.take_snapshot()
             top_stats = snapshot.statistics("lineno")
@@ -208,6 +216,9 @@ class RedBotServer:
             dump = traceback.format_exc()
             self.console(f"Error dumping memory stats:\n{dump}")
 
+    def handle_sigterm(self, sig: int, frame: Optional[FrameType]) -> None:
+        self.console("Caught SIGTERM, dumping memory stats...")
+        self.dump_memory_stats()
         self.shutdown()
 
     def shutdown(self) -> None:
@@ -414,7 +425,8 @@ def main() -> None:
     conf = ConfigParser()
     conf.read(args.config_file)
 
-    if args.debug:
+    if args.debug or conf["redbot"].getboolean("debug", fallback=False):
+        conf["redbot"]["debug"] = "true"
         _loop.debug = True
         warmup_regex()
         tracemalloc.start(25)
