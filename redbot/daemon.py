@@ -53,41 +53,6 @@ if os.environ.get("SYSTEMD_WATCHDOG"):
 _loop.precision = 0.2
 
 
-def warmup_regex() -> None:
-    """
-    Pre-compiles regexes in httplint to avoid tracemalloc overhead.
-    """
-    for _, name, _ in pkgutil.iter_modules(httplint.field.parsers.__path__):
-        module_name = f"httplint.field.parsers.{name}"
-        try:
-            module = importlib.import_module(module_name)
-        except ImportError:
-            continue
-
-        cls = getattr(module, name, None)
-        if not cls:
-            for item_name in dir(module):
-                item = getattr(module, item_name)
-                # Check for SingletonField or HttpListField essentially, but duck typing is fine
-                if (
-                    hasattr(item, "canonical_name")
-                    and hasattr(item, "syntax")
-                    and item.__module__ == module_name
-                ):
-                    cls = item
-                    break
-
-        if cls and hasattr(cls, "syntax") and cls.syntax:
-            syntax = cls.syntax
-            if isinstance(syntax, rfc9110.list_rule):
-                element_syntax = syntax.element
-                pattern = rf"^\s*(?:{element_syntax})\s*$"
-            else:
-                pattern = rf"^\s*(?:{syntax})\s*$"
-
-            re.compile(pattern, RE_FLAGS)
-
-
 class RedBotServer:
     """Run REDbot as a standalone Web server."""
 
@@ -96,6 +61,18 @@ class RedBotServer:
     def __init__(self, config: SectionProxy) -> None:
         self.config = config
         self.debug = self.config.getboolean("debug", fallback=False)
+
+        self.console(
+            f"Starting REDbot {redbot.__version__} on PID {os.getpid()}"
+            + f" (thor {thor.__version__}; httplint {httplint.__version__})\n"
+            + f"http://{self.config.get('host', '')}:{self.config['port']}/"
+        )
+
+        if self.debug:
+            self.console("Debug mode enabled")
+            self.warmup_regex()
+            tracemalloc.start(25)
+
         self.handler = partial(RedRequestHandler, server=self)
 
         # Set up the watchdog
@@ -277,6 +254,41 @@ class RedBotServer:
     def console(message: str) -> None:
         sys.stderr.write(f"{message}\n")
 
+    @staticmethod
+    def warmup_regex() -> None:
+        """
+        Pre-compiles regexes in httplint to avoid tracemalloc overhead.
+        """
+        for _, name, _ in pkgutil.iter_modules(httplint.field.parsers.__path__):
+            module_name = f"httplint.field.parsers.{name}"
+            try:
+                module = importlib.import_module(module_name)
+            except ImportError:
+                continue
+
+            cls = getattr(module, name, None)
+            if not cls:
+                for item_name in dir(module):
+                    item = getattr(module, item_name)
+                    # Check for SingletonField or HttpListField essentially, but duck typing is fine
+                    if (
+                        hasattr(item, "canonical_name")
+                        and hasattr(item, "syntax")
+                        and item.__module__ == module_name
+                    ):
+                        cls = item
+                        break
+
+            if cls and hasattr(cls, "syntax") and cls.syntax:
+                syntax = cls.syntax
+                if isinstance(syntax, rfc9110.list_rule):
+                    element_syntax = syntax.element
+                    pattern = rf"^\s*(?:{element_syntax})\s*$"
+                else:
+                    pattern = rf"^\s*(?:{syntax})\s*$"
+
+                re.compile(pattern, RE_FLAGS)
+
 
 class RedRequestHandler:
     static_types = {
@@ -430,14 +442,6 @@ def main() -> None:
 
     if args.debug or conf["redbot"].getboolean("debug", fallback=False):
         conf["redbot"]["debug"] = "true"
-        warmup_regex()
-        tracemalloc.start(25)
-
-    sys.stderr.write(
-        f"Starting REDbot {redbot.__version__} on PID {os.getpid()}"
-        + f" (thor {thor.__version__}; httplint {httplint.__version__})\n"
-        + f"http://{conf['redbot'].get('host', '')}:{conf['redbot']['port']}/\n"
-    )
 
     server = RedBotServer(conf["redbot"])
     server.run()
