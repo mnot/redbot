@@ -43,7 +43,7 @@ TEST_SOURCES = $(wildcard test/test_*.py)
 TEST_TARGETS = $(patsubst test/%.py,%,$(TEST_SOURCES))
 
 .PHONY: test
-test: $(TEST_TARGETS) coverage
+test: $(TEST_TARGETS) coverage i18n-check
 
 # Generic rule for running tests
 test_%: venv

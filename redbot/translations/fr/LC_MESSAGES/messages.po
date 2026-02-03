@@ -222,7 +222,7 @@ msgstr "Ce résultat est enregistré"
 #: redbot/formatter/templates/response_multi_finish.html:106
 #, python-brace-format
 msgid "Saved until {0} from now"
-msgstr "Enregistré jusqu'à %(0)s à partir de maintenant"
+msgstr "Enregistré jusqu'à {0} à partir de maintenant"
 
 #: redbot/formatter/templates/response_finish.html:70
 #: redbot/formatter/templates/response_multi_finish.html:99

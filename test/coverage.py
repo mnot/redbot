@@ -179,7 +179,7 @@ def check_static_usage():
                     
                     # Calculate needed variables
                     content = getattr(note_cls, "_summary", "") + getattr(note_cls, "_text", "")
-                    needed = set(re.findall(r"%\(([a-z0-9_]+)\)s", content))
+                    needed = set(re.findall(r"%\(([^)]+)\)[diouxXeEfFgGcrsa]", content))
                     
                     if not needed:
                         self.generic_visit(node)
