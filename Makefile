@@ -43,7 +43,7 @@ TEST_SOURCES = $(wildcard test/test_*.py)
 TEST_TARGETS = $(patsubst test/%.py,%,$(TEST_SOURCES))
 
 .PHONY: test
-test: $(TEST_TARGETS)
+test: $(TEST_TARGETS) coverage
 
 # Generic rule for running tests
 test_%: venv
@@ -64,6 +64,9 @@ test_webui: venv
 	while ! nc -z localhost 8000; do sleep 0.1; done; \
 	PYTHONPATH=.:$(VENV) $(VENV)/python test/test_webui.py
 
+.PHONY: coverage
+coverage: venv
+	PYTHONPATH=. $(VENV)/python test/coverage.py
 
 #############################################################################
 ## i18n
