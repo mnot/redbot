@@ -220,7 +220,7 @@ class RedBotServer:
         assert current_frame
         frame = current_frame.f_back
         assert frame
-        traceback.print_stack(frame, limit=1)
+        traceback.print_stack(frame, limit=5)
         self.console("  * Local Variables")
         for key, val in frame.f_locals.items():
             self.console(f"    {key}: {val}")
