@@ -69,7 +69,7 @@ docReady(function () {
 
     const tooltip = qs('span.tip', element)
     if (tooltip) {
-      tippy(element, {
+      tippy(qs('span', element), {
         content: tooltip.innerHTML,
         allowHTML: true,
         theme: 'redbot',
