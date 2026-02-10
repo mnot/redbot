@@ -235,6 +235,8 @@ class RedFetcher(thor.events.EventEmitter):
 
     def _response_done(self, trailers: List[Tuple[bytes, bytes]]) -> None:
         "Finish analysing the response, handling any parse errors."
+        if self.fetch_done:
+            return
         self.emit("debug", f"fetched {self.request.uri} ({self.check_name})")
         self.response.transfer_length = self.exchange.input_transfer_length
         self.response_header_length = self.exchange.input_header_length
