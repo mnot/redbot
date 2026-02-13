@@ -38,5 +38,7 @@ def e_js(instr: str) -> Markup:
         return Markup("")
     instr = instr.replace("\\", "\\\\")
     instr = instr.replace('"', r"\"")
+    instr = instr.replace("\n", r"\n")
+    instr = instr.replace("\r", r"")
     instr = instr.replace("<", r"\x3c")
     return Markup(instr)
