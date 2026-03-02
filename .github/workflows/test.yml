@@ -50,7 +50,7 @@ jobs:
       run: make test_webui
     - name: Upload screenshots
       if: always()
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: webui-screenshots
         path: fail_*.png
