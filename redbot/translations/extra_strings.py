@@ -5,4 +5,12 @@ from redbot.i18n import _
 
 def extra_strings() -> None:
     # httplint categories
-    pass
+    _("General")
+    _("Connection")
+    _("Browser Security")
+    _("Cross-Origin Resource Sharing")
+    _("Cookies")
+    _("Content Negotiation")
+    _("Caching")
+    _("Validation")
+    _("Partial Content")
