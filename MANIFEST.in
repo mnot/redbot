@@ -5,3 +5,10 @@ include redbot/assets/logo/*
 include redbot/assets/icons/*
 include redbot/formatter/templates/*
 recursive-include redbot/translations *.mo *.po *.pot
+
+prune build
+prune dist
+prune test
+prune tools
+prune src
+exclude .gitignore .editorconfig .dockerignore .coveragerc

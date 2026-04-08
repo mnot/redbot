@@ -7,7 +7,7 @@ authors = [
 description = "REDbot is lint for HTTP."
 requires-python = ">=3.9"
 readme = "README.md"
-license = {file = "LICENSE.md"}
+license = "MIT"
 classifiers = [
     "Operating System :: OS Independent",
     "Development Status :: 4 - Beta",
@@ -16,10 +16,9 @@ classifiers = [
     "Environment :: Web Environment",
     "Topic :: Internet :: WWW/HTTP",
     "Topic :: Software Development :: Testing",
-    "Operating System :: Unix",
     "Operating System :: MacOS :: MacOS X",
-    "License :: OSI Approved :: MIT License"
 ]
+license-files = ["LICENSE.md"]
 dependencies = [
     "httplint >= 2026.02.03",
     "importlib_resources",
@@ -68,6 +67,7 @@ version = {attr = "redbot.__version__"}
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["redbot", "redbot.*"]
+exclude = ["redbot.assets*", "redbot.translations*", "redbot.formatter.templates*"]
 namespaces = false
 
 [tool.setuptools]
