@@ -1,85 +1,85 @@
-#: redbot/formatter/html.py:127
+#: redbot/formatter/html.py:119
 msgid "view HAR"
 msgstr ""
 
-#: redbot/formatter/html.py:129
+#: redbot/formatter/html.py:121
 msgid "View a HAR (HTTP ARchive, a JSON format) file for this test"
 msgstr ""
 
-#: redbot/formatter/html.py:139
+#: redbot/formatter/html.py:131
 msgid "check embedded"
 msgstr ""
 
-#: redbot/formatter/html.py:142
+#: redbot/formatter/html.py:134
 msgid "Run REDbot on images, frames and embedded links"
 msgstr ""
 
-#: redbot/formatter/html.py:200
+#: redbot/formatter/html.py:192
 msgid "<p class='btw'>REDbot isn't showing all content, because it's so big!</p>"
 msgstr ""
 
-#: redbot/formatter/html.py:213
+#: redbot/formatter/html.py:205
 #, python-format
 msgid "%s response"
 msgstr ""
 
-#: redbot/formatter/html.py:227
+#: redbot/formatter/html.py:219
 #, python-format
 msgid " - %d problem\n"
 msgstr ""
 
-#: redbot/formatter/html_base.py:141
+#: redbot/formatter/html_base.py:129
 msgid "add a request header"
 msgstr ""
 
-#: redbot/formatter/html_base.py:142
+#: redbot/formatter/html_base.py:130
 msgid "copy cookies to request"
 msgstr ""
 
-#: redbot/formatter/html_base.py:143
+#: redbot/formatter/html_base.py:131
 msgid "view notes"
 msgstr ""
 
-#: redbot/formatter/html_base.py:144
+#: redbot/formatter/html_base.py:132
 #: redbot/formatter/templates/response_finish.html:53
 msgid "view content"
 msgstr ""
 
-#: redbot/formatter/html_base.py:145
+#: redbot/formatter/html_base.py:133
 #: redbot/formatter/templates/response_finish.html:89
 msgid "sort by alpha"
 msgstr ""
 
-#: redbot/formatter/html_base.py:146
+#: redbot/formatter/html_base.py:134
 msgid "show wire order"
 msgstr ""
 
-#: redbot/formatter/html_base.py:149
+#: redbot/formatter/html_base.py:137
 #, python-format
 msgid "Setting the %s request header can lead to unpredictable results."
 msgstr ""
 
-#: redbot/formatter/text.py:41
+#: redbot/formatter/text.py:32
 msgid "Head Links"
 msgstr ""
 
-#: redbot/formatter/text.py:42
+#: redbot/formatter/text.py:33
 msgid "Script Links"
 msgstr ""
 
-#: redbot/formatter/text.py:43
+#: redbot/formatter/text.py:34
 msgid "Frame Links"
 msgstr ""
 
-#: redbot/formatter/text.py:44
+#: redbot/formatter/text.py:35
 msgid "IFrame Links"
 msgstr ""
 
-#: redbot/formatter/text.py:45
+#: redbot/formatter/text.py:36
 msgid "Image Links"
 msgstr ""
 
-#: redbot/formatter/text.py:48
+#: redbot/formatter/text.py:39
 #, python-format
 msgid "Error: %s\n"
 msgstr ""
@@ -343,11 +343,11 @@ msgstr ""
 msgid "Enter a http:// or https:// URL to check"
 msgstr ""
 
-#: redbot/resource/fetch.py:303
+#: redbot/resource/fetch.py:305
 msgid "This response has content."
 msgstr ""
 
-#: redbot/resource/fetch.py:304
+#: redbot/resource/fetch.py:306
 #, python-format
 msgid ""
 "HTTP defines a few special situations where a response does not allow "
@@ -365,11 +365,11 @@ msgid ""
 "    %(sample)s\n"
 msgstr ""
 
-#: redbot/resource/fetch.py:321
+#: redbot/resource/fetch.py:323
 msgid "This response has extra data after it."
 msgstr ""
 
-#: redbot/resource/fetch.py:322
+#: redbot/resource/fetch.py:324
 #, python-format
 msgid ""
 "The server sent data after the message ended. This can be caused by an "
@@ -381,11 +381,11 @@ msgid ""
 "    %(sample)s\n"
 msgstr ""
 
-#: redbot/resource/fetch.py:335
+#: redbot/resource/fetch.py:337
 msgid "This response has chunked encoding errors."
 msgstr ""
 
-#: redbot/resource/fetch.py:336
+#: redbot/resource/fetch.py:338
 #, python-format
 msgid ""
 "The response indicates it uses HTTP chunked encoding, but there was a "
@@ -409,14 +409,14 @@ msgid ""
 "`Transfer-Encoding: chunked` without actually chunking the response body."
 msgstr ""
 
-#: redbot/resource/fetch.py:358
+#: redbot/resource/fetch.py:360
 #, python-format
 msgid ""
 "This response has whitespace at the end of the '%(header_name)s' header "
 "field name."
 msgstr ""
 
-#: redbot/resource/fetch.py:359
+#: redbot/resource/fetch.py:361
 msgid ""
 "HTTP specifically bans whitespace between header field names and the "
 "colon, because they can easily\n"
@@ -426,12 +426,12 @@ msgid ""
 "Most HTTP implementations will refuse to process this message.\n"
 msgstr ""
 
-#: redbot/resource/fetch.py:370
+#: redbot/resource/fetch.py:372
 #, python-format
 msgid "The %(response)s response contains a %(header_name)s header."
 msgstr ""
 
-#: redbot/resource/fetch.py:371
+#: redbot/resource/fetch.py:373
 #, python-format
 msgid ""
 "RFC 9110 requires that 1xx responses not contain a `%(header_name)s` "
@@ -648,7 +648,7 @@ msgid ""
 msgstr ""
 
 #: redbot/resource/active_check/conneg.py:19
-#: redbot/translations/extra_strings.py:11
+#: redbot/translations/extra_strings.py:13
 msgid "Content Negotiation"
 msgstr ""
 
@@ -1070,7 +1070,7 @@ msgid ""
 msgstr ""
 
 #: redbot/resource/active_check/range.py:28
-#: redbot/translations/extra_strings.py:15
+#: redbot/translations/extra_strings.py:16
 msgid "Partial Content"
 msgstr ""
 
@@ -1083,22 +1083,26 @@ msgid "General"
 msgstr ""
 
 #: redbot/translations/extra_strings.py:9
-msgid "Browser Security"
+msgid "Connection"
 msgstr ""
 
 #: redbot/translations/extra_strings.py:10
-msgid "Cookies"
+msgid "Browser Security"
+msgstr ""
+
+#: redbot/translations/extra_strings.py:11
+msgid "Cross-Origin Resource Sharing"
 msgstr ""
 
 #: redbot/translations/extra_strings.py:12
-msgid "Caching"
-msgstr ""
-
-#: redbot/translations/extra_strings.py:13
-msgid "Validation"
+msgid "Cookies"
 msgstr ""
 
 #: redbot/translations/extra_strings.py:14
-msgid "Connection"
+msgid "Caching"
+msgstr ""
+
+#: redbot/translations/extra_strings.py:15
+msgid "Validation"
 msgstr ""
 
