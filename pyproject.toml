@@ -64,14 +64,13 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.dynamic]
 version = {attr = "redbot.__version__"}
 
-[tool.setuptools]
-package-dir = {"" = "."}
-include-package-data = true
-
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["redbot*"]
-namespaces = true
+include = ["redbot", "redbot.*"]
+namespaces = false
+
+[tool.setuptools]
+include-package-data = true
 
 [tool.mypy]
 follow_imports = "normal"
