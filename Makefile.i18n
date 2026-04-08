@@ -1,0 +1,54 @@
+#
+# i18n management for Python projects
+#
+# This file contains targets for managing translations and message catalogs.
+#
+# Recommended Workflow for updating translations:
+# 1. make i18n-extract   - Extract source strings into messages.pot
+# 2. make i18n-update    - Update existing PO files with new strings from POT
+# 3. make i18n-autotranslate - Use LLM to translate missing strings
+# 4. make i18n-compile   - Compile PO files into MO binary files for runtime
+#
+# Shortcut: 'make translations' runs i18n-update followed by i18n-compile.
+#
+# Other targets:
+# - make i18n-check      - Verify translation health (missing strings, variable mismatches)
+# - make i18n-init LOCALE=xx - Initialize a new translation catalog for a new language
+#
+
+#############################################################################
+## i18n
+
+.PHONY: venv-i18n
+venv-i18n: $(VENV)/$(MARKER)-i18n
+$(VENV)/$(MARKER)-i18n: $(VENV)/$(MARKER)
+	$(VENV)/pip install -e .[i18n]
+	touch $@
+
+.PHONY: i18n-extract
+i18n-extract: venv-i18n
+	PYTHONPATH=. $(VENV)/pybabel extract --omit-header --ignore-dirs="build dist .venv" -F tools/i18n/babel.cfg -o redbot/translations/messages.pot .
+
+.PHONY: i18n-update
+i18n-update: i18n-extract venv-i18n
+	$(VENV)/pybabel update -i redbot/translations/messages.pot -d redbot/translations
+
+.PHONY: i18n-autotranslate
+i18n-autotranslate: venv-i18n
+	$(VENV)/python -m tools.i18n.autotranslate --locale_dir redbot/translations --model $(or $(MODEL), 'mlx-community/aya-23-8B-4bit') #--rpm $(or $(RPM),10)
+
+.PHONY: i18n-compile
+i18n-compile: venv-i18n
+	$(VENV)/pybabel compile -d redbot/translations
+
+.PHONY: translations
+translations: i18n-update i18n-compile
+
+.PHONY: i18n-check
+i18n-check: venv-i18n
+	PYTHONPATH=. $(VENV)/python -m tools.i18n.check
+
+.PHONY: i18n-init
+i18n-init: venv-i18n
+	@if [ -z "$(LOCALE)" ]; then echo "Usage: make init_locale LOCALE=xx"; exit 1; fi
+	$(VENV)/pybabel init -i redbot/translations/messages.pot -d redbot/translations -l $(LOCALE)

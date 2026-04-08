@@ -28,7 +28,6 @@ dependencies = [
     "netaddr >= 1.2.1",
     "thor >= 0.12.5",
     "typing-extensions >= 4.8.0",
-    "Babel >= 2.14.0",
 ]
 
 [project.urls]
@@ -45,9 +44,11 @@ dev = ["mypy",
        "build",
        "playwright",
        "types-Markdown",
-       "llm",
-       "llm-mlx",
        "j2lint",
+]
+i18n = ["Babel >= 2.14.0",
+        "llm",
+        "llm-mlx",
 ]
 
 [project.scripts]

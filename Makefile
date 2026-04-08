@@ -69,37 +69,6 @@ coverage: venv
 	PYTHONPATH=. $(VENV)/python test/coverage.py
 
 #############################################################################
-## i18n
-
-.PHONY: i18n-extract
-i18n-extract: venv
-	PYTHONPATH=. $(VENV)/pybabel extract --omit-header --ignore-dirs="build dist .venv" -F tools/i18n/babel.cfg -o redbot/translations/messages.pot .
-
-.PHONY: i18n-update
-i18n-update: i18n-extract venv
-	$(VENV)/pybabel update -i redbot/translations/messages.pot -d redbot/translations
-
-.PHONY: i18n-autotranslate
-i18n-autotranslate: venv
-	$(VENV)/python -m tools.i18n.autotranslate --locale_dir redbot/translations --model $(or $(MODEL), 'mlx-community/aya-23-8B-4bit') #--rpm $(or $(RPM),10)
-
-.PHONY: i18n-compile
-i18n-compile: venv
-	$(VENV)/pybabel compile -d redbot/translations
-
-.PHONY: translations
-translations: i18n-update i18n-compile
-
-.PHONY: i18n-check
-i18n-check: venv
-	PYTHONPATH=. $(VENV)/python -m tools.i18n.check
-
-.PHONY: i18n-init
-i18n-init: venv
-	@if [ -z "$(LOCALE)" ]; then echo "Usage: make init_locale LOCALE=xx"; exit 1; fi
-	$(VENV)/pybabel init -i redbot/translations/messages.pot -d redbot/translations -l $(LOCALE)
-
-#############################################################################
 ## Local test server / cli
 
 .PHONY: server
@@ -145,3 +114,4 @@ $(MODULES):
 
 
 include Makefile.pyproject
+include Makefile.i18n
