@@ -67,8 +67,8 @@ version = {attr = "redbot.__version__"}
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["redbot*"]
-exclude = ["test*", "tools*", "src*", "build*"]
+include = ["redbot", "redbot.*"]
+namespaces = false
 
 [tool.setuptools]
 include-package-data = true
