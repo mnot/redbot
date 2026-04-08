@@ -13,7 +13,6 @@ from httplint.field.utils import split_string, unquote_string
 from httplint.message import HttpMessageLinter
 from httplint.syntax import rfc9110
 
-
 DEFAULT_ENCODING = "utf-8"
 
 

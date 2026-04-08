@@ -171,38 +171,32 @@ class BaseHtmlFormatter(Formatter):
 
     def status(self, status: str) -> None:
         "Update the status bar of the browser"
-        self.output(
-            f"""
+        self.output(f"""
 <script nonce="{self.kw['nonce']}">
 <!-- {time.time() - self.start:3.3f}
 document.querySelector('#red_status').textContent = "{escape(status)}"
 -->
 </script>
-"""
-        )
+""")
 
     def debug(self, message: str) -> None:
         "Debug to console."
-        self.output(
-            f"""
+        self.output(f"""
 <script nonce="{self.kw['nonce']}">
 <!--
 console.log("{time.time() - self.start:3.3f} {e_js(message)}");
 -->
 </script>
-"""
-        )
+""")
 
     def final_status(self) -> None:
         #        See issue #51
         #        self.status("REDbot made %(reqs)s requests in %(elapse)2.3f seconds." % {
         #            'reqs': fetch.total_requests,
         self.status("")
-        self.output(
-            f"""
+        self.output(f"""
 <div id="final_status">{time.time() - self.start:2.2f} seconds</div>
-"""
-        )
+""")
 
     def format_extra(self, etype: str = ".html") -> Markup:
         """

@@ -357,13 +357,11 @@ class RedRequestHandler:
                 )
                 return None
             except Exception:  # pylint: disable=broad-except
-                self.server.console(
-                    """
+                self.server.console("""
 *** FATAL ERROR
 REDbot has encountered a fatal error which it really, really can't recover from
 in standalone server mode. Details follow.
-"""
-                )
+""")
 
                 dump = traceback.format_exc()
                 thor.stop()
