@@ -27,19 +27,19 @@ $(VENV)/$(MARKER)-i18n: $(VENV)/$(MARKER)
 
 .PHONY: i18n-extract
 i18n-extract: venv-i18n
-	PYTHONPATH=. $(VENV)/pybabel extract --omit-header --ignore-dirs="build dist .venv" -F tools/i18n/babel.cfg -o redbot/translations/messages.pot .
+	PYTHONPATH=. $(VENV)/pybabel extract --omit-header --ignore-dirs="build dist .venv" -F tools/i18n/babel.cfg -o $(PROJECT)/translations/messages.pot .
 
 .PHONY: i18n-update
 i18n-update: i18n-extract venv-i18n
-	$(VENV)/pybabel update -i redbot/translations/messages.pot -d redbot/translations
+	$(VENV)/pybabel update -i $(PROJECT)/translations/messages.pot -d $(PROJECT)/translations
 
 .PHONY: i18n-autotranslate
 i18n-autotranslate: venv-i18n
-	$(VENV)/python -m tools.i18n.autotranslate --locale_dir redbot/translations --model $(or $(MODEL), 'mlx-community/aya-23-8B-4bit') #--rpm $(or $(RPM),10)
+	$(VENV)/python -m tools.i18n.autotranslate --locale_dir $(PROJECT)/translations --model $(or $(MODEL), 'mlx-community/aya-23-8B-4bit') #--rpm $(or $(RPM),10)
 
 .PHONY: i18n-compile
 i18n-compile: venv-i18n
-	$(VENV)/pybabel compile -d redbot/translations
+	$(VENV)/pybabel compile -d $(PROJECT)/translations
 
 .PHONY: translations
 translations: i18n-update i18n-compile
@@ -51,4 +51,4 @@ i18n-check: venv-i18n
 .PHONY: i18n-init
 i18n-init: venv-i18n
 	@if [ -z "$(LOCALE)" ]; then echo "Usage: make init_locale LOCALE=xx"; exit 1; fi
-	$(VENV)/pybabel init -i redbot/translations/messages.pot -d redbot/translations -l $(LOCALE)
+	$(VENV)/pybabel init -i $(PROJECT)/translations/messages.pot -d $(PROJECT)/translations -l $(LOCALE)
