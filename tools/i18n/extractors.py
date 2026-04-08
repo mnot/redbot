@@ -53,10 +53,16 @@ def extract_notes(
     if isinstance(extra_keywords, str):
         extra_keywords = extra_keywords.split()
 
-    all_keywords = list(keywords) + extra_keywords
+    if isinstance(keywords, dict):
+        all_keywords = dict(keywords)
+    else:
+        all_keywords = {k: None for k in keywords}
 
-    # We need to pass a container that supports 'in' to extract_python.
-    # A list is fine.
+    if isinstance(extra_keywords, dict):
+        all_keywords.update(extra_keywords)
+    elif isinstance(extra_keywords, (list, tuple)):
+        for kw in extra_keywords:
+            all_keywords[kw] = None
 
     for lineno, funcname, messages, comments in extract_python(
         fileobj, all_keywords, comment_tags, options
