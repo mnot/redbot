@@ -128,7 +128,7 @@ class HTMLLinkParser(HTMLParser):
 
     def error(self, message: str) -> None:
         self.errors += 1
-        if self.getpos() == self.last_err_pos:
+        if self.getpos()[0] == self.last_err_pos:
             # we're in a loop; give up.
             if self.err:
                 self.err(f"giving up on link parsing after {self.errors} errors")
