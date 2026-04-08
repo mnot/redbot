@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-01-11 21:14+1100\n"
+"POT-Creation-Date: 2026-04-09 08:47+1000\n"
 "PO-Revision-Date: 2025-11-30 12:05+1100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh\n"
@@ -16,90 +16,90 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.17.0\n"
+"Generated-By: Babel 2.18.0\n"
 
-#: redbot/formatter/html.py:127
+#: redbot/formatter/html.py:119
 msgid "view HAR"
 msgstr "查看 HAR"
 
-#: redbot/formatter/html.py:129
+#: redbot/formatter/html.py:121
 msgid "View a HAR (HTTP ARchive, a JSON format) file for this test"
 msgstr "查看此测试的 HAR (HTTP ARchive，一种 JSON 格式) 文件"
 
-#: redbot/formatter/html.py:139
+#: redbot/formatter/html.py:131
 msgid "check embedded"
 msgstr "检查嵌入式"
 
-#: redbot/formatter/html.py:142
+#: redbot/formatter/html.py:134
 msgid "Run REDbot on images, frames and embedded links"
 msgstr "在图片、框架和嵌入式链接上运行 REDbot"
 
-#: redbot/formatter/html.py:200
+#: redbot/formatter/html.py:192
 msgid "<p class='btw'>REDbot isn't showing all content, because it's so big!</p>"
 msgstr "<p class='btw'>REDbot 没有显示所有内容，因为它太大了！</p>"
 
-#: redbot/formatter/html.py:213
+#: redbot/formatter/html.py:205
 #, python-format
 msgid "%s response"
 msgstr "%s 回复"
 
-#: redbot/formatter/html.py:227
+#: redbot/formatter/html.py:219
 #, python-format
 msgid " - %d problem\n"
 msgstr "%d 个问题"
 
-#: redbot/formatter/html_base.py:141
+#: redbot/formatter/html_base.py:129
 msgid "add a request header"
 msgstr "添加一个请求头"
 
-#: redbot/formatter/html_base.py:142
+#: redbot/formatter/html_base.py:130
 msgid "copy cookies to request"
 msgstr "将 cookie 复制到请求"
 
-#: redbot/formatter/html_base.py:143
+#: redbot/formatter/html_base.py:131
 msgid "view notes"
 msgstr "查看注释"
 
-#: redbot/formatter/html_base.py:144
+#: redbot/formatter/html_base.py:132
 #: redbot/formatter/templates/response_finish.html:53
 msgid "view content"
 msgstr "查看内容"
 
-#: redbot/formatter/html_base.py:145
+#: redbot/formatter/html_base.py:133
 #: redbot/formatter/templates/response_finish.html:89
 msgid "sort by alpha"
 msgstr "按字母排序"
 
-#: redbot/formatter/html_base.py:146
+#: redbot/formatter/html_base.py:134
 msgid "show wire order"
 msgstr "显示线序"
 
-#: redbot/formatter/html_base.py:149
+#: redbot/formatter/html_base.py:137
 #, python-format
 msgid "Setting the %s request header can lead to unpredictable results."
 msgstr "设置 %s 请求头可能导致不可预测的结果。"
 
-#: redbot/formatter/text.py:41
+#: redbot/formatter/text.py:32
 msgid "Head Links"
 msgstr "头部链接"
 
-#: redbot/formatter/text.py:42
+#: redbot/formatter/text.py:33
 msgid "Script Links"
 msgstr "脚本链接"
 
-#: redbot/formatter/text.py:43
+#: redbot/formatter/text.py:34
 msgid "Frame Links"
 msgstr "框架链接"
 
-#: redbot/formatter/text.py:44
+#: redbot/formatter/text.py:35
 msgid "IFrame Links"
 msgstr "IFrame 链接"
 
-#: redbot/formatter/text.py:45
+#: redbot/formatter/text.py:36
 msgid "Image Links"
 msgstr "图片链接"
 
-#: redbot/formatter/text.py:48
+#: redbot/formatter/text.py:39
 #, python-format
 msgid "Error: %s\n"
 msgstr "错误： %s"
@@ -367,11 +367,11 @@ msgstr "在此处键入 URI，然后按“回车键”进行检查。您还可�
 msgid "Enter a http:// or https:// URL to check"
 msgstr "请输入一个 http:// 或 https:// 网址进行检查"
 
-#: redbot/resource/fetch.py:303
+#: redbot/resource/fetch.py:305
 msgid "This response has content."
 msgstr "此响应包含内容。"
 
-#: redbot/resource/fetch.py:304
+#: redbot/resource/fetch.py:306
 #, python-format
 msgid ""
 "HTTP defines a few special situations where a response does not allow "
@@ -396,11 +396,11 @@ msgstr ""
 "\n"
 "    %(sample)s"
 
-#: redbot/resource/fetch.py:321
+#: redbot/resource/fetch.py:323
 msgid "This response has extra data after it."
 msgstr "此响应之后有额外数据。"
 
-#: redbot/resource/fetch.py:322
+#: redbot/resource/fetch.py:324
 #, python-format
 msgid ""
 "The server sent data after the message ended. This can be caused by an "
@@ -417,11 +417,11 @@ msgstr ""
 "\n"
 "    %(sample)s"
 
-#: redbot/resource/fetch.py:335
+#: redbot/resource/fetch.py:337
 msgid "This response has chunked encoding errors."
 msgstr "此响应存在分块编码错误。"
 
-#: redbot/resource/fetch.py:336
+#: redbot/resource/fetch.py:338
 #, python-format
 msgid ""
 "The response indicates it uses HTTP chunked encoding, but there was a "
@@ -459,14 +459,14 @@ msgstr ""
 "此问题通常是由于发送了整数块大小而不是十六进制块大小，或者在发送 `Transfer-Encoding: chunked` "
 "时实际上并未对响应正文进行分块而引起的。"
 
-#: redbot/resource/fetch.py:358
+#: redbot/resource/fetch.py:360
 #, python-format
 msgid ""
 "This response has whitespace at the end of the '%(header_name)s' header "
 "field name."
 msgstr "此响应在 '%(header_name)s' 标头字段名称的末尾包含空格。"
 
-#: redbot/resource/fetch.py:359
+#: redbot/resource/fetch.py:361
 msgid ""
 "HTTP specifically bans whitespace between header field names and the "
 "colon, because they can easily\n"
@@ -479,12 +479,12 @@ msgstr ""
 "\n"
 "大多数 HTTP 实现将拒绝处理此消息。"
 
-#: redbot/resource/fetch.py:370
+#: redbot/resource/fetch.py:372
 #, python-format
 msgid "The %(response)s response contains a %(header_name)s header."
 msgstr "%(response)s 响应包含一个 %(header_name)s 标头。"
 
-#: redbot/resource/fetch.py:371
+#: redbot/resource/fetch.py:373
 #, python-format
 msgid ""
 "RFC 9110 requires that 1xx responses not contain a `%(header_name)s` "
@@ -756,7 +756,7 @@ msgstr ""
 "[已知错误](https://issues.apache.org/bugzilla/show_bug.cgi?id=39727)。"
 
 #: redbot/resource/active_check/conneg.py:19
-#: redbot/translations/extra_strings.py:11
+#: redbot/translations/extra_strings.py:13
 msgid "Content Negotiation"
 msgstr "内容协商"
 
@@ -1278,7 +1278,7 @@ msgstr ""
 "Content-Length %(length_full)s 不匹配，这表明其中一个有误。"
 
 #: redbot/resource/active_check/range.py:28
-#: redbot/translations/extra_strings.py:15
+#: redbot/translations/extra_strings.py:16
 msgid "Partial Content"
 msgstr "部分内容"
 
@@ -1291,24 +1291,28 @@ msgid "General"
 msgstr "通用"
 
 #: redbot/translations/extra_strings.py:9
+msgid "Connection"
+msgstr "连接"
+
+#: redbot/translations/extra_strings.py:10
 msgid "Browser Security"
 msgstr "浏览器安全"
 
-#: redbot/translations/extra_strings.py:10
+#: redbot/translations/extra_strings.py:11
+msgid "Cross-Origin Resource Sharing"
+msgstr "跨域资源共享"
+
+#: redbot/translations/extra_strings.py:12
 msgid "Cookies"
 msgstr "Cookie"
 
-#: redbot/translations/extra_strings.py:12
+#: redbot/translations/extra_strings.py:14
 msgid "Caching"
 msgstr "缓存"
 
-#: redbot/translations/extra_strings.py:13
+#: redbot/translations/extra_strings.py:15
 msgid "Validation"
 msgstr "验证"
-
-#: redbot/translations/extra_strings.py:14
-msgid "Connection"
-msgstr "连接"
 
 #~ msgid "view body"
 #~ msgstr "查看正文"
