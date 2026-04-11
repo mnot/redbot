@@ -2,11 +2,12 @@
 Internationalization for REDbot.
 """
 
+import os
 from contextlib import contextmanager
 from contextvars import ContextVar
-import os
-from typing import Union, Generator, Any
-from babel.support import Translations, NullTranslations
+from typing import Any, Generator, Union
+
+from babel.support import NullTranslations, Translations
 from httplint.i18n import set_locale as httplint_set_locale
 
 _LOCALE: ContextVar[str] = ContextVar("locale", default="en")

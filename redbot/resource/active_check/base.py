@@ -7,13 +7,13 @@ This is the base class for all subrequests.
 
 from abc import ABCMeta, abstractmethod
 from configparser import SectionProxy
-from typing import List, Type, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Type, Union
 
-from httplint.note import Note, levels, categories
+from httplint.note import Note, categories, levels
 
+from redbot.note import RedbotNote
 from redbot.resource.fetch import RedFetcher
 from redbot.type import StrHeaderListType
-from redbot.note import RedbotNote
 
 if TYPE_CHECKING:
     from redbot.resource import HttpResource

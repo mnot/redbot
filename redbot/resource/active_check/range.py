@@ -2,19 +2,18 @@
 Subrequest for partial content checks.
 """
 
-from configparser import SectionProxy
 import random
+from configparser import SectionProxy
 from typing import TYPE_CHECKING
 
-from httplint.util import display_bytes
 from httplint.note import categories, levels
-from redbot.note import RedbotNote
+from httplint.util import display_bytes
 
-from redbot.resource.active_check.base import SubRequest
 from redbot.formatter import f_num
-from redbot.type import StrHeaderListType
-
 from redbot.i18n import _
+from redbot.note import RedbotNote
+from redbot.resource.active_check.base import SubRequest
+from redbot.type import StrHeaderListType
 
 if TYPE_CHECKING:
     from redbot.resource import HttpResource

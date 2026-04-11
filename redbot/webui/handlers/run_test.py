@@ -5,26 +5,26 @@ This module provides a handler for executing HTTP resource tests.
 """
 
 from functools import partial, update_wrapper
-from typing import TYPE_CHECKING, List, Optional, cast, Any, Tuple
-from urllib.parse import urlsplit, urlencode
+from typing import TYPE_CHECKING, Any, List, Optional, Tuple, cast
+from urllib.parse import urlencode, urlsplit
 
 import thor
 import thor.events
 from markupsafe import escape
 
+from redbot.formatter import find_formatter
 from redbot.resource import HttpResource
-from redbot.type import RawHeaderListType, StrHeaderListType, RedWebUiProtocol
+from redbot.resource.active_check import active_checks
+from redbot.type import RawHeaderListType, RedWebUiProtocol, StrHeaderListType
+from redbot.utils import e_url
 from redbot.webui.captcha import CaptchaHandler
 from redbot.webui.handlers.base import RequestHandler
 from redbot.webui.ratelimit import ratelimiter
 from redbot.webui.saved_tests import init_save_file, save_test
-from redbot.formatter import find_formatter
-from redbot.utils import e_url
-from redbot.resource.active_check import active_checks
 
 if TYPE_CHECKING:
-    from redbot.webui import RedWebUi
     from redbot.formatter import Formatter
+    from redbot.webui import RedWebUi
 
 
 class RunTestHandler(RequestHandler):

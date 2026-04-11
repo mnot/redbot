@@ -9,15 +9,15 @@ import os
 import pickle
 import time
 import zlib
-from typing import TYPE_CHECKING, cast, IO, Any
+from typing import IO, TYPE_CHECKING, Any, cast
 from urllib.parse import urlencode
 
-from markupsafe import escape
 import thor.events
+from markupsafe import escape
 
-from redbot.webui.handlers.base import RequestHandler
 from redbot.formatter import find_formatter
 from redbot.type import RedWebUiProtocol
+from redbot.webui.handlers.base import RequestHandler
 
 if TYPE_CHECKING:
     from redbot.webui import RedWebUi

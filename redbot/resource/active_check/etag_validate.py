@@ -3,10 +3,10 @@ Subrequest for ETag validation checks.
 """
 
 from httplint.note import categories, levels
-from redbot.note import RedbotNote
 
 from redbot.i18n import _
-from redbot.resource.active_check.base import SubRequest, MISSING_HDRS_304
+from redbot.note import RedbotNote
+from redbot.resource.active_check.base import MISSING_HDRS_304, SubRequest
 from redbot.type import StrHeaderListType
 
 

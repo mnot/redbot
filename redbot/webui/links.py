@@ -1,14 +1,14 @@
 # from configparser import SectionProxy # Unused
-from typing import List, Any, Optional
+from typing import Any, List, Optional
 from urllib.parse import urljoin
 
 from redbot.type import RedWebUiProtocol
 from redbot.webui.handlers import (
-    SaveHandler,
-    LoadSavedTestHandler,
     ClientErrorHandler,
-    ShowHandler,
+    LoadSavedTestHandler,
     RunTestHandler,
+    SaveHandler,
+    ShowHandler,
 )
 
 

@@ -1,5 +1,5 @@
 from configparser import SectionProxy
-from typing import Callable, Dict, List, Tuple, Any, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple
 
 from typing_extensions import Protocol
 

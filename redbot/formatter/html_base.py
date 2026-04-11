@@ -10,22 +10,21 @@ from markupsafe import Markup, escape
 from typing_extensions import Unpack
 
 import redbot
-from redbot.formatter import Formatter, FormatterArgs, relative_time, f_num
+from redbot.formatter import Formatter, FormatterArgs, f_num, relative_time
 from redbot.formatter.null_links import NullLinkGenerator
 from redbot.i18n import _, ngettext
 from redbot.type import LinkGenerator
-from redbot.webui.captcha import CAPTCHA_PROVIDERS
-
 from redbot.utils import (
-    e_url,
     e_authority,
+    e_fragment,
+    e_js,
     e_path,
     e_path_seg,
     e_query,
     e_query_arg,
-    e_fragment,
-    e_js,
+    e_url,
 )
+from redbot.webui.captcha import CAPTCHA_PROVIDERS
 
 __all__ = [
     "BaseHtmlFormatter",

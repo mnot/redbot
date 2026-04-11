@@ -4,7 +4,7 @@ Rate Limiting for RED, the Resource Expert Droid.
 
 from collections import defaultdict
 from configparser import SectionProxy
-from typing import Dict, Set, Union, Callable
+from typing import Callable, Dict, Set, Union
 from urllib.parse import urlsplit
 
 import thor.loop

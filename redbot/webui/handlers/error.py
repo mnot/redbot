@@ -6,8 +6,8 @@ This module provides a fallback handler for unsupported methods (405) and unknow
 
 from typing import TYPE_CHECKING
 
-from redbot.webui.handlers.base import RequestHandler
 from redbot.type import RedWebUiProtocol
+from redbot.webui.handlers.base import RequestHandler
 
 if TYPE_CHECKING:
     from redbot.webui import RedWebUi

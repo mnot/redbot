@@ -4,14 +4,14 @@ Show handler for REDbot Web UI.
 This module provides a handler for the main REDbot interface page.
 """
 
-from typing import TYPE_CHECKING, cast, Any, Tuple
+from typing import TYPE_CHECKING, Any, Tuple, cast
 from urllib.parse import urlencode
 
+from redbot.formatter import html
 from redbot.i18n import set_locale
 from redbot.resource import HttpResource
-from redbot.type import StrHeaderListType, RedWebUiProtocol
+from redbot.type import RedWebUiProtocol, StrHeaderListType
 from redbot.webui.handlers.base import RequestHandler
-from redbot.formatter import html
 
 if TYPE_CHECKING:
     from redbot.webui import RedWebUi

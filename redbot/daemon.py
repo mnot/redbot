@@ -5,31 +5,30 @@ Run REDbot as a daemon.
 """
 
 import argparse
-from configparser import ConfigParser, SectionProxy
 import cProfile
-from functools import partial
-import io
 import importlib
 import inspect
+import io
 import os
-from pstats import Stats
-import signal
-import re
 import pkgutil
+import re
+import signal
 import sys
-import tracemalloc
 import traceback
+import tracemalloc
+from configparser import ConfigParser, SectionProxy
+from functools import partial
+from pstats import Stats
 from types import FrameType
-from typing import Dict, Optional, Any, Callable
+from typing import Any, Callable, Dict, Optional
 from urllib.parse import urlsplit
-
-from importlib_resources import files as resource_files
 
 import httplint
 import httplint.field.parsers
+import thor
 from httplint.field.utils import RE_FLAGS
 from httplint.syntax import rfc9110
-import thor
+from importlib_resources import files as resource_files
 from thor.loop import _loop
 from thor.tcp import TcpConnection
 

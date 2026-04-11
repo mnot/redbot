@@ -2,20 +2,20 @@
 HAR Formatter for REDbot.
 """
 
-from html.parser import HTMLParser
 import operator
 import re
 import textwrap
+from html.parser import HTMLParser
 from typing import List, Optional
+
+import thor.http.error as httperr
+from httplint import HttpResponseLinter
+from httplint.note import Note, categories, levels
 from typing_extensions import Unpack
 
-from httplint import HttpResponseLinter
-from httplint.note import Note, levels, categories
-import thor.http.error as httperr
-
 from redbot.formatter import Formatter, FormatterArgs
-from redbot.resource import HttpResource
 from redbot.i18n import _
+from redbot.resource import HttpResource
 
 NL = "\n"
 

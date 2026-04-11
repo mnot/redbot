@@ -1,11 +1,11 @@
-from configparser import SectionProxy
 import gzip
 import os
 import pickle
 import tempfile
 import time
-from typing import cast, IO, Tuple, Optional
 import zlib
+from configparser import SectionProxy
+from typing import IO, Optional, Tuple, cast
 
 from redbot.resource import HttpResource
 from redbot.type import RedWebUiProtocol

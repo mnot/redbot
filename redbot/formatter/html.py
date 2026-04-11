@@ -7,23 +7,23 @@ import re
 from typing import Any, List, Match, Tuple, Union
 from urllib.parse import urljoin
 
-from typing_extensions import Unpack
-from httplint import get_field_description
-from httplint.note import Note, levels, categories
 import thor
 import thor.http.error as httperr
+from httplint import get_field_description
+from httplint.note import Note, categories, levels
+from typing_extensions import Unpack
 
 from redbot import __version__
 from redbot.formatter import FormatterArgs
 from redbot.formatter.html_base import (
-    BaseHtmlFormatter,
-    e_query_arg,
-    Markup,
-    escape,
     NL,
+    BaseHtmlFormatter,
+    Markup,
+    e_query_arg,
+    escape,
 )
+from redbot.i18n import LazyProxy, _, ngettext
 from redbot.resource import HttpResource, active_check
-from redbot.i18n import _, LazyProxy, ngettext
 
 
 class SingleEntryHtmlFormatter(BaseHtmlFormatter):

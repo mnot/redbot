@@ -6,22 +6,21 @@ problems and other interesting characteristics. It only makes one request,
 based upon the provided headers.
 """
 
-from configparser import SectionProxy
 import time
-from typing import Optional, Any, Dict, List, Tuple, Callable
+from configparser import SectionProxy
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
-from netaddr import IPAddress  # type: ignore
 import thor
-from thor.http.client import HttpClientExchange
 import thor.http.error as httperr
-
 from httplint import HttpRequestLinter, HttpResponseLinter
 from httplint.note import categories, levels
-from redbot.note import RedbotNote
+from netaddr import IPAddress  # type: ignore
+from thor.http.client import HttpClientExchange
 
 from redbot import __version__
-from redbot.type import StrHeaderListType, RawHeaderListType
 from redbot.i18n import _
+from redbot.note import RedbotNote
+from redbot.type import RawHeaderListType, StrHeaderListType
 
 UA_STRING = f"RED/{__version__} (https://redbot.org/)".encode("ascii")
 

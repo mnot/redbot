@@ -2,21 +2,21 @@
 Formatters for REDbot output.
 """
 
-from collections import defaultdict
-from configparser import SectionProxy
 import inspect
 import locale
 import sys
 import time
-from typing import Optional, Any, Callable, List, Dict, Tuple, Type, TYPE_CHECKING
 import unittest
+from collections import defaultdict
+from configparser import SectionProxy
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Type
 
-from babel.numbers import format_decimal
-from markdown import Markdown
 import thor
+from babel.numbers import format_decimal
+from httplint.util import relative_time as _relative_time
+from markdown import Markdown
 from thor.events import EventEmitter
 from typing_extensions import TypedDict
-from httplint.util import relative_time as _relative_time
 
 from redbot.i18n import get_locale, set_locale
 

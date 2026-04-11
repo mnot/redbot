@@ -1,5 +1,6 @@
 from httplint.note import Note
 from markupsafe import Markup, escape
+
 from redbot.i18n import _, get_locale
 
 

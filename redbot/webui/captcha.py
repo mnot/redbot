@@ -1,9 +1,9 @@
 import hmac
-from http import cookies
 import json
 import time
+from http import cookies
 from typing import Callable, Dict
-from urllib.parse import urlencode, parse_qs
+from urllib.parse import parse_qs, urlencode
 
 import thor
 from thor.http import HttpClient, get_header

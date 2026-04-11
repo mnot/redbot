@@ -5,9 +5,8 @@ Parse links from a stream of HTML data.
 """
 
 import codecs
-
 from html.parser import HTMLParser
-from typing import Optional, Any, Callable, Dict, List, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from httplint.field.utils import split_string, unquote_string
 from httplint.message import HttpMessageLinter

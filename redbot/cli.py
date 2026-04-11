@@ -4,14 +4,14 @@
 CLI interface to REDbot
 """
 
-from configparser import ConfigParser
-from argparse import ArgumentParser
 import sys
+from argparse import ArgumentParser
+from configparser import ConfigParser
 
 import thor
 
 from redbot import __version__
-from redbot.formatter import find_formatter, available_formatters
+from redbot.formatter import available_formatters, find_formatter
 from redbot.resource import HttpResource
 
 

@@ -9,17 +9,17 @@ of requests to probe the resource's behaviour.
 See webui.py for the Web front-end.
 """
 
-from configparser import SectionProxy
 import sys
-from typing import Optional, List, Dict, Set, Tuple, Union
+from configparser import SectionProxy
+from typing import Dict, List, Optional, Set, Tuple, Union
 from urllib.parse import urljoin
 
 import thor
 
 from redbot.formatter import f_num
 from redbot.resource import link_parse
-from redbot.resource.fetch import RedFetcher
 from redbot.resource.active_check import active_checks
+from redbot.resource.fetch import RedFetcher
 
 
 class HttpResource(RedFetcher):

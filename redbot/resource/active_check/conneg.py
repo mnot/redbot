@@ -3,11 +3,11 @@ Subrequest for content negotiation checks.
 """
 
 from httplint.note import categories, levels
-from redbot.note import RedbotNote
 
-from redbot.i18n import _
-from redbot.resource.active_check.base import SubRequest
 from redbot.formatter import f_num
+from redbot.i18n import _
+from redbot.note import RedbotNote
+from redbot.resource.active_check.base import SubRequest
 from redbot.type import StrHeaderListType
 
 

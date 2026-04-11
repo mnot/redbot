@@ -7,8 +7,8 @@ This module provides a handler for logging client-side JavaScript errors.
 import string
 from typing import TYPE_CHECKING
 
-from redbot.webui.handlers.base import RequestHandler
 from redbot.type import RedWebUiProtocol
+from redbot.webui.handlers.base import RequestHandler
 
 if TYPE_CHECKING:
     from redbot.webui import RedWebUi
