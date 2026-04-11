@@ -12,7 +12,7 @@
 # clean_py
 #     Clean Python-related temporary files
 # tidy_py
-#     Run black on Python files in $PROJECT
+#     Run isort and black on Python files in $PROJECT
 # lint_py
 #     Run pylint on $PROJECT, and validate pyproject.toml
 # typecheck_py
@@ -31,14 +31,7 @@
 #     Release the project on Pypi and Github releases (requires /.github/workflows/release.yml)
 #
 # See also Makefile.venv.
-#
-#
-# Make sure the following are in requirements.txt:
-# - pylint
-# - mypy
-# - black
-# - build
-# - validate-pyproject
+
 
 PY?=python
 VERSIONING?=semver-micro
@@ -50,10 +43,11 @@ MONTH=`date +%m`
 .PHONY: clean_py
 clean_py: clean-venv
 	find . -d -type d -name __pycache__ -exec rm -rf {} \;
-	rm -rf build dist MANIFEST $(PROJECT).egg-info .mypy_cache *.log changelog.md
+	rm -rf build/ dist/ MANIFEST $(PROJECT).egg-info/ .mypy_cache/ *.log changelog.md
 
 .PHONY: tidy_py
 tidy_py: venv
+	$(VENV)/isort $(PROJECT)
 	$(VENV)/black $(PROJECT)
 
 .PHONY: lint_py
@@ -119,7 +113,7 @@ build: venv
 
 changelog.md:
 	$(eval PREV_RELEASE=$(shell git tag --sort=-taggerdate -l v* | head -1))
-	git --no-pager log --pretty="- %s" $(PREV_RELEASE)..HEAD --grep "^Changed:" --grep "^Fixed:" --grep "^Added:" --grep "^Removed:" --output=$@
+	git --no-pager log --pretty="- %s" $(PREV_RELEASE)..HEAD --grep "^Changed:" --grep "^Fixed:" --grep "^Added:" --grep "^Changed:" --grep "^Removed:" --output=$@
 	sed -i "" -e "1s/^/\n\n/" $@
 
 # Manual pypi publication; no GitHub release
@@ -134,6 +128,17 @@ release: py_version changelog.md
 	rm -f changelog.md
 	git push
 	git push --tags origin  # github action will push to pypi and create a release
+
+
+.PHONY: bootstrap
+bootstrap:
+	@if [ ! -d SHORTNAME ]; then echo "Already bootstrapped."; exit 1; fi
+	@read -p "Project Name (e.g., myproject): " NAME; \
+	read -p "Description: " DESC; \
+	read -p "Project URL: " URL; \
+	find . -type f -not -path './.git/*' -not -name 'Makefile.pyproject' -exec sed -i "" -e "s,SHORTNAME,$$NAME,g" -e "s,DESCRIPTION,$$DESC,g" -e "s,PROJECT_URL,$$URL,g" {} +; \
+	mv SHORTNAME $$NAME; \
+	echo "Project initialized as $$NAME."
 
 
 include Makefile.venv
