@@ -4,10 +4,10 @@ HTML Formatter for REDbot.
 
 import operator
 import re
+import time
 from typing import Any, List, Match, Tuple, Union
 from urllib.parse import urljoin
 
-import thor
 import thor.http.error as httperr
 from httplint import get_field_description
 from httplint.note import Note, categories, levels
@@ -24,6 +24,8 @@ from redbot.formatter.html_base import (
 )
 from redbot.i18n import LazyProxy, _, ngettext
 from redbot.resource import HttpResource, active_check
+
+__all__ = ["SingleEntryHtmlFormatter", "TableHtmlFormatter", "BaseHtmlFormatter"]
 
 
 class SingleEntryHtmlFormatter(BaseHtmlFormatter):
@@ -97,7 +99,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
             is_saved = self.kw.get("is_saved", False)
             save_mtime = self.kw.get("save_mtime", None)
             allow_save = self.kw.get("allow_save", False)
-            if is_saved and save_mtime and (float(save_mtime) - thor.time() < 3600):
+            if is_saved and save_mtime and (float(save_mtime) - time.time() < 3600):
                 is_saved = False
                 allow_save = True
 
@@ -181,7 +183,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                         )
                     )
 
-                    def link_to(matchobj: Match, link_str: Markup = link_str) -> str:
+                    def link_to(matchobj: Match[str], link_str: Markup = link_str) -> str:
                         return rf"{matchobj.group(1)}{link_str}{matchobj.group(1)}"
 
                     safe_sample = Markup(
@@ -344,7 +346,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         is_saved = self.kw.get("is_saved", False)
         save_mtime = self.kw.get("save_mtime", None)
         allow_save = self.kw.get("allow_save", False)
-        if is_saved and save_mtime and (float(save_mtime) - thor.time() < 3600):
+        if is_saved and save_mtime and (float(save_mtime) - time.time() < 3600):
             is_saved = False
             allow_save = True
 

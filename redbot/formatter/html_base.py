@@ -36,6 +36,8 @@ __all__ = [
     "e_query_arg",
     "e_fragment",
     "e_js",
+    "Markup",
+    "escape",
 ]
 
 if TYPE_CHECKING:

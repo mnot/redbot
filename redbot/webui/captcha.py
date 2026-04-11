@@ -2,7 +2,7 @@ import hmac
 import json
 import time
 from http import cookies
-from typing import Callable, Dict
+from typing import Any, Callable, Dict
 from urllib.parse import parse_qs, urlencode
 
 import thor
@@ -34,8 +34,8 @@ class CaptchaHandler:
     def __init__(
         self,
         webui: RedWebUiProtocol,
-        continue_test: Callable,
-        error_response: Callable,
+        continue_test: Callable[..., Any],
+        error_response: Callable[..., Any],
     ) -> None:
         self.webui = webui
         self.client_ip = webui.get_client_ip()
