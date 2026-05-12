@@ -205,6 +205,7 @@ class RunTestHandler(RequestHandler):
             ]
             + extra_headers,
         )
+        ui.response_started = True
         if "check_name" in ui.query_string:
             check_name = ui.query_string.get("check_name", [""])[0]
             display_resource = cast(
