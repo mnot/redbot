@@ -44,6 +44,7 @@ class CaptchaHandler:
         self.provider = webui.config.get("captcha_provider", "")
         self.secret = webui.config.get("captcha_secret", "").encode("utf-8")
         self.token_lifetime = webui.config.getint("token_lifetime", fallback=300)
+        self.bind_client_ip = webui.config.getboolean("captcha_bind_client_ip", fallback=False)
 
     def configured(self) -> bool:
         if (
@@ -164,12 +165,23 @@ class CaptchaHandler:
         exchange.request_body(urlencode(request_form).encode("utf-8", "replace"))
         exchange.request_done([])
 
+    def _hmac_input(self, human_time: str) -> bytes:
+        """
+        Build the byte string signed by the human-token HMAC.
+
+        When captcha_bind_client_ip is enabled, the client IP is mixed in
+        so a token solved by one client cannot be replayed by another.
+        """
+        if self.bind_client_ip:
+            return f"{human_time}|{self.client_ip}".encode("utf-8")
+        return human_time.encode("ascii")
+
     def issue_human(self) -> RawHeaderListType:
         """
         Return cookie headers for later verification that this is a human.
         """
         human_time = str(int(time.time()) + self.token_lifetime)
-        human_hmac = hmac.new(self.secret, bytes(human_time, "ascii"), "sha512").hexdigest()
+        human_hmac = hmac.new(self.secret, self._hmac_input(human_time), "sha512").hexdigest()
         return [
             (
                 b"Set-Cookie",
@@ -189,6 +201,6 @@ class CaptchaHandler:
         """
         Check the user's human HMAC.
         """
-        computed_hmac = hmac.new(self.secret, bytes(str(human_time), "ascii"), "sha512")
-        is_valid = human_hmac == computed_hmac.hexdigest()
+        computed_hmac = hmac.new(self.secret, self._hmac_input(str(human_time)), "sha512")
+        is_valid = hmac.compare_digest(human_hmac, computed_hmac.hexdigest())
         return bool(is_valid and human_time >= time.time())
