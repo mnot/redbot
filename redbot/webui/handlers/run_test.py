@@ -278,9 +278,9 @@ class RunTestHandler(RequestHandler):
             HTML form string
         """
         base_uri = cls.get_base_uri(ui)
-        title = kwargs.get("title", "")
+        title = escape(kwargs.get("title", ""))
         uri = kwargs.get("uri", "")
-        css_class = kwargs.get("css_class", "")
+        css_class = escape(kwargs.get("css_class", ""))
 
         # Build query string for the action URL
         query_params = []

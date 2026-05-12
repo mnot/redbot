@@ -2,6 +2,8 @@
 from typing import Any, List, Optional
 from urllib.parse import urljoin
 
+from markupsafe import escape
+
 from redbot.type import RedWebUiProtocol
 from redbot.webui.handlers import (
     ClientErrorHandler,
@@ -162,7 +164,11 @@ class WebUiLinkGenerator:
                 output_format=res_format or "",
                 descend=descend,
             )
-            return f"<a href='{link_uri}'" f"class='{css_class}' title='{title}'>{link_value}</a>"
+            return (
+                f"<a href='{escape(link_uri)}' "
+                f"class='{escape(css_class)}' title='{escape(title)}'>"
+                f"{escape(link_value)}</a>"
+            )
 
         # For new tests, gather context and delegate to RunTestHandler
         test_uri = urljoin(uri, link or "")
