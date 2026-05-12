@@ -112,6 +112,7 @@ class RedWebUi:
 
         self.save_path: str
         self.timeout: Optional[thor.loop.ScheduledEvent] = None
+        self.response_started: bool = False
         self.response_done: bool = False
 
         self.nonce: str = standard_b64encode(getrandbits(128).to_bytes(16, "big")).decode("ascii")
@@ -133,6 +134,10 @@ class RedWebUi:
         log_message: Optional[str] = None,
     ) -> None:
         """Send an error response."""
+        if self.response_done:
+            if log_message:
+                self.error_log(log_message)
+            return
         # Create formatter for error display
         formatter = find_formatter("html")(
             self.config,
@@ -158,6 +163,7 @@ class RedWebUi:
                 (b"Vary", b"Accept-Language"),
             ],
         )
+        self.response_started = True
         with set_locale(self.locale):
             formatter.start_output()
             formatter.error_output(message)
@@ -178,11 +184,18 @@ class RedWebUi:
         self, formatter: Formatter, detail: Optional[Callable[[], str]] = None
     ) -> None:
         """Max runtime reached."""
+        if self.response_done:
+            return
         details = ""
         if detail:
             details = f"detail={detail()}"
         self.error_log(f"timeout <{formatter.resource.request.uri}> {details}")
         formatter.resource.stop()
+        if not self.response_started:
+            # Response hasn't started yet (e.g. timeout during captcha verify);
+            # send a proper error response instead of a half-formed one.
+            self.error_response(b"504", b"Gateway Timeout", "REDbot timeout.")
+            return
         formatter.error_output("REDbot timeout.")
         self.exchange.response_done([])
         self.response_done = True
