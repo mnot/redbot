@@ -329,12 +329,15 @@ class RedRequestHandler:
         if self.max_req_body and len(self.req_body) + len(chunk) > self.max_req_body:
             self.req_body_overflow = True
             self.req_body = b""
+            self.payload_too_large()
             return
         self.req_body += chunk
 
     def request_done(self, trailers: RawHeaderListType) -> None:
+        # If we already responded with 413 mid-body, do nothing: the body
+        # finally finished arriving, or the connection was closed.
         if self.req_body_overflow:
-            return self.payload_too_large()
+            return None
         try:
             p_uri = urlsplit(self.uri)
         except UnicodeDecodeError:
@@ -420,10 +423,22 @@ in standalone server mode. Details follow.
         self.exchange.response_done([])
 
     def payload_too_large(self) -> None:
-        headers = [(b"Content-Type", b"text/plain"), (b"Connection", b"close")]
-        self.exchange.response_start(b"413", b"Content Too Large", headers)
-        self.exchange.response_body(b"Request body too large.")
-        self.exchange.response_done([])
+        # Send 413 immediately and force-close the TCP connection so we stop
+        # reading the rest of the oversized body. Thor strips the Connection
+        # header (it's hop-by-hop) and has no public API on the exchange to
+        # abort, so we reach into http_conn.close_conn() directly.
+        try:
+            self.exchange.response_start(
+                b"413",
+                b"Content Too Large",
+                [(b"Content-Type", b"text/plain")],
+            )
+            self.exchange.response_body(b"Request body too large.")
+            self.exchange.response_done([])
+        finally:
+            http_conn = getattr(self.exchange, "http_conn", None)
+            if http_conn is not None:
+                http_conn.close_conn()
 
 
 # debugging output
