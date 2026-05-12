@@ -163,6 +163,7 @@ class RunTestHandler(RequestHandler):
                 ui.timeout.delete()
                 ui.timeout = None
             ui.exchange.response_done([])
+            ui.response_done = True
             save_test(ui, top_resource)
 
             # log excessive traffic

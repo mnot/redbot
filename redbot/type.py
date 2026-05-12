@@ -34,6 +34,7 @@ class RedWebUiProtocol(Protocol):
     nonce: str
     locale: str
     timeout: Optional["thor.loop.ScheduledEvent"]
+    response_done: bool
     link_generator: "LinkGenerator"
 
     def output(self, chunk: str) -> None: ...
