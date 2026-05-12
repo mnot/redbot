@@ -60,8 +60,12 @@ static_root = static
 
 # The name of a HTTP request header that will contain the client's IP address. Used for
 # logging, rate limiting, and CAPTCHA identification.
-# DO NOT SET this unless you trust the value of this header (e.g., it is under control of
-# your infrastructure). Comment out to disable.
+#
+# DO NOT SET this unless a reverse proxy in front of REDbot terminates client
+# connections AND strips/overwrites this header on the way in. If a client can
+# supply the header directly, they can spoof an arbitrary IP and bypass the
+# per-client rate limits (and pollute logs / CAPTCHA identification).
+# Comment out to disable.
 # remote_ip_header = X-Forwarded-For
 
 
