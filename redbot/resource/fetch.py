@@ -261,10 +261,10 @@ class RedFetcher(thor.events.EventEmitter):
         "Handle an error encountered while fetching the response."
         self.emit(
             "debug",
-            f"fetch error {self.request.uri} ({self.check_name}) - {error.desc}",
+            f"fetch error {self.request.uri} ({self.check_name}) - {error.desc}"
+            f"{f' ({error.detail})' if error.detail else ''}",
         )
-        assert error.detail is not None, "detail not set in _response_error"
-        err_sample = error.detail[:40] or ""
+        err_sample = (error.detail or "")[:40]
         if isinstance(error, httperr.ExtraDataError):
             if self.response.status_code == 304:
                 self.response.notes.add("body", BODY_NOT_ALLOWED, sample=err_sample)
@@ -272,8 +272,7 @@ class RedFetcher(thor.events.EventEmitter):
                 self.response.notes.add("body", EXTRA_DATA, sample=err_sample)
         elif isinstance(error, httperr.ChunkError):
             self.response.notes.add("field-transfer-encoding", BAD_CHUNK, chunk_sample=err_sample)
-        elif isinstance(error, httperr.HeaderSpaceError):
-            assert error.detail, "error.detail not set in _response_error"
+        elif isinstance(error, httperr.HeaderSpaceError) and error.detail:
             subject = f"field-{error.detail.lower().strip()}"
             self.response.notes.add(subject, HEADER_NAME_SPACE, header_name=error.detail)
             return
