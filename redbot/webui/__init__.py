@@ -112,6 +112,7 @@ class RedWebUi:
 
         self.save_path: str
         self.timeout: Optional[thor.loop.ScheduledEvent] = None
+        self.response_done: bool = False
 
         self.nonce: str = standard_b64encode(getrandbits(128).to_bytes(16, "big")).decode("ascii")
         self.start = time.time()
@@ -161,10 +162,13 @@ class RedWebUi:
             formatter.start_output()
             formatter.error_output(message)
         self.exchange.response_done([])
+        self.response_done = True
         if log_message:
             self.error_log(log_message)
 
     def output(self, chunk: str) -> None:
+        if self.response_done:
+            return
         self.exchange.response_body(chunk.encode(self.charset, "replace"))
 
     def error_log(self, message: str) -> None:
@@ -181,6 +185,7 @@ class RedWebUi:
         formatter.resource.stop()
         formatter.error_output("REDbot timeout.")
         self.exchange.response_done([])
+        self.response_done = True
 
     def get_client_id(self) -> str:
         """
