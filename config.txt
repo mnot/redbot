@@ -42,6 +42,10 @@ host = localhost
 # Port to listen on.
 port = 8000
 
+# Maximum size (bytes) of an incoming request body. Requests that exceed this
+# are rejected with 413. Set to 0 to disable the limit.
+max_request_body_size = 1048576
+
 # The URL where the Web user interface is rooted.
 ui_uri = https://redbot.org/
 

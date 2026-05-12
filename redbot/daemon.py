@@ -309,6 +309,8 @@ class RedRequestHandler:
         self.uri = b""
         self.req_hdrs: RawHeaderListType = []
         self.req_body = b""
+        self.req_body_overflow = False
+        self.max_req_body = server.config.getint("max_request_body_size", fallback=1048576)
         if not exchange.http_conn.tcp_conn:
             return
         self.client_ip = exchange.http_conn.tcp_conn.socket.getpeername()[0]
@@ -322,9 +324,17 @@ class RedRequestHandler:
         self.req_hdrs = req_hdrs
 
     def request_body(self, chunk: bytes) -> None:
+        if self.req_body_overflow:
+            return
+        if self.max_req_body and len(self.req_body) + len(chunk) > self.max_req_body:
+            self.req_body_overflow = True
+            self.req_body = b""
+            return
         self.req_body += chunk
 
     def request_done(self, trailers: RawHeaderListType) -> None:
+        if self.req_body_overflow:
+            return self.payload_too_large()
         try:
             p_uri = urlsplit(self.uri)
         except UnicodeDecodeError:
@@ -407,6 +417,12 @@ in standalone server mode. Details follow.
         headers.append((b"Content-Type", b"text/plain"))
         self.exchange.response_start(b"400", b"Bad Request", headers)
         self.exchange.response_body(why)
+        self.exchange.response_done([])
+
+    def payload_too_large(self) -> None:
+        headers = [(b"Content-Type", b"text/plain"), (b"Connection", b"close")]
+        self.exchange.response_start(b"413", b"Content Too Large", headers)
+        self.exchange.response_body(b"Request body too large.")
         self.exchange.response_done([])
 
 
