@@ -133,11 +133,7 @@ class HttpResource(RedFetcher):
             if not self.response.base_uri:
                 self.response.base_uri = base
             return
-        if (
-            self.descend
-            and tag not in ["a"]
-            and link not in self.links[tag]
-        ):
+        if self.descend and tag not in ["a"] and link not in self.links[tag]:
             linked = HttpResource(self.config)
             linked.set_request(urljoin(base, link), headers=self.request.headers.text)
             self.linked.append((linked, tag))
