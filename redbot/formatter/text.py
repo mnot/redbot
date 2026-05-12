@@ -63,16 +63,26 @@ class BaseTextFormatter(Formatter):
             if self.resource.response.complete:
                 self.output(self.format_headers(self.resource.response) + NL + NL)
             elif isinstance(self.resource.fetch_error, httperr.HttpError):
-                self.output(self.error_template % self.resource.fetch_error.desc)
+                self.output(
+                    self.error_template % self._format_fetch_error(self.resource.fetch_error)
+                )
 
             self.output(self.format_recommendations(self.resource) + NL)
         else:
             if self.resource.fetch_error is None:
                 pass
             elif isinstance(self.resource.fetch_error, httperr.HttpError):
-                self.output(self.error_template % self.resource.fetch_error.desc)
+                self.output(
+                    self.error_template % self._format_fetch_error(self.resource.fetch_error)
+                )
             else:
                 raise AssertionError("Unknown incomplete response error.")
+
+    @staticmethod
+    def _format_fetch_error(error: httperr.HttpError) -> str:
+        if error.detail:
+            return f"{error.desc} ({error.detail})"
+        return error.desc
 
     def error_output(self, message: str) -> None:
         self.output(self.error_template % message)
