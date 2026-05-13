@@ -102,9 +102,14 @@ class CaptchaHandler:
         exchange = token_client.exchange()
         captcha_status: bytes = b""
         captcha_body: bytes = b""
+        decided = False
 
         @thor.events.on(exchange)
         def error(err_msg: HttpError) -> None:
+            nonlocal decided
+            if decided:
+                return
+            decided = True
             self.error_response(
                 b"403",
                 b"Forbidden",
@@ -124,6 +129,10 @@ class CaptchaHandler:
 
         @thor.events.on(exchange)
         def response_done(_: RawHeaderListType) -> None:
+            nonlocal decided
+            if decided:
+                return
+            decided = True
             try:
                 results = json.loads(captcha_body)
             except ValueError:

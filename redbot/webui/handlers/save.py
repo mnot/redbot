@@ -211,7 +211,10 @@ class LoadSavedTestHandler(RequestHandler):
 
         @thor.events.on(formatter)
         def formatter_done() -> None:
+            if ui.response_done:
+                return
             ui.exchange.response_done([])
+            ui.response_done = True
 
         formatter.bind_resource(display_resource)
 
