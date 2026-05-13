@@ -154,6 +154,12 @@ class RunTestHandler(RequestHandler):
     ) -> None:
         """Preliminary checks are done; actually run the test."""
 
+        # The response may already have been finalized while we were waiting
+        # for captcha verification (e.g. the runtime timeout fired and sent a
+        # 504). Starting a new response now would raise OutputStateError.
+        if ui.response_done:
+            return
+
         if not extra_headers:
             extra_headers = []
 
