@@ -2,24 +2,19 @@
 A Web UI for RED, the Resource Expert Droid.
 """
 
-import os
-import string
 import sys
 import time
 from base64 import standard_b64encode
-from collections import defaultdict
 from configparser import SectionProxy
-from functools import partial, update_wrapper
 from random import getrandbits
-from typing import Callable, Dict, List, Optional, Tuple, Union, cast
-from urllib.parse import parse_qs, urlencode, urlsplit
+from typing import Callable, Optional
+from urllib.parse import parse_qs
 
 import thor
 import thor.http.common
 from babel.core import negotiate_locale
 from thor.http import get_header
 
-from redbot import __version__
 from redbot.formatter import Formatter, find_formatter
 from redbot.i18n import AVAILABLE_LOCALES, DEFAULT_LOCALE, set_locale
 from redbot.resource import HttpResource
@@ -27,7 +22,6 @@ from redbot.type import (
     HttpResponseExchange,
     LinkGenerator,
     RawHeaderListType,
-    StrHeaderListType,
 )
 from redbot.webui.handlers import (
     ClientErrorHandler,
@@ -39,7 +33,6 @@ from redbot.webui.handlers import (
     ShowHandler,
 )
 from redbot.webui.links import WebUiLinkGenerator
-from redbot.webui.saved_tests import init_save_file, save_test
 
 CSP = "script-src"
 

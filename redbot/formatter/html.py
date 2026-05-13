@@ -13,7 +13,6 @@ from httplint import get_field_description
 from httplint.note import Note, categories, levels
 from typing_extensions import Unpack
 
-from redbot import __version__
 from redbot.formatter import FormatterArgs
 from redbot.formatter.html_base import (
     NL,

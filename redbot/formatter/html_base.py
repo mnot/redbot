@@ -1,7 +1,6 @@
 import json
 import os
 import time
-from typing import TYPE_CHECKING
 from urllib.parse import urljoin, urlparse
 
 import httplint
@@ -39,9 +38,6 @@ __all__ = [
     "Markup",
     "escape",
 ]
-
-if TYPE_CHECKING:
-    from redbot.webui.handlers.base import RequestHandler
 
 NL = "\n"
 

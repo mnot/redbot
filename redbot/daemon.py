@@ -423,22 +423,15 @@ in standalone server mode. Details follow.
         self.exchange.response_done([])
 
     def payload_too_large(self) -> None:
-        # Send 413 immediately and force-close the TCP connection so we stop
-        # reading the rest of the oversized body. Thor strips the Connection
-        # header (it's hop-by-hop) and has no public API on the exchange to
-        # abort, so we reach into http_conn.close_conn() directly.
-        try:
-            self.exchange.response_start(
-                b"413",
-                b"Content Too Large",
-                [(b"Content-Type", b"text/plain")],
-            )
-            self.exchange.response_body(b"Request body too large.")
-            self.exchange.response_done([])
-        finally:
-            http_conn = getattr(self.exchange, "http_conn", None)
-            if http_conn is not None:
-                http_conn.close_conn()
+        # Send 413 and close the TCP connection so we stop reading the rest
+        # of the oversized body.
+        self.exchange.response_start(
+            b"413",
+            b"Content Too Large",
+            [(b"Content-Type", b"text/plain")],
+        )
+        self.exchange.response_body(b"Request body too large.")
+        self.exchange.response_done([], close=True)
 
 
 # debugging output

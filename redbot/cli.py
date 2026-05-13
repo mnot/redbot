@@ -10,7 +10,6 @@ from configparser import ConfigParser
 
 import thor
 
-from redbot import __version__
 from redbot.formatter import available_formatters, find_formatter
 from redbot.resource import HttpResource
 

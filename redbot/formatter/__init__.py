@@ -3,11 +3,8 @@ Formatters for REDbot output.
 """
 
 import inspect
-import locale
 import sys
 import time
-import unittest
-from collections import defaultdict
 from configparser import SectionProxy
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Type
 

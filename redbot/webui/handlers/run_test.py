@@ -24,7 +24,6 @@ from redbot.webui.saved_tests import init_save_file, save_test
 
 if TYPE_CHECKING:
     from redbot.formatter import Formatter
-    from redbot.webui import RedWebUi
 
 
 class RunTestHandler(RequestHandler):

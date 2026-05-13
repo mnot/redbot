@@ -4,13 +4,8 @@ Error handler for REDbot Web UI.
 This module provides a fallback handler for unsupported methods (405) and unknown requests (404).
 """
 
-from typing import TYPE_CHECKING
-
 from redbot.type import RedWebUiProtocol
 from redbot.webui.handlers.base import RequestHandler
-
-if TYPE_CHECKING:
-    from redbot.webui import RedWebUi
 
 
 class ErrorHandler(RequestHandler):
