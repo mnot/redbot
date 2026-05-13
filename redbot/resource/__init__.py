@@ -16,7 +16,6 @@ from urllib.parse import urljoin
 
 import thor
 
-from redbot.formatter import f_num
 from redbot.resource import link_parse
 from redbot.resource.active_check import active_checks
 from redbot.resource.fetch import RedFetcher

@@ -9,7 +9,7 @@ import os
 import pickle
 import time
 import zlib
-from typing import IO, TYPE_CHECKING, Any, cast
+from typing import IO, Any, cast
 from urllib.parse import urlencode
 
 import thor.events
@@ -18,9 +18,6 @@ from markupsafe import escape
 from redbot.formatter import find_formatter
 from redbot.type import RedWebUiProtocol
 from redbot.webui.handlers.base import RequestHandler
-
-if TYPE_CHECKING:
-    from redbot.webui import RedWebUi
 
 
 class SaveHandler(RequestHandler):
