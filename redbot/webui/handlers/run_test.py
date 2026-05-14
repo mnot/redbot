@@ -10,12 +10,13 @@ from urllib.parse import urlencode, urlsplit
 
 import thor
 import thor.events
+from httplint.util import iri_to_uri
 from markupsafe import escape
 
 from redbot.formatter import find_formatter
 from redbot.resource import HttpResource
 from redbot.resource.active_check import active_checks
-from redbot.type import RawHeaderListType, RedWebUiProtocol, StrHeaderListType
+from redbot.type import RawHeaderListType, RedWebUiProtocol
 from redbot.utils import e_url
 from redbot.webui.captcha import CaptchaHandler
 from redbot.webui.handlers.base import RequestHandler
@@ -24,6 +25,29 @@ from redbot.webui.saved_tests import init_save_file, save_test
 
 if TYPE_CHECKING:
     from redbot.formatter import Formatter
+
+_BAD_HEADER_NAME_CHARS = set('()<>@,;:\\"/[]?={} \t\r\n')
+
+
+def _validate_req_hdrs(raw: List[str]) -> Tuple[List[Tuple[str, str]], Optional[str]]:
+    """Parse and validate user-supplied req_hdr entries.
+
+    Returns (headers, error). When error is not None, headers is meaningless
+    and the test should not run.
+    """
+    headers: List[Tuple[str, str]] = []
+    for entry in raw:
+        if ":" not in entry:
+            return [], f"Request header {entry!r} is missing a colon."
+        name, value = entry.split(":", 1)
+        if not name:
+            return [], "Request header field name is empty."
+        if any(c in _BAD_HEADER_NAME_CHARS or ord(c) < 33 or ord(c) > 126 for c in name):
+            return [], f"Request header field name {name!r} contains invalid characters."
+        if "\r" in value or "\n" in value:
+            return [], f"Request header {name!r} value contains CR or LF."
+        headers.append((name, value))
+    return headers, None
 
 
 class RunTestHandler(RequestHandler):
@@ -59,11 +83,15 @@ class RunTestHandler(RequestHandler):
         """
         test_id = init_save_file(ui)
         test_uri = ui.query_string.get("uri", [""])[0]
-        test_req_hdrs: StrHeaderListType = [
-            cast(Tuple[str, str], tuple(h.split(":", 1)))
-            for h in ui.query_string.get("req_hdr", [])
-            if ":" in h
-        ]
+        try:
+            iri_to_uri(test_uri).encode("ascii")
+        except (ValueError, UnicodeError):
+            ui.error_response(b"400", b"Bad Request", "Request URI is malformed.")
+            return
+        test_req_hdrs, hdr_error = _validate_req_hdrs(ui.query_string.get("req_hdr", []))
+        if hdr_error:
+            ui.error_response(b"400", b"Bad Request", hdr_error)
+            return
         descend = "descend" in ui.query_string
 
         top_resource = HttpResource(ui.config, descend=descend)
