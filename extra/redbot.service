@@ -1,11 +1,9 @@
 [Unit]
-Description="REDbot"
+Description=REDbot
 After=network.target
 
 [Service]
 Type=simple
-User=redbot
-Group=redbot
 DynamicUser=true
 
 # Process
@@ -30,7 +28,13 @@ ProtectHome=tmpfs
 ProtectClock=true
 ProtectKernelModules=true
 ProtectKernelTunables=true
+ProtectKernelLogs=true
 ProtectControlGroups=true
+ProcSubset=pid
+RestrictSUIDSGID=true
+RestrictRealtime=true
+KeyringMode=private
+UMask=0077
 PrivateDevices=true
 SystemCallFilter=@system-service
 SystemCallErrorNumber=EPERM
