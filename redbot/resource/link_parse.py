@@ -13,6 +13,7 @@ from httplint.message import HttpMessageLinter
 from httplint.syntax import rfc9110
 
 DEFAULT_ENCODING = "utf-8"
+MAX_FEED_BYTES = 2 * 1024 * 1024
 
 
 class HTMLLinkParser(HTMLParser):
@@ -57,6 +58,7 @@ class HTMLLinkParser(HTMLParser):
         self.errors = 0
         self.last_err_pos: int = 0
         self.ok = True
+        self.bytes_fed = 0
         HTMLParser.__init__(self)
 
     def __getstate__(self) -> Dict[str, Any]:
@@ -65,6 +67,10 @@ class HTMLLinkParser(HTMLParser):
     def feed_bytes(self, bchunk: bytes) -> None:
         "Feed a given chunk of bytes to the parser"
         if self.ok:
+            self.bytes_fed += len(bchunk)
+            if self.bytes_fed > MAX_FEED_BYTES:
+                self.ok = False
+                return
             encoding = self.message.character_encoding or DEFAULT_ENCODING
             decoded = bchunk.decode(encoding, "ignore")
             self.feed(decoded)
