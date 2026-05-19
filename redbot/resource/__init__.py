@@ -56,7 +56,7 @@ class HttpResource(RedFetcher):
         self.linked: List[Tuple[HttpResource, str]] = []  # linked HttpResources
         self._link_parser = link_parse.HTMLLinkParser(self.response, [self.process_link])
         if self.descend or config.getboolean("content_links", False):
-            self.response_content_processors.append(self._link_parser.feed_bytes)
+            self.response.decoded.processors.append(self._link_parser.feed_bytes)
 
     def run_active_checks(self) -> None:
         """
