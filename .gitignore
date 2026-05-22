@@ -1,17 +1,21 @@
+# DO NOT EDIT outside marked project regions — managed by https://github.com/mnot/pyproject-tmpl
 *.pyc
 __pycache__
 .DS_Store
 /MANIFEST
 /dist
 /build
-ghostdriver.log
-geckodriver.log
-/.sass-cache
+/changelog.md
 /.coverage
 /.mypy_cache
 /.pytest_cache
 /.venv
-/redbot.egg-info
+/*.egg-info
+
+# === pyproject-tmpl: start "extras" ===
+ghostdriver.log
+geckodriver.log
+/.sass-cache
 /.npx-cache
 /src/node_modules
 /src/package-lock.json
@@ -20,3 +24,4 @@ geckodriver.log
 /fail_*.png
 /*.log
 /test_summary.md
+# === pyproject-tmpl: end "extras" ===

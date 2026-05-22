@@ -1,3 +1,4 @@
+# DO NOT EDIT outside marked project regions — managed by https://github.com/mnot/pyproject-tmpl
 name: Test
 
 on:
@@ -17,7 +18,8 @@ jobs:
     steps:
     - uses: actions/checkout@v6
       with:
-        submodules: "true"
+        submodules: 'true'
+    # === pyproject-tmpl: start "pre-test" ===
     - uses: actions/setup-node@v6
       with:
         node-version: 18
@@ -31,6 +33,7 @@ jobs:
     - name: Install Playwright
       if: steps.playwright-cache.outputs.cache-hit != 'true'
       run: npx playwright install --with-deps
+    # === pyproject-tmpl: end "pre-test" ===
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v6
       with:
@@ -46,8 +49,9 @@ jobs:
       run: make typecheck
     - name: Lint
       run: make lint
-    - name: WebUI Test
-      run: make test_webui
+    - name: Test
+      run: make test
+    # === pyproject-tmpl: start "post-test" ===
     - name: Upload screenshots
       if: always()
       uses: actions/upload-artifact@v7
@@ -55,3 +59,4 @@ jobs:
         name: webui-screenshots
         path: fail_*.png
         if-no-files-found: ignore
+    # === pyproject-tmpl: end "post-test" ===

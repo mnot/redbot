@@ -23,7 +23,10 @@ class RateLimiter:
         self.loop = thor.loop
 
     def process(
-        self, webui: RedWebUiProtocol, test_uri: str, error_response: Callable[..., None]
+        self,
+        webui: RedWebUiProtocol,
+        test_uri: str,
+        error_response: Callable[..., None],
     ) -> None:
         """Enforce limits on webui."""
         if not self.running:

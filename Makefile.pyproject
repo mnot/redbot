@@ -1,3 +1,4 @@
+# DO NOT EDIT — managed by https://github.com/mnot/pyproject-tmpl, overwritten by `make update`.
 #
 # Common Makefile for Python projects
 #
@@ -29,6 +30,11 @@
 #     Publish the project to pypi
 # release <<< TAGS AND PUSHES TO GITHUB
 #     Release the project on Pypi and Github releases (requires /.github/workflows/release.yml)
+# update-pyproject
+#     Refresh template-managed files in place from the pyproject-tmpl repo.
+# update-python-targets
+#     Refresh requires-python in pyproject.toml and the python-version
+#     matrix in .github/workflows/test.yml from endoflife.date.
 #
 # See also Makefile.venv.
 
@@ -130,15 +136,241 @@ release: py_version changelog.md
 	git push --tags origin  # github action will push to pypi and create a release
 
 
+## Template self-update
+
+TEMPLATE_REPO?=mnot/pyproject-tmpl
+TEMPLATE_BRANCH?=main
+TEMPLATE_RAW=https://raw.githubusercontent.com/$(TEMPLATE_REPO)/$(TEMPLATE_BRANCH)
+
+# Makefiles refreshed in stage 1 (so the recursive $(MAKE) call below picks
+# up the new recipes for the rest of the update).
+UPDATE_MAKEFILES = Makefile.pyproject Makefile.venv
+
+# Other files fully overwritten in stage 2.
+UPDATE_FILES = \
+	mypy.ini \
+	.pylintrc \
+	.isort.cfg \
+	.github/workflows/publish.yml
+
+# Two-stage so that updates to Makefile.pyproject/Makefile.venv take effect
+# in the same run: stage 1 refreshes the makefiles, then a recursive $(MAKE)
+# re-reads them and executes the rest of the update.
+.PHONY: update-pyproject
+update-pyproject:
+	@for f in $(UPDATE_MAKEFILES); do \
+		echo "  updating $$f"; \
+		curl -fsSL "$(TEMPLATE_RAW)/$$f" -o "$$f.tmp" || { echo "    failed: $$f"; rm -f "$$f.tmp"; exit 1; }; \
+		mv "$$f.tmp" "$$f"; \
+	done
+	@$(MAKE) --no-print-directory update-pyproject-rest
+
+.PHONY: update-pyproject-rest
+update-pyproject-rest: update-files update-gitignore update-editorconfig update-test-yml update-strip
+	@echo "Template files updated from $(TEMPLATE_REPO)@$(TEMPLATE_BRANCH)."
+
+.PHONY: update-files
+update-files:
+	@for f in $(UPDATE_FILES); do \
+		echo "  updating $$f"; \
+		mkdir -p "$$(dirname $$f)"; \
+		curl -fsSL "$(TEMPLATE_RAW)/$$f" -o "$$f.tmp" || { echo "    failed: $$f"; rm -f "$$f.tmp"; exit 1; }; \
+		mv "$$f.tmp" "$$f"; \
+	done
+
+# Refresh a template-managed file that contains named project regions.
+# Each file is mostly template-controlled; explicit start/end markers wrap
+# regions whose content the project owns. On update, the file is rewritten
+# from the template, but the local content of each named region is spliced
+# back in. Local regions without a matching slot in the new template are
+# warned about and dropped.
+define PARTIAL_UPDATE_SCRIPT
+import pathlib, re, sys
+
+START_RE = re.compile(r'\s*# === pyproject-tmpl: start "([^"]+)" ===\s*')
+END_RE = re.compile(r'\s*# === pyproject-tmpl: end "([^"]+)" ===\s*')
+
+def extract(text):
+    out = {}
+    lines = text.splitlines()
+    i = 0
+    while i < len(lines):
+        m = START_RE.fullmatch(lines[i])
+        if m:
+            name = m.group(1)
+            j = i + 1
+            while j < len(lines):
+                em = END_RE.fullmatch(lines[j])
+                if em and em.group(1) == name:
+                    out[name] = lines[i+1:j]
+                    i = j
+                    break
+                j += 1
+            else:
+                sys.exit(f"ERROR: region {name!r} not closed in {sys.argv[1]}")
+        i += 1
+    return out
+
+def merge(template_text, local_regions):
+    lines = template_text.splitlines()
+    out, seen = [], set()
+    i = 0
+    while i < len(lines):
+        m = START_RE.fullmatch(lines[i])
+        if m:
+            name = m.group(1)
+            seen.add(name)
+            out.append(lines[i])
+            j = i + 1
+            while j < len(lines):
+                em = END_RE.fullmatch(lines[j])
+                if em and em.group(1) == name:
+                    out.extend(local_regions.get(name, lines[i+1:j]))
+                    out.append(lines[j])
+                    i = j
+                    break
+                j += 1
+            else:
+                sys.exit(f"ERROR: template region {name!r} not closed")
+        else:
+            out.append(lines[i])
+        i += 1
+    return seen, out
+
+def skeleton(text):
+    """Return text with region bodies stripped, keeping the start/end markers."""
+    lines = text.splitlines()
+    out = []
+    i = 0
+    while i < len(lines):
+        m = START_RE.fullmatch(lines[i])
+        if m:
+            name = m.group(1)
+            out.append(lines[i])
+            j = i + 1
+            while j < len(lines):
+                em = END_RE.fullmatch(lines[j])
+                if em and em.group(1) == name:
+                    out.append(lines[j])
+                    i = j
+                    break
+                j += 1
+            else:
+                break
+        else:
+            out.append(lines[i])
+        i += 1
+    return "\n".join(out)
+
+local = pathlib.Path(sys.argv[1])
+tmpl = pathlib.Path(sys.argv[2])
+local_text = local.read_text() if local.exists() else None
+tmpl_text = tmpl.read_text()
+local_regions = extract(local_text) if local_text is not None else {}
+needs_migration = local_text is not None and skeleton(local_text) != skeleton(tmpl_text)
+seen, merged = merge(tmpl_text, local_regions)
+if needs_migration:
+    print(f"  NOTE: {local} had out-of-region content; appended below a MIGRATION NEEDED footer for manual triage", file=sys.stderr)
+    merged.extend([
+        "",
+        "# === pyproject-tmpl: MIGRATION NEEDED ===",
+        "# The previous version of this file had content the template no longer",
+        "# manages. It is preserved below as comments. Move what you still want",
+        "# into the appropriate named regions above, then delete this section.",
+        "# ---",
+    ])
+    for line in local_text.splitlines():
+        merged.append("# " + line if line else "#")
+for orphan in sorted(set(local_regions) - seen):
+    print(f"  WARNING: {local}: local region {orphan!r} has no slot in template; content dropped", file=sys.stderr)
+local.write_text("\n".join(merged) + "\n")
+endef
+export PARTIAL_UPDATE_SCRIPT
+
+# $(call partial_update,<file>) — refresh <file> while preserving any
+# project-owned start/end regions in its current content.
+define partial_update
+	@echo "  updating $(1)"
+	@mkdir -p "$$(dirname $(1))"
+	@curl -fsSL "$(TEMPLATE_RAW)/$(1)" -o "$(1).tmpl"
+	@python3 -c "$$PARTIAL_UPDATE_SCRIPT" "$(1)" "$(1).tmpl"
+	@rm -f "$(1).tmpl"
+endef
+
+.PHONY: update-gitignore
+update-gitignore:
+	$(call partial_update,.gitignore)
+
+.PHONY: update-editorconfig
+update-editorconfig:
+	$(call partial_update,.editorconfig)
+
+.PHONY: update-test-yml
+update-test-yml:
+	$(call partial_update,.github/workflows/test.yml)
+
+define UPDATE_PYTHON_TARGETS_SCRIPT
+import datetime, json, pathlib, re, sys, urllib.request
+
+with urllib.request.urlopen("https://endoflife.date/api/python.json") as resp:
+    data = json.load(resp)
+
+today = datetime.date.today().isoformat()
+versions = sorted(
+    [c["cycle"] for c in data
+     if c.get("eol") and c["eol"] > today and not c["cycle"].startswith("2.")],
+    key=lambda v: tuple(int(x) for x in v.split(".")),
+)
+if not versions:
+    print("ERROR: no supported Python versions returned", file=sys.stderr)
+    sys.exit(1)
+print(f"Currently supported Python: {', '.join(versions)}")
+
+def patch(path, pattern, replacement):
+    p = pathlib.Path(path)
+    if not p.exists():
+        return
+    original = p.read_text()
+    updated = re.sub(pattern, replacement, original, flags=re.M)
+    if updated != original:
+        p.write_text(updated)
+        print(f"  patched {path}")
+
+oldest = versions[0]
+patch("pyproject.toml",
+      r'^(requires-python\s*=\s*">=)\d+\.\d+(")',
+      rf'\g<1>{oldest}\g<2>')
+quoted = ", ".join(f'"{v}"' for v in versions)
+patch(".github/workflows/test.yml",
+      r"(python-version:\s*)\[[^\]]*\]",
+      rf"\g<1>[{quoted}]")
+endef
+export UPDATE_PYTHON_TARGETS_SCRIPT
+
+.PHONY: update-python-targets
+update-python-targets: venv
+	@$(VENV)/python -c "$$UPDATE_PYTHON_TARGETS_SCRIPT"
+
+.PHONY: update-strip
+update-strip:
+	@if grep -qE '^\[tool\.(mypy|pylint|isort)' pyproject.toml; then \
+		echo "  stripping [tool.mypy|pylint|isort] sections from pyproject.toml (moved to dotfiles)"; \
+		awk 'BEGIN{skip=0} /^\[/{skip=($$0 ~ /^\[tool\.(mypy|pylint|isort)/)} !skip' pyproject.toml > pyproject.toml.new; \
+		mv pyproject.toml.new pyproject.toml; \
+	fi
+
+
 .PHONY: bootstrap
 bootstrap:
 	@if [ ! -d SHORTNAME ]; then echo "Already bootstrapped."; exit 1; fi
 	@read -p "Project Name (e.g., myproject): " NAME; \
 	read -p "Description: " DESC; \
 	read -p "Project URL: " URL; \
-	find . -type f -not -path './.git/*' -not -name 'Makefile.pyproject' -exec sed -i "" -e "s,SHORTNAME,$$NAME,g" -e "s,DESCRIPTION,$$DESC,g" -e "s,PROJECT_URL,$$URL,g" {} +; \
-	mv SHORTNAME $$NAME; \
-	echo "Project initialized as $$NAME."
+	PKG=$$(echo "$$NAME" | tr '-' '_'); \
+	find . -type f -not -path './.git/*' -not -name 'Makefile.pyproject' -exec sed -i "" -e "s,SHORTNAME,$$PKG,g" -e "s,DESCRIPTION,$$DESC,g" -e "s,PROJECT_URL,$$URL,g" {} +; \
+	sed -i "" "s,^name = \"$$PKG\"\$$,name = \"$$NAME\"," pyproject.toml; \
+	mv SHORTNAME $$PKG; \
+	echo "Project initialized as $$NAME (package: $$PKG)."
 
 
 include Makefile.venv

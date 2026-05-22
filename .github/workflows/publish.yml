@@ -1,4 +1,4 @@
-
+# DO NOT EDIT — managed by https://github.com/mnot/pyproject-tmpl, overwritten by `make update`.
 name: Release and Publish
 
 on:
@@ -84,7 +84,6 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/redbot
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
 

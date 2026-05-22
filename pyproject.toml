@@ -74,42 +74,5 @@ namespaces = false
 [tool.setuptools]
 include-package-data = true
 
-[tool.mypy]
-strict = true
-show_error_codes = true
-
-[tool.pylint.basic]
-function-rgx = "[a-z_][a-z0-9_]{1,30}$"
-variable-rgx = "[a-z_][a-z0-9_]{1,30}$"
-attr-rgx = "[a-z_][a-z0-9_]{1,30}$"
-argument-rgx = "[a-z_][a-z0-9_]{1,30}$"
-class-attribute-rgx = "([A-Za-z_][A-Za-z0-9_]{1,30}|(__.*__))$"
-method-rgx = "[a-z_][a-z0-9_]{1,30}$"
-class-rgx = "[a-zA-Z0-9_]+$"
-
-[tool.pylint.messages_control]
-disable = "C0114,C0115,C0116,W0613,R0903"
-
-[tool.pylint.reports]
-reports = false
-
-[tool.pylint.variables]
-dummy-variables-rgx = "response_start|response_body|response_done|error|formatter_done|check_done|_"
-
-[tool.pylint.design]
-max-args=10
-max-positional-arguments=10
-max-locals=35
-max-branches=25
-max-statements=100
-max-attributes=40
-min-public-methods=1
-
-[tool.pylint.similarities]
-min-similarity-lines = 10
-
 [tool.black]
 line-length = 100
-
-[tool.isort]
-profile = "black"

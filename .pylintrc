@@ -1,0 +1,29 @@
+# === pyproject-tmpl: managed file (do not edit; overwritten by `make update`) ===
+[BASIC]
+function-rgx = [a-z_][a-z0-9_]{1,30}$
+variable-rgx = [a-z_][a-z0-9_]{1,30}$
+attr-rgx = [a-z_][a-z0-9_]{1,30}$
+argument-rgx = [a-z_][a-z0-9_]{1,30}$
+class-attribute-rgx = ([A-Za-z_][A-Za-z0-9_]{1,30}|(__.*__))$
+method-rgx = [a-z_][a-z0-9_]{1,30}$
+class-rgx = [a-zA-Z0-9_]+$
+
+[MESSAGES CONTROL]
+disable = C0114,C0115,C0116,W0613
+
+[REPORTS]
+reports = no
+
+[VARIABLES]
+dummy-variables-rgx = _
+
+[DESIGN]
+max-args = 10
+max-locals = 35
+max-branches = 25
+max-statements = 100
+max-attributes = 40
+min-public-methods = 1
+
+[SIMILARITIES]
+min-similarity-lines = 10

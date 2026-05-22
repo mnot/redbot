@@ -43,7 +43,10 @@ def _validate_req_hdrs(raw: List[str]) -> Tuple[List[Tuple[str, str]], Optional[
         if not name:
             return [], "Request header field name is empty."
         if any(c in _BAD_HEADER_NAME_CHARS or ord(c) < 33 or ord(c) > 126 for c in name):
-            return [], f"Request header field name {name!r} contains invalid characters."
+            return (
+                [],
+                f"Request header field name {name!r} contains invalid characters.",
+            )
         if "\r" in value or "\n" in value:
             return [], f"Request header {name!r} value contains CR or LF."
         headers.append((name, value))

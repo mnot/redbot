@@ -1,3 +1,4 @@
+# DO NOT EDIT outside marked project regions — managed by https://github.com/mnot/pyproject-tmpl
 # top-most EditorConfig file
 root = true
 
@@ -20,9 +21,11 @@ indent_size = 2
 [*.html]
 max_line_length = unset
 
+# === pyproject-tmpl: start "extras" ===
 [redbot/assets/**]
 max_line_length = unset
 insert_final_newline = unset
 
 [src/package-lock.json]
 indent_size = 2
+# === pyproject-tmpl: end "extras" ===
