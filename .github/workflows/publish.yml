@@ -1,3 +1,4 @@
+
 name: Release and Publish
 
 on:
@@ -95,8 +96,3 @@ jobs:
         path: dist/
     - name: Publish distribution to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
-
-  publish-docker-image:
-    uses: ./.github/workflows/docker-image.yml
-    needs:
-    - release

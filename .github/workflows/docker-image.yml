@@ -1,7 +1,8 @@
 name: Image publication
 
 on:
-  workflow_call
+  push:
+    tags: ['v*.*.*']
 
 env:
   REGISTRY: ghcr.io
