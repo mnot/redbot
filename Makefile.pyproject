@@ -237,8 +237,8 @@ def merge(template_text, local_regions):
         i += 1
     return seen, out
 
-def skeleton(text):
-    """Return text with region bodies stripped, keeping the start/end markers."""
+def skeleton_lines(text):
+    """Return list of lines outside any project region (template-managed portion)."""
     lines = text.splitlines()
     out = []
     i = 0
@@ -260,27 +260,37 @@ def skeleton(text):
         else:
             out.append(lines[i])
         i += 1
-    return "\n".join(out)
+    return out
 
 local = pathlib.Path(sys.argv[1])
 tmpl = pathlib.Path(sys.argv[2])
 local_text = local.read_text() if local.exists() else None
 tmpl_text = tmpl.read_text()
 local_regions = extract(local_text) if local_text is not None else {}
-needs_migration = local_text is not None and skeleton(local_text) != skeleton(tmpl_text)
 seen, merged = merge(tmpl_text, local_regions)
-if needs_migration:
-    print(f"  NOTE: {local} had out-of-region content; appended below a MIGRATION NEEDED footer for manual triage", file=sys.stderr)
+# At-risk lines: present in local outside regions, absent from new template entirely.
+# Blank lines and comment formatting churn don't trigger because set membership ignores
+# duplicates and position; only genuinely unique content shows up.
+at_risk = []
+if local_text is not None:
+    tmpl_lines = set(tmpl_text.splitlines())
+    for line in skeleton_lines(local_text):
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue  # blank or comment — not data-loss-critical
+        if line not in tmpl_lines:
+            at_risk.append(line)
+if at_risk:
+    print(f"  NOTE: {local}: {len(at_risk)} line(s) not present in new template; appended for manual triage", file=sys.stderr)
     merged.extend([
         "",
         "# === pyproject-tmpl: MIGRATION NEEDED ===",
-        "# The previous version of this file had content the template no longer",
-        "# manages. It is preserved below as comments. Move what you still want",
-        "# into the appropriate named regions above, then delete this section.",
+        "# The lines below were in your prior file but are not in the new template.",
+        "# Move what you still want into a named region above, then delete this section.",
         "# ---",
     ])
-    for line in local_text.splitlines():
-        merged.append("# " + line if line else "#")
+    for line in at_risk:
+        merged.append("# " + line)
 for orphan in sorted(set(local_regions) - seen):
     print(f"  WARNING: {local}: local region {orphan!r} has no slot in template; content dropped", file=sys.stderr)
 local.write_text("\n".join(merged) + "\n")
