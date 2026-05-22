@@ -9,7 +9,7 @@ method-rgx = [a-z_][a-z0-9_]{1,30}$
 class-rgx = [a-zA-Z0-9_]+$
 
 [MESSAGES CONTROL]
-disable = C0114,C0115,C0116,W0613
+disable = C0114,C0115,C0116,W0613,R0903
 
 [REPORTS]
 reports = no
@@ -24,6 +24,7 @@ max-branches = 25
 max-statements = 100
 max-attributes = 40
 min-public-methods = 1
+max-positional-arguments=10
 
 [SIMILARITIES]
 min-similarity-lines = 10
