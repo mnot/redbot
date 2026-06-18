@@ -36,6 +36,7 @@ import redbot
 from redbot.type import RawHeaderListType
 from redbot.webbotauth import (
     DIRECTORY_CONTENT_TYPE,
+    DIRECTORY_MAX_AGE,
     DIRECTORY_PATH,
     WebBotAuthError,
     load_signer,
@@ -432,7 +433,7 @@ in standalone server mode. Details follow.
         body = signer.directory_json()
         headers = [
             (b"Content-Type", DIRECTORY_CONTENT_TYPE.encode("ascii")),
-            (b"Cache-Control", b"max-age=86400"),
+            (b"Cache-Control", b"max-age=%d" % DIRECTORY_MAX_AGE),
         ]
         authority = self.request_authority()
         if authority:
@@ -446,7 +447,14 @@ in standalone server mode. Details follow.
         "The authority (Host) of the incoming request, for signing."
         for name, value in self.req_hdrs:
             if name.lower() == b"host":
-                return value.decode("ascii", "replace").strip().lower()
+                host = value.decode("ascii", "replace").strip().lower()
+                # Drop a default port so the signed @authority matches what a
+                # verifier normalizes to (RFC 9421 derives @authority this way).
+                for suffix in (":443", ":80"):
+                    if host.endswith(suffix):
+                        host = host[: -len(suffix)]
+                        break
+                return host
         return ""
 
     def not_found(self, path: bytes) -> None:

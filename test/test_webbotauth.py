@@ -3,6 +3,7 @@
 import base64
 import json
 import os
+import re
 import tempfile
 import unittest
 from configparser import ConfigParser
@@ -11,7 +12,9 @@ from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import serialization
 
 from redbot.webbotauth import (
+    DEFAULT_VALIDITY,
     DIRECTORY_TAG,
+    DIRECTORY_VALIDITY,
     REQUEST_TAG,
     WebBotAuthError,
     WebBotAuthSigner,
@@ -120,6 +123,18 @@ class TestWebBotAuthSigner(unittest.TestCase):
         self.assertEqual(key["x"], EXPECTED_X)
         self.assertEqual(key["kid"], EXPECTED_KEYID)
         self.assertEqual(key["use"], "sig")
+
+    def test_signature_validity_windows(self):
+        def span(headers):
+            sig_input = _headers_dict(headers)[b"signature-input"].decode("ascii")
+            created = int(re.search(r";created=(\d+)", sig_input).group(1))
+            expires = int(re.search(r";expires=(\d+)", sig_input).group(1))
+            return expires - created
+
+        # Request signatures are short-lived; the directory signature must outlast
+        # the directory's 24h cache lifetime.
+        self.assertEqual(span(self.signer.sign_request("https://example.com/")), DEFAULT_VALIDITY)
+        self.assertEqual(span(self.signer.sign_directory("example.com")), DIRECTORY_VALIDITY)
 
     def test_unique_nonce_per_signature(self):
         a = _headers_dict(self.signer.sign_request("https://example.com/"))
@@ -307,6 +322,19 @@ class TestChallengeRetry(unittest.TestCase):
         ex1.fire("response_done", [])
         self.assertFalse(fetcher._wba_retried)
         self.assertEqual(fetcher.response.status_code, 200)
+
+    def test_unsigned_when_key_breaks_midrun(self):
+        # If the key becomes unreadable/invalid after startup, a challenge must
+        # not crash the fetch -- it proceeds unsigned.
+        ex1 = _MockExchange()
+        fetcher = self._fetcher([ex1])
+        fetcher.check()
+        with open(self.key_path, "wb") as fh:
+            fh.write(b"not a valid key anymore")
+        ex1.fire("response_start", b"403", b"Forbidden", [(b"Accept-Signature", b'sig1=("@authority")')])
+        ex1.fire("response_done", [])
+        self.assertFalse(fetcher._wba_retried)
+        self.assertEqual(fetcher.response.status_code, 403)
 
     def test_no_double_retry(self):
         # If the signed retry is also challenged, we do not loop.

@@ -40,9 +40,15 @@ DIRECTORY_PATH = "/.well-known/http-message-signatures-directory"
 # Media type for the key directory.
 DIRECTORY_CONTENT_TYPE = "application/http-message-signatures-directory+json"
 
-# Default lifetime of a signature, in seconds. Web Bot Auth allows up to 24h;
-# we keep it short to limit the window for replay.
+# Default lifetime of a request signature, in seconds. Web Bot Auth allows up to
+# 24h; we keep it short to limit the window for replay.
 DEFAULT_VALIDITY = 300
+# Lifetime of the directory response signature. The directory is cacheable for a
+# day (see DIRECTORY_MAX_AGE), so its signature must stay valid at least that
+# long, or a verifier re-checking a cached copy would see it expired.
+DIRECTORY_VALIDITY = 86400
+# Cache lifetime advertised for the directory, in seconds.
+DIRECTORY_MAX_AGE = 86400
 # The label tying together the Signature-Input and Signature dictionary members.
 SIG_LABEL = "sig1"
 
@@ -115,11 +121,13 @@ class WebBotAuthSigner:
         self,
         components: List[Tuple[str, str]],
         tag: str,
+        validity: int,
     ) -> Tuple[str, str]:
         """
         Construct the RFC 9421 signature base over ``components`` (each an
         ordered (component-name, component-value) pair), sign it, and return the
         Signature-Input and Signature dictionary-member values for SIG_LABEL.
+        ``validity`` is the signature lifetime in seconds.
 
         Structured-field values are serialized with ``http_sf`` so the
         @signature-params line in the base and the Signature-Input header are
@@ -128,7 +136,7 @@ class WebBotAuthSigner:
         created = int(time.time())
         params: http_sf.types.ParamsType = {
             "created": created,
-            "expires": created + self.validity,
+            "expires": created + validity,
             "keyid": self.keyid,
             "alg": "ed25519",
             "nonce": base64.b64encode(secrets.token_bytes(32)).decode("ascii"),
@@ -149,6 +157,7 @@ class WebBotAuthSigner:
         sig_input, sig = self._build_signature(
             [("@authority", self.authority(uri)), ("signature-agent", agent_field)],
             REQUEST_TAG,
+            self.validity,
         )
         return [
             (b"Signature-Agent", agent_field.encode("ascii")),
@@ -158,7 +167,9 @@ class WebBotAuthSigner:
 
     def sign_directory(self, authority: str) -> List[Tuple[bytes, bytes]]:
         "Return the signature headers for a directory response served at ``authority``."
-        sig_input, sig = self._build_signature([("@authority", authority)], DIRECTORY_TAG)
+        sig_input, sig = self._build_signature(
+            [("@authority", authority)], DIRECTORY_TAG, DIRECTORY_VALIDITY
+        )
         return [
             (b"Signature-Input", sig_input.encode("ascii")),
             (b"Signature", sig.encode("ascii")),

@@ -21,7 +21,7 @@ from redbot import __version__
 from redbot.i18n import _
 from redbot.note import RedbotNote
 from redbot.type import RawHeaderListType, StrHeaderListType
-from redbot.webbotauth import load_signer
+from redbot.webbotauth import WebBotAuthError, load_signer
 
 UA_STRING = f"RED/{__version__} (https://redbot.org/)".encode("ascii")
 
@@ -256,7 +256,13 @@ class RedFetcher(thor.events.EventEmitter):
             return
         if not self._wba_retried and status in WBA_CHALLENGE_STATUSES and self.request.uri:
             if _has_accept_signature(res_headers):
-                signer = load_signer(self.config)
+                try:
+                    signer = load_signer(self.config)
+                except WebBotAuthError as why:
+                    # A key problem arising mid-run (e.g. rotated to a bad file)
+                    # should not crash the fetch; just proceed unsigned.
+                    self.emit("debug", f"Web Bot Auth disabled for this request: {why}")
+                    signer = None
                 if signer is not None:
                     self._wba_retried = True
                     self.emit(

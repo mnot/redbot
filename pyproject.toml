@@ -21,6 +21,7 @@ classifiers = [
 license-files = ["LICENSE.md"]
 dependencies = [
     "cryptography >= 42.0.0",
+    "http-sf >= 1.0",
     "httplint >= 2026.05.01",
     "importlib_resources",
     "Jinja2 >= 3.1.2",
