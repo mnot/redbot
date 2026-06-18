@@ -67,6 +67,44 @@ or
 > podman run --rm -p 8000:8000 ghcr.io/mnot/redbot
 
 
+## Web Bot Auth
+
+REDbot can authenticate its outgoing requests using [Web Bot Auth](https://datatracker.ietf.org/doc/draft-meunier-web-bot-auth-architecture/), which signs requests with an Ed25519 key using [HTTP Message Signatures (RFC 9421)](https://www.rfc-editor.org/rfc/rfc9421). This lets origins -- for example, those behind Cloudflare -- verify that requests genuinely come from your REDbot instance. The implementation follows the IETF drafts and is not specific to any one verifier.
+
+Requests are sent unsigned by default. REDbot only attaches a signature when the origin challenges for one -- that is, when it returns a `401`, `403`, or `429` response carrying an `Accept-Signature` header -- and then transparently retries the request signed. This avoids advertising the bot's identity to servers that don't ask for it.
+
+### Generating a key
+
+Create an Ed25519 private key in PEM form:
+
+~~~ bash
+> openssl genpkey -algorithm ed25519 -out web-bot-auth-key.pem
+~~~
+
+Keep this file private and readable by the REDbot process. The matching public key is published automatically (see below); you do not need to extract it yourself.
+
+### Configuring
+
+Set these in `config.txt` (for `redbot_daemon`):
+
+~~~ ini
+web_bot_auth_key = /path/to/web-bot-auth-key.pem
+web_bot_auth_agent = https://your-redbot.example
+~~~
+
+`web_bot_auth_agent` is the HTTPS origin where your public key directory is hosted. When you run `redbot_daemon`, it serves that directory at `/.well-known/http-message-signatures-directory` (a JWKS, self-signed per the spec), so a verifier can fetch your public key. Make sure this path is reachable at the origin you configured.
+
+For the command-line tool, pass the equivalent flags:
+
+~~~ bash
+> redbot --web-bot-auth-key web-bot-auth-key.pem --web-bot-auth-agent https://your-redbot.example https://example.com/
+~~~
+
+### Registering with a verifier
+
+To be recognised by a specific verifier (such as Cloudflare), register the directory URL with them; see, for example, Cloudflare's [Web Bot Auth documentation](https://developers.cloudflare.com/bots/reference/bot-verification/web-bot-auth/).
+
+
 ## Credits
 
 Icons by [Font Awesome](https://fontawesome.com/). REDbot includes code from [tippy.js](https://atomiks.github.io/tippyjs/) and [prettify.js](https://github.com/google/code-prettify).

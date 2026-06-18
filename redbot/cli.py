@@ -12,6 +12,7 @@ import thor
 
 from redbot.formatter import available_formatters, find_formatter
 from redbot.resource import HttpResource
+from redbot.webbotauth import WebBotAuthError, load_signer
 
 
 def main() -> None:
@@ -38,11 +39,34 @@ def main() -> None:
         default="text",
         help="output format",
     )
+    parser.add_argument(
+        "--web-bot-auth-key",
+        action="store",
+        dest="web_bot_auth_key",
+        help="path to an Ed25519 private key (PEM) for signing requests with Web Bot Auth",
+    )
+    parser.add_argument(
+        "--web-bot-auth-agent",
+        action="store",
+        dest="web_bot_auth_agent",
+        help="Signature-Agent URL identifying where this bot's key directory is hosted",
+    )
     args = parser.parse_args()
 
+    redbot_config = {"enable_local_access": "True"}
+    if args.web_bot_auth_key:
+        redbot_config["web_bot_auth_key"] = args.web_bot_auth_key
+    if args.web_bot_auth_agent:
+        redbot_config["web_bot_auth_agent"] = args.web_bot_auth_agent
     config_parser = ConfigParser()
-    config_parser.read_dict({"redbot": {"enable_local_access": "True"}})
+    config_parser.read_dict({"redbot": redbot_config})
     config = config_parser["redbot"]
+
+    try:
+        load_signer(config)  # validate Web Bot Auth config up front
+    except WebBotAuthError as why:
+        sys.stderr.write(f"Web Bot Auth configuration error: {why}\n")
+        sys.exit(1)
 
     resource = HttpResource(config, descend=args.descend)
     resource.set_request(args.url)
