@@ -27,6 +27,7 @@ from configparser import SectionProxy
 from typing import Dict, List, Optional, Tuple
 from urllib.parse import urlsplit
 
+import http_sf
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
@@ -112,50 +113,52 @@ class WebBotAuthSigner:
 
     def _build_signature(
         self,
-        authority: str,
-        include_agent: bool,
+        components: List[Tuple[str, str]],
         tag: str,
     ) -> Tuple[str, str]:
         """
-        Construct the RFC 9421 signature base, sign it, and return the
+        Construct the RFC 9421 signature base over ``components`` (each an
+        ordered (component-name, component-value) pair), sign it, and return the
         Signature-Input and Signature dictionary-member values for SIG_LABEL.
+
+        Structured-field values are serialized with ``http_sf`` so the
+        @signature-params line in the base and the Signature-Input header are
+        produced identically.
         """
         created = int(time.time())
-        expires = created + self.validity
-        nonce = base64.b64encode(secrets.token_bytes(32)).decode("ascii")
+        params: http_sf.types.ParamsType = {
+            "created": created,
+            "expires": created + self.validity,
+            "keyid": self.keyid,
+            "alg": "ed25519",
+            "nonce": base64.b64encode(secrets.token_bytes(32)).decode("ascii"),
+            "tag": tag,
+        }
+        covered: List[http_sf.types.ItemType] = [name for name, _ in components]
+        inner_list: http_sf.types.InnerListType = (covered, params)
 
-        components = ['"@authority"']
-        base_lines = [f'"@authority": {authority}']
-        if include_agent:
-            components.append('"signature-agent"')
-            base_lines.append(f'"signature-agent": "{self.agent}"')
+        base_lines = [f"{http_sf.ser(name)}: {value}" for name, value in components]
+        base_lines.append(f'{http_sf.ser("@signature-params")}: {http_sf.ser([inner_list])}')
+        signature = self._key.sign("\n".join(base_lines).encode("utf-8"))
 
-        params = (
-            f'({" ".join(components)});created={created};expires={expires}'
-            f';keyid="{self.keyid}";alg="ed25519";nonce="{nonce}";tag="{tag}"'
-        )
-        base_lines.append(f'"@signature-params": {params}')
-        base = "\n".join(base_lines).encode("utf-8")
-
-        signature = self._key.sign(base)
-        sig_input_value = f"{SIG_LABEL}={params}"
-        sig_value = f"{SIG_LABEL}=:{base64.b64encode(signature).decode('ascii')}:"
-        return sig_input_value, sig_value
+        return http_sf.ser({SIG_LABEL: inner_list}), http_sf.ser({SIG_LABEL: signature})
 
     def sign_request(self, uri: str) -> List[Tuple[bytes, bytes]]:
         "Return the Web Bot Auth headers to add to a request for ``uri``."
+        agent_field = http_sf.ser(self.agent)  # Signature-Agent value (an sf-string)
         sig_input, sig = self._build_signature(
-            self.authority(uri), include_agent=True, tag=REQUEST_TAG
+            [("@authority", self.authority(uri)), ("signature-agent", agent_field)],
+            REQUEST_TAG,
         )
         return [
-            (b"Signature-Agent", f'"{self.agent}"'.encode("ascii")),
+            (b"Signature-Agent", agent_field.encode("ascii")),
             (b"Signature-Input", sig_input.encode("ascii")),
             (b"Signature", sig.encode("ascii")),
         ]
 
     def sign_directory(self, authority: str) -> List[Tuple[bytes, bytes]]:
         "Return the signature headers for a directory response served at ``authority``."
-        sig_input, sig = self._build_signature(authority, include_agent=False, tag=DIRECTORY_TAG)
+        sig_input, sig = self._build_signature([("@authority", authority)], DIRECTORY_TAG)
         return [
             (b"Signature-Input", sig_input.encode("ascii")),
             (b"Signature", sig.encode("ascii")),
