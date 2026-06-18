@@ -69,7 +69,7 @@ or
 
 ## Web Bot Auth
 
-REDbot can authenticate its outgoing requests using [Web Bot Auth](https://datatracker.ietf.org/doc/draft-meunier-web-bot-auth-architecture/), which signs requests with an Ed25519 key using [HTTP Message Signatures (RFC 9421)](https://www.rfc-editor.org/rfc/rfc9421). This lets origins -- for example, those behind Cloudflare -- verify that requests genuinely come from your REDbot instance. The implementation follows the IETF drafts and is not specific to any one verifier.
+REDbot can authenticate its outgoing requests using [Web Bot Auth](https://datatracker.ietf.org/doc/draft-meunier-web-bot-auth-architecture/), which signs requests with an Ed25519 key using [HTTP Message Signatures (RFC 9421)](https://www.rfc-editor.org/rfc/rfc9421). This lets origins verify that requests genuinely come from your REDbot instance. The implementation follows the IETF drafts and is not specific to any one verifier.
 
 Requests are sent unsigned by default. REDbot only attaches a signature when the origin challenges for one -- that is, when it returns a `401`, `403`, or `429` response carrying an `Accept-Signature` header -- and then transparently retries the request signed. This avoids advertising the bot's identity to servers that don't ask for it.
 
@@ -102,7 +102,7 @@ For the command-line tool, pass the equivalent flags:
 
 ### Registering with a verifier
 
-To be recognised by a specific verifier (such as Cloudflare), register the directory URL with them; see, for example, Cloudflare's [Web Bot Auth documentation](https://developers.cloudflare.com/bots/reference/bot-verification/web-bot-auth/).
+To be recognised by a specific verifier, register your directory URL with them according to their process.
 
 
 ## Credits

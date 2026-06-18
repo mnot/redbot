@@ -76,8 +76,8 @@ static_root = static
 ## Web Bot Auth
 
 # REDbot can sign its outgoing requests using Web Bot Auth (HTTP Message
-# Signatures, RFC 9421), letting origins -- e.g. those behind Cloudflare --
-# verify that the requests come from REDbot. Requests are sent unsigned and only
+# Signatures, RFC 9421), letting origins verify that the requests come from
+# REDbot. Requests are sent unsigned and only
 # signed (and retried) when the origin challenges with a 401/403/429 response
 # carrying an Accept-Signature header. See the README for key generation.
 #

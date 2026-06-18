@@ -1,15 +1,15 @@
 """
 Web Bot Auth support for REDbot.
 
-Web Bot Auth lets an automated client prove its identity to an origin (for
-example, one behind Cloudflare) by attaching an HTTP Message Signature
-(RFC 9421) to its requests, signed with an Ed25519 key whose public half is
-published in a directory at a well-known location.
+Web Bot Auth lets an automated client prove its identity to an origin by
+attaching an HTTP Message Signature (RFC 9421) to its requests, signed with an
+Ed25519 key whose public half is published in a directory at a well-known
+location.
 
-This module is deliberately generic: it implements the IETF drafts
+This module implements the IETF drafts
 (draft-meunier-web-bot-auth-architecture and
-draft-meunier-http-message-signatures-directory) rather than anything
-Cloudflare-specific.
+draft-meunier-http-message-signatures-directory) and is not specific to any
+particular verifier.
 
 It provides:
 
