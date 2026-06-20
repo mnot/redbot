@@ -23,7 +23,16 @@ from redbot.note import RedbotNote
 from redbot.type import RawHeaderListType, StrHeaderListType
 from redbot.webbotauth import WebBotAuthError, load_signer
 
-UA_STRING = f"RED/{__version__} (https://redbot.org/)".encode("ascii")
+# Fallback UI URL advertised in the User-Agent when ui_uri is not configured
+# (e.g. the CLI). The public instance's ui_uri defaults to the same value.
+DEFAULT_UI_URI = "https://redbot.org/"
+
+
+def ua_string(config: SectionProxy) -> bytes:
+    "The User-Agent for outgoing requests, pointing at this instance's UI URL."
+    uri = config.get("ui_uri", "").strip() or DEFAULT_UI_URI
+    return f"RED/{__version__} ({uri})".encode("ascii", "replace")
+
 
 # Status codes on which a response carrying an Accept-Signature header is treated
 # as a Web Bot Auth challenge to re-send the request signed
@@ -171,7 +180,7 @@ class RedFetcher(thor.events.EventEmitter):
         assert self.request.uri, "uri not set in check"
 
         if "user-agent" not in [i[0].lower() for i in self.request.headers.text]:
-            self.request.headers.process([(b"User-Agent", UA_STRING)])
+            self.request.headers.process([(b"User-Agent", ua_string(self.config))])
         # Requests are sent unsigned; Web Bot Auth signatures are only added when
         # the origin challenges for them (see _response_start).
         self._send_request()
