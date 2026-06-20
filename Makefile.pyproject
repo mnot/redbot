@@ -24,6 +24,9 @@
 #     Bump the __version__ in $PROJECT/__init__.py using semver (https://semver.org/)
 # version <<< COMMITS TO GIT
 #     Bump the version according to $VERSIONING (default: semver-micro).
+# version-calver, version-semver-{major,minor,micro} <<< COMMITS TO GIT
+#     Explicit variants of `version` that pick the bump flavor directly
+#     (so `make version-<TAB>` offers them in shell completion).
 # build
 #     Build the project
 # pypi-pub
@@ -108,8 +111,16 @@ bump-semver-minor: py_version
 bump-semver-major: py_version
 	sed -i "" -e "s/$(VERSION)/$(NEXT_SEMMAJOR).0.0/" $(PROJECT)/__init__.py
 
-.PHONY: version
-version: typecheck lint test bump-$(VERSIONING)
+# `version` dispatches to `version-$(VERSIONING)`; the static pattern rule
+# below does the actual work. Listing the variants explicitly (rather than
+# using a `version-%` implicit rule) is required for two reasons: GNU make
+# won't apply implicit pattern rules to .PHONY targets, and shell
+# completion needs literal names to offer after `make version-<TAB>`.
+VERSION_TARGETS := version-calver version-semver-major version-semver-minor version-semver-micro
+.PHONY: version $(VERSION_TARGETS)
+version: version-$(VERSIONING)
+
+$(VERSION_TARGETS): version-%: typecheck lint test bump-%
 	git add $(PROJECT)/__init__.py
 	git commit -m 'bump version'
 
@@ -117,9 +128,15 @@ version: typecheck lint test bump-$(VERSIONING)
 build: venv
 	$(VENV)/python -m build
 
+.PHONY: changelog.md
 changelog.md:
-	$(eval PREV_RELEASE=$(shell git tag --sort=-taggerdate -l v* | head -1))
-	git --no-pager log --pretty="- %s" $(PREV_RELEASE)..HEAD --grep "^Changed:" --grep "^Fixed:" --grep "^Added:" --grep "^Changed:" --grep "^Removed:" --output=$@
+	$(eval PREV_RELEASE=$(shell git tag --sort=-taggerdate -l 'v*' | head -1))
+	@if [ -n "$(PREV_RELEASE)" ]; then RANGE="$(PREV_RELEASE)..HEAD"; else RANGE="HEAD"; fi; \
+	git --no-pager log --no-merges --pretty="- %s" $$RANGE --grep "^Added:" --grep "^Changed:" --grep "^Fixed:" --grep "^Removed:" > $@.tmp; \
+	rm -f $@; \
+	for p in Added Changed Fixed Removed; do grep "^- $$p:" $@.tmp >> $@ || true; done; \
+	rm -f $@.tmp
+	@if [ ! -s $@ ]; then echo "- Maintenance release (no changelog entries)" > $@; fi
 	sed -i "" -e "1s/^/\n\n/" $@
 
 # Manual pypi publication; no GitHub release
