@@ -176,7 +176,8 @@ class TestI18n(unittest.TestCase):
         config = MagicMock()
         config.getint.return_value = 1000
         config.getboolean.return_value = False
-        
+        config.get.return_value = ""  # no Web Bot Auth configured
+
         fetcher = RedFetcher(config)
         fetcher.client = MockClient()
         fetcher.set_request("http://example.com/")

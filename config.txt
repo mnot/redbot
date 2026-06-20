@@ -73,6 +73,31 @@ static_root = static
 # remote_ip_header = X-Forwarded-For
 
 
+## Web Bot Auth
+
+# REDbot can sign its outgoing requests using Web Bot Auth (HTTP Message
+# Signatures, RFC 9421), letting origins verify that the requests come from
+# REDbot. Requests are sent unsigned and only
+# signed (and retried) when the origin challenges with a 401/403/429 response
+# carrying an Accept-Signature header. See the README for key generation.
+#
+# Path to an Ed25519 private key in PEM (PKCS#8) format. Setting this enables
+# request signing. Comment out to disable.
+# web_bot_auth_key = /path/to/web-bot-auth-key.pem
+
+# The HTTPS origin hosting this bot's public key directory; it becomes the
+# Signature-Agent value, and verifiers fetch keys from
+# <origin>/.well-known/http-message-signatures-directory (the daemon serves that
+# automatically). If omitted, it defaults to the origin of ui_uri (above) -- so
+# if you enable signing without setting this, make sure ui_uri is set to this
+# instance's real public origin, NOT the default https://redbot.org, or you will
+# publish the wrong bot identity.
+# web_bot_auth_directory = https://redbot.example
+
+# Signature lifetime in seconds (how long after creation a signature is valid).
+# web_bot_auth_validity = 300
+
+
 ## Saved Tests
 
 # Where to keep files when users `save` them. Note that files will be automatically

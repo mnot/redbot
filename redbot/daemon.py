@@ -34,6 +34,13 @@ from thor.tcp import TcpConnection
 
 import redbot
 from redbot.type import RawHeaderListType
+from redbot.webbotauth import (
+    DIRECTORY_CONTENT_TYPE,
+    DIRECTORY_MAX_AGE,
+    DIRECTORY_PATH,
+    WebBotAuthError,
+    load_signer,
+)
 from redbot.webui import RedWebUi
 from redbot.webui.saved_tests import clean_saved_tests
 
@@ -77,6 +84,15 @@ class RedBotServer:
         # Set up the watchdog
         if SYSTEMD_NOTIFIER is not None:
             thor.schedule(self.watchdog_freq, self.watchdog_ping)
+
+        # Set up Web Bot Auth signing (validate config up front).
+        try:
+            self.signer = load_signer(config)
+        except WebBotAuthError as why:
+            self.console(f"FATAL: Web Bot Auth configuration error: {why}")
+            sys.exit(1)
+        if self.signer is not None:
+            self.console(f"Web Bot Auth enabled (keyid {self.signer.keyid})")
 
         self.static_files = resource_files("redbot.assets")
         self.extra_files = {}
@@ -342,6 +358,8 @@ class RedRequestHandler:
             p_uri = urlsplit(self.uri)
         except UnicodeDecodeError:
             return self.bad_request(b"That's not a URL.")
+        if p_uri.path == DIRECTORY_PATH.encode("ascii"):
+            return self.serve_directory()
         if (
             p_uri.path.startswith(self.server.static_root + b"/")
             or p_uri.path in self.server.extra_files
@@ -406,6 +424,38 @@ in standalone server mode. Details follow.
         self.exchange.response_body(content)
         self.exchange.response_done([])
         return None
+
+    def serve_directory(self) -> None:
+        "Serve the Web Bot Auth key directory (a self-signed JWKS)."
+        signer = self.server.signer
+        if signer is None:
+            return self.not_found(DIRECTORY_PATH.encode("ascii"))
+        body = signer.directory_json()
+        headers = [
+            (b"Content-Type", DIRECTORY_CONTENT_TYPE.encode("ascii")),
+            (b"Cache-Control", b"max-age=%d" % DIRECTORY_MAX_AGE),
+        ]
+        authority = self.request_authority()
+        if authority:
+            headers += signer.sign_directory(authority)
+        self.exchange.response_start(b"200", b"OK", headers)
+        self.exchange.response_body(body)
+        self.exchange.response_done([])
+        return None
+
+    def request_authority(self) -> str:
+        "The authority (Host) of the incoming request, for signing."
+        for name, value in self.req_hdrs:
+            if name.lower() == b"host":
+                host = value.decode("ascii", "replace").strip().lower()
+                # Drop a default port so the signed @authority matches what a
+                # verifier normalizes to (RFC 9421 derives @authority this way).
+                for suffix in (":443", ":80"):
+                    if host.endswith(suffix):
+                        host = host[: -len(suffix)]
+                        break
+                return host
+        return ""
 
     def not_found(self, path: bytes) -> None:
         headers = []

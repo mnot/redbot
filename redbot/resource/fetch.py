@@ -21,8 +21,19 @@ from redbot import __version__
 from redbot.i18n import _
 from redbot.note import RedbotNote
 from redbot.type import RawHeaderListType, StrHeaderListType
+from redbot.webbotauth import WebBotAuthError, load_signer
 
 UA_STRING = f"RED/{__version__} (https://redbot.org/)".encode("ascii")
+
+# Status codes on which a response carrying an Accept-Signature header is treated
+# as a Web Bot Auth challenge to re-send the request signed
+# (draft-meunier-web-bot-auth-architecture, Section 4.3).
+WBA_CHALLENGE_STATUSES = {b"401", b"403", b"429"}
+
+
+def _has_accept_signature(res_headers: RawHeaderListType) -> bool:
+    "Whether the response asks the client to sign (RFC 9421 Accept-Signature)."
+    return any(name.lower() == b"accept-signature" for name, _v in res_headers)
 
 
 class RedHttpClient(thor.http.HttpClient):
@@ -74,6 +85,7 @@ class RedFetcher(thor.events.EventEmitter):
         self.fetch_started = False
         self.fetch_error: Optional[httperr.HttpError] = None
         self.fetch_done = False
+        self._wba_retried = False
         self.setup_check_ip()
 
     def __getstate__(self) -> Dict[str, Any]:
@@ -160,6 +172,14 @@ class RedFetcher(thor.events.EventEmitter):
 
         if "user-agent" not in [i[0].lower() for i in self.request.headers.text]:
             self.request.headers.process([(b"User-Agent", UA_STRING)])
+        # Requests are sent unsigned; Web Bot Auth signatures are only added when
+        # the origin challenges for them (see _response_start).
+        self._send_request()
+
+    def _send_request(self, extra_headers: Optional[RawHeaderListType] = None) -> None:
+        "Start an exchange for the current request, optionally adding extra headers."
+        assert self.request.method, "method not set in _send_request"
+        assert self.request.uri, "uri not set in _send_request"
         self.exchange = self.client.exchange()
         self.exchange.on("response_nonfinal", self._response_nonfinal)
         self.exchange.once("response_start", self._response_start)
@@ -176,6 +196,8 @@ class RedFetcher(thor.events.EventEmitter):
             (k.encode("ascii", "replace"), v.encode("ascii", "replace"))
             for (k, v) in self.request.headers.text
         ]
+        if extra_headers:
+            req_hdrs += extra_headers
         self.request.start_time = time.time()
         self.exchange.request_start(
             self.request.method.encode("ascii"),
@@ -188,6 +210,19 @@ class RedFetcher(thor.events.EventEmitter):
                 self.transfer_out += len(self.request_content)
         if not self.fetch_done:  # the request could have immediately failed.
             self.exchange.request_done([])
+
+    def _abort_exchange(self) -> None:
+        "Detach from and close the current exchange (e.g. to retry the request)."
+        if hasattr(self, "exchange"):
+            self.exchange.remove_listeners(
+                "response_nonfinal",
+                "response_start",
+                "response_body",
+                "response_done",
+                "error",
+            )
+            if self.exchange.conn:
+                self.exchange.conn.close()
 
     def _response_nonfinal(
         self, status: bytes, phrase: bytes, res_headers: RawHeaderListType
@@ -219,6 +254,26 @@ class RedFetcher(thor.events.EventEmitter):
         "Process the response start-line and headers."
         if self.fetch_done:
             return
+        if not self._wba_retried and status in WBA_CHALLENGE_STATUSES and self.request.uri:
+            if _has_accept_signature(res_headers):
+                try:
+                    signer = load_signer(self.config)
+                except WebBotAuthError as why:
+                    # A key problem arising mid-run (e.g. rotated to a bad file)
+                    # should not crash the fetch; just proceed unsigned.
+                    self.emit("debug", f"Web Bot Auth disabled for this request: {why}")
+                    signer = None
+                if signer is not None:
+                    self._wba_retried = True
+                    self.emit(
+                        "debug",
+                        f"Web Bot Auth challenge for {self.request.uri}; retrying signed",
+                    )
+                    self._abort_exchange()
+                    self.nonfinal_responses = []
+                    self.transfer_out = 0
+                    self._send_request(signer.sign_request(self.request.uri))
+                    return
         self.response.start_time = time.time()
         assert self.exchange.res_version, "exchange.res_version not set in _response_start"
         self.response.process_response_topline(self.exchange.res_version, status, phrase)
