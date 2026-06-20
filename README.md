@@ -89,15 +89,17 @@ Set these in `config.txt` (for `redbot_daemon`):
 
 ~~~ ini
 web_bot_auth_key = /path/to/web-bot-auth-key.pem
-web_bot_auth_agent = https://your-redbot.example
+web_bot_auth_directory = https://your-redbot.example
 ~~~
 
-`web_bot_auth_agent` is the HTTPS origin where your public key directory is hosted. When you run `redbot_daemon`, it serves that directory at `/.well-known/http-message-signatures-directory` (a JWKS, self-signed per the spec), so a verifier can fetch your public key. Make sure this path is reachable at the origin you configured.
+`web_bot_auth_directory` is the HTTPS origin where your public key directory is hosted. When you run `redbot_daemon`, it serves that directory at `/.well-known/http-message-signatures-directory` (a JWKS, self-signed per the spec), so a verifier can fetch your public key. Make sure that path is reachable at the origin you configured.
 
-For the command-line tool, pass the equivalent flags:
+`web_bot_auth_directory` is optional: if you omit it, REDbot uses the origin of `ui_uri`. Because `ui_uri` defaults to `https://redbot.org/`, **enabling signing requires `ui_uri` to be set to your instance's real public origin** — otherwise you would publish the wrong bot identity. Set `web_bot_auth_directory` explicitly if your key directory lives on a different origin than the UI.
+
+For the command-line tool, pass the equivalent flags (there is no `ui_uri`, so the directory is required):
 
 ~~~ bash
-> redbot --web-bot-auth-key web-bot-auth-key.pem --web-bot-auth-agent https://your-redbot.example https://example.com/
+> redbot --web-bot-auth-key web-bot-auth-key.pem --web-bot-auth-directory https://your-redbot.example https://example.com/
 ~~~
 
 ### Registering with a verifier

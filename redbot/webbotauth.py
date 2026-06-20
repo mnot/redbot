@@ -66,16 +66,16 @@ class WebBotAuthSigner:
     """
     Signs requests and directory responses for Web Bot Auth.
 
-    ``key_pem`` is an Ed25519 private key in PEM (PKCS#8) form. ``agent`` is the
-    value of the Signature-Agent header: an HTTPS URL identifying where the key
-    directory is hosted (verifiers append the well-known directory path to its
-    origin). ``validity`` is the signature lifetime in seconds.
+    ``key_pem`` is an Ed25519 private key in PEM (PKCS#8) form. ``directory`` is
+    the HTTPS origin that hosts this bot's key directory; it becomes the
+    Signature-Agent header value, and verifiers append the well-known directory
+    path to it. ``validity`` is the signature lifetime in seconds.
     """
 
     def __init__(
         self,
         key_pem: bytes,
-        agent: str,
+        directory: str,
         validity: int = DEFAULT_VALIDITY,
         key_created: Optional[int] = None,
     ) -> None:
@@ -86,7 +86,7 @@ class WebBotAuthSigner:
         if not isinstance(key, Ed25519PrivateKey):
             raise WebBotAuthError("Web Bot Auth key must be an Ed25519 private key.")
         self._key = key
-        self.agent = agent.strip().strip('"')
+        self.directory = directory.strip().strip('"')
         self.validity = validity
         self.key_created = key_created
 
@@ -153,7 +153,7 @@ class WebBotAuthSigner:
 
     def sign_request(self, uri: str) -> List[Tuple[bytes, bytes]]:
         "Return the Web Bot Auth headers to add to a request for ``uri``."
-        agent_field = http_sf.ser(self.agent)  # Signature-Agent value (an sf-string)
+        agent_field = http_sf.ser(self.directory)  # Signature-Agent value (an sf-string)
         sig_input, sig = self._build_signature(
             [("@authority", self.authority(uri)), ("signature-agent", agent_field)],
             REQUEST_TAG,
@@ -192,21 +192,38 @@ class WebBotAuthSigner:
 _SIGNER_CACHE: Dict[str, WebBotAuthSigner] = {}
 
 
+def _ui_uri_origin(config: SectionProxy) -> str:
+    "The scheme://host[:port] origin of ui_uri, or '' if it isn't a usable URL."
+    parts = urlsplit(config.get("ui_uri", "").strip())
+    if not parts.scheme or not parts.netloc:
+        return ""
+    return f"{parts.scheme}://{parts.netloc}"
+
+
 def load_signer(config: SectionProxy) -> Optional[WebBotAuthSigner]:
     """
     Build a ``WebBotAuthSigner`` from REDbot configuration, or return None if
     Web Bot Auth is not configured. Raises ``WebBotAuthError`` on misconfiguration
     so problems surface at startup rather than mid-request. Successful signers are
-    cached, keyed by key path, agent, validity, and the key file's mtime.
+    cached, keyed by key path, directory, validity, and the key file's mtime.
+
+    The key directory location is ``web_bot_auth_directory``; if unset, it
+    defaults to the origin of ``ui_uri`` (so enabling signing requires ``ui_uri``
+    to be set correctly to this instance's public origin).
     """
     key_path = config.get("web_bot_auth_key", "").strip()
-    agent = config.get("web_bot_auth_agent", "").strip()
-    if not key_path and not agent:
-        return None
+    directory = config.get("web_bot_auth_directory", "").strip()
     if not key_path:
-        raise WebBotAuthError("web_bot_auth_agent is set but web_bot_auth_key is not.")
-    if not agent:
-        raise WebBotAuthError("web_bot_auth_key is set but web_bot_auth_agent is not.")
+        if directory:
+            raise WebBotAuthError("web_bot_auth_directory is set but web_bot_auth_key is not.")
+        return None
+    if not directory:
+        directory = _ui_uri_origin(config)
+        if not directory:
+            raise WebBotAuthError(
+                "Web Bot Auth needs a key directory location: set web_bot_auth_directory, "
+                "or (for the daemon) set ui_uri to this instance's public origin."
+            )
     validity = config.getint("web_bot_auth_validity", fallback=DEFAULT_VALIDITY)
 
     try:
@@ -214,7 +231,7 @@ def load_signer(config: SectionProxy) -> Optional[WebBotAuthSigner]:
     except OSError as why:
         raise WebBotAuthError(f"Can't read Web Bot Auth key '{key_path}': {why}") from why
 
-    cache_key = "\0".join([key_path, agent, str(validity), str(mtime)])
+    cache_key = "\0".join([key_path, directory, str(validity), str(mtime)])
     if cache_key not in _SIGNER_CACHE:
         try:
             with open(key_path, "rb") as fh:
@@ -222,6 +239,6 @@ def load_signer(config: SectionProxy) -> Optional[WebBotAuthSigner]:
         except OSError as why:
             raise WebBotAuthError(f"Can't read Web Bot Auth key '{key_path}': {why}") from why
         _SIGNER_CACHE[cache_key] = WebBotAuthSigner(
-            key_pem, agent, validity, key_created=int(mtime)
+            key_pem, directory, validity, key_created=int(mtime)
         )
     return _SIGNER_CACHE[cache_key]

@@ -151,29 +151,56 @@ class TestLoadSigner(unittest.TestCase):
     def test_disabled_returns_none(self):
         self.assertIsNone(load_signer(self._config()))
 
-    def test_key_without_agent_raises(self):
+    def test_key_without_directory_or_ui_uri_raises(self):
         with self.assertRaises(WebBotAuthError):
             load_signer(self._config(web_bot_auth_key="/tmp/nope.pem"))
 
-    def test_agent_without_key_raises(self):
+    def test_directory_without_key_raises(self):
         with self.assertRaises(WebBotAuthError):
-            load_signer(self._config(web_bot_auth_agent=AGENT))
+            load_signer(self._config(web_bot_auth_directory=AGENT))
 
     def test_missing_key_file_raises(self):
         with self.assertRaises(WebBotAuthError):
             load_signer(
                 self._config(
                     web_bot_auth_key="/nonexistent/web-bot-auth.pem",
-                    web_bot_auth_agent=AGENT,
+                    web_bot_auth_directory=AGENT,
                 )
             )
+
+    def test_directory_defaults_to_ui_uri_origin(self):
+        fd, path = tempfile.mkstemp(suffix=".pem")
+        try:
+            with os.fdopen(fd, "wb") as fh:
+                fh.write(RFC9421_ED25519_KEY)
+            # ui_uri can carry a path; only its origin is used.
+            config = self._config(web_bot_auth_key=path, ui_uri="https://red.example/app/")
+            signer = load_signer(config)
+            self.assertIsNotNone(signer)
+            self.assertEqual(signer.directory, "https://red.example")
+        finally:
+            os.unlink(path)
+
+    def test_explicit_directory_overrides_ui_uri(self):
+        fd, path = tempfile.mkstemp(suffix=".pem")
+        try:
+            with os.fdopen(fd, "wb") as fh:
+                fh.write(RFC9421_ED25519_KEY)
+            config = self._config(
+                web_bot_auth_key=path,
+                web_bot_auth_directory="https://bot.example",
+                ui_uri="https://red.example/",
+            )
+            self.assertEqual(load_signer(config).directory, "https://bot.example")
+        finally:
+            os.unlink(path)
 
     def test_loads_and_caches(self):
         fd, path = tempfile.mkstemp(suffix=".pem")
         try:
             with os.fdopen(fd, "wb") as fh:
                 fh.write(RFC9421_ED25519_KEY)
-            config = self._config(web_bot_auth_key=path, web_bot_auth_agent=AGENT)
+            config = self._config(web_bot_auth_key=path, web_bot_auth_directory=AGENT)
             signer = load_signer(config)
             self.assertIsNotNone(signer)
             self.assertEqual(signer.keyid, EXPECTED_KEYID)
@@ -246,7 +273,7 @@ class TestChallengeRetry(unittest.TestCase):
                 "redbot": {
                     "enable_local_access": "True",
                     "web_bot_auth_key": self.key_path,
-                    "web_bot_auth_agent": AGENT,
+                    "web_bot_auth_directory": AGENT,
                 }
             }
         )

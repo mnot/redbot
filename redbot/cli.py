@@ -46,18 +46,18 @@ def main() -> None:
         help="path to an Ed25519 private key (PEM) for signing requests with Web Bot Auth",
     )
     parser.add_argument(
-        "--web-bot-auth-agent",
+        "--web-bot-auth-directory",
         action="store",
-        dest="web_bot_auth_agent",
-        help="Signature-Agent URL identifying where this bot's key directory is hosted",
+        dest="web_bot_auth_directory",
+        help="HTTPS origin hosting this bot's key directory (the Signature-Agent value)",
     )
     args = parser.parse_args()
 
     redbot_config = {"enable_local_access": "True"}
     if args.web_bot_auth_key:
         redbot_config["web_bot_auth_key"] = args.web_bot_auth_key
-    if args.web_bot_auth_agent:
-        redbot_config["web_bot_auth_agent"] = args.web_bot_auth_agent
+    if args.web_bot_auth_directory:
+        redbot_config["web_bot_auth_directory"] = args.web_bot_auth_directory
     config_parser = ConfigParser()
     config_parser.read_dict({"redbot": redbot_config})
     config = config_parser["redbot"]
