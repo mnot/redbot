@@ -1,0 +1,15 @@
+[Unit]
+Description=Periodic REDbot saved-tests cleanup
+
+[Timer]
+# Sweep interval (matches gc_mins in config.txt). Saved files aren't eligible
+# for removal until no_save_mins (default 20 min), so this doesn't need to be
+# tight -- 10 min keeps the temp dir bounded without spawning a process every
+# couple of minutes. A run won't stack on a stalled one: systemd skips
+# activation while the oneshot is still active.
+OnBootSec=1min
+OnUnitActiveSec=10min
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

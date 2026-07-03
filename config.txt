@@ -112,9 +112,10 @@ save_days = 30
 # conneg requests.
 no_save_mins = 20
 
-# How often to garbage collect save files, in minutes. Only occurs when save_dir
-# is uncommented.
-gc_mins = 2
+# How often to garbage collect save files, in minutes. Cleanup runs out-of-process
+# via `redbot_gc <config>` (see extra/redbot-gc.{service,timer}), not the daemon;
+# this value is the interval to give that timer.
+gc_mins = 10
 
 
 ## Web abuse controls
