@@ -1,0 +1,53 @@
+[Unit]
+Description=REDbot saved-tests cleanup
+After=redbot.service
+
+[Service]
+Type=oneshot
+
+# Process
+Environment=PYTHONUNBUFFERED='true'
+WorkingDirectory=/opt/redbot
+ExecStart=/opt/redbot/app/bin/redbot_gc /opt/redbot/config/config.txt
+SyslogIdentifier=redbot-gc
+
+# Runs as the same static user as redbot.service so it can delete files the
+# daemon wrote under StateDirectory (/var/lib/redbot). Create the user with
+# the shipped sysusers snippet (extra/redbot-sysusers.conf).
+User=redbot
+Group=redbot
+
+# Sandbox (mirrors redbot.service; no network needed for cleanup)
+NoNewPrivileges=true
+PrivateTmp=true
+RemoveIPC=true
+LockPersonality=true
+ProtectSystem=strict
+ProtectProc=invisible
+ProtectHostname=true
+ProtectHome=tmpfs
+ProtectClock=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProcSubset=pid
+RestrictSUIDSGID=true
+RestrictRealtime=true
+KeyringMode=private
+UMask=0077
+PrivateDevices=true
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+CapabilityBoundingSet=
+DevicePolicy=closed
+RestrictNamespaces=true
+RestrictAddressFamilies=AF_UNIX
+StateDirectory=redbot
+LogsDirectory=redbot
+LimitCORE=0
+
+# Resource Limits
+CPUQuota=60%
+MemoryMax=60M

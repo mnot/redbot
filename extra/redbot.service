@@ -4,7 +4,13 @@ After=network.target
 
 [Service]
 Type=simple
-DynamicUser=true
+# Static system user shared with redbot-gc.service, so the cleanup timer can
+# manage files the daemon writes under StateDirectory. DynamicUser is avoided
+# deliberately: it hands each unit a different ephemeral UID, which can't share
+# ownership of persistent state. Create the user with the shipped sysusers
+# snippet (extra/redbot-sysusers.conf): `systemd-sysusers`.
+User=redbot
+Group=redbot
 
 # Process
 Environment=PYTHONUNBUFFERED='true' SYSTEMD_WATCHDOG='true'
@@ -36,6 +42,9 @@ RestrictRealtime=true
 KeyringMode=private
 UMask=0077
 PrivateDevices=true
+# Preserve the isolation DynamicUser used to imply.
+PrivateTmp=true
+RemoveIPC=true
 SystemCallFilter=@system-service
 SystemCallErrorNumber=EPERM
 CapabilityBoundingSet=

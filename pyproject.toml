@@ -57,6 +57,7 @@ i18n = ["Babel >= 2.14.0",
 [project.scripts]
 redbot = "redbot.cli:main"
 redbot_daemon = "redbot.daemon:main"
+redbot_gc = "redbot.gc:main"
 
 [build-system]
 requires = [

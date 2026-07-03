@@ -42,7 +42,6 @@ from redbot.webbotauth import (
     load_signer,
 )
 from redbot.webui import RedWebUi
-from redbot.webui.saved_tests import clean_saved_tests
 
 SYSTEMD_NOTIFIER: Optional[Callable[[Any], None]] = None
 SYSTEMD_NOTIFICATION: Optional[Any] = None
@@ -112,9 +111,10 @@ class RedBotServer:
             os.path.join(self.ui_path.decode("ascii"), config["static_root"])
         ).encode("ascii")
 
-        # Start garbage collection
-        if config.get("save_dir", ""):
-            thor.schedule(10, self.gc_state)
+        # Saved-tests cleanup runs out-of-process; see redbot.gc and
+        # extra/redbot-gc.{service,timer}. Keeping the blocking filesystem
+        # work off the loop thread stops a stalled save_dir from tripping
+        # the systemd watchdog.
 
         if self.debug:
             thor.schedule(3600, self.periodic_memory_dump)
@@ -224,10 +224,6 @@ class RedBotServer:
         if SYSTEMD_NOTIFIER and SYSTEMD_NOTIFICATION:
             SYSTEMD_NOTIFIER(SYSTEMD_NOTIFICATION.WATCHDOG)
             thor.schedule(self.watchdog_freq, self.watchdog_ping)
-
-    def gc_state(self) -> None:
-        clean_saved_tests(self.config)
-        thor.schedule(self.config.getint("gc_mins", fallback=2) * 60, self.gc_state)
 
     def handle_crash_signal(self, sig: int, frame: Optional[FrameType] = None) -> signal.Handlers:
         self.console(f"*** {signal.strsignal(sig)}\n")

@@ -1,0 +1,14 @@
+[Unit]
+Description=Periodic REDbot saved-tests cleanup
+
+[Timer]
+# Matches the default `gc_mins` in config.txt. Runs shortly after boot and
+# then every 2 minutes of active time. Persistent=false so a stalled run is
+# skipped rather than stacking up (the whole point of moving this off the
+# daemon's event loop).
+OnBootSec=1min
+OnUnitActiveSec=2min
+AccuracySec=15s
+
+[Install]
+WantedBy=timers.target
