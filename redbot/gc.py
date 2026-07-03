@@ -29,6 +29,10 @@ def main() -> None:
     seen, removed, errors = clean_saved_tests(conf["redbot"])
     sys.stdout.write(f"redbot_gc: {seen} files, {removed} removed, {errors} errors\n")
 
+    # Exit non-zero on errors so the systemd oneshot (and its journal entry)
+    # surfaces a stalled/failing save_dir instead of looking like a clean run.
+    sys.exit(1 if errors else 0)
+
 
 if __name__ == "__main__":
     main()
