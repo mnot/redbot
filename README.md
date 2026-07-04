@@ -35,25 +35,9 @@ Both of these methods will install the following programs into your [pipx binary
 
 ### Running REDbot as a systemd Service
 
-REDbot can run as a standalone service, managed by [systemd](https://freedesktop.org/wiki/Software/systemd/). This offers a degree of sandboxing and resource management, as well as process monitoring (including a watchdog function).
+REDbot can run as a standalone service, managed by [systemd](https://freedesktop.org/wiki/Software/systemd/). This offers a degree of sandboxing and resource management, process monitoring (including a watchdog function), and a timer that garbage-collects saved tests.
 
-To do this, install REDbot on your system with the `systemd` option. For example:
-
-> pipx install redbot[systemd]
-
-The copy `extra/redbot.service` into the appropriate directory (on most systems, `/etc/systemd/system/`.)
-
-Modify the file appropriately; this is only a sample. Then, as root:
-
-~~~ bash
-> systemctl reload-daemon
-> systemctl enable redbot
-> systemctl start redbot
-~~~
-
-By default, REDbot will listen on localhost port 8000. This can be adjusted in `config.txt`. Running REDbot behind a reverse proxy is recommended, if it is to be exposed to the Internet.
-
-If you want to allow people to save test results, create the directory referenced by the 'save_dir' configuration variable, and make sure that it's writable to the REDbot process.
+See [extra/README.md](extra/README.md) for the sample units and step-by-step setup.
 
 
 ### Running REDbot in a Container
