@@ -35,7 +35,7 @@ jobs:
       run: npx playwright install --with-deps
     # === pyproject-tmpl: end "pre-test" ===
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: ${{ matrix.python-version }}
     - name: Cache venv
