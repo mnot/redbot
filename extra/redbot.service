@@ -20,8 +20,13 @@ SyslogIdentifier=redbot
 Restart=always
 SystemCallArchitectures=native
 
-# Watchdog
-WatchdogSec=10
+# Watchdog. The daemon pings every 3s from the event loop, so this doubles as a
+# liveness check on the loop itself. Keep it well above the ping interval: at 10s
+# an ordinary reclaim stall was enough to trip it. Note the interval is
+# hardcoded as RedBotServer.watchdog_freq rather than derived from the
+# WATCHDOG_USEC systemd exports here, so the two have to be kept in step by
+# hand -- keep this at several times watchdog_freq.
+WatchdogSec=30
 
 # Sandbox
 NotifyAccess=main
@@ -55,12 +60,23 @@ StateDirectory=redbot
 LogsDirectory=redbot
 LimitCORE=0
 
-# Resource Limits
+# Resource Limits. Steady-state working set is ~57M (interpreter, Jinja
+# templates, compiled regexes, babel's CLDR tables); MemoryHigh must stay clear
+# of it, or the kernel throttles the process in reclaim and the resulting
+# multi-second stalls trip the watchdog. Swap is disabled deliberately: with it
+# enabled, an overshoot became tens of seconds of thrashing instead of a prompt
+# OOM kill and restart.
+#
+# These assume the daemon is NOT running with --debug. tracemalloc's overhead
+# was measured at ~45M, but that was at a 25-frame capture depth; it's since
+# dropped to 1, which should cut most of it. The remaining cost hasn't been
+# re-measured, so if you enable --debug, watch memory.events for `high` events
+# and raise MemoryHigh until they stop.
 CPUQuota=60%
 MemoryLow=40M
-MemoryHigh=50M
-MemoryMax=60M
-MemorySwapMax=60M
+MemoryHigh=96M
+MemoryMax=128M
+MemorySwapMax=0
 
 [Install]
 WantedBy=multi-user.target
