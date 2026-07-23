@@ -226,8 +226,13 @@ class RedBotServer:
 
     def watchdog_ping(self) -> None:
         if SYSTEMD_NOTIFIER and SYSTEMD_NOTIFICATION:
-            SYSTEMD_NOTIFIER(SYSTEMD_NOTIFICATION.WATCHDOG)
-            thor.schedule(self.watchdog_freq, self.watchdog_ping)
+            # Reschedule unconditionally: if the notify raises, dropping out of
+            # the chain here would silently stop all future pings, and systemd
+            # would kill us WatchdogSec later with nothing in the log to say why.
+            try:
+                SYSTEMD_NOTIFIER(SYSTEMD_NOTIFICATION.WATCHDOG)
+            finally:
+                thor.schedule(self.watchdog_freq, self.watchdog_ping)
 
     def handle_crash_signal(self, sig: int, frame: Optional[FrameType] = None) -> signal.Handlers:
         self.console(f"*** {signal.strsignal(sig)}\n")
