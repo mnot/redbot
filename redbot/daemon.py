@@ -226,13 +226,17 @@ class RedBotServer:
 
     def watchdog_ping(self) -> None:
         if SYSTEMD_NOTIFIER and SYSTEMD_NOTIFICATION:
-            # Reschedule unconditionally: if the notify raises, dropping out of
-            # the chain here would silently stop all future pings, and systemd
-            # would kill us WatchdogSec later with nothing in the log to say why.
+            # thor's scheduler calls events bare and run() only catches
+            # KeyboardInterrupt, so an exception here would otherwise take the
+            # whole daemon down. A transient notify failure isn't worth dropping
+            # in-flight requests for: log it and keep pinging. If they fail
+            # persistently the watchdog stops being fed and systemd kills us
+            # anyway, which is the outcome we want.
             try:
                 SYSTEMD_NOTIFIER(SYSTEMD_NOTIFICATION.WATCHDOG)
-            finally:
-                thor.schedule(self.watchdog_freq, self.watchdog_ping)
+            except Exception:  # pylint: disable=broad-except
+                self.console(f"Watchdog notify failed:\n{traceback.format_exc()}")
+            thor.schedule(self.watchdog_freq, self.watchdog_ping)
 
     def handle_crash_signal(self, sig: int, frame: Optional[FrameType] = None) -> signal.Handlers:
         self.console(f"*** {signal.strsignal(sig)}\n")
