@@ -76,7 +76,11 @@ class RedBotServer:
         if self.debug:
             self.console("Debug mode enabled")
             self.warmup_regex()
-            tracemalloc.start(25)
+            # Depth 1: dump_memory_stats() only ever reads traceback[0], so
+            # deeper capture is discarded work -- and take_snapshot() cost
+            # scales with it. At 25 frames snapshots grew past 25s on a ~100M
+            # heap, blocking the loop long enough to trip the watchdog.
+            tracemalloc.start(1)
 
         self.handler = partial(RedRequestHandler, server=self)
 
