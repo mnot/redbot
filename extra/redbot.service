@@ -60,22 +60,33 @@ StateDirectory=redbot
 LogsDirectory=redbot
 LimitCORE=0
 
-# Resource Limits. Steady-state working set is ~57M (interpreter, Jinja
-# templates, compiled regexes, babel's CLDR tables); MemoryHigh must stay clear
-# of it, or the kernel throttles the process in reclaim and the resulting
-# multi-second stalls trip the watchdog. Swap is disabled deliberately: with it
-# enabled, an overshoot became tens of seconds of thrashing instead of a prompt
-# OOM kill and restart.
+# Resource Limits. MemoryHigh must stay clear of the real working set, or the
+# kernel throttles the process in reclaim and the resulting multi-second stalls
+# trip the watchdog. Measured footprint:
 #
-# These assume the daemon is NOT running with --debug. tracemalloc's overhead
-# was measured at ~45M, but that was at a 25-frame capture depth; it's since
-# dropped to 1, which should cut most of it. The remaining cost hasn't been
-# re-measured, so if you enable --debug, watch memory.events for `high` events
-# and raise MemoryHigh until they stop.
+#   ~57M  base (interpreter, Jinja templates, compiled regexes, babel's CLDR
+#         tables)
+#   +46M  one-off, the first time a response triggers httplint's charset check:
+#         chardet lazily loads 352 bigram models of 64K each. 22M of that is
+#         live tables, the rest is decompression the allocator never returns.
+#         Paid once, on the first text/* response with a charset parameter.
+#   +0.14M per concurrent request, near enough regardless of body size --
+#         bodies stream through the linter rather than accumulating (20
+#         concurrent 5M fetches cost 2.6M total).
+#
+# So ~103M before any load, and concurrency is cheap on top. 150M leaves room
+# for a few hundred in-flight requests; 192M hard cap catches a genuine runaway.
+#
+# Swap is disabled deliberately: with it enabled, an overshoot became tens of
+# seconds of thrashing instead of a prompt OOM kill and restart.
+#
+# These assume the daemon is NOT running with --debug, which adds tracemalloc
+# on top. If you enable it, watch memory.events for `high` events and raise
+# MemoryHigh until they stop.
 CPUQuota=60%
 MemoryLow=40M
-MemoryHigh=96M
-MemoryMax=128M
+MemoryHigh=150M
+MemoryMax=192M
 MemorySwapMax=0
 
 [Install]
