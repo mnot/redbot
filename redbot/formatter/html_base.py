@@ -4,6 +4,7 @@ import time
 from urllib.parse import urljoin, urlparse
 
 import httplint
+from httplint.note import levels
 from jinja2 import Environment, PackageLoader, select_autoescape
 from markupsafe import Markup, escape
 from typing_extensions import Unpack
@@ -106,6 +107,8 @@ class BaseHtmlFormatter(Formatter):
         if self.kw.get("is_blank", None):
             extra_body_class = "blank"
 
+        social_meta = self.social_meta(uri)
+
         tpl = self.templates.get_template("response_start.html")
         self.output(
             tpl.render(
@@ -145,10 +148,44 @@ class BaseHtmlFormatter(Formatter):
                         "extra_body_class": extra_body_class,
                         "descend": self.kw.get("descend", False),
                         "test_id": self.kw.get("test_id", ""),
+                        **social_meta,
                     },
                 )
             )
         )
+
+    def social_meta(self, uri: str) -> dict[str, str]:
+        """
+        Build per-result Open Graph / Twitter card metadata for a saved result.
+
+        Only saved results carry useful metadata: the full resource (and its
+        notes) is available when the <head> is rendered, whereas a live test is
+        still fetching. Returns an empty dict otherwise, so the template falls
+        back to the static site metadata.
+        """
+        if not self.kw.get("is_saved") or not uri:
+            return {}
+        og_url = urljoin(self.template_vars["baseuri"], f"saved/{self.kw.get('test_id', '')}")
+        if getattr(self.resource, "descend", False):
+            description = "REDbot HTTP checks for this resource and its embedded resources."
+        else:
+            notes = getattr(getattr(self.resource, "response", None), "notes", []) or []
+            bad = sum(1 for note in notes if note.level == levels.BAD)
+            warn = sum(1 for note in notes if note.level == levels.WARN)
+            counts = []
+            if bad:
+                counts.append(f"{bad} problem" + ("" if bad == 1 else "s"))
+            if warn:
+                counts.append(f"{warn} warning" + ("" if warn == 1 else "s"))
+            if counts:
+                description = f"{', '.join(counts)} found by REDbot's HTTP checks."
+            else:
+                description = "No problems found by REDbot's HTTP checks."
+        return {
+            "og_title": f"REDbot: {uri}",
+            "og_description": description,
+            "og_url": og_url,
+        }
 
     def finish_output(self) -> None:
         """
