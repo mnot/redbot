@@ -408,3 +408,8 @@ venv: | $(VENV)/$(MARKER)-dev
 $(VENV)/$(MARKER)-dev: $(VENV)/$(MARKER)
 	$(VENV)/pip install -e .[dev]
 	touch $@
+
+
+## Optional per-checkout overrides (not managed by the template, git-ignored)
+
+-include Makefile.local
