@@ -8,7 +8,7 @@ from redbot.webui.handlers.client_error import ClientErrorHandler
 from redbot.webui.handlers.error import ErrorHandler
 from redbot.webui.handlers.run_test import RunTestHandler
 from redbot.webui.handlers.save import LoadSavedTestHandler, SaveHandler
-from redbot.webui.handlers.show import RedirectHandler, ShowHandler
+from redbot.webui.handlers.show import ShowHandler
 
 __all__ = [
     "SaveHandler",
@@ -16,6 +16,5 @@ __all__ = [
     "ClientErrorHandler",
     "RunTestHandler",
     "ShowHandler",
-    "RedirectHandler",
     "ErrorHandler",
 ]

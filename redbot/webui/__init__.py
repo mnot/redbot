@@ -27,7 +27,6 @@ from redbot.webui.handlers import (
     ClientErrorHandler,
     ErrorHandler,
     LoadSavedTestHandler,
-    RedirectHandler,
     RunTestHandler,
     SaveHandler,
     ShowHandler,
@@ -50,7 +49,6 @@ class RedWebUi:
         LoadSavedTestHandler,
         ClientErrorHandler,
         RunTestHandler,
-        RedirectHandler,
         ShowHandler,
         ErrorHandler,  # Final fallback for 404/405
     ]
