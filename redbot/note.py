@@ -1,3 +1,5 @@
+import re
+import secrets
 from threading import local
 
 from httplint.note import Note
@@ -35,12 +37,28 @@ class RedbotNote(Note):
             ) from err
 
     def _get_detail(self) -> Markup:
+        """
+        Every var is wire- or otherwise externally-derived data, never
+        template text, so none of it is rendered as Markdown: each is
+        swapped for an opaque, per-render placeholder token before
+        conversion, and the tokens are swapped back for their
+        HTML-escaped values afterwards. A var can therefore never be
+        parsed as Markdown syntax, regardless of whether the template
+        wraps it in a code span, and a value containing its own
+        backtick (or brackets, asterisks, etc.) can't break out of one.
+        """
         try:
-            return Markup(
-                _markdown()
-                .reset()
-                .convert(_(self._text) % {k: escape(str(v)) for k, v in self.vars.items()})
-            )
+            nonce = secrets.token_hex(16)
+            tokens = {name: f"{nonce}:{name}" for name in self.vars}
+            html = _markdown().reset().convert(_(self._text) % tokens)
+            if tokens:
+                values = {token: str(self.vars[name]) for name, token in tokens.items()}
+                # Longest first: var names sharing a prefix (range/range_expected)
+                # would otherwise let the shorter token match inside the longer one.
+                ordered = sorted(values, key=len, reverse=True)
+                pattern = re.compile("|".join(re.escape(token) for token in ordered))
+                html = pattern.sub(lambda m: str(escape(values[m.group(0)])), html)
+            return Markup(html)
         except TypeError as err:
             raise TypeError(
                 f"Detail formatting error in {self.__class__.__name__} "
