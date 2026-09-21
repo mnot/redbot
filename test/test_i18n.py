@@ -213,13 +213,11 @@ class TestI18n(unittest.TestCase):
             self.assertIn("Cette réponse a du contenu.", note.summary)
             self.assertIn("HTTP définit quelques situations spéciales", note.detail)
 
-    def test_redbot_note_detail_cache_is_per_locale(self):
+    def test_redbot_note_detail_reflects_current_locale(self):
         """
-        RedbotNote.detail caches its rendered HTML to avoid recomputing it
-        (fresh nonce, fresh regex, fresh Markdown pass) on repeat access.
-        That cache must be keyed by locale, not just by note instance --
-        otherwise reading .detail under one locale then another on the same
-        note would silently serve the first locale's rendering both times.
+        The same note, read under two different locales, must render each
+        one correctly -- i.e. RedbotNote._translate() is consulted fresh on
+        each access via httplint's Note.detail, not fixed at construction.
         """
         from redbot.resource.fetch import BODY_NOT_ALLOWED
         from redbot.i18n import set_locale
@@ -231,8 +229,6 @@ class TestI18n(unittest.TestCase):
             en_detail = str(note.detail)
         self.assertIn("HTTP définit quelques situations spéciales", fr_detail)
         self.assertIn("HTTP defines a few special situations", en_detail)
-        # Re-reading under "fr" must still return the French rendering,
-        # not whatever was cached most recently under "en".
         with set_locale("fr"):
             self.assertEqual(str(note.detail), fr_detail)
 

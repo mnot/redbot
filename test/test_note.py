@@ -1,8 +1,10 @@
 """
-Tests for RedbotNote's Markdown/HTML escaping of interpolated vars.
-
-RedbotNote._get_detail() must never let a wire-supplied var be parsed as
-Markdown, whether or not the template wraps it in a code span.
+RedbotNote no longer implements its own Markdown-escaping logic (see
+mnot/redbot#431 and mnot/httplint#158/#160/#161): it relies entirely on
+httplint's Note for rendering, overriding only _translate() to use redbot's
+own message catalog. httplint has its own comprehensive tests for the
+escaping mechanism itself; this file just guards against RedbotNote
+reintroducing a custom, unsafe override of that behavior.
 """
 
 import unittest
@@ -12,132 +14,21 @@ from httplint.note import categories, levels
 from redbot.note import RedbotNote
 
 
-class UNPROTECTED(RedbotNote):
-    """A var used in plain prose, like RANGE_INCORRECT's range_expected/received."""
+class INJECTION_PRONE(RedbotNote):
+    """A var used in plain prose, unprotected by a backtick span -- the
+    shape of template that caused the original bug."""
 
     category = categories.GENERAL
     level = levels.INFO
-    _summary = "unprotected"
-    _text = """\
-REDbot expected:
-
-> %(expected)s
-
-REDbot received:
-
-> %(received)s"""
+    _summary = "injection prone"
+    _text = "value: %(value)s"
 
 
-class CODE_SPAN(RedbotNote):
-    """A var wrapped in a code span, like conneg.py's negotiated_val."""
-
-    category = categories.GENERAL
-    level = levels.INFO
-    _summary = "code span"
-    _text = "Negotiated: `%(negotiated_val)s`"
-
-
-class PREFIXED_VARS(RedbotNote):
-    """Var names that are prefixes of one another, like range/range_expected."""
-
-    category = categories.GENERAL
-    level = levels.INFO
-    _summary = "prefixed"
-    _text = "a=%(range)s b=%(range_expected)s c=%(range_expected_bytes)s"
-
-
-class NO_VARS(RedbotNote):
-    category = categories.GENERAL
-    level = levels.INFO
-    _summary = "no vars"
-    _text = "Nothing to interpolate here."
-
-
-class TRUNCATED(RedbotNote):
-    """A var with a precision spec, like RANGE_INCORRECT's range_expected."""
-
-    category = categories.GENERAL
-    level = levels.INFO
-    _summary = "truncated"
-    _text = "> %(sample).100s"
-
-
-class PERCENT_LITERAL(RedbotNote):
-    """A literal '%%' alongside a var, like CONNEG_GZIP_GOOD's 'saving %(savings)s%%'."""
-
-    category = categories.GENERAL
-    level = levels.INFO
-    _summary = "percent"
-    _text = "saving %(savings)s%% of size"
-
-
-class TestNoteEscaping(unittest.TestCase):
-    def test_markdown_link_in_plain_text_is_inert(self) -> None:
-        note = UNPROTECTED(
-            "subject",
-            expected="ok",
-            received="[click me](javascript:alert(1))",
-        )
+class TestRedbotNoteRendering(unittest.TestCase):
+    def test_markdown_injection_is_neutralized(self) -> None:
+        note = INJECTION_PRONE("subject", value="[x](javascript:alert(1))")
         html = str(note.detail)
         self.assertNotIn('href="javascript', html)
-        self.assertIn("[click me](javascript:alert(1))", html)
-
-    def test_html_tag_in_var_is_escaped(self) -> None:
-        note = UNPROTECTED(
-            "subject",
-            expected="ok",
-            received="<script>alert(1)</script>",
-        )
-        html = str(note.detail)
-        self.assertNotIn("<script>", html)
-        self.assertIn("&lt;script&gt;", html)
-
-    def test_embedded_backtick_cannot_escape_code_span(self) -> None:
-        note = CODE_SPAN("subject", negotiated_val="a`</code><script>alert(1)</script>")
-        html = str(note.detail)
-        self.assertNotIn("<script>", html)
-        self.assertIn("&lt;script&gt;", html)
-        # The literal backtick survives (isn't stripped), since it's never
-        # parsed as Markdown syntax.
-        self.assertIn("a`", html)
-
-    def test_prefixed_var_names_do_not_collide(self) -> None:
-        note = PREFIXED_VARS(
-            "subject",
-            range="RANGEVAL",
-            range_expected="EXPECTEDVAL",
-            range_expected_bytes="BYTESVAL",
-        )
-        html = str(note.detail)
-        self.assertIn("a=RANGEVAL", html)
-        self.assertIn("b=EXPECTEDVAL", html)
-        self.assertIn("c=BYTESVAL", html)
-
-    def test_no_vars_renders_normally(self) -> None:
-        note = NO_VARS("subject")
-        self.assertIn("Nothing to interpolate here.", str(note.detail))
-
-    def test_precision_spec_truncates_the_real_value(self) -> None:
-        # The template's ".100s" must cap the actual value's length, not the
-        # short placeholder token that stands in for it during rendering.
-        note = TRUNCATED("subject", sample="A" * 145)
-        html = str(note.detail)
-        self.assertEqual(html.count("A"), 100)
-
-    def test_precision_spec_and_injection_together(self) -> None:
-        # A value that's both over the precision limit and Markdown-shaped
-        # must come out both truncated and inert.
-        link = "[x](javascript:alert(1))"
-        payload = link + "B" * 100
-        note = TRUNCATED("subject", sample=payload)
-        html = str(note.detail)
-        self.assertNotIn('href="javascript', html)
-        self.assertEqual(html.count("B"), 100 - len(link))
-
-    def test_percent_literal_is_preserved(self) -> None:
-        note = PERCENT_LITERAL("subject", savings=42)
-        html = str(note.detail)
-        self.assertIn("saving 42% of size", html)
 
 
 if __name__ == "__main__":
