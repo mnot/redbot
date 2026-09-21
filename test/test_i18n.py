@@ -213,6 +213,25 @@ class TestI18n(unittest.TestCase):
             self.assertIn("Cette réponse a du contenu.", note.summary)
             self.assertIn("HTTP définit quelques situations spéciales", note.detail)
 
+    def test_redbot_note_detail_reflects_current_locale(self):
+        """
+        The same note, read under two different locales, must render each
+        one correctly -- i.e. RedbotNote._translate() is consulted fresh on
+        each access via httplint's Note.detail, not fixed at construction.
+        """
+        from redbot.resource.fetch import BODY_NOT_ALLOWED
+        from redbot.i18n import set_locale
+
+        note = BODY_NOT_ALLOWED("subject", sample="test sample")
+        with set_locale("fr"):
+            fr_detail = str(note.detail)
+        with set_locale("en"):
+            en_detail = str(note.detail)
+        self.assertIn("HTTP définit quelques situations spéciales", fr_detail)
+        self.assertIn("HTTP defines a few special situations", en_detail)
+        with set_locale("fr"):
+            self.assertEqual(str(note.detail), fr_detail)
+
 
     def test_problem_pluralization(self):
         from redbot.formatter.html import SingleEntryHtmlFormatter
