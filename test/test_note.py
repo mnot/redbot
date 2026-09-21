@@ -53,6 +53,24 @@ class NO_VARS(RedbotNote):
     _text = "Nothing to interpolate here."
 
 
+class TRUNCATED(RedbotNote):
+    """A var with a precision spec, like RANGE_INCORRECT's range_expected."""
+
+    category = categories.GENERAL
+    level = levels.INFO
+    _summary = "truncated"
+    _text = "> %(sample).100s"
+
+
+class PERCENT_LITERAL(RedbotNote):
+    """A literal '%%' alongside a var, like CONNEG_GZIP_GOOD's 'saving %(savings)s%%'."""
+
+    category = categories.GENERAL
+    level = levels.INFO
+    _summary = "percent"
+    _text = "saving %(savings)s%% of size"
+
+
 class TestNoteEscaping(unittest.TestCase):
     def test_markdown_link_in_plain_text_is_inert(self) -> None:
         note = UNPROTECTED(
@@ -98,6 +116,28 @@ class TestNoteEscaping(unittest.TestCase):
     def test_no_vars_renders_normally(self) -> None:
         note = NO_VARS("subject")
         self.assertIn("Nothing to interpolate here.", str(note.detail))
+
+    def test_precision_spec_truncates_the_real_value(self) -> None:
+        # The template's ".100s" must cap the actual value's length, not the
+        # short placeholder token that stands in for it during rendering.
+        note = TRUNCATED("subject", sample="A" * 145)
+        html = str(note.detail)
+        self.assertEqual(html.count("A"), 100)
+
+    def test_precision_spec_and_injection_together(self) -> None:
+        # A value that's both over the precision limit and Markdown-shaped
+        # must come out both truncated and inert.
+        link = "[x](javascript:alert(1))"
+        payload = link + "B" * 100
+        note = TRUNCATED("subject", sample=payload)
+        html = str(note.detail)
+        self.assertNotIn('href="javascript', html)
+        self.assertEqual(html.count("B"), 100 - len(link))
+
+    def test_percent_literal_is_preserved(self) -> None:
+        note = PERCENT_LITERAL("subject", savings=42)
+        html = str(note.detail)
+        self.assertIn("saving 42% of size", html)
 
 
 if __name__ == "__main__":

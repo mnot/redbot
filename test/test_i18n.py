@@ -213,6 +213,29 @@ class TestI18n(unittest.TestCase):
             self.assertIn("Cette réponse a du contenu.", note.summary)
             self.assertIn("HTTP définit quelques situations spéciales", note.detail)
 
+    def test_redbot_note_detail_cache_is_per_locale(self):
+        """
+        RedbotNote.detail caches its rendered HTML to avoid recomputing it
+        (fresh nonce, fresh regex, fresh Markdown pass) on repeat access.
+        That cache must be keyed by locale, not just by note instance --
+        otherwise reading .detail under one locale then another on the same
+        note would silently serve the first locale's rendering both times.
+        """
+        from redbot.resource.fetch import BODY_NOT_ALLOWED
+        from redbot.i18n import set_locale
+
+        note = BODY_NOT_ALLOWED("subject", sample="test sample")
+        with set_locale("fr"):
+            fr_detail = str(note.detail)
+        with set_locale("en"):
+            en_detail = str(note.detail)
+        self.assertIn("HTTP définit quelques situations spéciales", fr_detail)
+        self.assertIn("HTTP defines a few special situations", en_detail)
+        # Re-reading under "fr" must still return the French rendering,
+        # not whatever was cached most recently under "en".
+        with set_locale("fr"):
+            self.assertEqual(str(note.detail), fr_detail)
+
 
     def test_problem_pluralization(self):
         from redbot.formatter.html import SingleEntryHtmlFormatter
