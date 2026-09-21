@@ -83,7 +83,7 @@ class ETagValidate(SubRequest):
                         self.add_notes(
                             "field-etag",
                             INM_DUP_ETAG_STRONG,
-                            etag=self.base.response.headers.parsed["etag"],
+                            etag=self.base.response.headers.parsed["etag"][1],
                         )
                 else:
                     self.add_notes("field-etag", INM_UNKNOWN)
