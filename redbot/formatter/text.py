@@ -19,6 +19,19 @@ from redbot.resource import HttpResource
 
 NL = "\n"
 
+_CONTROL_RE = re.compile(r"[\x00-\x08\x0a-\x1f\x7f-\x9f]")
+_CONTROL_NO_NL_RE = re.compile(r"[\x00-\x08\x0b-\x1f\x7f-\x9f]")
+
+
+def escape_controls(text: str, keep_newlines: bool = False) -> str:
+    """
+    Replace C0 and C1 control characters (and DEL) in server-controlled text with visible
+    escapes like \\x1b, so they can't drive the user's terminal. Tab is left alone, as are
+    newlines if keep_newlines is set.
+    """
+    regex = _CONTROL_NO_NL_RE if keep_newlines else _CONTROL_RE
+    return regex.sub(lambda m: f"\\x{ord(m.group(0)):02x}", text)
+
 
 class BaseTextFormatter(Formatter):
     """
@@ -81,16 +94,20 @@ class BaseTextFormatter(Formatter):
     @staticmethod
     def _format_fetch_error(error: httperr.HttpError) -> str:
         if error.detail:
-            return f"{error.desc} ({error.detail})"
-        return error.desc
+            return f"{escape_controls(error.desc)} ({escape_controls(error.detail)})"
+        return escape_controls(error.desc)
 
     def error_output(self, message: str) -> None:
-        self.output(self.error_template % message)
+        self.output(self.error_template % escape_controls(message))
 
     @staticmethod
     def format_headers(response: HttpResponseLinter) -> str:
-        out = [f"HTTP/{response.version} {response.status_code_str} {response.status_phrase}"]
-        return NL.join(out + [f"{h[0]}:{h[1]}" for h in response.headers.text])
+        out = [
+            escape_controls(
+                f"HTTP/{response.version} {response.status_code_str} {response.status_phrase}"
+            )
+        ]
+        return NL.join(out + [escape_controls(f"{h[0]}:{h[1]}") for h in response.headers.text])
 
     def format_recommendations(self, resource: HttpResource) -> str:
         return "".join(
@@ -121,9 +138,11 @@ class BaseTextFormatter(Formatter):
 
     @staticmethod
     def format_text(note: Note) -> List[str]:
-        return textwrap.wrap(strip_tags(re.sub(r"(?m)\s\s+", " ", note.detail)))
+        text = strip_tags(re.sub(r"(?m)\s\s+", " ", note.detail))
+        return textwrap.wrap(escape_controls(text, keep_newlines=True))
 
     def colorize(self, level: Optional[levels], instr: str) -> str:
+        instr = escape_controls(instr)
         if self.kw.get("tty_out", False):
             # info
             color_start = "\033[0;32m"

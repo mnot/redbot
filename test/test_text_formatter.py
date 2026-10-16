@@ -1,0 +1,152 @@
+"""
+The text formatter must not pass control characters from a response through to the
+terminal (mnot/redbot#448).
+"""
+
+import re
+import unittest
+from configparser import ConfigParser
+from typing import List
+
+import thor.http.error as httperr
+from httplint.note import categories, levels
+
+from redbot.formatter.text import (
+    TextFormatter,
+    TextListFormatter,
+    VerboseTextFormatter,
+    escape_controls,
+)
+from redbot.note import RedbotNote
+from redbot.resource import HttpResource
+
+EVIL = "a\x1b]52;c;ZXZpbA==\x07\x1b[2Jb"
+EVIL_ESCAPED = "a\\x1b]52;c;ZXZpbA==\\x07\\x1b[2Jb"
+
+# Anything a terminal might act on, other than tab and newline.
+BAD_CHARS = re.compile(r"[\x00-\x08\x0b-\x1f\x7f-\x9f]")
+# The formatter's own colour sequences.
+OWN_ANSI = re.compile(r"\x1b\[[01];?[0-9]*m")
+
+
+class EVIL_NOTE(RedbotNote):
+    category = categories.GENERAL
+    level = levels.WARN
+    _summary = "bad value %(value)s"
+    _text = "The value was %(value)s, which is bad."
+
+
+def make_resource() -> HttpResource:
+    conf = ConfigParser()
+    conf.add_section("redbot")
+    resource = HttpResource(conf["redbot"])
+    resource.request.uri = f"http://example.com/{EVIL}"
+    resource.response.process_response_topline(b"1.1", b"200", EVIL.encode("latin-1"))
+    resource.response.process_headers(
+        [
+            (b"X-Evil", EVIL.encode("latin-1")),
+            (b"X-C1", b"c1\x9b31m"),
+            (b"Content-Type", b"text/plain"),
+        ]
+    )
+    resource.response.complete = True
+    return resource
+
+
+def render(formatter_class: type, resource: HttpResource, tty_out: bool = False) -> str:
+    chunks: List[str] = []
+    formatter = formatter_class(
+        resource.config, resource, chunks.append, {"tty_out": tty_out, "descend": False}
+    )
+    formatter.bind_resource(resource)
+    formatter.finish_output()
+    return "".join(chunks)
+
+
+class TestEscapeControls(unittest.TestCase):
+    def test_issue_example(self) -> None:
+        self.assertEqual(escape_controls(EVIL), EVIL_ESCAPED)
+
+    def test_c0_c1_and_del(self) -> None:
+        self.assertEqual(escape_controls("\x00\x07\x7f\x80\x9b"), "\\x00\\x07\\x7f\\x80\\x9b")
+
+    def test_tab_kept(self) -> None:
+        self.assertEqual(escape_controls("a\tb"), "a\tb")
+
+    def test_newlines(self) -> None:
+        self.assertEqual(escape_controls("a\r\nb"), "a\\x0d\\x0ab")
+        self.assertEqual(escape_controls("a\nb", keep_newlines=True), "a\nb")
+        self.assertEqual(escape_controls("a\rb", keep_newlines=True), "a\\x0db")
+
+    def test_ordinary_text_untouched(self) -> None:
+        self.assertEqual(escape_controls("héllo ~   ☃"), "héllo ~   ☃")
+
+
+class TestTextFormatterOutput(unittest.TestCase):
+    def check_clean(self, out: str, tty_out: bool = False) -> None:
+        if tty_out:
+            out = OWN_ANSI.sub("", out)
+        self.assertIsNone(BAD_CHARS.search(out), repr(out))
+
+    def test_headers_and_status_phrase(self) -> None:
+        out = render(TextFormatter, make_resource())
+        self.check_clean(out)
+        self.assertIn(f"X-Evil:{EVIL_ESCAPED}", out)
+        self.assertIn(f"HTTP/1.1 200 {EVIL_ESCAPED}", out)
+        self.assertIn("X-C1:c1\\x9b31m", out)
+
+    def test_header_newline_cannot_forge_lines(self) -> None:
+        resource = make_resource()
+        resource.response.headers.text.append(("X-Split", "a\r\nHTTP/1.1 200 Forged"))
+        out = render(TextFormatter, resource)
+        self.assertIn("X-Split:a\\x0d\\x0aHTTP/1.1 200 Forged", out)
+        self.assertNotIn("\nHTTP/1.1 200 Forged", out)
+
+    def test_note_summary_and_detail(self) -> None:
+        for formatter_class in (TextFormatter, VerboseTextFormatter):
+            resource = make_resource()
+            resource.response.notes.add("header-x-evil", EVIL_NOTE, value=EVIL)
+            for tty_out in (False, True):
+                out = render(formatter_class, resource, tty_out)
+                self.check_clean(out, tty_out)
+                self.assertIn("bad value", out)
+
+    def test_note_detail_character_reference(self) -> None:
+        "A character reference in note text must not become a raw control character."
+        resource = make_resource()
+        resource.response.notes.add("header-x-evil", EVIL_NOTE, value="&#27;[2J&#7;")
+        out = render(VerboseTextFormatter, resource)
+        self.check_clean(out)
+
+    def test_own_colours_preserved(self) -> None:
+        resource = make_resource()
+        resource.response.notes.add("header-x-evil", EVIL_NOTE, value=EVIL)
+        out = render(TextFormatter, resource, tty_out=True)
+        self.assertIn("\x1b[1;33mbad value " + EVIL_ESCAPED + "\x1b[0;39m", out)
+
+    def test_fetch_error(self) -> None:
+        resource = make_resource()
+        resource.response.complete = False
+        resource.fetch_error = httperr.ConnectError(EVIL)
+        out = render(TextFormatter, resource)
+        self.check_clean(out)
+        self.assertIn(EVIL_ESCAPED, out)
+
+    def test_error_output(self) -> None:
+        resource = make_resource()
+        chunks: List[str] = []
+        formatter = TextFormatter(resource.config, resource, chunks.append, {})
+        formatter.error_output(EVIL)
+        self.assertEqual("".join(chunks), f"Error: {EVIL_ESCAPED}\n")
+
+    def test_linked_resources(self) -> None:
+        resource = make_resource()
+        linked = make_resource()
+        resource.linked.append((linked, "link"))
+        out = render(TextListFormatter, resource)
+        self.check_clean(out)
+        self.assertIn(f"http://example.com/{EVIL_ESCAPED}", out)
+
+
+if __name__ == "__main__":
+    unittest.main()
