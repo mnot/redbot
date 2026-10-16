@@ -68,6 +68,14 @@ class TestWebBotAuthSigner(unittest.TestCase):
             WebBotAuthSigner.authority("https://example.com:8443/"), "example.com:8443"
         )
 
+    def test_authority_ipv6(self):
+        self.assertEqual(WebBotAuthSigner.authority("http://[2001:db8::1]/"), "[2001:db8::1]")
+        self.assertEqual(
+            WebBotAuthSigner.authority("http://[2001:db8::1]:8080/"), "[2001:db8::1]:8080"
+        )
+        self.assertEqual(WebBotAuthSigner.authority("http://[2001:db8::1]:80/"), "[2001:db8::1]")
+        self.assertEqual(WebBotAuthSigner.authority("https://[2001:DB8::1]:443/"), "[2001:db8::1]")
+
     def test_sign_request_headers_present(self):
         headers = _headers_dict(self.signer.sign_request("https://example.com/path"))
         self.assertEqual(headers[b"signature-agent"], f'"{AGENT}"'.encode("ascii"))
