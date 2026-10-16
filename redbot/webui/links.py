@@ -171,7 +171,10 @@ class WebUiLinkGenerator:
             )
 
         # For new tests, gather context and delegate to RunTestHandler
-        test_uri = urljoin(uri, link or "")
+        try:
+            test_uri = urljoin(uri, link or "")
+        except ValueError:  # e.g. a Location value like "http://["
+            return str(escape(link_value))
 
         # Collect request headers from current context
         headers = []

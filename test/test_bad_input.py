@@ -12,6 +12,9 @@ from redbot.formatter.html import HeaderPresenter
 from redbot.resource import HttpResource
 from redbot.resource.link_parse import HTMLLinkParser
 from redbot.utils import decode_text
+from redbot.webui import RedWebUi
+from redbot.webui.links import WebUiLinkGenerator
+from redbot.webui.handlers.run_test import RunTestHandler
 from redbot.webui.handlers.save import LoadSavedTestHandler, SaveHandler
 from redbot.webui.saved_tests import save_test, valid_test_id
 
@@ -147,6 +150,46 @@ class TestCharsetFromRemote(unittest.TestCase):
             message.character_encoding = charset
             parser = HTMLLinkParser(message, [])
             parser.feed_bytes(b"<a href='/x'>x</a>")  # must not raise
+
+
+class TestNoSavePathByDefault(unittest.TestCase):
+    def test_save_path_starts_empty(self):
+        # init_save_file only sets save_path on success; save_test relies on the default.
+        with patch.object(RedWebUi, "handlers", []):
+            ui = RedWebUi(config(), "GET", b"", b"", [], b"", MagicMock(), "127.0.0.1")
+        self.assertEqual(ui.save_path, "")
+
+
+class TestHostileTargetOrReferer(unittest.TestCase):
+    def test_nonfinal_response_without_exchange_version(self):
+        # thor sets exchange.res_version only for final responses
+        resource = HttpResource(config())
+        resource.exchange = SimpleNamespace(res_version=None, conn=SimpleNamespace(res_version=b"1.1"))
+        resource._response_nonfinal(b"103", b"Early Hints", [(b"Link", b"</a>")])
+        self.assertEqual(len(resource.nonfinal_responses), 1)
+
+    def test_unparseable_location_is_shown_as_text(self):
+        resource = HttpResource(config())
+        resource.set_request("http://example.com/")
+        generator = WebUiLinkGenerator(SimpleNamespace(config=config()))
+        html = generator.resource_link(resource, "http://[", "http://[", use_stored=False)
+        self.assertEqual(html, "http://[")
+
+    def test_unparseable_referer_with_spam_domains(self):
+        ui = SimpleNamespace(
+            config=config(referer_spam_domains="spam.example"),
+            query_string={"uri": ["http://example.com/"], "req_hdr": ["Referer:http://["]},
+            output=lambda chunk: None,
+            nonce="n",
+            locale="en",
+            link_generator=MagicMock(),
+            error_response=MagicMock(),
+            timeout=None,
+            timeout_error=MagicMock(),
+            save_path="",
+        )
+        RunTestHandler.handle(ui)
+        self.assertEqual(ui.error_response.call_args[0][0], b"403")
 
 
 if __name__ == "__main__":

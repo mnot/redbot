@@ -53,4 +53,4 @@ def decode_text(data: bytes, encoding: Optional[str], errors: str = "replace") -
     try:
         return data.decode(encoding or "utf-8", errors)
     except (LookupError, UnicodeError):
-        return data.decode("utf-8", errors)
+        return data.decode("utf-8", "replace")
