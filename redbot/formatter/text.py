@@ -5,6 +5,7 @@ HAR Formatter for REDbot.
 import operator
 import re
 import textwrap
+import unicodedata
 from html.parser import HTMLParser
 from typing import List, Optional
 
@@ -18,6 +19,39 @@ from redbot.i18n import _
 from redbot.resource import HttpResource
 
 NL = "\n"
+
+# Unicode categories escaped in addition to C0/C1: format characters (bidi controls, zero-width
+# and invisible characters, soft hyphen, tag characters), and line and paragraph separators.
+_ESCAPED_CATEGORIES = frozenset({"Cf", "Zl", "Zp"})
+
+
+def _needs_escape(char: str, keep_newlines: bool) -> bool:
+    code = ord(char)
+    if code == 0x09 or (code == 0x0A and keep_newlines):
+        return False
+    if code < 0x20 or 0x7F <= code <= 0x9F:
+        return True
+    return code > 0x9F and unicodedata.category(char) in _ESCAPED_CATEGORIES
+
+
+def escape_controls(text: str, keep_newlines: bool = False) -> str:
+    """
+    Replace characters in server-controlled text that can drive or mislead the user's terminal
+    with visible escapes like \\x1b or \\u202e: C0 and C1 control characters (and DEL), plus
+    Unicode format characters (bidi controls, zero-width and invisible characters, soft hyphen,
+    tag characters) and line and paragraph separators. Tab is left alone, as are newlines if
+    keep_newlines is set.
+    """
+
+    def escape(char: str) -> str:
+        code = ord(char)
+        if code <= 0xFF:
+            return f"\\x{code:02x}"
+        if code <= 0xFFFF:
+            return f"\\u{code:04x}"
+        return f"\\U{code:08x}"
+
+    return "".join(escape(c) if _needs_escape(c, keep_newlines) else c for c in text)
 
 
 class BaseTextFormatter(Formatter):
@@ -81,16 +115,20 @@ class BaseTextFormatter(Formatter):
     @staticmethod
     def _format_fetch_error(error: httperr.HttpError) -> str:
         if error.detail:
-            return f"{error.desc} ({error.detail})"
-        return error.desc
+            return f"{escape_controls(error.desc)} ({escape_controls(error.detail)})"
+        return escape_controls(error.desc)
 
     def error_output(self, message: str) -> None:
-        self.output(self.error_template % message)
+        self.output(self.error_template % escape_controls(message))
 
     @staticmethod
     def format_headers(response: HttpResponseLinter) -> str:
-        out = [f"HTTP/{response.version} {response.status_code_str} {response.status_phrase}"]
-        return NL.join(out + [f"{h[0]}:{h[1]}" for h in response.headers.text])
+        out = [
+            escape_controls(
+                f"HTTP/{response.version} {response.status_code_str} {response.status_phrase}"
+            )
+        ]
+        return NL.join(out + [escape_controls(f"{h[0]}:{h[1]}") for h in response.headers.text])
 
     def format_recommendations(self, resource: HttpResource) -> str:
         return "".join(
@@ -121,9 +159,11 @@ class BaseTextFormatter(Formatter):
 
     @staticmethod
     def format_text(note: Note) -> List[str]:
-        return textwrap.wrap(strip_tags(re.sub(r"(?m)\s\s+", " ", note.detail)))
+        text = strip_tags(re.sub(r"(?m)\s\s+", " ", note.detail))
+        return textwrap.wrap(escape_controls(text, keep_newlines=True))
 
     def colorize(self, level: Optional[levels], instr: str) -> str:
+        instr = escape_controls(instr)
         if self.kw.get("tty_out", False):
             # info
             color_start = "\033[0;32m"
