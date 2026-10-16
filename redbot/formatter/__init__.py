@@ -20,7 +20,7 @@ from redbot.i18n import get_locale, set_locale
 if TYPE_CHECKING:
     from redbot.resource import HttpResource
 
-_formatters = ["html", "text", "har"]
+_formatters = ["html", "text", "text_verbose", "har"]
 
 
 def find_formatter(name: str, default: str = "html", multiple: bool = False) -> Type["Formatter"]:
@@ -34,7 +34,8 @@ def find_formatter(name: str, default: str = "html", multiple: bool = False) -> 
     if name not in _formatters:
         name = default
     try:
-        module_name = f"redbot.formatter.{name}"
+        # variants such as "text_verbose" live in their base format's module
+        module_name = f"redbot.formatter.{name.split('_', 1)[0]}"
         __import__(module_name)
         module = sys.modules[module_name]
     except (ImportError, KeyError, TypeError):

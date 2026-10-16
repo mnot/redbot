@@ -149,7 +149,7 @@ class TextFormatter(BaseTextFormatter):
     Format a REDbot object as text.
     """
 
-    name = "txt"
+    name = "text"
     media_type = "text/plain"
 
     def finish_output(self) -> None:
@@ -157,7 +157,7 @@ class TextFormatter(BaseTextFormatter):
 
 
 class VerboseTextFormatter(TextFormatter):
-    name = "txt_verbose"
+    name = "text_verbose"
 
     def __init__(self, *args: Unpack[FormatterArgs]) -> None:
         TextFormatter.__init__(self, *args)
@@ -195,7 +195,7 @@ class TextListFormatter(BaseTextFormatter):
 
 
 class VerboseTextListFormatter(TextListFormatter):
-    name = "txt_verbose"
+    name = "text_verbose"
 
     def __init__(self, *args: Unpack[FormatterArgs]) -> None:
         TextListFormatter.__init__(self, *args)
