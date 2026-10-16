@@ -228,7 +228,8 @@ class TestDaemonSurvivesHostileCookies(unittest.TestCase):
         self.assertEqual(self.post_check(b'human_time="\\262"; human_hmac=abc'), b"403")
 
     def test_overlong_time(self):
-        self.assertEqual(self.post_check(b"human_time=" + b"9" * 5000 + b"; human_hmac=abc"), b"403")
+        cookie = b"human_time=" + b"9" * 5000 + b"; human_hmac=abc"
+        self.assertEqual(self.post_check(cookie), b"403")
 
 
 if __name__ == "__main__":

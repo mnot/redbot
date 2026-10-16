@@ -120,6 +120,7 @@ class TestCaptchaCookies(unittest.TestCase):
         self._assert_rejected([b'human_time="\\262"; human_hmac="\\351"'])
 
     def test_invalid_utf8(self) -> None:
+        # Boundary: SimpleCookie already drops this, so it passes without the fix too.
         self._assert_rejected([b"human_time=9999999999; human_hmac=\xff\xfe"])
 
     def test_non_ascii_digits_in_time(self) -> None:
@@ -136,6 +137,7 @@ class TestCaptchaCookies(unittest.TestCase):
         self._assert_rejected([b"human_time=" + b"9" * 5000 + b"; human_hmac=abc"])
 
     def test_huge_time(self) -> None:
+        # Boundary: under int()'s digit limit, so it passes without the fix too.
         self._assert_rejected([b"human_time=" + b"9" * 400 + b"; human_hmac=abc"])
 
     def test_negative_time(self) -> None:
