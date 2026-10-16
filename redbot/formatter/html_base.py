@@ -166,7 +166,7 @@ class BaseHtmlFormatter(Formatter):
         """
         Something bad happened.
         """
-        self.output(f"<p class='error foo'>{message}</p>")
+        self.output(f"<p class='error foo'>{escape(message)}</p>")
         tpl = self.templates.get_template("footer.html")
         self.output(tpl.render(self.template_vars))
 
