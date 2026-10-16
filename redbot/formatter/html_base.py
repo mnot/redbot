@@ -73,6 +73,7 @@ class BaseHtmlFormatter(Formatter):
         if not ui_uri.endswith("/"):
             ui_uri += "/"
         # Only the Web UI supplies a CSP nonce; other callers (e.g., the CLI) get no attribute.
+        # An empty nonce is meaningless in a CSP, so it is treated as absent.
         nonce = self.kw.get("nonce")
         self.nonce_attr = Markup(' nonce="{}"').format(nonce) if nonce else Markup("")
         self.template_vars = {

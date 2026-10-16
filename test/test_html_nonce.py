@@ -14,7 +14,7 @@ from redbot.resource import HttpResource
 
 
 class _Handler(http.server.BaseHTTPRequestHandler):
-    def do_GET(self) -> None:
+    def do_GET(self) -> None:  # pylint: disable=invalid-name  # http.server hook name
         self.send_response(200)
         self.send_header("Content-Type", "text/plain")
         self.send_header("Content-Length", "2")
@@ -60,6 +60,10 @@ class TestHtmlNonce(unittest.TestCase):
         for tag in tags:
             if "ld+json" not in tag:
                 self.assertIn('nonce="abc123"', tag)
+
+    def test_empty_nonce_is_omitted(self) -> None:
+        # an empty nonce is meaningless in a CSP, so no attribute is emitted
+        self.assertNotIn("nonce", self._render({"nonce": ""}))
 
     def test_cli_html_output(self) -> None:
         server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _Handler)
