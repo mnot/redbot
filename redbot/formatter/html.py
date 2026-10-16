@@ -22,6 +22,7 @@ from redbot.formatter.html_base import (
 )
 from redbot.i18n import LazyProxy, _, ngettext
 from redbot.resource import HttpResource, active_check
+from redbot.utils import decode_text
 
 __all__ = ["SingleEntryHtmlFormatter", "TableHtmlFormatter", "BaseHtmlFormatter"]
 
@@ -156,10 +157,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     def format_body_sample(self, resource: HttpResource) -> Markup:
         """show the stored body sample"""
         sample = b"".join(resource.response_decoded_sample)
-        try:
-            uni_sample = sample.decode(resource.response.character_encoding or "utf-8", "ignore")
-        except (TypeError, LookupError):
-            uni_sample = sample.decode("utf-8", "replace")
+        uni_sample = decode_text(sample, resource.response.character_encoding, "ignore")
         safe_sample = escape(uni_sample)
         if self.config.getboolean("content_links", False):
             for __, link_set in list(resource.links.items()):
@@ -284,8 +282,9 @@ class HeaderPresenter:
     Present a HTTP header in the Web UI. By default, it will:
         - Escape HTML sequences to avoid XSS attacks
         - Wrap long lines
-    However if a method is present that corresponds to the header's
-    field-name, that method will be run instead to represent the value.
+    However if a method named present_ plus the header's field-name (with "-"
+    as "_") is present, that method will be run instead to represent the value.
+    The prefix keeps response-supplied names from reaching any other attribute.
     """
 
     def __init__(self, formatter: BaseHtmlFormatter) -> None:
@@ -298,9 +297,9 @@ class HeaderPresenter:
         """
         name = name.lower()
         value = value.lstrip()
-        name_token = name.replace("-", "_")
-        if name_token[0] != "_" and name_token != "show" and hasattr(self, name_token):
-            content: Markup = getattr(self, name_token)(name, value)
+        presenter = getattr(self, "present_" + name.replace("-", "_"), None)
+        if callable(presenter):
+            content: Markup = presenter(name, value)
             return content
         return escape(value)
 
@@ -318,7 +317,7 @@ class HeaderPresenter:
         )
         return link
 
-    content_location = location = x_xrds_location = bare_uri
+    present_content_location = present_location = present_x_xrds_location = bare_uri
 
 
 class TableHtmlFormatter(BaseHtmlFormatter):

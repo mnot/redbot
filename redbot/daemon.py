@@ -22,8 +22,8 @@ from functools import partial
 from importlib.resources import files as resource_files
 from pstats import Stats
 from types import FrameType
-from typing import Any, Callable, Dict, Optional
-from urllib.parse import urlsplit
+from typing import Any, Callable, Dict, Optional, Tuple
+from urllib.parse import SplitResultBytes, urlsplit
 
 import httplint
 import httplint.field.parsers
@@ -356,10 +356,10 @@ class RedRequestHandler:
         # finally finished arriving, or the connection was closed.
         if self.req_body_overflow:
             return None
-        try:
-            p_uri = urlsplit(self.uri)
-        except UnicodeDecodeError:
-            return self.bad_request(b"That's not a URL.")
+        parsed = self.parse_request()
+        if parsed is None:
+            return None
+        method, p_uri = parsed
         if p_uri.path == DIRECTORY_PATH.encode("ascii"):
             return self.serve_directory()
         if (
@@ -378,7 +378,7 @@ class RedRequestHandler:
             try:
                 RedWebUi(
                     self.server.config,
-                    self.method.decode(self.server.config.get("charset", "utf-8")),
+                    method,
                     ui_path,
                     p_uri.query,
                     self.req_hdrs,
@@ -401,6 +401,22 @@ in standalone server mode. Details follow.
                 sys.exit(1)
         else:
             return self.not_found(p_uri.path)
+
+    def parse_request(self) -> Optional[Tuple[str, SplitResultBytes]]:
+        "Parse the method and target; if they're unusable, send a 400 and return None."
+        try:
+            if b"\x00" in self.uri:
+                raise ValueError("NUL in request target")
+            p_uri = urlsplit(self.uri)
+        except ValueError:  # includes UnicodeDecodeError
+            self.bad_request(b"That's not a URL.")
+            return None
+        try:
+            method = self.method.decode(self.server.config.get("charset", "utf-8"))
+        except UnicodeDecodeError:
+            self.bad_request(b"That's not a method.")
+            return None
+        return method, p_uri
 
     def serve_static(self, path: bytes) -> None:
         path = posixpath.normpath(path)

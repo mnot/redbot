@@ -3,6 +3,7 @@ Utility functions for REDbot.
 """
 
 from functools import partial
+from typing import Optional
 from urllib.parse import quote as urlquote
 
 from markupsafe import Markup
@@ -42,3 +43,14 @@ def e_js(instr: str) -> Markup:
     instr = instr.replace("\r", r"")
     instr = instr.replace("<", r"\x3c")
     return Markup(instr)
+
+
+def decode_text(data: bytes, encoding: Optional[str], errors: str = "replace") -> str:
+    """
+    Decode data using a charset name supplied by a remote party. If the name
+    can't be used (unknown, not a text encoding, or 'undefined'), fall back to UTF-8.
+    """
+    try:
+        return data.decode(encoding or "utf-8", errors)
+    except (LookupError, UnicodeError):
+        return data.decode("utf-8", "replace")

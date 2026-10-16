@@ -100,7 +100,7 @@ class RedWebUi:
         else:
             self.locale = DEFAULT_LOCALE
 
-        self.save_path: str
+        self.save_path: str = ""
         self.timeout: Optional[thor.loop.ScheduledEvent] = None
         self.response_started: bool = False
         self.response_done: bool = False

@@ -238,8 +238,13 @@ class RedFetcher(thor.events.EventEmitter):
     ) -> None:
         "Got a non-final response."
         nfres = HttpResponseLinter(start_time=time.time())
-        assert self.exchange.res_version, "exchange.res_version not set in _response_nonfinal"
-        nfres.process_response_topline(self.exchange.res_version, status, phrase)
+        # thor only sets exchange.res_version for final responses.
+        res_version = (
+            self.exchange.res_version
+            or (self.exchange.conn.res_version if self.exchange.conn else None)
+            or b"1.1"
+        )
+        nfres.process_response_topline(res_version, status, phrase)
         nfres.process_headers(res_headers)
         nfres.finish_content(True)
         self.nonfinal_responses.append(nfres)

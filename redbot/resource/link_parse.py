@@ -12,6 +12,8 @@ from httplint.field.utils import split_string, unquote_string
 from httplint.message import HttpMessageLinter
 from httplint.syntax import rfc9110
 
+from redbot.utils import decode_text
+
 DEFAULT_ENCODING = "utf-8"
 MAX_FEED_BYTES = 2 * 1024 * 1024
 
@@ -72,7 +74,7 @@ class HTMLLinkParser(HTMLParser):
                 self.ok = False
                 return
             encoding = self.message.character_encoding or DEFAULT_ENCODING
-            decoded = bchunk.decode(encoding, "ignore")
+            decoded = decode_text(bchunk, encoding, "ignore")
             self.feed(decoded)
 
     def feed(self, data: str) -> None:

@@ -148,12 +148,14 @@ class RunTestHandler(RequestHandler):
 
         config_spam_domains = ui.config.get("referer_spam_domains") or ""
         referer_spam_domains = [i.strip() for i in config_spam_domains.split()]
-        if (
-            referer_spam_domains
-            and referers
-            and urlsplit(referers[0]).hostname in referer_spam_domains
-        ):
-            referer_error = "Referer not allowed."
+        if referer_spam_domains and referers:
+            try:
+                referer_host = urlsplit(referers[0]).hostname
+            except ValueError:
+                referer_error = "Referer not allowed."
+            else:
+                if referer_host in referer_spam_domains:
+                    referer_error = "Referer not allowed."
 
         if referer_error:
             ui.error_response(b"403", b"Forbidden", referer_error)
