@@ -36,7 +36,14 @@ class EVIL_NOTE(RedbotNote):
     _text = "The value was %(value)s, which is bad."
 
 
-def make_resource() -> HttpResource:
+class MULTILINE_NOTE(RedbotNote):
+    category = categories.GENERAL
+    level = levels.INFO
+    _summary = "multi-line note"
+    _text = "first line\nsecond line"
+
+
+def make_resource()-> HttpResource:
     conf = ConfigParser()
     conf.add_section("redbot")
     resource = HttpResource(conf["redbot"])
@@ -95,7 +102,7 @@ class TestTextFormatterOutput(unittest.TestCase):
         self.assertIn(f"HTTP/1.1 200 {EVIL_ESCAPED}", out)
         self.assertIn("X-C1:c1\\x9b31m", out)
 
-    def test_header_newline_cannot_forge_lines(self) -> None:
+    def test_header_newline_forgery(self) -> None:
         resource = make_resource()
         resource.response.headers.text.append(("X-Split", "a\r\nHTTP/1.1 200 Forged"))
         out = render(TextFormatter, resource)
@@ -111,7 +118,7 @@ class TestTextFormatterOutput(unittest.TestCase):
                 self.check_clean(out, tty_out)
                 self.assertIn("bad value", out)
 
-    def test_note_detail_character_reference(self) -> None:
+    def test_note_detail_charref(self) -> None:
         "A character reference in note text must not become a raw control character."
         resource = make_resource()
         resource.response.notes.add("header-x-evil", EVIL_NOTE, value="&#27;[2J&#7;")
@@ -131,6 +138,26 @@ class TestTextFormatterOutput(unittest.TestCase):
         out = render(TextFormatter, resource)
         self.check_clean(out)
         self.assertIn(EVIL_ESCAPED, out)
+
+    def test_fetch_error_desc(self) -> None:
+        class EvilDescError(httperr.HttpError):
+            desc = EVIL
+
+        for detail in (None, EVIL):
+            resource = make_resource()
+            resource.response.complete = False
+            resource.fetch_error = EvilDescError(detail)
+            out = render(TextFormatter, resource)
+            self.check_clean(out)
+            self.assertIn(EVIL_ESCAPED, out)
+
+    def test_note_detail_newlines(self) -> None:
+        "A newline in a note's own text is wrapped as whitespace, not shown as an escape."
+        resource = make_resource()
+        resource.response.notes.add("header-x-evil", MULTILINE_NOTE)
+        out = render(VerboseTextFormatter, resource)
+        self.assertIn("first line second line", out)
+        self.assertNotIn("\\x0a", out)
 
     def test_error_output(self) -> None:
         resource = make_resource()
