@@ -1,6 +1,7 @@
 import gzip
 import os
 import pickle
+import re
 import tempfile
 import time
 import zlib
@@ -9,6 +10,13 @@ from typing import IO, Optional, Tuple, cast
 
 from redbot.resource import HttpResource
 from redbot.type import RedWebUiProtocol
+
+_TEST_ID_RE = re.compile(r"[A-Za-z0-9_]+")
+
+
+def valid_test_id(test_id: str) -> bool:
+    "Whether test_id could be a name made by init_save_file (a tempfile.mkstemp name)."
+    return _TEST_ID_RE.fullmatch(test_id) is not None
 
 
 def init_save_file(webui: RedWebUiProtocol) -> Optional[str]:
@@ -25,6 +33,8 @@ def init_save_file(webui: RedWebUiProtocol) -> Optional[str]:
 
 def save_test(webui: RedWebUiProtocol, top_resource: HttpResource) -> None:
     """Save a test by test_id."""
+    if not webui.save_path:
+        return  # init_save_file couldn't make a file
     if webui.config.get("save_dir", None) and os.path.exists(webui.config["save_dir"]):
         try:
             with cast(IO[bytes], gzip.open(webui.save_path, "w")) as tmp_file:

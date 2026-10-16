@@ -19,6 +19,7 @@ from redbot.formatter import find_formatter
 from redbot.type import RedWebUiProtocol
 from redbot.webui.handlers.base import RequestHandler
 from redbot.webui.headers import security_headers
+from redbot.webui.saved_tests import valid_test_id
 
 
 class SaveHandler(RequestHandler):
@@ -55,6 +56,9 @@ class SaveHandler(RequestHandler):
         test_id = ui.path[1]
         if not test_id:
             ui.error_response(b"400", b"Bad Request", "test_id not provided.")
+            return
+        if not valid_test_id(test_id):
+            ui.error_response(b"400", b"Bad Request", "test_id is not valid.")
             return
 
         try:
@@ -151,6 +155,9 @@ class LoadSavedTestHandler(RequestHandler):
         test_id = ui.path[1]
         if not test_id:
             ui.error_response(b"400", b"Bad Request", "test_id not provided.")
+            return
+        if not valid_test_id(test_id):
+            ui.error_response(b"404", b"Not Found", "I'm sorry, I can't find that saved response.")
             return
 
         state_dir = ui.config.get("save_dir", "")
