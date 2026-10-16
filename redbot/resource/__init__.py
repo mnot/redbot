@@ -15,7 +15,7 @@ from typing import Dict, List, Optional, Set, Tuple, Union
 from urllib.parse import urljoin
 
 import thor
-from thor.http.error import UrlError
+from thor.http.error import HttpError, UrlError
 from thor.http.uri import parse_uri
 
 from redbot.resource import link_parse
@@ -86,7 +86,9 @@ class HttpResource(RedFetcher):
         self.links: Dict[str, Set[str]] = {}
         self.link_count: int = 0
         self.linked: List[Tuple[HttpResource, str]] = []  # linked HttpResources
-        self._link_parser = link_parse.HTMLLinkParser(self.response, [self.process_link])
+        self._link_parser = link_parse.HTMLLinkParser(
+            self.response, [self.process_link], err=self._link_error
+        )
         if self.descend or config.getboolean("content_links", False):
             self.response.decoded.processors.append(self._link_parser.feed_bytes)
 
@@ -140,7 +142,8 @@ class HttpResource(RedFetcher):
                 raise KeyError(f"* Can't find {resource} in task map: {self._task_map}") from None
         tasks_left = len(self._task_map)
         #        self.emit("debug", "%s checks remaining: %i" % (repr(self), tasks_left))
-        if tasks_left == 0:
+        # Links that fail immediately mustn't complete us while we're still reading the response.
+        if tasks_left == 0 and self.fetch_done:
             self.check_done = True
             self.emit("check_done")
 
@@ -177,10 +180,21 @@ class HttpResource(RedFetcher):
                 )
             self.linked.append((linked, tag))
             self.add_check(linked)
-            linked.check()
+            try:
+                linked.check()
+            except Exception as why:  # pylint: disable=broad-except
+                self.emit("debug", f"checking link {linked.request.uri} failed: {why!r}")
+                linked.fetch_error = linked.fetch_error or HttpError(str(why))
+                linked.stop()
+                if linked in self._task_map:  # stop() didn't complete it
+                    self.finish_check(linked)
         self.links[tag].add(link)
         if not self.response.base_uri:
             self.response.base_uri = base
+
+    def _link_error(self, message: str) -> None:
+        "Report a problem parsing or handling links."
+        self.emit("debug", f"link parsing: {message}")
 
     def stop(self) -> None:
         "Stop the resource and any sub-resources."

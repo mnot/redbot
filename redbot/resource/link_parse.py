@@ -52,7 +52,7 @@ class HTMLLinkParser(HTMLParser):
         self,
         message: HttpMessageLinter,
         link_procs: List[Callable[[str, str, str, str], None]],
-        err: Optional[Callable[[str], int]] = None,
+        err: Optional[Callable[[str], None]] = None,
     ) -> None:
         self.message = message
         self.link_procs = link_procs
