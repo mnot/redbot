@@ -6,12 +6,11 @@ import operator
 import re
 import textwrap
 from html.parser import HTMLParser
-from typing import List, Optional
+from typing import List, Optional, Unpack
 
 import thor.http.error as httperr
 from httplint import HttpResponseLinter
 from httplint.note import Note, categories, levels
-from typing_extensions import Unpack
 
 from redbot.formatter import Formatter, FormatterArgs
 from redbot.i18n import _

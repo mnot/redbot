@@ -1,12 +1,12 @@
 import json
 import os
 import time
+from typing import Unpack
 from urllib.parse import urljoin, urlparse
 
 import httplint
 from jinja2 import Environment, PackageLoader, select_autoescape
 from markupsafe import Markup, escape
-from typing_extensions import Unpack
 
 import redbot
 from redbot.formatter import Formatter, FormatterArgs, f_num, relative_time

@@ -18,6 +18,7 @@ import traceback
 import tracemalloc
 from configparser import ConfigParser, SectionProxy
 from functools import partial
+from importlib.resources import files as resource_files
 from pstats import Stats
 from types import FrameType
 from typing import Any, Callable, Dict, Optional
@@ -28,7 +29,6 @@ import httplint.field.parsers
 import thor
 from httplint.field.utils import RE_FLAGS
 from httplint.syntax import rfc9110
-from importlib_resources import files as resource_files
 from thor.loop import _loop
 from thor.tcp import TcpConnection
 

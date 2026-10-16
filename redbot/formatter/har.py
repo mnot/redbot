@@ -4,9 +4,7 @@ HAR Formatter for REDbot.
 
 import datetime
 import json
-from typing import Any, Dict, List, Optional
-
-from typing_extensions import TypedDict, Unpack
+from typing import Any, Dict, List, Optional, TypedDict, Unpack
 
 from redbot import __version__
 from redbot.formatter import Formatter, FormatterArgs
