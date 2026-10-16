@@ -1,4 +1,4 @@
-# DO NOT EDIT — managed by https://github.com/mnot/pyproject-tmpl, overwritten by `make update`.
+# DO NOT EDIT — managed by https://github.com/mnot/pyproject-tmpl, overwritten by `make update-pyproject`.
 #
 # SEAMLESSLY MANAGE PYTHON VIRTUAL ENVIRONMENT WITH A MAKEFILE
 #
