@@ -55,7 +55,7 @@ class TestHtmlNonce(unittest.TestCase):
     def test_nonce(self) -> None:
         html = self._render({"nonce": "abc123"})
         # every script tag except the JSON-LD data block carries the nonce
-        tags = re.findall(r"<script[^>]*>", html)
+        tags = re.findall(r"<script[^>]*>", html, flags=re.IGNORECASE)
         self.assertTrue(tags)
         for tag in tags:
             if "ld+json" not in tag:
