@@ -32,7 +32,7 @@ class TestNonce(unittest.TestCase):
 
     def test_uses_secrets(self) -> None:
         raw = bytes(range(16))
-        with patch("redbot.webui.secrets.token_bytes", return_value=raw) as token_bytes:
+        with patch("secrets.token_bytes", return_value=raw) as token_bytes:
             nonce = make_ui().nonce
         token_bytes.assert_called_once_with(16)
         self.assertEqual(base64.b64decode(nonce), raw)
