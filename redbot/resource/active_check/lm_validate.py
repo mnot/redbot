@@ -2,7 +2,7 @@
 Subrequest for Last-Modified validation checks.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from httplint.note import categories, levels
 
@@ -50,7 +50,9 @@ class LmValidate(SubRequest):
         lm_value = self.base.response.headers.parsed.get("last-modified", None)
         if lm_value:
             try:
-                l_m = datetime.utcfromtimestamp(self.base.response.headers.parsed["last-modified"])
+                l_m = datetime.fromtimestamp(
+                    self.base.response.headers.parsed["last-modified"], timezone.utc
+                )
             except ValueError:
                 return base_headers  # this shouldn't really happen
             date_str = (
