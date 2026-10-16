@@ -2,11 +2,11 @@
 A Web UI for RED, the Resource Expert Droid.
 """
 
+import secrets
 import sys
 import time
 from base64 import standard_b64encode
 from configparser import SectionProxy
-from random import getrandbits
 from typing import Callable, Optional
 from urllib.parse import parse_qs
 
@@ -106,7 +106,7 @@ class RedWebUi:
         self.response_started: bool = False
         self.response_done: bool = False
 
-        self.nonce: str = standard_b64encode(getrandbits(128).to_bytes(16, "big")).decode("ascii")
+        self.nonce: str = standard_b64encode(secrets.token_bytes(16)).decode("ascii")
         self.start = time.time()
 
         self.link_generator: LinkGenerator = WebUiLinkGenerator(self)
