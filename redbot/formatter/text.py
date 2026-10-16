@@ -5,6 +5,7 @@ HAR Formatter for REDbot.
 import operator
 import re
 import textwrap
+import unicodedata
 from html.parser import HTMLParser
 from typing import List, Optional
 
@@ -19,18 +20,38 @@ from redbot.resource import HttpResource
 
 NL = "\n"
 
-_CONTROL_RE = re.compile(r"[\x00-\x08\x0a-\x1f\x7f-\x9f]")
-_CONTROL_NO_NL_RE = re.compile(r"[\x00-\x08\x0b-\x1f\x7f-\x9f]")
+# Unicode categories escaped in addition to C0/C1: format characters (bidi controls, zero-width
+# and invisible characters, soft hyphen, tag characters), and line and paragraph separators.
+_ESCAPED_CATEGORIES = frozenset({"Cf", "Zl", "Zp"})
+
+
+def _needs_escape(char: str, keep_newlines: bool) -> bool:
+    code = ord(char)
+    if code == 0x09 or (code == 0x0A and keep_newlines):
+        return False
+    if code < 0x20 or 0x7F <= code <= 0x9F:
+        return True
+    return code > 0x9F and unicodedata.category(char) in _ESCAPED_CATEGORIES
 
 
 def escape_controls(text: str, keep_newlines: bool = False) -> str:
     """
-    Replace C0 and C1 control characters (and DEL) in server-controlled text with visible
-    escapes like \\x1b, so they can't drive the user's terminal. Tab is left alone, as are
-    newlines if keep_newlines is set.
+    Replace characters in server-controlled text that can drive or mislead the user's terminal
+    with visible escapes like \\x1b or \\u202e: C0 and C1 control characters (and DEL), plus
+    Unicode format characters (bidi controls, zero-width and invisible characters, soft hyphen,
+    tag characters) and line and paragraph separators. Tab is left alone, as are newlines if
+    keep_newlines is set.
     """
-    regex = _CONTROL_NO_NL_RE if keep_newlines else _CONTROL_RE
-    return regex.sub(lambda m: f"\\x{ord(m.group(0)):02x}", text)
+
+    def escape(char: str) -> str:
+        code = ord(char)
+        if code <= 0xFF:
+            return f"\\x{code:02x}"
+        if code <= 0xFFFF:
+            return f"\\u{code:04x}"
+        return f"\\U{code:08x}"
+
+    return "".join(escape(c) if _needs_escape(c, keep_newlines) else c for c in text)
 
 
 class BaseTextFormatter(Formatter):

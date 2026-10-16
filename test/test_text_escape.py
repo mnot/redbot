@@ -86,7 +86,55 @@ class TestEscapeControls(unittest.TestCase):
         self.assertEqual(escape_controls("a\rb", keep_newlines=True), "a\\x0db")
 
     def test_ordinary_text_untouched(self) -> None:
-        self.assertEqual(escape_controls("héllo ~   ☃"), "héllo ~   ☃")
+        text = "h\u00e9llo ~ \u00a0 \u2603"
+        self.assertEqual(escape_controls(text), text)
+
+
+class TestEscapeInvisibles(unittest.TestCase):
+    def test_invisible_and_bidi(self) -> None:
+        cases = {
+            "bidi marks": ("\u200e\u200f\u061c", "\\u200e\\u200f\\u061c"),
+            "bidi embeddings": (
+                "\u202a\u202b\u202c\u202d\u202e",
+                "\\u202a\\u202b\\u202c\\u202d\\u202e",
+            ),
+            "bidi isolates": ("\u2066\u2067\u2068\u2069", "\\u2066\\u2067\\u2068\\u2069"),
+            "zero-width": ("\u200b\u200c\u200d\u2060", "\\u200b\\u200c\\u200d\\u2060"),
+            "invisible operators": (
+                "\u2061\u2062\u2063\u2064",
+                "\\u2061\\u2062\\u2063\\u2064",
+            ),
+            "BOM, soft hyphen, Mongolian vowel separator": (
+                "\ufeff\u00ad\u180e",
+                "\\ufeff\\xad\\u180e",
+            ),
+            "line and paragraph separators": ("\u2028\u2029", "\\u2028\\u2029"),
+            "tag characters": ("\U000e0041\U000e007f", "\\U000e0041\\U000e007f"),
+        }
+        for name, (raw, escaped) in cases.items():
+            with self.subTest(name):
+                self.assertEqual(escape_controls(raw), escaped)
+
+    def test_spoofing_example(self) -> None:
+        self.assertEqual(escape_controls("evil\u202egnp.exe"), "evil\\u202egnp.exe")
+
+    def test_legitimate_unicode(self) -> None:
+        for text in (
+            "caf\u00e9 na\u00efve \u00fcber",
+            "\u65e5\u672c\u8a9e \u4e2d\u6587 \ud55c\uad6d\uc5b4",
+            "\u0645\u0631\u062d\u0628\u0627 \u05e9\u05dc\u05d5\u05dd",
+            "\U0001f600 \u2603 \u2764\ufe0f",
+            "a\u00a0b\u2003c\tD",
+        ):
+            with self.subTest(text):
+                self.assertEqual(escape_controls(text), text)
+
+    def test_emoji_zwj_escaped(self) -> None:
+        "The joiner in an emoji sequence is a Cf character, and is escaped with the rest."
+        family = "\U0001f468\u200d\U0001f469\u200d\U0001f467"
+        self.assertEqual(
+            escape_controls(family), "\U0001f468\\u200d\U0001f469\\u200d\U0001f467"
+        )
 
 
 class TestTextFormatterOutput(unittest.TestCase):
@@ -101,6 +149,18 @@ class TestTextFormatterOutput(unittest.TestCase):
         self.assertIn(f"X-Evil:{EVIL_ESCAPED}", out)
         self.assertIn(f"HTTP/1.1 200 {EVIL_ESCAPED}", out)
         self.assertIn("X-C1:c1\\x9b31m", out)
+
+    def test_bidi_end_to_end(self) -> None:
+        resource = make_resource()
+        resource.response.status_phrase = "OK\u202e"
+        resource.response.headers.text.append(("X-Bidi", "a\u202eb\u200bc\u2028d"))
+        resource.response.notes.add("header-x-evil", EVIL_NOTE, value="x\u2066y")
+        out = render(VerboseTextFormatter, resource)
+        self.assertIn("HTTP/1.1 200 OK\\u202e", out)
+        self.assertIn("X-Bidi:a\\u202eb\\u200bc\\u2028d", out)
+        self.assertIn("bad value x\\u2066y", out)
+        self.assertIn("The value was x\\u2066y", out)
+        self.assertIsNone(re.search("[\u202a-\u202e\u2066-\u2069\u200b-\u200f\u2028\u2029]", out))
 
     def test_header_newline_forgery(self) -> None:
         resource = make_resource()
