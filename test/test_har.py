@@ -3,6 +3,8 @@ import unittest
 from typing import List
 from unittest.mock import MagicMock
 
+from httplint.message import HttpResponseLinter
+
 from redbot.formatter.har import HarFormatter, format_media_type
 
 
@@ -29,22 +31,38 @@ class TestMimeType(unittest.TestCase):
             'multipart/form-data; boundary="a b\\"c"',
         )
 
-    def test_entry_mime_type_is_string(self) -> None:
+    def test_trailing_newline_is_quoted(self) -> None:
+        self.assertEqual(
+            format_media_type(("text/html", {"a": "x\n"})),
+            'text/html; a="x\n"',
+        )
+
+    def entry_mime_type(self, content_type: bytes) -> object:
+        "Build an entry from a response parsed by httplint, and return its mimeType."
+        response = HttpResponseLinter()
+        response.process_response_topline(b"1.1", b"200", b"OK")
+        response.process_headers([(b"Content-Type", content_type)])
+        response.start_time = 2.0
+        response.finish_time = 3.0
         resource = MagicMock()
         resource.request.start_time = 1.0
-        resource.response.start_time = 2.0
-        resource.response.finish_time = 3.0
-        resource.response.notes = []
         resource.request.headers.text = []
-        resource.response.headers.text = []
-        resource.response.decoded.length = 10
-        resource.response.content_length = 10
+        resource.response = response
         resource.response_header_length = 10
-        resource.response.headers.parsed = {"content-type": ("text/html", {"charset": "utf-8"})}
         formatter = make_formatter([])
         formatter.add_entry(resource)
-        mime_type = formatter.har["log"]["entries"][0]["response"]["content"]["mimeType"]
-        self.assertEqual(mime_type, "text/html; charset=utf-8")
+        return formatter.har["log"]["entries"][0]["response"]["content"]["mimeType"]
+
+    def test_entry_mime_type_is_string(self) -> None:
+        self.assertEqual(
+            self.entry_mime_type(b"text/html; charset=utf-8"), "text/html; charset=utf-8"
+        )
+
+    def test_entry_quoted_param(self) -> None:
+        self.assertEqual(
+            self.entry_mime_type(b'multipart/form-data; boundary="a b"'),
+            'multipart/form-data; boundary="a b"',
+        )
 
 
 class TestErrorOutput(unittest.TestCase):

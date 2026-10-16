@@ -14,7 +14,7 @@ from redbot.formatter import Formatter, FormatterArgs
 from redbot.resource import HttpResource
 from redbot.type import StrHeaderListType
 
-TOKEN_RE = re.compile(r"^[!#$%&'*+.^_`|~0-9A-Za-z-]+$")
+TOKEN_RE = re.compile(r"[!#$%&'*+.^_`|~0-9A-Za-z-]+")
 
 
 class HarLogDict(TypedDict):
@@ -186,7 +186,7 @@ def format_media_type(content_type: Optional[Tuple[str, Dict[str, Optional[str]]
     for name, value in params.items():
         if value is None:
             out.append(name)
-        elif TOKEN_RE.match(value):
+        elif TOKEN_RE.fullmatch(value):
             out.append(f"{name}={value}")
         else:
             escaped = value.replace("\\", "\\\\").replace('"', '\\"')
