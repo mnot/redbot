@@ -50,7 +50,7 @@ or
 
 > podman run --rm -p 8000:8000 ghcr.io/mnot/redbot
 
-The daemon runs as an unprivileged `redbot` user (UID 999). The image provides `/var/lib/redbot`, owned by that user, for `save_dir`; mount a named volume there to keep saved tests. A bind-mounted host directory must be writable by UID 999.
+The daemon runs as an unprivileged `redbot` user (UID 999). Saving tests is off by default. To enable it, set `save_dir = /var/lib/redbot` in a config file that you mount into the container and pass as the command, and mount a named volume at `/var/lib/redbot` to keep the saved tests. The image provides that directory, owned by the daemon's user; a bind-mounted host directory must be writable by UID 999.
 
 
 ## Web Bot Auth
