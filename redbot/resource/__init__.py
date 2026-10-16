@@ -15,10 +15,37 @@ from typing import Dict, List, Optional, Set, Tuple, Union
 from urllib.parse import urljoin
 
 import thor
+from thor.http.error import UrlError
+from thor.http.uri import parse_uri
 
 from redbot.resource import link_parse
 from redbot.resource.active_check import active_checks
 from redbot.resource.fetch import RedFetcher
+from redbot.type import StrHeaderListType
+
+# Withheld from linked resources on other origins.
+CREDENTIAL_HEADERS = {"authorization", "cookie", "proxy-authorization"}
+
+
+def origin_of(uri: Optional[str]) -> Optional[Tuple[str, str, int]]:
+    """
+    The (scheme, host, port) the client will connect to for this (normalised) request URI, parsed
+    the way the client does it; None if that can't be determined.
+    """
+    if not uri:
+        return None
+    try:
+        scheme, host, port, _authority, _target = parse_uri(uri.encode("ascii"))
+    except (UrlError, UnicodeError, ValueError):
+        return None
+    return (scheme, host.lower(), port)
+
+
+def split_credentials(headers: StrHeaderListType) -> Tuple[StrHeaderListType, StrHeaderListType]:
+    "Split request headers into (credentials, others)."
+    credentials = [(n, v) for (n, v) in headers if n.strip().lower() in CREDENTIAL_HEADERS]
+    others = [(n, v) for (n, v) in headers if n.strip().lower() not in CREDENTIAL_HEADERS]
+    return credentials, others
 
 
 class HttpResource(RedFetcher):
@@ -30,7 +57,7 @@ class HttpResource(RedFetcher):
     its notes; see that class for details.
 
     if descend is true, the response will be parsed for links and HttpResources started for each
-    link, enumerated in .linked.
+    link, enumerated in .linked. Linked resources don't run active checks.
 
     Emits "check_done" when everything has finished.
     """
@@ -38,14 +65,19 @@ class HttpResource(RedFetcher):
     check_name = "default"
     check_id = "default"
 
-    def __init__(self, config: SectionProxy, descend: bool = False) -> None:
+    def __init__(
+        self, config: SectionProxy, descend: bool = False, active_checks_enabled: bool = True
+    ) -> None:
         RedFetcher.__init__(self, config)
         self.descend: bool = descend
+        self.active_checks_enabled: bool = active_checks_enabled
         self.check_done: bool = False
-        self.partial_support: bool = False
-        self.inm_support: bool = False
-        self.ims_support: bool = False
-        self.gzip_support: bool = False
+        # None: not checked.
+        unchecked: Optional[bool] = None if not active_checks_enabled else False
+        self.partial_support: Optional[bool] = unchecked
+        self.inm_support: Optional[bool] = unchecked
+        self.ims_support: Optional[bool] = unchecked
+        self.gzip_support: Optional[bool] = unchecked
         self.gzip_savings: int = 0
         self._task_map: Set[RedFetcher] = set([])
         self.subreqs = {ac.check_id: ac(config, self) for ac in active_checks}
@@ -62,7 +94,7 @@ class HttpResource(RedFetcher):
         """
         Response is available; perform subordinate requests (e.g., conneg check).
         """
-        if self.response.complete:
+        if self.response.complete and self.active_checks_enabled:
             for active_check in list(self.subreqs.values()):
                 self.add_check(active_check)
                 active_check.check()
@@ -133,8 +165,16 @@ class HttpResource(RedFetcher):
                 self.response.base_uri = base
             return
         if self.descend and tag not in ["a"] and link not in self.links[tag]:
-            linked = HttpResource(self.config)
-            linked.set_request(urljoin(base, link), headers=self.request.headers.text)
+            linked = HttpResource(self.config, active_checks_enabled=False)
+            credentials, other_headers = split_credentials(self.request.headers.text)
+            linked.set_request(urljoin(base, link), headers=other_headers)
+            # Compare the normalised URIs, not the link text: normalisation can change the host.
+            # Credentials stay off unless both origins are known and equal.
+            linked_origin = origin_of(linked.request.uri)
+            if credentials and linked_origin and linked_origin == origin_of(self.request.uri):
+                linked.request.process_headers(
+                    [(n.encode("utf-8"), v.encode("utf-8")) for (n, v) in credentials]
+                )
             self.linked.append((linked, tag))
             self.add_check(linked)
             linked.check()
