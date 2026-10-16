@@ -63,7 +63,8 @@ class CaptchaHandler:
             body_args = parse_qs(raw_body, keep_blank_values=True)
             captcha_token = body_args.get("captcha_token", [None])[0]
 
-        cookie_str = b", ".join(get_header(self.webui.req_headers, b"cookie"))
+        # get_header() splits on commas, which is unsafe for Cookie; join raw lines (RFC 9113 8.2.3)
+        cookie_str = b"; ".join(v for n, v in self.webui.req_headers if n.lower() == b"cookie")
         try:
             cookiejar: cookies.SimpleCookie = cookies.SimpleCookie(
                 cookie_str.decode("utf-8", "replace")
