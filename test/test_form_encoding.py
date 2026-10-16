@@ -23,23 +23,46 @@ URI = "http://example.com/search?q=a+b&x=100%25&y=%41"
 HDR = "Authorization:Bearer ab+cd/ef==#frag&more=100%25;x,y?z"
 
 
+def extract_function(source: str, name: str) -> str:
+    """Return the text of a top-level `function name (...) { ... }`, by brace matching."""
+    start = re.search(rf"^function {name}\b", source, re.M)
+    if not start:
+        raise AssertionError(f"can't find function {name} in {SCRIPT}")
+    depth = 0
+    seen_brace = False
+    for pos in range(start.start(), len(source)):
+        if source[pos] == "{":
+            depth += 1
+            seen_brace = True
+        elif source[pos] == "}":
+            depth -= 1
+        if seen_brace and depth == 0:
+            return source[start.start() : pos + 1]
+    raise AssertionError(f"unbalanced braces in function {name} in {SCRIPT}")
+
+
 def serialize_form(fields: list[tuple[str, str]]) -> str:
     """Run the real serializeForm() from red_script.js over a fake form, under node."""
+    # Assumes serializeForm is a top-level function with no braces inside strings or
+    # regexes, and that `secrets` is a one-line top-level const.
     source = SCRIPT.read_text(encoding="utf-8")
     secrets = re.search(r"^const secrets = .*$", source, re.M)
-    function = re.search(r"^function serializeForm .*?^}$", source, re.M | re.S)
-    assert secrets and function, "can't find serializeForm in red_script.js"
+    if not secrets:
+        raise AssertionError(f"can't find `const secrets` in {SCRIPT}")
+    function = extract_function(source, "serializeForm")
     elements = [
         {"nodeName": "INPUT", "type": "hidden" if n != "uri" else "url", "name": n, "value": v}
         for n, v in fields
     ]
     program = (
-        f"{secrets.group(0)}\n{function.group(0)}\n"
+        f"{secrets.group(0)}\n{function}\n"
         f"console.log(serializeForm({{ elements: {json.dumps(elements)} }}))"
     )
     result = subprocess.run(
-        [NODE or "node", "-e", program], capture_output=True, text=True, check=True
+        [NODE or "node", "-e", program], capture_output=True, text=True, check=False
     )
+    if result.returncode != 0:
+        raise AssertionError(f"node exited {result.returncode}:\n{result.stderr}")
     return result.stdout.strip()
 
 
@@ -70,7 +93,7 @@ class TestFormRoundTrip(unittest.TestCase):
         self.assertEqual(parsed["descend"], ["1"])
         self.assertNotIn("captcha_token", parsed)
 
-    def test_query_has_no_raw_delimiters_in_values(self) -> None:
+    def test_no_raw_delimiters(self) -> None:
         query = serialize_form([("uri", "http://example.com/?a=b+c#d&e")])
         self.assertNotIn("#", query)
         self.assertEqual(len(query.split("&")), 1)
