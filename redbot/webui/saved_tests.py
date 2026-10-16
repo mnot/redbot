@@ -4,7 +4,6 @@ import pickle
 import re
 import tempfile
 import time
-import zlib
 from configparser import SectionProxy
 from typing import IO, Optional, Tuple, cast
 
@@ -25,10 +24,9 @@ def init_save_file(webui: RedWebUiProtocol) -> Optional[str]:
             fd, webui.save_path = tempfile.mkstemp(prefix="", dir=webui.config["save_dir"])
             os.close(fd)
             return os.path.split(webui.save_path)[1]
-        except OSError:
-            # Don't try to store it.
-            pass
-    return None  # should already be None, but make sure
+        except OSError as why:
+            webui.error_log(f"Can't create a file in save_dir, so tests won't be saved: {why}")
+    return None
 
 
 def save_test(webui: RedWebUiProtocol, top_resource: HttpResource) -> None:
@@ -39,8 +37,9 @@ def save_test(webui: RedWebUiProtocol, top_resource: HttpResource) -> None:
         try:
             with cast(IO[bytes], gzip.open(webui.save_path, "w")) as tmp_file:
                 pickle.dump(top_resource, tmp_file)
-        except (OSError, zlib.error, pickle.PickleError):
-            pass  # we don't cry if we can't store it.
+        except Exception as why:  # pylint: disable=broad-exception-caught
+            # Pickling can fail in many ways, and saving must never take down the daemon.
+            webui.error_log(f"Can't save test {os.path.basename(webui.save_path)}: {why!r}")
 
 
 def clean_saved_tests(config: SectionProxy) -> Tuple[int, int, int]:
