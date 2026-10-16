@@ -194,7 +194,9 @@ class RunTestHandler(RequestHandler):
         if not extra_headers:
             extra_headers = []
 
-        # Only requests that get this far leave a file in save_dir.
+        # Only requests that get this far leave a file in save_dir. The formatter
+        # keeps a reference to the params dict it was built with, so updating kw
+        # here is visible to it.
         test_id = init_save_file(ui)
         formatter.kw["allow_save"] = test_id
         formatter.kw["test_id"] = test_id
