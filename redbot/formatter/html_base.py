@@ -72,6 +72,10 @@ class BaseHtmlFormatter(Formatter):
         ui_uri = self.config.get("ui_uri", "https://redbot.org/")
         if not ui_uri.endswith("/"):
             ui_uri += "/"
+        # Only the Web UI supplies a CSP nonce; other callers (e.g., the CLI) get no attribute.
+        # An empty nonce is meaningless in a CSP, so it is treated as absent.
+        nonce = self.kw.get("nonce")
+        self.nonce_attr = Markup(' nonce="{}"').format(nonce) if nonce else Markup("")
         self.template_vars = {
             "formatter": self,
             "links": self.links,
@@ -84,7 +88,7 @@ class BaseHtmlFormatter(Formatter):
             ),
             "captcha_provider": captcha_provider,
             "captcha_script_url": Markup(captcha_data.get("script_url", b"").decode("ascii")),
-            "nonce": self.kw["nonce"],
+            "nonce_attr": self.nonce_attr,
         }
         self.start = time.time()
 
@@ -169,7 +173,7 @@ class BaseHtmlFormatter(Formatter):
     def status(self, status: str) -> None:
         "Update the status bar of the browser"
         self.output(f"""
-<script nonce="{self.kw['nonce']}">
+<script{self.nonce_attr}>
 <!-- {time.time() - self.start:3.3f}
 document.querySelector('#red_status').textContent = "{escape(status)}"
 -->
@@ -179,7 +183,7 @@ document.querySelector('#red_status').textContent = "{escape(status)}"
     def debug(self, message: str) -> None:
         "Debug to console."
         self.output(f"""
-<script nonce="{self.kw['nonce']}">
+<script{self.nonce_attr}>
 <!--
 console.log("{time.time() - self.start:3.3f} {e_js(message)}");
 -->

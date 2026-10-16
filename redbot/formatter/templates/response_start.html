@@ -42,7 +42,7 @@
   "operatingSystem": "Any"
 }
     </script>
-    <script type="text/javascript" nonce="{{ nonce }}">
+    <script type="text/javascript"{{ nonce_attr }}>
         var errorsReported = 0
         window.onerror = function (message, url, line, col, errorObj) {
             if (window.XMLHttpRequest) {
@@ -57,7 +57,7 @@
             }
         }
     </script>
-    <script id="config" type="application/json" nonce="{{ nonce }}">{{ config }}</script>
+    <script id="config" type="application/json"{{ nonce_attr }}>{{ config }}</script>
     {{ extra_js }}
 </head>
 
@@ -79,12 +79,12 @@
         </form>
     </div>
     <div id="red_status"></div>
-    <script src="{{ static }}/script.js?{{ redbot_version }}" type="text/javascript" nonce="{{ nonce }}" async></script>
+    <script src="{{ static }}/script.js?{{ redbot_version }}" type="text/javascript"{{ nonce_attr }} async></script>
     {% if captcha_provider != "" %}
     <div id="captcha_popup" data-size="invisible"></div>
-    <script type="text/javascript" nonce="{{ nonce }}">
+    <script type="text/javascript"{{ nonce_attr }}>
         function loadDone() { }
     </script>
-    <script src="{{ captcha_script_url }}" nonce="{{ nonce }}" async defer></script>
+    <script src="{{ captcha_script_url }}"{{ nonce_attr }} async defer></script>
     {% endif %}
-    <script src="{{ static }}/prettify.js" nonce="{{ nonce }}" type="text/javascript" defer></script>
+    <script src="{{ static }}/prettify.js"{{ nonce_attr }} type="text/javascript" defer></script>
