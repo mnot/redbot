@@ -11,6 +11,7 @@ import inspect
 import io
 import os
 import pkgutil
+import posixpath
 import re
 import signal
 import sys
@@ -107,8 +108,8 @@ class RedBotServer:
             self.ui_path += b"/"
 
         # Read static files
-        self.static_root = os.path.normpath(
-            os.path.join(self.ui_path.decode("ascii"), config["static_root"])
+        self.static_root = posixpath.normpath(
+            posixpath.join(self.ui_path.decode("ascii"), config["static_root"])
         ).encode("ascii")
 
         # Saved-tests cleanup runs out-of-process; see redbot.gc and
@@ -127,14 +128,10 @@ class RedBotServer:
         self.http_server.on("exchange", self.handler)
 
         # Install signal handlers
-        for signum in [
-            signal.SIGSEGV,
-            signal.SIGABRT,
-            signal.SIGFPE,
-            signal.SIGBUS,
-            signal.SIGILL,
-        ]:
-            signal.signal(signum, self.handle_crash_signal)
+        for signame in ["SIGSEGV", "SIGABRT", "SIGFPE", "SIGBUS", "SIGILL"]:
+            # not every platform defines every signal (e.g., SIGBUS on Windows)
+            if hasattr(signal, signame):
+                signal.signal(getattr(signal, signame), self.handle_crash_signal)
         signal.signal(signal.SIGINT, self.shutdown_signal)
         signal.signal(signal.SIGTERM, self.handle_sigterm)
 
@@ -406,7 +403,7 @@ in standalone server mode. Details follow.
             return self.not_found(p_uri.path)
 
     def serve_static(self, path: bytes) -> None:
-        path = os.path.normpath(path)
+        path = posixpath.normpath(path)
         if path.startswith(self.server.static_root + b"/"):
             # Strip the static root from the path to get relative file path
             path = path[len(self.server.static_root) + 1 :]

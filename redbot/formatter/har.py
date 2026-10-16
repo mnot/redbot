@@ -163,4 +163,5 @@ class HarFormatter(Formatter):
 
 
 def isoformat(timestamp: float) -> str:
-    return f"{datetime.datetime.utcfromtimestamp(timestamp).isoformat()}Z"
+    moment = datetime.datetime.fromtimestamp(timestamp, datetime.timezone.utc)
+    return f"{moment.replace(tzinfo=None).isoformat()}Z"
