@@ -8,9 +8,11 @@ from unittest import mock
 
 import thor
 import thor.http
+from thor.http.uri import parse_uri
 
 from redbot.formatter.html import TableHtmlFormatter
 from redbot.resource import HttpResource, origin_of
+from redbot.resource.fetch import RedFetcher
 
 CREDENTIALS = [
     ("Authorization", "Bearer secret"),
@@ -22,13 +24,26 @@ TOP = "https://example.com/page"
 
 
 def make_config(**values: str) -> ConfigParser:
+    # enable_local_access: the fetcher's HTTP client is shared by every HttpResource in the process,
+    # and the first one built without it installs a public-addresses-only check on that client.
     conf = ConfigParser()
-    conf.read_dict({"redbot": values})
+    conf.read_dict({"redbot": {"enable_local_access": "yes", **values}})
     return conf
 
 
 class TestOriginOf(unittest.TestCase):
     """origin_of gets the (already normalised) request URI, as set by set_request."""
+
+    def test_thor_parse_uri_shape(self):
+        # origin_of relies on this (internal) return shape; if thor changes it, fail loudly here
+        # rather than silently dropping credentials from every linked resource.
+        self.assertEqual(
+            parse_uri(b"https://user@Example.com:8443/a/b?q=1"),
+            ("https", "Example.com", 8443, b"Example.com:8443", b"/a/b?q=1"),
+        )
+        self.assertEqual(
+            origin_of("https://user@Example.com:8443/a/b?q=1"), ("https", "example.com", 8443)
+        )
 
     @staticmethod
     def normalised(iri: str) -> Optional[Tuple[str, str, int]]:
@@ -240,6 +255,9 @@ class TestDescendEndToEnd(unittest.TestCase):
     "Real requests against local servers."
 
     def setUp(self) -> None:
+        # Don't depend on (or leak) whatever address check earlier tests left on the shared client.
+        self.saved_check_ip = RedFetcher.client.check_ip
+        RedFetcher.client.check_ip = None
         self.servers = LocalServers()
         self.config = make_config(enable_local_access="yes", max_runtime="20")["redbot"]
         same, _other = self.servers.ports
@@ -260,6 +278,7 @@ class TestDescendEndToEnd(unittest.TestCase):
 
     def tearDown(self) -> None:
         self.servers.close()
+        RedFetcher.client.check_ip = self.saved_check_ip
 
     def test_credentials_only_reach_the_tested_origin(self):
         same, other = self.servers.ports
