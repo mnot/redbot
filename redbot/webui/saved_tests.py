@@ -4,6 +4,7 @@ import pickle
 import re
 import tempfile
 import time
+import traceback
 from configparser import SectionProxy
 from typing import IO, Optional, Tuple, cast
 
@@ -37,9 +38,15 @@ def save_test(webui: RedWebUiProtocol, top_resource: HttpResource) -> None:
         try:
             with cast(IO[bytes], gzip.open(webui.save_path, "w")) as tmp_file:
                 pickle.dump(top_resource, tmp_file)
-        except Exception as why:  # pylint: disable=broad-exception-caught
+        except Exception:  # pylint: disable=broad-exception-caught
             # Pickling can fail in many ways, and saving must never take down the daemon.
-            webui.error_log(f"Can't save test {os.path.basename(webui.save_path)}: {why!r}")
+            webui.error_log(
+                f"Can't save test {os.path.basename(webui.save_path)}:\n{traceback.format_exc()}"
+            )
+            try:
+                os.remove(webui.save_path)  # don't leave a file that can't be loaded
+            except OSError:
+                pass
 
 
 def clean_saved_tests(config: SectionProxy) -> Tuple[int, int, int]:

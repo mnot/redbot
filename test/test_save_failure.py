@@ -33,8 +33,20 @@ def make_ui(save_dir):
     return SimpleNamespace(config=config(save_dir=save_dir), save_path="", error_log=MagicMock())
 
 
-# Directory permissions aren't enforced for root (or on Windows).
-CAN_CHMOD = hasattr(os, "geteuid") and os.geteuid() != 0
+def chmod_enforced():
+    "Whether a 0o555 directory refuses new files here (not so for root, or on some mounts)."
+    with tempfile.TemporaryDirectory() as tmp:
+        os.chmod(tmp, 0o555)
+        try:
+            os.close(tempfile.mkstemp(dir=tmp)[0])
+        except OSError:
+            return True
+        finally:
+            os.chmod(tmp, 0o755)
+        return False
+
+
+CHMOD_ENFORCED = chmod_enforced()
 
 
 class TestInitSaveFile(unittest.TestCase):
@@ -57,7 +69,7 @@ class TestInitSaveFile(unittest.TestCase):
         self.assertEqual(ui.error_log.call_count, 1)
         self.assertIn("denied", ui.error_log.call_args[0][0])
 
-    @unittest.skipUnless(CAN_CHMOD, "directory permissions are not enforced")
+    @unittest.skipUnless(CHMOD_ENFORCED, "directory permissions are not enforced")
     def test_read_only_directory(self):
         os.chmod(self.save_dir, 0o555)
         self.addCleanup(os.chmod, self.save_dir, 0o755)
@@ -88,11 +100,22 @@ class TestSaveTest(unittest.TestCase):
             save_test(self.ui, {"a": 1})  # type: ignore[arg-type]
         self.assertEqual(self.ui.error_log.call_count, 1)
         self.assertIn("No space left", self.ui.error_log.call_args[0][0])
+        self.assertIn("Traceback", self.ui.error_log.call_args[0][0])
+        self.assertFalse(os.path.exists(self.ui.save_path))
 
     def test_unpicklable_resource_is_logged(self):
         save_test(self.ui, {"a": lambda: 1})  # type: ignore[arg-type]
         self.assertEqual(self.ui.error_log.call_count, 1)
         self.assertIn(str(self.test_id), self.ui.error_log.call_args[0][0])
+        self.assertFalse(os.path.exists(self.ui.save_path))
+
+    def test_failure_to_remove_the_file_is_ignored(self):
+        with (
+            patch("gzip.open", side_effect=OSError("boom")),
+            patch("os.remove", side_effect=PermissionError),
+        ):
+            save_test(self.ui, {"a": 1})  # type: ignore[arg-type]
+        self.assertEqual(self.ui.error_log.call_count, 1)
 
     def test_no_save_path_is_silent(self):
         ui = make_ui(self._tmp.name)
@@ -151,16 +174,16 @@ def free_port():
         return sock.getsockname()[1]
 
 
-@unittest.skipUnless(CAN_CHMOD, "directory permissions are not enforced")
 class TestUnwritableSaveDirDaemon(unittest.TestCase):
     """Regression test for #467: an unwritable save_dir must not break or stop the daemon."""
 
     def setUp(self):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
-        save_dir = os.path.join(tmp.name, "ro")
-        os.mkdir(save_dir, 0o555)
-        self.addCleanup(os.chmod, save_dir, 0o755)
+        # A regular file exists but can't hold new files, for any uid.
+        save_dir = os.path.join(tmp.name, "not_a_dir")
+        with open(save_dir, "w", encoding="utf-8"):
+            pass
 
         target = http.server.HTTPServer(("127.0.0.1", 0), OkHandler)
         threading.Thread(target=target.serve_forever, daemon=True).start()
@@ -180,18 +203,28 @@ class TestUnwritableSaveDirDaemon(unittest.TestCase):
             stderr=subprocess.PIPE,
             text=True,
         )
-        assert self.daemon.stderr is not None
-        self.addCleanup(self.daemon.stderr.close)
-        self.addCleanup(self.daemon.wait)
-        self.addCleanup(self.daemon.terminate)
+        self.stderr = ""
+        self.addCleanup(self.stop_daemon)
         deadline = time.time() + 20
         while time.time() < deadline:
+            self.assertIsNone(self.daemon.poll(), "daemon exited during startup")
             try:
                 socket.create_connection(("127.0.0.1", self.port), timeout=1).close()
                 return
             except OSError:
                 time.sleep(0.1)
         self.fail("daemon did not start")
+
+    def stop_daemon(self):
+        "Stop the daemon and collect its stderr; safe to call twice."
+        if self.daemon.poll() is None:
+            self.daemon.terminate()
+        try:
+            _, err = self.daemon.communicate(timeout=10)
+        except subprocess.TimeoutExpired:
+            self.daemon.kill()
+            _, err = self.daemon.communicate()
+        self.stderr = self.stderr or err or ""
 
     def test_check_completes_without_save(self):
         uri = f"http://127.0.0.1:{self.target_port}/"
@@ -206,9 +239,8 @@ class TestUnwritableSaveDirDaemon(unittest.TestCase):
         self.assertIsNone(self.daemon.poll(), "daemon exited")
         with urllib.request.urlopen(f"http://127.0.0.1:{self.port}/", timeout=10) as response:
             self.assertEqual(response.status, 200)
-        self.daemon.terminate()
-        assert self.daemon.stderr is not None
-        self.assertIn("save_dir", self.daemon.stderr.read())
+        self.stop_daemon()
+        self.assertIn("save_dir", self.stderr)
 
 
 if __name__ == "__main__":
