@@ -13,11 +13,20 @@
     <meta name="application-name" content="REDbot" />
     <meta name="ROBOTS" content="INDEX, NOFOLLOW" />
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="REDbot">
+    <meta property="og:image" content="https://redbot.org/static/logo/redbot-sq.png">
+    {% if og_title %}
+    <meta property="og:title" content="{{ og_title }}">
+    <meta property="og:description" content="{{ og_description }}">
+    <meta property="og:url" content="{{ og_url }}">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="{{ og_title }}">
+    <meta name="twitter:description" content="{{ og_description }}">
+    {% else %}
     <meta property="og:title" content="REDbot">
     <meta property="og:description" content="REDbot is lint for your HTTP resources.">
     <meta property="og:url" content="https://redbot.org/">
-    <meta property="og:site_name" content="REDbot">
-    <meta property="og:image" content="https://redbot.org/static/logo/redbot-sq.png">
+    {% endif %}
     <link rel="stylesheet" type="text/css" href="{{ static }}/style.css?{{ redbot_version }}">
     <link rel="apple-touch-icon-precomposed" sizes="144x144" href="{{ static }}/logo/apple-touch-icon-144x144.png" />
     <link rel="apple-touch-icon-precomposed" sizes="152x152" href="{{ static }}/logo/apple-touch-icon-152x152.png" />
