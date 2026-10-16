@@ -32,6 +32,8 @@ Both of these methods will install the following programs into your [pipx binary
 * `redbot` - the command-line interface
 * `redbot_daemon` - Web interface as a standalone daemon
 
+By default, `redbot` prints a text report for the URL. Use `-o` to choose another format: `text_verbose` adds an explanation of each note, and `har` produces an HTTP Archive (HAR) file. With `-a` (`--assets`), `text` and `text_verbose` also list the resources linked from an HTML response. The web interface accepts the same names in its `format` query argument (`format=text`, `format=text_verbose`, `format=har`).
+
 
 ### Running REDbot as a systemd Service
 
@@ -49,6 +51,8 @@ See [extra/README.md](extra/README.md) for the sample units and step-by-step set
 or
 
 > podman run --rm -p 8000:8000 ghcr.io/mnot/redbot
+
+The daemon runs as an unprivileged `redbot` user (UID 999). Saving tests is off by default. To enable it, set `save_dir = /var/lib/redbot` in a config file that you mount into the container and pass as the command, and mount a named volume at `/var/lib/redbot` to keep the saved tests. The image provides that directory, owned by the daemon's user; a bind-mounted host directory must be writable by UID 999.
 
 
 ## Web Bot Auth

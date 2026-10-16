@@ -99,7 +99,7 @@ function serializeForm (form) {
     if (element.nodeName === 'INPUT' && ['hidden', 'url'].includes(element.type)
     ) {
       if (!secrets.includes(element.name)) {
-        q.unshift(`${element.name}=${encodeURI(element.value).replace(/&/g, '%26')}`)
+        q.unshift(`${encodeURIComponent(element.name)}=${encodeURIComponent(element.value)}`)
       }
     }
   }

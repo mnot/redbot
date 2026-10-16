@@ -1,7 +1,5 @@
 from configparser import SectionProxy
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple
-
-from typing_extensions import Protocol
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Protocol, Tuple
 
 if TYPE_CHECKING:
     import thor.loop

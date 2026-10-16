@@ -108,6 +108,8 @@ class WebBotAuthSigner:
         "The RFC 9421 @authority derived component for a target URI."
         parts = urlsplit(uri)
         host = (parts.hostname or "").lower()
+        if ":" in host:
+            host = f"[{host}]"  # urlsplit strips the brackets from IPv6 literals
         default = {"http": 80, "https": 443}.get(parts.scheme.lower())
         try:
             port = parts.port

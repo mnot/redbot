@@ -37,7 +37,10 @@ def main() -> None:
         dest="output_format",
         choices=available_formatters(),
         default="text",
-        help="output format",
+        help=(
+            "output format; text_verbose adds an explanation of each note. "
+            "With --assets, text and text_verbose list the linked assets as well"
+        ),
     )
     parser.add_argument(
         "--web-bot-auth-key",

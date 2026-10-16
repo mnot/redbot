@@ -6,21 +6,27 @@ import inspect
 import sys
 import time
 from configparser import SectionProxy
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Type
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Type, TypedDict
 
 import thor
 from babel.numbers import format_decimal
 from httplint.util import relative_time as _relative_time
 from markdown import Markdown
 from thor.events import EventEmitter
-from typing_extensions import TypedDict
 
 from redbot.i18n import get_locale, set_locale
 
 if TYPE_CHECKING:
     from redbot.resource import HttpResource
 
-_formatters = ["html", "text", "har"]
+# format name -> module (under redbot.formatter) that implements it
+_format_modules = {
+    "html": "html",
+    "text": "text",
+    "text_verbose": "text",
+    "har": "har",
+}
+_formatters = list(_format_modules)
 
 
 def find_formatter(name: str, default: str = "html", multiple: bool = False) -> Type["Formatter"]:
@@ -34,7 +40,7 @@ def find_formatter(name: str, default: str = "html", multiple: bool = False) -> 
     if name not in _formatters:
         name = default
     try:
-        module_name = f"redbot.formatter.{name}"
+        module_name = f"redbot.formatter.{_format_modules[name]}"
         __import__(module_name)
         module = sys.modules[module_name]
     except (ImportError, KeyError, TypeError):

@@ -5,13 +5,12 @@ HTML Formatter for REDbot.
 import operator
 import re
 import time
-from typing import Any, List, Match, Tuple, Union
+from typing import Any, List, Match, Tuple, Union, Unpack
 from urllib.parse import urljoin
 
 import thor.http.error as httperr
 from httplint import get_field_description
 from httplint.note import Note, categories, levels
-from typing_extensions import Unpack
 
 from redbot.formatter import FormatterArgs
 from redbot.formatter.html_base import (

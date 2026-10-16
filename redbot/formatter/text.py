@@ -5,19 +5,52 @@ HAR Formatter for REDbot.
 import operator
 import re
 import textwrap
+import unicodedata
 from html.parser import HTMLParser
-from typing import List, Optional
+from typing import List, Optional, Unpack
 
 import thor.http.error as httperr
 from httplint import HttpResponseLinter
 from httplint.note import Note, categories, levels
-from typing_extensions import Unpack
 
 from redbot.formatter import Formatter, FormatterArgs
 from redbot.i18n import _
 from redbot.resource import HttpResource
 
 NL = "\n"
+
+# Unicode categories escaped in addition to C0/C1: format characters (bidi controls, zero-width
+# and invisible characters, soft hyphen, tag characters), and line and paragraph separators.
+_ESCAPED_CATEGORIES = frozenset({"Cf", "Zl", "Zp"})
+
+
+def _needs_escape(char: str, keep_newlines: bool) -> bool:
+    code = ord(char)
+    if code == 0x09 or (code == 0x0A and keep_newlines):
+        return False
+    if code < 0x20 or 0x7F <= code <= 0x9F:
+        return True
+    return code > 0x9F and unicodedata.category(char) in _ESCAPED_CATEGORIES
+
+
+def escape_controls(text: str, keep_newlines: bool = False) -> str:
+    """
+    Replace characters in server-controlled text that can drive or mislead the user's terminal
+    with visible escapes like \\x1b or \\u202e: C0 and C1 control characters (and DEL), plus
+    Unicode format characters (bidi controls, zero-width and invisible characters, soft hyphen,
+    tag characters) and line and paragraph separators. Tab is left alone, as are newlines if
+    keep_newlines is set.
+    """
+
+    def escape(char: str) -> str:
+        code = ord(char)
+        if code <= 0xFF:
+            return f"\\x{code:02x}"
+        if code <= 0xFFFF:
+            return f"\\u{code:04x}"
+        return f"\\U{code:08x}"
+
+    return "".join(escape(c) if _needs_escape(c, keep_newlines) else c for c in text)
 
 
 class BaseTextFormatter(Formatter):
@@ -81,16 +114,20 @@ class BaseTextFormatter(Formatter):
     @staticmethod
     def _format_fetch_error(error: httperr.HttpError) -> str:
         if error.detail:
-            return f"{error.desc} ({error.detail})"
-        return error.desc
+            return f"{escape_controls(error.desc)} ({escape_controls(error.detail)})"
+        return escape_controls(error.desc)
 
     def error_output(self, message: str) -> None:
-        self.output(self.error_template % message)
+        self.output(self.error_template % escape_controls(message))
 
     @staticmethod
     def format_headers(response: HttpResponseLinter) -> str:
-        out = [f"HTTP/{response.version} {response.status_code_str} {response.status_phrase}"]
-        return NL.join(out + [f"{h[0]}:{h[1]}" for h in response.headers.text])
+        out = [
+            escape_controls(
+                f"HTTP/{response.version} {response.status_code_str} {response.status_phrase}"
+            )
+        ]
+        return NL.join(out + [escape_controls(f"{h[0]}:{h[1]}") for h in response.headers.text])
 
     def format_recommendations(self, resource: HttpResource) -> str:
         return "".join(
@@ -121,9 +158,11 @@ class BaseTextFormatter(Formatter):
 
     @staticmethod
     def format_text(note: Note) -> List[str]:
-        return textwrap.wrap(strip_tags(re.sub(r"(?m)\s\s+", " ", note.detail)))
+        text = strip_tags(re.sub(r"(?m)\s\s+", " ", note.detail))
+        return textwrap.wrap(escape_controls(text, keep_newlines=True))
 
     def colorize(self, level: Optional[levels], instr: str) -> str:
+        instr = escape_controls(instr)
         if self.kw.get("tty_out", False):
             # info
             color_start = "\033[0;32m"
@@ -131,13 +170,14 @@ class BaseTextFormatter(Formatter):
             if level == levels.GOOD:
                 color_start = "\033[1;32m"
                 color_end = "\033[0;39m"
-            if level == levels.BAD:
+            elif level == levels.BAD:
                 color_start = "\033[1;31m"
                 color_end = "\033[0;39m"
-            if level == levels.WARN:
+            elif level == levels.WARN:
                 color_start = "\033[1;33m"
                 color_end = "\033[0;39m"
-            else:
+            elif level is None:
+                # URIs
                 color_start = "\033[1;34m"
                 color_end = "\033[0;39m"
             return color_start + instr + color_end
@@ -149,7 +189,7 @@ class TextFormatter(BaseTextFormatter):
     Format a REDbot object as text.
     """
 
-    name = "txt"
+    name = "text"
     media_type = "text/plain"
 
     def finish_output(self) -> None:
@@ -157,7 +197,7 @@ class TextFormatter(BaseTextFormatter):
 
 
 class VerboseTextFormatter(TextFormatter):
-    name = "txt_verbose"
+    name = "text_verbose"
 
     def __init__(self, *args: Unpack[FormatterArgs]) -> None:
         TextFormatter.__init__(self, *args)
@@ -195,7 +235,7 @@ class TextListFormatter(BaseTextFormatter):
 
 
 class VerboseTextListFormatter(TextListFormatter):
-    name = "txt_verbose"
+    name = "text_verbose"
 
     def __init__(self, *args: Unpack[FormatterArgs]) -> None:
         TextListFormatter.__init__(self, *args)

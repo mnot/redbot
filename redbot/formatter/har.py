@@ -5,9 +5,7 @@ HAR Formatter for REDbot.
 import datetime
 import json
 import re
-from typing import Any, Dict, List, Optional, Tuple
-
-from typing_extensions import NotRequired, TypedDict, Unpack
+from typing import Any, Dict, List, NotRequired, Optional, Tuple, TypedDict, Unpack
 
 from redbot import __version__
 from redbot.formatter import Formatter, FormatterArgs
@@ -174,7 +172,8 @@ class HarFormatter(Formatter):
 
 
 def isoformat(timestamp: float) -> str:
-    return f"{datetime.datetime.utcfromtimestamp(timestamp).isoformat()}Z"
+    moment = datetime.datetime.fromtimestamp(timestamp, datetime.timezone.utc)
+    return f"{moment.replace(tzinfo=None).isoformat()}Z"
 
 
 def format_media_type(content_type: Optional[Tuple[str, Dict[str, Optional[str]]]]) -> str:
