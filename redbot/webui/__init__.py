@@ -31,9 +31,8 @@ from redbot.webui.handlers import (
     SaveHandler,
     ShowHandler,
 )
+from redbot.webui.headers import security_headers
 from redbot.webui.links import WebUiLinkGenerator
-
-CSP = "script-src"
 
 
 class RedWebUi:
@@ -146,13 +145,10 @@ class RedWebUi:
             [
                 (b"Content-Type", formatter.content_type()),
                 (b"Cache-Control", b"max-age=60, must-revalidate"),
-                (
-                    b"Content-Security-Policy",
-                    f"{CSP} 'strict-dynamic' 'nonce-{self.nonce}'".encode("ascii"),
-                ),
                 (b"Content-Language", self.locale.encode("ascii")),
                 (b"Vary", b"Accept-Language"),
-            ],
+            ]
+            + security_headers(self.nonce),
         )
         self.response_started = True
         with set_locale(self.locale):

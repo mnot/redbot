@@ -18,6 +18,7 @@ from markupsafe import escape
 from redbot.formatter import find_formatter
 from redbot.type import RedWebUiProtocol
 from redbot.webui.handlers.base import RequestHandler
+from redbot.webui.headers import security_headers
 
 
 class SaveHandler(RequestHandler):
@@ -203,7 +204,8 @@ class LoadSavedTestHandler(RequestHandler):
             [
                 (b"Content-Type", formatter.content_type()),
                 (b"Cache-Control", b"max-age=3600, must-revalidate"),
-            ],
+            ]
+            + security_headers(ui.nonce),
         )
 
         @thor.events.on(formatter)
