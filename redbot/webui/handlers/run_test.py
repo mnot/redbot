@@ -84,7 +84,6 @@ class RunTestHandler(RequestHandler):
         Performs validation, creates the resource and formatter,
         then executes the test with proper rate limiting and captcha checks.
         """
-        test_id = init_save_file(ui)
         test_uri = ui.query_string.get("uri", [""])[0]
         try:
             iri_to_uri(test_uri).encode("ascii")
@@ -114,9 +113,11 @@ class RunTestHandler(RequestHandler):
             top_resource,
             ui.output,
             {
-                "allow_save": test_id,
+                # allow_save and test_id are filled in by _continue_test, once the
+                # request has passed validation, rate limiting and captcha.
+                "allow_save": None,
                 "is_saved": False,
-                "test_id": test_id,
+                "test_id": None,
                 "descend": descend,
                 "nonce": ui.nonce,
                 "locale": ui.locale,
@@ -193,6 +194,11 @@ class RunTestHandler(RequestHandler):
         if not extra_headers:
             extra_headers = []
 
+        # Only requests that get this far leave a file in save_dir.
+        test_id = init_save_file(ui)
+        formatter.kw["allow_save"] = test_id
+        formatter.kw["test_id"] = test_id
+
         @thor.events.on(formatter)
         def formatter_done() -> None:
             if ui.timeout:
@@ -201,7 +207,8 @@ class RunTestHandler(RequestHandler):
             if not ui.response_done:
                 ui.exchange.response_done([])
                 ui.response_done = True
-            save_test(ui, top_resource)
+            if test_id:
+                save_test(ui, top_resource)
 
             # log excessive traffic
             log_traffic = ui.config.getint("log_traffic", None)
