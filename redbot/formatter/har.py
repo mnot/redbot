@@ -4,12 +4,15 @@ HAR Formatter for REDbot.
 
 import datetime
 import json
-from typing import Any, Dict, List, Optional, TypedDict, Unpack
+import re
+from typing import Any, Dict, List, NotRequired, Optional, Tuple, TypedDict, Unpack
 
 from redbot import __version__
 from redbot.formatter import Formatter, FormatterArgs
 from redbot.resource import HttpResource
 from redbot.type import StrHeaderListType
+
+TOKEN_RE = re.compile(r"[!#$%&'*+.^_`|~0-9A-Za-z-]+")
 
 
 class HarLogDict(TypedDict):
@@ -18,6 +21,7 @@ class HarLogDict(TypedDict):
     browser: Dict[str, str]
     pages: List[Any]
     entries: List[Dict[str, Any]]
+    _red_error: NotRequired[str]
 
 
 class HarDict(TypedDict):
@@ -35,7 +39,12 @@ class HarFormatter(Formatter):
 
     def __init__(self, *args: Unpack[FormatterArgs]) -> None:
         Formatter.__init__(self, *args)
-        self.har: HarDict = {
+        self.har = self.empty_har()
+        self.last_id = 0
+
+    @staticmethod
+    def empty_har() -> HarDict:
+        return {
             "log": {
                 "version": "1.1",
                 "creator": {"name": "REDbot", "version": __version__},
@@ -44,7 +53,6 @@ class HarFormatter(Formatter):
                 "entries": [],
             }
         }
-        self.last_id = 0
 
     def start_output(self) -> None:
         pass
@@ -67,7 +75,10 @@ class HarFormatter(Formatter):
         self.output(json.dumps(self.har, indent=4))
 
     def error_output(self, message: str) -> None:
-        self.output(message)
+        "Output a valid (empty) HAR document, with the error in a custom field."
+        har = self.empty_har()
+        har["log"]["_red_error"] = message
+        self.output(json.dumps(har, indent=4))
 
     def add_entry(self, resource: HttpResource, page_ref: Optional[int] = None) -> None:
         assert resource.request.start_time, "request.start_time not set in add_entry"
@@ -101,7 +112,7 @@ class HarFormatter(Formatter):
             "content": {
                 "size": resource.response.decoded.length,
                 "compression": resource.response.decoded.length - resource.response.content_length,
-                "mimeType": resource.response.headers.parsed.get("content-type", ""),
+                "mimeType": format_media_type(resource.response.headers.parsed.get("content-type")),
             },
             "redirectURL": resource.response.headers.parsed.get("location", ""),
             "headersSize": resource.response_header_length,
@@ -163,3 +174,20 @@ class HarFormatter(Formatter):
 def isoformat(timestamp: float) -> str:
     moment = datetime.datetime.fromtimestamp(timestamp, datetime.timezone.utc)
     return f"{moment.replace(tzinfo=None).isoformat()}Z"
+
+
+def format_media_type(content_type: Optional[Tuple[str, Dict[str, Optional[str]]]]) -> str:
+    "Serialise a parsed (media type, parameters) pair as a string, as HAR requires."
+    if not content_type:
+        return ""
+    media_type, params = content_type
+    out = [media_type]
+    for name, value in params.items():
+        if value is None:
+            out.append(name)
+        elif TOKEN_RE.fullmatch(value):
+            out.append(f"{name}={value}")
+        else:
+            escaped = value.replace("\\", "\\\\").replace('"', '\\"')
+            out.append(f'{name}="{escaped}"')
+    return "; ".join(out)
