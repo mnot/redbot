@@ -56,4 +56,6 @@ jobs:
       - name: Sign the published image
         env:
           COSIGN_EXPERIMENTAL: "true"
-        run: echo "${{ steps.meta.outputs.tags }}" | xargs -I {} cosign sign --tlog-upload=false {}@${{ steps.build-and-push.outputs.digest }}
+          TAGS: ${{ steps.meta.outputs.tags }}
+          DIGEST: ${{ steps.build-and-push.outputs.digest }}
+        run: printf '%s\n' "$TAGS" | xargs -I {} cosign sign --tlog-upload=false {}@"$DIGEST"
