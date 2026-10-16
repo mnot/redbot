@@ -257,7 +257,7 @@ class RedBotServer:
             for name in files:
                 try:
                     path = os.path.join(root, name)
-                    uri = os.path.relpath(path, dir_name).encode("utf-8")
+                    uri = os.path.relpath(path, dir_name).replace(os.sep, "/").encode("utf-8")
                     with open(path, "rb") as fh:
                         out[b"/%s%s" % (uri_base, uri)] = fh.read()
                     if uri.endswith(b"/index.html"):
