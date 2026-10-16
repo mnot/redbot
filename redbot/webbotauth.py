@@ -87,6 +87,10 @@ class WebBotAuthSigner:
             raise WebBotAuthError("Web Bot Auth key must be an Ed25519 private key.")
         self._key = key
         self.directory = directory.strip().strip('"')
+        # The scheme verifiers use to fetch the directory; the daemon is usually
+        # behind a TLS-terminating proxy, so it can't see this on the connection.
+        scheme = urlsplit(self.directory).scheme.lower()
+        self.directory_scheme = scheme if scheme in ("http", "https") else "https"
         self.validity = validity
         self.key_created = key_created
 

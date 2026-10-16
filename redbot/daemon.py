@@ -463,16 +463,15 @@ in standalone server mode. Details follow.
 
     def request_authority(self) -> str:
         "The authority (Host) of the incoming request, for signing."
+        signer = self.server.signer
         for name, value in self.req_hdrs:
-            if name.lower() == b"host":
-                host = value.decode("ascii", "replace").strip().lower()
-                # Drop a default port so the signed @authority matches what a
-                # verifier normalizes to (RFC 9421 derives @authority this way).
-                for suffix in (":443", ":80"):
-                    if host.endswith(suffix):
-                        host = host[: -len(suffix)]
-                        break
-                return host
+            if signer is not None and name.lower() == b"host":
+                host = value.decode("ascii", "replace").strip()
+                # RFC 9421 section 2.2.3: omit the default port for the scheme.
+                try:
+                    return signer.authority(f"{signer.directory_scheme}://{host}")
+                except ValueError:  # e.g. an unterminated IPv6 literal
+                    return ""
         return ""
 
     def not_found(self, path: bytes) -> None:
