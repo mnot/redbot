@@ -76,6 +76,10 @@ class TestWebBotAuthSigner(unittest.TestCase):
         self.assertEqual(WebBotAuthSigner.authority("http://[2001:db8::1]:80/"), "[2001:db8::1]")
         self.assertEqual(WebBotAuthSigner.authority("https://[2001:DB8::1]:443/"), "[2001:db8::1]")
 
+    def test_authority_excludes_userinfo(self):
+        self.assertEqual(WebBotAuthSigner.authority("http://user:pw@[::1]:8080/"), "[::1]:8080")
+        self.assertEqual(WebBotAuthSigner.authority("http://user:pw@example.com/"), "example.com")
+
     def test_sign_request_headers_present(self):
         headers = _headers_dict(self.signer.sign_request("https://example.com/path"))
         self.assertEqual(headers[b"signature-agent"], f'"{AGENT}"'.encode("ascii"))
@@ -92,6 +96,17 @@ class TestWebBotAuthSigner(unittest.TestCase):
         params = sig_input[len("sig1=") :]
         base_lines = [
             '"@authority": example.com',
+            f'"signature-agent": "{AGENT}"',
+            f'"@signature-params": {params}',
+        ]
+        _verify(self.public_key, base_lines, headers[b"signature"].decode("ascii"))
+
+    def test_sign_request_ipv6_signature_verifies(self):
+        headers = _headers_dict(self.signer.sign_request("http://[2001:db8::1]:8080/path"))
+        sig_input = headers[b"signature-input"].decode("ascii")
+        params = sig_input[len("sig1=") :]
+        base_lines = [
+            '"@authority": [2001:db8::1]:8080',
             f'"signature-agent": "{AGENT}"',
             f'"@signature-params": {params}',
         ]
