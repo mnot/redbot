@@ -3,6 +3,7 @@
 
 from playwright.sync_api import sync_playwright, TimeoutError, Response, APIResponse, expect
 import unittest
+from urllib.parse import parse_qs, urlsplit
 import sys
 import os
 from test.server import Colors, colorize
@@ -91,6 +92,22 @@ class BasicWebUiTest(unittest.TestCase):
         self.check_complete()
         self.assertIn("Cache-Control", self.page.content())
         self.assertIn("no-cache", self.page.content())
+
+    def test_form_special_characters(self):
+        # + # & % in the URI and a request header value must reach the server intact
+        uri = self.test_uri + "?q=a+b&r=100%25#frag"
+        hdr = "Authorization:Bearer ab+cd==#x&y=100%25"
+        self.page.click("#add_req_hdr")
+        self.page.wait_for_selector("input[name='req_hdr']", state="attached")
+        self.page.evaluate(
+            "hdr => { document.querySelector(\"input[name='req_hdr']\").value = hdr }", hdr
+        )
+        self.page.fill("#uri", uri)
+        with self.page.expect_request(lambda r: r.method == "POST" and "/check?" in r.url) as info:
+            self.page.click("#go")
+        query = parse_qs(urlsplit(info.value.url).query)
+        self.assertEqual(query["uri"], [uri])
+        self.assertEqual(query["req_hdr"], [hdr])
 
     def test_view_har(self):
         with self.page.expect_response(lambda response: "format=har" in response.url) as response_info:
