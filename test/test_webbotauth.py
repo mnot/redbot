@@ -305,7 +305,7 @@ class TestDirectoryAuthority(unittest.TestCase):
                     WebBotAuthSigner(RFC9421_ED25519_KEY, directory).directory_scheme, "https"
                 )
 
-    def test_unparseable_host_is_unsigned(self) -> None:
+    def test_bad_host_unsigned(self) -> None:
         self.assertEqual(self._handler("https://d.test", "[::1").request_authority(), "")
         self.assertNotIn(b"signature", self._serve("https://d.test", "[::1"))
 
