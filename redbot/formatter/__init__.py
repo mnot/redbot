@@ -6,14 +6,13 @@ import inspect
 import sys
 import time
 from configparser import SectionProxy
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Type
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Type, TypedDict
 
 import thor
 from babel.numbers import format_decimal
 from httplint.util import relative_time as _relative_time
 from markdown import Markdown
 from thor.events import EventEmitter
-from typing_extensions import TypedDict
 
 from redbot.i18n import get_locale, set_locale
 
