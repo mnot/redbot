@@ -3,7 +3,7 @@ Tests for the text formatter's colour handling.
 """
 
 import unittest
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, cast
 
 from httplint.note import levels
 
@@ -13,10 +13,8 @@ END = "\033[0;39m"
 
 
 def make_formatter(**kw: Any) -> BaseTextFormatter:
-    "Build a formatter without the resource and config that colorize doesn't use."
-    formatter = BaseTextFormatter.__new__(BaseTextFormatter)
-    formatter.kw = dict(kw)
-    return formatter
+    "Build a formatter; colorize doesn't use the config, resource or output."
+    return BaseTextFormatter(cast(Any, None), cast(Any, None), lambda s: None, dict(kw))
 
 
 class TestColorize(unittest.TestCase):
@@ -25,8 +23,8 @@ class TestColorize(unittest.TestCase):
             levels.GOOD: "\033[1;32m",
             levels.BAD: "\033[1;31m",
             levels.WARN: "\033[1;33m",
-            levels.INFO: "\033[1;34m",
-            None: "\033[1;34m",
+            levels.INFO: "\033[0;32m",
+            None: "\033[1;34m",  # the URI line
         }
         formatter = make_formatter(tty_out=True)
         for level, start in expected.items():
