@@ -32,6 +32,8 @@ Both of these methods will install the following programs into your [pipx binary
 * `redbot` - the command-line interface
 * `redbot_daemon` - Web interface as a standalone daemon
 
+By default, `redbot` prints a text report for the URL. Use `-o` to choose another format: `text_verbose` adds an explanation of each note, and `har` produces an HTTP Archive (HAR) file. With `-a` (`--assets`), `text` and `text_verbose` also list the resources linked from an HTML response. The web interface accepts the same names in its `format` query argument (`format=text`, `format=text_verbose`, `format=har`).
+
 
 ### Running REDbot as a systemd Service
 
