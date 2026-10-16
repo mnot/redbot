@@ -12,13 +12,37 @@ See webui.py for the Web front-end.
 import sys
 from configparser import SectionProxy
 from typing import Dict, List, Optional, Set, Tuple, Union
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlsplit
 
 import thor
 
 from redbot.resource import link_parse
 from redbot.resource.active_check import active_checks
 from redbot.resource.fetch import RedFetcher
+from redbot.type import StrHeaderListType
+
+# Request headers that carry the user's credentials; they're only sent to the origin being tested.
+CREDENTIAL_HEADERS = {"authorization", "cookie", "proxy-authorization"}
+DEFAULT_PORTS = {"http": 80, "https": 443}
+
+
+def origin_of(uri: str) -> Optional[Tuple[str, str, int]]:
+    "Return the (scheme, host, port) origin of a URI, or None if it doesn't have one."
+    try:
+        parts = urlsplit(uri)
+        scheme = parts.scheme.lower()
+        host = parts.hostname
+        port = parts.port or DEFAULT_PORTS.get(scheme)
+    except ValueError:
+        return None
+    if not host or port is None:
+        return None
+    return (scheme, host.lower(), port)
+
+
+def strip_credentials(headers: StrHeaderListType) -> StrHeaderListType:
+    "Remove credential-bearing request headers."
+    return [(n, v) for (n, v) in headers if n.strip().lower() not in CREDENTIAL_HEADERS]
 
 
 class HttpResource(RedFetcher):
@@ -30,7 +54,9 @@ class HttpResource(RedFetcher):
     its notes; see that class for details.
 
     if descend is true, the response will be parsed for links and HttpResources started for each
-    link, enumerated in .linked.
+    link, enumerated in .linked. Linked resources get only the request headers that are safe to
+    send to another origin (not credentials, unless the link is to the same origin), and don't
+    run active checks.
 
     Emits "check_done" when everything has finished.
     """
@@ -38,9 +64,12 @@ class HttpResource(RedFetcher):
     check_name = "default"
     check_id = "default"
 
-    def __init__(self, config: SectionProxy, descend: bool = False) -> None:
+    def __init__(
+        self, config: SectionProxy, descend: bool = False, active_checks_enabled: bool = True
+    ) -> None:
         RedFetcher.__init__(self, config)
         self.descend: bool = descend
+        self.active_checks_enabled: bool = active_checks_enabled
         self.check_done: bool = False
         self.partial_support: bool = False
         self.inm_support: bool = False
@@ -62,7 +91,7 @@ class HttpResource(RedFetcher):
         """
         Response is available; perform subordinate requests (e.g., conneg check).
         """
-        if self.response.complete:
+        if self.response.complete and self.active_checks_enabled:
             for active_check in list(self.subreqs.values()):
                 self.add_check(active_check)
                 active_check.check()
@@ -133,8 +162,13 @@ class HttpResource(RedFetcher):
                 self.response.base_uri = base
             return
         if self.descend and tag not in ["a"] and link not in self.links[tag]:
-            linked = HttpResource(self.config)
-            linked.set_request(urljoin(base, link), headers=self.request.headers.text)
+            linked = HttpResource(self.config, active_checks_enabled=False)
+            linked_uri = urljoin(base, link)
+            linked_headers = self.request.headers.text
+            linked_origin = origin_of(linked_uri)
+            if linked_origin is None or linked_origin != origin_of(self.request.uri or ""):
+                linked_headers = strip_credentials(linked_headers)
+            linked.set_request(linked_uri, headers=linked_headers)
             self.linked.append((linked, tag))
             self.add_check(linked)
             linked.check()
