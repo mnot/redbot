@@ -63,12 +63,15 @@ class CaptchaHandler:
             body_args = parse_qs(raw_body, keep_blank_values=True)
             captcha_token = body_args.get("captcha_token", [None])[0]
 
-        # get_header() splits on commas, which is unsafe for Cookie; join raw lines (RFC 9113 8.2.3)
-        cookie_str = b"; ".join(v for n, v in self.webui.req_headers if n.lower() == b"cookie")
+        # get_header() splits on commas, which is unsafe for Cookie, so use the raw lines. Each
+        # is parsed on its own (equivalent to the "; " join of RFC 9113 8.2.3) so that an empty
+        # or malformed line can't hide cookies on later lines.
+        cookie_lines = [v for n, v in self.webui.req_headers if n.lower() == b"cookie"]
+        cookie_str = b"; ".join(cookie_lines)
+        cookiejar: cookies.SimpleCookie = cookies.SimpleCookie()
         try:
-            cookiejar: cookies.SimpleCookie = cookies.SimpleCookie(
-                cookie_str.decode("utf-8", "replace")
-            )
+            for line in cookie_lines:
+                cookiejar.update(cookies.SimpleCookie(line.decode("utf-8", "replace")))
         except cookies.CookieError:
             self.error_response(
                 b"400",
