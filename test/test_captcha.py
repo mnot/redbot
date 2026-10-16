@@ -101,6 +101,63 @@ class TestCaptchaCookies(unittest.TestCase):
             [b"a=b c", f"human_time={human_time}; human_hmac={human_hmac}".encode()]
         )
 
+    def _assert_rejected(self, cookie_lines: List[bytes]) -> None:
+        handler, continued, errors = self._handler(cookie_lines)
+        handler.run()
+        self.assertEqual(continued, [])
+        self.assertEqual(len(errors), 1)
+        self.assertEqual(errors[0][0], b"403")
+
+    def test_non_ascii_hmac(self) -> None:
+        # SimpleCookie unquotes the octal escape to "\xe9"
+        self._assert_rejected([b'human_time=9999999999; human_hmac="\\351"'])
+
+    def test_non_ascii_time(self) -> None:
+        # "\xb2" passes str.isdigit() but not int()
+        self._assert_rejected([b'human_time="\\262"; human_hmac=abc'])
+
+    def test_non_ascii_both(self) -> None:
+        self._assert_rejected([b'human_time="\\262"; human_hmac="\\351"'])
+
+    def test_invalid_utf8(self) -> None:
+        self._assert_rejected([b"human_time=9999999999; human_hmac=\xff\xfe"])
+
+    def test_non_ascii_digits_in_time(self) -> None:
+        # int() accepts these, so a valid token must not be accepted in this form
+        human_time, human_hmac = self._token()
+        arabic_indic = human_time.translate(str.maketrans("0123456789", "٠١٢٣٤٥٦٧٨٩"))
+        self.assertEqual(int(arabic_indic), int(human_time))
+        self._assert_rejected(
+            [f'human_time="{arabic_indic}"; human_hmac={human_hmac}'.encode("utf-8")]
+        )
+
+    def test_overlong_time(self) -> None:
+        # more digits than int() will convert
+        self._assert_rejected([b"human_time=" + b"9" * 5000 + b"; human_hmac=abc"])
+
+    def test_huge_time(self) -> None:
+        self._assert_rejected([b"human_time=" + b"9" * 400 + b"; human_hmac=abc"])
+
+    def test_negative_time(self) -> None:
+        self._assert_rejected([b"human_time=-1; human_hmac=abc"])
+
+    def test_empty_values(self) -> None:
+        self._assert_rejected([b"human_time=; human_hmac="])
+
+    def test_whitespace_values(self) -> None:
+        self._assert_rejected([b'human_time=" "; human_hmac=" "'])
+
+    def test_missing_hmac(self) -> None:
+        self._assert_rejected([b"human_time=9999999999"])
+
+    def test_wrong_hmac(self) -> None:
+        self._assert_rejected([b"human_time=9999999999; human_hmac=abc"])
+
+    def test_expired_token(self) -> None:
+        human_time = str(int(time.time()) - 10)
+        human_hmac = hmac.new(self.secret.encode(), human_time.encode(), "sha512").hexdigest()
+        self._assert_rejected([f"human_time={human_time}; human_hmac={human_hmac}".encode()])
+
 
 if __name__ == "__main__":
     unittest.main()
