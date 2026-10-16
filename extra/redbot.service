@@ -1,6 +1,9 @@
 [Unit]
 Description=REDbot
 After=network.target
+# Never give up restarting: with systemd's default limit (5 starts in 10s), a few
+# quick crashes would leave the unit failed until an administrator reset it.
+StartLimitIntervalSec=0
 
 [Service]
 Type=simple
@@ -18,6 +21,7 @@ WorkingDirectory=/opt/redbot
 ExecStart=/opt/redbot/app/bin/redbot_daemon /opt/redbot/config/config.txt
 SyslogIdentifier=redbot
 Restart=always
+RestartSec=2
 SystemCallArchitectures=native
 
 # Watchdog. The daemon pings every 3s from the event loop, so this doubles as a
