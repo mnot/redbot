@@ -20,6 +20,7 @@ from redbot.type import RawHeaderListType, RedWebUiProtocol
 from redbot.utils import e_url
 from redbot.webui.captcha import CaptchaHandler
 from redbot.webui.handlers.base import RequestHandler
+from redbot.webui.headers import security_headers
 from redbot.webui.ratelimit import ratelimiter
 from redbot.webui.saved_tests import init_save_file, save_test
 
@@ -241,13 +242,10 @@ class RunTestHandler(RequestHandler):
             b"OK",
             [
                 (b"Content-Type", formatter.content_type()),
-                (
-                    b"Content-Security-Policy",
-                    (f"script-src 'strict-dynamic' 'nonce-{ui.nonce}'").encode("ascii"),
-                ),
                 (b"Content-Language", ui.locale.encode("ascii")),
                 (b"Vary", b"Accept-Language"),
             ]
+            + security_headers(ui.nonce)
             + extra_headers,
         )
         ui.response_started = True

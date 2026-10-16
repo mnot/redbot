@@ -12,6 +12,7 @@ from redbot.i18n import set_locale
 from redbot.resource import HttpResource
 from redbot.type import RedWebUiProtocol, StrHeaderListType
 from redbot.webui.handlers.base import RequestHandler
+from redbot.webui.headers import security_headers
 
 
 class ShowHandler(RequestHandler):
@@ -77,13 +78,10 @@ class ShowHandler(RequestHandler):
             [
                 (b"Content-Type", formatter.content_type()),
                 (b"Cache-Control", b"max-age=5"),
-                (
-                    b"Content-Security-Policy",
-                    f"script-src 'strict-dynamic' 'nonce-{ui.nonce}'".encode("ascii"),
-                ),
                 (b"Content-Language", ui.locale.encode("ascii")),
                 (b"Vary", b"Accept-Language"),
-            ],
+            ]
+            + security_headers(ui.nonce),
         )
 
         with set_locale(ui.locale):
