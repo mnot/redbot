@@ -183,11 +183,14 @@ class HttpResource(RedFetcher):
             try:
                 linked.check()
             except Exception as why:  # pylint: disable=broad-except
-                self.emit("debug", f"checking link {linked.request.uri} failed: {why!r}")
                 linked.fetch_error = linked.fetch_error or HttpError(str(why))
                 linked.stop()
                 if linked in self._task_map:  # stop() didn't complete it
                     self.finish_check(linked)
+                try:  # after cleanup, so a failing listener can't undo it
+                    self.emit("debug", f"checking link {linked.request.uri} failed: {why!r}")
+                except Exception:  # pylint: disable=broad-except
+                    pass
         self.links[tag].add(link)
         if not self.response.base_uri:
             self.response.base_uri = base

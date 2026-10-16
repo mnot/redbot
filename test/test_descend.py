@@ -299,7 +299,7 @@ class TestUnencodableUri(unittest.TestCase):
         with mock.patch.object(HttpResource, "check", side_effect=ValueError("boom")):
             resource.process_link(TOP, "/app.js", "script", "")
         self.assertFalse(resource._task_map)  # pylint: disable=protected-access
-        (linked, _tag) = resource.linked[0]
+        linked, _tag = resource.linked[0]
         self.assertTrue(linked.fetch_done)
         self.assertIsNotNone(linked.fetch_error)
         self.assertTrue(any("boom" in message for message in debug), debug)
@@ -308,6 +308,20 @@ class TestUnencodableUri(unittest.TestCase):
         # ...but nothing is left waiting for it once the parent's own fetch finishes.
         resource.stop()
         self.assertEqual(done, ["check_done"])
+
+    def test_failing_debug_listener_does_not_stall_link(self) -> None:
+        # Cleanup must not depend on the debug message getting out. Everything here is
+        # synchronous, so a regression fails the assertions rather than hanging.
+        def broken(_message: str) -> None:
+            raise RuntimeError("bad listener")
+
+        resource = HttpResource(make_config()["redbot"], descend=True)
+        resource.set_request(TOP)
+        resource.on("debug", broken)
+        with mock.patch.object(HttpResource, "check", side_effect=ValueError("boom")):
+            resource.process_link(TOP, "/app.js", "script", "")
+        self.assertFalse(resource._task_map)  # pylint: disable=protected-access
+        self.assertTrue(resource.linked[0][0].fetch_done)
 
     def test_link_parser_reports_errors(self) -> None:
         with mock.patch.object(HttpResource, "process_link", side_effect=ValueError("boom")):
@@ -334,7 +348,7 @@ class TestUnencodableUri(unittest.TestCase):
 
         try:
             same, _other = servers.ports
-            resource = HttpResource(make_config(max_runtime="20")["redbot"], descend=True)
+            resource = HttpResource(make_config()["redbot"], descend=True)
             resource.set_request(f"http://127.0.0.1:{same}/page")
             resource.on("check_done", thor.stop)
             timeout = thor.schedule(20, give_up)
