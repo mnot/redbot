@@ -131,13 +131,14 @@ class BaseTextFormatter(Formatter):
             if level == levels.GOOD:
                 color_start = "\033[1;32m"
                 color_end = "\033[0;39m"
-            if level == levels.BAD:
+            elif level == levels.BAD:
                 color_start = "\033[1;31m"
                 color_end = "\033[0;39m"
-            if level == levels.WARN:
+            elif level == levels.WARN:
                 color_start = "\033[1;33m"
                 color_end = "\033[0;39m"
-            else:
+            elif level is None:
+                # URIs
                 color_start = "\033[1;34m"
                 color_end = "\033[0;39m"
             return color_start + instr + color_end
