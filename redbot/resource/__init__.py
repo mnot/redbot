@@ -12,9 +12,11 @@ See webui.py for the Web front-end.
 import sys
 from configparser import SectionProxy
 from typing import Dict, List, Optional, Set, Tuple, Union
-from urllib.parse import urljoin, urlsplit
+from urllib.parse import urljoin
 
 import thor
+from thor.http.error import UrlError
+from thor.http.uri import parse_uri
 
 from redbot.resource import link_parse
 from redbot.resource.active_check import active_checks
@@ -23,26 +25,27 @@ from redbot.type import StrHeaderListType
 
 # Request headers that carry the user's credentials; they're only sent to the origin being tested.
 CREDENTIAL_HEADERS = {"authorization", "cookie", "proxy-authorization"}
-DEFAULT_PORTS = {"http": 80, "https": 443}
 
 
-def origin_of(uri: str) -> Optional[Tuple[str, str, int]]:
-    "Return the (scheme, host, port) origin of a URI, or None if it doesn't have one."
-    try:
-        parts = urlsplit(uri)
-        scheme = parts.scheme.lower()
-        host = parts.hostname
-        port = parts.port or DEFAULT_PORTS.get(scheme)
-    except ValueError:
+def origin_of(uri: Optional[str]) -> Optional[Tuple[str, str, int]]:
+    """
+    Return the (scheme, host, port) that a request for this (already normalised) URI will connect
+    to, using the same parser the HTTP client does. Returns None if it can't be determined.
+    """
+    if not uri:
         return None
-    if not host or port is None:
+    try:
+        scheme, host, port, _authority, _target = parse_uri(uri.encode("ascii"))
+    except (UrlError, UnicodeError, ValueError):
         return None
     return (scheme, host.lower(), port)
 
 
-def strip_credentials(headers: StrHeaderListType) -> StrHeaderListType:
-    "Remove credential-bearing request headers."
-    return [(n, v) for (n, v) in headers if n.strip().lower() not in CREDENTIAL_HEADERS]
+def split_credentials(headers: StrHeaderListType) -> Tuple[StrHeaderListType, StrHeaderListType]:
+    "Separate request headers into (credentials, everything else)."
+    credentials = [(n, v) for (n, v) in headers if n.strip().lower() in CREDENTIAL_HEADERS]
+    others = [(n, v) for (n, v) in headers if n.strip().lower() not in CREDENTIAL_HEADERS]
+    return credentials, others
 
 
 class HttpResource(RedFetcher):
@@ -71,10 +74,12 @@ class HttpResource(RedFetcher):
         self.descend: bool = descend
         self.active_checks_enabled: bool = active_checks_enabled
         self.check_done: bool = False
-        self.partial_support: bool = False
-        self.inm_support: bool = False
-        self.ims_support: bool = False
-        self.gzip_support: bool = False
+        # None means "not checked" (as for linked resources, which skip the active checks).
+        unchecked: Optional[bool] = None if not active_checks_enabled else False
+        self.partial_support: Optional[bool] = unchecked
+        self.inm_support: Optional[bool] = unchecked
+        self.ims_support: Optional[bool] = unchecked
+        self.gzip_support: Optional[bool] = unchecked
         self.gzip_savings: int = 0
         self._task_map: Set[RedFetcher] = set([])
         self.subreqs = {ac.check_id: ac(config, self) for ac in active_checks}
@@ -163,12 +168,15 @@ class HttpResource(RedFetcher):
             return
         if self.descend and tag not in ["a"] and link not in self.links[tag]:
             linked = HttpResource(self.config, active_checks_enabled=False)
-            linked_uri = urljoin(base, link)
-            linked_headers = self.request.headers.text
-            linked_origin = origin_of(linked_uri)
-            if linked_origin is None or linked_origin != origin_of(self.request.uri or ""):
-                linked_headers = strip_credentials(linked_headers)
-            linked.set_request(linked_uri, headers=linked_headers)
+            credentials, other_headers = split_credentials(self.request.headers.text)
+            linked.set_request(urljoin(base, link), headers=other_headers)
+            # Compare the origins the client will connect to (after URI normalisation), and only
+            # then add the credentials back; if either can't be determined, they stay off.
+            linked_origin = origin_of(linked.request.uri)
+            if credentials and linked_origin and linked_origin == origin_of(self.request.uri):
+                linked.request.process_headers(
+                    [(n.encode("utf-8"), v.encode("utf-8")) for (n, v) in credentials]
+                )
             self.linked.append((linked, tag))
             self.add_check(linked)
             linked.check()
