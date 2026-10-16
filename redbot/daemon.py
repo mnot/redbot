@@ -453,26 +453,11 @@ in standalone server mode. Details follow.
             (b"Content-Type", DIRECTORY_CONTENT_TYPE.encode("ascii")),
             (b"Cache-Control", b"max-age=%d" % DIRECTORY_MAX_AGE),
         ]
-        authority = self.request_authority()
-        if authority:
-            headers += signer.sign_directory(authority)
+        headers += signer.sign_directory()
         self.exchange.response_start(b"200", b"OK", headers)
         self.exchange.response_body(body)
         self.exchange.response_done([])
         return None
-
-    def request_authority(self) -> str:
-        "The authority (Host) of the incoming request, for signing."
-        signer = self.server.signer
-        for name, value in self.req_hdrs:
-            if signer is not None and name.lower() == b"host":
-                host = value.decode("ascii", "replace").strip()
-                # RFC 9421 section 2.2.3: omit the default port for the scheme.
-                try:
-                    return signer.authority(f"{signer.directory_scheme}://{host}")
-                except ValueError:  # e.g. an unterminated IPv6 literal
-                    return ""
-        return ""
 
     def not_found(self, path: bytes) -> None:
         headers = []
