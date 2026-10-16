@@ -23,14 +23,14 @@ from redbot.resource.active_check import active_checks
 from redbot.resource.fetch import RedFetcher
 from redbot.type import StrHeaderListType
 
-# Request headers that carry the user's credentials; they're only sent to the origin being tested.
+# Withheld from linked resources on other origins.
 CREDENTIAL_HEADERS = {"authorization", "cookie", "proxy-authorization"}
 
 
 def origin_of(uri: Optional[str]) -> Optional[Tuple[str, str, int]]:
     """
-    Return the (scheme, host, port) that a request for this (already normalised) URI will connect
-    to, using the same parser the HTTP client does. Returns None if it can't be determined.
+    The (scheme, host, port) the client will connect to for this (normalised) request URI, parsed
+    the way the client does it; None if that can't be determined.
     """
     if not uri:
         return None
@@ -42,7 +42,7 @@ def origin_of(uri: Optional[str]) -> Optional[Tuple[str, str, int]]:
 
 
 def split_credentials(headers: StrHeaderListType) -> Tuple[StrHeaderListType, StrHeaderListType]:
-    "Separate request headers into (credentials, everything else)."
+    "Split request headers into (credentials, others)."
     credentials = [(n, v) for (n, v) in headers if n.strip().lower() in CREDENTIAL_HEADERS]
     others = [(n, v) for (n, v) in headers if n.strip().lower() not in CREDENTIAL_HEADERS]
     return credentials, others
@@ -57,9 +57,7 @@ class HttpResource(RedFetcher):
     its notes; see that class for details.
 
     if descend is true, the response will be parsed for links and HttpResources started for each
-    link, enumerated in .linked. Linked resources get only the request headers that are safe to
-    send to another origin (not credentials, unless the link is to the same origin), and don't
-    run active checks.
+    link, enumerated in .linked. Linked resources don't run active checks.
 
     Emits "check_done" when everything has finished.
     """
@@ -74,7 +72,7 @@ class HttpResource(RedFetcher):
         self.descend: bool = descend
         self.active_checks_enabled: bool = active_checks_enabled
         self.check_done: bool = False
-        # None means "not checked" (as for linked resources, which skip the active checks).
+        # None: not checked.
         unchecked: Optional[bool] = None if not active_checks_enabled else False
         self.partial_support: Optional[bool] = unchecked
         self.inm_support: Optional[bool] = unchecked
@@ -170,8 +168,8 @@ class HttpResource(RedFetcher):
             linked = HttpResource(self.config, active_checks_enabled=False)
             credentials, other_headers = split_credentials(self.request.headers.text)
             linked.set_request(urljoin(base, link), headers=other_headers)
-            # Compare the origins the client will connect to (after URI normalisation), and only
-            # then add the credentials back; if either can't be determined, they stay off.
+            # Compare the normalised URIs, not the link text: normalisation can change the host.
+            # Credentials stay off unless both origins are known and equal.
             linked_origin = origin_of(linked.request.uri)
             if credentials and linked_origin and linked_origin == origin_of(self.request.uri):
                 linked.request.process_headers(

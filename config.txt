@@ -23,9 +23,7 @@ debug = False
 # How many seconds to allow a check to run for.
 max_runtime = 60
 
-# Limit on how many links to check in a page when descending. Linked resources are fetched once
-# each (no conneg, validation or range checks), and Authorization, Cookie and Proxy-Authorization
-# request headers are only sent to links on the same origin as the page being tested.
+# Limit on how many links to check in a page when descending
 max_links = 100
 
 # Whether to make links in the HTML content view clickable (starting new tests). This is
