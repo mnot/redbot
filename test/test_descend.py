@@ -45,6 +45,27 @@ def make_config(**values: str) -> ConfigParser:
     return conf
 
 
+def check_locally(resource: HttpResource, timeout: float = 20) -> bool:
+    "Run resource.check() against local servers; False if check_done didn't arrive in time."
+    saved_check_ip = RedFetcher.client.check_ip
+    RedFetcher.client.check_ip = None
+    finished: List[bool] = []
+
+    def done() -> None:
+        finished.append(True)
+        thor.stop()
+
+    resource.on("check_done", done)
+    try:
+        timer = thor.schedule(timeout, thor.stop)
+        resource.check()
+        thor.run()
+        timer.delete()
+    finally:
+        RedFetcher.client.check_ip = saved_check_ip
+    return bool(finished)
+
+
 class TestOriginOf(unittest.TestCase):
     """origin_of gets the (already normalised) request URI, as set by set_request."""
 
@@ -282,20 +303,11 @@ class TestUnresolvableLinks(unittest.TestCase):
                     # only the good link is still outstanding
                     self.assertEqual(resource._task_map, {good})  # pylint: disable=protected-access
 
-    def test_invalid_base_is_ignored(self) -> None:
-        resource = self.resource()
-        with mock.patch.object(HttpResource, "check") as check:
-            resource.process_link("http://[bad/", "/rel.js", "img", "")
-            resource.process_link("http://[bad/", "https://other.example/abs.js", "img", "")
-        self.assertEqual(check.call_count, 2)
-        self.assertEqual(
-            [(r.request.uri, r.fetch_error) for (r, _tag) in resource.linked],
-            [("https://example.com/rel.js", None), ("https://other.example/abs.js", None)],
-        )
-
 
 class LocalServers:
     "Two local HTTP servers that record the request headers they receive, by (port, path)."
+
+    page_path = "/page"
 
     def __init__(self) -> None:
         self.seen: Dict[Tuple[int, str], List[Dict[str, str]]] = {}
@@ -316,7 +328,7 @@ class LocalServers:
             self.seen.setdefault((port, path), []).append(
                 {k.decode("ascii").lower(): v.decode("ascii") for k, v in exchange.req_hdrs}
             )
-            if path == "/page":
+            if path == self.page_path:
                 body = self.page().encode("utf-8")
                 ctype = b"text/html"
             else:

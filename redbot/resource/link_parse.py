@@ -7,6 +7,7 @@ Parse links from a stream of HTML data.
 import codecs
 from html.parser import HTMLParser
 from typing import Any, Callable, Dict, List, Optional, Tuple
+from urllib.parse import urljoin, urlsplit
 
 from httplint.charset import is_text_encoding, whatwg_encoding
 from httplint.field.utils import split_params, unquote_string
@@ -16,6 +17,8 @@ from redbot.utils import decode_text
 
 DEFAULT_ENCODING = "utf-8"
 MAX_FEED_BYTES = 2 * 1024 * 1024
+# A <base> inside these isn't the document's base (noscript: as when scripting is enabled).
+INERT_TAGS = ("template", "svg", "math", "noscript")
 
 # Python codecs that decode bytes to text but that a <meta> must not select: UTF-7 and
 # UTF-16/32 (HTML treats a UTF-16 <meta> as UTF-8), and ones that aren't character encodings.
@@ -73,6 +76,8 @@ class HTMLLinkParser(HTMLParser):
         self.last_err_pos: int = 0
         self.ok = True
         self.bytes_fed = 0
+        self.base_seen = False
+        self.inert_depth = {tag: 0 for tag in INERT_TAGS}
         self.decode_as: Optional[str] = None
         HTMLParser.__init__(self)
 
@@ -119,7 +124,13 @@ class HTMLLinkParser(HTMLParser):
                     for proc in self.link_procs:
                         proc(self.message.base_uri, target, tag, title)
         elif tag == "base":
-            self.message.base_uri = dict(attrs).get("href", self.message.base_uri) or ""
+            attr_d = dict(attrs)
+            inert = any(self.inert_depth.values())
+            if "href" in attr_d and not self.base_seen and not inert:  # first <base href> counts
+                self.base_seen = True
+                self.message.base_uri = resolve_base(self.message.base_uri, attr_d["href"] or "")
+        elif tag in self.inert_depth:
+            self.inert_depth[tag] += 1
         elif tag == "meta":
             attr_d = dict(attrs)
             if (attr_d.get("http-equiv", "") or "").lower() != "content-type":
@@ -159,6 +170,10 @@ class HTMLLinkParser(HTMLParser):
         elif not codecs.lookup(label).name.replace("-", "_").startswith(NOT_META_CHARSETS):
             self.decode_as = label
 
+    def handle_endtag(self, tag: str) -> None:
+        if self.inert_depth.get(tag):
+            self.inert_depth[tag] -= 1
+
     def error(self, message: str) -> None:
         self.errors += 1
         if self.getpos()[0] == self.last_err_pos:
@@ -170,6 +185,20 @@ class HTMLLinkParser(HTMLParser):
         self.last_err_pos, _ = self.getpos()
         if self.err:
             self.err(message)
+
+
+def resolve_base(page_uri: str, href: str) -> str:
+    """
+    Resolve a <base href> against the page's URI. As in the HTML spec, an unparseable href or a
+    data: or javascript: URI leaves the page URI as the base (Chromium uses about:blank instead).
+    """
+    try:
+        base = urljoin(page_uri, href.strip(" \t\n\f\r"))
+        if urlsplit(base).scheme.lower() in ("data", "javascript"):
+            return page_uri
+    except ValueError:
+        return page_uri
+    return base
 
 
 class BadErrorIReallyMeanIt(Exception):
