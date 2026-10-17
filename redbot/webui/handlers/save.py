@@ -8,7 +8,7 @@ import gzip
 import os
 import pickle
 import time
-import zlib
+import traceback
 from typing import IO, Any, cast
 from urllib.parse import urlencode
 
@@ -16,6 +16,7 @@ import thor.events
 from markupsafe import escape
 
 from redbot.formatter import find_formatter
+from redbot.resource import HttpResource
 from redbot.type import RedWebUiProtocol
 from redbot.webui.handlers.base import RequestHandler
 from redbot.webui.headers import security_headers
@@ -176,53 +177,76 @@ class LoadSavedTestHandler(RequestHandler):
         except (OSError, TypeError):
             ui.error_response(b"404", b"Not Found", "I'm sorry, I can't find that saved response.")
             return
-        except (pickle.PickleError, zlib.error, EOFError):
-            ui.error_response(
-                b"500",
-                b"Internal Server Error",
-                "I'm sorry, I had a problem loading that.",
-            )
+        except Exception:  # pylint: disable=broad-exception-caught
+            # Beyond corruption, a file from an older version can fail to unpickle
+            # (AttributeError, ImportError, ...), and that mustn't stop the daemon.
+            cls.load_failed(ui, test_id)
             return
 
-        if "check_name" in ui.query_string:
-            check_name = ui.query_string.get("check_name", [None])[0]
-            display_resource = top_resource.subreqs.get(check_name, top_resource)
-        else:
-            display_resource = top_resource
+        if not isinstance(top_resource, HttpResource):
+            cls.load_failed(ui, test_id, f"unexpected {type(top_resource).__name__} object")
+            return
 
-        format_ = ui.query_string.get("format", ["html"])[0]
-        formatter = find_formatter(format_, "html", top_resource.descend)(
-            ui.config,
-            display_resource,
-            ui.output,
-            {
-                "allow_save": (not is_saved),
-                "is_saved": True,
-                "save_mtime": mtime,
-                "test_id": test_id,
-                "nonce": ui.nonce,
-                "link_generator": ui.link_generator,
-            },
+        response_started = False
+        try:
+            display_resource: Any = top_resource
+            if "check_name" in ui.query_string:
+                check_name = ui.query_string["check_name"][0]
+                display_resource = top_resource.subreqs.get(check_name, top_resource)
+
+            format_ = ui.query_string.get("format", ["html"])[0]
+            formatter = find_formatter(format_, "html", top_resource.descend)(
+                ui.config,
+                display_resource,
+                ui.output,
+                {
+                    "allow_save": (not is_saved),
+                    "is_saved": True,
+                    "save_mtime": mtime,
+                    "test_id": test_id,
+                    "nonce": ui.nonce,
+                    "link_generator": ui.link_generator,
+                },
+            )
+
+            ui.exchange.response_start(
+                b"200",
+                b"OK",
+                [
+                    (b"Content-Type", formatter.content_type()),
+                    (b"Cache-Control", b"max-age=3600, must-revalidate"),
+                ]
+                + security_headers(ui.nonce),
+            )
+            response_started = True
+
+            @thor.events.on(formatter)
+            def formatter_done() -> None:
+                if ui.response_done:
+                    return
+                ui.exchange.response_done([])
+                ui.response_done = True
+
+            formatter.bind_resource(display_resource)
+        except Exception:  # pylint: disable=broad-exception-caught
+            # An old object can lack attributes that formatting needs.
+            if not response_started:
+                cls.load_failed(ui, test_id)
+            else:
+                ui.error_log(f"Can't display saved test {test_id}:\n{traceback.format_exc()}")
+                if not ui.response_done:
+                    ui.exchange.response_done([])
+                    ui.response_done = True
+
+    @classmethod
+    def load_failed(cls, ui: RedWebUiProtocol, test_id: str, detail: str = "") -> None:
+        "Send a 500 and log why a saved test couldn't be used; call from an except block."
+        ui.error_response(
+            b"500",
+            b"Internal Server Error",
+            "I'm sorry, I had a problem loading that.",
+            log_message=f"Can't load saved test {test_id}:\n{detail or traceback.format_exc()}",
         )
-
-        ui.exchange.response_start(
-            b"200",
-            b"OK",
-            [
-                (b"Content-Type", formatter.content_type()),
-                (b"Cache-Control", b"max-age=3600, must-revalidate"),
-            ]
-            + security_headers(ui.nonce),
-        )
-
-        @thor.events.on(formatter)
-        def formatter_done() -> None:
-            if ui.response_done:
-                return
-            ui.exchange.response_done([])
-            ui.response_done = True
-
-        formatter.bind_resource(display_resource)
 
     @classmethod
     def render_link(

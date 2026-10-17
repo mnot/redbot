@@ -2,8 +2,10 @@
 
 # pylint: disable=invalid-name,consider-using-with
 
+import gzip
 import http.server
 import os
+import pickle
 import socket
 import subprocess
 import sys
@@ -11,6 +13,7 @@ import tempfile
 import threading
 import time
 import unittest
+import urllib.error
 import urllib.request
 from configparser import ConfigParser
 from types import SimpleNamespace
@@ -19,6 +22,7 @@ from unittest.mock import MagicMock, patch
 from redbot.formatter import find_formatter
 from redbot.i18n import set_locale
 from redbot.resource import HttpResource
+from redbot.webui import RedWebUi
 from redbot.webui.links import WebUiLinkGenerator
 from redbot.webui.saved_tests import init_save_file, save_test
 
@@ -121,6 +125,127 @@ class TestSaveTest(unittest.TestCase):
         ui = make_ui(self._tmp.name)
         save_test(ui, {"a": 1})  # type: ignore[arg-type]
         ui.error_log.assert_not_called()
+
+
+MISSING_CLASS = b"credbot.resource\nNoSuchClass\n."
+MISSING_MODULE = b"cno_such_module_xyz\nThing\n."
+
+
+def write_saved(save_dir, test_id, payload, compress=True):
+    "Write payload (bytes) as a saved test file."
+    opener = gzip.open if compress else open
+    with opener(os.path.join(save_dir, test_id), "wb") as fh:
+        fh.write(payload)
+
+
+def stale_resource(cfg, drop):
+    "Pickle of an HttpResource that has lost an attribute, as from an older version."
+    resource = HttpResource(cfg)
+    resource.set_request("http://example.com/")
+    resource.check_done = True
+    delattr(resource, drop)
+    return pickle.dumps(resource)
+
+
+class TestLoadSavedTest(unittest.TestCase):
+    """Regression tests for #483: a saved test that can't be used gets a 500, not a crash."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.save_dir = self._tmp.name
+        self.addCleanup(self._tmp.cleanup)
+        self.cfg = config(save_dir=self.save_dir)
+        self.log: list[str] = []
+
+    def get(self, test_id="abc123", query=b""):
+        "Run a GET for the saved test; returns the exchange mock."
+        exchange = MagicMock()
+        RedWebUi(
+            self.cfg,
+            "GET",
+            f"/saved/{test_id}".encode("ascii"),
+            query,
+            [],
+            b"",
+            exchange,
+            "127.0.0.1",
+            self.log.append,
+        )
+        return exchange
+
+    def assert_status(self, exchange, status):
+        self.assertEqual(exchange.response_start.call_args[0][0], status)
+        self.assertEqual(exchange.response_start.call_count, 1)
+
+    def assert_load_failure(self, exchange, expected):
+        self.assert_status(exchange, b"500")
+        exchange.response_done.assert_called_once()
+        self.assertEqual(len(self.log), 1)
+        self.assertIn("abc123", self.log[0])
+        self.assertIn("Traceback", self.log[0])
+        self.assertIn(expected, self.log[0])
+
+    def test_valid_file_loads(self):
+        resource = HttpResource(self.cfg)
+        resource.set_request("http://example.com/")
+        resource.check_done = True
+        write_saved(self.save_dir, "abc123", pickle.dumps(resource))
+        exchange = self.get()
+        self.assert_status(exchange, b"200")
+        self.assertEqual(self.log, [])
+
+    def test_missing_class(self):
+        write_saved(self.save_dir, "abc123", MISSING_CLASS)
+        self.assert_load_failure(self.get(), "NoSuchClass")
+
+    def test_missing_module(self):
+        write_saved(self.save_dir, "abc123", MISSING_MODULE)
+        self.assert_load_failure(self.get(), "no_such_module_xyz")
+
+    def test_wrong_object_type(self):
+        write_saved(self.save_dir, "abc123", pickle.dumps({"a": 1}))
+        exchange = self.get()
+        self.assert_status(exchange, b"500")
+        self.assertEqual(len(self.log), 1)
+        self.assertIn("dict", self.log[0])
+
+    def test_attribute_missing_before_response(self):
+        write_saved(self.save_dir, "abc123", stale_resource(self.cfg, "descend"))
+        self.assert_load_failure(self.get(), "descend")
+
+    def test_attribute_missing_for_check_name(self):
+        write_saved(self.save_dir, "abc123", stale_resource(self.cfg, "subreqs"))
+        self.assert_load_failure(self.get(query=b"check_name=x"), "subreqs")
+
+    def test_attribute_missing_while_rendering(self):
+        write_saved(self.save_dir, "abc123", stale_resource(self.cfg, "request"))
+        exchange = self.get()
+        # Output had already started, so the response is ended rather than replaced.
+        self.assert_status(exchange, b"200")
+        exchange.response_done.assert_called_once()
+        self.assertEqual(len(self.log), 1)
+        self.assertIn("Traceback", self.log[0])
+        self.assertIn("request", self.log[0])
+
+    def test_corrupt_files(self):
+        for name, payload, compress in [
+            ("empty", b"", True),
+            ("truncated", pickle.dumps({"a": 1})[:5], True),
+            ("notpickle", b"this is not a pickle", True),
+        ]:
+            with self.subTest(name):
+                self.log.clear()
+                write_saved(self.save_dir, name, payload, compress)
+                self.assert_status(self.get(name), b"500")
+                self.assertEqual(len(self.log), 1)
+
+    def test_not_gzip_is_not_found(self):
+        write_saved(self.save_dir, "plain", b"plain text", compress=False)
+        self.assert_status(self.get("plain"), b"404")
+
+    def test_absent_file_is_not_found(self):
+        self.assert_status(self.get("nothere"), b"404")
+        self.assertEqual(self.log, [])
 
 
 class TestSaveFormRendering(unittest.TestCase):
@@ -241,6 +366,70 @@ class TestUnwritableSaveDirDaemon(unittest.TestCase):
             self.assertEqual(response.status, 200)
         self.stop_daemon()
         self.assertIn("save_dir", self.stderr)
+
+
+class TestUnusableSavedTestDaemon(unittest.TestCase):
+    """Regression test for #483: loading a stale saved test must not stop the daemon."""
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        save_dir = os.path.join(tmp.name, "save")
+        os.mkdir(save_dir)
+        write_saved(save_dir, "missingclass", MISSING_CLASS)
+        write_saved(save_dir, "missingmodule", MISSING_MODULE)
+
+        self.port = free_port()
+        conf_file = os.path.join(tmp.name, "config.txt")
+        with open(conf_file, "w", encoding="utf-8") as fh:
+            fh.write(
+                "[redbot]\nhost = 127.0.0.1\nstatic_root = static\n"
+                f"port = {self.port}\nsave_dir = {save_dir}\n"
+            )
+        self.daemon = subprocess.Popen(
+            [sys.executable, "-m", "redbot.daemon", conf_file],
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        self.stderr = ""
+        self.addCleanup(self.stop_daemon)
+        deadline = time.time() + 20
+        while time.time() < deadline:
+            self.assertIsNone(self.daemon.poll(), "daemon exited during startup")
+            try:
+                socket.create_connection(("127.0.0.1", self.port), timeout=1).close()
+                return
+            except OSError:
+                time.sleep(0.1)
+        self.fail("daemon did not start")
+
+    def stop_daemon(self):
+        "Stop the daemon and collect its stderr; safe to call twice."
+        if self.daemon.poll() is None:
+            self.daemon.terminate()
+        try:
+            _, err = self.daemon.communicate(timeout=10)
+        except subprocess.TimeoutExpired:
+            self.daemon.kill()
+            _, err = self.daemon.communicate()
+        self.stderr = self.stderr or err or ""
+
+    def status(self, path):
+        try:
+            with urllib.request.urlopen(f"http://127.0.0.1:{self.port}{path}", timeout=10) as r:
+                return r.status
+        except urllib.error.HTTPError as why:
+            return why.code
+
+    def test_daemon_survives(self):
+        for test_id in ["missingclass", "missingmodule"]:
+            self.assertEqual(self.status(f"/saved/{test_id}"), 500)
+            self.assertIsNone(self.daemon.poll(), "daemon exited")
+        self.assertEqual(self.status("/saved/nothere"), 404)
+        self.assertEqual(self.status("/"), 200)
+        self.stop_daemon()
+        self.assertIn("NoSuchClass", self.stderr)
+        self.assertNotIn("FATAL", self.stderr)
 
 
 if __name__ == "__main__":
