@@ -108,6 +108,8 @@ class BasicWebUiTest(unittest.TestCase):
         query = parse_qs(urlsplit(info.value.url).query)
         self.assertEqual(query["uri"], [uri])
         self.assertEqual(query["req_hdr"], [hdr])
+        # Let the check finish; closing the page mid-response intermittently hung CI.
+        self.check_complete()
 
     def test_view_har(self):
         with self.page.expect_response(lambda response: "format=har" in response.url) as response_info:
