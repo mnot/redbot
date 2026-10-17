@@ -10,6 +10,7 @@ import thor
 from thor.http import HttpClient, get_header
 from thor.http.error import HttpError
 
+from redbot.formatter.text import escape_controls
 from redbot.type import RawHeaderListType, RedWebUiProtocol
 
 token_client = HttpClient()
@@ -32,6 +33,24 @@ CAPTCHA_PROVIDERS: Dict[str, Dict[str, bytes]] = {
 
 # int() accepts Unicode digits and has a conversion length limit; real timestamps are 10 digits.
 HUMAN_TIME_RE = re.compile(r"[0-9]{1,16}")
+
+# Provider replies are a few hundred bytes; don't buffer more than this.
+MAX_REPLY_SIZE = 64 * 1024
+# Bound how much of a provider-supplied error list reaches the page and the log.
+MAX_ERROR_CODES = 10
+MAX_ERROR_CODE_LENGTH = 64
+
+
+def format_error_codes(codes: object) -> str:
+    """
+    Render a provider's "error-codes" value for display and logging. The provider controls it,
+    so accept only a non-empty list, coerce its items to bounded, control-free strings.
+    """
+    if not isinstance(codes, list) or not codes:
+        return "unknown error"
+    return ", ".join(
+        escape_controls(str(code)[:MAX_ERROR_CODE_LENGTH]) for code in codes[:MAX_ERROR_CODES]
+    )
 
 
 class CaptchaHandler:
@@ -110,6 +129,7 @@ class CaptchaHandler:
         exchange = token_client.exchange()
         captcha_status: bytes = b""
         captcha_body: bytes = b""
+        too_large = False
         decided = False
 
         @thor.events.on(exchange)
@@ -132,8 +152,13 @@ class CaptchaHandler:
 
         @thor.events.on(exchange)
         def response_body(chunk: bytes) -> None:
-            nonlocal captcha_body
+            nonlocal captcha_body, too_large
+            if too_large:
+                return
             captcha_body += chunk
+            if len(captcha_body) > MAX_REPLY_SIZE:
+                too_large = True
+                captcha_body = b""
 
         @thor.events.on(exchange)
         def response_done(_: RawHeaderListType) -> None:
@@ -141,27 +166,23 @@ class CaptchaHandler:
             if decided:
                 return
             decided = True
-            try:
-                results = json.loads(captcha_body)
-            except ValueError:
-                if captcha_status != b"200":
-                    status = captcha_status.decode("utf-8")
-                    e_str = f"Captcha server returned {status} status code"
-                else:
-                    e_str = "Captcha server response error"
-                self.error_response(
-                    b"500",
-                    b"Internal Server Error",
-                    e_str,
-                    e_str,
-                )
+            if captcha_status != b"200":
+                status = escape_controls(captcha_status.decode("utf-8", "replace"))
+                self._reply_error(f"Captcha server returned {status} status code")
                 return
-            if results.get("success", False):
+            results: Any = None
+            if not too_large:
+                try:
+                    results = json.loads(captcha_body)
+                except (ValueError, RecursionError):
+                    pass
+            if not isinstance(results, dict):
+                self._reply_error("Captcha server response error")
+                return
+            if results.get("success") is True:
                 self.continue_test(self.issue_human())
             else:
-                e_str = (
-                    "Captcha errors:" f"{', '.join(results.get('error-codes', ['unknown error']))}"
-                )
+                e_str = f"Captcha errors:{format_error_codes(results.get('error-codes'))}"
                 self.error_response(
                     b"403",
                     b"Forbidden",
@@ -181,6 +202,9 @@ class CaptchaHandler:
         )
         exchange.request_body(urlencode(request_form).encode("utf-8", "replace"))
         exchange.request_done([])
+
+    def _reply_error(self, e_str: str) -> None:
+        self.error_response(b"500", b"Internal Server Error", e_str, e_str)
 
     def _hmac_input(self, human_time: str) -> bytes:
         """
