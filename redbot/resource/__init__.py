@@ -59,7 +59,7 @@ class HttpResource(RedFetcher):
     if descend is true, the response will be parsed for links and HttpResources started for each
     link, enumerated in .linked. Linked resources don't run active checks.
 
-    Emits "check_done" when everything has finished.
+    Emits "check_done" once, when everything has finished.
     """
 
     check_name = "default"
@@ -97,9 +97,15 @@ class HttpResource(RedFetcher):
         Response is available; perform subordinate requests (e.g., conneg check).
         """
         if self.response.complete and self.active_checks_enabled:
-            for active_check in list(self.subreqs.values()):
-                self.add_check(active_check)
-                active_check.check()
+            # Register every check before starting any: one that finishes synchronously mustn't
+            # empty the task map while others are still to be started.
+            active = list(self.subreqs.values())
+            self.add_check(*active)
+            for active_check in active:
+                try:
+                    active_check.check()
+                except Exception as why:  # pylint: disable=broad-except
+                    self._abandon_check(active_check, why)
         else:
             self.finish_check()
 
@@ -143,9 +149,23 @@ class HttpResource(RedFetcher):
         tasks_left = len(self._task_map)
         #        self.emit("debug", "%s checks remaining: %i" % (repr(self), tasks_left))
         # Links that fail immediately mustn't complete us while we're still reading the response.
-        if tasks_left == 0 and self.fetch_done:
+        if tasks_left == 0 and self.fetch_done and not self.check_done:
             self.check_done = True
             self.emit("check_done")
+
+    def _abandon_check(self, check: RedFetcher, why: Exception) -> None:
+        "A check raised while starting; make sure it can't leave us waiting for it."
+        check.fetch_error = check.fetch_error or HttpError(str(why))
+        try:
+            check.stop()
+        except Exception:  # pylint: disable=broad-except
+            pass
+        if check in self._task_map:  # stop() didn't complete it
+            self.finish_check(check)
+        try:  # after cleanup, so a failing listener can't undo it
+            self.emit("debug", f"{check.check_name} check failed: {why!r}")
+        except Exception:  # pylint: disable=broad-except
+            pass
 
     def show_task_map(self, watch: bool = False) -> Union[str, None]:
         """
