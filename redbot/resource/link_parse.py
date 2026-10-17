@@ -4,13 +4,12 @@
 Parse links from a stream of HTML data.
 """
 
-import codecs
 from html.parser import HTMLParser
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-from httplint.field.utils import split_string, unquote_string
+from httplint.charset import is_text_encoding, whatwg_encoding
+from httplint.field.utils import split_params, unquote_string
 from httplint.message import HttpMessageLinter
-from httplint.syntax import rfc9110
 
 from redbot.utils import decode_text
 
@@ -119,18 +118,23 @@ class HTMLLinkParser(HTMLParser):
                     media_type, params = ct, ""
                 media_type = media_type.lower()
                 param_dict: Dict[str, Optional[str]] = {}
-                for param in split_string(params, rfc9110.parameter, r"\s*;\s*"):
+                for param in split_params(params):
                     try:
                         attr, val = param.split("=", 1)
                         param_dict[attr.lower()] = unquote_string(val)
                     except ValueError:
                         param_dict[param.lower()] = None
-                enc = param_dict.get("charset", self.message.character_encoding) or DEFAULT_ENCODING
-                try:
-                    codecs.lookup(enc)
-                    self.message.character_encoding = enc
-                except LookupError:
-                    pass
+                self._set_meta_charset(param_dict.get("charset"))
+
+    def _set_meta_charset(self, label: Optional[str]) -> None:
+        """
+        Use a <meta> charset the way httplint treats one from the header: only if the
+        Encoding Standard and Python both know the label. Otherwise, keep what's there.
+        """
+        encoding = whatwg_encoding(label)
+        if label and encoding not in (None, "replacement") and is_text_encoding(label):
+            self.message.whatwg_encoding = encoding
+            self.message.character_encoding = label
 
     def error(self, message: str) -> None:
         self.errors += 1
