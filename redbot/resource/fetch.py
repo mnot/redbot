@@ -116,6 +116,11 @@ class RedFetcher(thor.events.EventEmitter):
             out.append("fetch_done")
         return f"<{', '.join(out)} at {id(self):#x}>"
 
+    @property
+    def has_response(self) -> bool:
+        "Whether a status line arrived, so there are headers to show even if the body failed."
+        return self.response.status_code is not None
+
     def preflight(self) -> bool:
         """
         Check to see if we should bother running. Return True
@@ -299,6 +304,7 @@ class RedFetcher(thor.events.EventEmitter):
         assert self.exchange.res_version, "exchange.res_version not set in _response_start"
         self.response.process_response_topline(self.exchange.res_version, status, phrase)
         self.response.process_headers(res_headers)
+        self.response_header_length = self.exchange.input_header_length
         self.emit("response_headers_available")
 
     def _response_body(self, chunk: bytes) -> None:
@@ -348,6 +354,7 @@ class RedFetcher(thor.events.EventEmitter):
                 self.response.notes.add("body", EXTRA_DATA, sample=err_sample)
         elif isinstance(error, httperr.ChunkError):
             self.response.notes.add("field-transfer-encoding", BAD_CHUNK, chunk_sample=err_sample)
+            self.fetch_error = error  # thor stops the response here, so it never completes
         elif isinstance(error, httperr.HeaderSpaceError) and error.detail:
             subject = f"field-{error.detail.lower().strip()}"
             self.response.notes.add(subject, HEADER_NAME_SPACE, header_name=error.detail)
