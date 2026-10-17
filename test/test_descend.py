@@ -244,6 +244,56 @@ class TestLinkedResourceChecks(unittest.TestCase):
             self.assertIsNone(getattr(linked, attr), attr)
 
 
+class TestUnresolvableLinks(unittest.TestCase):
+    "A link urljoin rejects is listed as failed; it doesn't stop the links around it."
+
+    REJECTED = [
+        "http://[bad/x.js",
+        "http://[::1",
+        "//[",
+        "http://]/x.js",
+        "http://＃/x.js",  # fails NFKC normalisation of the netloc
+        "http://[" + "a" * 100000,
+    ]
+
+    @staticmethod
+    def resource() -> HttpResource:
+        resource = HttpResource(make_config()["redbot"], descend=True)
+        resource.set_request(TOP)
+        return resource
+
+    def test_rejected_links_are_listed_as_failed(self) -> None:
+        for link in self.REJECTED:
+            for order in ([link, "/good.js"], ["/good.js", link]):
+                with self.subTest(link=link[:20], first=order[0][:5]):
+                    resource = self.resource()
+                    with mock.patch.object(HttpResource, "check") as check:
+                        for item in order:
+                            resource.process_link(TOP, item, "script", "")
+                    check.assert_called_once()
+                    linked = {item: r for item, (r, _tag) in zip(order, resource.linked)}
+                    bad, good = linked[link], linked["/good.js"]
+                    assert bad.fetch_error is not None
+                    self.assertIsInstance(bad.fetch_error, UrlError)
+                    self.assertLess(len(bad.fetch_error.detail or ""), 100)
+                    self.assertTrue(bad.fetch_done)
+                    self.assertEqual(bad.request.uri, link)
+                    self.assertIsNone(good.fetch_error)
+                    # only the good link is still outstanding
+                    self.assertEqual(resource._task_map, {good})  # pylint: disable=protected-access
+
+    def test_invalid_base_is_ignored(self) -> None:
+        resource = self.resource()
+        with mock.patch.object(HttpResource, "check") as check:
+            resource.process_link("http://[bad/", "/rel.js", "img", "")
+            resource.process_link("http://[bad/", "https://other.example/abs.js", "img", "")
+        self.assertEqual(check.call_count, 2)
+        self.assertEqual(
+            [(r.request.uri, r.fetch_error) for (r, _tag) in resource.linked],
+            [("https://example.com/rel.js", None), ("https://other.example/abs.js", None)],
+        )
+
+
 class LocalServers:
     "Two local HTTP servers that record the request headers they receive, by (port, path)."
 
@@ -309,6 +359,20 @@ class UnsendableLinkServers(LocalServers):
             "<html><head>"
             f'<script src="ftp://127.0.0.1:{same}/bad.js"></script>'
             f'<script src="http://127.0.0.1:{same}/good.js"></script>'
+            "</head><body>hi</body></html>"
+        )
+
+
+class BadLinkServers(LocalServers):
+    "Serves a page with an invalid <base>, and a good link between two urljoin rejects."
+
+    def page(self) -> str:
+        same, _other = self.ports
+        return (
+            '<html><head><base href="http://[bad/">'
+            '<script src="http://[bad/x.js"></script>'
+            f'<script src="http://127.0.0.1:{same}/good.js"></script>'
+            '<script src="//[/y.js"></script>'
             "</head><body>hi</body></html>"
         )
 
@@ -415,6 +479,49 @@ class TestUnencodableUri(unittest.TestCase):
         self.assertIsNone(by_path["/good.js"].fetch_error)
         self.assertTrue(by_path["/good.js"].response.complete)
         self.assertNotIn((same, "/bad.js"), servers.seen)
+
+
+class TestUnresolvableLink(unittest.TestCase):
+    "Real servers; the page has an invalid <base> and a good link between two urljoin rejects."
+
+    def test_good_link_after_bad_link_is_checked(self) -> None:
+        saved_check_ip = RedFetcher.client.check_ip
+        RedFetcher.client.check_ip = None
+        servers = BadLinkServers()
+        done: List[str] = []
+        timed_out: List[bool] = []
+
+        def give_up() -> None:
+            timed_out.append(True)
+            thor.stop()
+
+        def check_done() -> None:
+            done.append("check_done")
+            thor.schedule(0.5, thor.stop)  # long enough to catch a second check_done
+
+        try:
+            same, _other = servers.ports
+            resource = HttpResource(make_config()["redbot"], descend=True)
+            resource.set_request(f"http://127.0.0.1:{same}/page")
+            resource.on("check_done", check_done)
+            timeout = thor.schedule(20, give_up)
+            resource.check()
+            thor.run()
+            timeout.delete()
+        finally:
+            servers.close()
+            RedFetcher.client.check_ip = saved_check_ip
+        self.assertFalse(timed_out, "test stalled")
+        self.assertEqual(done, ["check_done"])
+        self.assertEqual(len(resource.linked), 3)
+        first, good, last = (r for (r, _tag) in resource.linked)
+        for bad in (first, last):
+            self.assertIsInstance(bad.fetch_error, UrlError)
+        self.assertEqual(first.request.uri, "http://[bad/x.js")
+        self.assertIsNone(good.fetch_error)
+        self.assertTrue(good.response.complete)
+        self.assertEqual(len(servers.seen[(same, "/good.js")]), 1)
+        self.assertNotIn("/x.js", [path for (_port, path) in servers.seen])
 
 
 class TestDescendEndToEnd(unittest.TestCase):
