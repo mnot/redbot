@@ -1,5 +1,6 @@
 import hmac
 import json
+import re
 import time
 from http import cookies
 from typing import Any, Callable, Dict
@@ -28,6 +29,9 @@ CAPTCHA_PROVIDERS: Dict[str, Dict[str, bytes]] = {
         "script_url": b"https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit",
     },
 }
+
+# int() accepts Unicode digits and has a conversion length limit; real timestamps are 10 digits.
+HUMAN_TIME_RE = re.compile(r"[0-9]{1,16}")
 
 
 class CaptchaHandler:
@@ -83,7 +87,7 @@ class CaptchaHandler:
         human_time = cookiejar.get("human_time", None)
         human_hmac = cookiejar.get("human_hmac", None)
 
-        if human_time and human_time.value.isdigit() and human_hmac:
+        if human_time and HUMAN_TIME_RE.fullmatch(human_time.value) and human_hmac:
             if self.verify_human(int(human_time.value), human_hmac.value):
                 self.continue_test()
             else:
@@ -215,5 +219,8 @@ class CaptchaHandler:
         Check the user's human HMAC.
         """
         computed_hmac = hmac.new(self.secret, self._hmac_input(str(human_time)), "sha512")
-        is_valid = hmac.compare_digest(human_hmac, computed_hmac.hexdigest())
+        # compare_digest() raises TypeError on non-ASCII str; compare bytes instead.
+        is_valid = hmac.compare_digest(
+            human_hmac.encode("utf-8"), computed_hmac.hexdigest().encode("ascii")
+        )
         return bool(is_valid and human_time >= time.time())

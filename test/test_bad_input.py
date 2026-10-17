@@ -192,5 +192,45 @@ class TestHostileTargetOrReferer(unittest.TestCase):
         self.assertEqual(ui.error_response.call_args[0][0], b"403")
 
 
+class TestDaemonSurvivesHostileCookies(unittest.TestCase):
+    """
+    #466: an exception out of RedWebUi makes RedRequestHandler.request_done stop
+    the whole daemon, so run real requests through it with a captcha configured.
+    """
+
+    def post_check(self, cookie):
+        exchange = MagicMock()
+        server = SimpleNamespace(
+            config=config(
+                captcha_provider="hcaptcha",
+                captcha_secret="s3cret",
+                captcha_sitekey="key",
+            ),
+            static_root=b"/static",
+            extra_files={},
+            ui_path=b"/",
+            signer=None,
+            static_files=MagicMock(),
+            console=MagicMock(),
+        )
+        handler = RedRequestHandler(exchange, server)
+        handler.client_ip = "192.0.2.1"
+        handler.method = b"POST"
+        handler.uri = b"/check?uri=http://127.0.0.1:8001/"
+        handler.req_hdrs = [(b"Host", b"x"), (b"Cookie", cookie)]
+        handler.request_done([])
+        return exchange.response_start.call_args[0][0]
+
+    def test_non_ascii_hmac(self):
+        self.assertEqual(self.post_check(b'human_time=9999999999; human_hmac="\\351"'), b"403")
+
+    def test_non_ascii_time(self):
+        self.assertEqual(self.post_check(b'human_time="\\262"; human_hmac=abc'), b"403")
+
+    def test_overlong_time(self):
+        cookie = b"human_time=" + b"9" * 5000 + b"; human_hmac=abc"
+        self.assertEqual(self.post_check(cookie), b"403")
+
+
 if __name__ == "__main__":
     unittest.main()
