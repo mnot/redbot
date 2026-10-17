@@ -6,13 +6,26 @@ The <meta http-equiv="content-type"> handling in the link parser.
 
 import time
 import unittest
-from typing import List, Optional, Tuple
+from configparser import ConfigParser
+from typing import Dict, List, Optional, Tuple
+from urllib.parse import unquote
 
+import thor
+import thor.http
 from httplint.message import HttpMessageLinter
 
+from redbot.resource import HttpResource
+from redbot.resource.fetch import RedFetcher
 from redbot.resource.link_parse import HTMLLinkParser
 
-Charset = Tuple[Optional[str], Optional[str]]
+# label: (decode_as, character_encoding, whatwg_encoding)
+Classes = Dict[str, Tuple[Optional[str], Optional[str], Optional[str]]]
+
+
+def make_config() -> ConfigParser:
+    conf = ConfigParser()
+    conf.read_dict({"redbot": {"enable_local_access": "yes", "max_runtime": "20"}})
+    return conf
 
 
 def meta_tag(params: str) -> bytes:
@@ -26,97 +39,139 @@ def new_message(content_type: str = "text/html") -> HttpMessageLinter:
     return message
 
 
-def charset_from_header(label: str) -> Charset:
-    message = new_message(f"text/html; charset={label}")
-    return message.character_encoding, message.whatwg_encoding
-
-
-def charset_from_meta(label: str) -> Charset:
-    message = new_message()
-    HTMLLinkParser(message, []).feed_bytes(meta_tag(f"charset={label}"))
-    return message.character_encoding, message.whatwg_encoding
-
-
-def links_after_meta(label: str, content_type: str = "text/html") -> List[str]:
-    "Links from a non-ASCII (ISO-8859-1) body that follows a meta tag naming `label`."
-    links: List[str] = []
-    parser = HTMLLinkParser(
-        new_message(content_type), [lambda base, link, tag, title: links.append(link)]
-    )
-    parser.feed_bytes(meta_tag(f"charset={label}"))
-    parser.feed_bytes('<a href="/caf\xe9">x</a>'.encode("latin-1"))
-    return links
+def parse_meta(params: str, message: Optional[HttpMessageLinter] = None) -> HTMLLinkParser:
+    parser = HTMLLinkParser(message or new_message(), [])
+    parser.feed_bytes(meta_tag(params))
+    return parser
 
 
 class TestMetaCharset(unittest.TestCase):
-    def test_same_as_header(self) -> None:
-        labels = [
-            # Encoding Standard labels
-            "utf-8", "UTF-8", "utf8", "latin1", "iso-8859-1", "windows-1252", "cp1252",
-            "gb2312", "shift_jis", "macintosh", "ISO-8859-2", "iso-2022-kr",
-            # Python names that aren't labels, and unknown ones
-            "latin-1", "utf-7", "utf_8", "mac-roman", "unicode_escape", "hex", "no-such-charset",
-        ]  # fmt: skip
-        for label in labels:
+    def test_label_classes(self) -> None:
+        # Standard labels set the message as a header would; Python-only text encodings only
+        # decode; everything else is ignored.
+        expected: Classes = {
+            "latin1": (None, "latin1", "windows-1252"),
+            "windows-1252": (None, "windows-1252", "windows-1252"),
+            "gb2312": (None, "gb2312", "GBK"),
+            "shift_jis": (None, "shift_jis", "Shift_JIS"),
+            "latin-1": ("latin-1", None, None),
+            "mac-roman": ("mac-roman", None, None),
+            "euc_jp": ("euc_jp", None, None),
+            "utf-7": (None, None, None),
+            "utf-32": (None, None, None),
+            "iso-2022-kr": (None, None, None),
+            "hex": (None, None, None),
+            "unicode_escape": (None, None, None),
+            "rot13": (None, None, None),
+            "unknown": (None, None, None),
+        }
+        for label, classes in expected.items():
             with self.subTest(label=label):
-                meta = charset_from_meta(label)
-                header = charset_from_header(label)
-                self.assertEqual(meta[0], header[0])
-                if meta[0]:
-                    self.assertEqual(meta[1], header[1])
+                parser = parse_meta(f"charset={label}")
+                message = parser.message
+                self.assertEqual(
+                    (parser.decode_as, message.character_encoding, message.whatwg_encoding),
+                    classes,
+                )
+                header = new_message(f"text/html; charset={label}")
+                self.assertEqual(message.character_encoding, header.character_encoding)
 
-    def test_known_labels(self) -> None:
-        self.assertEqual(charset_from_meta("latin1"), ("latin1", "windows-1252"))
-        self.assertEqual(charset_from_meta("gb2312"), ("gb2312", "GBK"))
-        self.assertEqual(charset_from_meta("UTF-8"), ("UTF-8", "UTF-8"))
+    def test_later_meta_wins(self) -> None:
+        parser = parse_meta("charset=latin-1")
+        parser.feed_bytes(meta_tag("charset=utf-8"))
+        self.assertEqual((parser.decode_as, parser.message.character_encoding), (None, "utf-8"))
 
-    def test_unknown_labels(self) -> None:
-        for label in ["latin-1", "utf-7", "utf_8", "mac-roman", "hex", "bogus", "iso-2022-kr"]:
-            with self.subTest(label=label):
-                self.assertEqual(charset_from_meta(label), (None, None))
-
-    def test_unknown_label_keeps_header(self) -> None:
+    def test_unusable_keeps_header(self) -> None:
         message = new_message("text/html; charset=windows-1252")
-        HTMLLinkParser(message, []).feed_bytes(meta_tag("charset=utf-7"))
-        self.assertEqual(message.character_encoding, "windows-1252")
-        self.assertEqual(message.whatwg_encoding, "windows-1252")
+        parser = parse_meta("charset=utf-7", message)
+        self.assertEqual(
+            (parser.decode_as, message.character_encoding, message.whatwg_encoding),
+            (None, "windows-1252", "windows-1252"),
+        )
 
     def test_quoted_among_other_params(self) -> None:
-        message = new_message()
-        HTMLLinkParser(message, []).feed_bytes(meta_tag('format=flowed; charset="latin1"; x=y'))
-        self.assertEqual(message.character_encoding, "latin1")
+        parser = parse_meta('format=flowed; charset="latin1"; x=y')
+        self.assertEqual(parser.message.character_encoding, "latin1")
 
     def test_no_charset_changes_nothing(self) -> None:
         for content_type in ["text/html", "text/html; charset=windows-1252"]:
             message = new_message(content_type)
             before = (message.character_encoding, message.whatwg_encoding)
-            parser = HTMLLinkParser(message, [])
-            parser.feed_bytes(meta_tag("format=flowed"))
+            parser = parse_meta("format=flowed", message)
             parser.feed_bytes(meta_tag("charset"))
             self.assertEqual((message.character_encoding, message.whatwg_encoding), before)
-
-    def test_body_decoded_with_label(self) -> None:
-        for label in ["latin1", "windows-1252"]:
-            with self.subTest(label=label):
-                self.assertEqual(links_after_meta(label), ["/caf\xe9"])
-
-    def test_unknown_label_decodes_utf8(self) -> None:
-        # the invalid byte is dropped, as when the header has the label
-        for label in ["latin-1", "utf-7", "mac-roman", "no-such-charset"]:
-            with self.subTest(label=label):
-                self.assertEqual(links_after_meta(label), ["/caf"])
-                self.assertEqual(links_after_meta(label, f"text/html; charset={label}"), ["/caf"])
+            self.assertIsNone(parser.decode_as)
 
 
 class TestMetaParams(unittest.TestCase):
     def test_pathological_params(self) -> None:
-        # ~4 s each with split_string; a generous bound keeps this from being flaky
-        for params in ["a" * 64000, "a=b" + "c" * 64000 + " x", "x=" + "a;" * 32000]:
+        # ~4 s each with split_string, except the last; a generous bound avoids flakiness
+        for params in [
+            "a" * 64000,
+            "a=b" + "c" * 64000 + " x",
+            'a="' + "b" * 64000,
+            "x=" + "a;" * 32000,
+        ]:
             with self.subTest(params=params[:12]):
-                parser = HTMLLinkParser(new_message(), [])
                 start = time.perf_counter()
-                parser.feed_bytes(meta_tag(params))
+                parse_meta(params)
                 self.assertLess(time.perf_counter() - start, 1.0)
+
+
+# label: (link text, codec of the page's bytes). A <meta> only affects later chunks, so the
+# link is in the second one.
+USABLE = {
+    "latin-1": ("café", "latin-1"),
+    "mac-roman": ("café", "mac-roman"),
+    "euc_jp": ("日本", "euc_jp"),
+}
+# Not used to decode, so the (UTF-8) page is read as UTF-8, as when the header has the label.
+UNUSABLE = {label: ("café", "utf-8") for label in ["utf-7", "hex", "unicode_escape", "bogus"]}
+
+
+def serve_page(exchange: thor.http.HttpServerExchange) -> None:
+    label = unquote(exchange.uri.decode("ascii")[1:])
+    text, codec = {**USABLE, **UNUSABLE}[label]
+    head = f"<meta http-equiv=content-type content='text/html; charset={label}'>".encode()
+    exchange.response_start(b"200", b"OK", [(b"Content-Type", b"text/html")])
+    exchange.response_body(head)
+
+    def second_chunk() -> None:
+        exchange.response_body(f'<a href="/{text}">x</a>'.encode(codec))
+        exchange.response_done([])
+
+    thor.schedule(0.2, second_chunk)
+
+
+class TestMetaDecoding(unittest.TestCase):
+    "Links in a page whose <meta> charset arrives in an earlier chunk, over a real connection."
+
+    @staticmethod
+    def links(label: str) -> List[str]:
+        # A fresh server per page; fetching a second page from the same server stalled.
+        saved_check_ip = RedFetcher.client.check_ip
+        RedFetcher.client.check_ip = None
+        server = thor.http.HttpServer(b"127.0.0.1", 0)
+        server.on("exchange", serve_page)
+        sock = server.tcp_server.sock
+        assert sock is not None
+        try:
+            resource = HttpResource(make_config()["redbot"], descend=True)
+            resource.set_request(f"http://127.0.0.1:{sock.getsockname()[1]}/{label}")
+            resource.on("check_done", thor.stop)
+            timeout = thor.schedule(20, thor.stop)
+            resource.check()
+            thor.run()
+            timeout.delete()
+        finally:
+            server.shutdown()
+            RedFetcher.client.check_ip = saved_check_ip
+        return sorted(resource.links["a"]) if resource.check_done else ["timed out"]
+
+    def test_links_decoded(self) -> None:
+        for label, (text, _codec) in {**USABLE, **UNUSABLE}.items():
+            with self.subTest(label=label):
+                self.assertEqual(self.links(label), [f"/{text}"])
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@
 Parse links from a stream of HTML data.
 """
 
+import codecs
 from html.parser import HTMLParser
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
@@ -15,6 +16,18 @@ from redbot.utils import decode_text
 
 DEFAULT_ENCODING = "utf-8"
 MAX_FEED_BYTES = 2 * 1024 * 1024
+
+# Python codecs that decode bytes to text but that a <meta> must not select: UTF-7 and
+# UTF-16/32 (HTML treats a UTF-16 <meta> as UTF-8), and ones that aren't character encodings.
+NOT_META_CHARSETS = (
+    "utf_7",
+    "utf_16",
+    "utf_32",
+    "unicode_escape",
+    "raw_unicode_escape",
+    "idna",
+    "punycode",
+)
 
 
 class HTMLLinkParser(HTMLParser):
@@ -60,6 +73,7 @@ class HTMLLinkParser(HTMLParser):
         self.last_err_pos: int = 0
         self.ok = True
         self.bytes_fed = 0
+        self.decode_as: Optional[str] = None
         HTMLParser.__init__(self)
 
     def __getstate__(self) -> Dict[str, Any]:
@@ -72,7 +86,7 @@ class HTMLLinkParser(HTMLParser):
             if self.bytes_fed > MAX_FEED_BYTES:
                 self.ok = False
                 return
-            encoding = self.message.character_encoding or DEFAULT_ENCODING
+            encoding = self.decode_as or self.message.character_encoding or DEFAULT_ENCODING
             decoded = decode_text(bchunk, encoding, "ignore")
             self.feed(decoded)
 
@@ -128,13 +142,22 @@ class HTMLLinkParser(HTMLParser):
 
     def _set_meta_charset(self, label: Optional[str]) -> None:
         """
-        Use a <meta> charset the way httplint treats one from the header: only if the
-        Encoding Standard and Python both know the label. Otherwise, keep what's there.
+        Apply a <meta> charset. A label that the Encoding Standard and Python both know is
+        recorded on the message, as for the header. A Python-only text encoding (`latin-1`,
+        `mac-roman`) is only used to decode later chunks, so the message never claims it.
+        Anything else is ignored.
         """
+        if not label or not is_text_encoding(label):
+            return
         encoding = whatwg_encoding(label)
-        if label and encoding not in (None, "replacement") and is_text_encoding(label):
+        if encoding == "replacement":
+            return
+        if encoding:
             self.message.whatwg_encoding = encoding
             self.message.character_encoding = label
+            self.decode_as = None
+        elif not codecs.lookup(label).name.replace("-", "_").startswith(NOT_META_CHARSETS):
+            self.decode_as = label
 
     def error(self, message: str) -> None:
         self.errors += 1
