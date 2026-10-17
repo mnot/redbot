@@ -3,13 +3,14 @@ import json
 import re
 import time
 from http import cookies
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Optional
 from urllib.parse import parse_qs, urlencode
 
 import thor
 from thor.http import HttpClient, get_header
 from thor.http.error import HttpError
 
+from redbot.formatter.text import escape_controls
 from redbot.type import RawHeaderListType, RedWebUiProtocol
 
 token_client = HttpClient()
@@ -32,6 +33,33 @@ CAPTCHA_PROVIDERS: Dict[str, Dict[str, bytes]] = {
 
 # int() accepts Unicode digits and has a conversion length limit; real timestamps are 10 digits.
 HUMAN_TIME_RE = re.compile(r"[0-9]{1,16}")
+
+# Provider replies are a few hundred bytes; don't buffer more than this.
+MAX_REPLY_SIZE = 64 * 1024
+# Bound how much of a provider-supplied error list reaches the page and the log.
+MAX_ERROR_CODES = 10
+MAX_ERROR_CODE_LENGTH = 64
+
+
+def format_error_codes(codes: object) -> str:
+    """
+    Render a provider's "error-codes" value for display and logging. The provider controls it,
+    so accept only a non-empty list, coerce its items to bounded, control-free strings.
+    """
+    if not isinstance(codes, list) or not codes:
+        return "unknown error"
+    return ", ".join(
+        escape_controls(str(code)[:MAX_ERROR_CODE_LENGTH]) for code in codes[:MAX_ERROR_CODES]
+    )
+
+
+def parse_reply(body: bytes) -> Optional[Dict[str, Any]]:
+    "Return the provider's reply if it is a JSON object, otherwise None."
+    try:
+        results = json.loads(body)
+    except (ValueError, RecursionError):
+        return None
+    return results if isinstance(results, dict) else None
 
 
 class CaptchaHandler:
@@ -112,17 +140,32 @@ class CaptchaHandler:
         captcha_body: bytes = b""
         decided = False
 
+        def reject(results: Optional[Dict[str, Any]]) -> None:
+            "Fail on a reply that can't be a verdict, with `results` as parsed if it was."
+            if captcha_status != b"200":
+                status = escape_controls(captcha_status.decode("utf-8", "replace"))
+                e_str = f"Captcha server returned {status} status code"
+                codes = results.get("error-codes") if results else None
+                if isinstance(codes, list) and codes:
+                    log_str = f"{e_str} ({format_error_codes(codes)})"
+                else:
+                    log_str = e_str
+            else:
+                e_str = log_str = "Captcha server response error"
+            self.error_response(b"500", b"Internal Server Error", e_str, log_str)
+
         @thor.events.on(exchange)
         def error(err_msg: HttpError) -> None:
             nonlocal decided
             if decided:
                 return
             decided = True
+            detail = f"{err_msg.desc} ({err_msg.detail})" if err_msg.detail else err_msg.desc
             self.error_response(
                 b"403",
                 b"Forbidden",
                 "There was a problem with the captcha server; please try again soon.",
-                f"Captcha error: {err_msg}.",
+                escape_controls(f"Captcha error: {detail}."),
             )
 
         @thor.events.on(exchange)
@@ -132,8 +175,16 @@ class CaptchaHandler:
 
         @thor.events.on(exchange)
         def response_body(chunk: bytes) -> None:
-            nonlocal captcha_body
+            nonlocal captcha_body, decided
+            if decided:
+                return
             captcha_body += chunk
+            if len(captcha_body) > MAX_REPLY_SIZE:
+                decided = True
+                captcha_body = b""
+                reject(None)
+                if exchange.conn:
+                    exchange.conn.tcp_conn.abort()
 
         @thor.events.on(exchange)
         def response_done(_: RawHeaderListType) -> None:
@@ -141,27 +192,14 @@ class CaptchaHandler:
             if decided:
                 return
             decided = True
-            try:
-                results = json.loads(captcha_body)
-            except ValueError:
-                if captcha_status != b"200":
-                    status = captcha_status.decode("utf-8")
-                    e_str = f"Captcha server returned {status} status code"
-                else:
-                    e_str = "Captcha server response error"
-                self.error_response(
-                    b"500",
-                    b"Internal Server Error",
-                    e_str,
-                    e_str,
-                )
+            results = parse_reply(captcha_body)
+            if captcha_status != b"200" or results is None:
+                reject(results)
                 return
-            if results.get("success", False):
+            if results.get("success") is True:
                 self.continue_test(self.issue_human())
             else:
-                e_str = (
-                    "Captcha errors:" f"{', '.join(results.get('error-codes', ['unknown error']))}"
-                )
+                e_str = f"Captcha errors: {format_error_codes(results.get('error-codes'))}"
                 self.error_response(
                     b"403",
                     b"Forbidden",
