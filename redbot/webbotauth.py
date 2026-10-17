@@ -181,9 +181,7 @@ class WebBotAuthSigner:
 
     def sign_directory(self) -> List[Tuple[bytes, bytes]]:
         "Return the signature headers for the directory response."
-        # @authority is a request component, so the response signature needs ;req
-        # (RFC 9421 section 2.4; draft-meunier-http-message-signatures-directory
-        # section 5.2).
+        # Directory draft section 5.2: @authority must carry req (RFC 9421 section 2.4).
         sig_input, sig = self._build_signature(
             [(("@authority", {"req": True}), self.directory_authority)],
             DIRECTORY_TAG,
