@@ -86,28 +86,29 @@ class BaseTextFormatter(Formatter):
 
     def finish_output(self) -> None:
         "Fill in the template with RED's results."
-        self.output_resource(self.resource)
-
-    def output_resource(self, resource: HttpResource) -> None:
-        "Output the response and notes for a resource, or the error if its fetch failed."
-        if resource.response.complete or resource.nonfinal_responses:
-            if resource.nonfinal_responses:
+        if self.resource.response.complete or self.resource.nonfinal_responses:
+            if self.resource.nonfinal_responses:
                 self.output(
-                    NL.join([self.format_headers(r) for r in resource.nonfinal_responses]) + NL + NL
+                    NL.join([self.format_headers(r) for r in self.resource.nonfinal_responses])
+                    + NL
+                    + NL
                 )
-            if resource.response.complete:
-                self.output(self.format_headers(resource.response) + NL + NL)
-            elif isinstance(resource.fetch_error, httperr.HttpError):
-                self.output(self.error_template % self._format_fetch_error(resource.fetch_error))
-
-            self.output(self.format_recommendations(resource) + NL)
-        else:
-            if resource.fetch_error is None:
-                pass
-            elif isinstance(resource.fetch_error, httperr.HttpError):
-                self.output(self.error_template % self._format_fetch_error(resource.fetch_error))
+            if self.resource.response.complete:
+                self.output(self.format_headers(self.resource.response) + NL + NL)
             else:
-                raise AssertionError("Unknown incomplete response error.")
+                self.output_fetch_error(self.resource)
+
+            self.output(self.format_recommendations(self.resource) + NL)
+        else:
+            self.output_fetch_error(self.resource)
+
+    def output_fetch_error(self, resource: HttpResource) -> None:
+        "Output the error for a resource whose fetch failed, if there is one."
+        if resource.fetch_error is None:
+            return
+        if not isinstance(resource.fetch_error, httperr.HttpError):
+            raise AssertionError("Unknown incomplete response error.")
+        self.output(self.error_template % self._format_fetch_error(resource.fetch_error))
 
     @staticmethod
     def _format_fetch_error(error: httperr.HttpError) -> str:
@@ -225,8 +226,13 @@ class TextListFormatter(BaseTextFormatter):
                 subresources.sort(key=operator.attrgetter("request.uri"))
                 for subresource in subresources:
                     self.output(self.format_uri(subresource) + NL + NL)
-                    self.output_resource(subresource)
-                    self.output(NL)
+                    if subresource.response.status_code is None:  # no response to show
+                        self.output_fetch_error(subresource)
+                    else:
+                        self.output(self.format_headers(subresource.response) + NL + NL)
+                        if not subresource.response.complete:
+                            self.output_fetch_error(subresource)
+                    self.output(self.format_recommendations(subresource) + NL + NL)
 
     def format_uri(self, resource: HttpResource) -> str:
         return self.colorize(None, resource.request.uri or "")

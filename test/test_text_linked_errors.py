@@ -3,7 +3,6 @@ The text list formatter reports a failed fetch for a linked resource, rather tha
 "HTTP/ None None" block (mnot/redbot#489).
 """
 
-import re
 import socket
 import socketserver
 import subprocess
@@ -11,8 +10,8 @@ import sys
 import threading
 import unittest
 from configparser import ConfigParser
-from typing import List, Type
-from unittest import mock
+from test.test_text_escape import BAD_CHARS, EVIL, EVIL_ESCAPED, render
+from typing import Callable, List, Type
 
 import thor.http.error as httperr
 
@@ -22,217 +21,181 @@ from redbot.formatter.text import (
     VerboseTextListFormatter,
 )
 from redbot.resource import HttpResource
-from redbot.resource.fetch import RedFetcher
-
-EVIL = "a\x1b]52;c;ZXZpbA==\x07\x1b[2Jb"
-EVIL_ESCAPED = "a\\x1b]52;c;ZXZpbA==\\x07\\x1b[2Jb"
-BAD_CHARS = re.compile(r"[\x00-\x08\x0b-\x1f\x7f-\x9f]")
+from redbot.resource.fetch import BAD_CHUNK
 
 FORMATTERS: List[Type[BaseTextFormatter]] = [TextListFormatter, VerboseTextListFormatter]
 
 
-def make_config() -> ConfigParser:
+def linked_resource(uri: str, error: Callable[[HttpResource], None]) -> HttpResource:
     conf = ConfigParser()
-    conf.read_dict({"redbot": {"enable_local_access": "yes"}})
-    return conf
-
-
-def render(page: HttpResource, formatter_class: Type[BaseTextFormatter]) -> str:
-    chunks: List[str] = []
-    formatter = formatter_class(page.config, page, chunks.append, {"descend": True})
-    formatter.bind_resource(page)
-    formatter.finish_output()
-    return "".join(chunks)
-
-
-def make_page(*linked: HttpResource) -> HttpResource:
-    page = HttpResource(make_config()["redbot"], descend=True)
-    page.set_request("http://example.com/page")
-    page.response.process_response_topline(b"1.1", b"200", b"OK")
-    page.response.process_headers([(b"Content-Type", b"text/html")])
-    page.response.complete = True
-    for resource in linked:
-        page.linked.append((resource, "img"))
-    return page
-
-
-def linked_resource(uri: str) -> HttpResource:
-    resource = HttpResource(make_config()["redbot"], active_checks_enabled=False)
+    conf.read_dict({"redbot": {}})
+    resource = HttpResource(conf["redbot"], active_checks_enabled=False)
     resource.set_request(uri)
+    error(resource)
     return resource
 
 
-def unsupported_resource() -> HttpResource:
-    resource = linked_resource("ftp://example.com/x.png")
-    resource.check()  # thor rejects the scheme without opening a connection
-    return resource
+def render_link(resource: HttpResource, formatter_class: Type[BaseTextFormatter]) -> str:
+    page = HttpResource(resource.config, descend=True)
+    page.response.process_response_topline(b"1.1", b"200", b"OK")
+    page.response.complete = True
+    page.linked.append((resource, "img"))
+    return render(formatter_class, page)
 
 
-def good_resource(uri: str) -> HttpResource:
-    resource = linked_resource(uri)
-    resource.response.process_response_topline(b"1.1", b"200", b"OK")
-    resource.response.process_headers([(b"Content-Type", b"image/png")])
-    resource.response.complete = True
-    return resource
+def fail(error: httperr.HttpError) -> Callable[[HttpResource], None]:
+    def set_error(resource: HttpResource) -> None:
+        resource.fetch_error = error
+
+    return set_error
 
 
-def unencodable_resource() -> HttpResource:
-    resource = linked_resource("http://example.com/x.png")
-    # httplint used to leave a non-ASCII password in the URI (mnot/httplint#200); set it directly
-    # so this doesn't depend on its behaviour.
-    resource.request.uri = "http://a:\u00e9@example.com/x.png"
-    with mock.patch.object(RedFetcher.client, "exchange") as exchange:
-        resource.check()
-    exchange.assert_not_called()
-    return resource
+def truncate(error: httperr.HttpError | None) -> Callable[[HttpResource], None]:
+    "A response that has a status line and headers, but not all of its body."
+
+    def set_error(resource: HttpResource) -> None:
+        resource.response.process_response_topline(b"1.1", b"200", b"OK")
+        resource.response.process_headers([(b"Content-Length", b"100")])
+        resource.fetch_error = error
+
+    return set_error
 
 
 class TestLinkedFetchFailures(unittest.TestCase):
     def check(self, resource: HttpResource, expected: str) -> None:
         for formatter_class in FORMATTERS:
             with self.subTest(formatter=formatter_class.__name__):
-                out = render(make_page(resource), formatter_class)
+                out = render_link(resource, formatter_class)
                 self.assertNotIn("HTTP/ None", out)
-                self.assertIn(f"{resource.request.uri}\n\n{expected}\n\n", out)
+                self.assertIn(f"{resource.request.uri}\n\n{expected}\n", out)
 
-    def test_connection_refused(self) -> None:
-        resource = linked_resource("http://127.0.0.1:1/refused.png")
-        resource.fetch_error = httperr.ConnectError("Connection refused")
-        self.check(resource, "Error: Connection error (Connection refused)")
+    def test_no_response(self) -> None:
+        refused = httperr.ConnectError("Connection refused")
+        self.check(
+            linked_resource("http://127.0.0.1:1/x.png", fail(refused)),
+            "Error: Connection error (Connection refused)",
+        )
+        self.check(
+            linked_resource("http://example.com/x.png", fail(httperr.ReadTimeoutError())),
+            "Error: Read Timeout",
+        )
 
     def test_unsupported_scheme(self) -> None:
-        resource = unsupported_resource()
-        self.assertIsInstance(resource.fetch_error, httperr.UrlError)
+        resource = linked_resource("ftp://example.com/x.png", HttpResource.check)
         self.check(resource, "Error: Unsupported or invalid URI (Unsupported URL scheme 'ftp')")
 
     def test_unencodable_uri(self) -> None:
-        resource = unencodable_resource()
+        def unencodable(resource: HttpResource) -> None:
+            # Set directly, so this doesn't depend on how httplint treats a non-ASCII password.
+            resource.request.uri = "http://a:\u00e9@example.com/x.png"
+            resource.check()
+
+        resource = linked_resource("http://example.com/x.png", unencodable)
         self.check(
             resource, "Error: Unsupported or invalid URI (URI contains non-ASCII characters)"
         )
 
-    def test_incomplete_response(self) -> None:
-        resource = linked_resource("http://example.com/x.png")
-        resource.response.process_response_topline(b"1.1", b"200", b"OK")
-        resource.response.process_headers([(b"Content-Length", b"100")])
-        resource.fetch_error = httperr.ConnectError("Server dropped connection")
-        self.assertFalse(resource.response.complete)
-        self.check(resource, "Error: Connection error (Server dropped connection)")
-
-    def test_error_without_detail(self) -> None:
-        resource = linked_resource("http://example.com/x.png")
-        resource.fetch_error = httperr.ReadTimeoutError()
-        self.check(resource, "Error: Read Timeout")
-
     def test_no_error_recorded(self) -> None:
-        "Nothing is known about why it failed, so only the URI is shown."
-        resource = linked_resource("http://example.com/x.png")
-        for formatter_class in FORMATTERS:
-            out = render(make_page(resource), formatter_class)
-            self.assertNotIn("HTTP/ None", out)
-            self.assertNotIn("Error:", out)
-            self.assertIn("http://example.com/x.png\n", out)
-
-    def test_other_links_unaffected(self) -> None:
-        failed = unsupported_resource()
-        good = good_resource("http://example.com/b.png")
-        out = render(make_page(failed, good), TextListFormatter)
-        self.assertIn("Error: Unsupported or invalid URI", out)
-        self.assertIn(
-            "http://example.com/b.png\n\nHTTP/1.1 200 OK\nContent-Type:image/png\n\n", out
+        out = render_link(
+            linked_resource("http://example.com/x.png", lambda r: None), TextListFormatter
         )
+        self.assertNotIn("HTTP/ None", out)
+        self.assertNotIn("Error:", out)
 
-    def test_error_text_is_escaped(self) -> None:
+    def test_incomplete_response(self) -> None:
+        "An incomplete response with a status line shows it, then the error if there is one."
+        failed = linked_resource(
+            "http://example.com/x.png", truncate(httperr.ConnectError("Server dropped connection"))
+        )
+        for formatter_class in FORMATTERS:
+            out = render_link(failed, formatter_class)
+            self.assertIn(
+                "HTTP/1.1 200 OK\nContent-Length:100\n\n"
+                "Error: Connection error (Server dropped connection)\n",
+                out,
+            )
+        quiet = linked_resource("http://example.com/x.png", truncate(None))
+        quiet.response.notes.add("field-transfer-encoding", BAD_CHUNK, chunk_sample="ZZ")
+        out = render_link(quiet, TextListFormatter)
+        self.assertIn(
+            "HTTP/1.1 200 OK\nContent-Length:100\n\n* Connection:\n  * This response has chunked",
+            out,
+        )
+        self.assertNotIn("Error:", out)
+
+    def test_hostile_text_is_escaped(self) -> None:
         class EvilDescError(httperr.HttpError):
             desc = EVIL
 
         for error in (httperr.ConnectError(EVIL), EvilDescError(EVIL), EvilDescError(None)):
-            resource = linked_resource("http://example.com/x.png")
-            resource.fetch_error = error
+            resource = linked_resource(f"http://example.com/{EVIL}", fail(error))
             for formatter_class in FORMATTERS:
                 with self.subTest(error=error, formatter=formatter_class.__name__):
-                    out = render(make_page(resource), formatter_class)
+                    out = render_link(resource, formatter_class)
                     self.assertIsNone(BAD_CHARS.search(out), repr(out))
-                    self.assertIn(EVIL_ESCAPED, out)
+                    self.assertIn(f"http://example.com/{EVIL_ESCAPED}\n\nError: ", out)
+                    self.assertGreaterEqual(out.count(EVIL_ESCAPED), 2)
 
 
-class FakeServer(socketserver.ThreadingTCPServer):
-    "Serves a page with several links that fail in different ways."
+class Server(socketserver.ThreadingTCPServer):
+    "Serves a page with links that fail or misbehave in different ways."
 
     allow_reuse_address = True
     daemon_threads = True
+    refused_port = 0
 
     class Handler(socketserver.BaseRequestHandler):
         def handle(self) -> None:
             path = self.request.recv(4096).split()[1]
+            head = b"HTTP/1.1 200 OK\r\nConnection: close\r\n"
             if path == b"/page":
-                refused = self.server.refused_port  # type: ignore[attr-defined]
                 body = (
-                    "<html><head>"
-                    f'<script src="http://127.0.0.1:{refused}/refused.js"></script>'
-                    '<link rel="stylesheet" href="ftp://127.0.0.1/x.css">'
-                    "</head><body>"
-                    '<img src="/truncated.png">'
-                    '<img src="/hostile.png">'
-                    '<img src="/ok.png">'
-                    "</body></html>"
-                ).encode("utf-8")
-                self.reply(b"text/html", body)
-            elif path == b"/ok.png":
-                self.reply(b"image/png", b"x")
+                    f'<html><body><script src="http://127.0.0.1:{Server.refused_port}/x.js">'
+                    '</script><link rel="stylesheet" href="ftp://127.0.0.1/x.css">'
+                    '<img src="/truncated.png"><img src="/hostile.png"><img src="/chunked.png">'
+                    '<img src="/early.png"><img src="/ok.png"></body></html>'
+                ).encode()
+                response = head + b"Content-Type: text/html\r\nContent-Length: %d\r\n\r\n%s" % (
+                    len(body),
+                    body,
+                )
             elif path == b"/truncated.png":
-                self.request.sendall(
-                    b"HTTP/1.1 200 OK\r\nContent-Type: image/png\r\nContent-Length: 100\r\n"
-                    b"Connection: close\r\n\r\nabc"
+                response = head + b"Content-Length: 100\r\n\r\nabc"
+            elif path == b"/hostile.png":
+                response = b"HTTP/\x1b[2J\x07 200 OK\r\n\r\n"
+            elif path == b"/chunked.png":
+                response = head + b"Transfer-Encoding: chunked\r\n\r\nZZ\r\nx\r\n"
+            elif path == b"/early.png":
+                response = (
+                    b"HTTP/1.1 103 Early Hints\r\nLink: </a.css>; rel=preload\r\n\r\n"
+                    + head
+                    + b"Content-Length: 1\r\n\r\nx"
                 )
             else:
-                self.request.sendall(b"HTTP/\x1b[2J\x07 200 OK\r\n\r\n")
-
-        def reply(self, content_type: bytes, body: bytes) -> None:
-            self.request.sendall(
-                b"HTTP/1.1 200 OK\r\nContent-Type: %s\r\nContent-Length: %d\r\n"
-                b"Connection: close\r\n\r\n%s" % (content_type, len(body), body)
-            )
+                response = head + b"Content-Length: 1\r\n\r\nx"
+            self.request.sendall(response)
 
     def __init__(self) -> None:
-        self.refused_port = unused_port()
+        with socket.socket() as sock:
+            sock.bind(("127.0.0.1", 0))
+            Server.refused_port = sock.getsockname()[1]
         socketserver.ThreadingTCPServer.__init__(self, ("127.0.0.1", 0), self.Handler)
         threading.Thread(target=self.serve_forever, daemon=True).start()
 
 
-def unused_port() -> int:
-    with socket.socket() as sock:
-        sock.bind(("127.0.0.1", 0))
-        return int(sock.getsockname()[1])
-
-
 class TestCommandLine(unittest.TestCase):
-    "redbot -a -o text reports failed links."
+    "redbot -a reports failed links, and still shows what it did for the others."
 
-    server: FakeServer
-    port: int
-
-    @classmethod
-    def setUpClass(cls) -> None:
-        cls.server = FakeServer()
-        cls.port = cls.server.server_address[1]
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        cls.server.shutdown()
-        cls.server.server_close()
-
-    def run_redbot(self, output_format: str) -> str:
-        code = "from redbot.cli import main; main()"
+    def run_redbot(self, port: int, output_format: str) -> str:
         result = subprocess.run(
             [
                 sys.executable,
                 "-c",
-                code,
+                "from redbot.cli import main; main()",
                 "-a",
                 "-o",
                 output_format,
-                f"http://127.0.0.1:{self.port}/page",
+                f"http://127.0.0.1:{port}/page",
             ],
             capture_output=True,
             text=True,
@@ -242,29 +205,33 @@ class TestCommandLine(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         return result.stdout
 
-    def test_failed_links(self) -> None:
+    def test_links(self) -> None:
+        server = Server()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        port = server.server_address[1]
+        base = f"http://127.0.0.1:{port}"
         for output_format in ("text", "text_verbose"):
             with self.subTest(output_format):
-                out = self.run_redbot(output_format)
+                out = self.run_redbot(port, output_format)
                 self.assertNotIn("HTTP/ None", out)
-                for uri, error in [
-                    (
-                        f"http://127.0.0.1:{self.server.refused_port}/refused.js",
-                        "Error: Connection error",
-                    ),
-                    ("ftp://127.0.0.1/x.css", "Error: Unsupported or invalid URI"),
-                    (
-                        f"http://127.0.0.1:{self.port}/truncated.png",
-                        "Error: Connection error",
-                    ),
-                    (
-                        f"http://127.0.0.1:{self.port}/hostile.png",
-                        "Error: Unrecognised HTTP version",
-                    ),
-                ]:
-                    self.assertIn(f"{uri}\n\n{error}", out)
-                self.assertIn(f"http://127.0.0.1:{self.port}/ok.png\n\nHTTP/1.1 200 OK\n", out)
                 self.assertIsNone(BAD_CHARS.search(out), repr(out))
+                for uri, expected in [
+                    (f"http://127.0.0.1:{Server.refused_port}/x.js", "Error: Connection error"),
+                    ("ftp://127.0.0.1/x.css", "Error: Unsupported or invalid URI"),
+                    (f"{base}/truncated.png", "HTTP/1.1 200 OK\nConnection: close\n"),
+                    (
+                        f"{base}/hostile.png",
+                        "Error: Unrecognised HTTP version (HTTP/\\x1b[2J\\x07)",
+                    ),
+                    (f"{base}/chunked.png", "HTTP/1.1 200 OK\nConnection: close\n"),
+                    (f"{base}/early.png", "HTTP/1.1 200 OK\n"),
+                    (f"{base}/ok.png", "HTTP/1.1 200 OK\n"),
+                ]:
+                    self.assertIn(f"{uri}\n\n{expected}", out)
+                self.assertIn("chunked encoding errors", out.split(f"{base}/chunked.png")[1])
+                self.assertIn("Error: Connection error", out.split(f"{base}/truncated.png")[1])
+                self.assertNotIn("103 Early Hints", out)
 
 
 if __name__ == "__main__":
