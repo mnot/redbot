@@ -9,6 +9,7 @@ from urllib.parse import urlsplit
 
 import thor
 import thor.http
+from httplint.util import iri_to_uri
 from thor.http.error import UrlError
 from thor.http.uri import parse_uri
 
@@ -23,6 +24,17 @@ CREDENTIALS = [
 ]
 OTHER_HEADERS = [("Accept-Language", "en")]
 TOP = "https://example.com/page"
+
+
+def host_rewriting_normaliser(iri: str) -> str:
+    "What httplint 2026.10.1 did with non-ASCII userinfo: IDNA-encode it into the host."
+    rewrites = {
+        "https://é@example.com/x.js": "https://xn--@example-90a.com/x.js",
+        "https://bücher@example.com/x.js": "https://xn--bcher@example-wob.com/x.js",
+        # ASCII link text naming the page's host, so the comparison can't fail closed by accident
+        "https://rewritten@example.com/x.js": "https://rewritten@example.net/x.js",
+    }
+    return rewrites.get(iri) or iri_to_uri(iri)
 
 
 def make_config(**values: str) -> ConfigParser:
@@ -83,12 +95,27 @@ class TestOriginOf(unittest.TestCase):
         self.assertEqual(self.normalised("https://bücher.example/"), punycode)
         self.assertEqual(self.normalised("https://BÜCHER.example:443/"), punycode)
 
-    def test_userinfo_does_not_hide_the_real_host(self):
-        # httplint's normalisation rewrites these into a different host; origin_of must follow
-        # the rewritten URI (which is what's fetched), not the original text.
+    def test_userinfo_does_not_change_the_origin(self) -> None:
+        # httplint percent-encodes non-ASCII userinfo; the host is untouched.
         base = self.normalised("https://example.com/")
-        self.assertNotEqual(self.normalised("https://é@example.com/x.js"), base)
-        self.assertNotEqual(self.normalised("https://bücher@example.com/x.js"), base)
+        for iri in [
+            "https://é@example.com/x.js",
+            "https://bücher@example.com/x.js",
+            "https://user:pé@example.com/x.js",
+            "https://user:pass@example.com/x.js",
+        ]:
+            self.assertEqual(self.normalised(iri), base, iri)
+
+    def test_origin_follows_the_normalised_uri(self) -> None:
+        # If normalisation rewrites the host, origin_of must follow the rewritten URI (which is
+        # what's fetched), not the link text. httplint no longer does this, so simulate it.
+        base = self.normalised("https://example.com/")
+        with mock.patch("httplint.message.iri_to_uri", host_rewriting_normaliser):
+            self.assertEqual(
+                self.normalised("https://é@example.com/x.js"), ("https", "example-90a.com", 443)
+            )
+            self.assertNotEqual(self.normalised("https://é@example.com/x.js"), base)
+            self.assertNotEqual(self.normalised("https://bücher@example.com/x.js"), base)
 
     def test_undeterminable_origins_are_none(self):
         for uri in [None, "", "/relative", "data:text/plain,hi", "ftp://example.com/"]:
@@ -151,12 +178,32 @@ class TestDescendHeaders(unittest.TestCase):
         for uri, resource in linked.items():
             self.assertEqual(self.header_names(resource), ["accept-language"], uri)
 
-    def test_userinfo_idna_rewrite_does_not_leak_credentials(self):
-        # httplint rewrites https://é@example.com/ to https://xn--@example-90a.com/, so the
-        # request goes to a different (attacker-registrable) host.
-        links = ["https://é@example.com/x.js", "https://bücher@example.com/x.js"]
+    def test_userinfo_links_are_same_origin_and_get_credentials(self) -> None:
+        # Non-ASCII userinfo is percent-encoded, so these still go to the page's host.
+        all_names = sorted(n.lower() for (n, _v) in CREDENTIALS + OTHER_HEADERS)
+        links = [
+            "https://é@example.com/x.js",
+            "https://bücher@example.com/x.js",
+            "https://user:pé@example.com/x.js",
+        ]
         linked = self.descend(links)
-        self.assertEqual(len(linked), 2)
+        self.assertEqual(len(linked), len(links))
+        for uri, resource in linked.items():
+            self.assertEqual(urlsplit(uri).hostname, "example.com", uri)
+            self.assertEqual(origin_of(uri), origin_of(TOP), uri)
+            self.assertEqual(self.header_names(resource), all_names, uri)
+
+    def test_host_rewriting_normaliser_does_not_leak_credentials(self) -> None:
+        # Credentials follow the host that's actually requested. httplint no longer rewrites the
+        # host for userinfo, so simulate a normaliser that does.
+        links = [
+            "https://é@example.com/x.js",
+            "https://bücher@example.com/x.js",
+            "https://rewritten@example.com/x.js",
+        ]
+        with mock.patch("httplint.message.iri_to_uri", host_rewriting_normaliser):
+            linked = self.descend(links)
+        self.assertEqual(len(linked), len(links))
         for uri, resource in linked.items():
             self.assertEqual(self.header_names(resource), ["accept-language"], uri)
             self.assertNotEqual(origin_of(uri), origin_of(TOP), uri)
@@ -253,28 +300,29 @@ class LocalServers:
             server.shutdown()
 
 
-class UnencodableLinkServers(LocalServers):
-    "Serves a page whose first link has a non-ASCII password, followed by a good one."
+class UnsendableLinkServers(LocalServers):
+    "Serves a page whose first link has an unsupported scheme, followed by a good one."
 
     def page(self) -> str:
         same, _other = self.ports
         return (
             "<html><head>"
-            f'<script src="http://a:\u00e9@127.0.0.1:{same}/bad.js"></script>'
+            f'<script src="ftp://127.0.0.1:{same}/bad.js"></script>'
             f'<script src="http://127.0.0.1:{same}/good.js"></script>'
             "</head><body>hi</body></html>"
         )
 
 
 class TestUnencodableUri(unittest.TestCase):
-    "A request URI that can't be sent as ASCII fails that resource, not the whole test."
+    "A resource whose request can't be sent fails by itself, not the whole test."
 
     @staticmethod
     def unencodable_resource(**kwargs: bool) -> HttpResource:
         resource = HttpResource(make_config()["redbot"], **kwargs)
         resource.set_request("http://example.com/x.js")
-        # httplint can leave a non-ASCII password in the URI (mnot/httplint#200); set it directly
-        # so this doesn't depend on that being fixed.
+        # httplint 2026.10.2 percent-encodes a non-ASCII password (mnot/httplint#200), so no link
+        # produces this any more; set the URI directly to keep the defensive path in
+        # _send_request covered.
         resource.request.uri = "http://a:\u00e9@example.com/x.js"
         return resource
 
@@ -337,9 +385,11 @@ class TestUnencodableUri(unittest.TestCase):
         self.assertTrue(any("boom" in message for message in debug), debug)
 
     def test_descend_end_to_end(self) -> None:
+        # A link that fails before its request is sent (thor rejects the scheme) must not stall
+        # the page, or the links after it.
         saved_check_ip = RedFetcher.client.check_ip
         RedFetcher.client.check_ip = None
-        servers = UnencodableLinkServers()
+        servers = UnsendableLinkServers()
         timed_out: List[bool] = []
 
         def give_up() -> None:
