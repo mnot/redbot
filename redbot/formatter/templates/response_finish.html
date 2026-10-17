@@ -53,7 +53,7 @@
                 <a href='#' id='body_view' accesskey='b'>{{ _("view content") }}</a>
             </div>
 
-            {% if is_resource %}
+            {% if is_resource and resource.response.complete %}
             <div class='option'>
                 {{ har_link }}
             </div>

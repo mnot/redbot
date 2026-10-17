@@ -27,6 +27,15 @@
 {% endif %}
 {%- endmacro %}
 
+{% macro notes_cell(resource) %}
+<td>
+    {% for problem in resource.response.notes if problem.level in [levels.WARN, levels.BAD] %}
+    <span class='prob_num'>{{ problem|index_problem }}<span class='hidden'><span class='tip'>{{ problem.detail
+                }}</span></span></span>
+    {% endfor %}
+</td>
+{%- endmacro %}
+
 <table id='summary'>
     {% for heading, droids in droid_lists %}
     {% if heading != "" %}
@@ -70,20 +79,22 @@
         <td>{{ yes_no(resource.gzip_support) }}</td>
         {% endif %}
         <td>{{ yes_no(resource.partial_support) }}</td>
-        <td>
-            {% for problem in resource.response.notes if problem.level in [levels.WARN, levels.BAD] %}
-            <span class='prob_num'>{{ problem|index_problem }}<span class='hidden'><span class='tip'>{{ problem.detail
-                        }}</span></span></span>
-            {% endfor %}
-        </td>
+        {{ notes_cell(resource) }}
         {% else %}
-        <td colspan="11">
+        {% set has_status = resource.response.status_code is not none %}
+        {% if has_status %}
+        <td>{{ resource.response.status_code_str }}</td>
+        {% endif %}
+        <td colspan="{{ 10 if has_status else 11 }}">
             {% if resource.fetch_error == None %}
             {{ _("response incomplete") }}
             {% else %}
             {{ resource.fetch_error.desc or _("unknown problem") }}
             {% endif %}
         </td>
+        {% if has_status %}
+        {{ notes_cell(resource) }}
+        {% endif %}
         {% endif %}
     </tr>
     {% endfor %}
