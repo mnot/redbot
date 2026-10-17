@@ -170,7 +170,12 @@ class HttpResource(RedFetcher):
         if self.descend and tag not in ["a"] and link not in self.links[tag]:
             linked = HttpResource(self.config, active_checks_enabled=False)
             credentials, other_headers = split_credentials(self.request.headers.text)
-            linked.set_request(urljoin(base, link), headers=other_headers)
+            join_error: Optional[ValueError] = None
+            try:
+                uri = urljoin(base, link)
+            except ValueError as why:
+                uri, join_error = link, why  # still listed, with the error
+            linked.set_request(uri, headers=other_headers)
             # Compare the normalised URIs, not the link text: normalisation can change the host.
             # Credentials stay off unless both origins are known and equal.
             linked_origin = origin_of(linked.request.uri)
@@ -181,9 +186,13 @@ class HttpResource(RedFetcher):
             self.linked.append((linked, tag))
             self.add_check(linked)
             try:
+                if join_error:
+                    raise UrlError(str(join_error))
                 linked.check()
             except Exception as why:  # pylint: disable=broad-except
-                linked.fetch_error = linked.fetch_error or HttpError(str(why))
+                linked.fetch_error = linked.fetch_error or (
+                    why if isinstance(why, HttpError) else HttpError(str(why))
+                )
                 linked.stop()
                 if linked in self._task_map:  # stop() didn't complete it
                     self.finish_check(linked)

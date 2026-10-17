@@ -197,6 +197,100 @@ class TestLinkedResourceChecks(unittest.TestCase):
             self.assertIsNone(getattr(linked, attr), attr)
 
 
+class TestMalformedLinks(unittest.TestCase):
+    "A link that can't be resolved is listed as failed; it doesn't stop the links after it."
+
+    # urljoin raises ValueError for these
+    REJECTED = [
+        "http://[bad",
+        "http://[bad/x.js",
+        "http://[::1",
+        "http://[::1/x.js",
+        "http://]/x.js",
+        "http://a@[b/",
+        "http://[]/",
+        "//[",
+        "http://＃/x.js",  # fails NFKC normalisation of the netloc
+    ]
+    # urljoin copes with these; they still mustn't break anything
+    ODD = ["a\x00b.js", "/a b.js", " /x.js ", "http://exa\x00mple.com/", "\x00", "/" + "a" * 100000]
+
+    @staticmethod
+    def resource() -> HttpResource:
+        resource = HttpResource(make_config()["redbot"], descend=True)
+        resource.set_request(TOP)
+        return resource
+
+    def test_rejected_links_are_recorded_as_failed(self) -> None:
+        for link in self.REJECTED:
+            with self.subTest(link=link):
+                resource = self.resource()
+                debug: List[str] = []
+                resource.on("debug", debug.append)
+                with mock.patch.object(HttpResource, "check") as check:
+                    resource.process_link(TOP, link, "script", "")
+                    resource.process_link(TOP, "/good.js", "script", "")
+                check.assert_called_once()
+                self.assertEqual(len(resource.linked), 2)
+                bad, good = (r for (r, _tag) in resource.linked)
+                self.assertIsInstance(bad.fetch_error, UrlError)
+                self.assertTrue(bad.fetch_done)
+                self.assertEqual(bad.request.uri, link)
+                self.assertIsNone(good.fetch_error)
+                self.assertEqual(good.request.uri, "https://example.com/good.js")
+                self.assertEqual(resource.links["script"], {link, "/good.js"})
+                # the failed link is complete, so it can't hold up the parent
+                self.assertEqual(resource._task_map, {good})  # pylint: disable=protected-access
+                self.assertTrue(any("failed" in message for message in debug), debug)
+
+    def test_odd_links_do_not_raise(self) -> None:
+        for link in self.ODD:
+            with self.subTest(link=link[:20]):
+                resource = self.resource()
+                with mock.patch.object(HttpResource, "check") as check:
+                    resource.process_link(TOP, link, "script", "")
+                    resource.process_link(TOP, "/good.js", "script", "")
+                self.assertEqual(check.call_count, 2)
+                self.assertEqual(len(resource.linked), 2)
+
+    def test_bad_base_fails_relative_links(self) -> None:
+        resource = self.resource()
+        with mock.patch.object(HttpResource, "check") as check:
+            resource.process_link("http://[bad/", "/a.js", "img", "")
+            resource.process_link(TOP, "/b.js", "img", "")
+        check.assert_called_once()
+        failed, fine = (r for (r, _tag) in resource.linked)
+        self.assertIsInstance(failed.fetch_error, UrlError)
+        self.assertEqual(failed.request.uri, "/a.js")
+        self.assertIsNone(fine.fetch_error)
+
+    def test_failed_link_does_not_complete_the_parent_early(self) -> None:
+        resource = self.resource()
+        done: List[str] = []
+        resource.on("check_done", lambda: done.append("check_done"))
+        with mock.patch.object(HttpResource, "check"):
+            resource.process_link(TOP, "http://[bad/x.js", "script", "")
+        self.assertEqual(done, [])  # still reading the page
+        resource.stop()
+        self.assertEqual(done, ["check_done"])
+
+    def test_link_parser_carries_on_past_bad_links(self) -> None:
+        resource = self.resource()
+        debug: List[str] = []
+        resource.on("debug", debug.append)
+        resource.response.process_response_topline(b"1.1", b"200", b"OK")
+        resource.response.process_headers([(b"Content-Type", b"text/html")])
+        page = "".join(f'<script src="{link}"></script>' for link in self.REJECTED)
+        with mock.patch.object(HttpResource, "check"):
+            resource._link_parser.feed(  # pylint: disable=protected-access
+                page + '<img src="/good.png"><script src="/good.js"></script>'
+            )
+        uris = [r.request.uri for (r, _tag) in resource.linked]
+        self.assertEqual(len(uris), len(self.REJECTED) + 2)
+        self.assertEqual(uris[-2:], ["https://example.com/good.png", "https://example.com/good.js"])
+        self.assertFalse(any("feed problem" in message for message in debug), debug)
+
+
 class LocalServers:
     "Two local HTTP servers that record the request headers they receive, by (port, path)."
 
@@ -261,6 +355,19 @@ class UnencodableLinkServers(LocalServers):
         return (
             "<html><head>"
             f'<script src="http://a:\u00e9@127.0.0.1:{same}/bad.js"></script>'
+            f'<script src="http://127.0.0.1:{same}/good.js"></script>'
+            "</head><body>hi</body></html>"
+        )
+
+
+class BadLinkServers(LocalServers):
+    "Serves a page whose first link urljoin rejects, followed by a good one."
+
+    def page(self) -> str:
+        same, _other = self.ports
+        return (
+            "<html><head>"
+            '<script src="http://[bad/x.js"></script>'
             f'<script src="http://127.0.0.1:{same}/good.js"></script>'
             "</head><body>hi</body></html>"
         )
@@ -365,6 +472,48 @@ class TestUnencodableUri(unittest.TestCase):
         self.assertIsNone(by_path["/good.js"].fetch_error)
         self.assertTrue(by_path["/good.js"].response.complete)
         self.assertNotIn((same, "/bad.js"), servers.seen)
+
+
+class TestUnresolvableLink(unittest.TestCase):
+    "A page with a link urljoin rejects, followed by a good one, against real servers."
+
+    def test_good_link_after_bad_link_is_checked(self) -> None:
+        saved_check_ip = RedFetcher.client.check_ip
+        RedFetcher.client.check_ip = None
+        servers = BadLinkServers()
+        done: List[str] = []
+        timed_out: List[bool] = []
+
+        def give_up() -> None:
+            timed_out.append(True)
+            thor.stop()
+
+        def check_done() -> None:
+            done.append("check_done")
+            thor.schedule(0.5, thor.stop)  # long enough to catch a second check_done
+
+        try:
+            same, _other = servers.ports
+            resource = HttpResource(make_config()["redbot"], descend=True)
+            resource.set_request(f"http://127.0.0.1:{same}/page")
+            resource.on("check_done", check_done)
+            timeout = thor.schedule(20, give_up)
+            resource.check()
+            thor.run()
+            timeout.delete()
+        finally:
+            servers.close()
+            RedFetcher.client.check_ip = saved_check_ip
+        self.assertFalse(timed_out, "test stalled")
+        self.assertEqual(done, ["check_done"])
+        self.assertEqual(len(resource.linked), 2)
+        bad, good = (r for (r, _tag) in resource.linked)
+        self.assertIsInstance(bad.fetch_error, UrlError)
+        self.assertEqual(bad.request.uri, "http://[bad/x.js")
+        self.assertIsNone(good.fetch_error)
+        self.assertTrue(good.response.complete)
+        self.assertEqual(len(servers.seen[(same, "/good.js")]), 1)
+        self.assertNotIn("/x.js", [path for (_port, path) in servers.seen])
 
 
 class TestDescendEndToEnd(unittest.TestCase):
