@@ -102,10 +102,7 @@ class HttpResource(RedFetcher):
             active = list(self.subreqs.values())
             self.add_check(*active)
             for active_check in active:
-                try:
-                    active_check.check()
-                except Exception as why:  # pylint: disable=broad-except
-                    self._abandon_check(active_check, why)
+                active_check.check()
         else:
             self.finish_check()
 
@@ -152,20 +149,6 @@ class HttpResource(RedFetcher):
         if tasks_left == 0 and self.fetch_done and not self.check_done:
             self.check_done = True
             self.emit("check_done")
-
-    def _abandon_check(self, check: RedFetcher, why: Exception) -> None:
-        "A check raised while starting; make sure it can't leave us waiting for it."
-        check.fetch_error = check.fetch_error or HttpError(str(why))
-        try:
-            check.stop()
-        except Exception:  # pylint: disable=broad-except
-            pass
-        if check in self._task_map:  # stop() didn't complete it
-            self.finish_check(check)
-        try:  # after cleanup, so a failing listener can't undo it
-            self.emit("debug", f"{check.check_name} check failed: {why!r}")
-        except Exception:  # pylint: disable=broad-except
-            pass
 
     def show_task_map(self, watch: bool = False) -> Union[str, None]:
         """
