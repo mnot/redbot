@@ -349,8 +349,10 @@ class RedFetcher(thor.events.EventEmitter):
         elif isinstance(error, httperr.ChunkError):
             self.response.notes.add("field-transfer-encoding", BAD_CHUNK, chunk_sample=err_sample)
         elif isinstance(error, httperr.HeaderSpaceError) and error.detail:
-            subject = f"field-{error.detail.lower().strip()}"
-            self.response.notes.add(subject, HEADER_NAME_SPACE, header_name=error.detail)
+            subject = f"field-{err_sample.lower().strip()}"
+            self.response.notes.add(subject, HEADER_NAME_SPACE, header_name=err_sample)
+            # thor sends nothing after an error, so the response never completes.
+            self.fetch_error = error
         else:
             self.fetch_error = error
         self._fetch_done()
