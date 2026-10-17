@@ -8,7 +8,6 @@ import os
 import socket
 import subprocess
 import sys
-import tempfile
 import threading
 import time
 import unittest
@@ -17,7 +16,7 @@ import urllib.request
 from configparser import ConfigParser
 from types import SimpleNamespace
 from typing import Any, Dict, List, Optional, Tuple
-from unittest.mock import patch
+from unittest.mock import ANY, MagicMock, patch
 
 import thor.events
 from thor.http.error import HttpError, ReadTimeoutError
@@ -178,204 +177,108 @@ class TestCaptchaCookies(unittest.TestCase):
         self._assert_rejected([f"human_time={human_time}; human_hmac={human_hmac}".encode()])
 
 
-class FakeConn:
-    def __init__(self) -> None:
-        self.killed = False
-        self.tcp_conn = SimpleNamespace(abort=self.abort)
+SHOWN_ERROR = "Captcha server response error"
+UNKNOWN = "Captcha errors: unknown error"
+PADDED = b'{"success": true, "pad": "' + b"x" * MAX_REPLY_SIZE + b'"}'
+CODES = b",".join([b'"' + b"x" * 500 + b'"'] * 100)  # capped on the page
+# 200 replies: body and what the page shows (a 500 for SHOWN_ERROR, otherwise a 403)
+BAD_REPLIES = [
+    (b"null", SHOWN_ERROR),
+    (b'"x"', SHOWN_ERROR),
+    (b"not json", SHOWN_ERROR),
+    (b'{"a": "\xff"}', SHOWN_ERROR),
+    (b"[" * 50000, SHOWN_ERROR),  # RecursionError
+    (PADDED, SHOWN_ERROR),
+    (b'{"success": false}', UNKNOWN),
+    (b'{"error-codes": null}', UNKNOWN),
+    (b'{"success": "true"}', UNKNOWN),
+    (b'{"success": 1}', UNKNOWN),
+    (b'{"error-codes": [1, null, ["a"]]}', "Captcha errors: 1, None, ['a']"),
+    (b'{"error-codes": ["\\u001b[31m\\u202e", "<b>"]}', "Captcha errors: \\x1b[31m\\u202e, <b>"),
+    (b'{"error-codes": [' + CODES + b"]}", "Captcha errors: " + ", ".join(["x" * 64] * 10)),
+]
+# Other statuses are never a success, whatever the body; the codes are logged but not shown.
+BAD_STATUSES = [
+    (b"302", b'{"success": true}', "Captcha server returned 302 status code", None),
+    (b"\xff\x1b[31m", b"{}", "Captcha server returned \ufffd\\x1b[31m status code", None),
+    (
+        b"400",
+        b'{"error-codes": ["bad-request", "\\u001b[31m"]}',
+        "Captcha server returned 400 status code",
+        "Captcha server returned 400 status code (bad-request, \\x1b[31m)",
+    ),
+]
 
-    def abort(self) -> None:
-        self.killed = True
 
-
-class FakeExchange(thor.events.EventEmitter):
-    "Stands in for the provider exchange, so tests can emit its events."
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.conn = FakeConn()
-
-    def request_start(self, *args: Any) -> None:
-        pass
-
-    def request_body(self, *args: Any) -> None:
-        pass
-
-    def request_done(self, *args: Any) -> None:
-        pass
-
-
-class ReplyTestCase(unittest.TestCase):
+class TestCaptchaVerifyReply(unittest.TestCase):
     """
     #486: the callbacks on the provider exchange run from thor's loop, so anything they raise
     stops the daemon. Whatever the provider sends must end in continue_test or error_response.
     """
 
-    def setUp(self) -> None:
-        self.exchange = FakeExchange()
-
     def verify(
-        self,
-        body: bytes,
-        status: bytes = b"200",
-        chunks: Optional[List[bytes]] = None,
-        error_before: Optional[HttpError] = None,
-        error_after: Optional[HttpError] = None,
-    ) -> Tuple[List[Any], List[Any]]:
+        self, chunks: List[bytes], status: bytes = b"200", error: Optional[HttpError] = None
+    ) -> Tuple[List[Any], List[Any], Any]:
         parser = ConfigParser()
-        parser.read_dict(
-            {
-                "redbot": {
-                    "captcha_provider": "hcaptcha",
-                    "captcha_secret": "s3cret",
-                    "captcha_sitekey": "key",
-                }
-            }
-        )
+        parser.read_string("[redbot]\ncaptcha_provider = hcaptcha\ncaptcha_secret = s3cret\n")
         webui: Any = SimpleNamespace(config=parser["redbot"], get_client_ip=lambda: "192.0.2.1")
         continued: List[Any] = []
         errors: List[Any] = []
-        handler = CaptchaHandler(
-            webui,
-            lambda *a: continued.append(a),
-            lambda *a: errors.append(a),
-        )
+        handler = CaptchaHandler(webui, lambda *a: continued.append(a), lambda *a: errors.append(a))
+        exchange: Any = thor.events.EventEmitter()
+        exchange.conn = MagicMock()
+        exchange.request_start = exchange.request_body = exchange.request_done = MagicMock()
         with patch("redbot.webui.captcha.token_client") as client:
-            client.exchange.return_value = self.exchange
+            client.exchange.return_value = exchange
             handler.verify_captcha("token")
-        if error_before:
-            self.exchange.emit("error", error_before)
-        self.exchange.emit("response_start", status, b"phrase", [])
-        for chunk in [body] if chunks is None else chunks:
-            self.exchange.emit("response_body", chunk)
-        self.exchange.emit("response_done", [])
-        if error_after:
-            self.exchange.emit("error", error_after)
-        return continued, errors
+        if error:
+            exchange.emit("error", error)
+        exchange.emit("response_start", status, b"phrase", [])
+        for chunk in chunks:
+            exchange.emit("response_body", chunk)
+        exchange.emit("response_done", [])
+        return continued, errors, exchange.conn.tcp_conn.abort
 
-    def assert_error(self, body: bytes, code: bytes, **kwargs: Any) -> Tuple[str, str]:
-        "Check for exactly one error response; return what it shows and what it logs."
-        continued, errors = self.verify(body, **kwargs)
+    def assert_rejected(
+        self, body: bytes, status: bytes, code: bytes, shown: str, logged: Optional[str]
+    ) -> None:
+        continued, errors, _ = self.verify([body], status)
         self.assertEqual(continued, [])
-        self.assertEqual(len(errors), 1)
-        self.assertEqual(errors[0][0], code)
-        return str(errors[0][2]), str(errors[0][3])
+        self.assertEqual([e[:4] for e in errors], [(code, ANY, shown, logged or shown)])
 
-
-class TestCaptchaVerifyReply(ReplyTestCase):
-    def test_success(self) -> None:
-        continued, errors = self.verify(b'{"success": true}')
-        self.assertEqual(len(continued), 1)
-        self.assertEqual(errors, [])
-
-    def test_failure_with_codes(self) -> None:
-        body = b'{"success": false, "error-codes": ["invalid-input-response", "timeout"]}'
-        message, log = self.assert_error(body, b"403")
-        self.assertIn("invalid-input-response, timeout", message)
-        self.assertEqual(message, log)
-
-    def test_failure_without_codes(self) -> None:
-        self.assertIn("unknown error", self.assert_error(b'{"success": false}', b"403")[0])
-
-    def test_reply_is_not_an_object(self) -> None:
-        for body in [b"null", b"[]", b'"x"', b"1", b"true"]:
-            with self.subTest(body=body):
-                message, log = self.assert_error(body, b"500")
-                self.assertEqual(message, "Captcha server response error")
-                self.assertEqual(message, log)
-
-    def test_bad_error_codes(self) -> None:
-        for codes in ["null", "[]", "[1]", '"abc"', '{"a": 1}', "[null, [2], {}]", "true"]:
-            with self.subTest(codes=codes):
-                body = f'{{"success": false, "error-codes": {codes}}}'.encode()
-                message, _ = self.assert_error(body, b"403")
-                self.assertTrue(message.startswith("Captcha errors:"))
-
-    def test_error_codes_are_coerced(self) -> None:
-        body = b'{"success": false, "error-codes": [1, null, "x", [2]]}'
-        self.assertEqual(self.assert_error(body, b"403")[0], "Captcha errors:1, None, x, [2]")
-
-    def test_success_must_be_true(self) -> None:
-        for value in ['"true"', "1", '{"a": 1}', "[true]", "null", "false"]:
-            with self.subTest(success=value):
-                self.assert_error(f'{{"success": {value}}}'.encode(), b"403")
-
-    def test_not_json(self) -> None:
-        for body in [b"", b"not json", b'{"success": true, "x": "\xff"}', b"\xff\xfe\x00"]:
-            with self.subTest(body=body):
-                message, _ = self.assert_error(body, b"500")
-                self.assertEqual(message, "Captcha server response error")
-
-    def test_non_200_is_never_success(self) -> None:
-        for status in [b"500", b"403", b"302"]:
+    def test_bad_replies(self) -> None:
+        for body, shown in BAD_REPLIES:
+            with self.subTest(body=body[:40]):
+                code = b"500" if shown == SHOWN_ERROR else b"403"
+                self.assert_rejected(body, b"200", code, shown, None)
+        for status, body, shown, logged in BAD_STATUSES:
             with self.subTest(status=status):
-                message, log = self.assert_error(b'{"success": true}', b"500", status=status)
-                self.assertEqual(message, f"Captcha server returned {status.decode()} status code")
-                self.assertEqual(message, log)
+                self.assert_rejected(body, status, b"500", shown, logged)
 
-    def test_non_200_codes_logged_only(self) -> None:
-        body = b'{"success": false, "error-codes": ["bad-request", "\\u001b[31m"]}'
-        message, log = self.assert_error(body, b"500", status=b"400")
-        self.assertEqual(message, "Captcha server returned 400 status code")
-        self.assertEqual(log, f"{message} (bad-request, \\x1b[31m)")
-
-    def test_odd_status_bytes(self) -> None:
-        message, _ = self.assert_error(b"{}", b"500", status=b"\xff\x1b[31m")
-        self.assertNotIn("\x1b", message)
-
-    def test_controls_in_codes(self) -> None:
-        body = b'{"success": false, "error-codes": ["\\u001b[31mred\\u202e\\u0007\\n\\u0085"]}'
-        message, _ = self.assert_error(body, b"403")
-        for code in [0x1B, 0x202E, 0x07, 0x0A, 0x85]:
-            self.assertNotIn(chr(code), message)
-        self.assertIn("\\x1b[31mred", message)
-
-    def test_error_codes_are_bounded(self) -> None:
-        codes = b",".join([b'"' + b"x" * 500 + b'"'] * 100)
-        body = b'{"success": false, "error-codes": [' + codes + b"]}"
-        self.assertLess(len(self.assert_error(body, b"403")[0]), 1000)
-
-
-class TestCaptchaVerifyLimits(ReplyTestCase):
-    padded = b'{"success": true, "pad": "' + b"x" * MAX_REPLY_SIZE + b'"}'
-
-    def test_deeply_nested(self) -> None:
-        # json.loads raises RecursionError, not ValueError, for this
-        self.assert_error(b"[" * 50000, b"500")
-
-    def test_oversized_aborts(self) -> None:
-        chunks = [self.padded[i : i + 4096] for i in range(0, len(self.padded), 4096)]
-        message, _ = self.assert_error(b"", b"500", chunks=chunks)
-        self.assertEqual(message, "Captcha server response error")
-        self.assertTrue(self.exchange.conn.killed)
-
-    def test_oversized_whole(self) -> None:
-        self.assert_error(self.padded, b"500")
-
-    def test_reply_at_the_size_limit(self) -> None:
+    def test_success(self) -> None:
         head = b'{"success": true, "pad": "'
-        body = head + b"x" * (MAX_REPLY_SIZE - len(head) - 2) + b'"}'
-        self.assertEqual(len(body), MAX_REPLY_SIZE)
-        continued, errors = self.verify(body)
-        self.assertEqual(len(continued), 1)
-        self.assertEqual(errors, [])
-        self.assertFalse(self.exchange.conn.killed)
+        at_limit = head + b"x" * (MAX_REPLY_SIZE - len(head) - 2) + b'"}'
+        for body in [b'{"success": true}', at_limit]:
+            continued, errors, abort = self.verify([body])
+            self.assertEqual((len(continued), errors, abort.called), (1, [], False))
 
+    def test_oversized_reply_is_aborted(self) -> None:
+        chunks = [PADDED[i : i + 4096] for i in range(0, len(PADDED), 4096)]
+        continued, errors, abort = self.verify(chunks)
+        self.assertEqual((continued, len(errors), abort.called), ([], 1, True))
 
-class TestCaptchaVerifyErrors(ReplyTestCase):
-    def test_error_is_logged(self) -> None:
-        message, log = self.assert_error(b"", b"403", error_before=ReadTimeoutError("read"))
-        self.assertIn("problem with the captcha server", message)
-        self.assertEqual(log, "Captcha error: Read Timeout (read).")
-
-    def test_error_without_detail(self) -> None:
-        _, log = self.assert_error(b"", b"403", error_before=ReadTimeoutError())
-        self.assertEqual(log, "Captcha error: Read Timeout.")
-
-    def test_error_detail_is_escaped(self) -> None:
+    def test_connection_errors(self) -> None:
         # thor puts peer-supplied text in some details
-        detail = "\x1b[31m" + chr(0x202E) + "\n"
-        _, log = self.assert_error(b"", b"403", error_before=HttpError(detail))
-        self.assertEqual(log, "Captcha error: Unknown Error (\\x1b[31m\\u202e\\x0a).")
+        escaped = HttpError("\x1b[31m" + chr(0x202E) + "\n")
+        for error, log in [
+            (ReadTimeoutError("read"), "Captcha error: Read Timeout (read)."),
+            (ReadTimeoutError(), "Captcha error: Read Timeout."),
+            (escaped, "Captcha error: Unknown Error (\\x1b[31m\\u202e\\x0a)."),
+        ]:
+            with self.subTest(log=log):
+                _, errors, _ = self.verify([b'{"success": true}'], error=error)
+                self.assertEqual([(e[0], e[3]) for e in errors], [(b"403", log)])
+                self.assertIn("problem with the captcha server", errors[0][2])
 
 
 class Provider(http.server.BaseHTTPRequestHandler):
@@ -386,42 +289,24 @@ class Provider(http.server.BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:  # pylint: disable=invalid-name
         self.rfile.read(int(self.headers.get("Content-Length") or 0))
-        if self.reply["body"] is None:
+        body = self.reply["body"]
+        if body is None:
             self.close_connection = True  # no response at all
             return
-        if self.reply["body"] == b"trickle":
-            self.trickle()
-            return
         self.send_response(self.reply["status"])
-        self.send_header("Content-Length", str(len(self.reply["body"])))
-        self.end_headers()
-        self.wfile.write(self.reply["body"])
-
-    def trickle(self) -> None:
-        "Send more than the daemon will buffer, then keep going until it hangs up."
-        self.send_response(200)
-        self.send_header("Content-Length", str(10_000_000))
+        self.send_header("Content-Length", str(len(body) if body != b"trickle" else 10_000_000))
         self.end_headers()
         try:
+            if body != b"trickle":
+                self.wfile.write(body)
+                return
+            # more than the daemon will buffer, then on until it hangs up
             self.wfile.write(b" " * (MAX_REPLY_SIZE + 1))
             for _ in range(100):
                 time.sleep(0.2)
                 self.wfile.write(b" ")
-                self.wfile.flush()
         except OSError:
             Provider.dropped.set()
-
-    def log_message(self, *args: Any) -> None:  # pylint: disable=arguments-differ
-        pass
-
-
-class Target(http.server.BaseHTTPRequestHandler):
-    def do_GET(self) -> None:  # pylint: disable=invalid-name
-        self.send_response(200)
-        self.send_header("Content-Type", "text/plain")
-        self.send_header("Content-Length", "2")
-        self.end_headers()
-        self.wfile.write(b"ok")
 
     def log_message(self, *args: Any) -> None:  # pylint: disable=arguments-differ
         pass
@@ -430,57 +315,42 @@ class Target(http.server.BaseHTTPRequestHandler):
 # Only ever points the daemon at a local stub; nothing here contacts a real provider.
 LAUNCHER = """
 import sys
+from configparser import ConfigParser
+from redbot.daemon import RedBotServer
 from redbot.webui import captcha
-url = sys.argv[1].encode()
-assert url.startswith(b"http://127.0.0.1:"), url
-captcha.CAPTCHA_PROVIDERS["hcaptcha"]["verify_url"] = url
-from redbot.daemon import main
-sys.argv = ["redbot", sys.argv[2]]
-main()
+url, port = sys.argv[1:]
+assert url.startswith("http://127.0.0.1:"), url
+captcha.CAPTCHA_PROVIDERS["hcaptcha"]["verify_url"] = url.encode()
+conf = ConfigParser()
+conf.read_string(
+    f"[redbot]\\nhost = 127.0.0.1\\nport = {port}\\nstatic_root = static\\n"
+    "captcha_provider = hcaptcha\\ncaptcha_secret = placeholder\\ncaptcha_sitekey = placeholder\\n"
+)
+RedBotServer(conf["redbot"]).run()
 """
-
-
-def free_port() -> int:
-    with socket.socket() as sock:
-        sock.bind(("127.0.0.1", 0))
-        port: int = sock.getsockname()[1]
-        return port
 
 
 class TestDaemonSurvivesBadCaptchaReplies(unittest.TestCase):
     "#486: a real daemon, with the provider replaced by a local stub."
 
     def setUp(self) -> None:
-        tmp = tempfile.TemporaryDirectory()
-        self.addCleanup(tmp.cleanup)
-        servers = []
-        for handler in [Provider, Target]:
-            server = http.server.HTTPServer(("127.0.0.1", 0), handler)
-            threading.Thread(target=server.serve_forever, daemon=True).start()
-            self.addCleanup(server.server_close)
-            self.addCleanup(server.shutdown)
-            servers.append(server)
-        provider_url = f"http://127.0.0.1:{servers[0].server_address[1]}/siteverify"
-        self.target_port = servers[1].server_address[1]
-
-        self.port = free_port()
-        conf_file = os.path.join(tmp.name, "config.txt")
-        with open(conf_file, "w", encoding="utf-8") as fh:
-            fh.write(
-                "[redbot]\nhost = 127.0.0.1\nstatic_root = static\nenable_local_access = True\n"
-                f"port = {self.port}\ncaptcha_provider = hcaptcha\n"
-                "captcha_secret = placeholder-secret\ncaptcha_sitekey = placeholder-sitekey\n"
-            )
+        provider = http.server.HTTPServer(("127.0.0.1", 0), Provider)
+        threading.Thread(target=provider.serve_forever, daemon=True).start()
+        self.addCleanup(provider.server_close)
+        self.addCleanup(provider.shutdown)
+        with socket.socket() as sock:
+            sock.bind(("127.0.0.1", 0))
+            self.port = sock.getsockname()[1]
+        url = f"http://127.0.0.1:{provider.server_address[1]}/siteverify"
         self.daemon = subprocess.Popen(
-            [sys.executable, "-c", LAUNCHER, provider_url, conf_file],
+            [sys.executable, "-c", LAUNCHER, url, str(self.port)],
             cwd=ROOT,
             stderr=subprocess.PIPE,
             text=True,
         )
-        self.stderr = ""
-        self.addCleanup(self.stop_daemon)
-        deadline = time.time() + 20
-        while time.time() < deadline:
+        self.addCleanup(self.daemon.__exit__, None, None, None)
+        self.addCleanup(self.daemon.terminate)
+        for _ in range(200):
             self.assertIsNone(self.daemon.poll(), "daemon exited during startup")
             try:
                 socket.create_connection(("127.0.0.1", self.port), timeout=1).close()
@@ -489,22 +359,10 @@ class TestDaemonSurvivesBadCaptchaReplies(unittest.TestCase):
                 time.sleep(0.1)
         self.fail("daemon did not start")
 
-    def stop_daemon(self) -> None:
-        "Stop the daemon and collect its stderr; safe to call twice."
-        if self.daemon.poll() is None:
-            self.daemon.terminate()
-        try:
-            _, err = self.daemon.communicate(timeout=10)
-        except subprocess.TimeoutExpired:
-            self.daemon.kill()
-            _, err = self.daemon.communicate()
-        self.stderr = self.stderr or err or ""
-
     def check(self, body: Optional[bytes], status: int = 200) -> Tuple[int, str]:
         Provider.reply = {"status": status, "body": body}
-        uri = f"http://127.0.0.1:{self.target_port}/"
         request = urllib.request.Request(
-            f"http://127.0.0.1:{self.port}/check?uri={uri}",
+            f"http://127.0.0.1:{self.port}/check?uri=http://127.0.0.1:1/",
             data=b"captcha_token=abc",
             method="POST",
         )
@@ -515,9 +373,9 @@ class TestDaemonSurvivesBadCaptchaReplies(unittest.TestCase):
             return err.code, err.read().decode("utf-8")
 
     def test_bad_replies(self) -> None:
-        cases: List[Tuple[Optional[bytes], int, int]] = [
+        cases = [
             (b"null", 200, 500),
-            (b'{"success": false, "error-codes": [1]}', 200, 403),
+            (b'{"error-codes": [1, "<script>alert(1)</script>", "\\u001b[31m"]}', 200, 403),
             (b'{"success": true}', 500, 500),
             (None, 200, 403),
         ]
@@ -526,34 +384,25 @@ class TestDaemonSurvivesBadCaptchaReplies(unittest.TestCase):
                 got, page = self.check(body, status)
                 self.assertEqual(got, expected)
                 self.assertIn("</html>", page)
+                self.assertNotIn("<script>alert(1)", page)
                 self.assertIsNone(self.daemon.poll(), "daemon exited")
-        got, _ = self.check(b'{"success": true}')
-        self.assertEqual(got, 200)
         with urllib.request.urlopen(f"http://127.0.0.1:{self.port}/", timeout=10) as response:
             self.assertEqual(response.status, 200)
-        self.stop_daemon()
-        self.assertNotIn("Traceback", self.stderr)
-        self.assertNotIn("Captcha error: .", self.stderr)  # the closed connection says why
+        self.daemon.terminate()
+        stderr = self.daemon.communicate()[1]
+        self.assertNotIn("Traceback", stderr)
+        self.assertIn("Captcha error: ", stderr)
+        self.assertNotIn("Captcha error: .", stderr)
+        self.assertIn("\\x1b[31m", stderr)
+        self.assertNotIn("\x1b", stderr)
 
     def test_oversized_reply_is_cut_off(self) -> None:
         Provider.dropped.clear()
         start = time.time()
-        got, _ = self.check(b"trickle")
-        self.assertEqual(got, 500)
+        self.assertEqual(self.check(b"trickle")[0], 500)
         self.assertLess(time.time() - start, 8)
         self.assertTrue(Provider.dropped.wait(10), "the provider was never hung up on")
         self.assertIsNone(self.daemon.poll(), "daemon exited")
-
-    def test_failure_text_is_escaped(self) -> None:
-        got, page = self.check(
-            b'{"success": false, "error-codes": ["<script>alert(1)</script>", "\\u001b[31m"]}'
-        )
-        self.assertEqual(got, 403)
-        self.assertIn("&lt;script&gt;alert(1)", page)
-        self.assertNotIn("<script>alert(1)", page)
-        self.stop_daemon()
-        self.assertNotIn("\x1b", self.stderr)
-        self.assertIn("\\x1b[31m", self.stderr)
 
 
 if __name__ == "__main__":

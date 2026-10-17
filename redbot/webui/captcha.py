@@ -199,7 +199,7 @@ class CaptchaHandler:
             if results.get("success") is True:
                 self.continue_test(self.issue_human())
             else:
-                e_str = f"Captcha errors:{format_error_codes(results.get('error-codes'))}"
+                e_str = f"Captcha errors: {format_error_codes(results.get('error-codes'))}"
                 self.error_response(
                     b"403",
                     b"Forbidden",
