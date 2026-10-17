@@ -189,6 +189,13 @@ class RedFetcher(thor.events.EventEmitter):
         "Start an exchange for the current request, optionally adding extra headers."
         assert self.request.method, "method not set in _send_request"
         assert self.request.uri, "uri not set in _send_request"
+        try:
+            wire_uri = self.request.uri.encode("ascii")
+        except UnicodeEncodeError:
+            # e.g., httplint leaves a non-ASCII password in the URI unencoded
+            self.fetch_error = httperr.UrlError("URI contains non-ASCII characters")
+            self._fetch_done()
+            return
         self.exchange = self.client.exchange()
         self.exchange.on("response_nonfinal", self._response_nonfinal)
         self.exchange.once("response_start", self._response_start)
@@ -210,7 +217,7 @@ class RedFetcher(thor.events.EventEmitter):
         self.request.start_time = time.time()
         self.exchange.request_start(
             self.request.method.encode("ascii"),
-            self.request.uri.encode("ascii"),
+            wire_uri,
             req_hdrs,
         )
         if not self.fetch_done:  # the request could have immediately failed.
