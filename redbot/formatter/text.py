@@ -95,21 +95,20 @@ class BaseTextFormatter(Formatter):
                 )
             if self.resource.response.complete:
                 self.output(self.format_headers(self.resource.response) + NL + NL)
-            elif isinstance(self.resource.fetch_error, httperr.HttpError):
-                self.output(
-                    self.error_template % self._format_fetch_error(self.resource.fetch_error)
-                )
+            else:
+                self.output_fetch_error(self.resource)
 
             self.output(self.format_recommendations(self.resource) + NL)
         else:
-            if self.resource.fetch_error is None:
-                pass
-            elif isinstance(self.resource.fetch_error, httperr.HttpError):
-                self.output(
-                    self.error_template % self._format_fetch_error(self.resource.fetch_error)
-                )
-            else:
-                raise AssertionError("Unknown incomplete response error.")
+            self.output_fetch_error(self.resource)
+
+    def output_fetch_error(self, resource: HttpResource) -> None:
+        "Output the error for a resource whose fetch failed, if there is one."
+        if resource.fetch_error is None:
+            return
+        if not isinstance(resource.fetch_error, httperr.HttpError):
+            raise AssertionError("Unknown incomplete response error.")
+        self.output(self.error_template % self._format_fetch_error(resource.fetch_error))
 
     @staticmethod
     def _format_fetch_error(error: httperr.HttpError) -> str:
@@ -227,7 +226,12 @@ class TextListFormatter(BaseTextFormatter):
                 subresources.sort(key=operator.attrgetter("request.uri"))
                 for subresource in subresources:
                     self.output(self.format_uri(subresource) + NL + NL)
-                    self.output(self.format_headers(subresource.response) + NL + NL)
+                    if subresource.response.status_code is None:  # no response to show
+                        self.output_fetch_error(subresource)
+                    else:
+                        self.output(self.format_headers(subresource.response) + NL + NL)
+                        if not subresource.response.complete:
+                            self.output_fetch_error(subresource)
                     self.output(self.format_recommendations(subresource) + NL + NL)
 
     def format_uri(self, resource: HttpResource) -> str:
