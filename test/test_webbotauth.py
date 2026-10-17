@@ -129,18 +129,39 @@ class TestWebBotAuthSigner(unittest.TestCase):
         with self.assertRaises(InvalidSignature):
             _verify(self.public_key, base_lines, headers[b"signature"].decode("ascii"))
 
-    def test_sign_directory_verifies(self):
+    def test_sign_directory_verifies(self) -> None:
         headers = _headers_dict(self.signer.sign_directory())
         self.assertNotIn(b"signature-agent", headers)
         sig_input = headers[b"signature-input"].decode("ascii")
-        self.assertTrue(sig_input.startswith('sig1=("@authority")'))
+        # @authority is a request component: the response signature covers it with ;req.
+        self.assertTrue(sig_input.startswith('sig1=("@authority";req);'))
         self.assertIn(f';tag="{DIRECTORY_TAG}"', sig_input)
+        self.assertIn(f';keyid="{EXPECTED_KEYID}"', sig_input)
+        self.assertIn(';alg="ed25519"', sig_input)
+        for param in ("created", "expires", "nonce"):
+            self.assertIn(f";{param}=", sig_input)
+        params = sig_input[len("sig1=") :]
+        base_lines = [
+            '"@authority";req: signature-agent.test',
+            f'"@signature-params": {params}',
+        ]
+        _verify(self.public_key, base_lines, headers[b"signature"].decode("ascii"))
+
+    def test_directory_plain_fails(self) -> None:
+        headers = _headers_dict(self.signer.sign_directory())
+        sig_input = headers[b"signature-input"].decode("ascii")
         params = sig_input[len("sig1=") :]
         base_lines = [
             '"@authority": signature-agent.test',
             f'"@signature-params": {params}',
         ]
-        _verify(self.public_key, base_lines, headers[b"signature"].decode("ascii"))
+        with self.assertRaises(InvalidSignature):
+            _verify(self.public_key, base_lines, headers[b"signature"].decode("ascii"))
+
+    def test_request_no_req(self) -> None:
+        headers = _headers_dict(self.signer.sign_request("https://example.com/path"))
+        sig_input = headers[b"signature-input"].decode("ascii")
+        self.assertNotIn(";req", sig_input)
 
     def test_directory_json(self):
         directory = json.loads(self.signer.directory_json())
@@ -261,7 +282,7 @@ class TestDirectoryAuthority(unittest.TestCase):
     ) -> None:
         headers = self._serve(directory, hosts)
         params = headers[b"signature-input"].decode("ascii")[len("sig1=") :]
-        base_lines = [f'"@authority": {authority}', f'"@signature-params": {params}']
+        base_lines = [f'"@authority";req: {authority}', f'"@signature-params": {params}']
         _verify(self.public_key, base_lines, headers[b"signature"].decode("ascii"))
 
     def test_configured_authority_cases(self) -> None:

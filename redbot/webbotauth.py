@@ -129,15 +129,16 @@ class WebBotAuthSigner:
 
     def _build_signature(
         self,
-        components: List[Tuple[str, str]],
+        components: List[Tuple[http_sf.types.ItemType, str]],
         tag: str,
         validity: int,
     ) -> Tuple[str, str]:
         """
         Construct the RFC 9421 signature base over ``components`` (each an
-        ordered (component-name, component-value) pair), sign it, and return the
-        Signature-Input and Signature dictionary-member values for SIG_LABEL.
-        ``validity`` is the signature lifetime in seconds.
+        ordered (component-identifier, component-value) pair; an identifier is a
+        structured-field item, so it can carry parameters such as ``req``), sign
+        it, and return the Signature-Input and Signature dictionary-member values
+        for SIG_LABEL. ``validity`` is the signature lifetime in seconds.
 
         Structured-field values are serialized with ``http_sf`` so the
         @signature-params line in the base and the Signature-Input header are
@@ -152,10 +153,10 @@ class WebBotAuthSigner:
             "nonce": base64.b64encode(secrets.token_bytes(32)).decode("ascii"),
             "tag": tag,
         }
-        covered: List[http_sf.types.ItemType] = [name for name, _ in components]
+        covered = [identifier for identifier, _ in components]
         inner_list: http_sf.types.InnerListType = (covered, params)
 
-        base_lines = [f"{http_sf.ser(name)}: {value}" for name, value in components]
+        base_lines = [f"{http_sf.ser(identifier)}: {value}" for identifier, value in components]
         base_lines.append(f'{http_sf.ser("@signature-params")}: {http_sf.ser([inner_list])}')
         signature = self._key.sign("\n".join(base_lines).encode("utf-8"))
 
@@ -165,7 +166,10 @@ class WebBotAuthSigner:
         "Return the Web Bot Auth headers to add to a request for ``uri``."
         agent_field = http_sf.ser(self.directory)  # Signature-Agent value (an sf-string)
         sig_input, sig = self._build_signature(
-            [("@authority", self.authority(uri)), ("signature-agent", agent_field)],
+            [
+                (("@authority", {}), self.authority(uri)),
+                (("signature-agent", {}), agent_field),
+            ],
             REQUEST_TAG,
             self.validity,
         )
@@ -177,8 +181,13 @@ class WebBotAuthSigner:
 
     def sign_directory(self) -> List[Tuple[bytes, bytes]]:
         "Return the signature headers for the directory response."
+        # @authority is a request component, so the response signature needs ;req
+        # (RFC 9421 section 2.4; draft-meunier-http-message-signatures-directory
+        # section 5.2).
         sig_input, sig = self._build_signature(
-            [("@authority", self.directory_authority)], DIRECTORY_TAG, DIRECTORY_VALIDITY
+            [(("@authority", {"req": True}), self.directory_authority)],
+            DIRECTORY_TAG,
+            DIRECTORY_VALIDITY,
         )
         return [
             (b"Signature-Input", sig_input.encode("ascii")),
