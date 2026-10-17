@@ -89,7 +89,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
     def finish_output(self) -> None:
         self.final_status()
         media_type = self.resource.response.headers.parsed.get("content-type", [""])[0]
-        if self.resource.response.complete or self.resource.nonfinal_responses:
+        if self.resource.has_response or self.resource.nonfinal_responses:
             validator_link = self.validators.get(media_type, None)
             if validator_link and self.resource.response.complete:
                 validator_link = validator_link % e_query_arg(self.resource.request.uri or "")
@@ -355,6 +355,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
                     **{
                         "droid_lists": self.make_droid_lists(self.resource),
                         "problems": self.problems,
+                        "show_har": self.resource.response.complete,
                         "levels": levels,
                         "is_saved": is_saved,
                         "save_mtime": save_mtime,

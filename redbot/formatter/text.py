@@ -86,16 +86,17 @@ class BaseTextFormatter(Formatter):
 
     def finish_output(self) -> None:
         "Fill in the template with RED's results."
-        if self.resource.response.complete or self.resource.nonfinal_responses:
+        response = self.resource.response
+        if self.resource.has_response or self.resource.nonfinal_responses:
             if self.resource.nonfinal_responses:
                 self.output(
                     NL.join([self.format_headers(r) for r in self.resource.nonfinal_responses])
                     + NL
                     + NL
                 )
-            if self.resource.response.complete:
-                self.output(self.format_headers(self.resource.response) + NL + NL)
-            else:
+            if self.resource.has_response:
+                self.output(self.format_headers(response) + NL + NL)
+            if not response.complete:
                 self.output_fetch_error(self.resource)
 
             self.output(self.format_recommendations(self.resource) + NL)
@@ -226,7 +227,7 @@ class TextListFormatter(BaseTextFormatter):
                 subresources.sort(key=operator.attrgetter("request.uri"))
                 for subresource in subresources:
                     self.output(self.format_uri(subresource) + NL + NL)
-                    if subresource.response.status_code is None:  # no response to show
+                    if not subresource.has_response:  # no response to show
                         self.output_fetch_error(subresource)
                     else:
                         self.output(self.format_headers(subresource.response) + NL + NL)
