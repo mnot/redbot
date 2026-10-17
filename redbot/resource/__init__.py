@@ -170,12 +170,15 @@ class HttpResource(RedFetcher):
         if self.descend and tag not in ["a"] and link not in self.links[tag]:
             linked = HttpResource(self.config, active_checks_enabled=False)
             credentials, other_headers = split_credentials(self.request.headers.text)
-            join_error: Optional[ValueError] = None
+            uri: Optional[str]
             try:
                 uri = urljoin(base, link)
-            except ValueError as why:
-                uri, join_error = link, why  # still listed, with the error
-            linked.set_request(uri, headers=other_headers)
+            except ValueError:
+                try:  # browsers ignore an invalid <base>
+                    uri = urljoin(self.request.uri or "", link)
+                except ValueError:
+                    uri = None
+            linked.set_request(uri if uri is not None else link, headers=other_headers)
             # Compare the normalised URIs, not the link text: normalisation can change the host.
             # Credentials stay off unless both origins are known and equal.
             linked_origin = origin_of(linked.request.uri)
@@ -185,24 +188,28 @@ class HttpResource(RedFetcher):
                 )
             self.linked.append((linked, tag))
             self.add_check(linked)
-            try:
-                if join_error:
-                    raise UrlError(str(join_error))
-                linked.check()
-            except Exception as why:  # pylint: disable=broad-except
-                linked.fetch_error = linked.fetch_error or (
-                    why if isinstance(why, HttpError) else HttpError(str(why))
-                )
-                linked.stop()
-                if linked in self._task_map:  # stop() didn't complete it
-                    self.finish_check(linked)
-                try:  # after cleanup, so a failing listener can't undo it
-                    self.emit("debug", f"checking link {linked.request.uri} failed: {why!r}")
-                except Exception:  # pylint: disable=broad-except
-                    pass
+            if uri is None:  # can't be resolved; list it as failed and carry on
+                self._fail_link(linked, UrlError("link could not be resolved"))
+            else:
+                try:
+                    linked.check()
+                except Exception as why:  # pylint: disable=broad-except
+                    self._fail_link(linked, HttpError(str(why)))
         self.links[tag].add(link)
         if not self.response.base_uri:
             self.response.base_uri = base
+
+    def _fail_link(self, linked: "HttpResource", error: HttpError) -> None:
+        "Record why a linked resource couldn't be checked, and complete it."
+        linked.fetch_error = linked.fetch_error or error
+        linked.stop()
+        if linked in self._task_map:  # stop() didn't complete it
+            self.finish_check(linked)
+        try:  # after cleanup, so a failing listener can't undo it
+            uri = (linked.request.uri or "")[:200]
+            self.emit("debug", f"checking link {uri} failed: {error!r}")
+        except Exception:  # pylint: disable=broad-except
+            pass
 
     def _link_error(self, message: str) -> None:
         "Report a problem parsing or handling links."
