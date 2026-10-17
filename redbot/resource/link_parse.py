@@ -7,6 +7,7 @@ Parse links from a stream of HTML data.
 import codecs
 from html.parser import HTMLParser
 from typing import Any, Callable, Dict, List, Optional, Tuple
+from urllib.parse import urljoin, urlsplit
 
 from httplint.field.utils import split_string, unquote_string
 from httplint.message import HttpMessageLinter
@@ -61,6 +62,7 @@ class HTMLLinkParser(HTMLParser):
         self.last_err_pos: int = 0
         self.ok = True
         self.bytes_fed = 0
+        self.base_seen = False
         HTMLParser.__init__(self)
 
     def __getstate__(self) -> Dict[str, Any]:
@@ -106,7 +108,10 @@ class HTMLLinkParser(HTMLParser):
                     for proc in self.link_procs:
                         proc(self.message.base_uri, target, tag, title)
         elif tag == "base":
-            self.message.base_uri = dict(attrs).get("href", self.message.base_uri) or ""
+            attr_d = dict(attrs)
+            if "href" in attr_d and not self.base_seen:  # only the first <base href> counts
+                self.base_seen = True
+                self.message.base_uri = resolve_base(self.message.base_uri, attr_d["href"] or "")
         elif tag == "meta":
             attr_d = dict(attrs)
             if (attr_d.get("http-equiv", "") or "").lower() != "content-type":
@@ -143,6 +148,17 @@ class HTMLLinkParser(HTMLParser):
         self.last_err_pos, _ = self.getpos()
         if self.err:
             self.err(message)
+
+
+def resolve_base(page_uri: str, href: str) -> str:
+    "Resolve a <base href> against the page's URI; browsers ignore one that's unusable."
+    try:
+        base = urljoin(page_uri, href.strip())
+        if urlsplit(base).scheme.lower() in ("data", "javascript"):
+            return page_uri
+    except ValueError:
+        return page_uri
+    return base
 
 
 class BadErrorIReallyMeanIt(Exception):

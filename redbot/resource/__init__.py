@@ -177,10 +177,7 @@ class HttpResource(RedFetcher):
             try:
                 uri = urljoin(base, link)
             except ValueError:
-                try:  # browsers ignore an invalid <base>
-                    uri = urljoin(self.request.uri or "", link)
-                except ValueError:
-                    uri = None
+                uri = None
             linked.set_request(uri if uri is not None else link, headers=other_headers)
             # Compare the normalised URIs, not the link text: normalisation can change the host.
             # Credentials stay off unless both origins are known and equal.
