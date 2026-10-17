@@ -5,9 +5,11 @@ import unittest
 from configparser import ConfigParser
 from typing import Dict, List, Optional, Tuple
 from unittest import mock
+from urllib.parse import urlsplit
 
 import thor
 import thor.http
+from thor.http.error import UrlError
 from thor.http.uri import parse_uri
 
 from redbot.formatter.html import TableHtmlFormatter
@@ -218,7 +220,7 @@ class LocalServers:
                 {k.decode("ascii").lower(): v.decode("ascii") for k, v in exchange.req_hdrs}
             )
             if path == "/page":
-                body = self.page().encode("ascii")
+                body = self.page().encode("utf-8")
                 ctype = b"text/html"
             else:
                 body = b"x"
@@ -249,6 +251,120 @@ class LocalServers:
     def close(self) -> None:
         for server, _port in self.servers:
             server.shutdown()
+
+
+class UnencodableLinkServers(LocalServers):
+    "Serves a page whose first link has a non-ASCII password, followed by a good one."
+
+    def page(self) -> str:
+        same, _other = self.ports
+        return (
+            "<html><head>"
+            f'<script src="http://a:\u00e9@127.0.0.1:{same}/bad.js"></script>'
+            f'<script src="http://127.0.0.1:{same}/good.js"></script>'
+            "</head><body>hi</body></html>"
+        )
+
+
+class TestUnencodableUri(unittest.TestCase):
+    "A request URI that can't be sent as ASCII fails that resource, not the whole test."
+
+    @staticmethod
+    def unencodable_resource(**kwargs: bool) -> HttpResource:
+        resource = HttpResource(make_config()["redbot"], **kwargs)
+        resource.set_request("http://example.com/x.js")
+        # httplint can leave a non-ASCII password in the URI (mnot/httplint#200); set it directly
+        # so this doesn't depend on that being fixed.
+        resource.request.uri = "http://a:\u00e9@example.com/x.js"
+        return resource
+
+    def test_check_fails_cleanly(self) -> None:
+        resource = self.unencodable_resource()
+        done: List[str] = []
+        resource.on("check_done", lambda: done.append("check_done"))
+        with mock.patch.object(RedFetcher.client, "exchange") as exchange:
+            resource.check()
+        exchange.assert_not_called()
+        self.assertTrue(resource.fetch_done)
+        self.assertIsInstance(resource.fetch_error, UrlError)
+        self.assertEqual(done, ["check_done"])
+
+    def test_failing_link_check_still_completes(self) -> None:
+        resource = HttpResource(make_config()["redbot"], descend=True)
+        resource.set_request(TOP)
+        debug: List[str] = []
+        resource.on("debug", debug.append)
+        done: List[str] = []
+        resource.on("check_done", lambda: done.append("check_done"))
+        with mock.patch.object(HttpResource, "check", side_effect=ValueError("boom")):
+            resource.process_link(TOP, "/app.js", "script", "")
+        self.assertFalse(resource._task_map)  # pylint: disable=protected-access
+        linked, _tag = resource.linked[0]
+        self.assertTrue(linked.fetch_done)
+        self.assertIsNotNone(linked.fetch_error)
+        self.assertTrue(any("boom" in message for message in debug), debug)
+        # Still reading the page, so the link can't complete the parent...
+        self.assertEqual(done, [])
+        # ...but nothing is left waiting for it once the parent's own fetch finishes.
+        resource.stop()
+        self.assertEqual(done, ["check_done"])
+
+    def test_failing_debug_listener_does_not_stall_link(self) -> None:
+        # Cleanup must not depend on the debug message getting out. Everything here is
+        # synchronous, so a regression fails the assertions rather than hanging.
+        def broken(_message: str) -> None:
+            raise RuntimeError("bad listener")
+
+        resource = HttpResource(make_config()["redbot"], descend=True)
+        resource.set_request(TOP)
+        resource.on("debug", broken)
+        with mock.patch.object(HttpResource, "check", side_effect=ValueError("boom")):
+            resource.process_link(TOP, "/app.js", "script", "")
+        self.assertFalse(resource._task_map)  # pylint: disable=protected-access
+        self.assertTrue(resource.linked[0][0].fetch_done)
+
+    def test_link_parser_reports_errors(self) -> None:
+        with mock.patch.object(HttpResource, "process_link", side_effect=ValueError("boom")):
+            resource = HttpResource(make_config()["redbot"], descend=True)
+        resource.set_request(TOP)
+        debug: List[str] = []
+        resource.on("debug", debug.append)
+        resource.response.process_response_topline(b"1.1", b"200", b"OK")
+        resource.response.process_headers([(b"Content-Type", b"text/html")])
+        resource._link_parser.feed(  # pylint: disable=protected-access
+            '<script src="/a.js"></script>'
+        )
+        self.assertTrue(any("boom" in message for message in debug), debug)
+
+    def test_descend_end_to_end(self) -> None:
+        saved_check_ip = RedFetcher.client.check_ip
+        RedFetcher.client.check_ip = None
+        servers = UnencodableLinkServers()
+        timed_out: List[bool] = []
+
+        def give_up() -> None:
+            timed_out.append(True)
+            thor.stop()
+
+        try:
+            same, _other = servers.ports
+            resource = HttpResource(make_config()["redbot"], descend=True)
+            resource.set_request(f"http://127.0.0.1:{same}/page")
+            resource.on("check_done", thor.stop)
+            timeout = thor.schedule(20, give_up)
+            resource.check()
+            thor.run()
+            timeout.delete()
+        finally:
+            servers.close()
+            RedFetcher.client.check_ip = saved_check_ip
+        self.assertFalse(timed_out, "test stalled")
+        self.assertTrue(resource.check_done)
+        by_path = {urlsplit(str(r.request.uri)).path: r for (r, _tag) in resource.linked}
+        self.assertIsInstance(by_path["/bad.js"].fetch_error, UrlError)
+        self.assertIsNone(by_path["/good.js"].fetch_error)
+        self.assertTrue(by_path["/good.js"].response.complete)
+        self.assertNotIn((same, "/bad.js"), servers.seen)
 
 
 class TestDescendEndToEnd(unittest.TestCase):
