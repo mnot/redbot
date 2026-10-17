@@ -63,7 +63,7 @@
 
 <body class="{{ extra_body_class }}">
 
-    {{ links.save_form(test_id, descend) | safe }}
+    {% if test_id %}{{ links.save_form(test_id, descend) | safe }}{% endif %}
 
     <div id="request">
         <h1><a href="{{ links.home_link() }}"><span class="hilight"><abbr title="Resource Expert Droid">RED</abbr></span>bot</a>{{ extra_title
