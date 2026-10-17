@@ -351,7 +351,6 @@ class RedFetcher(thor.events.EventEmitter):
         elif isinstance(error, httperr.HeaderSpaceError) and error.detail:
             subject = f"field-{error.detail.lower().strip()}"
             self.response.notes.add(subject, HEADER_NAME_SPACE, header_name=error.detail)
-            return
         else:
             self.fetch_error = error
         self._fetch_done()
