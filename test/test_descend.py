@@ -45,6 +45,27 @@ def make_config(**values: str) -> ConfigParser:
     return conf
 
 
+def check_locally(resource: HttpResource, timeout: float = 20) -> bool:
+    "Run resource.check() against local servers; False if check_done didn't arrive in time."
+    saved_check_ip = RedFetcher.client.check_ip
+    RedFetcher.client.check_ip = None
+    finished: List[bool] = []
+
+    def done() -> None:
+        finished.append(True)
+        thor.stop()
+
+    resource.on("check_done", done)
+    try:
+        timer = thor.schedule(timeout, thor.stop)
+        resource.check()
+        thor.run()
+        timer.delete()
+    finally:
+        RedFetcher.client.check_ip = saved_check_ip
+    return bool(finished)
+
+
 class TestOriginOf(unittest.TestCase):
     """origin_of gets the (already normalised) request URI, as set by set_request."""
 

@@ -17,6 +17,8 @@ from redbot.utils import decode_text
 
 DEFAULT_ENCODING = "utf-8"
 MAX_FEED_BYTES = 2 * 1024 * 1024
+# A <base> inside these isn't the document's base (noscript: as when scripting is enabled).
+INERT_TAGS = ("template", "svg", "math", "noscript")
 
 
 class HTMLLinkParser(HTMLParser):
@@ -63,6 +65,7 @@ class HTMLLinkParser(HTMLParser):
         self.ok = True
         self.bytes_fed = 0
         self.base_seen = False
+        self.inert_depth = {tag: 0 for tag in INERT_TAGS}
         HTMLParser.__init__(self)
 
     def __getstate__(self) -> Dict[str, Any]:
@@ -109,9 +112,12 @@ class HTMLLinkParser(HTMLParser):
                         proc(self.message.base_uri, target, tag, title)
         elif tag == "base":
             attr_d = dict(attrs)
-            if "href" in attr_d and not self.base_seen:  # only the first <base href> counts
+            inert = any(self.inert_depth.values())
+            if "href" in attr_d and not self.base_seen and not inert:  # first <base href> counts
                 self.base_seen = True
                 self.message.base_uri = resolve_base(self.message.base_uri, attr_d["href"] or "")
+        elif tag in self.inert_depth:
+            self.inert_depth[tag] += 1
         elif tag == "meta":
             attr_d = dict(attrs)
             if (attr_d.get("http-equiv", "") or "").lower() != "content-type":
@@ -137,6 +143,10 @@ class HTMLLinkParser(HTMLParser):
                 except LookupError:
                     pass
 
+    def handle_endtag(self, tag: str) -> None:
+        if self.inert_depth.get(tag):
+            self.inert_depth[tag] -= 1
+
     def error(self, message: str) -> None:
         self.errors += 1
         if self.getpos()[0] == self.last_err_pos:
@@ -151,9 +161,12 @@ class HTMLLinkParser(HTMLParser):
 
 
 def resolve_base(page_uri: str, href: str) -> str:
-    "Resolve a <base href> against the page's URI; browsers ignore one that's unusable."
+    """
+    Resolve a <base href> against the page's URI. As in the HTML spec, an unparseable href or a
+    data: or javascript: URI leaves the page URI as the base (Chromium uses about:blank instead).
+    """
     try:
-        base = urljoin(page_uri, href.strip())
+        base = urljoin(page_uri, href.strip(" \t\n\f\r"))
         if urlsplit(base).scheme.lower() in ("data", "javascript"):
             return page_uri
     except ValueError:
