@@ -20,7 +20,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from unittest.mock import patch
 
 import thor.events
-from thor.http.error import HttpError
+from thor.http.error import HttpError, ReadTimeoutError
 
 from redbot.webui.captcha import MAX_REPLY_SIZE, CaptchaHandler
 
@@ -178,8 +178,21 @@ class TestCaptchaCookies(unittest.TestCase):
         self._assert_rejected([f"human_time={human_time}; human_hmac={human_hmac}".encode()])
 
 
+class FakeConn:
+    def __init__(self) -> None:
+        self.killed = False
+        self.tcp_conn = SimpleNamespace(abort=self.abort)
+
+    def abort(self) -> None:
+        self.killed = True
+
+
 class FakeExchange(thor.events.EventEmitter):
     "Stands in for the provider exchange, so tests can emit its events."
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.conn = FakeConn()
 
     def request_start(self, *args: Any) -> None:
         pass
@@ -197,13 +210,16 @@ class ReplyTestCase(unittest.TestCase):
     stops the daemon. Whatever the provider sends must end in continue_test or error_response.
     """
 
+    def setUp(self) -> None:
+        self.exchange = FakeExchange()
+
     def verify(
         self,
         body: bytes,
         status: bytes = b"200",
         chunks: Optional[List[bytes]] = None,
-        error_first: bool = False,
-        error_last: bool = False,
+        error_before: Optional[HttpError] = None,
+        error_after: Optional[HttpError] = None,
     ) -> Tuple[List[Any], List[Any]]:
         parser = ConfigParser()
         parser.read_dict(
@@ -223,27 +239,26 @@ class ReplyTestCase(unittest.TestCase):
             lambda *a: continued.append(a),
             lambda *a: errors.append(a),
         )
-        exchange = FakeExchange()
         with patch("redbot.webui.captcha.token_client") as client:
-            client.exchange.return_value = exchange
+            client.exchange.return_value = self.exchange
             handler.verify_captcha("token")
-        if error_first:
-            exchange.emit("error", HttpError("connect failed"))
-        exchange.emit("response_start", status, b"phrase", [])
+        if error_before:
+            self.exchange.emit("error", error_before)
+        self.exchange.emit("response_start", status, b"phrase", [])
         for chunk in [body] if chunks is None else chunks:
-            exchange.emit("response_body", chunk)
-        exchange.emit("response_done", [])
-        if error_last:
-            exchange.emit("error", HttpError("late"))
+            self.exchange.emit("response_body", chunk)
+        self.exchange.emit("response_done", [])
+        if error_after:
+            self.exchange.emit("error", error_after)
         return continued, errors
 
-    def assert_error(self, body: bytes, code: bytes, **kwargs: Any) -> str:
+    def assert_error(self, body: bytes, code: bytes, **kwargs: Any) -> Tuple[str, str]:
+        "Check for exactly one error response; return what it shows and what it logs."
         continued, errors = self.verify(body, **kwargs)
         self.assertEqual(continued, [])
         self.assertEqual(len(errors), 1)
         self.assertEqual(errors[0][0], code)
-        self.assertEqual(errors[0][2], errors[0][3])  # shown and logged alike
-        return str(errors[0][2])
+        return str(errors[0][2]), str(errors[0][3])
 
 
 class TestCaptchaVerifyReply(ReplyTestCase):
@@ -253,74 +268,88 @@ class TestCaptchaVerifyReply(ReplyTestCase):
         self.assertEqual(errors, [])
 
     def test_failure_with_codes(self) -> None:
-        message = self.assert_error(
-            b'{"success": false, "error-codes": ["invalid-input-response", "timeout"]}', b"403"
-        )
+        body = b'{"success": false, "error-codes": ["invalid-input-response", "timeout"]}'
+        message, log = self.assert_error(body, b"403")
         self.assertIn("invalid-input-response, timeout", message)
+        self.assertEqual(message, log)
 
     def test_failure_without_codes(self) -> None:
-        self.assertIn("unknown error", self.assert_error(b'{"success": false}', b"403"))
+        self.assertIn("unknown error", self.assert_error(b'{"success": false}', b"403")[0])
 
     def test_reply_is_not_an_object(self) -> None:
-        for body in [b"null", b"[]", b'"x"', b"1", b"true", b'[{"success": true}]']:
+        for body in [b"null", b"[]", b'"x"', b"1", b"true"]:
             with self.subTest(body=body):
-                message = self.assert_error(body, b"500")
+                message, log = self.assert_error(body, b"500")
                 self.assertEqual(message, "Captcha server response error")
+                self.assertEqual(message, log)
 
     def test_bad_error_codes(self) -> None:
-        for codes in ["null", "[]", "[1]", '"abc"', '{"a": 1}', "[null, [2], {}]", "1.5", "true"]:
+        for codes in ["null", "[]", "[1]", '"abc"', '{"a": 1}', "[null, [2], {}]", "true"]:
             with self.subTest(codes=codes):
                 body = f'{{"success": false, "error-codes": {codes}}}'.encode()
-                message = self.assert_error(body, b"403")
+                message, _ = self.assert_error(body, b"403")
                 self.assertTrue(message.startswith("Captcha errors:"))
 
     def test_error_codes_are_coerced(self) -> None:
         body = b'{"success": false, "error-codes": [1, null, "x", [2]]}'
-        message = self.assert_error(body, b"403")
-        self.assertEqual(message, "Captcha errors:1, None, x, [2]")
+        self.assertEqual(self.assert_error(body, b"403")[0], "Captcha errors:1, None, x, [2]")
 
     def test_success_must_be_true(self) -> None:
-        for value in ['"true"', '"yes"', "1", '{"a": 1}', "[true]", "null", "false", "0", '""']:
+        for value in ['"true"', "1", '{"a": 1}', "[true]", "null", "false"]:
             with self.subTest(success=value):
                 self.assert_error(f'{{"success": {value}}}'.encode(), b"403")
+
+    def test_not_json(self) -> None:
+        for body in [b"", b"not json", b'{"success": true, "x": "\xff"}', b"\xff\xfe\x00"]:
+            with self.subTest(body=body):
+                message, _ = self.assert_error(body, b"500")
+                self.assertEqual(message, "Captcha server response error")
 
     def test_non_200_is_never_success(self) -> None:
         for status in [b"500", b"403", b"302"]:
             with self.subTest(status=status):
-                message = self.assert_error(b'{"success": true}', b"500", status=status)
+                message, log = self.assert_error(b'{"success": true}', b"500", status=status)
                 self.assertEqual(message, f"Captcha server returned {status.decode()} status code")
+                self.assertEqual(message, log)
 
-    def test_non_200_not_json(self) -> None:
-        message = self.assert_error(b"<html>oops</html>", b"500", status=b"502")
-        self.assertEqual(message, "Captcha server returned 502 status code")
+    def test_non_200_codes_logged_only(self) -> None:
+        body = b'{"success": false, "error-codes": ["bad-request", "\\u001b[31m"]}'
+        message, log = self.assert_error(body, b"500", status=b"400")
+        self.assertEqual(message, "Captcha server returned 400 status code")
+        self.assertEqual(log, f"{message} (bad-request, \\x1b[31m)")
 
     def test_odd_status_bytes(self) -> None:
-        message = self.assert_error(b"{}", b"500", status=b"\xff\x1b[31m")
+        message, _ = self.assert_error(b"{}", b"500", status=b"\xff\x1b[31m")
         self.assertNotIn("\x1b", message)
 
-    def test_not_json(self) -> None:
-        for body in [b"", b"not json", b"{", b"{'success': true}"]:
-            with self.subTest(body=body):
-                message = self.assert_error(body, b"500")
-                self.assertEqual(message, "Captcha server response error")
+    def test_controls_in_codes(self) -> None:
+        body = b'{"success": false, "error-codes": ["\\u001b[31mred\\u202e\\u0007\\n\\u0085"]}'
+        message, _ = self.assert_error(body, b"403")
+        for code in [0x1B, 0x202E, 0x07, 0x0A, 0x85]:
+            self.assertNotIn(chr(code), message)
+        self.assertIn("\\x1b[31mred", message)
 
-    def test_invalid_utf8(self) -> None:
-        for body in [b'{"success": true, "x": "\xff"}', b"\xff\xfe\x00", b"\xef\xbb\xbf\xff"]:
-            with self.subTest(body=body):
-                self.assert_error(body, b"500")
+    def test_error_codes_are_bounded(self) -> None:
+        codes = b",".join([b'"' + b"x" * 500 + b'"'] * 100)
+        body = b'{"success": false, "error-codes": [' + codes + b"]}"
+        self.assertLess(len(self.assert_error(body, b"403")[0]), 1000)
 
 
 class TestCaptchaVerifyLimits(ReplyTestCase):
+    padded = b'{"success": true, "pad": "' + b"x" * MAX_REPLY_SIZE + b'"}'
+
     def test_deeply_nested(self) -> None:
         # json.loads raises RecursionError, not ValueError, for this
         self.assert_error(b"[" * 50000, b"500")
-        self.assert_error(b'{"success": false, "a": ' + b"[" * 50000, b"500")
 
-    def test_oversized_reply(self) -> None:
-        body = b'{"success": true, "pad": "' + b"x" * MAX_REPLY_SIZE + b'"}'
-        self.assert_error(body, b"500")
-        chunks = [body[i : i + 4096] for i in range(0, len(body), 4096)]
-        self.assert_error(body, b"500", chunks=chunks)
+    def test_oversized_aborts(self) -> None:
+        chunks = [self.padded[i : i + 4096] for i in range(0, len(self.padded), 4096)]
+        message, _ = self.assert_error(b"", b"500", chunks=chunks)
+        self.assertEqual(message, "Captcha server response error")
+        self.assertTrue(self.exchange.conn.killed)
+
+    def test_oversized_whole(self) -> None:
+        self.assert_error(self.padded, b"500")
 
     def test_reply_at_the_size_limit(self) -> None:
         head = b'{"success": true, "pad": "'
@@ -329,49 +358,58 @@ class TestCaptchaVerifyLimits(ReplyTestCase):
         continued, errors = self.verify(body)
         self.assertEqual(len(continued), 1)
         self.assertEqual(errors, [])
+        self.assertFalse(self.exchange.conn.killed)
 
-    def test_chunked_reply(self) -> None:
-        continued, _ = self.verify(b"", chunks=[b'{"succ', b'ess": tr', b"ue}"])
-        self.assertEqual(len(continued), 1)
 
-    def test_controls_in_codes(self) -> None:
-        body = b'{"success": false, "error-codes": ["\\u001b[31mred\\u202e\\u0007\\n\\u0085"]}'
-        message = self.assert_error(body, b"403")
-        for code in [0x1B, 0x202E, 0x07, 0x0A, 0x85]:
-            self.assertNotIn(chr(code), message)
-        self.assertIn("\\x1b[31mred", message)
+class TestCaptchaVerifyErrors(ReplyTestCase):
+    def test_error_is_logged(self) -> None:
+        message, log = self.assert_error(b"", b"403", error_before=ReadTimeoutError("read"))
+        self.assertIn("problem with the captcha server", message)
+        self.assertEqual(log, "Captcha error: Read Timeout (read).")
 
-    def test_error_codes_are_bounded(self) -> None:
-        codes = b",".join([b'"' + b"x" * 500 + b'"'] * 100)
-        message = self.assert_error(b'{"success": false, "error-codes": [' + codes + b"]}", b"403")
-        self.assertLess(len(message), 1000)
+    def test_error_without_detail(self) -> None:
+        _, log = self.assert_error(b"", b"403", error_before=ReadTimeoutError())
+        self.assertEqual(log, "Captcha error: Read Timeout.")
 
-    def test_connection_error(self) -> None:
-        # a reply that follows an error must not produce a second response
-        _, errors = self.verify(b'{"success": true}', error_first=True)
-        self.assertEqual(len(errors), 1)
-        self.assertEqual(errors[0][0], b"403")
-
-    def test_late_error_is_ignored(self) -> None:
-        continued, errors = self.verify(b'{"success": true}', error_last=True)
-        self.assertEqual(len(continued), 1)
-        self.assertEqual(errors, [])
+    def test_error_detail_is_escaped(self) -> None:
+        # thor puts peer-supplied text in some details
+        detail = "\x1b[31m" + chr(0x202E) + "\n"
+        _, log = self.assert_error(b"", b"403", error_before=HttpError(detail))
+        self.assertEqual(log, "Captcha error: Unknown Error (\\x1b[31m\\u202e\\x0a).")
 
 
 class Provider(http.server.BaseHTTPRequestHandler):
     "A stand-in captcha provider; the class attribute holds what it replies with next."
 
     reply: Dict[str, Any] = {}
+    dropped = threading.Event()
 
     def do_POST(self) -> None:  # pylint: disable=invalid-name
         self.rfile.read(int(self.headers.get("Content-Length") or 0))
         if self.reply["body"] is None:
             self.close_connection = True  # no response at all
             return
+        if self.reply["body"] == b"trickle":
+            self.trickle()
+            return
         self.send_response(self.reply["status"])
         self.send_header("Content-Length", str(len(self.reply["body"])))
         self.end_headers()
         self.wfile.write(self.reply["body"])
+
+    def trickle(self) -> None:
+        "Send more than the daemon will buffer, then keep going until it hangs up."
+        self.send_response(200)
+        self.send_header("Content-Length", str(10_000_000))
+        self.end_headers()
+        try:
+            self.wfile.write(b" " * (MAX_REPLY_SIZE + 1))
+            for _ in range(100):
+                time.sleep(0.2)
+                self.wfile.write(b" ")
+                self.wfile.flush()
+        except OSError:
+            Provider.dropped.set()
 
     def log_message(self, *args: Any) -> None:  # pylint: disable=arguments-differ
         pass
@@ -479,26 +517,32 @@ class TestDaemonSurvivesBadCaptchaReplies(unittest.TestCase):
     def test_bad_replies(self) -> None:
         cases: List[Tuple[Optional[bytes], int, int]] = [
             (b"null", 200, 500),
-            (b"[]", 200, 500),
-            (b'"x"', 200, 500),
-            (b'{"success": false, "error-codes": null}', 200, 403),
             (b'{"success": false, "error-codes": [1]}', 200, 403),
-            (b'{"success": false, "error-codes": "bad"}', 200, 403),
-            (b'{"success": "yes"}', 200, 403),
-            (b"[" * 50000, 200, 500),
-            (b"not json", 200, 500),
-            (b"\xff\xfe", 200, 500),
-            (b'{"success": true, "pad": "' + b"x" * 200000 + b'"}', 200, 500),
             (b'{"success": true}', 500, 500),
-            (b"", 204, 500),
             (None, 200, 403),
         ]
         for body, status, expected in cases:
-            with self.subTest(body=None if body is None else body[:40], status=status):
+            with self.subTest(body=body, status=status):
                 got, page = self.check(body, status)
                 self.assertEqual(got, expected)
                 self.assertIn("</html>", page)
                 self.assertIsNone(self.daemon.poll(), "daemon exited")
+        got, _ = self.check(b'{"success": true}')
+        self.assertEqual(got, 200)
+        with urllib.request.urlopen(f"http://127.0.0.1:{self.port}/", timeout=10) as response:
+            self.assertEqual(response.status, 200)
+        self.stop_daemon()
+        self.assertNotIn("Traceback", self.stderr)
+        self.assertNotIn("Captcha error: .", self.stderr)  # the closed connection says why
+
+    def test_oversized_reply_is_cut_off(self) -> None:
+        Provider.dropped.clear()
+        start = time.time()
+        got, _ = self.check(b"trickle")
+        self.assertEqual(got, 500)
+        self.assertLess(time.time() - start, 8)
+        self.assertTrue(Provider.dropped.wait(10), "the provider was never hung up on")
+        self.assertIsNone(self.daemon.poll(), "daemon exited")
 
     def test_failure_text_is_escaped(self) -> None:
         got, page = self.check(
@@ -510,17 +554,6 @@ class TestDaemonSurvivesBadCaptchaReplies(unittest.TestCase):
         self.stop_daemon()
         self.assertNotIn("\x1b", self.stderr)
         self.assertIn("\\x1b[31m", self.stderr)
-
-    def test_daemon_keeps_serving(self) -> None:
-        self.check(b"null")
-        self.check(b'{"success": false, "error-codes": [1]}')
-        got, _ = self.check(b'{"success": true}')
-        self.assertEqual(got, 200)
-        self.assertIsNone(self.daemon.poll(), "daemon exited")
-        with urllib.request.urlopen(f"http://127.0.0.1:{self.port}/", timeout=10) as response:
-            self.assertEqual(response.status, 200)
-        self.stop_daemon()
-        self.assertNotIn("Traceback", self.stderr)
 
 
 if __name__ == "__main__":

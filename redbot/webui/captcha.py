@@ -3,7 +3,7 @@ import json
 import re
 import time
 from http import cookies
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Optional
 from urllib.parse import parse_qs, urlencode
 
 import thor
@@ -51,6 +51,15 @@ def format_error_codes(codes: object) -> str:
     return ", ".join(
         escape_controls(str(code)[:MAX_ERROR_CODE_LENGTH]) for code in codes[:MAX_ERROR_CODES]
     )
+
+
+def parse_reply(body: bytes) -> Optional[Dict[str, Any]]:
+    "Return the provider's reply if it is a JSON object, otherwise None."
+    try:
+        results = json.loads(body)
+    except (ValueError, RecursionError):
+        return None
+    return results if isinstance(results, dict) else None
 
 
 class CaptchaHandler:
@@ -129,8 +138,21 @@ class CaptchaHandler:
         exchange = token_client.exchange()
         captcha_status: bytes = b""
         captcha_body: bytes = b""
-        too_large = False
         decided = False
+
+        def reject(results: Optional[Dict[str, Any]]) -> None:
+            "Fail on a reply that can't be a verdict, with `results` as parsed if it was."
+            if captcha_status != b"200":
+                status = escape_controls(captcha_status.decode("utf-8", "replace"))
+                e_str = f"Captcha server returned {status} status code"
+                codes = results.get("error-codes") if results else None
+                if isinstance(codes, list) and codes:
+                    log_str = f"{e_str} ({format_error_codes(codes)})"
+                else:
+                    log_str = e_str
+            else:
+                e_str = log_str = "Captcha server response error"
+            self.error_response(b"500", b"Internal Server Error", e_str, log_str)
 
         @thor.events.on(exchange)
         def error(err_msg: HttpError) -> None:
@@ -138,11 +160,12 @@ class CaptchaHandler:
             if decided:
                 return
             decided = True
+            detail = f"{err_msg.desc} ({err_msg.detail})" if err_msg.detail else err_msg.desc
             self.error_response(
                 b"403",
                 b"Forbidden",
                 "There was a problem with the captcha server; please try again soon.",
-                f"Captcha error: {err_msg}.",
+                escape_controls(f"Captcha error: {detail}."),
             )
 
         @thor.events.on(exchange)
@@ -152,13 +175,16 @@ class CaptchaHandler:
 
         @thor.events.on(exchange)
         def response_body(chunk: bytes) -> None:
-            nonlocal captcha_body, too_large
-            if too_large:
+            nonlocal captcha_body, decided
+            if decided:
                 return
             captcha_body += chunk
             if len(captcha_body) > MAX_REPLY_SIZE:
-                too_large = True
+                decided = True
                 captcha_body = b""
+                reject(None)
+                if exchange.conn:
+                    exchange.conn.tcp_conn.abort()
 
         @thor.events.on(exchange)
         def response_done(_: RawHeaderListType) -> None:
@@ -166,18 +192,9 @@ class CaptchaHandler:
             if decided:
                 return
             decided = True
-            if captcha_status != b"200":
-                status = escape_controls(captcha_status.decode("utf-8", "replace"))
-                self._reply_error(f"Captcha server returned {status} status code")
-                return
-            results: Any = None
-            if not too_large:
-                try:
-                    results = json.loads(captcha_body)
-                except (ValueError, RecursionError):
-                    pass
-            if not isinstance(results, dict):
-                self._reply_error("Captcha server response error")
+            results = parse_reply(captcha_body)
+            if captcha_status != b"200" or results is None:
+                reject(results)
                 return
             if results.get("success") is True:
                 self.continue_test(self.issue_human())
@@ -202,9 +219,6 @@ class CaptchaHandler:
         )
         exchange.request_body(urlencode(request_form).encode("utf-8", "replace"))
         exchange.request_done([])
-
-    def _reply_error(self, e_str: str) -> None:
-        self.error_response(b"500", b"Internal Server Error", e_str, e_str)
 
     def _hmac_input(self, human_time: str) -> bytes:
         """
