@@ -81,18 +81,17 @@
         <td>{{ yes_no(resource.partial_support) }}</td>
         {{ notes_cell(resource) }}
         {% else %}
-        {% set has_status = resource.response.status_code is not none %}
-        {% if has_status %}
+        {% if resource.has_response %}
         <td>{{ resource.response.status_code_str }}</td>
         {% endif %}
-        <td colspan="{{ 10 if has_status else 11 }}">
+        <td colspan="{{ 9 if resource.has_response else 11 }}">
             {% if resource.fetch_error == None %}
             {{ _("response incomplete") }}
             {% else %}
             {{ resource.fetch_error.desc or _("unknown problem") }}
             {% endif %}
         </td>
-        {% if has_status %}
+        {% if resource.has_response %}
         {{ notes_cell(resource) }}
         {% endif %}
         {% endif %}
@@ -102,9 +101,11 @@
 </table>
 
 <div class="options">
+    {% if show_har %}
     <div class='option'>
         {{ har_link }}
     </div>
+    {% endif %}
     {% if not is_saved %}
     {% if allow_save %}
     <div class='option' title='{{ _("Save these results for future reference") }}'>

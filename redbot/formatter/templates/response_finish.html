@@ -17,7 +17,7 @@
 
         {% if resource.fetch_error %}
         <p class='error'>
-            {{ resource.fetch_error.desc }}
+            {{ resource.fetch_error.desc }}{% if resource.fetch_error.detail %} ({{ resource.fetch_error.detail }}){% endif %}
         </p>
         {% endif %}
 
@@ -38,6 +38,7 @@
             <span class='option' title='{{ _("How large the response headers are, including the status line") }}'>{{
                 _("response headers") }}: {{ resource.response_header_length|f_num }} {{ _("bytes") }}</span>
 
+            {% if resource.response.complete %}
             <span class='option' title='{{ _("How large the response content is") }}'>{{ _("content") }}: {{
                 resource.response.content_length|f_num }} {{ _("bytes") }}</span>
 
@@ -46,6 +47,7 @@
                 _("transfer overhead") }}: {{ (resource.response.transfer_length -
                 resource.response.content_length)|f_num }} {{ _("bytes") }}</span>
             {%- endif %}
+            {% endif %}
 
             <br />
 

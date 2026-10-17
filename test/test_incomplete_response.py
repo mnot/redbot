@@ -11,19 +11,15 @@ import sys
 import threading
 import unittest
 from configparser import ConfigParser
-from typing import List, Optional, Type
+from html.parser import HTMLParser
+from typing import Any, List, Optional, Tuple, Type
 
 import thor.http.error as httperr
 
 from redbot.formatter import Formatter
-from redbot.formatter.har import HarFormatter
 from redbot.formatter.html import SingleEntryHtmlFormatter, TableHtmlFormatter
-from redbot.formatter.text import (
-    TextFormatter,
-    TextListFormatter,
-    VerboseTextFormatter,
-    VerboseTextListFormatter,
-)
+from redbot.formatter.null_links import NullLinkGenerator
+from redbot.formatter.text import TextFormatter, VerboseTextFormatter
 from redbot.i18n import set_locale
 from redbot.resource import HttpResource
 from redbot.resource.fetch import BAD_CHUNK
@@ -32,6 +28,7 @@ CHUNKED = b"HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: close\r
 CHUNK_ERROR = "Chunked encoding error (ZZ)"
 CHUNK_NOTE = "This response has chunked encoding errors."
 HEADERS = "HTTP/1.1 200 OK\nTransfer-Encoding: chunked\nConnection: close\n"
+DROPPED = "Server dropped connection before the response was complete."
 
 
 class Server(socketserver.ThreadingTCPServer):
@@ -64,6 +61,13 @@ class Server(socketserver.ThreadingTCPServer):
         threading.Thread(target=self.serve_forever, daemon=True).start()
 
 
+class HarLinks(NullLinkGenerator):
+    "Unlike the CLI's, this generates a HAR link."
+
+    def har_link(self, *args: Any, **kw: Any) -> str:
+        return "HARLINK"
+
+
 def run_redbot(url: str, *args: str) -> str:
     result = subprocess.run(
         [sys.executable, "-c", "from redbot.cli import main; main()", *args, url],
@@ -74,6 +78,11 @@ def run_redbot(url: str, *args: str) -> str:
     )
     assert result.returncode == 0, result.stderr
     return result.stdout
+
+
+def squash(markup: str) -> str:
+    "The text of some markup, with whitespace collapsed."
+    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", markup)).strip()
 
 
 class TestCommandLine(unittest.TestCase):
@@ -96,9 +105,10 @@ class TestCommandLine(unittest.TestCase):
     def test_html(self) -> None:
         out = run_redbot(f"{self.base}/", "-o", "html")
         self.assertIn("HTTP/1.1 200 OK", out)
-        self.assertIn("<p class='error'>\n            Chunked encoding error\n", out)
+        self.assertIn(CHUNK_ERROR, squash(out))
         self.assertIn(CHUNK_NOTE, out)
-        self.assertNotIn("view HAR", out)  # there'd be no entry in it
+        self.assertRegex(out, r"response headers: [1-9]\d* bytes")
+        self.assertNotIn("content:", out)  # only part of the body arrived
 
     def test_har(self) -> None:
         har = json.loads(run_redbot(f"{self.base}/", "-o", "har"))
@@ -109,11 +119,12 @@ class TestCommandLine(unittest.TestCase):
         self.assertTrue(
             out.startswith(
                 "HTTP/1.1 200 OK\nConnection: close\nContent-Length: 100\n\n"
-                "Error: Connection error (Server dropped connection before the response was "
-                "complete.)\n"
+                f"Error: Connection error ({DROPPED})\n"
             ),
             out,
         )
+        out = run_redbot(f"{self.base}/truncated", "-o", "html")
+        self.assertIn(f"Connection error ({DROPPED})", squash(out))
 
     def test_linked_text(self) -> None:
         for output_format in ("text", "text_verbose"):
@@ -127,17 +138,20 @@ class TestCommandLine(unittest.TestCase):
 
     def test_linked_html(self) -> None:
         out = run_redbot(f"{self.base}/page", "-a", "-o", "html")
-        rows = re.findall(r"<tr class=\"droid\">(.*?)</tr>", out, re.S)
-        text = [re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", row)).strip() for row in rows]
-        self.assertEqual(len(text), 3)
-        self.assertRegex(text[1], r"^200 Chunked encoding error \d+ ")
-        self.assertEqual(text[2], "200 Connection error")
+        rows = [squash(row) for row in re.findall(r"<tr class=\"droid\">(.*?)</tr>", out, re.S)]
+        self.assertEqual(len(rows), 3)
+        self.assertRegex(rows[1], r"^200 Chunked encoding error \d+ ")
+        self.assertEqual(rows[2], "200 Connection error")
         self.assertIn(CHUNK_NOTE, out)
 
 
-def incomplete_resource(
-    error: Optional[httperr.HttpError], status: bool = True, note: bool = True
+def make_resource(
+    error: Optional[httperr.HttpError] = None,
+    status: bool = True,
+    complete: bool = False,
+    note: bool = True,
 ) -> HttpResource:
+    "A resource whose fetch is over; its body is complete only if asked."
     conf = ConfigParser()
     conf.read_dict({"redbot": {}})
     resource = HttpResource(conf["redbot"], active_checks_enabled=False)
@@ -145,6 +159,8 @@ def incomplete_resource(
     if status:
         resource.response.process_response_topline(b"1.1", b"200", b"OK")
         resource.response.process_headers([(b"Content-Length", b"100")])
+    if complete:
+        resource.response.finish_content(True)
     if note:
         resource.response.notes.add("field-transfer-encoding", BAD_CHUNK, chunk_sample="ZZ")
     resource.fetch_error = error
@@ -156,7 +172,10 @@ def incomplete_resource(
 def render(formatter_class: Type[Formatter], resource: HttpResource, descend: bool = False) -> str:
     chunks: List[str] = []
     formatter = formatter_class(
-        resource.config, resource, chunks.append, {"descend": descend, "nonce": "n"}
+        resource.config,
+        resource,
+        chunks.append,
+        {"descend": descend, "nonce": "n", "link_generator": HarLinks()},
     )
     formatter.bind_resource(resource)
     with set_locale("en"):
@@ -164,106 +183,111 @@ def render(formatter_class: Type[Formatter], resource: HttpResource, descend: bo
     return "".join(chunks)
 
 
-class TestFormatterDecision(unittest.TestCase):
+class RowWidths(HTMLParser):
+    "The width in columns of each table row, counting colspans."
+
+    def __init__(self) -> None:
+        HTMLParser.__init__(self)
+        self.widths: List[int] = []
+        self.row: Optional[int] = None
+
+    def handle_starttag(self, tag: str, attrs: List[Tuple[str, Optional[str]]]) -> None:
+        if tag == "tr":
+            self.row = 0
+        elif tag in ("td", "th") and self.row is not None:
+            self.row += int(dict(attrs).get("colspan") or 1)
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "tr" and self.row is not None:
+            self.widths.append(self.row)
+            self.row = None
+
+
+class TestFormatters(unittest.TestCase):
     "What's shown depends on whether there's a status line, not on whether the body finished."
 
-    text_formatters = [TextFormatter, VerboseTextFormatter]
-
-    def test_text_no_error(self) -> None:
-        for formatter_class in self.text_formatters:
-            out = render(formatter_class, incomplete_resource(None))
-            self.assertTrue(out.startswith("HTTP/1.1 200 OK\nContent-Length:100\n\n* Connection:"))
-            self.assertNotIn("Error:", out)
-
-    def test_text_with_error(self) -> None:
-        error = httperr.ChunkError("ZZ")
-        for formatter_class in self.text_formatters:
-            out = render(formatter_class, incomplete_resource(error))
-            self.assertTrue(
-                out.startswith(
-                    f"HTTP/1.1 200 OK\nContent-Length:100\n\nError: {CHUNK_ERROR}\n* Connection:"
-                ),
-                out,
-            )
-            self.assertIn(CHUNK_NOTE, out)
-
-    def test_text_no_status_line(self) -> None:
-        error = httperr.ConnectError("refused")
-        for formatter_class in self.text_formatters:
-            out = render(formatter_class, incomplete_resource(error, status=False, note=False))
-            self.assertEqual(out, "Error: Connection error (refused)\n")
-        for formatter_class in self.text_formatters:
-            self.assertEqual(
-                render(formatter_class, incomplete_resource(None, status=False, note=False)), ""
-            )
-
-    def test_text_list_matches_page(self) -> None:
-        "A link is shown the same way as the page itself."
-        for page_class, list_class in [
-            (TextFormatter, TextListFormatter),
-            (VerboseTextFormatter, VerboseTextListFormatter),
-        ]:
-            for error in (None, httperr.ChunkError("ZZ")):
-                resource = incomplete_resource(error)
-                page = HttpResource(resource.config, descend=True)
-                page.response.process_response_topline(b"1.1", b"200", b"OK")
-                page.response.complete = True
-                page.linked.append((resource, "img"))
-                linked = render(list_class, page, descend=True)
-                self.assertIn(
-                    f"http://example.com/x\n\n{render(page_class, resource).rstrip()}", linked
+    def test_text(self) -> None:
+        for formatter_class in (TextFormatter, VerboseTextFormatter):
+            with self.subTest(formatter=formatter_class.__name__):
+                out = render(formatter_class, make_resource(httperr.ChunkError("ZZ")))
+                self.assertTrue(
+                    out.startswith(
+                        "HTTP/1.1 200 OK\nContent-Length:100\n\n"
+                        f"Error: {CHUNK_ERROR}\n* Connection:"
+                    ),
+                    out,
+                )
+                self.assertIn(CHUNK_NOTE, out)
+                out = render(formatter_class, make_resource())  # nothing says why
+                self.assertTrue(out.startswith("HTTP/1.1 200 OK\nContent-Length:100\n\n* Conn"))
+                no_status = make_resource(httperr.ConnectError("refused"), False, note=False)
+                self.assertEqual(
+                    render(formatter_class, no_status), "Error: Connection error (refused)\n"
                 )
 
-    def test_html(self) -> None:
-        resource = incomplete_resource(httperr.ChunkError("ZZ"))
+    def test_html_page(self) -> None:
+        resource = make_resource(httperr.ConnectError("dropped"))
+        resource.response_header_length = 55
         out = render(SingleEntryHtmlFormatter, resource)
         self.assertIn("HTTP/1.1 200 OK", out)
-        self.assertIn("Chunked encoding error", out)
+        self.assertIn("Connection error (dropped)", squash(out))
         self.assertIn(CHUNK_NOTE, out)
-        self.assertNotIn("view HAR", out)
-        self.assertNotIn("validate content", out)
+        self.assertIn("response headers: 55 bytes", squash(out))
+        for absent in ("content:", "transfer overhead", "HARLINK", "validate content"):
+            self.assertNotIn(absent, out)
+        complete = squash(render(SingleEntryHtmlFormatter, make_resource(complete=True)))
+        self.assertIn("content: 0 bytes", complete)
+        self.assertIn("HARLINK", complete)
+
+    def test_html_error_is_escaped(self) -> None:
+        evil = "<script>x</script>\x1b[2J\x07"
+        for status in (True, False):
+            with self.subTest(status=status):
+                resource = make_resource(httperr.ConnectError(evil), status, note=False)
+                out = render(SingleEntryHtmlFormatter, resource)
+                self.assertIn("Connection error (&lt;script&gt;x&lt;/script&gt;", out)
+                self.assertNotIn("<script>x", out)
 
     def test_html_no_status_line(self) -> None:
-        out = render(
-            SingleEntryHtmlFormatter, incomplete_resource(httperr.ConnectError("refused"), False)
-        )
+        resource = make_resource(httperr.ConnectError("refused"), status=False, note=False)
+        out = render(SingleEntryHtmlFormatter, resource)
         self.assertIn("Connection error (refused)", out)
         self.assertNotIn("HTTP/1.1", out)
-        self.assertNotIn("view HAR", out)
+        self.assertNotIn("HARLINK", out)
 
-    def test_html_table_rows(self) -> None:
-        page = HttpResource(incomplete_resource(None).config, descend=True)
-        page.set_request("http://example.com/")
-        page.response.process_response_topline(b"1.1", b"200", b"OK")
-        page.response.finish_content(True)
-        page.linked.append((incomplete_resource(httperr.ChunkError("ZZ")), "img"))
-        page.linked.append(
-            (incomplete_resource(httperr.ConnectError("refused"), status=False, note=False), "img")
-        )
-        out = render(TableHtmlFormatter, page, descend=True)
-        text = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", out))
-        self.assertIn("200 Chunked encoding error", text)
-        self.assertIn("Connection error", text)
-        self.assertNotIn("HTTP/ None", text)
-        self.assertIn(CHUNK_NOTE, out)
-
-    def test_har_skips_incomplete(self) -> None:
-        out = render(HarFormatter, incomplete_resource(httperr.ChunkError("ZZ")))
-        self.assertEqual(json.loads(out)["log"]["entries"], [])
+    def test_table(self) -> None:
+        "Every row is as wide as the header, however the response ended."
+        for page_complete in (True, False):
+            with self.subTest(page_complete=page_complete):
+                page = make_resource(complete=page_complete, note=False)
+                for link in (
+                    make_resource(complete=True, note=False),
+                    make_resource(httperr.ChunkError("ZZ")),
+                    make_resource(httperr.ConnectError("refused"), False, note=False),
+                ):
+                    page.linked.append((link, "img"))
+                out = render(TableHtmlFormatter, page, descend=True)
+                rows = RowWidths()
+                rows.feed(out)
+                self.assertEqual(rows.widths, [12] * 6)  # a header and a page, a header and 3 links
+                self.assertIn("Chunked encoding error", squash(out))
+                self.assertIn(CHUNK_NOTE, out)
+                self.assertNotIn("HTTP/ None", out)
+                self.assertEqual("HARLINK" in out, page_complete)
 
 
 class TestRecordedError(unittest.TestCase):
-    "Every way a response can end up incomplete leaves a fetch error saying why."
+    "A chunk error ends the response, so it's recorded as the fetch error."
 
-    def fetch(self, error: httperr.HttpError, status: bool = True) -> HttpResource:
-        resource = incomplete_resource(None, status=status, note=False)
+    @staticmethod
+    def end_with(resource: HttpResource, error: httperr.HttpError) -> None:
         resource._response_error(error)  # pylint: disable=protected-access
-        return resource
 
     def test_chunk_errors(self) -> None:
         for error in (httperr.ChunkError("ZZ"), httperr.ChunkTerminatorError("xx")):
             with self.subTest(error=error):
-                resource = self.fetch(error)
+                resource = make_resource(note=False)
+                self.end_with(resource, error)
                 self.assertIs(resource.fetch_error, error)
                 self.assertTrue(resource.fetch_done)
                 self.assertEqual(
@@ -271,15 +295,9 @@ class TestRecordedError(unittest.TestCase):
                 )
 
     def test_extra_data_is_not_an_error(self) -> None:
-        resource = incomplete_resource(None, note=False)
-        resource.response.complete = True
-        resource._response_error(httperr.ExtraDataError("junk"))  # pylint: disable=protected-access
+        resource = make_resource(complete=True, note=False)
+        self.end_with(resource, httperr.ExtraDataError("junk"))
         self.assertIsNone(resource.fetch_error)
-
-    def test_other_errors(self) -> None:
-        for error in (httperr.ConnectError("dropped"), httperr.HeaderNameError("x")):
-            with self.subTest(error=error):
-                self.assertIs(self.fetch(error).fetch_error, error)
 
 
 if __name__ == "__main__":
