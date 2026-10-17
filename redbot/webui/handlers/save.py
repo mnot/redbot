@@ -9,7 +9,7 @@ import os
 import pickle
 import time
 import traceback
-from typing import IO, Any, cast
+from typing import IO, Any, List, Optional, Tuple, cast
 from urllib.parse import urlencode
 
 import thor.events
@@ -183,11 +183,46 @@ class LoadSavedTestHandler(RequestHandler):
             cls.load_failed(ui, test_id)
             return
 
+        rendered = cls.render_saved(ui, test_id, top_resource, is_saved, mtime)
+        if rendered is None:
+            return
+        content_type, chunks = rendered
+
+        ui.exchange.response_start(
+            b"200",
+            b"OK",
+            [
+                (b"Content-Type", content_type),
+                (b"Cache-Control", b"max-age=3600, must-revalidate"),
+            ]
+            + security_headers(ui.nonce),
+        )
+        for chunk in chunks:
+            ui.output(chunk)
+        ui.exchange.response_done([])
+        ui.response_done = True
+
+    @classmethod
+    def render_saved(
+        cls,
+        ui: RedWebUiProtocol,
+        test_id: str,
+        top_resource: Any,
+        is_saved: bool,
+        mtime: float,
+    ) -> Optional[Tuple[bytes, List[str]]]:
+        """
+        Format the saved test into memory, returning its content type and output.
+
+        This happens before any response is sent, so a failure can still get a 500
+        rather than a cacheable 200 with a broken body. Returns None after sending
+        that 500.
+        """
         if not isinstance(top_resource, HttpResource):
             cls.load_failed(ui, test_id, f"unexpected {type(top_resource).__name__} object")
-            return
-
-        response_started = False
+            return None
+        chunks: List[str] = []
+        done = False
         try:
             display_resource: Any = top_resource
             if "check_name" in ui.query_string:
@@ -198,7 +233,7 @@ class LoadSavedTestHandler(RequestHandler):
             formatter = find_formatter(format_, "html", top_resource.descend)(
                 ui.config,
                 display_resource,
-                ui.output,
+                chunks.append,
                 {
                     "allow_save": (not is_saved),
                     "is_saved": True,
@@ -209,34 +244,19 @@ class LoadSavedTestHandler(RequestHandler):
                 },
             )
 
-            ui.exchange.response_start(
-                b"200",
-                b"OK",
-                [
-                    (b"Content-Type", formatter.content_type()),
-                    (b"Cache-Control", b"max-age=3600, must-revalidate"),
-                ]
-                + security_headers(ui.nonce),
-            )
-            response_started = True
-
             @thor.events.on(formatter)
             def formatter_done() -> None:
-                if ui.response_done:
-                    return
-                ui.exchange.response_done([])
-                ui.response_done = True
+                nonlocal done
+                done = True
 
             formatter.bind_resource(display_resource)
+            if not done:
+                raise RuntimeError("the saved test is incomplete")
+            return formatter.content_type(), chunks
         except Exception:  # pylint: disable=broad-exception-caught
             # An old object can lack attributes that formatting needs.
-            if not response_started:
-                cls.load_failed(ui, test_id)
-            else:
-                ui.error_log(f"Can't display saved test {test_id}:\n{traceback.format_exc()}")
-                if not ui.response_done:
-                    ui.exchange.response_done([])
-                    ui.response_done = True
+            cls.load_failed(ui, test_id)
+            return None
 
     @classmethod
     def load_failed(cls, ui: RedWebUiProtocol, test_id: str, detail: str = "") -> None:

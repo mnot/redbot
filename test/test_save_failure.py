@@ -219,13 +219,11 @@ class TestLoadSavedTest(unittest.TestCase):
 
     def test_attribute_missing_while_rendering(self):
         write_saved(self.save_dir, "abc123", stale_resource(self.cfg, "request"))
-        exchange = self.get()
-        # Output had already started, so the response is ended rather than replaced.
-        self.assert_status(exchange, b"200")
-        exchange.response_done.assert_called_once()
-        self.assertEqual(len(self.log), 1)
-        self.assertIn("Traceback", self.log[0])
-        self.assertIn("request", self.log[0])
+        self.assert_load_failure(self.get(), "request")
+
+    def test_unfinished_test(self):
+        write_saved(self.save_dir, "abc123", stale_resource(self.cfg, "check_done"))
+        self.assert_load_failure(self.get(), "check_done")
 
     def test_corrupt_files(self):
         for name, payload, compress in [
@@ -378,6 +376,7 @@ class TestUnusableSavedTestDaemon(unittest.TestCase):
         os.mkdir(save_dir)
         write_saved(save_dir, "missingclass", MISSING_CLASS)
         write_saved(save_dir, "missingmodule", MISSING_MODULE)
+        write_saved(save_dir, "norender", stale_resource(config(), "request"))
 
         self.port = free_port()
         conf_file = os.path.join(tmp.name, "config.txt")
@@ -414,12 +413,16 @@ class TestUnusableSavedTestDaemon(unittest.TestCase):
             _, err = self.daemon.communicate()
         self.stderr = self.stderr or err or ""
 
-    def status(self, path):
+    def fetch(self, path):
+        "Returns (status, Cache-Control, body)."
         try:
             with urllib.request.urlopen(f"http://127.0.0.1:{self.port}{path}", timeout=10) as r:
-                return r.status
+                return r.status, r.headers.get("Cache-Control"), r.read()
         except urllib.error.HTTPError as why:
-            return why.code
+            return why.code, why.headers.get("Cache-Control"), why.read()
+
+    def status(self, path):
+        return self.fetch(path)[0]
 
     def test_daemon_survives(self):
         for test_id in ["missingclass", "missingmodule"]:
@@ -429,6 +432,19 @@ class TestUnusableSavedTestDaemon(unittest.TestCase):
         self.assertEqual(self.status("/"), 200)
         self.stop_daemon()
         self.assertIn("NoSuchClass", self.stderr)
+        self.assertNotIn("FATAL", self.stderr)
+
+    def test_render_failure_is_an_error_not_a_cacheable_page(self):
+        for query in ["", "?format=txt"]:
+            with self.subTest(query):
+                status, cache_control, body = self.fetch(f"/saved/norender{query}")
+                self.assertEqual(status, 500)
+                self.assertNotIn("3600", cache_control or "")
+                self.assertIn(b"problem loading", body)
+                self.assertIsNone(self.daemon.poll(), "daemon exited")
+        self.assertEqual(self.status("/"), 200)
+        self.stop_daemon()
+        self.assertIn("has no attribute 'request'", self.stderr)
         self.assertNotIn("FATAL", self.stderr)
 
 
