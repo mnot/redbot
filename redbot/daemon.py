@@ -453,27 +453,11 @@ in standalone server mode. Details follow.
             (b"Content-Type", DIRECTORY_CONTENT_TYPE.encode("ascii")),
             (b"Cache-Control", b"max-age=%d" % DIRECTORY_MAX_AGE),
         ]
-        authority = self.request_authority()
-        if authority:
-            headers += signer.sign_directory(authority)
+        headers += signer.sign_directory()
         self.exchange.response_start(b"200", b"OK", headers)
         self.exchange.response_body(body)
         self.exchange.response_done([])
         return None
-
-    def request_authority(self) -> str:
-        "The authority (Host) of the incoming request, for signing."
-        for name, value in self.req_hdrs:
-            if name.lower() == b"host":
-                host = value.decode("ascii", "replace").strip().lower()
-                # Drop a default port so the signed @authority matches what a
-                # verifier normalizes to (RFC 9421 derives @authority this way).
-                for suffix in (":443", ":80"):
-                    if host.endswith(suffix):
-                        host = host[: -len(suffix)]
-                        break
-                return host
-        return ""
 
     def not_found(self, path: bytes) -> None:
         headers = []

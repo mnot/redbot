@@ -7,10 +7,15 @@ import re
 import tempfile
 import unittest
 from configparser import ConfigParser
+from types import SimpleNamespace
+from typing import Dict, Iterable, List, Tuple, cast
+from unittest.mock import MagicMock
 
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 
+from redbot.daemon import RedBotServer, RedRequestHandler
 from redbot.webbotauth import (
     DEFAULT_VALIDITY,
     DIRECTORY_TAG,
@@ -34,11 +39,11 @@ EXPECTED_X = "JrQLj5P_89iXES9-vFgrIy29clF9CC_oPPsw3c5D0bs"
 AGENT = "https://signature-agent.test"
 
 
-def _headers_dict(headers):
+def _headers_dict(headers: Iterable[Tuple[bytes, bytes]]) -> Dict[bytes, bytes]:
     return {name.lower(): value for name, value in headers}
 
 
-def _verify(public_key, base_lines, sig_header_value):
+def _verify(public_key: Ed25519PublicKey, base_lines: List[str], sig_header_value: str) -> None:
     "Verify a Signature header value (label sig1) over the given base lines."
     base = "\n".join(base_lines).encode("utf-8")
     assert sig_header_value.startswith("sig1=:") and sig_header_value.endswith(":")
@@ -125,14 +130,14 @@ class TestWebBotAuthSigner(unittest.TestCase):
             _verify(self.public_key, base_lines, headers[b"signature"].decode("ascii"))
 
     def test_sign_directory_verifies(self):
-        headers = _headers_dict(self.signer.sign_directory("redbot.example"))
+        headers = _headers_dict(self.signer.sign_directory())
         self.assertNotIn(b"signature-agent", headers)
         sig_input = headers[b"signature-input"].decode("ascii")
         self.assertTrue(sig_input.startswith('sig1=("@authority")'))
         self.assertIn(f';tag="{DIRECTORY_TAG}"', sig_input)
         params = sig_input[len("sig1=") :]
         base_lines = [
-            '"@authority": redbot.example',
+            '"@authority": signature-agent.test',
             f'"@signature-params": {params}',
         ]
         _verify(self.public_key, base_lines, headers[b"signature"].decode("ascii"))
@@ -157,7 +162,7 @@ class TestWebBotAuthSigner(unittest.TestCase):
         # Request signatures are short-lived; the directory signature must outlast
         # the directory's 24h cache lifetime.
         self.assertEqual(span(self.signer.sign_request("https://example.com/")), DEFAULT_VALIDITY)
-        self.assertEqual(span(self.signer.sign_directory("example.com")), DIRECTORY_VALIDITY)
+        self.assertEqual(span(self.signer.sign_directory()), DIRECTORY_VALIDITY)
 
     def test_unique_nonce_per_signature(self):
         a = _headers_dict(self.signer.sign_request("https://example.com/"))
@@ -230,6 +235,80 @@ class TestLoadSigner(unittest.TestCase):
             self.assertIs(load_signer(config), signer)  # cached
         finally:
             os.unlink(path)
+
+
+class TestDirectoryAuthority(unittest.TestCase):
+    "The directory response is signed over the configured directory's authority."
+
+    def setUp(self) -> None:
+        priv = serialization.load_pem_private_key(RFC9421_ED25519_KEY, password=None)
+        self.public_key = cast(Ed25519PublicKey, priv.public_key())
+
+    def _serve(self, directory: str, hosts: Iterable[str] = ()) -> Dict[bytes, bytes]:
+        "Serve the directory to a request with these Host headers; return the response headers."
+        parser = ConfigParser()
+        parser.read_dict({"redbot": {}})
+        signer = WebBotAuthSigner(RFC9421_ED25519_KEY, directory)
+        server = SimpleNamespace(signer=signer, config=parser["redbot"])
+        handler = RedRequestHandler(MagicMock(), cast(RedBotServer, server))
+        handler.req_hdrs = [(b"Host", host.encode("ascii")) for host in hosts]
+        handler.serve_directory()
+        exchange = cast(MagicMock, handler.exchange)
+        return _headers_dict(exchange.response_start.call_args[0][2])
+
+    def _assert_signs(
+        self, directory: str, authority: str, hosts: Iterable[str] = ()
+    ) -> None:
+        headers = self._serve(directory, hosts)
+        params = headers[b"signature-input"].decode("ascii")[len("sig1=") :]
+        base_lines = [f'"@authority": {authority}', f'"@signature-params": {params}']
+        _verify(self.public_key, base_lines, headers[b"signature"].decode("ascii"))
+
+    def test_configured_authority_cases(self) -> None:
+        cases = [
+            ("https://x.test", "x.test"),
+            ("https://X.Test/", "x.test"),
+            ("https://x.test:443", "x.test"),
+            ("https://x.test:80", "x.test:80"),
+            ("http://x.test:80", "x.test"),
+            ("http://x.test:443", "x.test:443"),
+            ("https://x.test:8443/app/", "x.test:8443"),
+            ("https://[2001:DB8::1]", "[2001:db8::1]"),
+            ("https://[2001:db8::1]:443", "[2001:db8::1]"),
+            ("https://[2001:db8::1]:80", "[2001:db8::1]:80"),
+            ("http://[2001:db8::1]:80", "[2001:db8::1]"),
+            ("http://[2001:db8::1]:443", "[2001:db8::1]:443"),
+            ("bot.example", "bot.example"),
+            ("bot.example:80", "bot.example:80"),
+        ]
+        for directory, authority in cases:
+            with self.subTest(directory=directory):
+                self._assert_signs(directory, authority, [authority])
+
+    def test_host_header_is_ignored(self) -> None:
+        hosts = [
+            [],
+            ["x.test"],
+            ["x.test:80"],
+            ["x.test:443"],
+            ["other.example:8443"],
+            ["victim.example"],
+            ["a b"],
+            ["[::1"],
+            ["x.test/evil?x#y"],
+            ["victim.example", "x.test"],
+        ]
+        for host in hosts:
+            with self.subTest(host=host):
+                self._assert_signs("https://x.test", "x.test", host)
+
+    def test_wrong_authority_fails(self) -> None:
+        with self.assertRaises(InvalidSignature):
+            self._assert_signs("https://x.test", "x.test:80", ["x.test:80"])
+
+    def test_invalid_directory_rejected(self) -> None:
+        with self.assertRaises(WebBotAuthError):
+            WebBotAuthSigner(RFC9421_ED25519_KEY, "https://[bad")
 
 
 class _MockConn:

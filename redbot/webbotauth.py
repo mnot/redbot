@@ -87,6 +87,14 @@ class WebBotAuthSigner:
             raise WebBotAuthError("Web Bot Auth key must be an Ed25519 private key.")
         self._key = key
         self.directory = directory.strip().strip('"')
+        # Verifiers derive @authority from the directory URL they fetched. A
+        # scheme-less directory is taken as https.
+        try:
+            self.directory_authority = self.authority(
+                self.directory if "://" in self.directory else f"https://{self.directory}"
+            )
+        except ValueError as why:
+            raise WebBotAuthError(f"Invalid Web Bot Auth directory '{directory}'.") from why
         self.validity = validity
         self.key_created = key_created
 
@@ -167,10 +175,10 @@ class WebBotAuthSigner:
             (b"Signature", sig.encode("ascii")),
         ]
 
-    def sign_directory(self, authority: str) -> List[Tuple[bytes, bytes]]:
-        "Return the signature headers for a directory response served at ``authority``."
+    def sign_directory(self) -> List[Tuple[bytes, bytes]]:
+        "Return the signature headers for the directory response."
         sig_input, sig = self._build_signature(
-            [("@authority", authority)], DIRECTORY_TAG, DIRECTORY_VALIDITY
+            [("@authority", self.directory_authority)], DIRECTORY_TAG, DIRECTORY_VALIDITY
         )
         return [
             (b"Signature-Input", sig_input.encode("ascii")),
