@@ -14,7 +14,7 @@ import thor
 import thor.http.error as httperr
 from httplint import HttpRequestLinter, HttpResponseLinter
 from httplint.note import categories, levels
-from netaddr import IPAddress  # type: ignore
+from netaddr import IPAddress, IPNetwork  # type: ignore
 from thor.http.client import HttpClientExchange
 
 from redbot import __version__
@@ -38,6 +38,15 @@ def ua_string(config: SectionProxy) -> bytes:
 # as a Web Bot Auth challenge to re-send the request signed
 # (draft-meunier-web-bot-auth-architecture, Section 4.3).
 WBA_CHALLENGE_STATUSES = {b"401", b"403", b"429"}
+
+
+# RFC 6052's Well-Known Prefix for NAT64. Addresses in it count as global
+# no matter what they carry, but behind a NAT64 gateway the connection is
+# actually made to the embedded IPv4 address (RFC 6052 Section 2.2: /96
+# layout, low 32 bits) - which can be anything, including loopback or a
+# private range. RFC 8215's local-use 64:ff9b:1::/48 doesn't need handling
+# here; netaddr already treats it as non-global.
+NAT64_WELL_KNOWN_PREFIX = IPNetwork("64:ff9b::/96")
 
 
 def _has_accept_signature(res_headers: RawHeaderListType) -> bool:
@@ -140,6 +149,12 @@ class RedFetcher(thor.events.EventEmitter):
                 addr = IPAddress(dns_result)
                 if not addr.is_global():
                     return False
+                if addr in NAT64_WELL_KNOWN_PREFIX:
+                    # behind a NAT64 gateway this connects to the embedded
+                    # IPv4 address, which needn't be global even though the
+                    # translated form is; test it the same way.
+                    if not IPAddress(int(addr) & 0xFFFFFFFF).is_global():
+                        return False
                 return True
 
             self.client.check_ip = check_ip
