@@ -102,11 +102,13 @@ static_root = static
 
 # Where to keep files when users `save` them. Note that files will be automatically
 # deleted from this directory, so it needs to be only used for REDbot.
-# Saved tests are Python pickles that the daemon loads when someone requests them, so anyone
-# who can write to this directory can run code as the daemon's user. It must be private to that
-# user: create it yourself, owned by the daemon's user, mode 0700. On a host with other users,
-# don't use the default below; /tmp is shared, so another user could create the directory first.
 # Comment out to disable saving.
+#
+# Saved tests are Python pickles that the daemon loads when someone requests them, so anyone
+# who can write to this directory can run code as the daemon's user. Only that user may be able
+# to write to it (e.g. mode 0700), and it must not be a directory that another user created.
+# The daemon doesn't create it or check any of this. On a host with other users, don't use the
+# default below; /tmp is shared, so another user could create the directory first.
 save_dir = /tmp/redbot/
 
 # How long to store things when users save them, in days.
