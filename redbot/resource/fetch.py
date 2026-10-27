@@ -41,6 +41,9 @@ def is_public_address(dns_result: str) -> bool:
     return bool(addr.is_global())
 
 
+MAX_NONFINAL_RESPONSES = 20
+
+
 def ua_string(config: SectionProxy) -> bytes:
     "The User-Agent for outgoing requests, pointing at this instance's UI URL."
     uri = config.get("ui_uri", "").strip() or DEFAULT_UI_URI
@@ -101,6 +104,7 @@ class RedFetcher(thor.events.EventEmitter):
 
         self.request = HttpRequestLinter()
         self.nonfinal_responses: List[HttpResponseLinter] = []
+        self.nonfinal_overflow = 0  # 1xx responses beyond MAX_NONFINAL_RESPONSES, not kept
         self.response = HttpResponseLinter()
         self.response.decoded.processors.append(self.sample_decoded)
         self.exchange: HttpClientExchange
@@ -256,6 +260,12 @@ class RedFetcher(thor.events.EventEmitter):
         self, status: bytes, phrase: bytes, res_headers: RawHeaderListType
     ) -> None:
         "Got a non-final response."
+        if len(self.nonfinal_responses) >= MAX_NONFINAL_RESPONSES:
+            # A hostile server can send these indefinitely; keep the first few and stop parsing.
+            if not self.nonfinal_overflow:
+                self.response.notes.add("", ONE_XX_TOO_MANY, limit=MAX_NONFINAL_RESPONSES)
+            self.nonfinal_overflow += 1
+            return
         nfres = HttpResponseLinter(start_time=time.time())
         # thor only sets exchange.res_version for final responses.
         res_version = (
@@ -304,6 +314,7 @@ class RedFetcher(thor.events.EventEmitter):
                     )
                     self._abort_exchange()
                     self.nonfinal_responses = []
+                    self.nonfinal_overflow = 0
                     self.transfer_out = 0
                     self._send_request(signer.sign_request(self.request.uri))
                     return
@@ -453,6 +464,18 @@ be confused by recipients; some will strip it, and others won't, leading to a va
 
 Most HTTP implementations will refuse to process this message.
 """
+
+
+class ONE_XX_TOO_MANY(RedbotNote):
+    category = categories.CONNECTION
+    level = levels.WARN
+    _summary = "The server sent more than %(limit)s non-final responses."
+    _text = """\
+Servers can send any number of 1xx (informational) responses before the final one, but this server
+sent more than REDbot is willing to examine. REDbot has kept and checked the first %(limit)s and
+ignored the rest.
+
+Clients receiving this many may behave unexpectedly, or give up."""
 
 
 class ONE_XX_BAD_HEADER(RedbotNote):
