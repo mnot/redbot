@@ -5,7 +5,7 @@ HTML Formatter for REDbot.
 import operator
 import re
 import time
-from typing import Any, List, Match, Tuple, Union, Unpack
+from typing import Any, List, Match, Tuple, Union, Unpack, cast
 from urllib.parse import urljoin
 
 import thor.http.error as httperr
@@ -394,34 +394,42 @@ class TableHtmlFormatter(BaseHtmlFormatter):
 
 # Template filters that need the formatter get it from the render context, because the
 # environment they are registered on is shared by every formatter.
+def _single(context: Context) -> SingleEntryHtmlFormatter:
+    return cast(SingleEntryHtmlFormatter, context["formatter"])
+
+
+def _table(context: Context) -> TableHtmlFormatter:
+    return cast(TableHtmlFormatter, context["formatter"])
+
+
 @pass_context
 def _header_present(context: Context, header: Tuple[str, str]) -> Markup:
-    return context["formatter"].format_header(header)  # type: ignore[no-any-return]
+    return _single(context).format_header(header)
 
 
 @pass_context
 def _header_description(context: Context, header_name: str) -> Markup:
-    return context["formatter"].format_header_description(header_name)  # type: ignore[no-any-return]
+    return _single(context).format_header_description(header_name)
 
 
 @pass_context
 def _subrequest_messages(context: Context, category: categories) -> Markup:
-    return context["formatter"].format_subrequest_messages(category)  # type: ignore[no-any-return]
+    return _single(context).format_subrequest_messages(category)
 
 
 @pass_context
 def _header_levels(context: Context, response: Any) -> dict[int, levels]:
-    return context["formatter"].determine_header_levels(response)  # type: ignore[no-any-return]
+    return _single(context).determine_header_levels(response)
 
 
 @pass_context
 def _index_problem(context: Context, problem: Note) -> int:
-    return context["formatter"].index_problem(problem)  # type: ignore[no-any-return]
+    return _table(context).index_problem(problem)
 
 
 @pass_context
 def _note_description(context: Context, header_name: str) -> Markup:
-    return context["formatter"].format_note_description(header_name)  # type: ignore[no-any-return]
+    return _table(context).format_note_description(header_name)
 
 
 BaseHtmlFormatter.templates.filters.update(

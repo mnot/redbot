@@ -7,6 +7,8 @@ from types import SimpleNamespace
 import redbot.formatter.har
 import redbot.formatter.html
 import redbot.formatter.text as text
+from httplint.note import categories
+
 from redbot.formatter import available_formatters, find_formatter
 from redbot.formatter.html import SingleEntryHtmlFormatter, TableHtmlFormatter
 from redbot.i18n import set_locale
@@ -45,7 +47,6 @@ class TestFindFormatter(unittest.TestCase):
             self.assertIn(name, available_formatters())
 
 
-
 class TestHtmlFormatterIsolation(unittest.TestCase):
     "Formatters share one template environment; none may see another's resource."
 
@@ -79,6 +80,22 @@ class TestHtmlFormatterIsolation(unittest.TestCase):
         self.assertIn("a.example", page)
         self.assertNotIn("b.example", page)
         self.assertNotIn("secret-for-http://b.example/", page)
+
+    def test_subrequest_messages_use_the_rendering_formatter(self):
+        config = ConfigParser()
+        config.add_section("redbot")
+        cfg = config["redbot"]
+        first, _ = self._formatter(cfg, "http://a.example/", SingleEntryHtmlFormatter)
+        second, _ = self._formatter(cfg, "http://b.example/", SingleEntryHtmlFormatter)
+        first.kw["test_id"] = "first_id"
+        second.kw["test_id"] = "second_id"
+        for formatter in (first, second):
+            formatter.resource.subreqs["range"].fetch_started = True
+        template = first.templates.from_string("{{ category|subrequest_messages }}")
+        with set_locale("en"):
+            out = template.render(formatter=first, category=categories.RANGE)
+        self.assertIn("first_id", out)
+        self.assertNotIn("second_id", out)
 
     def test_table_formatters_keep_their_own_problems(self):
         config = ConfigParser()
