@@ -103,6 +103,55 @@ class TestMetaCharset(unittest.TestCase):
             self.assertIsNone(parser.decode_as)
 
 
+class TestMetaPrecedence(unittest.TestCase):
+    def test_header_charset_wins(self) -> None:
+        message = new_message("text/html; charset=windows-1252")
+        parser = parse_meta("charset=utf-8", message)
+        parser.feed_bytes(b"<meta charset=latin-1>")
+        self.assertEqual(
+            (parser.decode_as, message.character_encoding, message.whatwg_encoding),
+            (None, "windows-1252", "windows-1252"),
+        )
+
+    def test_unrecognised_header_charset_does_not_block(self) -> None:
+        parser = parse_meta("charset=utf-8", new_message("text/html; charset=bogus"))
+        self.assertEqual(parser.message.character_encoding, "utf-8")
+
+    def test_meta_charset_attribute(self) -> None:
+        for tag in [b"<meta charset=latin1>", b"<META CHARSET=' latin1 '>"]:
+            with self.subTest(tag=tag):
+                parser = HTMLLinkParser(new_message(), [])
+                parser.feed_bytes(tag)
+                self.assertEqual(
+                    (parser.message.character_encoding, parser.message.whatwg_encoding),
+                    ("latin1", "windows-1252"),
+                )
+
+    def test_meta_charset_attribute_beats_http_equiv(self) -> None:
+        parser = HTMLLinkParser(new_message(), [])
+        parser.feed_bytes(b"<meta charset=latin1 http-equiv=content-type content='charset=utf-8'>")
+        self.assertEqual(parser.message.character_encoding, "latin1")
+
+    def test_utf16_label_means_utf8(self) -> None:
+        for label in ["utf-16", "utf-16le", "utf-16be", "unicode", "ucs-2"]:
+            with self.subTest(label=label):
+                parser = parse_meta(f"charset={label}")
+                message = parser.message
+                self.assertEqual(
+                    (parser.decode_as, message.character_encoding, message.whatwg_encoding),
+                    (None, "utf-8", "UTF-8"),
+                )
+
+    def test_utf16_label_leaves_later_chunks_readable(self) -> None:
+        links: List[str] = []
+        message = new_message()
+        parser = HTMLLinkParser(message, [lambda base, link, tag, title: links.append(link)])
+        for tag in [b"<meta charset=utf-16>", meta_tag("charset=utf-16")]:
+            parser.feed_bytes(tag)
+        parser.feed_bytes('<a href="/café">x</a>'.encode("utf-8"))
+        self.assertEqual(links, ["/café"])
+
+
 class TestMetaParams(unittest.TestCase):
     def test_pathological_params(self) -> None:
         # ~4 s each with split_string, except the last; a generous bound avoids flakiness

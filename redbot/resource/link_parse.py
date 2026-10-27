@@ -77,6 +77,7 @@ class HTMLLinkParser(HTMLParser):
         self.base_seen = False
         self.inert_depth = {tag: 0 for tag in INERT_TAGS}
         self.decode_as: Optional[str] = None
+        self._header_charset: Optional[bool] = None  # whether the header gave a charset
         self._decoder: Optional[codecs.IncrementalDecoder] = None
         self._decoder_encoding = ""
         HTMLParser.__init__(self)
@@ -169,6 +170,9 @@ class HTMLLinkParser(HTMLParser):
             self.inert_depth[tag] += 1
         elif tag == "meta":
             attr_d = first_attrs(attrs)
+            if "charset" in attr_d:
+                self._set_meta_charset((attr_d["charset"] or "").strip(" \t\n\f\r"))
+                return
             if (attr_d.get("http-equiv", "") or "").lower() != "content-type":
                 return
             ct = attr_d.get("content", None)
@@ -192,11 +196,18 @@ class HTMLLinkParser(HTMLParser):
         Apply a <meta> charset. A label that the Encoding Standard and Python both know is
         recorded on the message, as for the header. A Python-only text encoding (`latin-1`,
         `mac-roman`) is only used to decode later chunks, so the message never claims it.
-        Anything else is ignored.
+        Anything else is ignored, as is any <meta> when the header already gave a charset.
         """
-        if not label or not is_text_encoding(label):
+        if self._header_charset is None:
+            self._header_charset = self.message.whatwg_encoding is not None
+        if not label or self._header_charset:
             return
         encoding = whatwg_encoding(label)
+        if encoding in ("UTF-16LE", "UTF-16BE"):
+            # The tag had to be readable as ASCII, so HTML takes these labels to mean UTF-8.
+            label, encoding = "utf-8", "UTF-8"
+        if not is_text_encoding(label):
+            return
         if encoding == "replacement":
             return
         if encoding:
