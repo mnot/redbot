@@ -168,16 +168,23 @@ class RedWebUi:
         self.console(f"{self.get_client_ip()}: {message}")
 
     def timeout_error(
-        self, formatter: Formatter, detail: Optional[Callable[[], str]] = None
+        self,
+        formatter: Formatter,
+        resource: HttpResource,
+        detail: Optional[Callable[[], str]] = None,
     ) -> None:
-        """Max runtime reached."""
+        """Max runtime reached; stop the whole test, not just the resource being displayed."""
         if self.response_done:
             return
         details = ""
         if detail:
             details = f"detail={detail()}"
-        self.error_log(f"timeout <{formatter.resource.request.uri}> {details}")
-        formatter.resource.stop()
+        self.error_log(f"timeout <{resource.request.uri}> {details}")
+        resource.stop()
+        if formatter.resource is not resource:
+            # The displayed check may not have started, so stopping the test won't finish it,
+            # and the formatter only finishes (and saves the test) when it does.
+            formatter.resource.stop()
         if not self.response_started:
             # Response hasn't started yet (e.g. timeout during captcha verify);
             # send a proper error response instead of a half-formed one.

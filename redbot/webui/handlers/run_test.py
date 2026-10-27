@@ -127,7 +127,7 @@ class RunTestHandler(RequestHandler):
             },
         )
         continue_test = partial(cls._continue_test, ui, top_resource, formatter)
-        timeout_error = partial(ui.timeout_error, formatter)
+        timeout_error = partial(ui.timeout_error, formatter, top_resource)
         update_wrapper(timeout_error, ui.timeout_error)
 
         ui.timeout = thor.schedule(
