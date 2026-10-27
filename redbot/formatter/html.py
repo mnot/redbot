@@ -5,12 +5,14 @@ HTML Formatter for REDbot.
 import operator
 import re
 import time
-from typing import Any, Dict, List, Match, Tuple, Union, Unpack
+from typing import Any, Dict, List, Match, Tuple, Union, Unpack, cast
 from urllib.parse import urljoin
 
 import thor.http.error as httperr
 from httplint import get_field_description
 from httplint.note import Note, categories, levels
+from jinja2 import pass_context
+from jinja2.runtime import Context
 
 from redbot.formatter import FormatterArgs
 from redbot.formatter.html_base import (
@@ -76,14 +78,6 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
 
     def __init__(self, *args: Unpack[FormatterArgs]) -> None:
         BaseHtmlFormatter.__init__(self, *args)
-        self.templates.filters.update(
-            {
-                "header_present": self.format_header,
-                "header_description": self.format_header_description,
-                "subrequest_messages": self.format_subrequest_messages,
-                "header_levels": self.determine_header_levels,
-            }
-        )
         self.header_presenter = HeaderPresenter(self)
 
     def finish_output(self) -> None:
@@ -340,12 +334,6 @@ class TableHtmlFormatter(BaseHtmlFormatter):
     def __init__(self, *args: Any, **kw: Any) -> None:
         BaseHtmlFormatter.__init__(self, *args, **kw)
         self.problems: List[Note] = []
-        self.templates.filters.update(
-            {
-                "index_problem": self.index_problem,
-                "note_description": self.format_note_description,
-            }
-        )
 
     def finish_output(self) -> None:
         self.final_status()
@@ -411,3 +399,55 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         if description:
             return Markup(self._markdown.reset().convert(description % {"field_name": header_name}))
         return Markup("")
+
+
+# Template filters that need the formatter get it from the render context, because the
+# environment they are registered on is shared by every formatter.
+def _single(context: Context) -> SingleEntryHtmlFormatter:
+    return cast(SingleEntryHtmlFormatter, context["formatter"])
+
+
+def _table(context: Context) -> TableHtmlFormatter:
+    return cast(TableHtmlFormatter, context["formatter"])
+
+
+@pass_context
+def _header_present(context: Context, header: Tuple[str, str]) -> Markup:
+    return _single(context).format_header(header)
+
+
+@pass_context
+def _header_description(context: Context, header_name: str) -> Markup:
+    return _single(context).format_header_description(header_name)
+
+
+@pass_context
+def _subrequest_messages(context: Context, category: categories) -> Markup:
+    return _single(context).format_subrequest_messages(category)
+
+
+@pass_context
+def _header_levels(context: Context, response: Any) -> dict[int, levels]:
+    return _single(context).determine_header_levels(response)
+
+
+@pass_context
+def _index_problem(context: Context, problem: Note) -> int:
+    return _table(context).index_problem(problem)
+
+
+@pass_context
+def _note_description(context: Context, header_name: str) -> Markup:
+    return _table(context).format_note_description(header_name)
+
+
+BaseHtmlFormatter.templates.filters.update(
+    {
+        "header_present": _header_present,
+        "header_description": _header_description,
+        "subrequest_messages": _subrequest_messages,
+        "header_levels": _header_levels,
+        "index_problem": _index_problem,
+        "note_description": _note_description,
+    }
+)

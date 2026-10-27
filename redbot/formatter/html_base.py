@@ -67,15 +67,17 @@ class BaseHtmlFormatter(Formatter):
         ),
     )
     templates.install_gettext_callables(_, ngettext, newstyle=True)  # type: ignore[attr-defined]  # pylint: disable=no-member
+    # The environment is shared by every formatter, so filters must not close over an instance;
+    # those that need one take it from the render context (see html.py).
+    templates.filters.update(
+        {
+            "f_num": f_num,
+            "relative_time": relative_time,
+        }
+    )
 
     def __init__(self, *args: Unpack[FormatterArgs]) -> None:
         Formatter.__init__(self, *args)
-        self.templates.filters.update(
-            {
-                "f_num": f_num,
-                "relative_time": relative_time,
-            }
-        )
         captcha_provider = self.config.get("captcha_provider", "")
         captcha_data = CAPTCHA_PROVIDERS.get(captcha_provider, {})
         self.links: LinkGenerator = self.kw.get("link_generator") or NullLinkGenerator()
