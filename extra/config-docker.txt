@@ -13,7 +13,7 @@ charset = utf-8
 max_runtime = 60
 
 # Where to keep files for future reference, when users save them. Comment out to disable.
-# save_dir = /tmp/
+# save_dir = /var/lib/redbot
 
 # how long to store things when users save them, in days.
 save_days = 30

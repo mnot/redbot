@@ -19,6 +19,13 @@ build/
 *.swp
 *.swo
 
+# Ignore anything that may hold secrets: the image uses extra/config-docker.txt, not a local
+# config.txt, and a checkout might contain a Web Bot Auth key
+/config.txt
+*.pem
+*.key
+.env
+
 # Ignore other non-relevant files
 README.md
 Dockerfile
