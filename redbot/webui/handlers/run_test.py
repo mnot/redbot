@@ -128,6 +128,22 @@ class RunTestHandler(RequestHandler):
             },
         )
         continue_test = partial(cls._continue_test, ui, top_resource, formatter)
+
+        # thor emits "error" on an exchange whose connection closes before the response is sent.
+        # This is registered here, not in _continue_test, to also cover the client going away
+        # during rate limiting and captcha verification.
+        @thor.events.on(cast(thor.events.EventEmitter, ui.exchange))
+        def error(_err: HttpError) -> None:
+            if ui.response_done:
+                return
+            ui.response_done = True  # there is nobody left to send the rest to
+            if ui.timeout:
+                ui.timeout.delete()
+                ui.timeout = None
+            top_resource.stop()
+            if formatter.resource is not top_resource:
+                formatter.resource.stop()  # an unstarted check isn't stopped with the test
+
         timeout_error = partial(ui.timeout_error, formatter)
         update_wrapper(timeout_error, ui.timeout_error)
 
@@ -234,14 +250,6 @@ class RunTestHandler(RequestHandler):
                         f"{to / 1024:n}K out "
                         f"for <{e_url(str(top_resource.request.uri))}> "
                     )
-
-        # thor emits "error" on an exchange whose connection closes before the response is sent
-        @thor.events.on(cast(thor.events.EventEmitter, ui.exchange))
-        def error(_err: HttpError) -> None:
-            if ui.response_done:
-                return
-            ui.response_done = True  # there is nobody left to send the rest to
-            top_resource.stop()
 
         ui.exchange.response_start(
             b"200",

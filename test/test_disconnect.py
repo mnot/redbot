@@ -6,12 +6,17 @@ A client that goes away stops the test it started (mnot/redbot#516).
 
 import os
 import socket
+import struct
 import subprocess
 import sys
 import tempfile
 import threading
 import time
 import unittest
+from configparser import ConfigParser
+from unittest.mock import MagicMock, patch
+
+from redbot.webui.handlers.run_test import RunTestHandler
 
 CLOSE_WAIT = 5  # seconds; max_runtime is far longer, so the timeout can't be what closes it
 
@@ -101,6 +106,9 @@ class TestClientDisconnect(unittest.TestCase):
     def test_disconnect_closes_upstream_connection(self):
         uri = f"http://127.0.0.1:{self.target.port}/"
         client = socket.create_connection(("127.0.0.1", self.port), timeout=10)
+        self.addCleanup(client.close)
+        # Close with a reset: thor holds on for request_timeout after a client's clean FIN.
+        client.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, struct.pack("ii", 1, 0))
         client.sendall(
             f"POST /check?uri={uri} HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Length: 0\r\n\r\n".encode()
         )
@@ -113,6 +121,36 @@ class TestClientDisconnect(unittest.TestCase):
         self.assertIsNone(self.daemon.poll(), "daemon exited")
         err = self.stop_daemon()
         self.assertNotIn("Traceback", err)
+
+
+class TestDisconnectBeforeTheTestStarts(unittest.TestCase):
+    "The client goes away while a captcha is pending; the test must not start afterwards."
+
+    def test_error_during_captcha_stops_and_prevents_the_test(self):
+        conf = ConfigParser()
+        conf.add_section("redbot")
+        ui = MagicMock()
+        ui.config = conf["redbot"]
+        ui.query_string = {"uri": ["http://example.com/"]}
+        ui.response_done = False
+        with (
+            patch("redbot.webui.handlers.run_test.thor.schedule"),
+            patch("redbot.webui.handlers.run_test.HttpResource") as resource_class,
+            patch("redbot.webui.handlers.run_test.find_formatter") as find_formatter,
+            patch("redbot.webui.handlers.run_test.ratelimiter.process"),
+            patch("redbot.webui.handlers.run_test.CaptchaHandler") as captcha,
+        ):
+            top_resource = resource_class.return_value
+            find_formatter.return_value.return_value.resource = top_resource
+            captcha.return_value.configured.return_value = True
+            RunTestHandler.handle(ui)
+        listeners = {call[0][0]: call[0][1] for call in ui.exchange.on.call_args_list}
+        listeners["error"](Exception("client went away"))
+        top_resource.stop.assert_called_once()
+        self.assertTrue(ui.response_done)
+        captcha.call_args[0][1]()  # the captcha completes afterwards
+        ui.exchange.response_start.assert_not_called()
+        top_resource.check.assert_not_called()
 
 
 if __name__ == "__main__":

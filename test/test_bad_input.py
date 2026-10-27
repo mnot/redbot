@@ -184,6 +184,7 @@ class TestHostileTargetOrReferer(unittest.TestCase):
             locale="en",
             link_generator=MagicMock(),
             error_response=MagicMock(),
+            exchange=MagicMock(),
             timeout=None,
             timeout_error=MagicMock(),
             save_path="",
