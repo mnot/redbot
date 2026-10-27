@@ -12,6 +12,7 @@ import thor
 import thor.events
 from httplint.util import iri_to_uri
 from markupsafe import escape
+from thor.http.error import HttpError
 
 from redbot.formatter import find_formatter
 from redbot.resource import HttpResource
@@ -234,9 +235,12 @@ class RunTestHandler(RequestHandler):
                         f"for <{e_url(str(top_resource.request.uri))}> "
                     )
 
-        # Stop the resource if the client disconnects
+        # thor emits "error" on an exchange whose connection closes before the response is sent
         @thor.events.on(cast(thor.events.EventEmitter, ui.exchange))
-        def close() -> None:
+        def error(_err: HttpError) -> None:
+            if ui.response_done:
+                return
+            ui.response_done = True  # there is nobody left to send the rest to
             top_resource.stop()
 
         ui.exchange.response_start(
