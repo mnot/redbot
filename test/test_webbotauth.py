@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import base64
+import hashlib
 import json
 import os
 import re
@@ -133,14 +134,31 @@ class TestWebBotAuthSigner(unittest.TestCase):
         headers = _headers_dict(self.signer.sign_directory())
         self.assertNotIn(b"signature-agent", headers)
         sig_input = headers[b"signature-input"].decode("ascii")
-        self.assertTrue(sig_input.startswith('sig1=("@authority";req)'))
+        self.assertTrue(sig_input.startswith('sig1=("@authority";req "content-digest")'))
         self.assertIn(f';tag="{DIRECTORY_TAG}"', sig_input)
         params = sig_input[len("sig1=") :]
         base_lines = [
             '"@authority";req: signature-agent.test',
+            f'"content-digest": {headers[b"content-digest"].decode("ascii")}',
             f'"@signature-params": {params}',
         ]
         _verify(self.public_key, base_lines, headers[b"signature"].decode("ascii"))
+
+    def test_directory_content_digest_matches_body(self):
+        headers = _headers_dict(self.signer.sign_directory())
+        digest = hashlib.sha256(self.signer.directory_json()).digest()
+        self.assertEqual(headers[b"content-digest"], b"sha-256=:" + base64.b64encode(digest) + b":")
+
+    def test_directory_signature_does_not_verify_for_another_digest(self):
+        headers = _headers_dict(self.signer.sign_directory())
+        params = headers[b"signature-input"].decode("ascii")[len("sig1=") :]
+        base_lines = [
+            '"@authority";req: signature-agent.test',
+            '"content-digest": sha-256=:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=:',
+            f'"@signature-params": {params}',
+        ]
+        with self.assertRaises(InvalidSignature):
+            _verify(self.public_key, base_lines, headers[b"signature"].decode("ascii"))
 
     def test_directory_plain_fails(self):
         headers = _headers_dict(self.signer.sign_directory())
@@ -148,6 +166,7 @@ class TestWebBotAuthSigner(unittest.TestCase):
         params = sig_input[len("sig1=") :]
         base_lines = [
             '"@authority": signature-agent.test',
+            f'"content-digest": {headers[b"content-digest"].decode("ascii")}',
             f'"@signature-params": {params}',
         ]
         with self.assertRaises(InvalidSignature):
@@ -313,7 +332,11 @@ class TestDirectoryAuthority(unittest.TestCase):
     def _assert_signs(self, directory: str, authority: str, hosts: Iterable[str] = ()) -> None:
         headers = self._serve(directory, hosts)
         params = headers[b"signature-input"].decode("ascii")[len("sig1=") :]
-        base_lines = [f'"@authority";req: {authority}', f'"@signature-params": {params}']
+        base_lines = [
+            f'"@authority";req: {authority}',
+            f'"content-digest": {headers[b"content-digest"].decode("ascii")}',
+            f'"@signature-params": {params}',
+        ]
         _verify(self.public_key, base_lines, headers[b"signature"].decode("ascii"))
 
     def test_configured_authority_cases(self) -> None:
@@ -336,6 +359,20 @@ class TestDirectoryAuthority(unittest.TestCase):
         for directory, authority in cases:
             with self.subTest(directory=directory):
                 self._assert_signs(directory, authority, [authority])
+
+    def test_served_body_matches_content_digest(self) -> None:
+        parser = ConfigParser()
+        parser.read_dict({"redbot": {}})
+        signer = WebBotAuthSigner(RFC9421_ED25519_KEY, "https://x.test")
+        server = SimpleNamespace(signer=signer, config=parser["redbot"])
+        handler = RedRequestHandler(MagicMock(), cast(RedBotServer, server))
+        handler.req_hdrs = []
+        handler.serve_directory()
+        exchange = cast(MagicMock, handler.exchange)
+        headers = _headers_dict(exchange.response_start.call_args[0][2])
+        body = exchange.response_body.call_args[0][0]
+        digest = base64.b64encode(hashlib.sha256(body).digest())
+        self.assertEqual(headers[b"content-digest"], b"sha-256=:" + digest + b":")
 
     def test_host_header_is_ignored(self) -> None:
         hosts = [

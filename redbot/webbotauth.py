@@ -196,14 +196,22 @@ class WebBotAuthSigner:
         ]
 
     def sign_directory(self) -> List[Tuple[bytes, bytes]]:
-        "Return the signature headers for the directory response."
-        # Directory draft section 5.2: @authority must carry req (RFC 9421 section 2.4).
+        """
+        Return the Content-Digest and signature headers for the directory response, whose body is
+        ``directory_json()``. draft-ietf-webbotauth-httpsig-protocol Appendix B.1 requires the
+        signature to cover @authority with ``req`` (RFC 9421 section 2.4) and the content digest.
+        """
+        digest = http_sf.ser({"sha-256": hashlib.sha256(self.directory_json()).digest()})
         sig_input, sig = self._build_signature(
-            [(("@authority", {"req": True}), self.directory_authority)],
+            [
+                (("@authority", {"req": True}), self.directory_authority),
+                (("content-digest", {}), digest),
+            ],
             DIRECTORY_TAG,
             DIRECTORY_VALIDITY,
         )
         return [
+            (b"Content-Digest", digest.encode("ascii")),
             (b"Signature-Input", sig_input.encode("ascii")),
             (b"Signature", sig.encode("ascii")),
         ]
