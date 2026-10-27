@@ -6,6 +6,7 @@ Packaging and container hygiene (mnot/redbot#533).
 
 import os
 import re
+import tomllib
 import unittest
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -21,22 +22,35 @@ class TestPackaging(unittest.TestCase):
         samples = re.findall(
             r"^#?\s*save_dir\s*=\s*(\S+)", read("extra", "config-docker.txt"), re.M
         )
-        self.assertEqual(samples, ["/var/lib/redbot"])
+        self.assertTrue(samples)
+        for sample in samples:
+            self.assertNotEqual(sample.rstrip("/"), "/tmp")
+            self.assertEqual(sample, "/var/lib/redbot")  # the directory the image provides
 
-    def test_docker_context_excludes_secrets(self):
+    def test_docker_context_excludes_secrets_at_any_depth(self):
+        # .dockerignore patterns use Go's filepath.Match, where * doesn't cross /, so a bare
+        # *.pem only matches at the root of the build context.
         ignored = read(".dockerignore").splitlines()
-        for pattern in ("/config.txt", "*.pem", "*.key"):
+        for pattern in ("/config.txt", "**/*.pem", "**/*.key", "**/.env"):
             self.assertIn(pattern, ignored)
+        self.assertNotIn("*.pem", ignored)
 
-    def test_docker_image_does_not_use_the_root_config(self):
-        self.assertIn("extra/config-docker.txt", read("Dockerfile"))
+    def test_docker_image_does_not_use_or_copy_the_root_config(self):
+        dockerfile = read("Dockerfile")
+        self.assertIn("extra/config-docker.txt", dockerfile)
+        self.assertNotRegex(dockerfile, r"(?m)^\s*COPY\b.*\bconfig\.txt")
 
     def test_setuptools_is_new_enough_for_license_expressions(self):
-        pyproject = read("pyproject.toml")
-        self.assertIn('license = "MIT"', pyproject)  # PEP 639, needs setuptools 77
-        floor = re.search(r'"setuptools>=(\d+)', pyproject)
-        self.assertIsNotNone(floor)
-        self.assertGreaterEqual(int(floor.group(1)), 77)
+        with open(os.path.join(ROOT, "pyproject.toml"), "rb") as fh:
+            pyproject = tomllib.load(fh)
+        self.assertIsInstance(pyproject["project"]["license"], str)  # PEP 639
+        floors = [
+            int(m.group(1))
+            for requirement in pyproject["build-system"]["requires"]
+            if (m := re.match(r"setuptools\s*(?:>=|~=|==)\s*(\d+)", requirement))
+        ]
+        self.assertEqual(len(floors), 1)
+        self.assertGreaterEqual(floors[0], 77)
 
 
 if __name__ == "__main__":
