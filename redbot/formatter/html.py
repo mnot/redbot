@@ -173,7 +173,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                         self.links.resource_link(
                             resource,
                             abs_link,
-                            escape(link),
+                            link,
                             use_stored=False,
                             css_class="nocode",
                         )
@@ -182,8 +182,11 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     def link_to(matchobj: Match[str], link_str: Markup = link_str) -> str:
                         return rf"{matchobj.group(1)}{link_str}{matchobj.group(1)}"
 
+                    # safe_sample is escaped, so the link has to be as well to match it
                     safe_sample = Markup(
-                        re.sub(rf"(&#34;|&#39;){re.escape(link)}\1", link_to, safe_sample)
+                        re.sub(
+                            rf"(&#34;|&#39;){re.escape(str(escape(link)))}\1", link_to, safe_sample
+                        )
                     )
         message: Union[str, LazyProxy] = ""
         if not resource.response_decoded_complete:
@@ -311,7 +314,7 @@ class HeaderPresenter:
             self.formatter.links.resource_link(
                 self.formatter.resource,
                 svalue,
-                escape(svalue),
+                svalue,
                 use_stored=False,
             )
         )

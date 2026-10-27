@@ -175,7 +175,7 @@ class BaseHtmlFormatter(Formatter):
         self.output(f"""
 <script{self.nonce_attr}>
 <!-- {time.time() - self.start:3.3f}
-document.querySelector('#red_status').textContent = "{escape(status)}"
+document.querySelector('#red_status').textContent = "{e_js(status)}"
 -->
 </script>
 """)
