@@ -329,7 +329,7 @@ def load_signer(config: SectionProxy) -> Optional[WebBotAuthSigner]:
     key_created: Optional[int] = None
     if config.get("web_bot_auth_key_created", "").strip():
         try:
-            key_created = config.getint("web_bot_auth_key_created")
+            key_created = int(config.get("web_bot_auth_key_created", "").strip())
         except ValueError as why:
             raise WebBotAuthError(
                 "web_bot_auth_key_created must be a Unix timestamp in whole seconds."
