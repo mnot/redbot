@@ -118,15 +118,21 @@ class CaptchaHandler:
         if human_time and HUMAN_TIME_RE.fullmatch(human_time.value) and human_hmac:
             if self.verify_human(int(human_time.value), human_hmac.value):
                 self.continue_test()
+            elif captcha_token:
+                # A stale cookie (it expired, or the client's address changed) mustn't stop a
+                # freshly solved captcha from being accepted.
+                self.verify_captcha(captcha_token)
             else:
+                # Clear it, because the page's script doesn't show the widget while one is set.
                 self.error_response(
                     b"403",
                     b"Forbidden",
                     "I need to double-check that you're human; please resubmit.",
+                    None,
+                    self.expire_human(),
                 )
         elif captcha_token:
-            if captcha_token:
-                self.verify_captcha(captcha_token)
+            self.verify_captcha(captcha_token)
         else:
             self.error_response(
                 b"403",
@@ -250,6 +256,14 @@ class CaptchaHandler:
                     "ascii"
                 ),
             ),
+        ]
+
+    @staticmethod
+    def expire_human() -> RawHeaderListType:
+        "Return cookie headers that remove the human-token cookies."
+        return [
+            (b"Set-Cookie", b"human_time=; Max-Age=0; SameSite=Strict"),
+            (b"Set-Cookie", b"human_hmac=; Max-Age=0; SameSite=Strict"),
         ]
 
     def verify_human(self, human_time: int, human_hmac: str) -> bool:

@@ -122,8 +122,9 @@ class RedWebUi:
         status_phrase: bytes,
         message: str,
         log_message: Optional[str] = None,
+        headers: Optional[RawHeaderListType] = None,
     ) -> None:
-        """Send an error response."""
+        """Send an error response, with any extra headers."""
         if self.response_done:
             if log_message:
                 self.error_log(log_message)
@@ -148,7 +149,8 @@ class RedWebUi:
                 (b"Content-Language", self.locale.encode("ascii")),
                 (b"Vary", b"Accept-Language"),
             ]
-            + security_headers(self.nonce),
+            + security_headers(self.nonce)
+            + (headers or []),
         )
         self.response_started = True
         with set_locale(self.locale):
