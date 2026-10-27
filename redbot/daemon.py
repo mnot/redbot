@@ -17,7 +17,7 @@ import signal
 import sys
 import traceback
 import tracemalloc
-from configparser import ConfigParser, SectionProxy
+from configparser import SectionProxy
 from functools import partial
 from importlib.resources import files as resource_files
 from pstats import Stats
@@ -35,6 +35,7 @@ from thor.tcp import TcpConnection
 
 import redbot
 from redbot.type import RawHeaderListType
+from redbot.utils import read_config
 from redbot.webbotauth import (
     DIRECTORY_CONTENT_TYPE,
     DIRECTORY_MAX_AGE,
@@ -510,13 +511,12 @@ def main() -> None:
     )
     parser.add_argument("config_file", type=str, help="configuration file")
     args = parser.parse_args()
-    conf = ConfigParser()
-    conf.read(args.config_file)
+    conf = read_config("redbot_daemon", args.config_file)
 
-    if args.debug or conf["redbot"].getboolean("debug", fallback=False):
-        conf["redbot"]["debug"] = "true"
+    if args.debug or conf.getboolean("debug", fallback=False):
+        conf["debug"] = "true"
 
-    server = RedBotServer(conf["redbot"])
+    server = RedBotServer(conf)
     server.run()
 
 
