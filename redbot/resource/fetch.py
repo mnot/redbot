@@ -105,7 +105,7 @@ class RedFetcher(thor.events.EventEmitter):
             pass
         del state["response_content_processors"]
         # Saved tests are rendered with the Web UI's config; this one holds secrets.
-        del state["config"]
+        state.pop("config", None)
         return state
 
     def __repr__(self) -> str:

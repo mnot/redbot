@@ -177,6 +177,9 @@ class TestSavedConfig(unittest.TestCase):
             )
             resource = HttpResource(conf["redbot"])
             resource.set_request("http://example.com/")
+            linked = HttpResource(conf["redbot"], active_checks_enabled=False)
+            linked.set_request("http://example.com/linked")
+            resource.linked.append((linked, "a"))
             ui = make_ui(save_dir, {})
             ui.config = conf["redbot"]
             ui.save_path = os.path.join(save_dir, "saved")
@@ -188,6 +191,9 @@ class TestSavedConfig(unittest.TestCase):
             loaded = pickle.loads(data)
             self.assertEqual(loaded.request.uri, "http://example.com/")
             self.assertEqual(loaded.subreqs.keys(), resource.subreqs.keys())
+            self.assertEqual(loaded.linked[0][0].request.uri, "http://example.com/linked")
+            self.assertFalse(hasattr(loaded.linked[0][0], "config"))
+            self.assertFalse(hasattr(loaded, "config"))
 
 
 if __name__ == "__main__":
