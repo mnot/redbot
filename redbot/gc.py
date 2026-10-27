@@ -11,8 +11,8 @@ and trip the systemd watchdog. See extra/redbot-gc.{service,timer}.
 
 import argparse
 import sys
-from configparser import ConfigParser
 
+from redbot.utils import read_config
 from redbot.webui.saved_tests import clean_saved_tests
 
 
@@ -23,10 +23,9 @@ def main() -> None:
     parser.add_argument("config_file", type=str, help="configuration file")
     args = parser.parse_args()
 
-    conf = ConfigParser()
-    conf.read(args.config_file)
+    conf = read_config("redbot_gc", args.config_file)
 
-    seen, removed, errors = clean_saved_tests(conf["redbot"])
+    seen, removed, errors = clean_saved_tests(conf)
     sys.stdout.write(f"redbot_gc: {seen} files, {removed} removed, {errors} errors\n")
 
     # Exit non-zero on errors so the systemd oneshot (and its journal entry)

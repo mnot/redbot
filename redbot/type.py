@@ -45,9 +45,12 @@ class RedWebUiProtocol(Protocol):
         status_phrase: bytes,
         message: str,
         log_message: Optional[str] = None,
+        headers: Optional[RawHeaderListType] = None,
     ) -> None: ...
     def error_log(self, message: str) -> None: ...
-    def timeout_error(self, formatter: Any, detail: Optional[Callable[[], str]] = None) -> None: ...
+    def timeout_error(
+        self, formatter: Any, resource: Any, detail: Optional[Callable[[], str]] = None
+    ) -> None: ...
 
 
 class LinkGenerator(Protocol):

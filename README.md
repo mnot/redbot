@@ -55,6 +55,11 @@ or
 The daemon runs as an unprivileged `redbot` user (UID 999). Saving tests is off by default. To enable it, set `save_dir = /var/lib/redbot` in a config file that you mount into the container and pass as the command, and mount a named volume at `/var/lib/redbot` to keep the saved tests. The image provides that directory, owned by the daemon's user; a bind-mounted host directory must be writable by UID 999.
 
 
+## Command line
+
+The `redbot` command checks one URL: `redbot [-a] [-o FORMAT] [-t SECONDS] URL`. `-a` also checks the assets a page links to, and `-t` (default 60; 0 for no limit) stops the check after that many seconds and shows what was collected.
+
+
 ## Web Bot Auth
 
 REDbot can authenticate its outgoing requests using [Web Bot Auth](https://datatracker.ietf.org/doc/draft-meunier-web-bot-auth-architecture/), which signs requests with an Ed25519 key using [HTTP Message Signatures (RFC 9421)](https://www.rfc-editor.org/rfc/rfc9421). This lets origins verify that requests genuinely come from your REDbot instance. The implementation follows the IETF drafts and is not specific to any one verifier.

@@ -77,6 +77,19 @@ class CaptchaHandler:
         self.secret = webui.config.get("captcha_secret", "").encode("utf-8")
         self.token_lifetime = webui.config.getint("token_lifetime", fallback=300)
         self.bind_client_ip = webui.config.getboolean("captcha_bind_client_ip", fallback=False)
+        # Whether the request carried a human cookie, which has to be cleared if we refuse it:
+        # the page's script doesn't show the captcha widget while one is set.
+        self.clear_cookies = False
+
+    def forbidden(self, message: str, log_message: Optional[str] = None) -> None:
+        "Refuse the request, clearing any human cookie that came with it."
+        self.error_response(
+            b"403",
+            b"Forbidden",
+            message,
+            log_message,
+            self.expire_human() if self.clear_cookies else None,
+        )
 
     def configured(self) -> bool:
         if (
@@ -114,25 +127,21 @@ class CaptchaHandler:
             return
         human_time = cookiejar.get("human_time", None)
         human_hmac = cookiejar.get("human_hmac", None)
+        self.clear_cookies = human_hmac is not None
 
         if human_time and HUMAN_TIME_RE.fullmatch(human_time.value) and human_hmac:
             if self.verify_human(int(human_time.value), human_hmac.value):
                 self.continue_test()
-            else:
-                self.error_response(
-                    b"403",
-                    b"Forbidden",
-                    "I need to double-check that you're human; please resubmit.",
-                )
-        elif captcha_token:
-            if captcha_token:
+            elif captcha_token:
+                # A stale cookie (it expired, or the client's address changed) mustn't stop a
+                # freshly solved captcha from being accepted.
                 self.verify_captcha(captcha_token)
+            else:
+                self.forbidden("I need to double-check that you're human; please resubmit.")
+        elif captcha_token:
+            self.verify_captcha(captcha_token)
         else:
-            self.error_response(
-                b"403",
-                b"Forbidden",
-                "I need to double-check that you're human; please resubmit.",
-            )
+            self.forbidden("I need to double-check that you're human; please resubmit.")
 
     def verify_captcha(self, presented_token: str) -> None:
         exchange = token_client.exchange()
@@ -161,9 +170,7 @@ class CaptchaHandler:
                 return
             decided = True
             detail = f"{err_msg.desc} ({err_msg.detail})" if err_msg.detail else err_msg.desc
-            self.error_response(
-                b"403",
-                b"Forbidden",
+            self.forbidden(
                 "There was a problem with the captcha server; please try again soon.",
                 escape_controls(f"Captcha error: {detail}."),
             )
@@ -200,12 +207,7 @@ class CaptchaHandler:
                 self.continue_test(self.issue_human())
             else:
                 e_str = f"Captcha errors: {format_error_codes(results.get('error-codes'))}"
-                self.error_response(
-                    b"403",
-                    b"Forbidden",
-                    e_str,
-                    e_str,
-                )
+                self.forbidden(e_str, e_str)
 
         request_form = {
             "secret": self.secret,
@@ -250,6 +252,14 @@ class CaptchaHandler:
                     "ascii"
                 ),
             ),
+        ]
+
+    @staticmethod
+    def expire_human() -> RawHeaderListType:
+        "Return cookie headers that remove the human-token cookies."
+        return [
+            (b"Set-Cookie", b"human_time=; Max-Age=0; SameSite=Strict"),
+            (b"Set-Cookie", b"human_hmac=; Max-Age=0; SameSite=Strict"),
         ]
 
     def verify_human(self, human_time: int, human_hmac: str) -> bool:

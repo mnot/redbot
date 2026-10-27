@@ -87,7 +87,7 @@ class WebUiLinkGenerator:
         use_stored: bool = False,
         test_id: Optional[str] = None,
     ) -> str:
-        """Link to a resource."""
+        """Link to a resource. The label is raw text; it is escaped exactly once."""
         return self._generate_link(
             resource=resource,
             link_value=label,

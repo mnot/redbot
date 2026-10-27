@@ -71,6 +71,7 @@ class TestErrorResponse(unittest.TestCase):
             exchange=MagicMock(),
             output=out.append,
             error_log=MagicMock(),
+            query_string={},
         )
         with patch("redbot.webui.find_formatter") as finder:
             finder.return_value = lambda cfg, res, output, params: make_formatter(out.append)

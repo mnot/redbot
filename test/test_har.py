@@ -76,5 +76,50 @@ class TestErrorOutput(unittest.TestCase):
             self.assertIn(field, har["log"])
 
 
+class TestFailedFetch(unittest.TestCase):
+    "A fetch that failed must not look like a successful run with nothing in it (#535)."
+
+    def finish(self, fetch_error: object) -> dict:
+        resource = MagicMock()
+        resource.response.complete = False
+        resource.fetch_error = fetch_error
+        out: List[str] = []
+        HarFormatter(MagicMock(), resource, out.append, {}).finish_output()
+        return json.loads("".join(out))
+
+    def test_error_is_reported(self) -> None:
+        error = MagicMock()
+        error.desc = "Connection error"
+        error.detail = "Server dropped connection before the response was complete."
+        har = self.finish(error)
+        self.assertEqual(har["log"]["entries"], [])
+        self.assertEqual(
+            har["log"]["_red_error"],
+            "Connection error (Server dropped connection before the response was complete.)",
+        )
+
+    def test_incomplete_response_without_an_error_is_still_flagged(self) -> None:
+        self.assertIn("_red_error", self.finish(None)["log"])
+
+    def test_check_that_never_ran_is_not_reported_as_failed(self) -> None:
+        resource = MagicMock()
+        resource.response.complete = False
+        resource.fetch_error = None
+        resource.fetch_started = False
+        out: List[str] = []
+        HarFormatter(MagicMock(), resource, out.append, {}).finish_output()
+        self.assertNotIn("_red_error", json.loads("".join(out))["log"])
+
+    def test_complete_response_has_no_error(self) -> None:
+        resource = MagicMock()
+        resource.response.complete = True
+        resource.linked = []
+        formatter = HarFormatter(MagicMock(), resource, lambda _: None, {})
+        formatter.add_page = MagicMock(return_value=1)  # type: ignore[method-assign]
+        formatter.add_entry = MagicMock()  # type: ignore[method-assign]
+        formatter.finish_output()
+        self.assertNotIn("_red_error", formatter.har["log"])
+
+
 if __name__ == "__main__":
     unittest.main()

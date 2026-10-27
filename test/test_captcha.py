@@ -117,6 +117,60 @@ class TestCaptchaCookies(unittest.TestCase):
             [b"a=b c", f"human_time={human_time}; human_hmac={human_hmac}".encode()]
         )
 
+    def _stale_cookie_handler(self, token: Optional[str]):
+        "A handler whose request carries cookies the server no longer accepts."
+        human_time = str(int(time.time()) - 10)  # expired
+        human_hmac = hmac.new(self.secret.encode(), human_time.encode(), "sha512").hexdigest()
+        handler, continued, errors = self._handler(
+            [f"human_time={human_time}; human_hmac={human_hmac}".encode()]
+        )
+        if token is not None:
+            handler.webui.req_headers.append(
+                (b"content-type", b"application/x-www-form-urlencoded")
+            )
+            handler.webui.req_body = f"captcha_token={token}".encode()
+        handler.verify_captcha = MagicMock()  # type: ignore[method-assign]
+        return handler, continued, errors
+
+    def test_stale_cookie_does_not_block_a_solved_captcha(self) -> None:
+        handler, continued, errors = self._stale_cookie_handler("solved")
+        handler.run()
+        handler.verify_captcha.assert_called_once_with("solved")  # type: ignore[attr-defined]
+        self.assertEqual((continued, errors), ([], []))
+
+    def test_stale_cookie_without_a_token_is_cleared(self) -> None:
+        handler, continued, errors = self._stale_cookie_handler(None)
+        handler.run()
+        handler.verify_captcha.assert_not_called()  # type: ignore[attr-defined]
+        self.assertEqual(continued, [])
+        self.assertEqual(errors[0][0], b"403")
+        cleared = [value for name, value in errors[0][4] if name == b"Set-Cookie"]
+        self.assertEqual(len(cleared), 2)
+        for value in cleared:
+            self.assertIn(b"Max-Age=0", value)
+        self.assertEqual({v.split(b"=")[0] for v in cleared}, {b"human_time", b"human_hmac"})
+
+    def test_cookie_without_a_usable_time_is_cleared_too(self) -> None:
+        for cookie in [b"human_hmac=abc", b"human_hmac=abc; human_time=notanumber"]:
+            with self.subTest(cookie=cookie):
+                handler, _, errors = self._handler([cookie])
+                handler.run()
+                self.assertEqual(errors[0][0], b"403")
+                self.assertEqual(len(errors[0][4]), 2)
+
+    def test_no_cookies_are_cleared_when_none_came_in(self) -> None:
+        handler, _, errors = self._handler([])
+        handler.run()
+        self.assertEqual(errors[0][0], b"403")
+        self.assertIsNone(errors[0][4])
+
+    def test_every_refusal_clears_a_stale_cookie(self) -> None:
+        handler, _, errors = self._handler([b"human_hmac=abc"])
+        handler.run()
+        errors.clear()
+        handler.forbidden("The captcha was wrong.", "log")
+        self.assertEqual((errors[0][0], errors[0][3], len(errors[0][4])), (b"403", "log", 2))
+
     def _assert_rejected(self, cookie_lines: List[bytes]) -> None:
         handler, continued, errors = self._handler(cookie_lines)
         handler.run()

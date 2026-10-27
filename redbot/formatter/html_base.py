@@ -1,7 +1,7 @@
 import json
 import os
 import time
-from typing import Unpack
+from typing import Optional, Unpack
 from urllib.parse import urljoin, urlparse
 
 import httplint
@@ -42,6 +42,16 @@ __all__ = [
 NL = "\n"
 
 
+def resolve_uri(base: Optional[str], reference: object) -> str:
+    "Resolve a (possibly relative) reference against base; empty if there's nothing to link to."
+    if not base or not isinstance(reference, str) or not reference.strip():
+        return ""
+    try:
+        return urljoin(base, reference.strip())
+    except ValueError:
+        return ""
+
+
 class BaseHtmlFormatter(Formatter):
     """
     Base class for HTML formatters."""
@@ -57,15 +67,17 @@ class BaseHtmlFormatter(Formatter):
         ),
     )
     templates.install_gettext_callables(_, ngettext, newstyle=True)  # type: ignore[attr-defined]  # pylint: disable=no-member
+    # The environment is shared by every formatter, so filters must not close over an instance;
+    # those that need one take it from the render context (see html.py).
+    templates.filters.update(
+        {
+            "f_num": f_num,
+            "relative_time": relative_time,
+        }
+    )
 
     def __init__(self, *args: Unpack[FormatterArgs]) -> None:
         Formatter.__init__(self, *args)
-        self.templates.filters.update(
-            {
-                "f_num": f_num,
-                "relative_time": relative_time,
-            }
-        )
         captcha_provider = self.config.get("captcha_provider", "")
         captcha_data = CAPTCHA_PROVIDERS.get(captcha_provider, {})
         self.links: LinkGenerator = self.kw.get("link_generator") or NullLinkGenerator()
@@ -175,7 +187,7 @@ class BaseHtmlFormatter(Formatter):
         self.output(f"""
 <script{self.nonce_attr}>
 <!-- {time.time() - self.start:3.3f}
-document.querySelector('#red_status').textContent = "{escape(status)}"
+document.querySelector('#red_status').textContent = "{e_js(status)}"
 -->
 </script>
 """)
@@ -224,3 +236,7 @@ console.log("{time.time() - self.start:3.3f} {e_js(message)}");
                 except IOError as why:
                     out.append(f"<!-- error opening {extra_file}: {why} -->")
         return Markup(NL.join(out))
+
+
+# Stateless, so it can live on the environment every formatter shares.
+BaseHtmlFormatter.templates.filters["resolve_uri"] = resolve_uri

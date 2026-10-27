@@ -104,6 +104,8 @@ class RedFetcher(thor.events.EventEmitter):
         except KeyError:
             pass
         del state["response_content_processors"]
+        # Saved tests are rendered with the Web UI's config; this one holds secrets.
+        state.pop("config", None)
         return state
 
     def __repr__(self) -> str:
@@ -242,6 +244,8 @@ class RedFetcher(thor.events.EventEmitter):
                 "response_done",
                 "error",
             )
+            # thor retries a dropped idempotent request unless its exchange has errored.
+            self.exchange.input_error(httperr.ConnectError("Request abandoned."))
             if self.exchange.conn:
                 self.exchange.conn.close()
 
@@ -376,8 +380,7 @@ class RedFetcher(thor.events.EventEmitter):
 
     def stop(self) -> None:
         "Stop the fetcher."
-        if hasattr(self, "exchange") and self.exchange.conn:
-            self.exchange.conn.close()
+        self._abort_exchange()
         self._fetch_done()
 
 

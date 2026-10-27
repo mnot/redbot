@@ -124,7 +124,7 @@ class RunTestHandler(RequestHandler):
                 "nonce": ui.nonce,
                 "locale": ui.locale,
                 "link_generator": ui.link_generator,
-                "check_name": check_title or check_name,
+                "check_name": "" if descend else (check_title or check_name),
             },
         )
         continue_test = partial(cls._continue_test, ui, top_resource, formatter)
@@ -144,7 +144,7 @@ class RunTestHandler(RequestHandler):
             if formatter.resource is not top_resource:
                 formatter.resource.stop()  # an unstarted check isn't stopped with the test
 
-        timeout_error = partial(ui.timeout_error, formatter)
+        timeout_error = partial(ui.timeout_error, formatter, top_resource)
         update_wrapper(timeout_error, ui.timeout_error)
 
         ui.timeout = thor.schedule(
@@ -223,12 +223,20 @@ class RunTestHandler(RequestHandler):
 
         @thor.events.on(formatter)
         def formatter_done() -> None:
-            if ui.timeout:
-                ui.timeout.delete()
-                ui.timeout = None
             if not ui.response_done:
                 ui.exchange.response_done([])
                 ui.response_done = True
+            # A check named in the request can finish first. The timeout still applies to the
+            # rest of the test, and the test is saved only once all of it is done.
+            if top_resource.check_done:
+                test_done()
+            else:
+                top_resource.once("check_done", test_done)
+
+        def test_done() -> None:
+            if ui.timeout:
+                ui.timeout.delete()
+                ui.timeout = None
             if test_id:
                 save_test(ui, top_resource)
 
@@ -263,7 +271,8 @@ class RunTestHandler(RequestHandler):
             + extra_headers,
         )
         ui.response_started = True
-        if "check_name" in ui.query_string:
+        # A descend run shows the linked resources, which only the top resource has.
+        if "check_name" in ui.query_string and "descend" not in ui.query_string:
             check_name = ui.query_string.get("check_name", [""])[0]
             display_resource = cast(
                 HttpResource, top_resource.subreqs.get(check_name, top_resource)

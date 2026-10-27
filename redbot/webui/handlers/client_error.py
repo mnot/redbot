@@ -6,6 +6,7 @@ This module provides a handler for logging client-side JavaScript errors.
 
 import string
 
+from redbot.formatter.text import escape_controls
 from redbot.type import RedWebUiProtocol
 from redbot.webui.handlers.base import RequestHandler
 
@@ -37,8 +38,8 @@ class ClientErrorHandler(RequestHandler):
         and logs it to the console. Returns a 204 No Content response.
         """
         # Extract and sanitize the error message
-        body = ui.req_body.decode("ascii", "replace")[:255].replace("\n", "")
-        body_safe = "".join([x for x in body if x in string.printable])
+        body = ui.req_body.decode("ascii", "replace")[:255]
+        body_safe = escape_controls("".join([x for x in body if x in string.printable]))
 
         # Log the error
         ui.error_log(f"Client JS -> {body_safe}")
