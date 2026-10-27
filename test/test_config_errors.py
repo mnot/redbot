@@ -63,6 +63,21 @@ class TestConfigErrors(unittest.TestCase):
             with self.subTest(module=module):
                 self.assert_one_line(module, self.dir, "configuration file")
 
+    def test_percent_signs_in_values_are_not_interpolation(self):
+        path = self.write("pct.txt", "[redbot]\ncaptcha_secret = ab%cd\n")
+        script = (
+            "import sys; from redbot.utils import read_config; "
+            "print(read_config('t', sys.argv[1]).get('captcha_secret'))"
+        )
+        result = subprocess.run(
+            [sys.executable, "-c", script, path],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+        self.assertEqual(result.stdout.strip(), "ab%cd", result.stderr)
+
     def test_valid_file_still_works(self):
         save_dir = os.path.join(self.dir, "save")
         os.mkdir(save_dir)

@@ -150,6 +150,27 @@ class TestCaptchaCookies(unittest.TestCase):
             self.assertIn(b"Max-Age=0", value)
         self.assertEqual({v.split(b"=")[0] for v in cleared}, {b"human_time", b"human_hmac"})
 
+    def test_cookie_without_a_usable_time_is_cleared_too(self) -> None:
+        for cookie in [b"human_hmac=abc", b"human_hmac=abc; human_time=notanumber"]:
+            with self.subTest(cookie=cookie):
+                handler, _, errors = self._handler([cookie])
+                handler.run()
+                self.assertEqual(errors[0][0], b"403")
+                self.assertEqual(len(errors[0][4]), 2)
+
+    def test_no_cookies_are_cleared_when_none_came_in(self) -> None:
+        handler, _, errors = self._handler([])
+        handler.run()
+        self.assertEqual(errors[0][0], b"403")
+        self.assertIsNone(errors[0][4])
+
+    def test_every_refusal_clears_a_stale_cookie(self) -> None:
+        handler, _, errors = self._handler([b"human_hmac=abc"])
+        handler.run()
+        errors.clear()
+        handler.forbidden("The captcha was wrong.", "log")
+        self.assertEqual((errors[0][0], errors[0][3], len(errors[0][4])), (b"403", "log", 2))
+
     def _assert_rejected(self, cookie_lines: List[bytes]) -> None:
         handler, continued, errors = self._handler(cookie_lines)
         handler.run()

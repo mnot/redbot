@@ -61,6 +61,19 @@ class TestCliTimeout(unittest.TestCase):
         self.assertIn("stopped after 2 seconds", result.stderr)
         self.assertIn("HTTP/1.1 200 OK", result.stdout)  # what was collected is shown
 
+    def test_bad_timeouts_are_refused(self):
+        for value in ["-5", "nan", "inf", "soon"]:
+            with self.subTest(value=value):
+                result = subprocess.run(
+                    [sys.executable, "-m", "redbot.cli", "--timeout", value, "http://127.0.0.1:1/"],
+                    capture_output=True,
+                    text=True,
+                    timeout=30,
+                    check=False,
+                )
+                self.assertEqual(result.returncode, 2)
+                self.assertIn("timeout", result.stderr)
+
     def test_default_is_sixty_seconds(self):
         result = subprocess.run(
             [sys.executable, "-m", "redbot.cli", "--help"],

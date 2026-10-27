@@ -31,6 +31,12 @@ class TestSaveMissingTest(unittest.TestCase):
             SaveHandler.handle(ui)
         self.assertEqual(ui.error_response.call_args[0][0], b"404")
 
+    def test_missing_save_directory_is_a_404_like_the_get_side(self):
+        ui = make_ui(save_dir="/nonexistent/redbot-save-dir")
+        ui.path = ["saved", "abcdefgh"]
+        SaveHandler.handle(ui)
+        self.assertEqual(ui.error_response.call_args[0][0], b"404")
+
     def test_existing_id_redirects(self):
         with tempfile.TemporaryDirectory() as save_dir:
             open(f"{save_dir}/abcdefgh", "wb").close()

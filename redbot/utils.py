@@ -23,7 +23,7 @@ def read_config(program: str, path: str) -> configparser.SectionProxy:
     malformed, or that has no [redbot] section, ends the program with a one-line message rather
     than a traceback.
     """
-    conf = configparser.ConfigParser()
+    conf = configparser.ConfigParser(interpolation=None)  # a '%' in a secret is just a '%'
     try:
         read = conf.read(path)
     except (configparser.Error, UnicodeError) as why:

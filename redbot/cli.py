@@ -4,6 +4,7 @@
 CLI interface to REDbot
 """
 
+import math
 import sys
 from argparse import ArgumentParser
 from configparser import ConfigParser
@@ -71,6 +72,8 @@ def main() -> None:
         help="HTTPS origin hosting this bot's key directory (the Signature-Agent value)",
     )
     args = parser.parse_args()
+    if not math.isfinite(args.timeout) or args.timeout < 0:
+        parser.error("--timeout must be a number of seconds, 0 or more")
 
     redbot_config = {"enable_local_access": "True"}
     if args.web_bot_auth_key:
