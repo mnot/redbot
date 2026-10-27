@@ -86,8 +86,7 @@ static_root = static
 # web_bot_auth_key = /path/to/web-bot-auth-key.pem
 
 # The HTTPS origin hosting this bot's public key directory (http is accepted, for testing); any
-# path is ignored; it becomes the
-# Signature-Agent value, and verifiers fetch keys from
+# path is ignored; it becomes the Signature-Agent member's value, and verifiers fetch keys from
 # <origin>/.well-known/http-message-signatures-directory (the daemon serves that
 # automatically). If omitted, it defaults to the origin of ui_uri (above) -- so
 # if you enable signing without setting this, make sure ui_uri is set to this

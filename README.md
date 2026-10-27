@@ -57,7 +57,7 @@ The daemon runs as an unprivileged `redbot` user (UID 999). Saving tests is off 
 
 ## Web Bot Auth
 
-REDbot can authenticate its outgoing requests using [Web Bot Auth](https://datatracker.ietf.org/doc/draft-meunier-web-bot-auth-architecture/), which signs requests with an Ed25519 key using [HTTP Message Signatures (RFC 9421)](https://www.rfc-editor.org/rfc/rfc9421). This lets origins verify that requests genuinely come from your REDbot instance. The implementation follows the IETF drafts and is not specific to any one verifier.
+REDbot can authenticate its outgoing requests using [Web Bot Auth](https://datatracker.ietf.org/doc/draft-ietf-webbotauth-httpsig-protocol/), which signs requests with an Ed25519 key using [HTTP Message Signatures (RFC 9421)](https://www.rfc-editor.org/rfc/rfc9421). This lets origins verify that requests genuinely come from your REDbot instance. The implementation follows the IETF drafts and is not specific to any one verifier.
 
 Requests are sent unsigned by default. REDbot only attaches a signature when the origin challenges for one -- that is, when it returns a `401`, `403`, or `429` response carrying an `Accept-Signature` header -- and then transparently retries the request signed. This avoids advertising the bot's identity to servers that don't ask for it.
 

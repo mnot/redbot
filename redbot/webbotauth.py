@@ -6,10 +6,9 @@ attaching an HTTP Message Signature (RFC 9421) to its requests, signed with an
 Ed25519 key whose public half is published in a directory at a well-known
 location.
 
-This module implements the IETF drafts
-(draft-meunier-web-bot-auth-architecture and
-draft-meunier-http-message-signatures-directory) and is not specific to any
-particular verifier.
+This module implements the IETF Web Bot Auth drafts
+(draft-ietf-webbotauth-httpsig-protocol, which also covers the key directory) and is not specific
+to any particular verifier.
 
 It provides:
 
@@ -33,7 +32,7 @@ import http_sf
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
-# The tag identifying the purpose of a signature (draft-meunier-web-bot-auth).
+# The tag identifying the purpose of a signature (draft-ietf-webbotauth-httpsig-protocol).
 REQUEST_TAG = "web-bot-auth"
 # The tag for a signature over the directory response itself.
 DIRECTORY_TAG = "http-message-signatures-directory"
@@ -119,7 +118,7 @@ class WebBotAuthSigner:
 
     ``key_pem`` is an Ed25519 private key in PEM (PKCS#8) form. ``directory`` is
     the HTTPS origin that hosts this bot's key directory; it becomes the
-    Signature-Agent header value, and verifiers append the well-known directory
+    Signature-Agent member value, and verifiers append the well-known directory
     path to it. ``validity`` is the signature lifetime in seconds.
     """
 

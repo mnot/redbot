@@ -36,7 +36,7 @@ def ua_string(config: SectionProxy) -> bytes:
 
 # Status codes on which a response carrying an Accept-Signature header is treated
 # as a Web Bot Auth challenge to re-send the request signed
-# (draft-meunier-web-bot-auth-architecture, Section 4.3).
+# (draft-ietf-webbotauth-httpsig-protocol, Section 5.3).
 WBA_CHALLENGE_STATUSES = {b"401", b"403", b"429"}
 
 
