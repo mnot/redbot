@@ -69,7 +69,7 @@ def main() -> None:
         "--web-bot-auth-directory",
         action="store",
         dest="web_bot_auth_directory",
-        help="HTTPS origin hosting this bot's key directory (the Signature-Agent value)",
+        help="HTTPS origin hosting this bot's key directory (sent in the Signature-Agent header)",
     )
     args = parser.parse_args()
     if not math.isfinite(args.timeout) or args.timeout < 0:
