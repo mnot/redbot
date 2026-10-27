@@ -186,6 +186,44 @@ class TestWebBotAuthSigner(unittest.TestCase):
         self.assertNotEqual(a[b"signature-input"], b[b"signature-input"])
 
 
+class TestKnownAnswers(unittest.TestCase):
+    """
+    The Ed25519 test vector in draft-meunier-web-bot-auth-architecture-05 Appendix A.2.3 (the legacy
+    Signature-Agent: an sf-string): the signature base, and so the signature, must match byte for
+    byte. The draft labels it sig2; the label is not part of what is signed.
+
+    The draft's vectors for the Dictionary form (A.1.2, A.2.2) print the member value with its
+    quotes but were signed over it without them, so they can't be used until that is settled.
+    """
+
+    NONCE = (
+        "e8N7S2MFd/qrd6T2R3tdfAuuANngKI7LFtKYI/vowzk4lAZYadIX6wW25MwG7DCT9RUKAJ0qVkU0mEeLElW1qg=="
+    )
+    SIGNATURE_INPUT = (
+        '("@authority" "signature-agent")'
+        ";created=1735689600"
+        ';keyid="poqkLGiymh_W0uP6PZFw-dvez3QJT5SolqXBCW38r0U"'
+        ';alg="ed25519"'
+        ";expires=1735693200"
+        f';nonce="{NONCE}"'
+        ';tag="web-bot-auth"'
+    )
+    SIGNATURE = (
+        ":jdq0SqOwHdyHr9+r5jw3iYZH6aNGKijYp/EstF4RQTQdi5N5YYKrD+mCT1HA1nZDsi6nJKuHxUi/5Syp3rLWBA==:"
+    )
+
+    def test_legacy_signature_agent_vector(self):
+        signer = WebBotAuthSigner(
+            RFC9421_ED25519_KEY, "https://signature-agent.test", validity=3600
+        )
+        headers = _headers_dict(
+            signer.sign_request("https://example.com/", created=1735689600, nonce=self.NONCE)
+        )
+        self.assertEqual(headers[b"signature-agent"], b'"https://signature-agent.test"')
+        self.assertEqual(headers[b"signature-input"].decode(), "sig1=" + self.SIGNATURE_INPUT)
+        self.assertEqual(headers[b"signature"].decode(), "sig1=" + self.SIGNATURE)
+
+
 class TestLoadSigner(unittest.TestCase):
     def _config(self, **values):
         parser = ConfigParser()
@@ -272,9 +310,7 @@ class TestDirectoryAuthority(unittest.TestCase):
         exchange = cast(MagicMock, handler.exchange)
         return _headers_dict(exchange.response_start.call_args[0][2])
 
-    def _assert_signs(
-        self, directory: str, authority: str, hosts: Iterable[str] = ()
-    ) -> None:
+    def _assert_signs(self, directory: str, authority: str, hosts: Iterable[str] = ()) -> None:
         headers = self._serve(directory, hosts)
         params = headers[b"signature-input"].decode("ascii")[len("sig1=") :]
         base_lines = [f'"@authority";req: {authority}', f'"@signature-params": {params}']
@@ -476,7 +512,9 @@ class TestChallengeRetry(unittest.TestCase):
         fetcher.check()
         with open(self.key_path, "wb") as fh:
             fh.write(b"not a valid key anymore")
-        ex1.fire("response_start", b"403", b"Forbidden", [(b"Accept-Signature", b'sig1=("@authority")')])
+        ex1.fire(
+            "response_start", b"403", b"Forbidden", [(b"Accept-Signature", b'sig1=("@authority")')]
+        )
         ex1.fire("response_done", [])
         self.assertFalse(fetcher._wba_retried)
         self.assertEqual(fetcher.response.status_code, 403)
@@ -506,7 +544,9 @@ class TestNoSignerNoRetry(unittest.TestCase):
         fetcher.client = _MockClient([ex1])
         fetcher.set_request("http://example.com/")
         fetcher.check()
-        ex1.fire("response_start", b"403", b"Forbidden", [(b"Accept-Signature", b'sig1=("@authority")')])
+        ex1.fire(
+            "response_start", b"403", b"Forbidden", [(b"Accept-Signature", b'sig1=("@authority")')]
+        )
         ex1.fire("response_done", [])
         self.assertFalse(fetcher._wba_retried)
         self.assertEqual(fetcher.response.status_code, 403)

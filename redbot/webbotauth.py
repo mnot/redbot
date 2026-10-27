@@ -97,6 +97,10 @@ class WebBotAuthSigner:
             raise WebBotAuthError(f"Invalid Web Bot Auth directory '{directory}'.") from why
         self.validity = validity
         self.key_created = key_created
+        try:
+            self._agent_field = http_sf.ser(self.directory)  # Signature-Agent value (an sf-string)
+        except (ValueError, TypeError) as why:
+            raise WebBotAuthError(f"Invalid Web Bot Auth directory '{directory}': {why}") from why
 
         raw_public = key.public_key().public_bytes(
             serialization.Encoding.Raw, serialization.PublicFormat.Raw
@@ -132,6 +136,8 @@ class WebBotAuthSigner:
         components: List[Tuple[http_sf.types.ItemType, str]],
         tag: str,
         validity: int,
+        created: Optional[int] = None,
+        nonce: Optional[str] = None,
     ) -> Tuple[str, str]:
         """
         Construct the RFC 9421 signature base over ``components`` (each an
@@ -142,15 +148,22 @@ class WebBotAuthSigner:
 
         Structured-field values are serialized with ``http_sf`` so the
         @signature-params line in the base and the Signature-Input header are
-        produced identically.
+        produced identically. The parameters are in the order the drafts' test vectors use, because
+        the order is part of what is signed.
+
+        ``created`` and ``nonce`` default to the current time and a random value; tests can
+        supply them to reproduce a known signature.
         """
-        created = int(time.time())
+        if created is None:
+            created = int(time.time())
+        if nonce is None:
+            nonce = base64.b64encode(secrets.token_bytes(32)).decode("ascii")
         params: http_sf.types.ParamsType = {
             "created": created,
-            "expires": created + validity,
             "keyid": self.keyid,
             "alg": "ed25519",
-            "nonce": base64.b64encode(secrets.token_bytes(32)).decode("ascii"),
+            "expires": created + validity,
+            "nonce": nonce,
             "tag": tag,
         }
         covered = [identifier for identifier, _ in components]
@@ -162,19 +175,22 @@ class WebBotAuthSigner:
 
         return http_sf.ser({SIG_LABEL: inner_list}), http_sf.ser({SIG_LABEL: signature})
 
-    def sign_request(self, uri: str) -> List[Tuple[bytes, bytes]]:
+    def sign_request(
+        self, uri: str, created: Optional[int] = None, nonce: Optional[str] = None
+    ) -> List[Tuple[bytes, bytes]]:
         "Return the Web Bot Auth headers to add to a request for ``uri``."
-        agent_field = http_sf.ser(self.directory)  # Signature-Agent value (an sf-string)
         sig_input, sig = self._build_signature(
             [
                 (("@authority", {}), self.authority(uri)),
-                (("signature-agent", {}), agent_field),
+                (("signature-agent", {}), self._agent_field),
             ],
             REQUEST_TAG,
             self.validity,
+            created,
+            nonce,
         )
         return [
-            (b"Signature-Agent", agent_field.encode("ascii")),
+            (b"Signature-Agent", self._agent_field.encode("ascii")),
             (b"Signature-Input", sig_input.encode("ascii")),
             (b"Signature", sig.encode("ascii")),
         ]
