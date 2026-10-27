@@ -325,12 +325,18 @@ class TestDirectoryAuthority(unittest.TestCase):
             WebBotAuthSigner(RFC9421_ED25519_KEY, "https://[bad")
 
 
+class _MockTcpConn:
+    def __init__(self, conn):
+        self.conn = conn
+
+    def abort(self):
+        self.conn.closed = True
+
+
 class _MockConn:
     def __init__(self):
         self.closed = False
-
-    def close(self):
-        self.closed = True
+        self.tcp_conn = _MockTcpConn(self)
 
 
 class _MockExchange:
@@ -375,6 +381,10 @@ class _MockClient:
     def __init__(self, exchanges):
         self._exchanges = list(exchanges)
         self.check_ip = None
+        self.dead = []
+
+    def dead_conn(self, conn):
+        self.dead.append(conn)
 
     def exchange(self):
         return self._exchanges.pop(0)

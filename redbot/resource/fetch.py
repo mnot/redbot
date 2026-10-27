@@ -255,8 +255,12 @@ class RedFetcher(thor.events.EventEmitter):
             )
             # thor retries a dropped idempotent request unless its exchange has errored.
             self.exchange.input_error(httperr.ConnectError("Request abandoned."))
-            if self.exchange.conn:
-                self.exchange.conn.close()
+            conn = self.exchange.conn
+            if conn:
+                # Not a graceful close: that leaves the connection attached, to be released into
+                # the pool half-closed once the rest of the response arrives.
+                conn.tcp_conn.abort()
+                self.client.dead_conn(conn)
 
     def _response_nonfinal(
         self, status: bytes, phrase: bytes, res_headers: RawHeaderListType
@@ -317,6 +321,7 @@ class RedFetcher(thor.events.EventEmitter):
                     self._abort_exchange()
                     self.nonfinal_responses = []
                     self.nonfinal_overflow = 0
+                    self.transfer_in = 0
                     self.transfer_out = 0
                     self._send_request(signer.sign_request(self.request.uri))
                     return
