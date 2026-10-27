@@ -32,7 +32,6 @@ class RangeRequest(SubRequest):
         self.range_start: int
         self.range_end: int
         self.range_target: bytes
-        self.max_sample_size = 0  # unlimited
         SubRequest.__init__(self, config, resource)
 
     def modify_request_headers(self, base_headers: StrHeaderListType) -> StrHeaderListType:
@@ -41,8 +40,8 @@ class RangeRequest(SubRequest):
             sample_num = random.randint(0, len(samples) - 1)
             sample_len = min(96, len(samples[sample_num][1]))
             self.range_start = samples[sample_num][0]
-            self.range_end = self.range_start + sample_len
-            self.range_target = samples[sample_num][1][: sample_len + 1]
+            self.range_end = self.range_start + sample_len - 1  # inclusive
+            self.range_target = samples[sample_num][1][:sample_len]
             base_headers.append(("Range", f"bytes={self.range_start}-{self.range_end}"))
         return base_headers
 
@@ -89,7 +88,11 @@ class RangeRequest(SubRequest):
                 MISSING_HDRS_206,
             )
 
-            if self.response.content_length == self.base.response.content_length:
+            covers_all = (
+                self.range_start == 0
+                and len(self.range_target) == self.base.response.content_length
+            )
+            if not covers_all and self.response.content_length == self.base.response.content_length:
                 self.add_notes("field-content-length", RANGE_CL_FULL)
 
             content_range = self.response.headers.parsed.get("content-range", None)

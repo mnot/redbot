@@ -14,7 +14,7 @@ import thor
 import thor.http.error as httperr
 from httplint import HttpRequestLinter, HttpResponseLinter
 from httplint.note import categories, levels
-from netaddr import IPAddress  # type: ignore
+from netaddr import IPAddress, IPNetwork  # type: ignore
 from thor.http.client import HttpClientExchange
 
 from redbot import __version__
@@ -26,6 +26,32 @@ from redbot.webbotauth import WebBotAuthError, load_signer
 # Fallback UI URL advertised in the User-Agent when ui_uri is not configured
 # (e.g. the CLI). The public instance's ui_uri defaults to the same value.
 DEFAULT_UI_URI = "https://redbot.org/"
+
+
+# IPv6 prefixes whose last 32 bits are the IPv4 address that is really connected to: the NAT64
+# well-known prefix (RFC 6052), SIIT (RFC 7915) and the deprecated IPv4-compatible form. netaddr
+# considers some of these global even when the IPv4 address inside is loopback or private.
+EMBEDDED_IPV4_PREFIXES = [
+    IPNetwork("64:ff9b::/96"),
+    IPNetwork("::ffff:0:0:0/96"),
+    IPNetwork("::/96"),
+]
+# The local-use NAT64 prefix (RFC 8215) is for the local network, so it is never public.
+NAT64_LOCAL_PREFIX = IPNetwork("64:ff9b:1::/48")
+
+
+def is_public_address(dns_result: str) -> bool:
+    "Whether it's OK to connect to the address, when local access isn't enabled."
+    addr = IPAddress(dns_result)
+    if addr.version == 6:
+        if addr in NAT64_LOCAL_PREFIX:
+            return False
+        if any(addr in prefix for prefix in EMBEDDED_IPV4_PREFIXES):
+            return is_public_address(str(IPAddress(addr.value & 0xFFFFFFFF, 4)))
+    return bool(addr.is_global())
+
+
+MAX_NONFINAL_RESPONSES = 20
 
 
 def ua_string(config: SectionProxy) -> bytes:
@@ -88,6 +114,7 @@ class RedFetcher(thor.events.EventEmitter):
 
         self.request = HttpRequestLinter()
         self.nonfinal_responses: List[HttpResponseLinter] = []
+        self.nonfinal_overflow = 0  # 1xx responses beyond MAX_NONFINAL_RESPONSES, not kept
         self.response = HttpResponseLinter()
         self.response.decoded.processors.append(self.sample_decoded)
         self.exchange: HttpClientExchange
@@ -138,13 +165,7 @@ class RedFetcher(thor.events.EventEmitter):
             not self.config.getboolean("enable_local_access", fallback=False)
         ) and self.client.check_ip is None:
 
-            def check_ip(dns_result: str) -> bool:
-                addr = IPAddress(dns_result)
-                if not addr.is_global():
-                    return False
-                return True
-
-            self.client.check_ip = check_ip
+            self.client.check_ip = is_public_address
 
     def set_request(
         self,
@@ -246,13 +267,23 @@ class RedFetcher(thor.events.EventEmitter):
             )
             # thor retries a dropped idempotent request unless its exchange has errored.
             self.exchange.input_error(httperr.ConnectError("Request abandoned."))
-            if self.exchange.conn:
-                self.exchange.conn.close()
+            conn = self.exchange.conn
+            if conn:
+                # Not a graceful close: that leaves the connection attached, to be released into
+                # the pool half-closed once the rest of the response arrives.
+                conn.tcp_conn.abort()
+                self.client.dead_conn(conn)
 
     def _response_nonfinal(
         self, status: bytes, phrase: bytes, res_headers: RawHeaderListType
     ) -> None:
         "Got a non-final response."
+        if len(self.nonfinal_responses) >= MAX_NONFINAL_RESPONSES:
+            # A hostile server can send these indefinitely; keep the first few and stop parsing.
+            if not self.nonfinal_overflow:
+                self.response.notes.add("", ONE_XX_TOO_MANY, limit=MAX_NONFINAL_RESPONSES)
+            self.nonfinal_overflow += 1
+            return
         nfres = HttpResponseLinter(start_time=time.time())
         # thor only sets exchange.res_version for final responses.
         res_version = (
@@ -301,6 +332,8 @@ class RedFetcher(thor.events.EventEmitter):
                     )
                     self._abort_exchange()
                     self.nonfinal_responses = []
+                    self.nonfinal_overflow = 0
+                    self.transfer_in = 0
                     self.transfer_out = 0
                     self._send_request(signer.sign_request(self.request.uri))
                     return
@@ -449,6 +482,18 @@ be confused by recipients; some will strip it, and others won't, leading to a va
 
 Most HTTP implementations will refuse to process this message.
 """
+
+
+class ONE_XX_TOO_MANY(RedbotNote):
+    category = categories.CONNECTION
+    level = levels.WARN
+    _summary = "The server sent more than %(limit)s non-final responses."
+    _text = """\
+Servers can send any number of 1xx (informational) responses before the final one, but this server
+sent more than REDbot is willing to examine. REDbot has kept and checked the first %(limit)s and
+ignored the rest.
+
+Clients receiving this many may behave unexpectedly, or give up."""
 
 
 class ONE_XX_BAD_HEADER(RedbotNote):

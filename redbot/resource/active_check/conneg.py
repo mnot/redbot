@@ -44,6 +44,17 @@ class ConnegCheck(SubRequest):
             self.add_base_note("", CONNEG_SUBREQ_PROBLEM, problem=problem)
             return
 
+        bare_codings = [
+            c for c in bare.headers.parsed.get("content-encoding", []) if c != "identity"
+        ]
+        if bare_codings:
+            # The resource is compressed whether or not the client asks, so there's nothing
+            # negotiated to compare: both responses are the same representation.
+            if "gzip" in bare_codings or "x-gzip" in bare_codings:
+                self.base.gzip_support = True
+            self.add_base_note("field-content-encoding", CONNEG_UNCONDITIONAL_GZIP)
+            return
+
         if "gzip" not in negotiated.headers.parsed.get(
             "content-encoding", []
         ) and "x-gzip" not in negotiated.headers.parsed.get("content-encoding", []):
@@ -142,6 +153,20 @@ When REDbot tried to check the resource for content negotiation support, there w
 `%(problem)s`
 
 Trying again might fix it."""
+
+
+class CONNEG_UNCONDITIONAL_GZIP(RedbotNote):
+    category = categories.CONNEG
+    level = levels.INFO
+    _summary = "The resource is compressed even when the client doesn't ask for it."
+    _text = """\
+HTTP supports compression of responses by negotiating for `Content-Encoding`. When REDbot made a
+request without `Accept-Encoding`, the response was already compressed, so REDbot can't tell
+whether the resource negotiates its compression.
+
+HTTP allows this, because a client that doesn't send `Accept-Encoding` is taken to accept any
+content-coding. Clients that can't decode the compression will not be able to use the resource,
+though, and the server may be ignoring any `Accept-Encoding` they do send."""
 
 
 class CONNEG_GZIP_GOOD(RedbotNote):
