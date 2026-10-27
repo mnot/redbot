@@ -365,7 +365,7 @@ def load_signer(config: SectionProxy) -> Optional[WebBotAuthSigner]:
             raise WebBotAuthError(f"Can't read Web Bot Auth key '{pem_path}': {why}") from why
         if os.name == "posix" and mode & 0o077:
             sys.stderr.write(
-                f"WARNING: Web Bot Auth key '{pem_path}' is accessible to other users "
+                "WARNING: the file named by web_bot_auth_key is accessible to other users "
                 f"(mode {mode & 0o777:03o}); it should be readable only by REDbot's user.\n"
             )
         _SIGNER_CACHE = (
