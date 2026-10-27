@@ -355,7 +355,7 @@ class TestKeyFileHandling(unittest.TestCase):
             load_signer(self._config())
             load_signer(self._config())
         self.assertEqual(err.getvalue().count("WARNING"), 1)
-        self.assertIn(self.path, err.getvalue())
+        self.assertIn("web_bot_auth_key", err.getvalue())
         self.assertIn("644", err.getvalue())
 
     def test_private_key_gets_no_warning(self):
