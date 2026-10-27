@@ -149,7 +149,7 @@ class HTMLLinkParser(HTMLParser):
 
     def handle_starttag(self, tag: str, attrs: List[Tuple[str, Optional[str]]]) -> None:
         if tag in self.link_types:
-            attr_d = dict(attrs)
+            attr_d = first_attrs(attrs)
             url_attr, rels = self.link_types[tag]
             if not rels or attr_d.get("rel", None) in rels:
                 target = attr_d.get(url_attr, "")
@@ -160,7 +160,7 @@ class HTMLLinkParser(HTMLParser):
                     for proc in self.link_procs:
                         proc(self.message.base_uri, target, tag, title)
         elif tag == "base":
-            attr_d = dict(attrs)
+            attr_d = first_attrs(attrs)
             inert = any(self.inert_depth.values())
             if "href" in attr_d and not self.base_seen and not inert:  # first <base href> counts
                 self.base_seen = True
@@ -168,7 +168,7 @@ class HTMLLinkParser(HTMLParser):
         elif tag in self.inert_depth:
             self.inert_depth[tag] += 1
         elif tag == "meta":
-            attr_d = dict(attrs)
+            attr_d = first_attrs(attrs)
             if (attr_d.get("http-equiv", "") or "").lower() != "content-type":
                 return
             ct = attr_d.get("content", None)
@@ -221,6 +221,14 @@ class HTMLLinkParser(HTMLParser):
         self.last_err_pos, _ = self.getpos()
         if self.err:
             self.err(message)
+
+
+def first_attrs(attrs: List[Tuple[str, Optional[str]]]) -> Dict[str, Optional[str]]:
+    "A start tag's attributes as a dict; browsers use the first of a repeated one, not the last."
+    attr_d: Dict[str, Optional[str]] = {}
+    for name, value in attrs:
+        attr_d.setdefault(name, value)
+    return attr_d
 
 
 def new_decoder(encoding: str) -> codecs.IncrementalDecoder:

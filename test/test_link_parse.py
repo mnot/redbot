@@ -8,6 +8,51 @@ from redbot.resource.link_parse import HTMLLinkParser
 from httplint.message import HttpMessageLinter
 
 
+class TestRepeatedAttributes(unittest.TestCase):
+    "A browser uses the first of a repeated attribute."
+
+    @staticmethod
+    def parse(html: str) -> tuple:
+        links = []
+
+        def capture_link(base: str, link: str, tag: str, title: str) -> None:
+            links.append((tag, link, title))
+
+        message = HttpMessageLinter()
+        message.headers.parsed.update({"content-type": ["text/html"]})
+        message.base_uri = "http://example.com/"
+        parser = HTMLLinkParser(message, [capture_link])
+        parser.feed(html)
+        return links, message
+
+    def test_first_url_attribute_wins(self) -> None:
+        for html, expected in [
+            ('<script src="/a.js" src="/b.js">', ("script", "/a.js", "")),
+            ('<a href="/a" href="/b">', ("a", "/a", "")),
+            ('<img src="/a.png" src="/b.png">', ("img", "/a.png", "")),
+            ('<a href="/a" title="one" title="two">', ("a", "/a", "one")),
+            ('<link rel="stylesheet" rel="x" href="/a.css" href="/b.css">', ("link", "/a.css", "")),
+        ]:
+            with self.subTest(html=html):
+                links, _ = self.parse(html)
+                self.assertEqual(links, [expected])
+
+    def test_first_rel_wins(self) -> None:
+        links, _ = self.parse('<link rel="icon" rel="stylesheet" href="/a.css">')
+        self.assertEqual(links, [])
+
+    def test_first_base_href_wins(self) -> None:
+        _, message = self.parse('<base href="/a/" href="/b/">')
+        self.assertEqual(message.base_uri, "http://example.com/a/")
+
+    def test_first_meta_attribute_wins(self) -> None:
+        _, message = self.parse(
+            '<meta http-equiv="content-type" content="text/html; charset=latin1" '
+            'content="text/html; charset=utf-8">'
+        )
+        self.assertEqual(message.character_encoding, "latin1")
+
+
 class TestLinkParse(unittest.TestCase):
     def test_link_parsing(self):
         links = []
