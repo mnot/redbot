@@ -145,7 +145,7 @@ class WebBotAuthSigner:
         self.validity = validity
         self.key_created = key_created
         try:
-            self._agent_field = http_sf.ser(self.directory)  # Signature-Agent value (an sf-string)
+            self._agent_field = http_sf.ser(self.directory)  # the member's value, an sf-string
         except (ValueError, TypeError) as why:
             raise WebBotAuthError(f"Invalid Web Bot Auth directory '{directory}': {why}") from why
 
@@ -185,13 +185,14 @@ class WebBotAuthSigner:
         validity: int,
         created: Optional[int] = None,
         nonce: Optional[str] = None,
+        label: str = SIG_LABEL,
     ) -> Tuple[str, str]:
         """
         Construct the RFC 9421 signature base over ``components`` (each an
         ordered (component-identifier, component-value) pair; an identifier is a
         structured-field item, so it can carry parameters such as ``req``), sign
         it, and return the Signature-Input and Signature dictionary-member values
-        for SIG_LABEL. ``validity`` is the signature lifetime in seconds.
+        for ``label``. ``validity`` is the signature lifetime in seconds.
 
         Structured-field values are serialized with ``http_sf`` so the
         @signature-params line in the base and the Signature-Input header are
@@ -220,24 +221,34 @@ class WebBotAuthSigner:
         base_lines.append(f'{http_sf.ser("@signature-params")}: {http_sf.ser([inner_list])}')
         signature = self._key.sign("\n".join(base_lines).encode("utf-8"))
 
-        return http_sf.ser({SIG_LABEL: inner_list}), http_sf.ser({SIG_LABEL: signature})
+        return http_sf.ser({label: inner_list}), http_sf.ser({label: signature})
 
     def sign_request(
-        self, uri: str, created: Optional[int] = None, nonce: Optional[str] = None
+        self,
+        uri: str,
+        created: Optional[int] = None,
+        nonce: Optional[str] = None,
+        label: str = SIG_LABEL,
     ) -> List[Tuple[bytes, bytes]]:
-        "Return the Web Bot Auth headers to add to a request for ``uri``."
+        """
+        Return the Web Bot Auth headers to add to a request for ``uri``.
+
+        Signature-Agent is a Dictionary whose member is keyed to the signature label
+        (draft-ietf-webbotauth-httpsig-protocol section 5.2.1), and that member is what is signed.
+        """
         sig_input, sig = self._build_signature(
             [
                 (("@authority", {}), self.authority(uri)),
-                (("signature-agent", {}), self._agent_field),
+                (("signature-agent", {"key": label}), self._agent_field),
             ],
             REQUEST_TAG,
             self.validity,
             created,
             nonce,
+            label,
         )
         return [
-            (b"Signature-Agent", self._agent_field.encode("ascii")),
+            (b"Signature-Agent", http_sf.ser({label: self.directory}).encode("ascii")),
             (b"Signature-Input", sig_input.encode("ascii")),
             (b"Signature", sig.encode("ascii")),
         ]

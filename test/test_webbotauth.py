@@ -91,9 +91,9 @@ class TestWebBotAuthSigner(unittest.TestCase):
 
     def test_sign_request_headers_present(self):
         headers = _headers_dict(self.signer.sign_request("https://example.com/path"))
-        self.assertEqual(headers[b"signature-agent"], f'"{AGENT}"'.encode("ascii"))
+        self.assertEqual(headers[b"signature-agent"], f'sig1="{AGENT}"'.encode("ascii"))
         sig_input = headers[b"signature-input"].decode("ascii")
-        self.assertTrue(sig_input.startswith('sig1=("@authority" "signature-agent")'))
+        self.assertTrue(sig_input.startswith('sig1=("@authority" "signature-agent";key="sig1")'))
         self.assertIn(f';tag="{REQUEST_TAG}"', sig_input)
         self.assertIn(f';keyid="{EXPECTED_KEYID}"', sig_input)
         self.assertIn(";created=", sig_input)
@@ -105,7 +105,7 @@ class TestWebBotAuthSigner(unittest.TestCase):
         params = sig_input[len("sig1=") :]
         base_lines = [
             '"@authority": example.com',
-            f'"signature-agent": "{AGENT}"',
+            f'"signature-agent";key="sig1": "{AGENT}"',
             f'"@signature-params": {params}',
         ]
         _verify(self.public_key, base_lines, headers[b"signature"].decode("ascii"))
@@ -116,7 +116,7 @@ class TestWebBotAuthSigner(unittest.TestCase):
         params = sig_input[len("sig1=") :]
         base_lines = [
             '"@authority": [2001:db8::1]:8080',
-            f'"signature-agent": "{AGENT}"',
+            f'"signature-agent";key="sig1": "{AGENT}"',
             f'"@signature-params": {params}',
         ]
         _verify(self.public_key, base_lines, headers[b"signature"].decode("ascii"))
@@ -127,7 +127,7 @@ class TestWebBotAuthSigner(unittest.TestCase):
         params = sig_input[len("sig1=") :]
         base_lines = [
             '"@authority": evil.example',  # wrong authority
-            f'"signature-agent": "{AGENT}"',
+            f'"signature-agent";key="sig1": "{AGENT}"',
             f'"@signature-params": {params}',
         ]
         with self.assertRaises(InvalidSignature):
@@ -210,40 +210,40 @@ class TestWebBotAuthSigner(unittest.TestCase):
 
 class TestKnownAnswers(unittest.TestCase):
     """
-    The Ed25519 test vector in draft-meunier-web-bot-auth-architecture-05 Appendix A.2.3 (the legacy
-    Signature-Agent: an sf-string): the signature base, and so the signature, must match byte for
-    byte. The draft labels it sig2; the label is not part of what is signed.
-
-    The draft's vectors for the Dictionary form (A.1.2, A.2.2) print the member value with its
-    quotes but were signed over it without them, so they can't be used until that is settled.
+    The Ed25519 test vector in draft-ietf-webbotauth-httpsig-protocol-00 Appendix E.2.1: the
+    signature base, and so the signature, must match byte for byte. The draft's signature label
+    (sig2) isn't signed, but its Signature-Agent key (agent2) is, so the label is passed to match.
+    The signature covers the member's value with its quotes, as RFC 9421 section 2.1.2 says.
     """
 
     NONCE = (
-        "e8N7S2MFd/qrd6T2R3tdfAuuANngKI7LFtKYI/vowzk4lAZYadIX6wW25MwG7DCT9RUKAJ0qVkU0mEeLElW1qg=="
+        "n9p433xm+NJ3ph3upfBIGmsuwHw387YV7Q/F+6BSpGCVjYCqQw6rznNA8PVVLySrAWsv0hQtFioQb6E1YsauiA=="
     )
     SIGNATURE_INPUT = (
-        '("@authority" "signature-agent")'
+        '("@authority" "signature-agent";key="agent2")'
         ";created=1735689600"
         ';keyid="poqkLGiymh_W0uP6PZFw-dvez3QJT5SolqXBCW38r0U"'
         ';alg="ed25519"'
-        ";expires=1735693200"
+        ";expires=4889289600"
         f';nonce="{NONCE}"'
         ';tag="web-bot-auth"'
     )
     SIGNATURE = (
-        ":jdq0SqOwHdyHr9+r5jw3iYZH6aNGKijYp/EstF4RQTQdi5N5YYKrD+mCT1HA1nZDsi6nJKuHxUi/5Syp3rLWBA==:"
+        ":RdNFx5Bj6au3YgAMQL/RzmUlZE8QZLIaXGRpw985hWnwPfMxT228NMk6ehRS1PSl4e8PhbNZACSanGdhEwYCCg==:"
     )
 
-    def test_legacy_signature_agent_vector(self):
+    def test_signature_agent_vector(self):
         signer = WebBotAuthSigner(
-            RFC9421_ED25519_KEY, "https://signature-agent.test", validity=3600
+            RFC9421_ED25519_KEY, "https://signature-agent.test", validity=3153600000
         )
         headers = _headers_dict(
-            signer.sign_request("https://example.com/", created=1735689600, nonce=self.NONCE)
+            signer.sign_request(
+                "https://example.com/", created=1735689600, nonce=self.NONCE, label="agent2"
+            )
         )
-        self.assertEqual(headers[b"signature-agent"], b'"https://signature-agent.test"')
-        self.assertEqual(headers[b"signature-input"].decode(), "sig1=" + self.SIGNATURE_INPUT)
-        self.assertEqual(headers[b"signature"].decode(), "sig1=" + self.SIGNATURE)
+        self.assertEqual(headers[b"signature-agent"], b'agent2="https://signature-agent.test"')
+        self.assertEqual(headers[b"signature-input"].decode(), "agent2=" + self.SIGNATURE_INPUT)
+        self.assertEqual(headers[b"signature"].decode(), "agent2=" + self.SIGNATURE)
 
 
 class TestLoadSigner(unittest.TestCase):
@@ -415,7 +415,7 @@ class TestConfigurationValidation(unittest.TestCase):
         signer = self._signer("https://bücher.example")
         self.assertEqual(signer.directory, "https://xn--bcher-kva.example")
         headers = _headers_dict(signer.sign_request("https://example.com/"))  # doesn't raise
-        self.assertEqual(headers[b"signature-agent"], b'"https://xn--bcher-kva.example"')
+        self.assertEqual(headers[b"signature-agent"], b'sig1="https://xn--bcher-kva.example"')
 
     def test_bad_directories_are_rejected_at_construction(self):
         for directory in [
@@ -654,7 +654,7 @@ class TestChallengeRetry(unittest.TestCase):
             "response_start",
             b"403",
             b"Forbidden",
-            [(b"Accept-Signature", b'sig1=("@authority" "signature-agent");tag="web-bot-auth"')],
+            [(b"Accept-Signature", b'sig1=("@authority" "signature-agent";key="sig1");tag="web-bot-auth"')],
         )
 
         # The challenged exchange is aborted and a signed retry is sent.
