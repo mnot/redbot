@@ -14,6 +14,9 @@ from redbot.formatter import available_formatters, find_formatter
 from redbot.resource import HttpResource
 from redbot.webbotauth import WebBotAuthError, load_signer
 
+# The read timeout restarts whenever a byte arrives, so a slow server could keep us here for ever.
+DEFAULT_TIMEOUT = 60.0
+
 
 def main() -> None:
     parser = ArgumentParser()
@@ -40,6 +43,19 @@ def main() -> None:
         help=(
             "output format; text_verbose adds an explanation of each note. "
             "With --assets, text and text_verbose list the linked assets as well"
+        ),
+    )
+    parser.add_argument(
+        "-t",
+        "--timeout",
+        action="store",
+        dest="timeout",
+        type=float,
+        default=DEFAULT_TIMEOUT,
+        metavar="SECONDS",
+        help=(
+            "stop the check after this many seconds in all and show what was collected "
+            f"(default {DEFAULT_TIMEOUT:g}; 0 for no limit)"
         ),
     )
     parser.add_argument(
@@ -87,6 +103,14 @@ def main() -> None:
     def formatter_done() -> None:
         thor.stop()
 
+    def stop_checking() -> None:
+        sys.stderr.write(
+            f"redbot: stopped after {args.timeout:g} seconds; showing what was collected\n"
+        )
+        resource.stop()
+
+    if args.timeout > 0:
+        thor.schedule(args.timeout, stop_checking)
     resource.check()
     thor.run()
 
