@@ -174,11 +174,15 @@ class RedWebUi:
         detail: Optional[Callable[[], str]] = None,
     ) -> None:
         """Max runtime reached; stop the whole test, not just the resource being displayed."""
-        if self.response_done:
-            return
         details = ""
         if detail:
             details = f"detail={detail()}"
+        if self.response_done:
+            # The response is out, but the test may still be running (see _continue_test).
+            if resource.fetch_started and not resource.check_done:
+                self.error_log(f"timeout <{resource.request.uri}> {details}")
+                resource.stop()
+            return
         self.error_log(f"timeout <{resource.request.uri}> {details}")
         resource.stop()
         if formatter.resource is not resource:

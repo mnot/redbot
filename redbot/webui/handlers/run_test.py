@@ -206,12 +206,20 @@ class RunTestHandler(RequestHandler):
 
         @thor.events.on(formatter)
         def formatter_done() -> None:
-            if ui.timeout:
-                ui.timeout.delete()
-                ui.timeout = None
             if not ui.response_done:
                 ui.exchange.response_done([])
                 ui.response_done = True
+            # A check named in the request can finish first. The timeout still applies to the
+            # rest of the test, and the test is saved only once all of it is done.
+            if top_resource.check_done:
+                test_done()
+            else:
+                top_resource.once("check_done", test_done)
+
+        def test_done() -> None:
+            if ui.timeout:
+                ui.timeout.delete()
+                ui.timeout = None
             if test_id:
                 save_test(ui, top_resource)
 

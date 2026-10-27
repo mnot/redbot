@@ -25,9 +25,14 @@ def free_port():
 
 
 class HangingServer:
-    "Accepts connections, reads the request, and never answers."
+    """
+    Accepts connections, reads the request, and never answers. With hang_when, only requests
+    it matches hang; the rest get a plain 200.
+    """
 
-    def __init__(self):
+    def __init__(self, hang_when=None):
+        self.hang_when = hang_when
+        self.accepted = 0
         self.sock = socket.socket()
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.bind(("127.0.0.1", 0))
@@ -42,10 +47,24 @@ class HangingServer:
                 conn, _ = self.sock.accept()
             except OSError:
                 return
+            self.accepted += 1
             threading.Thread(target=self._hold, args=(conn,), daemon=True).start()
 
     def _hold(self, conn):
         try:
+            data = b""
+            while b"\r\n\r\n" not in data:
+                more = conn.recv(65536)
+                if not more:
+                    raise OSError
+                data += more
+            if self.hang_when and not self.hang_when(data.lower()):
+                conn.sendall(
+                    b"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\n"
+                    b"Accept-Ranges: bytes\r\nConnection: close\r\n\r\nok"
+                )
+                conn.close()
+                return
             while conn.recv(65536):
                 pass
         except OSError:
@@ -57,13 +76,17 @@ class HangingServer:
         self.sock.close()
 
 
-class TestTimeoutStopsTest(unittest.TestCase):
+class DaemonCase(unittest.TestCase):
+    "A daemon with a short max_runtime, and a local target that hangs."
+
+    hang_when = None
+
     def setUp(self):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         save_dir = self.save_dir = os.path.join(tmp.name, "save")
         os.mkdir(save_dir)
-        self.target = HangingServer()
+        self.target = HangingServer(self.hang_when)
         self.addCleanup(self.target.close)
 
         self.port = free_port()
@@ -109,15 +132,23 @@ class TestTimeoutStopsTest(unittest.TestCase):
         with urllib.request.urlopen(request, timeout=30) as response:
             return response.read().decode("utf-8")
 
+
+class TestTimeoutStopsTest(DaemonCase):
     def test_timeout_closes_upstream_connection(self):
         for query in ("", "&check_name=range"):
             with self.subTest(query=query):
                 self.target.closed.clear()
-                self.assertIn("REDbot timeout.", self.check(query))
+                self.assertTrue("REDbot timeout." in self.check(query))
                 self.assertTrue(
                     self.target.closed.wait(CLOSE_WAIT),
                     "REDbot kept its connection to the target open after the timeout",
                 )
+
+    def test_timeout_does_not_reconnect(self):
+        self.check("&check_name=range")
+        self.assertTrue(self.target.closed.wait(CLOSE_WAIT))
+        time.sleep(3)  # thor would retry the dropped request after 0.5 s, twice
+        self.assertEqual(self.target.accepted, 1)
 
     def test_timeout_logs_the_test_uri(self):
         self.check("&check_name=range")
@@ -133,6 +164,26 @@ class TestTimeoutStopsTest(unittest.TestCase):
         with urllib.request.urlopen(url, timeout=10) as response:
             self.assertEqual(response.status, 200)
         with urllib.request.urlopen(url.split("?")[0], timeout=10) as response:
+            self.assertEqual(response.status, 200)
+
+
+class TestTimeoutAfterDisplayedCheckFinishes(DaemonCase):
+    "The named check finishes at once, but another check hangs: max_runtime still applies."
+
+    hang_when = staticmethod(lambda request: b"accept-encoding" in request)
+
+    def test_timeout_stops_the_rest_of_the_test(self):
+        self.target.closed.clear()
+        self.assertFalse("REDbot timeout." in self.check("&check_name=range"))
+        self.assertTrue(
+            self.target.closed.wait(CLOSE_WAIT),
+            "the hung request outlived max_runtime",
+        )
+        time.sleep(1)
+        saved = os.listdir(self.save_dir)
+        self.assertEqual(len(saved), 1)
+        url = f"http://127.0.0.1:{self.port}/saved/{saved[0]}"
+        with urllib.request.urlopen(url, timeout=10) as response:
             self.assertEqual(response.status, 200)
 
 
