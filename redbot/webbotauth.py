@@ -21,7 +21,9 @@ import base64
 import hashlib
 import json
 import os
+import re
 import secrets
+import sys
 import time
 from configparser import SectionProxy
 from typing import Dict, List, Optional, Tuple
@@ -43,6 +45,8 @@ DIRECTORY_CONTENT_TYPE = "application/http-message-signatures-directory+json"
 # Default lifetime of a request signature, in seconds. Web Bot Auth allows up to
 # 24h; we keep it short to limit the window for replay.
 DEFAULT_VALIDITY = 300
+# The longest request signature lifetime we'll configure: the 24h ceiling the drafts recommend.
+MAX_VALIDITY = 86400
 # Lifetime of the directory response signature. The directory is cacheable for a
 # day (see DIRECTORY_MAX_AGE), so its signature must stay valid at least that
 # long, or a verifier re-checking a cached copy would see it expired.
@@ -60,6 +64,53 @@ class WebBotAuthError(Exception):
 def _b64url(data: bytes) -> str:
     "base64url-encode without padding (RFC 7515 / RFC 8037)."
     return base64.urlsafe_b64encode(data).rstrip(b"=").decode("ascii")
+
+
+_HOST_LABEL = re.compile(r"[a-z0-9_]([a-z0-9_-]{0,61}[a-z0-9_])?")
+_SCHEME_LIKE = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*:(?!\d+(?:[/?#]|$))")
+
+
+def normalise_directory(directory: str) -> str:
+    """
+    The ASCII serialisation of the origin of the key directory: scheme and host (in ASCII form),
+    plus the port unless it is the scheme's default. A scheme-less value is taken as https, and
+    anything after the authority is dropped, because verifiers append the well-known path to the
+    origin (draft-ietf-webbotauth-httpsig-protocol section 5.5).
+    """
+    invalid = WebBotAuthError(f"Invalid Web Bot Auth directory '{directory}'.")
+    text = directory.strip().strip('"').strip()
+    if "://" not in text:
+        if "//" in text or _SCHEME_LIKE.match(text):  # a mistyped scheme, not a host
+            raise invalid
+        text = f"https://{text}"
+    try:
+        parts = urlsplit(text)
+        host = parts.hostname
+        port = parts.port
+    except ValueError as why:
+        raise invalid from why
+    scheme = parts.scheme.lower()
+    if scheme not in ("http", "https") or not host:
+        raise invalid
+    if ":" in host:  # an IPv6 literal; urlsplit has stripped its brackets
+        host = f"[{host}]"
+    else:
+        try:
+            ascii_host = host.encode("idna").decode("ascii")
+            # IDNA 2003 maps some characters (e.g. the sharp s) to others; refuse those.
+            if ascii_host.encode("ascii").decode("idna") != host:
+                raise invalid
+        except UnicodeError as why:
+            raise invalid from why
+        if len(ascii_host) > 253 or not all(
+            _HOST_LABEL.fullmatch(label) or label.startswith("xn--")
+            for label in ascii_host.rstrip(".").split(".")
+        ):
+            raise invalid
+        host = ascii_host
+    default_port = 443 if scheme == "https" else 80
+    origin = f"{scheme}://{host}"
+    return origin if port is None or port == default_port else f"{origin}:{port}"
 
 
 class WebBotAuthSigner:
@@ -86,17 +137,17 @@ class WebBotAuthSigner:
         if not isinstance(key, Ed25519PrivateKey):
             raise WebBotAuthError("Web Bot Auth key must be an Ed25519 private key.")
         self._key = key
-        self.directory = directory.strip().strip('"')
-        # Verifiers derive @authority from the directory URL they fetched. A
-        # scheme-less directory is taken as https.
-        try:
-            self.directory_authority = self.authority(
-                self.directory if "://" in self.directory else f"https://{self.directory}"
-            )
-        except ValueError as why:
-            raise WebBotAuthError(f"Invalid Web Bot Auth directory '{directory}'.") from why
+        self.directory = normalise_directory(directory)
+        # Verifiers derive @authority from the directory URL they fetched.
+        self.directory_authority = self.authority(self.directory)
+        if validity < 1:
+            raise WebBotAuthError("Web Bot Auth validity must be at least one second.")
         self.validity = validity
         self.key_created = key_created
+        try:
+            self._agent_field = http_sf.ser(self.directory)  # Signature-Agent value (an sf-string)
+        except (ValueError, TypeError) as why:
+            raise WebBotAuthError(f"Invalid Web Bot Auth directory '{directory}': {why}") from why
 
         raw_public = key.public_key().public_bytes(
             serialization.Encoding.Raw, serialization.PublicFormat.Raw
@@ -132,6 +183,8 @@ class WebBotAuthSigner:
         components: List[Tuple[http_sf.types.ItemType, str]],
         tag: str,
         validity: int,
+        created: Optional[int] = None,
+        nonce: Optional[str] = None,
     ) -> Tuple[str, str]:
         """
         Construct the RFC 9421 signature base over ``components`` (each an
@@ -142,15 +195,22 @@ class WebBotAuthSigner:
 
         Structured-field values are serialized with ``http_sf`` so the
         @signature-params line in the base and the Signature-Input header are
-        produced identically.
+        produced identically. The parameters are in the order the drafts' test vectors use, because
+        the order is part of what is signed.
+
+        ``created`` and ``nonce`` default to the current time and a random value; tests can
+        supply them to reproduce a known signature.
         """
-        created = int(time.time())
+        if created is None:
+            created = int(time.time())
+        if nonce is None:
+            nonce = base64.b64encode(secrets.token_bytes(32)).decode("ascii")
         params: http_sf.types.ParamsType = {
             "created": created,
-            "expires": created + validity,
             "keyid": self.keyid,
             "alg": "ed25519",
-            "nonce": base64.b64encode(secrets.token_bytes(32)).decode("ascii"),
+            "expires": created + validity,
+            "nonce": nonce,
             "tag": tag,
         }
         covered = [identifier for identifier, _ in components]
@@ -162,32 +222,43 @@ class WebBotAuthSigner:
 
         return http_sf.ser({SIG_LABEL: inner_list}), http_sf.ser({SIG_LABEL: signature})
 
-    def sign_request(self, uri: str) -> List[Tuple[bytes, bytes]]:
+    def sign_request(
+        self, uri: str, created: Optional[int] = None, nonce: Optional[str] = None
+    ) -> List[Tuple[bytes, bytes]]:
         "Return the Web Bot Auth headers to add to a request for ``uri``."
-        agent_field = http_sf.ser(self.directory)  # Signature-Agent value (an sf-string)
         sig_input, sig = self._build_signature(
             [
                 (("@authority", {}), self.authority(uri)),
-                (("signature-agent", {}), agent_field),
+                (("signature-agent", {}), self._agent_field),
             ],
             REQUEST_TAG,
             self.validity,
+            created,
+            nonce,
         )
         return [
-            (b"Signature-Agent", agent_field.encode("ascii")),
+            (b"Signature-Agent", self._agent_field.encode("ascii")),
             (b"Signature-Input", sig_input.encode("ascii")),
             (b"Signature", sig.encode("ascii")),
         ]
 
     def sign_directory(self) -> List[Tuple[bytes, bytes]]:
-        "Return the signature headers for the directory response."
-        # Directory draft section 5.2: @authority must carry req (RFC 9421 section 2.4).
+        """
+        Return the Content-Digest and signature headers for the directory response, whose body is
+        ``directory_json()``. draft-ietf-webbotauth-httpsig-protocol Appendix B.1 requires the
+        signature to cover @authority with ``req`` (RFC 9421 section 2.4) and the content digest.
+        """
+        digest = http_sf.ser({"sha-256": hashlib.sha256(self.directory_json()).digest()})
         sig_input, sig = self._build_signature(
-            [(("@authority", {"req": True}), self.directory_authority)],
+            [
+                (("@authority", {"req": True}), self.directory_authority),
+                (("content-digest", {}), digest),
+            ],
             DIRECTORY_TAG,
             DIRECTORY_VALIDITY,
         )
         return [
+            (b"Content-Digest", digest.encode("ascii")),
             (b"Signature-Input", sig_input.encode("ascii")),
             (b"Signature", sig.encode("ascii")),
         ]
@@ -206,12 +277,17 @@ class WebBotAuthSigner:
         return json.dumps({"keys": [key]}, separators=(",", ":")).encode("utf-8")
 
 
-_SIGNER_CACHE: Dict[str, WebBotAuthSigner] = {}
+# The signer for the most recent configuration, with the key it was built from. One entry: a key
+# file that is rewritten often (by a secrets agent, say) must not leave a trail of old signers.
+_SIGNER_CACHE: Optional[Tuple[str, WebBotAuthSigner]] = None
 
 
 def _ui_uri_origin(config: SectionProxy) -> str:
     "The scheme://host[:port] origin of ui_uri, or '' if it isn't a usable URL."
-    parts = urlsplit(config.get("ui_uri", "").strip())
+    try:
+        parts = urlsplit(config.get("ui_uri", "").strip())
+    except ValueError:
+        return ""
     if not parts.scheme or not parts.netloc:
         return ""
     return f"{parts.scheme}://{parts.netloc}"
@@ -221,16 +297,16 @@ def load_signer(config: SectionProxy) -> Optional[WebBotAuthSigner]:
     """
     Build a ``WebBotAuthSigner`` from REDbot configuration, or return None if
     Web Bot Auth is not configured. Raises ``WebBotAuthError`` on misconfiguration
-    so problems surface at startup rather than mid-request. Successful signers are
-    cached, keyed by key path, directory, validity, and the key file's mtime.
+    so problems surface at startup rather than mid-request. The latest signer is cached, keyed
+    by key path, directory, validity, key creation time and the key file's mtime.
 
     The key directory location is ``web_bot_auth_directory``; if unset, it
     defaults to the origin of ``ui_uri`` (so enabling signing requires ``ui_uri``
     to be set correctly to this instance's public origin).
     """
-    key_path = config.get("web_bot_auth_key", "").strip()
+    pem_path = config.get("web_bot_auth_key", "").strip()
     directory = config.get("web_bot_auth_directory", "").strip()
-    if not key_path:
+    if not pem_path:
         if directory:
             raise WebBotAuthError("web_bot_auth_directory is set but web_bot_auth_key is not.")
         return None
@@ -241,21 +317,49 @@ def load_signer(config: SectionProxy) -> Optional[WebBotAuthSigner]:
                 "Web Bot Auth needs a key directory location: set web_bot_auth_directory, "
                 "or (for the daemon) set ui_uri to this instance's public origin."
             )
-    validity = config.getint("web_bot_auth_validity", fallback=DEFAULT_VALIDITY)
+    try:
+        validity = config.getint("web_bot_auth_validity", fallback=DEFAULT_VALIDITY)
+    except ValueError as why:
+        raise WebBotAuthError("web_bot_auth_validity must be a whole number of seconds.") from why
+    if not 1 <= validity <= MAX_VALIDITY:
+        raise WebBotAuthError(
+            f"web_bot_auth_validity must be between 1 and {MAX_VALIDITY} seconds, not {validity}."
+        )
+
+    key_created: Optional[int] = None
+    if config.get("web_bot_auth_key_created", "").strip():
+        try:
+            key_created = int(config.get("web_bot_auth_key_created", "").strip())
+        except ValueError as why:
+            raise WebBotAuthError(
+                "web_bot_auth_key_created must be a Unix timestamp in whole seconds."
+            ) from why
+        if key_created < 0:
+            raise WebBotAuthError("web_bot_auth_key_created can't be negative.")
 
     try:
-        mtime = os.path.getmtime(key_path)
+        stat = os.stat(pem_path)
     except OSError as why:
-        raise WebBotAuthError(f"Can't read Web Bot Auth key '{key_path}': {why}") from why
+        raise WebBotAuthError(f"Can't read Web Bot Auth key '{pem_path}': {why}") from why
 
-    cache_key = "\0".join([key_path, directory, str(validity), str(mtime)])
-    if cache_key not in _SIGNER_CACHE:
+    global _SIGNER_CACHE  # pylint: disable=global-statement
+    cache_key = "\0".join(
+        [pem_path, directory, str(validity), str(key_created), str(stat.st_mtime)]
+    )
+    if _SIGNER_CACHE is None or _SIGNER_CACHE[0] != cache_key:
         try:
-            with open(key_path, "rb") as fh:
+            with open(pem_path, "rb") as fh:
                 key_pem = fh.read()
+                mode = os.fstat(fh.fileno()).st_mode
         except OSError as why:
-            raise WebBotAuthError(f"Can't read Web Bot Auth key '{key_path}': {why}") from why
-        _SIGNER_CACHE[cache_key] = WebBotAuthSigner(
-            key_pem, directory, validity, key_created=int(mtime)
+            raise WebBotAuthError(f"Can't read Web Bot Auth key '{pem_path}': {why}") from why
+        if os.name == "posix" and mode & 0o077:
+            sys.stderr.write(
+                "WARNING: the file named by web_bot_auth_key is accessible to other users "
+                f"(mode {mode & 0o777:03o}); it should be readable only by REDbot's user.\n"
+            )
+        _SIGNER_CACHE = (
+            cache_key,
+            WebBotAuthSigner(key_pem, directory, validity, key_created=key_created),
         )
-    return _SIGNER_CACHE[cache_key]
+    return _SIGNER_CACHE[1]

@@ -85,7 +85,8 @@ static_root = static
 # request signing. Comment out to disable.
 # web_bot_auth_key = /path/to/web-bot-auth-key.pem
 
-# The HTTPS origin hosting this bot's public key directory; it becomes the
+# The HTTPS origin hosting this bot's public key directory (http is accepted, for testing); any
+# path is ignored; it becomes the
 # Signature-Agent value, and verifiers fetch keys from
 # <origin>/.well-known/http-message-signatures-directory (the daemon serves that
 # automatically). If omitted, it defaults to the origin of ui_uri (above) -- so
@@ -94,8 +95,13 @@ static_root = static
 # publish the wrong bot identity.
 # web_bot_auth_directory = https://redbot.example
 
-# Signature lifetime in seconds (how long after creation a signature is valid).
+# Signature lifetime in seconds (how long after creation a signature is valid), from 1 to
+# 86400.
 # web_bot_auth_validity = 300
+
+# When the key was created, as a Unix timestamp. If set, it is published as the key's "nbf"
+# (not before) in the directory; if not, "nbf" is left out.
+# web_bot_auth_key_created =
 
 
 ## Saved Tests

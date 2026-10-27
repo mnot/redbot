@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
 import base64
+import contextlib
+import hashlib
+import io
 import json
 import os
 import re
@@ -15,6 +18,7 @@ from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 
+from redbot import webbotauth
 from redbot.daemon import RedBotServer, RedRequestHandler
 from redbot.webbotauth import (
     DEFAULT_VALIDITY,
@@ -133,14 +137,31 @@ class TestWebBotAuthSigner(unittest.TestCase):
         headers = _headers_dict(self.signer.sign_directory())
         self.assertNotIn(b"signature-agent", headers)
         sig_input = headers[b"signature-input"].decode("ascii")
-        self.assertTrue(sig_input.startswith('sig1=("@authority";req)'))
+        self.assertTrue(sig_input.startswith('sig1=("@authority";req "content-digest")'))
         self.assertIn(f';tag="{DIRECTORY_TAG}"', sig_input)
         params = sig_input[len("sig1=") :]
         base_lines = [
             '"@authority";req: signature-agent.test',
+            f'"content-digest": {headers[b"content-digest"].decode("ascii")}',
             f'"@signature-params": {params}',
         ]
         _verify(self.public_key, base_lines, headers[b"signature"].decode("ascii"))
+
+    def test_directory_content_digest_matches_body(self):
+        headers = _headers_dict(self.signer.sign_directory())
+        digest = hashlib.sha256(self.signer.directory_json()).digest()
+        self.assertEqual(headers[b"content-digest"], b"sha-256=:" + base64.b64encode(digest) + b":")
+
+    def test_directory_signature_does_not_verify_for_another_digest(self):
+        headers = _headers_dict(self.signer.sign_directory())
+        params = headers[b"signature-input"].decode("ascii")[len("sig1=") :]
+        base_lines = [
+            '"@authority";req: signature-agent.test',
+            '"content-digest": sha-256=:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=:',
+            f'"@signature-params": {params}',
+        ]
+        with self.assertRaises(InvalidSignature):
+            _verify(self.public_key, base_lines, headers[b"signature"].decode("ascii"))
 
     def test_directory_plain_fails(self):
         headers = _headers_dict(self.signer.sign_directory())
@@ -148,6 +169,7 @@ class TestWebBotAuthSigner(unittest.TestCase):
         params = sig_input[len("sig1=") :]
         base_lines = [
             '"@authority": signature-agent.test',
+            f'"content-digest": {headers[b"content-digest"].decode("ascii")}',
             f'"@signature-params": {params}',
         ]
         with self.assertRaises(InvalidSignature):
@@ -184,6 +206,44 @@ class TestWebBotAuthSigner(unittest.TestCase):
         a = _headers_dict(self.signer.sign_request("https://example.com/"))
         b = _headers_dict(self.signer.sign_request("https://example.com/"))
         self.assertNotEqual(a[b"signature-input"], b[b"signature-input"])
+
+
+class TestKnownAnswers(unittest.TestCase):
+    """
+    The Ed25519 test vector in draft-meunier-web-bot-auth-architecture-05 Appendix A.2.3 (the legacy
+    Signature-Agent: an sf-string): the signature base, and so the signature, must match byte for
+    byte. The draft labels it sig2; the label is not part of what is signed.
+
+    The draft's vectors for the Dictionary form (A.1.2, A.2.2) print the member value with its
+    quotes but were signed over it without them, so they can't be used until that is settled.
+    """
+
+    NONCE = (
+        "e8N7S2MFd/qrd6T2R3tdfAuuANngKI7LFtKYI/vowzk4lAZYadIX6wW25MwG7DCT9RUKAJ0qVkU0mEeLElW1qg=="
+    )
+    SIGNATURE_INPUT = (
+        '("@authority" "signature-agent")'
+        ";created=1735689600"
+        ';keyid="poqkLGiymh_W0uP6PZFw-dvez3QJT5SolqXBCW38r0U"'
+        ';alg="ed25519"'
+        ";expires=1735693200"
+        f';nonce="{NONCE}"'
+        ';tag="web-bot-auth"'
+    )
+    SIGNATURE = (
+        ":jdq0SqOwHdyHr9+r5jw3iYZH6aNGKijYp/EstF4RQTQdi5N5YYKrD+mCT1HA1nZDsi6nJKuHxUi/5Syp3rLWBA==:"
+    )
+
+    def test_legacy_signature_agent_vector(self):
+        signer = WebBotAuthSigner(
+            RFC9421_ED25519_KEY, "https://signature-agent.test", validity=3600
+        )
+        headers = _headers_dict(
+            signer.sign_request("https://example.com/", created=1735689600, nonce=self.NONCE)
+        )
+        self.assertEqual(headers[b"signature-agent"], b'"https://signature-agent.test"')
+        self.assertEqual(headers[b"signature-input"].decode(), "sig1=" + self.SIGNATURE_INPUT)
+        self.assertEqual(headers[b"signature"].decode(), "sig1=" + self.SIGNATURE)
 
 
 class TestLoadSigner(unittest.TestCase):
@@ -253,6 +313,157 @@ class TestLoadSigner(unittest.TestCase):
             os.unlink(path)
 
 
+class TestKeyFileHandling(unittest.TestCase):
+    "Key file hygiene (#532): the signer cache doesn't grow, loose permissions are flagged."
+
+    def setUp(self):
+        webbotauth._SIGNER_CACHE = None
+        self.addCleanup(setattr, webbotauth, "_SIGNER_CACHE", None)
+        fd, self.path = tempfile.mkstemp(suffix=".pem")
+        self.addCleanup(os.unlink, self.path)
+        with os.fdopen(fd, "wb") as fh:
+            fh.write(RFC9421_ED25519_KEY)
+
+    def _config(self, **values: str):
+        parser = ConfigParser()
+        parser.read_dict(
+            {
+                "redbot": {
+                    "web_bot_auth_key": self.path,
+                    "web_bot_auth_directory": AGENT,
+                    **values,
+                }
+            }
+        )
+        return parser["redbot"]
+
+    def test_cache_holds_one_signer(self):
+        config = self._config()
+        signers = []
+        for i in range(5):
+            os.utime(self.path, (1_000_000 + i, 1_000_000 + i))  # as if the file were rewritten
+            signers.append(load_signer(config))
+            self.assertIs(load_signer(config), signers[-1])
+        self.assertEqual(len({id(s) for s in signers}), 5)
+        self.assertIsNotNone(webbotauth._SIGNER_CACHE)
+        self.assertIs(webbotauth._SIGNER_CACHE[1], signers[-1])
+
+    def test_loose_key_permissions_are_warned_about_once(self):
+        os.chmod(self.path, 0o644)
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err):
+            load_signer(self._config())
+            load_signer(self._config())
+        self.assertEqual(err.getvalue().count("WARNING"), 1)
+        self.assertIn("web_bot_auth_key", err.getvalue())
+        self.assertIn("644", err.getvalue())
+
+    def test_private_key_gets_no_warning(self):
+        os.chmod(self.path, 0o600)
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err):
+            load_signer(self._config())
+        self.assertEqual(err.getvalue(), "")
+
+    def test_nbf_is_published_only_when_configured(self):
+        without = json.loads(load_signer(self._config()).directory_json())
+        self.assertNotIn("nbf", without["keys"][0])
+        webbotauth._SIGNER_CACHE = None
+        with_nbf = json.loads(
+            load_signer(self._config(web_bot_auth_key_created="1735689600")).directory_json()
+        )
+        self.assertEqual(with_nbf["keys"][0]["nbf"], 1735689600)
+
+    def test_bad_key_created_is_rejected(self):
+        for value in ["yesterday", "-1"]:
+            with self.subTest(value=value), self.assertRaises(WebBotAuthError):
+                load_signer(self._config(web_bot_auth_key_created=value))
+
+    def test_unusable_ui_uri_is_a_configuration_error(self):
+        parser = ConfigParser()
+        parser.read_dict({"redbot": {"web_bot_auth_key": self.path, "ui_uri": "http://[bad/"}})
+        with self.assertRaises(WebBotAuthError):
+            load_signer(parser["redbot"])
+
+
+class TestConfigurationValidation(unittest.TestCase):
+    "Problems with the configuration surface when it is loaded, not inside the event loop (#519)."
+
+    def _signer(self, directory: str) -> WebBotAuthSigner:
+        return WebBotAuthSigner(RFC9421_ED25519_KEY, directory)
+
+    def test_directory_is_normalised_to_an_origin(self):
+        cases = {
+            "bot.example": "https://bot.example",
+            "bot.example:8443": "https://bot.example:8443",
+            "https://Bot.Example/": "https://bot.example",
+            "https://bot.example/app/?x=1#y": "https://bot.example",
+            "https://user:pw@bot.example:8443/a": "https://bot.example:8443",
+            "http://bot.example": "http://bot.example",
+            '"https://bot.example"': "https://bot.example",
+            "https://[2001:DB8::1]:8443/": "https://[2001:db8::1]:8443",
+            "https://bot.example:443": "https://bot.example",  # an origin omits the default port
+            "http://bot.example:80/": "http://bot.example",
+            "https://bot.example:80": "https://bot.example:80",
+            "bot.example:443": "https://bot.example",
+        }
+        for directory, expected in cases.items():
+            with self.subTest(directory=directory):
+                self.assertEqual(self._signer(directory).directory, expected)
+
+    def test_non_ascii_host_is_sent_in_ascii_form(self):
+        signer = self._signer("https://bücher.example")
+        self.assertEqual(signer.directory, "https://xn--bcher-kva.example")
+        headers = _headers_dict(signer.sign_request("https://example.com/"))  # doesn't raise
+        self.assertEqual(headers[b"signature-agent"], b'"https://xn--bcher-kva.example"')
+
+    def test_bad_directories_are_rejected_at_construction(self):
+        for directory in [
+            "",
+            "https://",
+            "ftp://bot.example",
+            "https://[bad",
+            "https://bot.example:99999",
+            "https://" + "a" * 70 + ".example",  # label too long for IDNA
+            "https:/bot.example",  # mistyped schemes mustn't become a host
+            "https//bot.example",
+            "mailto:a@bot.example",
+            "https://faß.example",  # IDNA 2003 would publish fass.example
+            "https://exa mple.test",
+            "https://%78.test",
+            "https://-bad.example",
+            "https://" + ".".join(["a" * 60] * 5),  # longer than a host name can be
+        ]:
+            with self.subTest(directory=directory), self.assertRaises(WebBotAuthError):
+                self._signer(directory)
+
+    def _config(self, key_path: str, **values: str):
+        parser = ConfigParser()
+        parser.read_dict(
+            {
+                "redbot": {
+                    "web_bot_auth_key": key_path,
+                    "web_bot_auth_directory": AGENT,
+                    **values,
+                }
+            }
+        )
+        return parser["redbot"]
+
+    def test_validity_is_validated_at_load(self):
+        fd, path = tempfile.mkstemp(suffix=".pem")
+        self.addCleanup(os.unlink, path)
+        with os.fdopen(fd, "wb") as fh:
+            fh.write(RFC9421_ED25519_KEY)
+        for validity in ["abc", "1.5", "", "0", "-5", "86401"]:
+            with self.subTest(validity=validity), self.assertRaises(WebBotAuthError):
+                load_signer(self._config(path, web_bot_auth_validity=validity))
+        for validity in ["1", "300", "86400"]:
+            with self.subTest(validity=validity):
+                signer = load_signer(self._config(path, web_bot_auth_validity=validity))
+                self.assertEqual(signer.validity, int(validity))
+
+
 class TestDirectoryAuthority(unittest.TestCase):
     "The directory response is signed over the configured directory's authority."
 
@@ -275,7 +486,11 @@ class TestDirectoryAuthority(unittest.TestCase):
     def _assert_signs(self, directory: str, authority: str, hosts: Iterable[str] = ()) -> None:
         headers = self._serve(directory, hosts)
         params = headers[b"signature-input"].decode("ascii")[len("sig1=") :]
-        base_lines = [f'"@authority";req: {authority}', f'"@signature-params": {params}']
+        base_lines = [
+            f'"@authority";req: {authority}',
+            f'"content-digest": {headers[b"content-digest"].decode("ascii")}',
+            f'"@signature-params": {params}',
+        ]
         _verify(self.public_key, base_lines, headers[b"signature"].decode("ascii"))
 
     def test_configured_authority_cases(self) -> None:
@@ -298,6 +513,20 @@ class TestDirectoryAuthority(unittest.TestCase):
         for directory, authority in cases:
             with self.subTest(directory=directory):
                 self._assert_signs(directory, authority, [authority])
+
+    def test_served_body_matches_content_digest(self) -> None:
+        parser = ConfigParser()
+        parser.read_dict({"redbot": {}})
+        signer = WebBotAuthSigner(RFC9421_ED25519_KEY, "https://x.test")
+        server = SimpleNamespace(signer=signer, config=parser["redbot"])
+        handler = RedRequestHandler(MagicMock(), cast(RedBotServer, server))
+        handler.req_hdrs = []
+        handler.serve_directory()
+        exchange = cast(MagicMock, handler.exchange)
+        headers = _headers_dict(exchange.response_start.call_args[0][2])
+        body = exchange.response_body.call_args[0][0]
+        digest = base64.b64encode(hashlib.sha256(body).digest())
+        self.assertEqual(headers[b"content-digest"], b"sha-256=:" + digest + b":")
 
     def test_host_header_is_ignored(self) -> None:
         hosts = [
