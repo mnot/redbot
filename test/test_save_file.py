@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 
+import gzip
 import os
+import pickle
 import tempfile
 import unittest
 from configparser import ConfigParser
 from unittest.mock import MagicMock, patch
 
+from redbot.resource import HttpResource
 from redbot.webui.handlers.run_test import RunTestHandler
+from redbot.webui.saved_tests import save_test
 
 
 def make_ui(save_dir, query_string):
@@ -152,6 +156,38 @@ class TestSaveFileCreation(unittest.TestCase):
         continue_test()
         ui.exchange.response_start.assert_not_called()
         self.assertEqual(self.saved_files(), [])
+
+
+class TestSavedConfig(unittest.TestCase):
+    """Regression tests for #523: saved tests must not carry the configuration."""
+
+    SECRETS = ("SUPERSECRETVALUE123", "/etc/redbot/SECRETKEYPATH.pem")
+
+    def test_saved_file_contains_no_config(self):
+        with tempfile.TemporaryDirectory() as save_dir:
+            conf = ConfigParser()
+            conf.read_dict(
+                {
+                    "redbot": {
+                        "save_dir": save_dir,
+                        "captcha_secret": self.SECRETS[0],
+                        "web_bot_auth_key": self.SECRETS[1],
+                    }
+                }
+            )
+            resource = HttpResource(conf["redbot"])
+            resource.set_request("http://example.com/")
+            ui = make_ui(save_dir, {})
+            ui.config = conf["redbot"]
+            ui.save_path = os.path.join(save_dir, "saved")
+            save_test(ui, resource)
+            with gzip.open(ui.save_path) as fd:
+                data = fd.read()
+            for secret in self.SECRETS:
+                self.assertFalse(secret.encode() in data, f"{secret} was pickled")
+            loaded = pickle.loads(data)
+            self.assertEqual(loaded.request.uri, "http://example.com/")
+            self.assertEqual(loaded.subreqs.keys(), resource.subreqs.keys())
 
 
 if __name__ == "__main__":
