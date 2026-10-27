@@ -14,7 +14,7 @@ import thor
 import thor.http.error as httperr
 from httplint import HttpRequestLinter, HttpResponseLinter
 from httplint.note import categories, levels
-from netaddr import IPAddress  # type: ignore
+from netaddr import IPAddress, IPNetwork  # type: ignore
 from thor.http.client import HttpClientExchange
 
 from redbot import __version__
@@ -26,6 +26,19 @@ from redbot.webbotauth import WebBotAuthError, load_signer
 # Fallback UI URL advertised in the User-Agent when ui_uri is not configured
 # (e.g. the CLI). The public instance's ui_uri defaults to the same value.
 DEFAULT_UI_URI = "https://redbot.org/"
+
+
+# Translated by a NAT64 gateway to an IPv4 address (RFC 6052, RFC 8215), which may be a private one,
+# yet netaddr considers some of them global.
+NAT64_PREFIXES = [IPNetwork("64:ff9b::/96"), IPNetwork("64:ff9b:1::/48")]
+
+
+def is_public_address(dns_result: str) -> bool:
+    "Whether it's OK to connect to the address, when local access isn't enabled."
+    addr = IPAddress(dns_result)
+    if any(addr in prefix for prefix in NAT64_PREFIXES):
+        return False
+    return bool(addr.is_global())
 
 
 def ua_string(config: SectionProxy) -> bytes:
@@ -136,13 +149,7 @@ class RedFetcher(thor.events.EventEmitter):
             not self.config.getboolean("enable_local_access", fallback=False)
         ) and self.client.check_ip is None:
 
-            def check_ip(dns_result: str) -> bool:
-                addr = IPAddress(dns_result)
-                if not addr.is_global():
-                    return False
-                return True
-
-            self.client.check_ip = check_ip
+            self.client.check_ip = is_public_address
 
     def set_request(
         self,
