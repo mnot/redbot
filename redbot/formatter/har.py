@@ -72,6 +72,12 @@ class HarFormatter(Formatter):
                 # filter out incomplete responses
                 if linked_resource.response.complete:
                     self.add_entry(linked_resource, page_id)
+        else:
+            # An empty log would look like a successful run with nothing in it.
+            error = self.resource.fetch_error
+            self.har["log"]["_red_error"] = (
+                error.desc if error else "The response was not complete."
+            )
         self.output(json.dumps(self.har, indent=4))
 
     def error_output(self, message: str) -> None:
