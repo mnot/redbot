@@ -128,8 +128,8 @@ class RedWebUi:
             if log_message:
                 self.error_log(log_message)
             return
-        # Create formatter for error display
-        formatter = find_formatter("html")(
+        # Create formatter for error display, in the format the client asked for
+        formatter = find_formatter(self.query_string.get("format", ["html"])[0], "html")(
             self.config,
             HttpResource(self.config),
             self.output,
