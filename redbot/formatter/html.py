@@ -5,7 +5,7 @@ HTML Formatter for REDbot.
 import operator
 import re
 import time
-from typing import Any, List, Match, Tuple, Union, Unpack
+from typing import Any, Dict, List, Match, Tuple, Union, Unpack
 from urllib.parse import urljoin
 
 import thor.http.error as httperr
@@ -160,6 +160,8 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
         uni_sample = decode_text(sample, resource.response.character_encoding, "ignore")
         safe_sample = escape(uni_sample)
         if self.config.getboolean("content_links", False):
+            # Keyed by the link as it appears in safe_sample, which is escaped.
+            replacements: Dict[str, Markup] = {}
             for __, link_set in list(resource.links.items()):
                 for link in link_set:
                     if len(link) > 8000:  # avoid processing inline assets through regex
@@ -169,7 +171,7 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                     except ValueError:
                         continue  # we're not interested in raising these upstream
 
-                    link_str = Markup(
+                    replacements[str(escape(link))] = Markup(
                         self.links.resource_link(
                             resource,
                             abs_link,
@@ -178,16 +180,20 @@ class SingleEntryHtmlFormatter(BaseHtmlFormatter):
                             css_class="nocode",
                         )
                     )
+            if replacements:
+                # One pass, so that what is inserted for one link is never searched for another.
+                alternatives = "|".join(
+                    re.escape(link) for link in sorted(replacements, key=len, reverse=True)
+                )
 
-                    def link_to(matchobj: Match[str], link_str: Markup = link_str) -> str:
-                        return rf"{matchobj.group(1)}{link_str}{matchobj.group(1)}"
-
-                    # safe_sample is escaped, so the link has to be as well to match it
-                    safe_sample = Markup(
-                        re.sub(
-                            rf"(&#34;|&#39;){re.escape(str(escape(link)))}\1", link_to, safe_sample
-                        )
+                def link_to(matchobj: Match[str]) -> str:
+                    return (
+                        f"{matchobj.group(1)}{replacements[matchobj.group(2)]}{matchobj.group(1)}"
                     )
+
+                safe_sample = Markup(
+                    re.sub(rf"(&#34;|&#39;)({alternatives})\1", link_to, safe_sample)
+                )
         message: Union[str, LazyProxy] = ""
         if not resource.response_decoded_complete:
             message = _("<p class='btw'>REDbot isn't showing all content, because it's so big!</p>")
@@ -389,7 +395,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         ]
         droid_lists = [("", [resource])]
         for hdr_tag, heading in link_order:
-            droids = [d[0] for d in getattr(resource, "linked", []) if d[1] == hdr_tag]
+            droids = [d[0] for d in resource.linked if d[1] == hdr_tag]
             if droids:
                 droids.sort(key=operator.attrgetter("response.base_uri"))
                 droid_lists.append((heading, droids))

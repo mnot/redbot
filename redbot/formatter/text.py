@@ -221,7 +221,7 @@ class TextListFormatter(BaseTextFormatter):
         BaseTextFormatter.finish_output(self)
         sep = "=" * 78
         for hdr_tag, heading in self.link_order:
-            subresources = [d[0] for d in getattr(self.resource, "linked", []) if d[1] == hdr_tag]
+            subresources = [d[0] for d in self.resource.linked if d[1] == hdr_tag]
             self.output(f"{sep}{NL}{heading} ({len(subresources)}){NL}{sep}{NL}")
             if subresources:
                 subresources.sort(key=operator.attrgetter("request.uri"))

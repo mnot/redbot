@@ -9,6 +9,7 @@ import unittest
 from configparser import ConfigParser
 from typing import List
 from unittest.mock import MagicMock
+from urllib.parse import parse_qs
 
 from redbot.webui import RedWebUi
 
@@ -17,7 +18,11 @@ def error_response(query: bytes):
     parser = ConfigParser()
     parser.add_section("redbot")
     exchange = MagicMock()
-    ui = RedWebUi(parser["redbot"], "POST", b"check", query, [], b"", exchange, "127.0.0.1")
+    # a GET for the front page doesn't start a test; the query is set for error_response to use
+    ui = RedWebUi(parser["redbot"], "GET", b"", b"", [], b"", exchange, "127.0.0.1")
+    exchange.reset_mock()
+    ui.query_string = parse_qs(query.decode())
+    ui.response_done = False
     ui.error_response(b"400", b"Bad Request", "Request URI is <malformed>.")
     headers = dict(exchange.response_start.call_args[0][2])
     body = b"".join(call[0][0] for call in exchange.response_body.call_args_list).decode()

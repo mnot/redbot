@@ -56,9 +56,9 @@
             title=resource.request.uri)|safe }}
         </td>
         {% if resource.response.complete %}
-        {% if resource.response.status_code in [301, 302, 303, 307, 308] and "location" in
-        resource.response.headers.parsed %}
-        <td>{{ links.resource_link(formatter.resource, resource.response.headers.parsed['location'], resource.response.status_code_str, test_id=test_id, use_stored=False,
+        {% set redirect_target = resource.request.uri|resolve_uri(resource.response.headers.parsed.get('location', '')) %}
+        {% if resource.response.status_code in [301, 302, 303, 307, 308] and redirect_target %}
+        <td>{{ links.resource_link(formatter.resource, redirect_target, resource.response.status_code_str, test_id=test_id, use_stored=False,
             descend=True)|safe }}</td>
         {% elif resource.response.status_code in [400, 404, 410] %}
         <td class="bad">{{ resource.response.status_code_str }}</td>

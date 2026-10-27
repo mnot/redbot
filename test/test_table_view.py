@@ -10,12 +10,13 @@ from configparser import ConfigParser
 from html.parser import HTMLParser
 from types import SimpleNamespace
 from typing import List, Optional, Tuple
+from unittest.mock import MagicMock, patch
 
-from redbot.formatter.har import HarFormatter
 from redbot.formatter.html import TableHtmlFormatter
-from redbot.formatter.text import TextListFormatter
 from redbot.i18n import set_locale
 from redbot.resource import HttpResource
+from redbot.webui.handlers.run_test import RunTestHandler
+from redbot.webui.handlers.save import LoadSavedTestHandler
 from redbot.webui.links import WebUiLinkGenerator
 
 
@@ -98,35 +99,78 @@ class TestTableView(unittest.TestCase):
         self.assertEqual(counter.opened, counter.closed)
 
 
-class TestFormatsBoundToACheck(unittest.TestCase):
-    "With descend and check_name, the displayed resource is a SubRequest, which has no .linked."
+class TestRedirectLinks(unittest.TestCase):
+    "The redirect link in the table resolves Location against the linked resource (#526)."
 
-    def subrequest(self) -> HttpResource:
-        top = descend_resource()
-        subrequest = top.subreqs["range"]
-        subrequest.set_request("http://a.example/")
-        respond(subrequest, b"206")
-        subrequest.response.finish_time = 2.0
-        return subrequest
-
-    def test_table_view(self):
+    def render(self, uri: str, location: str) -> str:
+        cfg = config()["redbot"]
+        top = HttpResource(cfg, descend=True)
+        top.set_request("http://top.example/page")
+        respond(top, b"200")
+        linked = HttpResource(cfg, active_checks_enabled=False)
+        linked.set_request(uri)
+        respond(linked, b"301", [(b"Location", location.encode())])
+        top.linked.append((linked, "script"))
         out: List[str] = []
-        formatter = table_formatter(self.subrequest(), out)
+        formatter = table_formatter(top, out)
         with set_locale("en"):
             formatter.finish_output()
-        self.assertIn("</html>", "".join(out))
+        return "".join(out)
 
-    def test_text_list(self):
-        out: List[str] = []
-        formatter = TextListFormatter(config()["redbot"], self.subrequest(), out.append, {})
-        formatter.finish_output()
-        self.assertTrue(out)
+    def test_relative_location_is_resolved_against_the_linked_resource(self):
+        page = self.render("http://other.example/sub/dir/mv3", "next")
+        self.assertIn('name="uri" value="http://other.example/sub/dir/next"', page)
 
-    def test_har(self):
-        out: List[str] = []
-        formatter = HarFormatter(config()["redbot"], self.subrequest(), out.append, {})
-        formatter.finish_output()
-        self.assertIn('"log"', "".join(out))
+    def test_absolute_location_is_kept(self):
+        page = self.render("http://other.example/mv", "https://third.example/x")
+        self.assertIn('name="uri" value="https://third.example/x"', page)
+
+    def test_useless_locations_get_no_link(self):
+        for location in ["", " "]:
+            with self.subTest(location=location):
+                page = self.render("http://other.example/sub/mv", location)
+                self.assertNotIn('value="301"', page)  # shown, but not as a link
+                self.assertIn("<td>301</td>", page)
+
+
+class TestDescendWithACheck(unittest.TestCase):
+    "A descend run shows the top resource even if a check is named, because only it has links."
+
+    def test_run_test_displays_the_top_resource(self):
+        ui = MagicMock()
+        ui.config = config()["redbot"]
+        ui.query_string = {
+            "uri": ["http://example.com/"],
+            "descend": ["True"],
+            "check_name": ["range"],
+        }
+        ui.response_done = False
+        with (
+            patch("redbot.webui.handlers.run_test.thor.schedule"),
+            patch("redbot.webui.handlers.run_test.HttpResource") as resource_class,
+            patch("redbot.webui.handlers.run_test.find_formatter") as find_formatter,
+            patch("redbot.webui.handlers.run_test.ratelimiter.process"),
+            patch("redbot.webui.handlers.run_test.CaptchaHandler") as captcha,
+        ):
+            captcha.return_value.configured.return_value = False
+            RunTestHandler.handle(ui)
+        top = resource_class.return_value
+        find_formatter.return_value.return_value.bind_resource.assert_called_once_with(top)
+
+    def test_saved_descend_test_renders_the_table_for_a_named_check(self):
+        top = descend_resource()
+        top.check_done = True  # as in a saved test
+        ui = MagicMock()
+        ui.config = config()["redbot"]
+        ui.query_string = {"check_name": ["conneg"]}
+        ui.nonce = "n"
+        ui.link_generator = WebUiLinkGenerator(SimpleNamespace(config=ui.config))
+        with set_locale("en"):
+            rendered = LoadSavedTestHandler.render_saved(ui, "abc", top, False, 0.0)
+        self.assertIsNotNone(rendered)
+        page = "".join(rendered[1])
+        self.assertIn("moved.js", page)  # the linked resources are there
+        ui.error_response.assert_not_called()
 
 
 if __name__ == "__main__":

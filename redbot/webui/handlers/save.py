@@ -225,7 +225,7 @@ class LoadSavedTestHandler(RequestHandler):
         done = False
         try:
             display_resource: Any = top_resource
-            if "check_name" in ui.query_string:
+            if "check_name" in ui.query_string and not top_resource.descend:
                 check_name = ui.query_string["check_name"][0]
                 display_resource = top_resource.subreqs.get(check_name, top_resource)
 

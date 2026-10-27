@@ -123,7 +123,7 @@ class RunTestHandler(RequestHandler):
                 "nonce": ui.nonce,
                 "locale": ui.locale,
                 "link_generator": ui.link_generator,
-                "check_name": check_title or check_name,
+                "check_name": "" if descend else (check_title or check_name),
             },
         )
         continue_test = partial(cls._continue_test, ui, top_resource, formatter)
@@ -251,7 +251,8 @@ class RunTestHandler(RequestHandler):
             + extra_headers,
         )
         ui.response_started = True
-        if "check_name" in ui.query_string:
+        # A descend run shows the linked resources, which only the top resource has.
+        if "check_name" in ui.query_string and "descend" not in ui.query_string:
             check_name = ui.query_string.get("check_name", [""])[0]
             display_resource = cast(
                 HttpResource, top_resource.subreqs.get(check_name, top_resource)

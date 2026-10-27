@@ -5,6 +5,7 @@ The HTML formatter escapes each value once, in the right context (mnot/redbot#52
 """
 
 import unittest
+from html.parser import HTMLParser
 from configparser import ConfigParser
 from types import SimpleNamespace
 from typing import List
@@ -58,6 +59,24 @@ class TestHtmlEscaping(unittest.TestCase):
         self.assertIn('value="http://a.example/page?a=1&amp;b=2"', body)
         self.assertIn('class="post_link nocode"', body)
         self.assertNotIn("&amp;amp;", body)
+
+    def test_links_that_contain_other_links_stay_well_formed(self):
+        formatter, _ = self.formatter(content_links="yes")
+        resource = formatter.resource
+        resource.response_decoded_sample = [b'see \'a"/y"b\' and "/y"']
+        resource.links = {"a": {"/y", 'a"/y"b'}}
+        resource.response.base_uri = "http://a.example/"
+        with set_locale("en"):
+            body = str(formatter.format_body_sample(resource))
+        forms = []
+
+        class FormCounter(HTMLParser):
+            def handle_starttag(self, tag, attrs):
+                if tag == "form":
+                    forms.append(dict(attrs))
+
+        FormCounter().feed(body)
+        self.assertEqual(len(forms), 2)  # no form was inserted into another's attributes
 
     def test_status_is_escaped_for_javascript_not_html(self):
         formatter, out = self.formatter()

@@ -89,13 +89,26 @@ class TestFailedFetch(unittest.TestCase):
 
     def test_error_is_reported(self) -> None:
         error = MagicMock()
-        error.desc = "Server dropped connection before the response was complete."
+        error.desc = "Connection error"
+        error.detail = "Server dropped connection before the response was complete."
         har = self.finish(error)
         self.assertEqual(har["log"]["entries"], [])
-        self.assertEqual(har["log"]["_red_error"], error.desc)
+        self.assertEqual(
+            har["log"]["_red_error"],
+            "Connection error (Server dropped connection before the response was complete.)",
+        )
 
     def test_incomplete_response_without_an_error_is_still_flagged(self) -> None:
         self.assertIn("_red_error", self.finish(None)["log"])
+
+    def test_check_that_never_ran_is_not_reported_as_failed(self) -> None:
+        resource = MagicMock()
+        resource.response.complete = False
+        resource.fetch_error = None
+        resource.fetch_started = False
+        out: List[str] = []
+        HarFormatter(MagicMock(), resource, out.append, {}).finish_output()
+        self.assertNotIn("_red_error", json.loads("".join(out))["log"])
 
     def test_complete_response_has_no_error(self) -> None:
         resource = MagicMock()
