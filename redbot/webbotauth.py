@@ -43,6 +43,8 @@ DIRECTORY_CONTENT_TYPE = "application/http-message-signatures-directory+json"
 # Default lifetime of a request signature, in seconds. Web Bot Auth allows up to
 # 24h; we keep it short to limit the window for replay.
 DEFAULT_VALIDITY = 300
+# The longest request signature lifetime we'll configure: the 24h ceiling the drafts recommend.
+MAX_VALIDITY = 86400
 # Lifetime of the directory response signature. The directory is cacheable for a
 # day (see DIRECTORY_MAX_AGE), so its signature must stay valid at least that
 # long, or a verifier re-checking a cached copy would see it expired.
@@ -60,6 +62,32 @@ class WebBotAuthError(Exception):
 def _b64url(data: bytes) -> str:
     "base64url-encode without padding (RFC 7515 / RFC 8037)."
     return base64.urlsafe_b64encode(data).rstrip(b"=").decode("ascii")
+
+
+def normalise_directory(directory: str) -> str:
+    """
+    The origin of the key directory: scheme and host (in ASCII form), plus a port if there is one.
+    A scheme-less value is taken as https, and anything after the authority is dropped, because
+    verifiers append the well-known path to the origin (draft-ietf-webbotauth-httpsig-protocol
+    section 5.5).
+    """
+    text = directory.strip().strip('"').strip()
+    try:
+        parts = urlsplit(text if "://" in text else f"https://{text}")
+        host = parts.hostname
+        port = parts.port
+    except ValueError as why:
+        raise WebBotAuthError(f"Invalid Web Bot Auth directory '{directory}'.") from why
+    if parts.scheme.lower() not in ("http", "https") or not host:
+        raise WebBotAuthError(f"Invalid Web Bot Auth directory '{directory}'.")
+    try:
+        host = host.encode("idna").decode("ascii")
+    except UnicodeError as why:
+        raise WebBotAuthError(f"Invalid Web Bot Auth directory host in '{directory}'.") from why
+    if ":" in host:
+        host = f"[{host}]"  # urlsplit strips the brackets from IPv6 literals
+    origin = f"{parts.scheme.lower()}://{host}"
+    return f"{origin}:{port}" if port is not None else origin
 
 
 class WebBotAuthSigner:
@@ -86,15 +114,11 @@ class WebBotAuthSigner:
         if not isinstance(key, Ed25519PrivateKey):
             raise WebBotAuthError("Web Bot Auth key must be an Ed25519 private key.")
         self._key = key
-        self.directory = directory.strip().strip('"')
-        # Verifiers derive @authority from the directory URL they fetched. A
-        # scheme-less directory is taken as https.
-        try:
-            self.directory_authority = self.authority(
-                self.directory if "://" in self.directory else f"https://{self.directory}"
-            )
-        except ValueError as why:
-            raise WebBotAuthError(f"Invalid Web Bot Auth directory '{directory}'.") from why
+        self.directory = normalise_directory(directory)
+        # Verifiers derive @authority from the directory URL they fetched.
+        self.directory_authority = self.authority(self.directory)
+        if validity < 1:
+            raise WebBotAuthError("Web Bot Auth validity must be at least one second.")
         self.validity = validity
         self.key_created = key_created
         try:
@@ -265,7 +289,14 @@ def load_signer(config: SectionProxy) -> Optional[WebBotAuthSigner]:
                 "Web Bot Auth needs a key directory location: set web_bot_auth_directory, "
                 "or (for the daemon) set ui_uri to this instance's public origin."
             )
-    validity = config.getint("web_bot_auth_validity", fallback=DEFAULT_VALIDITY)
+    try:
+        validity = config.getint("web_bot_auth_validity", fallback=DEFAULT_VALIDITY)
+    except ValueError as why:
+        raise WebBotAuthError("web_bot_auth_validity must be a whole number of seconds.") from why
+    if not 1 <= validity <= MAX_VALIDITY:
+        raise WebBotAuthError(
+            f"web_bot_auth_validity must be between 1 and {MAX_VALIDITY} seconds, not {validity}."
+        )
 
     try:
         mtime = os.path.getmtime(key_path)

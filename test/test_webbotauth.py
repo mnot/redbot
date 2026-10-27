@@ -310,6 +310,72 @@ class TestLoadSigner(unittest.TestCase):
             os.unlink(path)
 
 
+class TestConfigurationValidation(unittest.TestCase):
+    "Problems with the configuration surface when it is loaded, not inside the event loop (#519)."
+
+    def _signer(self, directory: str) -> WebBotAuthSigner:
+        return WebBotAuthSigner(RFC9421_ED25519_KEY, directory)
+
+    def test_directory_is_normalised_to_an_origin(self):
+        cases = {
+            "bot.example": "https://bot.example",
+            "bot.example:8443": "https://bot.example:8443",
+            "https://Bot.Example/": "https://bot.example",
+            "https://bot.example/app/?x=1#y": "https://bot.example",
+            "https://user:pw@bot.example:8443/a": "https://bot.example:8443",
+            "http://bot.example": "http://bot.example",
+            '"https://bot.example"': "https://bot.example",
+            "https://[2001:DB8::1]:8443/": "https://[2001:db8::1]:8443",
+        }
+        for directory, expected in cases.items():
+            with self.subTest(directory=directory):
+                self.assertEqual(self._signer(directory).directory, expected)
+
+    def test_non_ascii_host_is_sent_in_ascii_form(self):
+        signer = self._signer("https://bücher.example")
+        self.assertEqual(signer.directory, "https://xn--bcher-kva.example")
+        headers = _headers_dict(signer.sign_request("https://example.com/"))  # doesn't raise
+        self.assertEqual(headers[b"signature-agent"], b'"https://xn--bcher-kva.example"')
+
+    def test_bad_directories_are_rejected_at_construction(self):
+        for directory in [
+            "",
+            "https://",
+            "ftp://bot.example",
+            "https://[bad",
+            "https://bot.example:99999",
+            "https://" + "a" * 70 + ".example",  # label too long for IDNA
+        ]:
+            with self.subTest(directory=directory), self.assertRaises(WebBotAuthError):
+                self._signer(directory)
+
+    def _config(self, key_path: str, **values: str):
+        parser = ConfigParser()
+        parser.read_dict(
+            {
+                "redbot": {
+                    "web_bot_auth_key": key_path,
+                    "web_bot_auth_directory": AGENT,
+                    **values,
+                }
+            }
+        )
+        return parser["redbot"]
+
+    def test_validity_is_validated_at_load(self):
+        fd, path = tempfile.mkstemp(suffix=".pem")
+        self.addCleanup(os.unlink, path)
+        with os.fdopen(fd, "wb") as fh:
+            fh.write(RFC9421_ED25519_KEY)
+        for validity in ["abc", "1.5", "", "0", "-5", "86401"]:
+            with self.subTest(validity=validity), self.assertRaises(WebBotAuthError):
+                load_signer(self._config(path, web_bot_auth_validity=validity))
+        for validity in ["1", "300", "86400"]:
+            with self.subTest(validity=validity):
+                signer = load_signer(self._config(path, web_bot_auth_validity=validity))
+                self.assertEqual(signer.validity, int(validity))
+
+
 class TestDirectoryAuthority(unittest.TestCase):
     "The directory response is signed over the configured directory's authority."
 
