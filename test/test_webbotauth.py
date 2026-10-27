@@ -272,9 +272,7 @@ class TestDirectoryAuthority(unittest.TestCase):
         exchange = cast(MagicMock, handler.exchange)
         return _headers_dict(exchange.response_start.call_args[0][2])
 
-    def _assert_signs(
-        self, directory: str, authority: str, hosts: Iterable[str] = ()
-    ) -> None:
+    def _assert_signs(self, directory: str, authority: str, hosts: Iterable[str] = ()) -> None:
         headers = self._serve(directory, hosts)
         params = headers[b"signature-input"].decode("ascii")[len("sig1=") :]
         base_lines = [f'"@authority";req: {authority}', f'"@signature-params": {params}']
@@ -343,6 +341,7 @@ class _MockExchange:
         self.res_version = b"1.1"
         self.conn = _MockConn()
         self.requests = []
+        self.errors = []
         self.input_transfer_length = 0
         self.input_header_length = 0
 
@@ -355,6 +354,9 @@ class _MockExchange:
     def remove_listeners(self, *events):
         for event in events:
             self.callbacks.pop(event, None)
+
+    def input_error(self, err, close=True):
+        self.errors.append(err)
 
     def request_start(self, method, uri, hdrs):
         self.requests.append((method, uri, hdrs))
@@ -476,7 +478,9 @@ class TestChallengeRetry(unittest.TestCase):
         fetcher.check()
         with open(self.key_path, "wb") as fh:
             fh.write(b"not a valid key anymore")
-        ex1.fire("response_start", b"403", b"Forbidden", [(b"Accept-Signature", b'sig1=("@authority")')])
+        ex1.fire(
+            "response_start", b"403", b"Forbidden", [(b"Accept-Signature", b'sig1=("@authority")')]
+        )
         ex1.fire("response_done", [])
         self.assertFalse(fetcher._wba_retried)
         self.assertEqual(fetcher.response.status_code, 403)
@@ -506,7 +510,9 @@ class TestNoSignerNoRetry(unittest.TestCase):
         fetcher.client = _MockClient([ex1])
         fetcher.set_request("http://example.com/")
         fetcher.check()
-        ex1.fire("response_start", b"403", b"Forbidden", [(b"Accept-Signature", b'sig1=("@authority")')])
+        ex1.fire(
+            "response_start", b"403", b"Forbidden", [(b"Accept-Signature", b'sig1=("@authority")')]
+        )
         ex1.fire("response_done", [])
         self.assertFalse(fetcher._wba_retried)
         self.assertEqual(fetcher.response.status_code, 403)
