@@ -2,11 +2,40 @@
 Utility functions for REDbot.
 """
 
+import configparser
+import os
+import sys
 from functools import partial
-from typing import Optional
+from typing import NoReturn, Optional
 from urllib.parse import quote as urlquote
 
 from markupsafe import Markup
+
+
+def config_error(program: str, message: str) -> NoReturn:
+    "Report a problem with the configuration file in one line, and exit with a failure status."
+    sys.exit(f"{program}: {message}")
+
+
+def read_config(program: str, path: str) -> configparser.SectionProxy:
+    """
+    Read the [redbot] section of a configuration file. A file that is missing, unreadable or
+    malformed, or that has no [redbot] section, ends the program with a one-line message rather
+    than a traceback.
+    """
+    conf = configparser.ConfigParser(interpolation=None)  # a '%' in a secret is just a '%'
+    try:
+        read = conf.read(path)
+    except (configparser.Error, UnicodeError) as why:
+        config_error(
+            program, f"can't parse configuration file '{path}': {' '.join(str(why).split())}"
+        )
+    if not read:
+        reason = "is not readable" if os.path.exists(path) else "was not found"
+        config_error(program, f"configuration file '{path}' {reason}")
+    if "redbot" not in conf:
+        config_error(program, f"configuration file '{path}' has no [redbot] section")
+    return conf["redbot"]
 
 
 def unicode_url_escape(url: str, safe: str) -> str:

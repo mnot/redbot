@@ -67,7 +67,8 @@ class SaveHandler(RequestHandler):
             now = time.time()
             state_dir = ui.config.get("save_dir", "")
             if not os.path.exists(state_dir):
-                raise OSError("Save directory does not exist")
+                ui.error_response(b"404", b"Not Found", "Saving not configured.")
+                return
 
             os.utime(
                 os.path.join(state_dir, test_id),
@@ -86,6 +87,9 @@ class SaveHandler(RequestHandler):
                 b"303", b"See Other", [(b"Location", location.encode("ascii"))]
             )
             ui.output("Redirecting to the saved test page...")
+        except FileNotFoundError:
+            ui.error_response(b"404", b"Not Found", "I'm sorry, I can't find that saved response.")
+            return
         except OSError:
             ui.error_response(b"500", b"Internal Server Error", "Sorry, I couldn't save that.")
             return
