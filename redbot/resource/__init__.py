@@ -81,7 +81,6 @@ class HttpResource(RedFetcher):
         self.gzip_savings: int = 0
         self._task_map: Set[RedFetcher] = set([])
         self.subreqs = {ac.check_id: ac(config, self) for ac in active_checks}
-        self.once("fetch_done", self.run_active_checks)
 
         self.links: Dict[str, Set[str]] = {}
         self.link_count: int = 0
@@ -91,6 +90,9 @@ class HttpResource(RedFetcher):
         )
         if self.descend or config.getboolean("content_links", False):
             self.response.decoded.processors.append(self._link_parser.feed_bytes)
+        # Flush the parser first, so links in the last chunk are found before the checks start.
+        self.once("fetch_done", self._link_parser.finish)
+        self.once("fetch_done", self.run_active_checks)
 
     def run_active_checks(self) -> None:
         """

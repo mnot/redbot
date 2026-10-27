@@ -7,6 +7,7 @@ from redbot.resource import HttpResource
 from redbot.resource.link_parse import HTMLLinkParser
 from httplint.message import HttpMessageLinter
 
+
 class TestLinkParse(unittest.TestCase):
     def test_link_parsing(self):
         links = []
@@ -19,7 +20,7 @@ class TestLinkParse(unittest.TestCase):
         message.base_uri = "http://example.com/"
 
         parser = HTMLLinkParser(message, [capture_link])
-        
+
         html_content = """
         <html>
             <head>
@@ -32,7 +33,7 @@ class TestLinkParse(unittest.TestCase):
             </body>
         </html>
         """
-        
+
         parser.feed(html_content)
 
         expected_links = [
@@ -54,10 +55,12 @@ class TestLinkParse(unittest.TestCase):
             links.append((tag, link))
 
         message = HttpMessageLinter()
-        message.process_headers([
-            (b"content-type", b"text/html"),
-            (b"content-encoding", b"gzip"),
-        ])
+        message.process_headers(
+            [
+                (b"content-type", b"text/html"),
+                (b"content-encoding", b"gzip"),
+            ]
+        )
         message.base_uri = "http://example.com/"
 
         parser = HTMLLinkParser(message, [capture_link])
@@ -71,7 +74,6 @@ class TestLinkParse(unittest.TestCase):
 
         self.assertIn(("a", "/foo"), links)
 
-
     def test_descend_resource_receives_decoded_links(self):
         """End-to-end: HttpResource with descend=True extracts links from gzip responses."""
         conf = ConfigParser()
@@ -82,10 +84,12 @@ class TestLinkParse(unittest.TestCase):
         resource.process_link = lambda base, link, tag, title: captured.append((tag, link))
         resource._link_parser.link_procs = [resource.process_link]
 
-        resource.response.process_headers([
-            (b"content-type", b"text/html"),
-            (b"content-encoding", b"gzip"),
-        ])
+        resource.response.process_headers(
+            [
+                (b"content-type", b"text/html"),
+                (b"content-encoding", b"gzip"),
+            ]
+        )
         resource.response.base_uri = "http://example.com/"
 
         body = b'<html><body><a href="/bar">Bar</a></body></html>'
@@ -93,6 +97,77 @@ class TestLinkParse(unittest.TestCase):
         resource.response.finish_content(True)
 
         self.assertIn(("a", "/bar"), captured)
+
+
+class TestLinkParseChunking(unittest.TestCase):
+    "Links survive a chunk boundary inside a character, and bad bytes can't alter them (#505)."
+
+    @staticmethod
+    def parse(chunks, content_type=b"text/html"):
+        links = []
+        message = HttpMessageLinter()
+        message.process_headers([(b"content-type", content_type)])
+        message.base_uri = "http://example.com/"
+        parser = HTMLLinkParser(message, [lambda base, link, tag, title: links.append(link)])
+        for chunk in chunks:
+            parser.feed_bytes(chunk)
+        parser.finish()
+        return links
+
+    def test_utf8_character_split_across_chunks(self):
+        body = '<a href="/café">x</a><a href="/ok">ok</a>'.encode("utf-8")
+        split = body.index(b"\xc3") + 1
+        self.assertEqual(
+            self.parse([body[:split], body[split:]], b"text/html; charset=utf-8"),
+            ["/café", "/ok"],
+        )
+
+    def test_utf8_split_with_no_charset(self):
+        body = '<a href="/café">x</a>'.encode("utf-8")
+        split = body.index(b"\xc3") + 1
+        self.assertEqual(self.parse([body[:split], body[split:]]), ["/café"])
+
+    def test_double_byte_character_split_across_chunks(self):
+        body = '<a href="/日本">x</a>'.encode("shift_jis")
+        split = body.index(b"/") + 2
+        self.assertEqual(
+            self.parse([body[:split], body[split:]], b"text/html; charset=shift_jis"),
+            ["/日本"],
+        )
+
+    def test_link_in_the_last_chunk_is_found(self):
+        self.assertEqual(self.parse([b'<a href="/caf', b'e">x</a>']), ["/cafe"])
+
+    def test_resource_flushes_the_parser_when_the_fetch_is_done(self):
+        conf = ConfigParser()
+        conf.read_dict({"redbot": {"max_links": "10"}})
+        resource = HttpResource(conf["redbot"], descend=True, active_checks_enabled=False)
+        resource.set_request("http://example.com/")
+        resource.response.process_response_topline(b"1.1", b"200", b"OK")
+        resource.response.process_headers([(b"Content-Type", b"text/html; charset=utf-8")])
+        body = '<a href="/café">x</a>'.encode("utf-8")
+        split = body.index(b"\xc3") + 1
+        resource.response.decoded.feed_content(body[:split])
+        resource.response.decoded.feed_content(body[split:])
+        resource.emit("fetch_done")
+        self.assertEqual(resource.links["a"], {"/café"})
+
+    def test_every_split_point(self):
+        body = '<a href="/café/日本語">x</a>'.encode("utf-8")
+        for i in range(1, len(body)):
+            self.assertEqual(self.parse([body[:i], body[i:]]), ["/café/日本語"], i)
+
+    def test_invalid_bytes_are_replaced_not_dropped(self):
+        links = self.parse([b'<a href="/caf\xe9">x</a>'])
+        self.assertEqual(links, ["/caf�"])
+
+    def test_unusable_charset_falls_back_to_utf8(self):
+        body = '<a href="/café">x</a>'.encode("utf-8")
+        self.assertEqual(self.parse([body], b"text/html; charset=hex"), ["/café"])
+
+    def test_meta_charset_change_mid_stream(self):
+        head = b'<meta http-equiv="content-type" content="text/html; charset=latin-1">'
+        self.assertEqual(self.parse([head, b'<a href="/caf\xe9">x</a>']), ["/café"])
 
 
 if __name__ == "__main__":

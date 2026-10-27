@@ -13,8 +13,6 @@ from httplint.charset import is_text_encoding, whatwg_encoding
 from httplint.field.utils import split_params, unquote_string
 from httplint.message import HttpMessageLinter
 
-from redbot.utils import decode_text
-
 DEFAULT_ENCODING = "utf-8"
 MAX_FEED_BYTES = 2 * 1024 * 1024
 # A <base> inside these isn't the document's base (noscript: as when scripting is enabled).
@@ -79,6 +77,8 @@ class HTMLLinkParser(HTMLParser):
         self.base_seen = False
         self.inert_depth = {tag: 0 for tag in INERT_TAGS}
         self.decode_as: Optional[str] = None
+        self._decoder: Optional[codecs.IncrementalDecoder] = None
+        self._decoder_encoding = ""
         HTMLParser.__init__(self)
 
     def __getstate__(self) -> Dict[str, Any]:
@@ -92,8 +92,36 @@ class HTMLLinkParser(HTMLParser):
                 self.ok = False
                 return
             encoding = self.decode_as or self.message.character_encoding or DEFAULT_ENCODING
-            decoded = decode_text(bchunk, encoding, "ignore")
-            self.feed(decoded)
+            self.feed(self._decode(bchunk, encoding))
+
+    def _decode(self, bchunk: bytes, encoding: str) -> str:
+        """
+        Decode a chunk, holding over the start of a character that continues in the next one.
+        A <meta> can change the encoding part way through, so the decoder follows it; bytes
+        it was holding go to the new one.
+        """
+        if self._decoder is None or self._decoder_encoding != encoding:
+            held = b""
+            if self._decoder is not None:
+                held = self._decoder.getstate()[0]
+            self._decoder = new_decoder(encoding)
+            self._decoder_encoding = encoding
+            bchunk = held + bchunk
+        return self._decoder.decode(bchunk)
+
+    def finish(self) -> None:
+        "No more data is coming; process what the parser is holding back (e.g., a split tag)."
+        if not self.ok or self._decoder is None:
+            return
+        self.feed(self._decoder.decode(b"", final=True))
+        try:
+            HTMLParser.close(self)
+        except BadErrorIReallyMeanIt:
+            pass
+        except Exception as why:  # pylint: disable=broad-except
+            if self.err:
+                self.err(f"close problem: {why}")
+            self.errors += 1
 
     def feed(self, data: str) -> None:
         "Feed a given chunk of str to the parser"
@@ -185,6 +213,20 @@ class HTMLLinkParser(HTMLParser):
         self.last_err_pos, _ = self.getpos()
         if self.err:
             self.err(message)
+
+
+def new_decoder(encoding: str) -> codecs.IncrementalDecoder:
+    """
+    An incremental decoder for a charset name supplied by a remote party, replacing bytes that
+    aren't valid so that they can't quietly turn one URL into another. Falls back to UTF-8 if the
+    name can't be used.
+    """
+    if is_text_encoding(encoding):
+        try:
+            return codecs.getincrementaldecoder(encoding)("replace")
+        except LookupError:
+            pass
+    return codecs.getincrementaldecoder(DEFAULT_ENCODING)("replace")
 
 
 def resolve_base(page_uri: str, href: str) -> str:
