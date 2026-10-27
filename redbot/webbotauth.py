@@ -22,6 +22,7 @@ import hashlib
 import json
 import os
 import secrets
+import sys
 import time
 from configparser import SectionProxy
 from typing import Dict, List, Optional, Tuple
@@ -254,7 +255,9 @@ class WebBotAuthSigner:
         return json.dumps({"keys": [key]}, separators=(",", ":")).encode("utf-8")
 
 
-_SIGNER_CACHE: Dict[str, WebBotAuthSigner] = {}
+# The signer for the most recent configuration, with the key it was built from. One entry: a key
+# file that is rewritten often (by a secrets agent, say) must not leave a trail of old signers.
+_SIGNER_CACHE: Optional[Tuple[str, WebBotAuthSigner]] = None
 
 
 def _ui_uri_origin(config: SectionProxy) -> str:
@@ -269,8 +272,8 @@ def load_signer(config: SectionProxy) -> Optional[WebBotAuthSigner]:
     """
     Build a ``WebBotAuthSigner`` from REDbot configuration, or return None if
     Web Bot Auth is not configured. Raises ``WebBotAuthError`` on misconfiguration
-    so problems surface at startup rather than mid-request. Successful signers are
-    cached, keyed by key path, directory, validity, and the key file's mtime.
+    so problems surface at startup rather than mid-request. The latest signer is cached, keyed
+    by key path, directory, validity, key creation time and the key file's mtime.
 
     The key directory location is ``web_bot_auth_directory``; if unset, it
     defaults to the origin of ``ui_uri`` (so enabling signing requires ``ui_uri``
@@ -298,19 +301,37 @@ def load_signer(config: SectionProxy) -> Optional[WebBotAuthSigner]:
             f"web_bot_auth_validity must be between 1 and {MAX_VALIDITY} seconds, not {validity}."
         )
 
+    key_created: Optional[int] = None
+    if config.get("web_bot_auth_key_created", "").strip():
+        try:
+            key_created = config.getint("web_bot_auth_key_created")
+        except ValueError as why:
+            raise WebBotAuthError(
+                "web_bot_auth_key_created must be a Unix timestamp in whole seconds."
+            ) from why
+
     try:
-        mtime = os.path.getmtime(key_path)
+        stat = os.stat(key_path)
     except OSError as why:
         raise WebBotAuthError(f"Can't read Web Bot Auth key '{key_path}': {why}") from why
 
-    cache_key = "\0".join([key_path, directory, str(validity), str(mtime)])
-    if cache_key not in _SIGNER_CACHE:
+    global _SIGNER_CACHE  # pylint: disable=global-statement
+    cache_key = "\0".join(
+        [key_path, directory, str(validity), str(key_created), str(stat.st_mtime)]
+    )
+    if _SIGNER_CACHE is None or _SIGNER_CACHE[0] != cache_key:
         try:
             with open(key_path, "rb") as fh:
                 key_pem = fh.read()
         except OSError as why:
             raise WebBotAuthError(f"Can't read Web Bot Auth key '{key_path}': {why}") from why
-        _SIGNER_CACHE[cache_key] = WebBotAuthSigner(
-            key_pem, directory, validity, key_created=int(mtime)
+        if stat.st_mode & 0o077:
+            sys.stderr.write(
+                f"WARNING: Web Bot Auth key '{key_path}' is accessible to other users "
+                f"(mode {stat.st_mode & 0o777:03o}); it should be readable only by REDbot's user.\n"
+            )
+        _SIGNER_CACHE = (
+            cache_key,
+            WebBotAuthSigner(key_pem, directory, validity, key_created=key_created),
         )
-    return _SIGNER_CACHE[cache_key]
+    return _SIGNER_CACHE[1]

@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 import base64
+import contextlib
 import hashlib
+import io
 import json
 import os
 import re
@@ -16,6 +18,7 @@ from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 
+from redbot import webbotauth
 from redbot.daemon import RedBotServer, RedRequestHandler
 from redbot.webbotauth import (
     DEFAULT_VALIDITY,
@@ -308,6 +311,72 @@ class TestLoadSigner(unittest.TestCase):
             self.assertIs(load_signer(config), signer)  # cached
         finally:
             os.unlink(path)
+
+
+class TestKeyFileHandling(unittest.TestCase):
+    "Key file hygiene (#532): the signer cache doesn't grow, loose permissions are flagged."
+
+    def setUp(self):
+        webbotauth._SIGNER_CACHE = None
+        self.addCleanup(setattr, webbotauth, "_SIGNER_CACHE", None)
+        fd, self.path = tempfile.mkstemp(suffix=".pem")
+        self.addCleanup(os.unlink, self.path)
+        with os.fdopen(fd, "wb") as fh:
+            fh.write(RFC9421_ED25519_KEY)
+
+    def _config(self, **values: str):
+        parser = ConfigParser()
+        parser.read_dict(
+            {
+                "redbot": {
+                    "web_bot_auth_key": self.path,
+                    "web_bot_auth_directory": AGENT,
+                    **values,
+                }
+            }
+        )
+        return parser["redbot"]
+
+    def test_cache_holds_one_signer(self):
+        config = self._config()
+        signers = []
+        for i in range(5):
+            os.utime(self.path, (1_000_000 + i, 1_000_000 + i))  # as if the file were rewritten
+            signers.append(load_signer(config))
+            self.assertIs(load_signer(config), signers[-1])
+        self.assertEqual(len({id(s) for s in signers}), 5)
+        self.assertIsNotNone(webbotauth._SIGNER_CACHE)
+        self.assertIs(webbotauth._SIGNER_CACHE[1], signers[-1])
+
+    def test_loose_key_permissions_are_warned_about_once(self):
+        os.chmod(self.path, 0o644)
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err):
+            load_signer(self._config())
+            load_signer(self._config())
+        self.assertEqual(err.getvalue().count("WARNING"), 1)
+        self.assertIn(self.path, err.getvalue())
+        self.assertIn("644", err.getvalue())
+
+    def test_private_key_gets_no_warning(self):
+        os.chmod(self.path, 0o600)
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err):
+            load_signer(self._config())
+        self.assertEqual(err.getvalue(), "")
+
+    def test_nbf_is_published_only_when_configured(self):
+        without = json.loads(load_signer(self._config()).directory_json())
+        self.assertNotIn("nbf", without["keys"][0])
+        webbotauth._SIGNER_CACHE = None
+        with_nbf = json.loads(
+            load_signer(self._config(web_bot_auth_key_created="1735689600")).directory_json()
+        )
+        self.assertEqual(with_nbf["keys"][0]["nbf"], 1735689600)
+
+    def test_bad_key_created_is_rejected(self):
+        with self.assertRaises(WebBotAuthError):
+            load_signer(self._config(web_bot_auth_key_created="yesterday"))
 
 
 class TestConfigurationValidation(unittest.TestCase):
