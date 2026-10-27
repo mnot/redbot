@@ -162,15 +162,17 @@ class HttpResource(RedFetcher):
 
     def process_link(self, base: str, link: str, tag: str, title: str) -> None:
         "Handle a link from content."
-        self.link_count += 1
         if tag not in self.links:
             self.links[tag] = set()
         max_links = self.config.getint("max_links", fallback=100)
-        if self.link_count > max_links:
-            if not self.response.base_uri:
-                self.response.base_uri = base
-            return
-        if self.descend and tag not in ["a"] and link not in self.links[tag]:
+        # max_links limits the links that are checked, so anchors, which aren't, don't use it up.
+        if (
+            self.descend
+            and tag not in ["a"]
+            and link not in self.links[tag]
+            and self.link_count < max_links
+        ):
+            self.link_count += 1
             linked = HttpResource(self.config, active_checks_enabled=False)
             credentials, other_headers = split_credentials(self.request.headers.text)
             uri: Optional[str]
