@@ -304,9 +304,9 @@ def load_signer(config: SectionProxy) -> Optional[WebBotAuthSigner]:
     defaults to the origin of ``ui_uri`` (so enabling signing requires ``ui_uri``
     to be set correctly to this instance's public origin).
     """
-    key_path = config.get("web_bot_auth_key", "").strip()
+    pem_path = config.get("web_bot_auth_key", "").strip()
     directory = config.get("web_bot_auth_directory", "").strip()
-    if not key_path:
+    if not pem_path:
         if directory:
             raise WebBotAuthError("web_bot_auth_directory is set but web_bot_auth_key is not.")
         return None
@@ -338,24 +338,24 @@ def load_signer(config: SectionProxy) -> Optional[WebBotAuthSigner]:
             raise WebBotAuthError("web_bot_auth_key_created can't be negative.")
 
     try:
-        stat = os.stat(key_path)
+        stat = os.stat(pem_path)
     except OSError as why:
-        raise WebBotAuthError(f"Can't read Web Bot Auth key '{key_path}': {why}") from why
+        raise WebBotAuthError(f"Can't read Web Bot Auth key '{pem_path}': {why}") from why
 
     global _SIGNER_CACHE  # pylint: disable=global-statement
     cache_key = "\0".join(
-        [key_path, directory, str(validity), str(key_created), str(stat.st_mtime)]
+        [pem_path, directory, str(validity), str(key_created), str(stat.st_mtime)]
     )
     if _SIGNER_CACHE is None or _SIGNER_CACHE[0] != cache_key:
         try:
-            with open(key_path, "rb") as fh:
+            with open(pem_path, "rb") as fh:
                 key_pem = fh.read()
                 mode = os.fstat(fh.fileno()).st_mode
         except OSError as why:
-            raise WebBotAuthError(f"Can't read Web Bot Auth key '{key_path}': {why}") from why
+            raise WebBotAuthError(f"Can't read Web Bot Auth key '{pem_path}': {why}") from why
         if os.name == "posix" and mode & 0o077:
             sys.stderr.write(
-                f"WARNING: Web Bot Auth key '{key_path}' is accessible to other users "
+                f"WARNING: Web Bot Auth key '{pem_path}' is accessible to other users "
                 f"(mode {mode & 0o777:03o}); it should be readable only by REDbot's user.\n"
             )
         _SIGNER_CACHE = (
