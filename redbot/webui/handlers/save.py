@@ -86,6 +86,9 @@ class SaveHandler(RequestHandler):
                 b"303", b"See Other", [(b"Location", location.encode("ascii"))]
             )
             ui.output("Redirecting to the saved test page...")
+        except FileNotFoundError:
+            ui.error_response(b"404", b"Not Found", "I'm sorry, I can't find that saved response.")
+            return
         except OSError:
             ui.error_response(b"500", b"Internal Server Error", "Sorry, I couldn't save that.")
             return
