@@ -389,7 +389,7 @@ class TableHtmlFormatter(BaseHtmlFormatter):
         ]
         droid_lists = [("", [resource])]
         for hdr_tag, heading in link_order:
-            droids = [d[0] for d in resource.linked if d[1] == hdr_tag]
+            droids = [d[0] for d in getattr(resource, "linked", []) if d[1] == hdr_tag]
             if droids:
                 droids.sort(key=operator.attrgetter("response.base_uri"))
                 droid_lists.append((heading, droids))
