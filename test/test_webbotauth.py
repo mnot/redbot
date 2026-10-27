@@ -375,8 +375,15 @@ class TestKeyFileHandling(unittest.TestCase):
         self.assertEqual(with_nbf["keys"][0]["nbf"], 1735689600)
 
     def test_bad_key_created_is_rejected(self):
+        for value in ["yesterday", "-1"]:
+            with self.subTest(value=value), self.assertRaises(WebBotAuthError):
+                load_signer(self._config(web_bot_auth_key_created=value))
+
+    def test_unusable_ui_uri_is_a_configuration_error(self):
+        parser = ConfigParser()
+        parser.read_dict({"redbot": {"web_bot_auth_key": self.path, "ui_uri": "http://[bad/"}})
         with self.assertRaises(WebBotAuthError):
-            load_signer(self._config(web_bot_auth_key_created="yesterday"))
+            load_signer(parser["redbot"])
 
 
 class TestConfigurationValidation(unittest.TestCase):
@@ -395,6 +402,10 @@ class TestConfigurationValidation(unittest.TestCase):
             "http://bot.example": "http://bot.example",
             '"https://bot.example"': "https://bot.example",
             "https://[2001:DB8::1]:8443/": "https://[2001:db8::1]:8443",
+            "https://bot.example:443": "https://bot.example",  # an origin omits the default port
+            "http://bot.example:80/": "http://bot.example",
+            "https://bot.example:80": "https://bot.example:80",
+            "bot.example:443": "https://bot.example",
         }
         for directory, expected in cases.items():
             with self.subTest(directory=directory):
@@ -414,6 +425,14 @@ class TestConfigurationValidation(unittest.TestCase):
             "https://[bad",
             "https://bot.example:99999",
             "https://" + "a" * 70 + ".example",  # label too long for IDNA
+            "https:/bot.example",  # mistyped schemes mustn't become a host
+            "https//bot.example",
+            "mailto:a@bot.example",
+            "https://faß.example",  # IDNA 2003 would publish fass.example
+            "https://exa mple.test",
+            "https://%78.test",
+            "https://-bad.example",
+            "https://" + ".".join(["a" * 60] * 5),  # longer than a host name can be
         ]:
             with self.subTest(directory=directory), self.assertRaises(WebBotAuthError):
                 self._signer(directory)

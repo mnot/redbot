@@ -82,6 +82,8 @@ web_bot_auth_directory = https://your-redbot.example
 
 `web_bot_auth_directory` is the HTTPS origin where your public key directory is hosted. When you run `redbot_daemon`, it serves that directory at `/.well-known/http-message-signatures-directory` (a JWKS, self-signed per the spec), so a verifier can fetch your public key. Make sure that path is reachable at the origin you configured.
 
+`web_bot_auth_validity` (seconds, 1 to 86400, default 300) sets how long a signature stays valid, and `web_bot_auth_key_created` (a Unix timestamp) is published as the key's `nbf` if you set it. REDbot warns at startup if the key file is readable by other users. Only the scheme, host and port of `web_bot_auth_directory` are used; any path is ignored.
+
 `web_bot_auth_directory` is optional: if you omit it, REDbot uses the origin of `ui_uri`. Because `ui_uri` defaults to `https://redbot.org/`, **enabling signing requires `ui_uri` to be set to your instance's real public origin** — otherwise you would publish the wrong bot identity. Set `web_bot_auth_directory` explicitly if your key directory lives on a different origin than the UI.
 
 For the command-line tool, pass the equivalent flags (there is no `ui_uri`, so the directory is required):

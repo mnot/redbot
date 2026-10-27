@@ -21,6 +21,7 @@ import base64
 import hashlib
 import json
 import os
+import re
 import secrets
 import sys
 import time
@@ -65,30 +66,51 @@ def _b64url(data: bytes) -> str:
     return base64.urlsafe_b64encode(data).rstrip(b"=").decode("ascii")
 
 
+_HOST_LABEL = re.compile(r"[a-z0-9_]([a-z0-9_-]{0,61}[a-z0-9_])?")
+_SCHEME_LIKE = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*:(?!\d+(?:[/?#]|$))")
+
+
 def normalise_directory(directory: str) -> str:
     """
-    The origin of the key directory: scheme and host (in ASCII form), plus a port if there is one.
-    A scheme-less value is taken as https, and anything after the authority is dropped, because
-    verifiers append the well-known path to the origin (draft-ietf-webbotauth-httpsig-protocol
-    section 5.5).
+    The ASCII serialisation of the origin of the key directory: scheme and host (in ASCII form),
+    plus the port unless it is the scheme's default. A scheme-less value is taken as https, and
+    anything after the authority is dropped, because verifiers append the well-known path to the
+    origin (draft-ietf-webbotauth-httpsig-protocol section 5.5).
     """
+    invalid = WebBotAuthError(f"Invalid Web Bot Auth directory '{directory}'.")
     text = directory.strip().strip('"').strip()
+    if "://" not in text:
+        if "//" in text or _SCHEME_LIKE.match(text):  # a mistyped scheme, not a host
+            raise invalid
+        text = f"https://{text}"
     try:
-        parts = urlsplit(text if "://" in text else f"https://{text}")
+        parts = urlsplit(text)
         host = parts.hostname
         port = parts.port
     except ValueError as why:
-        raise WebBotAuthError(f"Invalid Web Bot Auth directory '{directory}'.") from why
-    if parts.scheme.lower() not in ("http", "https") or not host:
-        raise WebBotAuthError(f"Invalid Web Bot Auth directory '{directory}'.")
-    try:
-        host = host.encode("idna").decode("ascii")
-    except UnicodeError as why:
-        raise WebBotAuthError(f"Invalid Web Bot Auth directory host in '{directory}'.") from why
-    if ":" in host:
-        host = f"[{host}]"  # urlsplit strips the brackets from IPv6 literals
-    origin = f"{parts.scheme.lower()}://{host}"
-    return f"{origin}:{port}" if port is not None else origin
+        raise invalid from why
+    scheme = parts.scheme.lower()
+    if scheme not in ("http", "https") or not host:
+        raise invalid
+    if ":" in host:  # an IPv6 literal; urlsplit has stripped its brackets
+        host = f"[{host}]"
+    else:
+        try:
+            ascii_host = host.encode("idna").decode("ascii")
+            # IDNA 2003 maps some characters (e.g. the sharp s) to others; refuse those.
+            if ascii_host.encode("ascii").decode("idna") != host:
+                raise invalid
+        except UnicodeError as why:
+            raise invalid from why
+        if len(ascii_host) > 253 or not all(
+            _HOST_LABEL.fullmatch(label) or label.startswith("xn--")
+            for label in ascii_host.rstrip(".").split(".")
+        ):
+            raise invalid
+        host = ascii_host
+    default_port = 443 if scheme == "https" else 80
+    origin = f"{scheme}://{host}"
+    return origin if port is None or port == default_port else f"{origin}:{port}"
 
 
 class WebBotAuthSigner:
@@ -262,7 +284,10 @@ _SIGNER_CACHE: Optional[Tuple[str, WebBotAuthSigner]] = None
 
 def _ui_uri_origin(config: SectionProxy) -> str:
     "The scheme://host[:port] origin of ui_uri, or '' if it isn't a usable URL."
-    parts = urlsplit(config.get("ui_uri", "").strip())
+    try:
+        parts = urlsplit(config.get("ui_uri", "").strip())
+    except ValueError:
+        return ""
     if not parts.scheme or not parts.netloc:
         return ""
     return f"{parts.scheme}://{parts.netloc}"
@@ -309,6 +334,8 @@ def load_signer(config: SectionProxy) -> Optional[WebBotAuthSigner]:
             raise WebBotAuthError(
                 "web_bot_auth_key_created must be a Unix timestamp in whole seconds."
             ) from why
+        if key_created < 0:
+            raise WebBotAuthError("web_bot_auth_key_created can't be negative.")
 
     try:
         stat = os.stat(key_path)
@@ -323,12 +350,13 @@ def load_signer(config: SectionProxy) -> Optional[WebBotAuthSigner]:
         try:
             with open(key_path, "rb") as fh:
                 key_pem = fh.read()
+                mode = os.fstat(fh.fileno()).st_mode
         except OSError as why:
             raise WebBotAuthError(f"Can't read Web Bot Auth key '{key_path}': {why}") from why
-        if stat.st_mode & 0o077:
+        if os.name == "posix" and mode & 0o077:
             sys.stderr.write(
                 f"WARNING: Web Bot Auth key '{key_path}' is accessible to other users "
-                f"(mode {stat.st_mode & 0o777:03o}); it should be readable only by REDbot's user.\n"
+                f"(mode {mode & 0o777:03o}); it should be readable only by REDbot's user.\n"
             )
         _SIGNER_CACHE = (
             cache_key,
