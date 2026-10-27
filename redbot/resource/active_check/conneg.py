@@ -44,7 +44,9 @@ class ConnegCheck(SubRequest):
             self.add_base_note("", CONNEG_SUBREQ_PROBLEM, problem=problem)
             return
 
-        bare_codings = bare.headers.parsed.get("content-encoding", [])
+        bare_codings = [
+            c for c in bare.headers.parsed.get("content-encoding", []) if c != "identity"
+        ]
         if bare_codings:
             # The resource is compressed whether or not the client asks, so there's nothing
             # negotiated to compare: both responses are the same representation.
@@ -164,7 +166,7 @@ whether the resource negotiates its compression.
 
 HTTP allows this, because a client that doesn't send `Accept-Encoding` is taken to accept any
 content-coding. Clients that can't decode the compression will not be able to use the resource,
-though, and any `Accept-Encoding` they do send is being ignored."""
+though, and the server may be ignoring any `Accept-Encoding` they do send."""
 
 
 class CONNEG_GZIP_GOOD(RedbotNote):

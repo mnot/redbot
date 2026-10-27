@@ -28,16 +28,26 @@ from redbot.webbotauth import WebBotAuthError, load_signer
 DEFAULT_UI_URI = "https://redbot.org/"
 
 
-# Translated by a NAT64 gateway to an IPv4 address (RFC 6052, RFC 8215), which may be a private one,
-# yet netaddr considers some of them global.
-NAT64_PREFIXES = [IPNetwork("64:ff9b::/96"), IPNetwork("64:ff9b:1::/48")]
+# IPv6 prefixes whose last 32 bits are the IPv4 address that is really connected to: the NAT64
+# well-known prefix (RFC 6052), SIIT (RFC 7915) and the deprecated IPv4-compatible form. netaddr
+# considers some of these global even when the IPv4 address inside is loopback or private.
+EMBEDDED_IPV4_PREFIXES = [
+    IPNetwork("64:ff9b::/96"),
+    IPNetwork("::ffff:0:0:0/96"),
+    IPNetwork("::/96"),
+]
+# The local-use NAT64 prefix (RFC 8215) is for the local network, so it is never public.
+NAT64_LOCAL_PREFIX = IPNetwork("64:ff9b:1::/48")
 
 
 def is_public_address(dns_result: str) -> bool:
     "Whether it's OK to connect to the address, when local access isn't enabled."
     addr = IPAddress(dns_result)
-    if any(addr in prefix for prefix in NAT64_PREFIXES):
-        return False
+    if addr.version == 6:
+        if addr in NAT64_LOCAL_PREFIX:
+            return False
+        if any(addr in prefix for prefix in EMBEDDED_IPV4_PREFIXES):
+            return is_public_address(str(IPAddress(addr.value & 0xFFFFFFFF, 4)))
     return bool(addr.is_global())
 
 

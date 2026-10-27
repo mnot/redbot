@@ -125,7 +125,7 @@ class TestRangeCheck(unittest.TestCase):
     def test_small_chunks(self):
         server = self.assert_correct(BODY, 50)
         start, end = (int(n) for n in server.ranges[0].split("-"))
-        self.assertEqual((start % 50, end - start + 1), (0, 50))
+        self.assertEqual((start % 50, end - start + 1), (0, min(50, len(BODY) - start)))
 
     def test_body_shorter_than_the_range(self):
         server = self.assert_correct(BODY[:60], None)

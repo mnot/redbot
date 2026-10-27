@@ -37,6 +37,12 @@ class TestMaxLinks(unittest.TestCase):
         self.feed(resource, [("img", f"/image{i}.png") for i in range(10)])
         self.assertEqual(len(resource.linked), 3)
 
+    def test_recorded_links_are_bounded(self):
+        resource = self.resource(3)
+        self.feed(resource, [("a", f"/page{i}") for i in range(1000)])
+        self.assertEqual(resource.listed_count, 30)
+        self.assertEqual(len(resource.links["a"]), 30)
+
     def test_repeated_links_are_checked_once(self):
         resource = self.resource(3)
         self.feed(resource, [("img", "/logo.png")] * 5)

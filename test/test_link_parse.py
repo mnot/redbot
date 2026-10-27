@@ -149,8 +149,29 @@ class TestLinkParseChunking(unittest.TestCase):
         split = body.index(b"\xc3") + 1
         resource.response.decoded.feed_content(body[:split])
         resource.response.decoded.feed_content(body[split:])
+        resource.response.finish_content(True)
         resource.emit("fetch_done")
         self.assertEqual(resource.links["a"], {"/café"})
+
+    def test_utf16_without_a_bom_does_not_raise(self):
+        body = '<a href="/ok">x</a>'.encode("utf-8")
+        self.assertEqual(self.parse([body], b"text/html; charset=utf-16"), ["/ok"])
+
+    def test_meta_utf16_does_not_raise(self):
+        head = b'<meta http-equiv="content-type" content="text/html; charset=utf-16">'
+        self.assertEqual(self.parse([head, b'<a href="/ok">x</a>']), ["/ok"])
+
+    def test_nothing_is_flushed_after_a_stopped_fetch(self):
+        conf = ConfigParser()
+        conf.read_dict({"redbot": {"max_links": "10"}})
+        resource = HttpResource(conf["redbot"], descend=True, active_checks_enabled=False)
+        resource.set_request("http://example.com/")
+        resource.response.process_response_topline(b"1.1", b"200", b"OK")
+        resource.response.process_headers([(b"Content-Type", b"text/html")])
+        resource.response.decoded.feed_content(b'<img src="/held')
+        resource.response.decoded.feed_content(b'.png">')
+        resource.stop()  # the response never completed
+        self.assertEqual(resource.linked, [])
 
     def test_every_split_point(self):
         body = '<a href="/café/日本語">x</a>'.encode("utf-8")

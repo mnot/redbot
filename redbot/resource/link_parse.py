@@ -107,13 +107,21 @@ class HTMLLinkParser(HTMLParser):
             self._decoder = new_decoder(encoding)
             self._decoder_encoding = encoding
             bchunk = held + bchunk
-        return self._decoder.decode(bchunk)
+        try:
+            return self._decoder.decode(bchunk)
+        except UnicodeError:
+            # e.g. utf-16 without a BOM; the page's label is no use, so treat it as the default
+            self._decoder = new_decoder(DEFAULT_ENCODING)
+            return self._decoder.decode(bchunk)
 
     def finish(self) -> None:
         "No more data is coming; process what the parser is holding back (e.g., a split tag)."
         if not self.ok or self._decoder is None:
             return
-        self.feed(self._decoder.decode(b"", final=True))
+        try:
+            self.feed(self._decoder.decode(b"", final=True))
+        except UnicodeError:
+            pass
         try:
             HTMLParser.close(self)
         except BadErrorIReallyMeanIt:

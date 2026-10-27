@@ -31,15 +31,21 @@ class TestIsPublicAddress(unittest.TestCase):
         ]:
             self.assertFalse(is_public_address(addr), addr)
 
-    def test_nat64_addresses_are_denied(self):
+    def test_nat64_addresses_follow_the_ipv4_address_inside(self):
         for addr in [
             "64:ff9b::7f00:1",  # 127.0.0.1
             "64:ff9b::a00:1",  # 10.0.0.1
             "64:ff9b::a9fe:a9fe",  # 169.254.169.254
-            "64:ff9b::808:808",  # 8.8.8.8: the gateway's destination can't be told apart
-            "64:ff9b:1::1",
-            "64:ff9b:1:ffff::1",
+            "::ffff:0:127.0.0.1",  # SIIT
+            "::127.0.0.1",  # IPv4-compatible
+            "::1",
         ]:
+            self.assertFalse(is_public_address(addr), addr)
+        for addr in ["64:ff9b::808:808", "::ffff:0:8.8.8.8"]:  # 8.8.8.8: DNS64 hosts need these
+            self.assertTrue(is_public_address(addr), addr)
+
+    def test_local_use_nat64_prefix_is_denied(self):
+        for addr in ["64:ff9b:1::1", "64:ff9b:1:ffff::1", "64:ff9b:1::808:808"]:
             self.assertFalse(is_public_address(addr), addr)
 
 

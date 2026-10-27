@@ -48,6 +48,10 @@ def split_credentials(headers: StrHeaderListType) -> Tuple[StrHeaderListType, St
     return credentials, others
 
 
+# The links recorded for the content view are capped at this multiple of max_links.
+LISTED_LINKS_FACTOR = 10
+
+
 class HttpResource(RedFetcher):
     """
     Given a URI (optionally with method, request headers and content), examine the URI for issues
@@ -83,15 +87,14 @@ class HttpResource(RedFetcher):
         self.subreqs = {ac.check_id: ac(config, self) for ac in active_checks}
 
         self.links: Dict[str, Set[str]] = {}
-        self.link_count: int = 0
+        self.link_count: int = 0  # links being checked
+        self.listed_count: int = 0  # distinct links recorded in .links
         self.linked: List[Tuple[HttpResource, str]] = []  # linked HttpResources
         self._link_parser = link_parse.HTMLLinkParser(
             self.response, [self.process_link], err=self._link_error
         )
         if self.descend or config.getboolean("content_links", False):
             self.response.decoded.processors.append(self._link_parser.feed_bytes)
-        # Flush the parser first, so links in the last chunk are found before the checks start.
-        self.once("fetch_done", self._link_parser.finish)
         self.once("fetch_done", self.run_active_checks)
 
     def run_active_checks(self) -> None:
@@ -103,10 +106,17 @@ class HttpResource(RedFetcher):
             # empty the task map while others are still to be started.
             active = list(self.subreqs.values())
             self.add_check(*active)
+            self._finish_links()  # after the above: links that fail at once can't complete us
             for active_check in active:
                 active_check.check()
         else:
+            self._finish_links()
             self.finish_check()
+
+    def _finish_links(self) -> None:
+        "Find the links in what the parser was holding back, if the response arrived whole."
+        if self.response.complete and not self.fetch_error:
+            self._link_parser.finish()
 
     def descendable(self) -> bool:
         """
@@ -167,6 +177,10 @@ class HttpResource(RedFetcher):
         if tag not in self.links:
             self.links[tag] = set()
         max_links = self.config.getint("max_links", fallback=100)
+        if self.listed_count >= max_links * LISTED_LINKS_FACTOR and link not in self.links[tag]:
+            if not self.response.base_uri:
+                self.response.base_uri = base
+            return
         # max_links limits the links that are checked, so anchors, which aren't, don't use it up.
         if (
             self.descend
@@ -199,7 +213,9 @@ class HttpResource(RedFetcher):
                     linked.check()
                 except Exception as why:  # pylint: disable=broad-except
                     self._fail_link(linked, HttpError(str(why)))
-        self.links[tag].add(link)
+        if link not in self.links[tag]:
+            self.links[tag].add(link)
+            self.listed_count += 1
         if not self.response.base_uri:
             self.response.base_uri = base
 
