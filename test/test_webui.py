@@ -69,7 +69,7 @@ class BasicWebUiTest(unittest.TestCase):
         self.context.close()
 
     def test_multi(self):
-        self.page.click('input[value="check embedded"]')
+        self.page.click('button:has-text("check embedded")')
         self.check_complete()
 
     def test_request_header(self):

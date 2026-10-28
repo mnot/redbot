@@ -31,6 +31,13 @@
   .post_link {
     color: red_vars.$link_in_box_colour;
   }
+
+  // A button doesn't fold with the surrounding text unless told to.
+  .post_link {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-indent: 0;
+  }
 }
 
 .nonfinal_response {

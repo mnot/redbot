@@ -392,8 +392,8 @@ class RunTestHandler(RequestHandler):
 
         # Add submit button
         form_parts.append(
-            f'<input type="submit" value="{escape(link_text)}" '
-            f'class="post_link {css_class}" title="{title}" />'
+            f'<button type="submit" class="post_link {css_class}" title="{title}">'
+            f"{escape(link_text)}</button>"
         )
         form_parts.append("</form>")
 
