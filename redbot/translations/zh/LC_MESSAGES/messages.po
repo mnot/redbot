@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-04-09 08:47+1000\n"
+"POT-Creation-Date: 2026-10-28 13:32+1100\n"
 "PO-Revision-Date: 2025-11-30 12:05+1100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh\n"
@@ -18,91 +18,92 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: redbot/formatter/html.py:119
+#: redbot/formatter/html.py:114
 msgid "view HAR"
 msgstr "查看 HAR"
 
-#: redbot/formatter/html.py:121
+#: redbot/formatter/html.py:116
 msgid "View a HAR (HTTP ARchive, a JSON format) file for this test"
 msgstr "查看此测试的 HAR (HTTP ARchive，一种 JSON 格式) 文件"
 
-#: redbot/formatter/html.py:131
+#: redbot/formatter/html.py:126
 msgid "check embedded"
 msgstr "检查嵌入式"
 
-#: redbot/formatter/html.py:134
+#: redbot/formatter/html.py:129
 msgid "Run REDbot on images, frames and embedded links"
 msgstr "在图片、框架和嵌入式链接上运行 REDbot"
 
-#: redbot/formatter/html.py:192
+#: redbot/formatter/html.py:193
 msgid "<p class='btw'>REDbot isn't showing all content, because it's so big!</p>"
 msgstr "<p class='btw'>REDbot 没有显示所有内容，因为它太大了！</p>"
 
-#: redbot/formatter/html.py:205
+#: redbot/formatter/html.py:206
 #, python-format
 msgid "%s response"
-msgstr "%s 回复"
+msgstr "%s 响应"
 
-#: redbot/formatter/html.py:219
+#: redbot/formatter/html.py:220
 #, python-format
 msgid " - %d problem\n"
-msgstr "%d 个问题"
+msgid_plural " - %d problems\n"
+msgstr[0] " - %d 个问题\n"
 
-#: redbot/formatter/html_base.py:129
+#: redbot/formatter/html_base.py:142
 msgid "add a request header"
-msgstr "添加一个请求头"
+msgstr "添加一个请求标头"
 
-#: redbot/formatter/html_base.py:130
+#: redbot/formatter/html_base.py:143
 msgid "copy cookies to request"
 msgstr "将 cookie 复制到请求"
 
-#: redbot/formatter/html_base.py:131
+#: redbot/formatter/html_base.py:144
 msgid "view notes"
 msgstr "查看注释"
 
-#: redbot/formatter/html_base.py:132
-#: redbot/formatter/templates/response_finish.html:53
+#: redbot/formatter/html_base.py:145
+#: redbot/formatter/templates/response_finish.html:55
 msgid "view content"
 msgstr "查看内容"
 
-#: redbot/formatter/html_base.py:133
-#: redbot/formatter/templates/response_finish.html:89
+#: redbot/formatter/html_base.py:146
+#: redbot/formatter/templates/response_finish.html:91
 msgid "sort by alpha"
 msgstr "按字母排序"
 
-#: redbot/formatter/html_base.py:134
+#: redbot/formatter/html_base.py:147
 msgid "show wire order"
 msgstr "显示线序"
 
-#: redbot/formatter/html_base.py:137
+#: redbot/formatter/html_base.py:150
 #, python-format
 msgid "Setting the %s request header can lead to unpredictable results."
-msgstr "设置 %s 请求头可能导致不可预测的结果。"
+msgstr "设置 %s 请求标头可能会导致不可预测的结果。"
 
-#: redbot/formatter/text.py:32
+#: redbot/formatter/text.py:65
 msgid "Head Links"
 msgstr "头部链接"
 
-#: redbot/formatter/text.py:33
+#: redbot/formatter/text.py:66
 msgid "Script Links"
 msgstr "脚本链接"
 
-#: redbot/formatter/text.py:34
+#: redbot/formatter/text.py:67
 msgid "Frame Links"
 msgstr "框架链接"
 
-#: redbot/formatter/text.py:35
+#: redbot/formatter/text.py:68
 msgid "IFrame Links"
 msgstr "IFrame 链接"
 
-#: redbot/formatter/text.py:36
+#: redbot/formatter/text.py:69
 msgid "Image Links"
 msgstr "图片链接"
 
-#: redbot/formatter/text.py:39
+#: redbot/formatter/text.py:72
 #, python-format
 msgid "Error: %s\n"
-msgstr "错误： %s"
+msgstr "错误： %s\n"
 
 #: redbot/formatter/templates/footer.html:5
 msgid "version"
@@ -146,13 +147,13 @@ msgstr "服务条款"
 
 #: redbot/formatter/templates/footer.html:16
 msgid "apply."
-msgstr "应用"
+msgstr "适用。"
 
 #: redbot/formatter/templates/response_finish.html:25
 msgid ""
 "These are the response headers; hover over each one for an explanation of"
 " what it does. Headers that REDbot hasn't checked are darker."
-msgstr "这些是响应头; 悬停在每个头上可以显示其解释。 REDbot未检查的头更暗。"
+msgstr "这些是响应标头；悬停在每个标头上以了解其功能。未由REDbot检查的标头会变暗。"
 
 #: redbot/formatter/templates/response_finish.html:34
 msgid ""
@@ -160,78 +161,76 @@ msgid ""
 "when appropriate,\n"
 "                validate the response or check its assets (such as "
 "referenced images, stylesheets and scripts)."
-msgstr ""
-"在此，您可以查看响应正文，这是一个请求的 HAR 文档，并在适当时，\n"
-"                验证响应或检查其资源（如引用的图片、样式表和脚本）。"
+msgstr "在这里，您可以查看响应正文、该请求的 HAR 文档，并在适用时验证响应或检查其资源（如引用的图片、样式表和脚本）。"
 
 #: redbot/formatter/templates/response_finish.html:38
 msgid "How large the response headers are, including the status line"
-msgstr "响应头的大小，包括状态行"
+msgstr "响应标头的大小，包括状态行"
 
 #: redbot/formatter/templates/response_finish.html:39
 msgid "response headers"
-msgstr "响应头"
+msgstr "响应标头"
 
 #: redbot/formatter/templates/response_finish.html:39
-#: redbot/formatter/templates/response_finish.html:42
-#: redbot/formatter/templates/response_finish.html:47
+#: redbot/formatter/templates/response_finish.html:43
+#: redbot/formatter/templates/response_finish.html:48
 msgid "bytes"
 msgstr "字节"
 
-#: redbot/formatter/templates/response_finish.html:41
+#: redbot/formatter/templates/response_finish.html:42
 msgid "How large the response content is"
 msgstr "响应内容的尺寸"
 
-#: redbot/formatter/templates/response_finish.html:41
+#: redbot/formatter/templates/response_finish.html:42
 msgid "content"
 msgstr "内容"
 
-#: redbot/formatter/templates/response_finish.html:45
-msgid "How much using chunked encoding adds to the response size"
-msgstr "分块编码会增加响应多少大小"
-
 #: redbot/formatter/templates/response_finish.html:46
+msgid "How much using chunked encoding adds to the response size"
+msgstr "分块编码使响应增大了多少"
+
+#: redbot/formatter/templates/response_finish.html:47
 msgid "transfer overhead"
 msgstr "传输开销"
 
-#: redbot/formatter/templates/response_finish.html:52
+#: redbot/formatter/templates/response_finish.html:54
 msgid "View this response content (with any gzip compression removed)"
 msgstr "查看此响应内容（已移除任何 gzip 压缩）"
 
-#: redbot/formatter/templates/response_finish.html:63
-#: redbot/formatter/templates/response_multi_finish.html:105
+#: redbot/formatter/templates/response_finish.html:65
+#: redbot/formatter/templates/response_multi_finish.html:116
 msgid "This result is saved"
 msgstr "此结果已保存"
 
-#: redbot/formatter/templates/response_finish.html:64
-#: redbot/formatter/templates/response_multi_finish.html:106
+#: redbot/formatter/templates/response_finish.html:66
+#: redbot/formatter/templates/response_multi_finish.html:117
 #, python-brace-format
 msgid "Saved until {0} from now"
-msgstr "将在 {0} 后保存"
+msgstr "将保存 {0}"
 
-#: redbot/formatter/templates/response_finish.html:70
-#: redbot/formatter/templates/response_multi_finish.html:99
+#: redbot/formatter/templates/response_finish.html:72
+#: redbot/formatter/templates/response_multi_finish.html:110
 msgid "Save these results for future reference"
 msgstr "为日后参考保存这些结果"
 
-#: redbot/formatter/templates/response_finish.html:71
-#: redbot/formatter/templates/response_multi_finish.html:100
+#: redbot/formatter/templates/response_finish.html:73
+#: redbot/formatter/templates/response_multi_finish.html:111
 msgid "save"
 msgstr "保存"
 
-#: redbot/formatter/templates/response_finish.html:76
+#: redbot/formatter/templates/response_finish.html:78
 msgid "Validate the response body with a third party service"
 msgstr "使用第三方服务验证响应正文"
 
-#: redbot/formatter/templates/response_finish.html:77
+#: redbot/formatter/templates/response_finish.html:79
 msgid "validate content"
 msgstr "验证内容"
 
-#: redbot/formatter/templates/response_finish.html:88
+#: redbot/formatter/templates/response_finish.html:90
 msgid "Header sorting"
-msgstr "Header 排序"
+msgstr "标头排序"
 
-#: redbot/formatter/templates/response_finish.html:96
+#: redbot/formatter/templates/response_finish.html:98
 msgid ""
 "These notes explain what REDbot has found about your URL; hover over\n"
 "                each one for a detailed explanation."
@@ -239,11 +238,11 @@ msgstr ""
 "这些注释解释了 REDbot 发现的关于您 URL 的信息；将鼠标悬停在\n"
 "                每个注释上可获取详细说明。"
 
-#: redbot/formatter/templates/response_finish.html:124
+#: redbot/formatter/templates/response_finish.html:126
 msgid "If something doesn't seem right, feel free to"
 msgstr "如果有什么不对劲，请随时"
 
-#: redbot/formatter/templates/response_finish.html:125
+#: redbot/formatter/templates/response_finish.html:127
 msgid "file an issue"
 msgstr "提交问题"
 
@@ -317,7 +316,7 @@ msgstr "是否支持 If-None-Match 验证，使用 ETags。"
 
 #: redbot/formatter/templates/response_multi_finish.html:11
 msgid "INM"
-msgstr "信息"
+msgstr "INM"
 
 #: redbot/formatter/templates/response_multi_finish.html:13
 msgid ""
@@ -345,15 +344,15 @@ msgstr "遇到问题。"
 msgid "notes"
 msgstr "备注"
 
-#: redbot/formatter/templates/response_multi_finish.html:82
+#: redbot/formatter/templates/response_multi_finish.html:88
 msgid "response incomplete"
 msgstr "响应不完整"
 
-#: redbot/formatter/templates/response_multi_finish.html:84
+#: redbot/formatter/templates/response_multi_finish.html:90
 msgid "unknown problem"
 msgstr "未知问题"
 
-#: redbot/formatter/templates/response_multi_finish.html:114
+#: redbot/formatter/templates/response_multi_finish.html:125
 msgid "Notes"
 msgstr "备注"
 
@@ -361,17 +360,17 @@ msgstr "备注"
 msgid ""
 "Type in a URI here and press 'return' to check it. You can also specify "
 "request headers by clicking 'add a request header.'"
-msgstr "在此处键入 URI，然后按“回车键”进行检查。您还可以通过点击“添加请求头”来指定请求头。"
+msgstr "在此输入URI并按“回车”键检查它。您也可以通过点击“添加请求标头”来指定请求标头。"
 
 #: redbot/formatter/templates/response_start.html:75
 msgid "Enter a http:// or https:// URL to check"
 msgstr "请输入一个 http:// 或 https:// 网址进行检查"
 
-#: redbot/resource/fetch.py:305
+#: redbot/resource/fetch.py:455
 msgid "This response has content."
 msgstr "此响应包含内容。"
 
-#: redbot/resource/fetch.py:306
+#: redbot/resource/fetch.py:456
 #, python-format
 msgid ""
 "HTTP defines a few special situations where a response does not allow "
@@ -388,19 +387,19 @@ msgid ""
 "\n"
 "    %(sample)s\n"
 msgstr ""
-"HTTP 定义了几种不允许包含响应内容的特殊情况。这些情况包括 101、204 和 304 响应，以及对 `HEAD` 方法的响应。\n"
+"HTTP 定义了一些特殊情况，其中响应不允许包含内容。这包括 101、204 和 304 响应，以及对 `HEAD` 方法的响应。\n"
 "\n"
-"尽管不允许，此响应在头信息结束后仍包含数据。接收到此响应的客户端可能会将内容视为连接中的下一个响应，从而导致互操作性和安全问题。\n"
+"该响应在标头结束之后包含数据，尽管这是不被允许的。接收到该响应的客户端可能会将内容视为连接中的下一个响应，导致互操作性和安全问题。\n"
 "\n"
-"附加数据以以下内容开头：\n"
+"额外数据以下列内容开头：\n"
 "\n"
-"    %(sample)s"
+"    %(sample)s\n"
 
-#: redbot/resource/fetch.py:323
+#: redbot/resource/fetch.py:473
 msgid "This response has extra data after it."
 msgstr "此响应之后有额外数据。"
 
-#: redbot/resource/fetch.py:324
+#: redbot/resource/fetch.py:474
 #, python-format
 msgid ""
 "The server sent data after the message ended. This can be caused by an "
@@ -411,17 +410,17 @@ msgid ""
 "\n"
 "    %(sample)s\n"
 msgstr ""
-"服务器在消息结束后发送了数据。这可能是由于 `Content-Length` 报头不正确，或者服务器本身存在编程错误。\n"
+"服务器在消息结束之后发送了数据。这可能是由于错误的 `Content-Length` 标头，或者服务器自身的编程错误导致。\n"
 "\n"
-"额外数据以以下内容开始：\n"
+"额外数据以下列内容开头：\n"
 "\n"
-"    %(sample)s"
+"    %(sample)s\n"
 
-#: redbot/resource/fetch.py:337
+#: redbot/resource/fetch.py:487
 msgid "This response has chunked encoding errors."
 msgstr "此响应存在分块编码错误。"
 
-#: redbot/resource/fetch.py:338
+#: redbot/resource/fetch.py:488
 #, python-format
 msgid ""
 "The response indicates it uses HTTP chunked encoding, but there was a "
@@ -459,14 +458,14 @@ msgstr ""
 "此问题通常是由于发送了整数块大小而不是十六进制块大小，或者在发送 `Transfer-Encoding: chunked` "
 "时实际上并未对响应正文进行分块而引起的。"
 
-#: redbot/resource/fetch.py:360
+#: redbot/resource/fetch.py:510
 #, python-format
 msgid ""
 "This response has whitespace at the end of the '%(header_name)s' header "
 "field name."
 msgstr "此响应在 '%(header_name)s' 标头字段名称的末尾包含空格。"
 
-#: redbot/resource/fetch.py:361
+#: redbot/resource/fetch.py:511
 msgid ""
 "HTTP specifically bans whitespace between header field names and the "
 "colon, because they can easily\n"
@@ -477,14 +476,35 @@ msgid ""
 msgstr ""
 "HTTP 明确禁止在标头字段名和冒号之间出现空格，因为接收者很容易混淆；一些接收者会将其删除，而另一些则不会，这会导致各种攻击。\n"
 "\n"
-"大多数 HTTP 实现将拒绝处理此消息。"
+"大多数 HTTP 实现将拒绝处理此消息。\n"
 
-#: redbot/resource/fetch.py:372
+#: redbot/resource/fetch.py:522
+#, python-format
+msgid "The server sent more than %(limit)s non-final responses."
+msgstr "服务器发送了超过%(limit)s个非最终响应。"
+
+#: redbot/resource/fetch.py:523
+#, python-format
+msgid ""
+"Servers can send any number of 1xx (informational) responses before the "
+"final one, but this server\n"
+"sent more than REDbot is willing to examine. REDbot has kept and checked "
+"the first %(limit)s and\n"
+"ignored the rest.\n"
+"\n"
+"Clients receiving this many may behave unexpectedly, or give up."
+msgstr ""
+"服务器可以在最终响应之前发送任意数量的1xx（信息性）响应，但这个服务器发送了超过REDbot愿意检查的数量。REDbot保留了并检查了前%(limit)s个，忽略了其余的。"
+"\n"
+"\n"
+"接收到这么多响应的客户端可能会表现出不可预期的行为，或者放弃。"
+
+#: redbot/resource/fetch.py:534
 #, python-format
 msgid "The %(response)s response contains a %(header_name)s header."
 msgstr "%(response)s 响应包含一个 %(header_name)s 标头。"
 
-#: redbot/resource/fetch.py:373
+#: redbot/resource/fetch.py:535
 #, python-format
 msgid ""
 "RFC 9110 requires that 1xx responses not contain a `%(header_name)s` "
@@ -493,11 +513,11 @@ msgid ""
 "Clients receiving this response will either fail to process it or behave "
 "unexpectedly.\n"
 msgstr ""
-"RFC 9110 要求 1xx 响应不得包含 `%(header_name)s` 报头。\n"
+"RFC 9110 要求 1xx 响应不得包含 `%(header_name)s` 标头。\n"
 "\n"
-"收到此响应的客户端将无法处理它或表现出异常行为。"
+"接收此响应的客户端将要么无法处理它，要么表现出不可预测的行为。\n"
 
-#: redbot/resource/fetch.py:172
+#: redbot/resource/fetch.py:239
 #, python-format
 msgid "fetching %(uri)s (%(check_name)s)"
 msgstr "正在获取 %(uri)s (%(check_name)s)"
@@ -519,17 +539,17 @@ msgid ""
 "might remove them from\n"
 "their cached copies."
 msgstr ""
-"HTTP 要求 `304 Not Modified` 响应在存在于普通（例如，`200 OK`）响应中的情况下，也必须包含某些头信息。\n"
+"HTTP 要求 `304 Not Modified` 响应包含某些标头，如果这些标头也存在于正常响应中（例如 `200 OK` 响应）。\n"
 "\n"
-"此响应缺少以下头信息：`%(missing_hdrs)s`。\n"
+"此响应缺少以下标头：`%(missing_hdrs)s`。\n"
 "\n"
-"这可能会影响缓存操作；因为缺少头信息，缓存可能会从其缓存副本中移除它们。"
+"这可能会影响缓存操作；因为标头缺失，缓存可能从其缓存副本中删除这些标头。"
 
-#: redbot/resource/active_check/conneg.py:138
+#: redbot/resource/active_check/conneg.py:149
 msgid "There was a problem checking for Content Negotiation support."
 msgstr "检查内容协商支持时出现问题。"
 
-#: redbot/resource/active_check/conneg.py:139
+#: redbot/resource/active_check/conneg.py:150
 #, python-format
 msgid ""
 "When REDbot tried to check the resource for content negotiation support, "
@@ -539,20 +559,45 @@ msgid ""
 "\n"
 "Trying again might fix it."
 msgstr ""
-"当 REDbot 尝试检查资源的 Content-Negotiation 支持时，出现了一个问题：\n"
+"当 REDbot 尝试检查资源的内容协商支持时，出现了一个问题：\n"
 "\n"
 "`%(problem)s`\n"
 "\n"
 "重试可能会解决此问题。"
 
-#: redbot/resource/active_check/conneg.py:150
+#: redbot/resource/active_check/conneg.py:161
+msgid "The resource is compressed even when the client doesn't ask for it."
+msgstr "资源在客户端未请求的情况下也会被压缩。"
+
+#: redbot/resource/active_check/conneg.py:162
+msgid ""
+"HTTP supports compression of responses by negotiating for `Content-"
+"Encoding`. When REDbot made a\n"
+"request without `Accept-Encoding`, the response was already compressed, "
+"so REDbot can't tell\n"
+"whether the resource negotiates its compression.\n"
+"\n"
+"HTTP allows this, because a client that doesn't send `Accept-Encoding` is"
+" taken to accept any\n"
+"content-coding. Clients that can't decode the compression will not be "
+"able to use the resource,\n"
+"though, and the server may be ignoring any `Accept-Encoding` they do send."
+msgstr ""
+"HTTP 支持通过协商 `Content-Encoding` 来压缩响应。当 REDbot 没有发送 `Accept-Encoding` "
+"时，响应已经压缩，所以 REDbot 无法判断资源是否协商了压缩。\n"
+"\n"
+"HTTP 允许这种情况，因为不发送 `Accept-Encoding` "
+"的客户端被假定为接受任何内容编码。不过，无法解码压缩内容的客户端将无法使用该资源，而且服务器可能忽略了它们发送的任何 `Accept-"
+"Encoding`。"
+
+#: redbot/resource/active_check/conneg.py:175
 #, python-format
 msgid ""
 "Content negotiation for gzip compression is supported, saving "
 "%(savings)s%%."
 msgstr "内容协商已支持 gzip 压缩，可节省 %(savings)s%%。"
 
-#: redbot/resource/active_check/conneg.py:151
+#: redbot/resource/active_check/conneg.py:176
 #, python-format
 msgid ""
 "HTTP supports compression of responses by negotiating for `Content-"
@@ -568,14 +613,14 @@ msgstr ""
 "\n"
 "显示了压缩响应的标头。"
 
-#: redbot/resource/active_check/conneg.py:162
+#: redbot/resource/active_check/conneg.py:187
 #, python-format
 msgid ""
 "Content negotiation for gzip compression makes the response %(savings)s%%"
 " larger."
 msgstr "gzip 压缩的内容协商使响应大小增加了 %(savings)s%%。"
 
-#: redbot/resource/active_check/conneg.py:163
+#: redbot/resource/active_check/conneg.py:188
 #, python-format
 msgid ""
 "HTTP supports compression of responses by negotiating for `Content-"
@@ -597,28 +642,28 @@ msgstr ""
 "%(savings)s%%；从 %(orig_size)s 字节到 %(gzip_size)s 字节。\n"
 "\n"
 "通常，这种情况发生在未压缩的响应非常小，或者无法进一步压缩时；由于 gzip "
-"压缩有一定的开销，它可能会使响应变大。**关闭**此资源的压缩可能会略微提高响应时间和节省带宽。\n"
+"压缩有一定的开销，它可能会使响应变大。**关闭**此资源的压缩可能会略微缩短响应时间和节省带宽。\n"
 "\n"
 "将显示压缩响应的标头。"
 
-#: redbot/resource/active_check/conneg.py:178
+#: redbot/resource/active_check/conneg.py:203
 msgid "Content negotiation for gzip compression isn't supported."
 msgstr "gzip 压缩的内容协商不受支持。"
 
-#: redbot/resource/active_check/conneg.py:179
+#: redbot/resource/active_check/conneg.py:204
 msgid ""
 "HTTP supports compression of responses by negotiating for `Content-"
 "Encoding`. When REDbot asked for\n"
 "a compressed response, the resource did not provide one."
 msgstr "HTTP 通过协商 `Content-Encoding` 来支持响应压缩。当 REDbot 请求压缩响应时，资源并未提供。"
 
-#: redbot/resource/active_check/conneg.py:187
+#: redbot/resource/active_check/conneg.py:212
 msgid ""
 "The compressed response is negotiated, but doesn't have an appropriate "
 "Vary header."
-msgstr "压缩响应已协商，但缺少合适的 Vary 头。"
+msgstr "压缩响应已协商，但缺少合适的 Vary 标头。"
 
-#: redbot/resource/active_check/conneg.py:188
+#: redbot/resource/active_check/conneg.py:213
 msgid ""
 "All content negotiated responses need to have a `Vary` header that "
 "reflects the header(s) used to\n"
@@ -632,11 +677,11 @@ msgstr ""
 "\n"
 "压缩响应是针对 `gzip` 内容编码协商的，因此 `Vary` 标头需要包含 `Accept-Encoding`，即请求标头。"
 
-#: redbot/resource/active_check/conneg.py:199
+#: redbot/resource/active_check/conneg.py:224
 msgid "The resource doesn't send Vary consistently."
 msgstr "资源未一致地发送 Vary。"
 
-#: redbot/resource/active_check/conneg.py:200
+#: redbot/resource/active_check/conneg.py:225
 #, python-format
 msgid ""
 "HTTP requires that the `Vary` response header be sent consistently for "
@@ -655,20 +700,20 @@ msgid ""
 "consistently determine what the\n"
 "cache key for a given URI is."
 msgstr ""
-"HTTP 要求，如果 `Vary` 响应头因请求的不同方面而改变，则必须对所有响应一致地发送。\n"
+"HTTP 要求在所有响应中一致地发送 `Vary` 响应标头，如果它们根据请求的不同方面而变化。\n"
 "\n"
-"此资源既有压缩版本也有未压缩版本，通过 `Accept-Encoding` 请求头进行协商，但它对每个版本发送不同的 Vary 头：\n"
+"该资源提供压缩和未压缩两种变体，通过 `Accept-Encoding` 请求标头进行协商，但对于每个变体发送不同的 Vary 标头；\n"
 "\n"
-"* 压缩响应时发送 \"`%(conneg_vary)s`\"\n"
-"* 未压缩响应时发送 \"`%(no_conneg_vary)s`\"\n"
+"* 在响应压缩时发送 `%(conneg_vary)s`，\n"
+"* 在未压缩时发送 `%(no_conneg_vary)s`。\n"
 "\n"
-"这可能导致下游缓存出现问题，因为它们无法一致地确定给定 URI 的缓存键是什么。"
+"这可能会给下游缓存带来问题，因为它们无法一致地确定给定URI的缓存键是什么。"
 
-#: redbot/resource/active_check/conneg.py:217
+#: redbot/resource/active_check/conneg.py:242
 msgid "The response status is different when content negotiation happens."
 msgstr "响应状态在发生内容协商时有所不同。"
 
-#: redbot/resource/active_check/conneg.py:218
+#: redbot/resource/active_check/conneg.py:243
 #, python-format
 msgid ""
 "When content negotiation is used, the response status shouldn't change "
@@ -689,12 +734,12 @@ msgstr ""
 "\n"
 "REDbot 因此没有检查内容协商的其他方面。"
 
-#: redbot/resource/active_check/conneg.py:231
+#: redbot/resource/active_check/conneg.py:256
 #, python-format
 msgid "The %(header)s header is different when content negotiation happens."
-msgstr "当发生内容协商时，%(header)s 头部会有所不同。"
+msgstr "当内容协商发生时，%(header)s 标头会不同。"
 
-#: redbot/resource/active_check/conneg.py:232
+#: redbot/resource/active_check/conneg.py:257
 #, python-format
 msgid ""
 "When content negotiation is used, the %(header)s response header "
@@ -704,16 +749,16 @@ msgid ""
 "* Negotiated: `%(negotiated_val)s`\n"
 "* Non-negotiated: `%(bare_val)s`"
 msgstr ""
-"当使用内容协商时，%(header)s 响应头在协商和非协商的响应之间不应改变。\n"
+"当使用内容协商时，%(header)s 响应标头在协商响应和非协商响应之间不应改变。\n"
 "\n"
-"* 协商的：`%(negotiated_val)s`\n"
-"* 非协商的：`%(bare_val)s`"
+"* 协商：`%(negotiated_val)s`\n"
+"* 非协商：`%(bare_val)s`"
 
-#: redbot/resource/active_check/conneg.py:243
+#: redbot/resource/active_check/conneg.py:268
 msgid "The response content is different when content negotiation happens."
 msgstr "当发生内容协商时，响应内容是不同的。"
 
-#: redbot/resource/active_check/conneg.py:244
+#: redbot/resource/active_check/conneg.py:269
 msgid ""
 "When content negotiation is used, the response content typically "
 "shouldn't change between negotiated\n"
@@ -727,11 +772,11 @@ msgstr ""
 "\n"
 "这可能存在正当理由；例如，因为不同的服务器处理了两个请求。然而，RED 的输出可能会因此产生偏差。"
 
-#: redbot/resource/active_check/conneg.py:255
+#: redbot/resource/active_check/conneg.py:280
 msgid "The ETag doesn't change between negotiated representations."
-msgstr "ETag 在协商表示之间不应改变。"
+msgstr "协商得到的各个表示之间，ETag 没有变化。"
 
-#: redbot/resource/active_check/conneg.py:256
+#: redbot/resource/active_check/conneg.py:281
 msgid ""
 "HTTP requires that the `ETag`s for two different responses associated "
 "with the same URI be\n"
@@ -798,13 +843,13 @@ msgid ""
 "`304 Not Modified`\n"
 "response, indicating that it supports `ETag` validation."
 msgstr ""
-"HTTP 允许客户端进行条件请求，以查看其缓存的副本是否仍然有效。\n"
-"由于此响应具有 `ETag`，客户端应能够使用 `If-None-Match` 请求头进行验证。REDbot 已执行此操作，并发现该资源发送了 "
-"`304 Not Modified` 响应，表明它支持 `ETag` 验证。"
+"HTTP 允许客户端进行有条件请求，以查看它们持有的副本是否仍然有效。由于此响应包含 `ETag`，客户端应该能够使用 `If-None-"
+"Match` 请求标头进行验证。REDbot 已经完成了这一点，并发现该资源发送 `304 Not Modified` 响应，表明它支持 "
+"`ETag` 验证。"
 
 #: redbot/resource/active_check/etag_validate.py:125
 msgid "An If-None-Match conditional request returned the full content unchanged."
-msgstr "If-None-Match 条件请求返回了完全不变的内容。"
+msgstr "If-None-Match 条件请求返回了未更改的完整内容。"
 
 #: redbot/resource/active_check/etag_validate.py:127
 msgid ""
@@ -818,10 +863,10 @@ msgid ""
 "response even though it hadn't\n"
 "changed, indicating that it doesn't support `ETag` validation."
 msgstr ""
-"HTTP 允许客户端进行条件请求，以查看其持有的副本是否仍然有效。\n"
-"由于此响应包含 `ETag`，客户端应能够使用 `If-None-Match` 请求头进行验证。\n"
+"HTTP 允许客户端进行有条件请求，以检查他们持有的副本是否仍然有效。由于此响应包含 `ETag`，客户端应该能够使用 `If-None-"
+"Match` 请求标头进行验证。\n"
 "\n"
-"REDbot 已执行此操作，并发现即使资源未更改，它也会发送相同的完整响应，这表明它不支持 `ETag` 验证。"
+"REDbot 已经做到了这一点，并发现资源即使没有更改也会发送相同的完整响应，这表明它不支持 `ETag` 验证。"
 
 #: redbot/resource/active_check/etag_validate.py:139
 #: redbot/resource/active_check/etag_validate.py:156
@@ -897,10 +942,10 @@ msgid ""
 "request, so REDbot can't tell whether or not `ETag` validation is "
 "supported."
 msgstr ""
-"HTTP 允许客户端发出条件请求，以检查其持有的副本是否仍然有效。\n"
-"由于此响应具有 `ETag`，客户端应该能够使用 `If-None-Match` 请求头来进行验证。\n"
+"HTTP 允许客户端进行有条件请求，以查看他们持有的副本是否仍然有效。由于该响应包含 `ETag`，客户端应该能够使用 `If-None-"
+"Match` 请求标头进行验证。\n"
 "\n"
-"REDbot 已执行此操作，但在原始请求和验证请求之间响应已发生更改，因此 REDbot 无法判断是否支持 `ETag` 验证。"
+"REDbot 已经实现了这一点，但原始请求和验证请求之间的响应发生了变化，所以 REDbot 无法确定是否支持 `ETag` 验证。"
 
 #: redbot/resource/active_check/etag_validate.py:185
 #, python-format
@@ -918,9 +963,9 @@ msgid ""
 "%(enc_inm_status)s status code, so RED\n"
 "can't tell whether or not `ETag` validation is supported."
 msgstr ""
-"HTTP 允许客户端发出条件请求，以查看它们所持有的副本是否仍然有效。\n"
-"由于此响应包含 `ETag`，客户端应能够使用 `If-None-Match` 请求头进行验证。REDbot 已经这样做了，但响应的 "
-"%(enc_inm_status)s 状态码，因此 RED 无法确定是否支持 `ETag` 验证。"
+"HTTP 允许客户端进行有条件请求，以查看他们持有的副本是否仍然有效。由于此响应包含 `ETag`，客户端应该能够使用 `If-None-"
+"Match` 请求标头进行验证。REDbot 已经实现了这一点，但响应包含一个 %(enc_inm_status)s 状态码，因此 RED "
+"无法确定 `ETag` 验证是否被支持。"
 
 #: redbot/resource/active_check/etag_validate.py:18
 msgid "ETag Validation"
@@ -930,11 +975,11 @@ msgstr "ETag 验证"
 msgid "The ETag validation response"
 msgstr "ETag 验证响应"
 
-#: redbot/resource/active_check/lm_validate.py:110
+#: redbot/resource/active_check/lm_validate.py:112
 msgid "There was a problem checking for Last-Modified validation support."
 msgstr "检查 Last-Modified 验证支持时出现问题。"
 
-#: redbot/resource/active_check/lm_validate.py:111
+#: redbot/resource/active_check/lm_validate.py:113
 #, python-format
 msgid ""
 "When REDbot tried to check the resource for Last-Modified validation "
@@ -950,11 +995,11 @@ msgstr ""
 "\n"
 "重试可能可以解决此问题。"
 
-#: redbot/resource/active_check/lm_validate.py:122
+#: redbot/resource/active_check/lm_validate.py:124
 msgid "If-Modified-Since conditional requests are supported."
 msgstr "If-Modified-Since 条件请求受支持。"
 
-#: redbot/resource/active_check/lm_validate.py:123
+#: redbot/resource/active_check/lm_validate.py:125
 msgid ""
 "HTTP allows clients to make conditional requests to see if a copy that "
 "they hold is still valid.\n"
@@ -966,18 +1011,18 @@ msgid ""
 "Modified` response, indicating\n"
 "that it supports `Last-Modified` validation."
 msgstr ""
-"HTTP 允许客户端发出条件请求，以检查其缓存的副本是否仍然有效。\n"
-"由于此响应具有 `Last-Modified` 标头，因此客户端应能够使用 `If-Modified-Since` 请求标头进行验证。\n"
+"HTTP 允许客户端发送有条件请求，以检查他们持有的副本是否仍然有效。由于此响应包含 `Last-Modified` 标头，客户端应该能够使用 "
+"`If-Modified-Since` 请求标头进行验证。\n"
 "\n"
-"REDbot 已执行此操作，并发现该资源发送了 `304 Not Modified` 响应，表明它支持 `Last-Modified` 验证。"
+"REDbot 已经实现了这一点，并发现该资源返回 `304 Not Modified` 响应，表明它支持 `Last-Modified` 验证。"
 
-#: redbot/resource/active_check/lm_validate.py:135
+#: redbot/resource/active_check/lm_validate.py:137
 msgid ""
 "An If-Modified-Since conditional request returned the full content "
 "unchanged."
 msgstr "If-Modified-Since 条件请求返回了未更改的完整内容。"
 
-#: redbot/resource/active_check/lm_validate.py:136
+#: redbot/resource/active_check/lm_validate.py:138
 msgid ""
 "HTTP allows clients to make conditional requests to see if a copy that "
 "they hold is still valid.\n"
@@ -989,18 +1034,18 @@ msgid ""
 "even though it hadn't\n"
 "changed, indicating that it doesn't support `Last-Modified` validation."
 msgstr ""
-"HTTP 允许客户端发起条件请求，以检查其缓存副本是否仍然有效。\n"
-"由于此响应包含 `Last-Modified` 标头，客户端应该能够使用 `If-Modified-Since` 请求标头进行验证。\n"
+"HTTP 允许客户端发送有条件请求，以检查他们持有的副本是否仍然有效。由于此响应包含 `Last-Modified` 标头，客户端应该能够使用 "
+"`If-Modified-Since` 请求标头进行验证。\n"
 "\n"
-"REDbot 已执行此操作，发现即使资源未更改，服务器也发送了完整响应，这表明它不支持 `Last-Modified` 验证。"
+"REDbot 已经完成了此操作，并发现即使资源没有更改，它仍然发送了完整响应，这表明它不支持 `Last-Modified` 验证。"
 
-#: redbot/resource/active_check/lm_validate.py:148
+#: redbot/resource/active_check/lm_validate.py:150
 msgid ""
 "An If-Modified-Since conditional request returned the full content, but "
 "it had changed."
 msgstr "If-Modified-Since 条件请求返回了完整内容，但内容已更改。"
 
-#: redbot/resource/active_check/lm_validate.py:151
+#: redbot/resource/active_check/lm_validate.py:153
 msgid ""
 "HTTP allows clients to make conditional requests to see if a copy that "
 "they hold is still valid.\n"
@@ -1013,17 +1058,18 @@ msgid ""
 "request, so REDbot can't tell whether or not `Last-Modified` validation "
 "is supported."
 msgstr ""
-"HTTP 允许客户端发出条件请求，以查看其缓存的副本是否仍然有效。\n"
-"由于此响应具有 `Last-Modified` 标头，客户端应能够使用 `If-Modified-Since` 请求标头进行验证。\n"
+"HTTP 允许客户端发送有条件请求，以检查他们持有的副本是否仍然有效。由于此响应包含 `Last-Modified` 标头，客户端应该能够使用 "
+"`If-Modified-Since` 请求标头进行验证。\n"
 "\n"
-"REDbot 已执行此操作，但响应在原始请求和验证请求之间发生了更改，因此 REDbot 无法确定是否支持 `Last-Modified` 验证。"
+"REDbot 已经实现了这一点，但原始请求和验证请求之间的响应发生了变化，所以 REDbot 无法确定 `Last-Modified` "
+"验证是否被支持。"
 
-#: redbot/resource/active_check/lm_validate.py:163
+#: redbot/resource/active_check/lm_validate.py:165
 #, python-format
 msgid "An If-Modified-Since conditional request returned a %(ims_status)s status."
 msgstr "If-Modified-Since 条件请求返回了 %(ims_status)s 状态。"
 
-#: redbot/resource/active_check/lm_validate.py:164
+#: redbot/resource/active_check/lm_validate.py:166
 #, python-format
 msgid ""
 "HTTP allows clients to make conditional requests to see if a copy that "
@@ -1036,26 +1082,25 @@ msgid ""
 "code, so REDbot can't tell\n"
 "whether or not `Last-Modified` validation is supported."
 msgstr ""
-"HTTP 允许客户端进行条件请求，以检查其持有的副本是否仍然有效。\n"
-"由于此响应具有 `Last-Modified` 标头，客户端应能够使用\n"
+"HTTP 允许客户端进行有条件请求，以查看他们持有的副本是否仍然有效。由于此响应包含 `Last-Modified` 标头，客户端应该能够使用 "
 "`If-Modified-Since` 请求标头进行验证。\n"
 "\n"
-"REDbot 已执行此操作，但响应的 %(enc_ims_status)s 状态码，因此 REDbot 无法确定\n"
-"`Last-Modified` 验证是否受支持。"
+"REDbot 已经完成了此操作，但响应包含 %(enc_ims_status)s 状态码，因此 REDbot 无法确定 `Last-"
+"Modified` 验证是否得到支持。"
 
 #: redbot/resource/active_check/lm_validate.py:20
 msgid "Last-Modified Validation"
-msgstr "最后修改日期验证"
+msgstr "Last-Modified 验证"
 
 #: redbot/resource/active_check/lm_validate.py:22
 msgid "The Last-Modified validation response"
-msgstr "最后修改响应"
+msgstr "Last-Modified 验证响应"
 
-#: redbot/resource/active_check/range.py:146
+#: redbot/resource/active_check/range.py:148
 msgid "There was a problem checking for Partial Content support."
 msgstr "检查部分内容支持时出现问题。"
 
-#: redbot/resource/active_check/range.py:147
+#: redbot/resource/active_check/range.py:149
 #, python-format
 msgid ""
 "When REDbot tried to check the resource for partial content support, "
@@ -1071,11 +1116,11 @@ msgstr ""
 "\n"
 "再试一次可能可以解决此问题。"
 
-#: redbot/resource/active_check/range.py:158
+#: redbot/resource/active_check/range.py:160
 msgid "The resource advertises support for non-standard range-units."
-msgstr "资源支持非标准范围单位。"
+msgstr "资源声明支持非标准的 range-unit。"
 
-#: redbot/resource/active_check/range.py:159
+#: redbot/resource/active_check/range.py:161
 msgid ""
 "The `Accept-Ranges` response header tells clients what `range-unit`s a "
 "resource is willing to\n"
@@ -1084,16 +1129,16 @@ msgid ""
 "Clients who don't know about the non-standard range-unit will not be able"
 " to use it."
 msgstr ""
-"`Accept-Ranges` 响应头告知客户端资源未来请求中愿意处理的 `range-unit`。HTTP 只定义两种：`bytes` 和 "
+"响应标头 `Accept-Ranges` 告诉客户端资源未来请求愿意处理的 `range-unit`。HTTP 仅定义了两个：`bytes` 和 "
 "`none`。\n"
 "\n"
-"不了解非标准 `range-unit` 的客户端将无法使用它。"
+"不了解非标准 range-unit 的客户端将无法使用它。"
 
-#: redbot/resource/active_check/range.py:169
+#: redbot/resource/active_check/range.py:171
 msgid "A ranged request returned the correct partial content."
 msgstr "Range 请求返回了正确的局部内容。"
 
-#: redbot/resource/active_check/range.py:170
+#: redbot/resource/active_check/range.py:172
 msgid ""
 "This resource advertises support for ranged requests with `Accept-"
 "Ranges`; that is, it allows\n"
@@ -1101,14 +1146,14 @@ msgid ""
 " this by requesting part of\n"
 "this response, which was returned correctly."
 msgstr ""
-"此资源通过 `Accept-Ranges` 广告支持分段请求；也就是说，它允许客户端指定仅发送其中一部分。REDbot "
+"此资源通过 `Accept-Ranges` 声明支持范围请求；也就是说，它允许客户端指定仅发送其中一部分。REDbot "
 "已通过请求此响应的一部分进行了测试，并且已正确返回。"
 
-#: redbot/resource/active_check/range.py:179
+#: redbot/resource/active_check/range.py:181
 msgid "A ranged request returned partial content, but it was incorrect."
 msgstr "分段请求返回了部分内容，但它是错误的。"
 
-#: redbot/resource/active_check/range.py:180
+#: redbot/resource/active_check/range.py:182
 #, python-format
 msgid ""
 "This resource advertises support for ranged requests with `Accept-"
@@ -1152,24 +1197,22 @@ msgstr ""
 "\n"
 "_(最多显示 100 个字符的示例)_"
 
-#: redbot/resource/active_check/range.py:205
+#: redbot/resource/active_check/range.py:207
 msgid "A ranged request returned another representation."
 msgstr "一个范围请求返回了另一个表示。"
 
-#: redbot/resource/active_check/range.py:206
+#: redbot/resource/active_check/range.py:208
 msgid ""
 "A new representation was retrieved when checking support of ranged "
 "request. This is not an error,\n"
 "it just indicates that REDbot cannot draw any conclusion at this time."
-msgstr ""
-"检索到支持范围请求的新表示形式。这不是一个错误，\n"
-"它只是表明 REDbot 目前无法得出任何结论。"
+msgstr "在检查分段请求支持时，获取了一个新的表示。这不是错误，它只是表示REDbot此时无法得出任何结论。"
 
-#: redbot/resource/active_check/range.py:214
+#: redbot/resource/active_check/range.py:216
 msgid "A ranged request returned the full rather than partial content."
 msgstr "范围请求返回了完整内容，而非部分内容。"
 
-#: redbot/resource/active_check/range.py:215
+#: redbot/resource/active_check/range.py:217
 msgid ""
 "This resource advertises support for ranged requests with `Accept-"
 "Ranges`; that is, it allows\n"
@@ -1183,12 +1226,12 @@ msgstr ""
 "此资源通过 `Accept-Ranges` 声明支持范围请求；也就是说，它允许客户端指定仅发送响应的一部分。REDbot "
 "已通过请求此响应的一部分进行了测试，但返回了整个响应。换句话说，尽管该资源声明支持部分内容，但它似乎并未实际支持。"
 
-#: redbot/resource/active_check/range.py:225
+#: redbot/resource/active_check/range.py:227
 #, python-format
 msgid "A ranged request returned a %(range_status)s status."
 msgstr "一个范围请求返回了 %(range_status)s 状态。"
 
-#: redbot/resource/active_check/range.py:226
+#: redbot/resource/active_check/range.py:228
 #, python-format
 msgid ""
 "This resource advertises support for ranged requests; that is, it allows "
@@ -1201,13 +1244,13 @@ msgstr ""
 "此资源支持范围请求；也就是说，它允许客户端指定仅发送响应的一部分。REDbot 已通过请求响应的一部分进行了测试，但返回了 "
 "%(enc_range_status)s 响应代码，这是 REDbot 未预料到的。"
 
-#: redbot/resource/active_check/range.py:235
+#: redbot/resource/active_check/range.py:237
 msgid ""
 "Partial responses don't have the same support for compression that full "
 "ones do."
 msgstr "部分响应不支持与完整响应相同的压缩。"
 
-#: redbot/resource/active_check/range.py:236
+#: redbot/resource/active_check/range.py:238
 msgid ""
 "This resource supports ranged requests and also supports negotiation for "
 "gzip compression, but\n"
@@ -1222,11 +1265,11 @@ msgstr ""
 "\n"
 "这可能导致客户端在比较部分响应和完整响应时出现问题，因为部分响应是以字节范围表示的，而压缩会改变字节。"
 
-#: redbot/resource/active_check/range.py:247
+#: redbot/resource/active_check/range.py:249
 msgid "The partial response is missing required headers."
 msgstr "部分响应缺少必需的标头。"
 
-#: redbot/resource/active_check/range.py:248
+#: redbot/resource/active_check/range.py:250
 #, python-format
 msgid ""
 "HTTP requires `206 Partial Content` responses to have certain headers, if"
@@ -1246,11 +1289,11 @@ msgstr ""
 "\n"
 "这可能会影响缓存操作；因为缺少标头，缓存可能会从其存储的副本中删除它们。"
 
-#: redbot/resource/active_check/range.py:261
+#: redbot/resource/active_check/range.py:263
 msgid "The partial response has a Content-Length equal to the full response."
 msgstr "部分响应的 Content-Length 等于完整响应。"
 
-#: redbot/resource/active_check/range.py:262
+#: redbot/resource/active_check/range.py:264
 msgid ""
 "The `Content-Length` header in a 206 response should indicate the size of"
 " the partial content, not\n"
@@ -1258,14 +1301,14 @@ msgid ""
 "matches the size of the full response,\n"
 "which suggests it might be incorrect."
 msgstr ""
-"Content-Length 标头在 206 "
-"响应中应该指示部分内容的大小，而不是完整的响应。部分响应的内容长度与完整的响应的大小匹配，这表明它可能不正确。"
+"`Content-Length` 标头在 206 响应中应指示部分内容的大小，而不是完整响应的大小。此部分响应的 `Content-Length`"
+" 与完整响应的大小一致，这表明它可能不正确。"
 
-#: redbot/resource/active_check/range.py:271
+#: redbot/resource/active_check/range.py:273
 msgid "The Content-Range header indicates an incorrect total length."
 msgstr "Content-Range 标头指示的总长度不正确。"
 
-#: redbot/resource/active_check/range.py:272
+#: redbot/resource/active_check/range.py:274
 #, python-format
 msgid ""
 "The `Content-Range` header in a 206 response indicates the total length "
@@ -1274,15 +1317,15 @@ msgid ""
 "the full response\n"
 "(%(length_full)s), which suggests one of them is incorrect."
 msgstr ""
-"Content-Range 头字段在 206 响应中表示响应的总长度——在此，为 %(length_206)s。在此，该值与全响应的 "
-"Content-Length %(length_full)s 不匹配，这表明其中一个有误。"
+"206 响应中的 `Content-Range` 标头表示响应的总长度，此处为 %(length_206)s。该值与完整响应的 `Content-"
+"Length`（%(length_full)s）不一致，这表明二者之一有误。"
 
-#: redbot/resource/active_check/range.py:28
+#: redbot/resource/active_check/range.py:27
 #: redbot/translations/extra_strings.py:16
 msgid "Partial Content"
 msgstr "部分内容"
 
-#: redbot/resource/active_check/range.py:30
+#: redbot/resource/active_check/range.py:29
 msgid "The partial response"
 msgstr "部分响应"
 

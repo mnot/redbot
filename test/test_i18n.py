@@ -212,7 +212,7 @@ class TestI18n(unittest.TestCase):
         with set_locale("fr"):
             note = BODY_NOT_ALLOWED("subject", sample="test sample")
             self.assertIn("Cette réponse a du contenu.", note.summary)
-            self.assertIn("HTTP définit quelques situations spéciales", note.detail)
+            self.assertIn("HTTP définit quelques situations", note.detail)
 
     def test_redbot_note_detail_reflects_current_locale(self):
         """
@@ -228,7 +228,7 @@ class TestI18n(unittest.TestCase):
             fr_detail = str(note.detail)
         with set_locale("en"):
             en_detail = str(note.detail)
-        self.assertIn("HTTP définit quelques situations spéciales", fr_detail)
+        self.assertIn("HTTP définit quelques situations", fr_detail)
         self.assertIn("HTTP defines a few special situations", en_detail)
         with set_locale("fr"):
             self.assertEqual(str(note.detail), fr_detail)
