@@ -95,23 +95,74 @@ class CatalogChecker:
             if not message.id:
                 continue
 
+            # A plural message has a tuple of ids and of strings; report it by its singular.
+            msgid = message.id[0] if message.pluralizable else message.id
+
             # 1. Check for fuzzy
             if "fuzzy" in message.flags:
                 issues.append(
-                    TranslationIssue(IssueType.FUZZY, message.id, message.lineno)
+                    TranslationIssue(IssueType.FUZZY, msgid, message.lineno)
                 )
 
             # 2. Check for missing
-            if not message.string:
+            if not message.string or (
+                message.pluralizable and not all(message.string)
+            ):
                 issues.append(
-                    TranslationIssue(IssueType.MISSING, message.id, message.lineno)
+                    TranslationIssue(IssueType.MISSING, msgid, message.lineno)
                 )
+                continue
+
+            if message.pluralizable:
+                issues.extend(self.check_plural(message))
                 continue
 
             issues.extend(
                 self.check_pair(message.id, message.string, lang, message.lineno)
             )
 
+        return issues
+
+    def check_plural(self, message) -> List[TranslationIssue]:
+        """
+        Check a plural message's variables and syntax. A form may leave out a variable
+        the other form has ("one item" and "%(n)s items"), so only variables the English
+        doesn't have are errors in every form; the last form, which serves the larger
+        numbers (and every number, in a language with one form), must keep all of the
+        English plural's. The heuristics are not run on plurals.
+        """
+        singular, plural = message.id[0], message.id[1]
+        forms = list(message.string)
+        issues = []
+        allowed = self.find_variables(singular) | self.find_variables(plural)
+        for form in forms:
+            extra = self.find_variables(form) - allowed
+            if extra:
+                issues.append(
+                    TranslationIssue(
+                        IssueType.BAD_VARIABLE,
+                        singular,
+                        message.lineno,
+                        f"Extra: {', '.join(sorted(extra))}",
+                    )
+                )
+            valid, error_msg = self.validate_format_string(form)
+            if not valid:
+                issues.append(
+                    TranslationIssue(
+                        IssueType.SYNTAX_ERROR, singular, message.lineno, error_msg
+                    )
+                )
+        missing = self.find_variables(plural) - self.find_variables(forms[-1])
+        if missing:
+            issues.append(
+                TranslationIssue(
+                    IssueType.BAD_VARIABLE,
+                    singular,
+                    message.lineno,
+                    f"Missing: {', '.join(sorted(missing))}",
+                )
+            )
         return issues
 
     def check_pair(
