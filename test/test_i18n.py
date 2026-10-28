@@ -136,6 +136,7 @@ class TestI18n(unittest.TestCase):
             def __init__(self):
                 self.callbacks = {}
                 self.res_version = b"1.1"
+                self.conn = None
                 self.input_transfer_length = 0
                 self.input_header_length = 0
 

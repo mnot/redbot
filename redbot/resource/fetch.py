@@ -8,14 +8,15 @@ based upon the provided headers.
 
 import time
 from configparser import SectionProxy
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple, cast
 
 import thor
 import thor.http.error as httperr
 from httplint import HttpRequestLinter, HttpResponseLinter
-from httplint.note import categories, levels
+from httplint.note import Note, Notes, categories, levels
 from netaddr import IPAddress, IPNetwork  # type: ignore
 from thor.http.client import HttpClientExchange
+from thor.http.client.connection import HttpClientConnection
 
 from redbot import __version__
 from redbot.i18n import _
@@ -115,6 +116,8 @@ class RedFetcher(thor.events.EventEmitter):
         self.request = HttpRequestLinter()
         self.nonfinal_responses: List[HttpResponseLinter] = []
         self.nonfinal_overflow = 0  # 1xx responses beyond MAX_NONFINAL_RESPONSES, not kept
+        self._nonfinal_conn: Optional[HttpClientConnection] = None  # what they arrived on
+        self._nonfinal_notes: List[Note] = []  # the notes they raised
         self.response = HttpResponseLinter()
         self.response.decoded.processors.append(self.sample_decoded)
         self.exchange: HttpClientExchange
@@ -133,6 +136,7 @@ class RedFetcher(thor.events.EventEmitter):
         del state["response_content_processors"]
         # Saved tests are rendered with the Web UI's config; this one holds secrets.
         state.pop("config", None)
+        state.pop("_nonfinal_conn", None)
         return state
 
     def __repr__(self) -> str:
@@ -278,10 +282,13 @@ class RedFetcher(thor.events.EventEmitter):
         self, status: bytes, phrase: bytes, res_headers: RawHeaderListType
     ) -> None:
         "Got a non-final response."
+        self._forget_stale_nonfinal()
         if len(self.nonfinal_responses) >= MAX_NONFINAL_RESPONSES:
             # A hostile server can send these indefinitely; keep the first few and stop parsing.
             if not self.nonfinal_overflow:
-                self.response.notes.add("", ONE_XX_TOO_MANY, limit=MAX_NONFINAL_RESPONSES)
+                self._nonfinal_notes.append(
+                    self.response.notes.add("", ONE_XX_TOO_MANY, limit=MAX_NONFINAL_RESPONSES)
+                )
             self.nonfinal_overflow += 1
             return
         nfres = HttpResponseLinter(start_time=time.time())
@@ -304,17 +311,42 @@ class RedFetcher(thor.events.EventEmitter):
                 b"content-range",
                 b"trailer",
             ]:
-                self.response.notes.add(
-                    f"header-{name.decode('ascii')}",
-                    ONE_XX_BAD_HEADER,
-                    response=status.decode("ascii", "replace").split()[0],
-                    header_name=wire_name.decode("ascii"),
+                self._nonfinal_notes.append(
+                    self.response.notes.add(
+                        f"header-{name.decode('ascii')}",
+                        ONE_XX_BAD_HEADER,
+                        response=status.decode("ascii", "replace").split()[0],
+                        header_name=wire_name.decode("ascii"),
+                    )
                 )
+
+    def _forget_stale_nonfinal(self) -> None:
+        """
+        Drop 1xx responses that arrived on an earlier attempt. Thor retries a dropped request on a
+        new connection without an event; the connection changing is the only sign.
+        """
+        if not hasattr(self, "exchange"):  # the fetch is already done
+            return
+        conn = self.exchange.conn
+        if conn is not self._nonfinal_conn:
+            self._reset_nonfinal()
+            self._nonfinal_conn = conn
+
+    def _reset_nonfinal(self) -> None:
+        "Forget the 1xx responses seen so far, and the notes they raised."
+        stale = {id(note) for note in self._nonfinal_notes}
+        notes = cast(Notes, self.response.notes)
+        notes.data[:] = [n for n in notes.data if id(n) not in stale]
+        self._nonfinal_notes = []
+        self.nonfinal_responses = []
+        self.nonfinal_overflow = 0
+        self._nonfinal_conn = None
 
     def _response_start(self, status: bytes, phrase: bytes, res_headers: RawHeaderListType) -> None:
         "Process the response start-line and headers."
         if self.fetch_done:
             return
+        self._forget_stale_nonfinal()
         if not self._wba_retried and status in WBA_CHALLENGE_STATUSES and self.request.uri:
             if _has_accept_signature(res_headers):
                 try:
@@ -331,8 +363,7 @@ class RedFetcher(thor.events.EventEmitter):
                         f"Web Bot Auth challenge for {self.request.uri}; retrying signed",
                     )
                     self._abort_exchange()
-                    self.nonfinal_responses = []
-                    self.nonfinal_overflow = 0
+                    self._reset_nonfinal()
                     self.transfer_in = 0
                     self.transfer_out = 0
                     self._send_request(signer.sign_request(self.request.uri))
@@ -378,6 +409,7 @@ class RedFetcher(thor.events.EventEmitter):
 
     def _response_error(self, error: httperr.HttpError) -> None:
         "Handle an error encountered while fetching the response."
+        self._forget_stale_nonfinal()
         self.emit(
             "debug",
             f"fetch error {self.request.uri} ({self.check_name}) - {error.desc}"

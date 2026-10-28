@@ -19,7 +19,7 @@ from typing import List
 import thor
 
 from redbot.resource import HttpResource
-from redbot.resource.fetch import RedFetcher
+from redbot.resource.fetch import ONE_XX_BAD_HEADER, RedFetcher
 
 CHALLENGE_BODY = b"x" * 400
 
@@ -89,7 +89,35 @@ class ChallengeServer:
             conn.close()
 
 
-class TestChallengeConnection(unittest.TestCase):
+class InterimChallengeServer(ChallengeServer):
+    "Sends a 103 with a header it shouldn't have before the challenge, and none before the 200."
+
+    def handle(self, conn: socket.socket) -> None:
+        try:
+            data = b""
+            while b"\r\n\r\n" not in data:
+                more = conn.recv(65536)
+                if not more:
+                    return
+                data += more
+            if b"signature-input:" in data.lower():
+                conn.sendall(b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nok")
+            else:
+                conn.sendall(
+                    b"HTTP/1.1 103 Early Hints\r\nContent-Length: 5\r\n\r\n"
+                    b"HTTP/1.1 401 Unauthorized\r\nContent-Length: 0\r\n"
+                    b'Accept-Signature: sig1=("@authority");tag="web-bot-auth"\r\n\r\n'
+                )
+        except OSError:
+            pass
+        finally:
+            conn.close()
+
+
+class ChallengeCase(unittest.TestCase):
+    def make_server(self) -> ChallengeServer:
+        return ChallengeServer()
+
     def setUp(self):
         fd, key_path = tempfile.mkstemp(suffix=".pem")
         with os.fdopen(fd, "wb") as fh:
@@ -106,7 +134,7 @@ class TestChallengeConnection(unittest.TestCase):
             }
         )
         self.config = parser["redbot"]
-        self.server = ChallengeServer()
+        self.server = self.make_server()
         self.addCleanup(self.server.close)
 
     def resource(self) -> HttpResource:
@@ -119,6 +147,8 @@ class TestChallengeConnection(unittest.TestCase):
         self.assertTrue(check_locally(resource), "check_done didn't arrive")
         return resource
 
+
+class TestChallengeConnection(ChallengeCase):
     def test_challenged_connection_is_abandoned(self):
         resource = self.fetch()
         self.assertEqual(resource.response.status_code, 200)
@@ -158,6 +188,17 @@ class TestChallengeConnection(unittest.TestCase):
         self.assertLess(finished[0] - started[0], 1, "the fetch waited on a bad connection")
         # the second fetch is unsigned first, so it is challenged again, then signed
         self.assertEqual(self.server.requests[2:], [False, True])
+
+
+class TestChallengeInterimResponses(ChallengeCase):
+    def make_server(self) -> ChallengeServer:
+        return InterimChallengeServer()
+
+    def test_challenge_interim_responses_and_notes_are_dropped(self):
+        resource = self.fetch()
+        self.assertEqual(resource.response.status_code, 200)
+        self.assertEqual(resource.nonfinal_responses, [])
+        self.assertFalse([n for n in resource.response.notes if isinstance(n, ONE_XX_BAD_HEADER)])
 
 
 if __name__ == "__main__":
