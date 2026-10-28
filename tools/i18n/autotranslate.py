@@ -571,7 +571,13 @@ def autotranslate_file(
         return model.prompt(prompt, **options).text()
 
     # Identify messages that need translation (empty or fuzzy)
-    to_translate = [m for m in catalog if m.id and (not m.string or "fuzzy" in m.flags)]
+    needed = [m for m in catalog if m.id and (not m.string or "fuzzy" in m.flags)]
+    to_translate = [m for m in needed if isinstance(m.id, str)]
+    if len(needed) > len(to_translate):
+        print(
+            f"Skipping {len(needed) - len(to_translate)} plural messages in {lang}; "
+            "translate their forms by hand."
+        )
     count = 0
     left_empty: List[Tuple[Any, str]] = []
     kept_fuzzy: List[Tuple[Any, str]] = []
@@ -590,11 +596,7 @@ def autotranslate_file(
             if i > 0 and sleep_time > 0:
                 time.sleep(sleep_time)
 
-            if isinstance(message.id, str):
-                result = translate(ask, lang, message.id, mode=protect_mode)
-            else:  # plural entries: unchanged, no masking or validation
-                reply = ask(build_prompt(lang, str(message.id), False, None)).strip()
-                result = Result(reply or None)
+            result = translate(ask, lang, message.id, mode=protect_mode)
             exception_count = 0
 
             if result.text and not result.fuzzy:

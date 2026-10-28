@@ -380,6 +380,60 @@ class PoFixture(unittest.TestCase):
             return handle.read()
 
 
+class PluralTest(unittest.TestCase):
+    """Plural messages have a tuple of ids and strings (mnot/redbot#555)."""
+
+    IDS = (" - %d problem\n", " - %d problems\n")
+
+    def issues(self, strings, locale="fr"):
+        catalog = Catalog(locale=locale)
+        catalog.add(self.IDS, strings)
+        return CatalogChecker().check_catalog(catalog, locale)
+
+    def kinds(self, strings, locale="fr"):
+        return sorted(
+            (i.issue_type.name, i.details) for i in self.issues(strings, locale)
+        )
+
+    def test_good_plural_has_no_issues(self) -> None:
+        self.assertEqual(self.kinds(("- %d problème", "- %d problèmes")), [])
+        self.assertEqual(self.kinds(("%d problème",), "ja"), [])
+
+    def test_extra_variable_in_any_form(self) -> None:
+        self.assertEqual(
+            self.kinds(("- %(n)s problème", "- %d problèmes")),
+            [("BAD_VARIABLE", "Extra: %(n)s")],
+        )
+
+    def test_missing_variable_in_the_last_form(self) -> None:
+        self.assertEqual(
+            self.kinds(("- %d problème", "- des problèmes")),
+            [("BAD_VARIABLE", "Missing: %d")],
+        )
+        self.assertEqual(self.kinds(("des problèmes",), "ja"), [("BAD_VARIABLE", "Missing: %d")])
+
+    def test_a_form_may_leave_out_the_number(self) -> None:
+        self.assertEqual(self.kinds(("un problème", "- %d problèmes")), [])
+
+    def test_stray_percent(self) -> None:
+        names = [name for name, _ in self.kinds(("- 5% problème", "- %d problèmes"))]
+        self.assertEqual(names, ["SYNTAX_ERROR"])
+
+    def test_empty_form_is_missing(self) -> None:
+        self.assertEqual([i.issue_type for i in self.issues(("- %d problème", ""))], [IssueType.MISSING])
+        self.assertEqual([i.issue_type for i in self.issues(("", ""))], [IssueType.MISSING])
+
+    def test_reported_by_the_singular(self) -> None:
+        issues = self.issues(("- %d problème", "- des problèmes"))
+        self.assertEqual({i.message_id for i in issues}, {self.IDS[0]})
+
+    def test_never_marked_fuzzy(self) -> None:
+        catalog = Catalog(locale="fr")
+        catalog.add(self.IDS, ("- %d problème", "- des problèmes"))
+        issues = CatalogChecker().check_catalog(catalog, "fr")
+        self.assertEqual(check.mark_fuzzy(catalog, issues), 0)
+
+
 class MarkFuzzyTest(PoFixture):
     """--mark-fuzzy flags entries with issues; it never touches the others."""
 

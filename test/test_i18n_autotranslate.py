@@ -666,7 +666,7 @@ class DropAddedBackticksTest(unittest.TestCase):
 
 
 class PluralTest(unittest.TestCase):
-    def test_plural_reply_is_not_changed(self) -> None:
+    def test_plural_messages_are_not_sent_to_the_model(self) -> None:
         catalog = Catalog(locale="fr")
         catalog.add(("One header.", "Many headers."), ("", ""), flags=["fuzzy"])
         model = FakeModel(lambda p: "Un `en-tête`.")
@@ -677,8 +677,8 @@ class PluralTest(unittest.TestCase):
             contextlib.redirect_stdout(io.StringIO()),
         ):
             autotranslate.autotranslate_file("x.po", "fr", "fake", 0, model=model)
-        self.assertEqual(len(model.calls), 1)
-        self.assertEqual([m.string for m in saved[0] if m.id], ["Un `en-tête`."])
+        self.assertEqual(model.calls, [])
+        self.assertEqual([m.string for m in saved[0] if m.id], [("", "")])
 
 
 class CodeSpanRuleTest(unittest.TestCase):
@@ -740,6 +740,19 @@ class FileTest(unittest.TestCase):
         with contextlib.redirect_stdout(out):
             autotranslate.autotranslate_file(self.path, "fr", "fake", 0, model=model, **kwargs)
         return out.getvalue()
+
+    def test_plural_messages_are_skipped_and_left_alone(self) -> None:
+        catalog = load_catalog(self.path)
+        ids = (" - %d problem\n", " - %d problems\n")
+        catalog.add(ids, ("- %d problème", ""), flags=["fuzzy"])
+        save_catalog(self.path, catalog)
+        model = FakeModel(faithful)
+        output = self.run_file(model)
+        entry = load_catalog(self.path).get(ids)
+        self.assertEqual(entry.string, ("- %d problème", ""))
+        self.assertIn("fuzzy", entry.flags)
+        self.assertIn("Skipping 1 plural messages in fr", output)
+        self.assertFalse([call for call in model.calls if "problem" in call[0]])
 
     def test_left_empty_is_reported_and_never_written(self) -> None:
         def reply(prompt: str) -> str:
