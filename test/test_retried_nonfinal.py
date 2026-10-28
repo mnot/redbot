@@ -14,7 +14,12 @@ from types import SimpleNamespace
 from typing import Callable, List, Optional
 
 from redbot.resource import HttpResource
-from redbot.resource.fetch import ONE_XX_BAD_HEADER, RedFetcher
+from redbot.resource.fetch import (
+    MAX_NONFINAL_RESPONSES,
+    ONE_XX_BAD_HEADER,
+    ONE_XX_TOO_MANY,
+    RedFetcher,
+)
 
 EARLY_HINTS = b"HTTP/1.1 103 Early Hints\r\nLink: </x>; rel=preload\r\n\r\n"
 BAD_EARLY_HINTS = b"HTTP/1.1 103 Early Hints\r\nContent-Length: 5\r\n\r\n"
@@ -141,6 +146,17 @@ class TestForgetStale(unittest.TestCase):
         self.assertEqual(len(resource.nonfinal_responses), 1)
         bad = [n for n in resource.response.notes if isinstance(n, ONE_XX_BAD_HEADER)]
         self.assertEqual(len(bad), 1)
+
+    def test_overflow_is_forgotten_with_the_responses(self) -> None:
+        resource = self.resource()
+        conn = object()
+        for _ in range(MAX_NONFINAL_RESPONSES + 3):
+            self.arrive(resource, conn)
+        self.assertEqual(resource.nonfinal_overflow, 3)
+        self.arrive(resource, object())
+        self.assertEqual(resource.nonfinal_overflow, 0)
+        self.assertEqual(len(resource.nonfinal_responses), 1)
+        self.assertFalse([n for n in resource.response.notes if isinstance(n, ONE_XX_TOO_MANY)])
 
     def test_reset_keeps_other_notes(self) -> None:
         resource = self.resource()
