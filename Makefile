@@ -41,7 +41,7 @@ tidy: tidy_py
 # coverage runs every other test file under pytest, so they aren't run separately here; to run
 # one on its own, use `make test_<name>`.
 .PHONY: test
-test: test_webui coverage i18n-check
+test: coverage i18n-check test_webui
 
 # Generic rule for running tests
 test_%: venv
