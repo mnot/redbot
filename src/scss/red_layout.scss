@@ -138,13 +138,12 @@ form.link {
   display: inline;
 }
 
-form.link input[type='submit'] {
+form.link button {
   border: none;
   padding: 0;
   background: none;
   cursor: pointer;
-  font-family: inherit;
-  font-size: inherit;
+  font: inherit;
   color: red_vars.$link_colour;
   text-decoration: underline;
   text-align: left;

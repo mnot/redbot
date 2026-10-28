@@ -224,13 +224,12 @@ form.link {
   display: inline;
 }
 
-form.link input[type=submit] {
+form.link button {
   border: none;
   padding: 0;
   background: none;
   cursor: pointer;
-  font-family: inherit;
-  font-size: inherit;
+  font: inherit;
   color: var(--link-colour);
   text-decoration: underline;
   text-align: left;
@@ -393,6 +392,11 @@ option[value="other..."] {
 #response .post_link,
 .nonfinal_response .post_link {
   color: var(--link-in-box-colour);
+}
+#response .post_link, .nonfinal_response .post_link {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-indent: 0;
 }
 
 .nonfinal_response {

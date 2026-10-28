@@ -44,6 +44,7 @@ class TestHtmlEscaping(unittest.TestCase):
             formatter.finish_output()
         page = "".join(out)
         self.assertIn('value="http://a.example/?x=1&amp;y=2&amp;z=&#39;&#34;&lt;&gt;"', page)
+        self.assertIn(">http://a.example/?x=1&amp;y=2&amp;z=&#39;&#34;&lt;&gt;</button>", page)
         self.assertNotIn("&amp;amp;", page)
         self.assertNotIn("&amp;#", page)
         self.assertNotIn("&amp;lt;", page)

@@ -69,8 +69,19 @@ class BasicWebUiTest(unittest.TestCase):
         self.context.close()
 
     def test_multi(self):
-        self.page.click('input[value="check embedded"]')
+        self.page.click('button:has-text("check embedded")')
         self.check_complete()
+
+    def test_long_location_folds(self):
+        self.page.fill("#uri", self.test_uri + "redirect-long")
+        self.page.press("#uri", "Enter")
+        self.check_complete()
+        link = self.page.locator("#response li[data-name='location'] button.post_link")
+        box = self.page.locator("#response")
+        link_box = link.bounding_box()
+        outer_box = box.bounding_box()
+        self.assertLessEqual(link_box["x"] + link_box["width"], outer_box["x"] + outer_box["width"])
+        self.assertGreater(link_box["height"], 2 * 14)  # more than one line
 
     def test_request_header(self):
         self.page.click("#add_req_hdr")

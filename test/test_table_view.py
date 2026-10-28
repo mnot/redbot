@@ -86,7 +86,7 @@ class TestTableView(unittest.TestCase):
     def test_redirect_links_to_its_location(self):
         page = self.render()
         self.assertIn('name="uri" value="http://a.example/new.js"', page)
-        self.assertIn('value="301"', page)  # the link's label
+        self.assertIn(">301</button>", page)  # the link's label
 
     def test_error_statuses_are_marked_bad(self):
         page = self.render()
@@ -129,7 +129,7 @@ class TestRedirectLinks(unittest.TestCase):
         for location in ["", " "]:
             with self.subTest(location=location):
                 page = self.render("http://other.example/sub/mv", location)
-                self.assertNotIn('value="301"', page)  # shown, but not as a link
+                self.assertNotIn(">301</button>", page)  # shown, but not as a link
                 self.assertIn("<td>301</td>", page)
 
 
