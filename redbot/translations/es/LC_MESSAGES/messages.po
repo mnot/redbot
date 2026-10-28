@@ -28,7 +28,7 @@ msgstr "Ver un archivo HAR (HTTP ARchive, un formato JSON) para esta prueba"
 
 #: redbot/formatter/html.py:126
 msgid "check embedded"
-msgstr "comprobar incrustado"
+msgstr "comprobar incrustados"
 
 #: redbot/formatter/html.py:129
 msgid "Run REDbot on images, frames and embedded links"
@@ -49,8 +49,8 @@ msgstr "respuesta %s"
 #, python-format
 msgid " - %d problem\n"
 msgid_plural " - %d problems\n"
-msgstr[0] "- %d problema"
-msgstr[1] "- %d problemas"
+msgstr[0] " - %d problema\n"
+msgstr[1] " - %d problemas\n"
 
 #: redbot/formatter/html_base.py:142
 msgid "add a request header"
@@ -72,11 +72,11 @@ msgstr "ver contenido"
 #: redbot/formatter/html_base.py:146
 #: redbot/formatter/templates/response_finish.html:91
 msgid "sort by alpha"
-msgstr "ordenar por orden alfabético"
+msgstr "ordenar alfabéticamente"
 
 #: redbot/formatter/html_base.py:147
 msgid "show wire order"
-msgstr "Muestra el orden de cableado"
+msgstr "mostrar orden original"
 
 #: redbot/formatter/html_base.py:150
 #, python-format
@@ -87,7 +87,7 @@ msgstr ""
 
 #: redbot/formatter/text.py:65
 msgid "Head Links"
-msgstr "Enlaces principales"
+msgstr "Enlaces de la sección head"
 
 #: redbot/formatter/text.py:66
 msgid "Script Links"
@@ -108,7 +108,7 @@ msgstr "Enlaces de imágenes"
 #: redbot/formatter/text.py:72
 #, python-format
 msgid "Error: %s\n"
-msgstr "Error: %s"
+msgstr "Error: %s\n"
 
 #: redbot/formatter/templates/footer.html:5
 msgid "version"
@@ -136,7 +136,7 @@ msgstr ""
 
 #: redbot/formatter/templates/footer.html:10
 msgid "bookmarklet"
-msgstr "marca de posición"
+msgstr "bookmarklet"
 
 #: redbot/formatter/templates/footer.html:14
 msgid "This site is protected by hCaptcha and its"
@@ -203,7 +203,7 @@ msgstr "contenido"
 
 #: redbot/formatter/templates/response_finish.html:46
 msgid "How much using chunked encoding adds to the response size"
-msgstr "¿Cuánto añade la codificación por fragmentos al tamaño de la respuesta?"
+msgstr "Cuánto añade la codificación por fragmentos al tamaño de la respuesta"
 
 #: redbot/formatter/templates/response_finish.html:47
 msgid "transfer overhead"
@@ -222,7 +222,7 @@ msgstr "Este resultado se ha guardado"
 #: redbot/formatter/templates/response_multi_finish.html:117
 #, python-brace-format
 msgid "Saved until {0} from now"
-msgstr "Guardado hasta {0} de ahora"
+msgstr "Guardado durante {0} más"
 
 #: redbot/formatter/templates/response_finish.html:72
 #: redbot/formatter/templates/response_multi_finish.html:110
@@ -256,11 +256,11 @@ msgstr ""
 
 #: redbot/formatter/templates/response_finish.html:126
 msgid "If something doesn't seem right, feel free to"
-msgstr "Si algo no parece correcto, no dudes en"
+msgstr "¡Si algo no parece correcto, no dudes en"
 
 #: redbot/formatter/templates/response_finish.html:127
 msgid "file an issue"
-msgstr "archiva un problema"
+msgstr "abrir una incidencia"
 
 #: redbot/formatter/templates/response_multi_finish.html:3
 msgid "The URI tested. Click to run a detailed analysis."
@@ -292,7 +292,7 @@ msgstr "Si una caché compartida (p. ej., proxy) puede almacenar la respuesta."
 
 #: redbot/formatter/templates/response_multi_finish.html:6
 msgid "shared"
-msgstr "compartido"
+msgstr "compartida"
 
 #: redbot/formatter/templates/response_multi_finish.html:7
 msgid "Whether a private (e.g., browser) cache can store the response."
@@ -302,7 +302,7 @@ msgstr ""
 
 #: redbot/formatter/templates/response_multi_finish.html:7
 msgid "private"
-msgstr "privado"
+msgstr "privada"
 
 #: redbot/formatter/templates/response_multi_finish.html:8
 msgid "How long the response had been cached before REDbot got it."
@@ -423,7 +423,7 @@ msgstr ""
 "\n"
 "Los datos adicionales comenzaron con:\n"
 "\n"
-"    %(sample)s"
+"    %(sample)s\n"
 
 #: redbot/resource/fetch.py:473
 msgid "This response has extra data after it."
@@ -441,9 +441,8 @@ msgid ""
 "    %(sample)s\n"
 msgstr ""
 "El servidor envió datos después de que el mensaje terminara. Esto puede "
-"ser causado por una `Content-Length`\n"
-"cabecera incorrecta, o por un error de programación en el propio "
-"servidor.\n"
+"ser causado por una cabecera `Content-Length`\n"
+"incorrecta, o por un error de programación en el propio servidor.\n"
 "\n"
 "Los datos adicionales comenzaron con:\n"
 "\n"
@@ -515,8 +514,8 @@ msgid ""
 "Most HTTP implementations will refuse to process this message.\n"
 msgstr ""
 "HTTP prohíbe específicamente los espacios en blanco entre los nombres de "
-"campos de cabecera y el dos puntos, ya que pueden confundir fácilmente a "
-"los receptores; algunos los eliminarán, y otros no, lo que lleva a una "
+"campos de cabecera y los dos puntos, ya que pueden confundir fácilmente a"
+" los receptores; algunos los eliminarán, y otros no, lo que lleva a una "
 "variedad de ataques.\n"
 "\n"
 "La mayoría de las implementaciones de HTTP se negarán a procesar este "
@@ -648,7 +647,7 @@ msgstr ""
 "considera como que acepta\n"
 "cualquier codificación de contenido. Los clientes que no pueden "
 "decodificar la compresión\n"
-"no podrán usar el recurso, aunque el servidor podría estar ignorando "
+"no podrán usar el recurso, y es posible que el servidor esté ignorando "
 "cualquier `Accept-Encoding` que\n"
 "envíen."
 
@@ -713,8 +712,8 @@ msgstr ""
 "\n"
 "A menudo, esto sucede cuando la respuesta descomprimida es muy pequeña o "
 "no se puede comprimir más; dado que la compresión gzip tiene cierta "
-"sobrecarga, puede hacer que la respuesta sea más grande. Desactivar la "
-"compresión para este recurso puede mejorar ligeramente los tiempos de "
+"sobrecarga, puede hacer que la respuesta sea más grande. **Desactivar** "
+"la compresión para este recurso puede mejorar ligeramente los tiempos de "
 "respuesta y ahorrar ancho de banda.\n"
 "\n"
 "Se muestran las cabeceras de la respuesta comprimida."
@@ -1047,8 +1046,8 @@ msgid ""
 "prepend `W/`, to make its value\n"
 "`W/%(etag)s`. Otherwise, they need to use different `ETag`s."
 msgstr ""
-"Las `ETag` deben identificar de forma única la representación de la "
-"respuesta; si el contenido cambia, también debería hacerlo la ETag.\n"
+"Se espera que las `ETag` identifiquen de forma única la representación de"
+" la respuesta; si el contenido cambia, también debería hacerlo la ETag.\n"
 "\n"
 "Aquí, la misma `ETag` se usó para dos respuestas diferentes durante la "
 "validación, lo que significa que los clientes y las cachés posteriores "
@@ -1139,8 +1138,8 @@ msgid ""
 "\n"
 "Trying again might fix it."
 msgstr ""
-"Cuando REDbot intentó comprobar el recurso para obtener compatibilidad "
-"con la validación Last-Modified, hubo un problema:\n"
+"Cuando REDbot intentó comprobar la compatibilidad del recurso con la "
+"validación Last-Modified, hubo un problema:\n"
 "\n"
 "`%(problem)s`\n"
 "\n"
@@ -1474,7 +1473,7 @@ msgstr ""
 
 #: redbot/resource/active_check/range.py:249
 msgid "The partial response is missing required headers."
-msgstr "La respuesta parcial falta las cabeceras requeridas."
+msgstr "A la respuesta parcial le faltan las cabeceras requeridas."
 
 #: redbot/resource/active_check/range.py:250
 #, python-format
@@ -1534,9 +1533,9 @@ msgid ""
 "the full response\n"
 "(%(length_full)s), which suggests one of them is incorrect."
 msgstr ""
-"La cabecera 'Content-Range' en una respuesta 206 indica la longitud total"
+"La cabecera `Content-Range` en una respuesta 206 indica la longitud total"
 " de la respuesta, aquí,\n"
-"%(length_206)s. Aquí, ese valor no coincide con la 'Content-Length' de la"
+"%(length_206)s. Aquí, ese valor no coincide con la `Content-Length` de la"
 " respuesta completa\n"
 "(%(length_full)s), lo cual sugiere que una de ellas es incorrecta."
 

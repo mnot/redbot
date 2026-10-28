@@ -28,7 +28,7 @@ msgstr "Visualiser un fichier HAR (HTTP Archive, un format JSON) pour ce test"
 
 #: redbot/formatter/html.py:126
 msgid "check embedded"
-msgstr "vérifier intégré"
+msgstr "vérifier les éléments intégrés"
 
 #: redbot/formatter/html.py:129
 msgid "Run REDbot on images, frames and embedded links"
@@ -49,8 +49,8 @@ msgstr "Réponse %s"
 #, python-format
 msgid " - %d problem\n"
 msgid_plural " - %d problems\n"
-msgstr[0] "- %d problème"
-msgstr[1] "- %d problèmes"
+msgstr[0] " - %d problème\n"
+msgstr[1] " - %d problèmes\n"
 
 #: redbot/formatter/html_base.py:142
 msgid "add a request header"
@@ -76,7 +76,7 @@ msgstr "trier par ordre alpha"
 
 #: redbot/formatter/html_base.py:147
 msgid "show wire order"
-msgstr "Montrer la commande de fil"
+msgstr "afficher l'ordre d'origine"
 
 #: redbot/formatter/html_base.py:150
 #, python-format
@@ -87,7 +87,7 @@ msgstr ""
 
 #: redbot/formatter/text.py:65
 msgid "Head Links"
-msgstr "Liens de l'en-tête"
+msgstr "Liens de la section head"
 
 #: redbot/formatter/text.py:66
 msgid "Script Links"
@@ -108,7 +108,7 @@ msgstr "Liens d'image"
 #: redbot/formatter/text.py:72
 #, python-format
 msgid "Error: %s\n"
-msgstr "Erreur : %s"
+msgstr "Erreur : %s\n"
 
 #: redbot/formatter/templates/footer.html:5
 msgid "version"
@@ -140,7 +140,7 @@ msgstr "signet interactif"
 
 #: redbot/formatter/templates/footer.html:14
 msgid "This site is protected by hCaptcha and its"
-msgstr "Ce site est protégé par hCaptcha et ses"
+msgstr "Ce site est protégé par hCaptcha et sa"
 
 #: redbot/formatter/templates/footer.html:15
 msgid "Privacy Policy"
@@ -148,7 +148,7 @@ msgstr "Politique de confidentialité"
 
 #: redbot/formatter/templates/footer.html:15
 msgid "and"
-msgstr "et"
+msgstr "et ses"
 
 #: redbot/formatter/templates/footer.html:16
 msgid "Terms of Service"
@@ -452,7 +452,7 @@ msgstr ""
 "\n"
 "Les données supplémentaires ont commencé par :\n"
 "\n"
-"    %(sample)s"
+"    %(sample)s\n"
 
 #: redbot/resource/fetch.py:487
 msgid "This response has chunked encoding errors."
@@ -523,7 +523,7 @@ msgstr ""
 " destinataires ; certains les supprimeront, d'autres non, ce qui "
 "entraînera une variété d'attaques.\n"
 "\n"
-"La plupart des implémentations HTTP refuseront de traiter ce message."
+"La plupart des implémentations HTTP refuseront de traiter ce message.\n"
 
 #: redbot/resource/fetch.py:522
 #, python-format
@@ -566,8 +566,8 @@ msgstr ""
 "RFC 9110 exige que les réponses 1xx n'incluent pas l'en-tête "
 "`%(header_name)s`.\n"
 "\n"
-"Les clients qui reçoivent cette réponse peuvent ne pas être en mesure de "
-"la traiter correctement ou peuvent se comporter de manière inattendue."
+"Les clients qui reçoivent cette réponse ne parviendront pas à la traiter,"
+" ou se comporteront de manière inattendue.\n"
 
 #: redbot/resource/fetch.py:239
 #, python-format
@@ -591,11 +591,11 @@ msgid ""
 "might remove them from\n"
 "their cached copies."
 msgstr ""
-"HTTP exige que les réponses « 304 Not Modified » possèdent certains en-"
-"têtes, s'ils sont également présents dans une réponse « 200 OK » normale,"
-" par exemple.\n"
+"HTTP exige que les réponses `304 Not Modified` possèdent certains en-"
+"têtes, s'ils sont également présents dans une réponse `200 OK` normale, "
+"par exemple.\n"
 "\n"
-"La réponse manquant des en-têtes suivants : `%(missing_hdrs)s`.\n"
+"Il manque à cette réponse les en-têtes suivants : `%(missing_hdrs)s`.\n"
 "\n"
 "Cela peut affecter l'opération de cache ; comme les en-têtes sont "
 "manquants, les caches pourraient les supprimer de leurs copies mises en "
@@ -716,8 +716,8 @@ msgstr ""
 "Souvent, cela se produit lorsque la réponse décompressée est très petite "
 "ou ne peut pas être davantage compressée ; comme la compression gzip a "
 "une certaine surcharge, elle peut augmenter la taille de la réponse. "
-"Désactiver la compression pour cette ressource peut légèrement améliorer "
-"les temps de réponse et économiser de la bande passante.\n"
+"**Désactiver** la compression pour cette ressource peut légèrement "
+"améliorer les temps de réponse et économiser de la bande passante.\n"
 "\n"
 "Les en-têtes de la réponse compressée sont affichés."
 
@@ -755,12 +755,12 @@ msgid ""
 "the `Vary` header needs to contain\n"
 "`Accept-Encoding`, the request header used."
 msgstr ""
-"Toute réponse négociée de contenu doit avoir un `Vary` en-tête qui "
-"reflète l'en-tête(s) utilisé(s) pour\n"
+"Toute réponse négociée de contenu doit avoir un en-tête `Vary` qui "
+"reflète les en-têtes utilisés pour\n"
 "sélectionner la réponse.\n"
 "\n"
-"La réponse compressée a été négociée pour `gzip` codage de contenu, donc "
-"l'en-tête `Vary` doit contenir\n"
+"La réponse compressée a été négociée pour le codage de contenu `gzip`, "
+"donc l'en-tête `Vary` doit contenir\n"
 "`Accept-Encoding`, l'en-tête de requête utilisé."
 
 #: redbot/resource/active_check/conneg.py:224
@@ -1293,7 +1293,7 @@ msgid ""
 "\n"
 "Trying again might fix it."
 msgstr ""
-"Lorsqu'REDbot a tenté de vérifier la prise en charge du contenu partiel "
+"Lorsque REDbot a tenté de vérifier la prise en charge du contenu partiel "
 "pour la ressource, un problème est survenu :\n"
 "\n"
 "`%(problem)s`\n"
@@ -1333,7 +1333,7 @@ msgid ""
 "this response, which was returned correctly."
 msgstr ""
 "Cette ressource annonce son support pour les requêtes avec plage avec "
-"`Accept-Ranges` ; c'est-à-dire, elle permet\n"
+"`Accept-Ranges` ; c'est-à-dire qu'elle permet\n"
 "aux clients de spécifier qu'une seule partie de celle-ci soit envoyée. "
 "REDbot a testé cela en demandant une partie\n"
 "de cette réponse, qui a été retournée correctement."
@@ -1424,14 +1424,14 @@ msgid ""
 "the resource advertises support for partial content, it doesn't appear to"
 " actually do so."
 msgstr ""
-"Cette ressource annonce un support pour les requêtes avec plage avec "
-"`Accept-Ranges`; c'est-à-dire qu'elle permet\n"
+"Cette ressource annonce la prise en charge des requêtes par plage avec "
+"`Accept-Ranges` ; c'est-à-dire qu'elle permet\n"
 "aux clients de spécifier que seule une partie de la réponse soit envoyée."
 " REDbot a testé cela\n"
 "en demandant une partie de cette réponse, mais l'ensemble de la réponse a"
-" été retourné. En d'autres\n"
-"termes, bien que la ressource annonce un support pour le contenu partiel,"
-" il ne semble pas réellement\n"
+" été retournée. En d'autres\n"
+"termes, bien que la ressource annonce la prise en charge du contenu "
+"partiel, elle ne semble pas réellement\n"
 "le faire."
 
 #: redbot/resource/active_check/range.py:227
@@ -1449,8 +1449,8 @@ msgid ""
 "response, but a %(enc_range_status)s response code was returned, which "
 "REDbot was not expecting."
 msgstr ""
-"Cette ressource annonce le support des requêtes avec plage ; "
-"c'est-à-dire, elle permet aux clients de spécifier que\n"
+"Cette ressource annonce le support des requêtes avec plage ; c'est-à-dire"
+" qu'elle permet aux clients de spécifier que\n"
 "seule une partie de la réponse soit envoyée. REDbot a testé cela en "
 "demandant une partie de cette\n"
 "réponse, mais un code de statut de réponse %(enc_range_status)s a été "
@@ -1516,7 +1516,9 @@ msgstr ""
 
 #: redbot/resource/active_check/range.py:263
 msgid "The partial response has a Content-Length equal to the full response."
-msgstr "La réponse partielle a une Content-Length égale à la réponse complète."
+msgstr ""
+"La réponse partielle a une Content-Length égale à celle de la réponse "
+"complète."
 
 #: redbot/resource/active_check/range.py:264
 msgid ""
@@ -1545,8 +1547,8 @@ msgid ""
 "the full response\n"
 "(%(length_full)s), which suggests one of them is incorrect."
 msgstr ""
-"La tête `Content-Range` dans une réponse 206 indique la longueur totale "
-"de la réponse - ici,\n"
+"L'en-tête `Content-Range` dans une réponse 206 indique la longueur totale"
+" de la réponse - ici,\n"
 "%(length_206)s. Ici, cette valeur ne correspond pas à la `Content-Length`"
 " de la réponse complète\n"
 "(%(length_full)s), ce qui suggère que l'une des deux valeurs est "
