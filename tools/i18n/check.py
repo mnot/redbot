@@ -105,16 +105,19 @@ class CatalogChecker:
                 )
 
             # 2. Check for missing
-            if not message.string or (
+            incomplete = not message.string or (
                 message.pluralizable and not all(message.string)
-            ):
+            )
+            if incomplete:
                 issues.append(
                     TranslationIssue(IssueType.MISSING, msgid, message.lineno)
                 )
-                continue
 
             if message.pluralizable:
+                # the forms that are filled in are still checked
                 issues.extend(self.check_plural(message))
+                continue
+            if incomplete:
                 continue
 
             issues.extend(
@@ -129,13 +132,16 @@ class CatalogChecker:
         the other form has ("one item" and "%(n)s items"), so only variables the English
         doesn't have are errors in every form; the last form, which serves the larger
         numbers (and every number, in a language with one form), must keep all of the
-        English plural's. The heuristics are not run on plurals.
+        English plural's. Empty forms are skipped (they are reported as MISSING). The
+        heuristics are not run on plurals.
         """
         singular, plural = message.id[0], message.id[1]
         forms = list(message.string)
         issues = []
         allowed = self.find_variables(singular) | self.find_variables(plural)
         for form in forms:
+            if not form:
+                continue
             extra = self.find_variables(form) - allowed
             if extra:
                 issues.append(
@@ -154,7 +160,7 @@ class CatalogChecker:
                     )
                 )
         missing = self.find_variables(plural) - self.find_variables(forms[-1])
-        if missing:
+        if forms[-1] and missing:
             issues.append(
                 TranslationIssue(
                     IssueType.BAD_VARIABLE,
