@@ -43,6 +43,10 @@ def test_handler(exchange):
     if uri == "/img.png":
         content = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82"
         resp_hdrs[b"Content-Type"] = b"image/png"
+    elif uri == "/redirect-long":
+        status = b"302"
+        phrase = b"Found"
+        resp_hdrs[b"Location"] = b"http://127.0.0.1:8001/sorry/index?continue=http://127.0.0.1:8001/&q=" + b"a" * 150
     elif method not in ["GET", "HEAD"]:
         status = b"501"
         phrase = b"Not Implemented"
