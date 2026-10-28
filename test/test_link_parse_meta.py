@@ -76,18 +76,18 @@ class TestMetaCharset(unittest.TestCase):
                 header = new_message(f"text/html; charset={label}")
                 self.assertEqual(message.character_encoding, header.character_encoding)
 
-    def test_later_meta_wins(self) -> None:
+    def test_first_meta_wins(self) -> None:
         parser = parse_meta("charset=latin-1")
         parser.feed_bytes(meta_tag("charset=utf-8"))
-        self.assertEqual((parser.decode_as, parser.message.character_encoding), (None, "utf-8"))
+        self.assertEqual((parser.decode_as, parser.message.character_encoding), ("latin-1", None))
+        parser = parse_meta("charset=windows-1252")
+        parser.feed_bytes(meta_tag("charset=utf-8"))
+        self.assertEqual(parser.message.character_encoding, "windows-1252")
 
-    def test_unusable_keeps_header(self) -> None:
-        message = new_message("text/html; charset=windows-1252")
-        parser = parse_meta("charset=utf-7", message)
-        self.assertEqual(
-            (parser.decode_as, message.character_encoding, message.whatwg_encoding),
-            (None, "windows-1252", "windows-1252"),
-        )
+    def test_unusable_meta_does_not_count_as_first(self) -> None:
+        parser = parse_meta("charset=utf-7")
+        parser.feed_bytes(meta_tag("charset=windows-1252"))
+        self.assertEqual(parser.message.character_encoding, "windows-1252")
 
     def test_quoted_among_other_params(self) -> None:
         parser = parse_meta('format=flowed; charset="latin1"; x=y')
@@ -142,14 +142,75 @@ class TestMetaPrecedence(unittest.TestCase):
                     (None, "utf-8", "UTF-8"),
                 )
 
+    def test_x_user_defined_means_windows_1252(self) -> None:
+        parser = parse_meta("charset=x-user-defined")
+        self.assertEqual(
+            (parser.message.character_encoding, parser.message.whatwg_encoding),
+            ("windows-1252", "windows-1252"),
+        )
+
+    def test_bad_charset_attribute_falls_back_to_http_equiv(self) -> None:
+        parser = HTMLLinkParser(new_message(), [])
+        parser.feed_bytes(
+            b"<meta charset=bogus http-equiv=content-type content='text/html; charset=latin1'>"
+        )
+        self.assertEqual(parser.message.character_encoding, "latin1")
+
+    def test_xml_types_ignore_meta(self) -> None:
+        for content_type in ["application/xhtml+xml", "application/atom+xml"]:
+            with self.subTest(content_type=content_type):
+                parser = parse_meta("charset=windows-1252", new_message(content_type))
+                parser.feed_bytes(b"<meta charset=windows-1252>")
+                self.assertEqual(
+                    (parser.decode_as, parser.message.character_encoding), (None, None)
+                )
+
+    def test_bom_beats_meta(self) -> None:
+        for bom in [b"\xef\xbb\xbf", b"\xff\xfe", b"\xfe\xff"]:
+            with self.subTest(bom=bom):
+                parser = HTMLLinkParser(new_message(), [])
+                parser.feed_bytes(bom + b"<meta charset=windows-1252>")
+                self.assertIsNone(parser.message.character_encoding)
+
+
+class TestMetaLinks(unittest.TestCase):
+    "What a page's later chunks decode to once its <meta> tags have been read."
+
+    @staticmethod
+    def links(chunks: List[bytes], message: Optional[HttpMessageLinter] = None) -> List[str]:
+        found: List[str] = []
+        parser = HTMLLinkParser(
+            message or new_message(), [lambda base, link, tag, title: found.append(link)]
+        )
+        for chunk in chunks:
+            parser.feed_bytes(chunk)
+        return found
+
     def test_utf16_label_leaves_later_chunks_readable(self) -> None:
-        links: List[str] = []
-        message = new_message()
-        parser = HTMLLinkParser(message, [lambda base, link, tag, title: links.append(link)])
-        for tag in [b"<meta charset=utf-16>", meta_tag("charset=utf-16")]:
-            parser.feed_bytes(tag)
-        parser.feed_bytes('<a href="/café">x</a>'.encode("utf-8"))
-        self.assertEqual(links, ["/café"])
+        page = '<a href="/café">x</a>'.encode("utf-8")
+        for label in ["utf-16", "utf-16le", "utf-16be"]:
+            with self.subTest(label=label):
+                self.assertEqual(
+                    self.links([b"<meta charset=%s>" % label.encode(), page]), ["/café"]
+                )
+                self.assertEqual(self.links([meta_tag(f"charset={label}"), page]), ["/café"])
+
+    def test_later_meta_does_not_change_decoding(self) -> None:
+        page = '<a href="/café">x</a>'.encode("utf-8")
+        self.assertEqual(
+            self.links([b"<meta charset=utf-8>", b"<meta charset=windows-1252>", page]), ["/café"]
+        )
+
+    def test_header_charset_decodes_despite_meta(self) -> None:
+        message = new_message("text/html; charset=windows-1252")
+        page = '<a href="/café">x</a>'.encode("windows-1252")
+        self.assertEqual(self.links([b"<meta charset=utf-8>", page], message), ["/café"])
+
+    def test_bom_decodes_despite_meta(self) -> None:
+        page = '<a href="/café">x</a>'.encode("utf-8")
+        self.assertEqual(
+            self.links([b"\xef\xbb\xbf<meta charset=windows-1252>", page]), ["/café"]
+        )
 
 
 class TestMetaParams(unittest.TestCase):
