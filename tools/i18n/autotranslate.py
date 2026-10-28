@@ -571,7 +571,12 @@ def autotranslate_file(
         return model.prompt(prompt, **options).text()
 
     # Identify messages that need translation (empty or fuzzy)
-    needed = [m for m in catalog if m.id and (not m.string or "fuzzy" in m.flags)]
+    needed = [
+        m
+        for m in catalog
+        if m.id
+        and (not m.string or (m.pluralizable and not all(m.string)) or "fuzzy" in m.flags)
+    ]
     to_translate = [m for m in needed if isinstance(m.id, str)]
     if len(needed) > len(to_translate):
         print(

@@ -754,6 +754,13 @@ class FileTest(unittest.TestCase):
         self.assertIn("Skipping 1 plural messages in fr", output)
         self.assertFalse([call for call in model.calls if "problem" in call[0]])
 
+    def test_empty_plural_messages_are_counted_too(self) -> None:
+        catalog = load_catalog(self.path)
+        catalog.add((" - %d problem\n", " - %d problems\n"), ("", ""))
+        save_catalog(self.path, catalog)
+        output = self.run_file(FakeModel(faithful))
+        self.assertIn("Skipping 1 plural messages in fr", output)
+
     def test_left_empty_is_reported_and_never_written(self) -> None:
         def reply(prompt: str) -> str:
             if "never" in text_of(prompt):

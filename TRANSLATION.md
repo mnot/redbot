@@ -46,6 +46,7 @@ Code that contains user-facing strings should follow these guidelines:
 
     msg = ngettext("%(num)s item", "%(num)s items", count) % {"num": count}
     ```
+    The tools don't translate plural entries: `make i18n-autotranslate` skips them and `make i18n-check MARK_FUZZY=1` doesn't mark them. Fill in every `msgstr[n]` by hand (the `Plural-Forms` header of each `.po` says how many: two for `fr` and `es`, one for `ja` and `zh`), then run `make i18n-check`.
 
 ## Release checklist
 
@@ -67,7 +68,7 @@ Run this when translatable strings have changed.
 8. Spot-check: run `make server` and visit it with your browser's language set to the new locale.
 9. Commit the result as its own PR.
 
-To translate by hand instead of step 4, edit the `.po` files (e.g., `redbot/translations/fr/LC_MESSAGES/messages.po`). `make i18n-clear-fuzzy` blanks entries already marked `fuzzy` and **discards their text**, for translating them by hand.
+To translate by hand instead of step 4, edit the `.po` files (e.g., `redbot/translations/fr/LC_MESSAGES/messages.po`). `make i18n-clear-fuzzy` blanks entries already marked `fuzzy` (every form, for a plural entry) and **discards their text**, for translating them by hand.
 
 ## Reviewing translations
 

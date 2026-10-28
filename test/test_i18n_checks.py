@@ -423,6 +423,13 @@ class PluralTest(unittest.TestCase):
         self.assertEqual([i.issue_type for i in self.issues(("- %d problème", ""))], [IssueType.MISSING])
         self.assertEqual([i.issue_type for i in self.issues(("", ""))], [IssueType.MISSING])
 
+    def test_filled_forms_are_still_checked_beside_an_empty_one(self) -> None:
+        issues = self.issues(("- %(n)s problème", ""))
+        self.assertEqual(
+            sorted((i.issue_type.name, i.details) for i in issues),
+            [("BAD_VARIABLE", "Extra: %(n)s"), ("MISSING", "")],
+        )
+
     def test_reported_by_the_singular(self) -> None:
         issues = self.issues(("- %d problème", "- des problèmes"))
         self.assertEqual({i.message_id for i in issues}, {self.IDS[0]})
