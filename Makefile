@@ -38,12 +38,10 @@ tidy: tidy_py
 ## Tests
 
 
-# Auto-discover test files
-TEST_SOURCES = $(wildcard test/test_*.py)
-TEST_TARGETS = $(patsubst test/%.py,%,$(TEST_SOURCES))
-
+# coverage runs every other test file under pytest, so they aren't run separately here; to run
+# one on its own, use `make test_<name>`.
 .PHONY: test
-test: $(TEST_TARGETS) coverage i18n-check
+test: test_webui coverage i18n-check
 
 # Generic rule for running tests
 test_%: venv
