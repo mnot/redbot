@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-04-09 08:47+1000\n"
+"POT-Creation-Date: 2026-10-28 13:32+1100\n"
 "PO-Revision-Date: 2025-12-02 12:04+1100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ja\n"
@@ -18,88 +18,89 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: redbot/formatter/html.py:119
+#: redbot/formatter/html.py:114
 msgid "view HAR"
 msgstr "HAR を表示"
 
-#: redbot/formatter/html.py:121
+#: redbot/formatter/html.py:116
 msgid "View a HAR (HTTP ARchive, a JSON format) file for this test"
 msgstr "このテストのHAR (HTTP ARchive、JSON形式) ファイルを表示"
 
-#: redbot/formatter/html.py:131
+#: redbot/formatter/html.py:126
 msgid "check embedded"
 msgstr "埋め込みチェック"
 
-#: redbot/formatter/html.py:134
+#: redbot/formatter/html.py:129
 msgid "Run REDbot on images, frames and embedded links"
 msgstr "画像、フレーム、埋め込みリンクでREDbotを実行"
 
-#: redbot/formatter/html.py:192
+#: redbot/formatter/html.py:193
 msgid "<p class='btw'>REDbot isn't showing all content, because it's so big!</p>"
 msgstr "<p class='btw'>REDbot は、コンテンツが非常に大きいため、すべてを表示できていません！</p>"
 
-#: redbot/formatter/html.py:205
+#: redbot/formatter/html.py:206
 #, python-format
 msgid "%s response"
 msgstr "%s レスポンス"
 
-#: redbot/formatter/html.py:219
+#: redbot/formatter/html.py:220
 #, python-format
 msgid " - %d problem\n"
-msgstr "- %d 件の問題"
+msgid_plural " - %d problems\n"
+msgstr[0] "- %d 件の問題"
 
-#: redbot/formatter/html_base.py:129
+#: redbot/formatter/html_base.py:142
 msgid "add a request header"
 msgstr "リクエストヘッダーを追加"
 
-#: redbot/formatter/html_base.py:130
+#: redbot/formatter/html_base.py:143
 msgid "copy cookies to request"
 msgstr "クッキーをリクエストにコピー"
 
-#: redbot/formatter/html_base.py:131
+#: redbot/formatter/html_base.py:144
 msgid "view notes"
 msgstr "ノートを表示"
 
-#: redbot/formatter/html_base.py:132
-#: redbot/formatter/templates/response_finish.html:53
+#: redbot/formatter/html_base.py:145
+#: redbot/formatter/templates/response_finish.html:55
 msgid "view content"
 msgstr "コンテンツを表示"
 
-#: redbot/formatter/html_base.py:133
-#: redbot/formatter/templates/response_finish.html:89
+#: redbot/formatter/html_base.py:146
+#: redbot/formatter/templates/response_finish.html:91
 msgid "sort by alpha"
 msgstr "アルファベット順に並べ替え"
 
-#: redbot/formatter/html_base.py:134
+#: redbot/formatter/html_base.py:147
 msgid "show wire order"
 msgstr "ワイヤー注文を表示"
 
-#: redbot/formatter/html_base.py:137
+#: redbot/formatter/html_base.py:150
 #, python-format
 msgid "Setting the %s request header can lead to unpredictable results."
 msgstr "%s リクエストヘッダーを設定すると、予期しない結果を招く可能性があります。"
 
-#: redbot/formatter/text.py:32
+#: redbot/formatter/text.py:65
 msgid "Head Links"
 msgstr "ヘッドリンク"
 
-#: redbot/formatter/text.py:33
+#: redbot/formatter/text.py:66
 msgid "Script Links"
 msgstr "スクリプトリンク"
 
-#: redbot/formatter/text.py:34
+#: redbot/formatter/text.py:67
 msgid "Frame Links"
 msgstr "フレームリンク"
 
-#: redbot/formatter/text.py:35
+#: redbot/formatter/text.py:68
 msgid "IFrame Links"
 msgstr "IFrame リンク"
 
-#: redbot/formatter/text.py:36
+#: redbot/formatter/text.py:69
 msgid "Image Links"
 msgstr "画像リンク"
 
-#: redbot/formatter/text.py:39
+#: redbot/formatter/text.py:72
 #, python-format
 msgid "Error: %s\n"
 msgstr "エラー: %s"
@@ -146,7 +147,7 @@ msgstr "利用規約"
 
 #: redbot/formatter/templates/footer.html:16
 msgid "apply."
-msgstr "適用"
+msgstr "が適用されます。"
 
 #: redbot/formatter/templates/response_finish.html:25
 msgid ""
@@ -175,65 +176,65 @@ msgid "response headers"
 msgstr "レスポンスヘッダー"
 
 #: redbot/formatter/templates/response_finish.html:39
-#: redbot/formatter/templates/response_finish.html:42
-#: redbot/formatter/templates/response_finish.html:47
+#: redbot/formatter/templates/response_finish.html:43
+#: redbot/formatter/templates/response_finish.html:48
 msgid "bytes"
 msgstr "バイト"
 
-#: redbot/formatter/templates/response_finish.html:41
+#: redbot/formatter/templates/response_finish.html:42
 msgid "How large the response content is"
 msgstr "レスポンスコンテンツのサイズ"
 
-#: redbot/formatter/templates/response_finish.html:41
+#: redbot/formatter/templates/response_finish.html:42
 msgid "content"
 msgstr "コンテンツ"
 
-#: redbot/formatter/templates/response_finish.html:45
+#: redbot/formatter/templates/response_finish.html:46
 msgid "How much using chunked encoding adds to the response size"
 msgstr "チャンクエンコーディングを使用すると、レスポンスサイズはどのくらい増加しますか"
 
-#: redbot/formatter/templates/response_finish.html:46
+#: redbot/formatter/templates/response_finish.html:47
 msgid "transfer overhead"
 msgstr "転送オーバーヘッド"
 
-#: redbot/formatter/templates/response_finish.html:52
+#: redbot/formatter/templates/response_finish.html:54
 msgid "View this response content (with any gzip compression removed)"
 msgstr "このレスポンスコンテンツを表示します（gzip圧縮は解除されます）"
 
-#: redbot/formatter/templates/response_finish.html:63
-#: redbot/formatter/templates/response_multi_finish.html:105
+#: redbot/formatter/templates/response_finish.html:65
+#: redbot/formatter/templates/response_multi_finish.html:116
 msgid "This result is saved"
 msgstr "この結果は保存されました"
 
-#: redbot/formatter/templates/response_finish.html:64
-#: redbot/formatter/templates/response_multi_finish.html:106
+#: redbot/formatter/templates/response_finish.html:66
+#: redbot/formatter/templates/response_multi_finish.html:117
 #, python-brace-format
 msgid "Saved until {0} from now"
 msgstr "{0} 後まで保存"
 
-#: redbot/formatter/templates/response_finish.html:70
-#: redbot/formatter/templates/response_multi_finish.html:99
+#: redbot/formatter/templates/response_finish.html:72
+#: redbot/formatter/templates/response_multi_finish.html:110
 msgid "Save these results for future reference"
 msgstr "これらの結果を今後の参照のために保存します"
 
-#: redbot/formatter/templates/response_finish.html:71
-#: redbot/formatter/templates/response_multi_finish.html:100
+#: redbot/formatter/templates/response_finish.html:73
+#: redbot/formatter/templates/response_multi_finish.html:111
 msgid "save"
 msgstr "保存"
 
-#: redbot/formatter/templates/response_finish.html:76
+#: redbot/formatter/templates/response_finish.html:78
 msgid "Validate the response body with a third party service"
 msgstr "サードパーティサービスでレスポンスボディを検証します"
 
-#: redbot/formatter/templates/response_finish.html:77
+#: redbot/formatter/templates/response_finish.html:79
 msgid "validate content"
 msgstr "コンテンツを検証"
 
-#: redbot/formatter/templates/response_finish.html:88
+#: redbot/formatter/templates/response_finish.html:90
 msgid "Header sorting"
 msgstr "ヘッダーの並べ替え"
 
-#: redbot/formatter/templates/response_finish.html:96
+#: redbot/formatter/templates/response_finish.html:98
 msgid ""
 "These notes explain what REDbot has found about your URL; hover over\n"
 "                each one for a detailed explanation."
@@ -241,11 +242,11 @@ msgstr ""
 "これらの注釈は、REDBot があなたの URL "
 "について見つけたことを説明しています。各注釈にマウスカーソルを合わせると、詳細な説明が表示されます。"
 
-#: redbot/formatter/templates/response_finish.html:124
+#: redbot/formatter/templates/response_finish.html:126
 msgid "If something doesn't seem right, feel free to"
 msgstr "何か問題があるようでしたら、お気軽にご"
 
-#: redbot/formatter/templates/response_finish.html:125
+#: redbot/formatter/templates/response_finish.html:127
 msgid "file an issue"
 msgstr "問題を報告する"
 
@@ -347,15 +348,15 @@ msgstr "問題が発生しました。"
 msgid "notes"
 msgstr "メモ"
 
-#: redbot/formatter/templates/response_multi_finish.html:82
+#: redbot/formatter/templates/response_multi_finish.html:88
 msgid "response incomplete"
 msgstr "レスポンスが不完全です"
 
-#: redbot/formatter/templates/response_multi_finish.html:84
+#: redbot/formatter/templates/response_multi_finish.html:90
 msgid "unknown problem"
 msgstr "不明な問題"
 
-#: redbot/formatter/templates/response_multi_finish.html:114
+#: redbot/formatter/templates/response_multi_finish.html:125
 msgid "Notes"
 msgstr "注"
 
@@ -369,11 +370,11 @@ msgstr "URIをここに入力し、「Enter」キーを押してチェックし�
 msgid "Enter a http:// or https:// URL to check"
 msgstr "http:// または https:// URL を入力してチェックしてください"
 
-#: redbot/resource/fetch.py:305
+#: redbot/resource/fetch.py:455
 msgid "This response has content."
 msgstr "このレスポンスにはコンテンツがあります。"
 
-#: redbot/resource/fetch.py:306
+#: redbot/resource/fetch.py:456
 #, python-format
 msgid ""
 "HTTP defines a few special situations where a response does not allow "
@@ -400,11 +401,11 @@ msgstr ""
 "\n"
 "    %(sample)s"
 
-#: redbot/resource/fetch.py:323
+#: redbot/resource/fetch.py:473
 msgid "This response has extra data after it."
 msgstr "このレスポンスには、余分なデータが含まれています。"
 
-#: redbot/resource/fetch.py:324
+#: redbot/resource/fetch.py:474
 #, python-format
 msgid ""
 "The server sent data after the message ended. This can be caused by an "
@@ -422,11 +423,11 @@ msgstr ""
 "\n"
 "    %(sample)s"
 
-#: redbot/resource/fetch.py:337
+#: redbot/resource/fetch.py:487
 msgid "This response has chunked encoding errors."
 msgstr "このレスポンスにはチャンクエンコーディングエラーがあります。"
 
-#: redbot/resource/fetch.py:338
+#: redbot/resource/fetch.py:488
 #, python-format
 msgid ""
 "The response indicates it uses HTTP chunked encoding, but there was a "
@@ -465,14 +466,14 @@ msgstr ""
 "この問題は、16進数ではなく整数でチャンクサイズを送信したり、レスポンスボディを実際にはチャンク化せずに `Transfer-Encoding: "
 "chunked` を送信したりすることが原因で発生することがよくあります。"
 
-#: redbot/resource/fetch.py:360
+#: redbot/resource/fetch.py:510
 #, python-format
 msgid ""
 "This response has whitespace at the end of the '%(header_name)s' header "
 "field name."
 msgstr "このレスポンスの「%(header_name)s」ヘッダーフィールド名には末尾に空白があります。"
 
-#: redbot/resource/fetch.py:361
+#: redbot/resource/fetch.py:511
 msgid ""
 "HTTP specifically bans whitespace between header field names and the "
 "colon, because they can easily\n"
@@ -486,12 +487,33 @@ msgstr ""
 "\n"
 "ほとんどのHTTP実装では、このメッセージの処理を拒否します。"
 
-#: redbot/resource/fetch.py:372
+#: redbot/resource/fetch.py:522
+#, python-format
+msgid "The server sent more than %(limit)s non-final responses."
+msgstr "サーバーは、%(limit)s 以上の非最終レスポンスを送信しました。"
+
+#: redbot/resource/fetch.py:523
+#, python-format
+msgid ""
+"Servers can send any number of 1xx (informational) responses before the "
+"final one, but this server\n"
+"sent more than REDbot is willing to examine. REDbot has kept and checked "
+"the first %(limit)s and\n"
+"ignored the rest.\n"
+"\n"
+"Clients receiving this many may behave unexpectedly, or give up."
+msgstr ""
+"サーバーは最終的なものになる前に、1xx（情報）レスポンスを任意の数送信できますが、このサーバーはREDbotが調べることに同意するよりも多くのものを送信しました。REDbotは最初の%(limit)sを保持しチェックし、残りは無視しました。"
+"\n"
+"\n"
+"この数のレスポンスを受信するクライアントは予期せぬ動作をするか、または諦めるかもしれません。"
+
+#: redbot/resource/fetch.py:534
 #, python-format
 msgid "The %(response)s response contains a %(header_name)s header."
 msgstr "%(response)s レスポンスには %(header_name)s ヘッダーが含まれています。"
 
-#: redbot/resource/fetch.py:373
+#: redbot/resource/fetch.py:535
 #, python-format
 msgid ""
 "RFC 9110 requires that 1xx responses not contain a `%(header_name)s` "
@@ -504,7 +526,7 @@ msgstr ""
 "\n"
 "このレスポンスを受信するクライアントは、処理に失敗するか、予期しない動作をする可能性があります。"
 
-#: redbot/resource/fetch.py:172
+#: redbot/resource/fetch.py:239
 #, python-format
 msgid "fetching %(uri)s (%(check_name)s)"
 msgstr "%(uri)s を取得中 (%(check_name)s)"
@@ -532,11 +554,11 @@ msgstr ""
 "\n"
 "これはキャッシュの動作に影響を与える可能性があります。ヘッダーが存在しないため、キャッシュはキャッシュされたコピーからそれらを削除する可能性があります。"
 
-#: redbot/resource/active_check/conneg.py:138
+#: redbot/resource/active_check/conneg.py:149
 msgid "There was a problem checking for Content Negotiation support."
 msgstr "コンテンツネゴシエーションのサポートを確認中に問題が発生しました。"
 
-#: redbot/resource/active_check/conneg.py:139
+#: redbot/resource/active_check/conneg.py:150
 #, python-format
 msgid ""
 "When REDbot tried to check the resource for content negotiation support, "
@@ -552,14 +574,40 @@ msgstr ""
 "\n"
 "再試行すると、問題が解決する可能性があります。"
 
-#: redbot/resource/active_check/conneg.py:150
+#: redbot/resource/active_check/conneg.py:161
+msgid "The resource is compressed even when the client doesn't ask for it."
+msgstr "リソースはクライアントが要求しない場合でも圧縮されます。"
+
+#: redbot/resource/active_check/conneg.py:162
+msgid ""
+"HTTP supports compression of responses by negotiating for `Content-"
+"Encoding`. When REDbot made a\n"
+"request without `Accept-Encoding`, the response was already compressed, "
+"so REDbot can't tell\n"
+"whether the resource negotiates its compression.\n"
+"\n"
+"HTTP allows this, because a client that doesn't send `Accept-Encoding` is"
+" taken to accept any\n"
+"content-coding. Clients that can't decode the compression will not be "
+"able to use the resource,\n"
+"though, and the server may be ignoring any `Accept-Encoding` they do send."
+msgstr ""
+"HTTPは、`Content-Encoding` による交渉でレスポンスの圧縮をサポートします。REDbotが`Accept-Encoding` "
+"を含まないリクエストを送信した場合、レスポンスはすでに圧縮されていたため、REDbotはリソースが圧縮の交渉を行っているかどうかを判断できません。"
+"\n"
+"\n"
+"HTTPはこれを許可します。`Accept-Encoding` "
+"を送信しないクライアントは、任意のコンテンツ・コーディングを許可されるとみなされるからです。圧縮のデコードができないクライアントはリソースを使用できなくなり、サーバーは"
+"`Accept-Encoding` を送信した場合でも無視する可能性があります。"
+
+#: redbot/resource/active_check/conneg.py:175
 #, python-format
 msgid ""
 "Content negotiation for gzip compression is supported, saving "
 "%(savings)s%%."
 msgstr "gzip圧縮のコンテンツネゴシエーションをサポートしており、%(savings)s%% の節約になります。"
 
-#: redbot/resource/active_check/conneg.py:151
+#: redbot/resource/active_check/conneg.py:176
 #, python-format
 msgid ""
 "HTTP supports compression of responses by negotiating for `Content-"
@@ -576,14 +624,14 @@ msgstr ""
 "\n"
 "圧縮されたレスポンスのヘッダーが表示されます。"
 
-#: redbot/resource/active_check/conneg.py:162
+#: redbot/resource/active_check/conneg.py:187
 #, python-format
 msgid ""
 "Content negotiation for gzip compression makes the response %(savings)s%%"
 " larger."
 msgstr "gzip圧縮のコンテンツネゴシエーションにより、レスポンスが%(savings)s%%大きくなります。"
 
-#: redbot/resource/active_check/conneg.py:163
+#: redbot/resource/active_check/conneg.py:188
 #, python-format
 msgid ""
 "HTTP supports compression of responses by negotiating for `Content-"
@@ -611,11 +659,11 @@ msgstr ""
 "\n"
 "圧縮されたレスポンスのヘッダーが表示されます。"
 
-#: redbot/resource/active_check/conneg.py:178
+#: redbot/resource/active_check/conneg.py:203
 msgid "Content negotiation for gzip compression isn't supported."
 msgstr "gzip圧縮のコンテンツネゴシエーションはサポートされていません。"
 
-#: redbot/resource/active_check/conneg.py:179
+#: redbot/resource/active_check/conneg.py:204
 msgid ""
 "HTTP supports compression of responses by negotiating for `Content-"
 "Encoding`. When REDbot asked for\n"
@@ -624,13 +672,13 @@ msgstr ""
 "HTTP は、`Content-Encoding` をネゴシエートすることでレスポンスの圧縮をサポートしています。REDbot "
 "が圧縮されたレスポンスを要求した際、リソースはそれを提供しませんでした。"
 
-#: redbot/resource/active_check/conneg.py:187
+#: redbot/resource/active_check/conneg.py:212
 msgid ""
 "The compressed response is negotiated, but doesn't have an appropriate "
 "Vary header."
 msgstr "圧縮されたレスポンスはネゴシエートされましたが、適切な Vary ヘッダーがありません。"
 
-#: redbot/resource/active_check/conneg.py:188
+#: redbot/resource/active_check/conneg.py:213
 msgid ""
 "All content negotiated responses need to have a `Vary` header that "
 "reflects the header(s) used to\n"
@@ -645,11 +693,11 @@ msgstr ""
 "圧縮された応答は `gzip` コンテンツエンコーディング用にネゴシエートされたため、`Vary` "
 "ヘッダーには、使用されたリクエストヘッダーである `Accept-Encoding` を含める必要があります。"
 
-#: redbot/resource/active_check/conneg.py:199
+#: redbot/resource/active_check/conneg.py:224
 msgid "The resource doesn't send Vary consistently."
 msgstr "リソースはVaryを一貫して送信していません。"
 
-#: redbot/resource/active_check/conneg.py:200
+#: redbot/resource/active_check/conneg.py:225
 #, python-format
 msgid ""
 "HTTP requires that the `Vary` response header be sent consistently for "
@@ -679,11 +727,11 @@ msgstr ""
 "\n"
 "これは、ダウンストリームキャッシュで問題を引き起こす可能性があります。なぜなら、指定されたURIのキャッシュキーが一貫して特定できないためです。"
 
-#: redbot/resource/active_check/conneg.py:217
+#: redbot/resource/active_check/conneg.py:242
 msgid "The response status is different when content negotiation happens."
 msgstr "コンテンツネゴシエーションが発生した場合、レスポンスステータスが異なります。"
 
-#: redbot/resource/active_check/conneg.py:218
+#: redbot/resource/active_check/conneg.py:243
 #, python-format
 msgid ""
 "When content negotiation is used, the response status shouldn't change "
@@ -705,12 +753,12 @@ msgstr ""
 "\n"
 "REDbot はこのため、コンテンツネゴシエーションの他の側面をチェックしていません。"
 
-#: redbot/resource/active_check/conneg.py:231
+#: redbot/resource/active_check/conneg.py:256
 #, python-format
 msgid "The %(header)s header is different when content negotiation happens."
 msgstr "コンテンツネゴシエーションが発生した場合、%(header)s ヘッダーは異なります。"
 
-#: redbot/resource/active_check/conneg.py:232
+#: redbot/resource/active_check/conneg.py:257
 #, python-format
 msgid ""
 "When content negotiation is used, the %(header)s response header "
@@ -726,11 +774,11 @@ msgstr ""
 "* ネゴシエートされたもの： `%(negotiated_val)s`\n"
 "*ネゴシエートされていないもの： `%(bare_val)s`"
 
-#: redbot/resource/active_check/conneg.py:243
+#: redbot/resource/active_check/conneg.py:268
 msgid "The response content is different when content negotiation happens."
 msgstr "コンテンツネゴシエーションが発生した場合、レスポンスコンテンツは異なります。"
 
-#: redbot/resource/active_check/conneg.py:244
+#: redbot/resource/active_check/conneg.py:269
 msgid ""
 "When content negotiation is used, the response content typically "
 "shouldn't change between negotiated\n"
@@ -745,11 +793,11 @@ msgstr ""
 "\n"
 "これには正当な理由があるかもしれません。例として、異なるサーバーが2つのリクエストを処理したためです。しかし、その結果、REDの出力が歪む可能性があります。"
 
-#: redbot/resource/active_check/conneg.py:255
+#: redbot/resource/active_check/conneg.py:280
 msgid "The ETag doesn't change between negotiated representations."
 msgstr "ETag は、ネゴシエートされた表現間でも変更されません。"
 
-#: redbot/resource/active_check/conneg.py:256
+#: redbot/resource/active_check/conneg.py:281
 msgid ""
 "HTTP requires that the `ETag`s for two different responses associated "
 "with the same URI be\n"
@@ -817,10 +865,9 @@ msgid ""
 "`304 Not Modified`\n"
 "response, indicating that it supports `ETag` validation."
 msgstr ""
-"HTTP は、クライアントが保持しているコピーがまだ有効かどうかを確認するために、条件付きリクエストを行えるようにします。\n"
-"このレスポンスには `ETag` が含まれているため、クライアントは検証のために `If-None-Match` "
-"リクエストヘッダーを使用できるはずです。REDbot はこれを行い、リソースが `304 Not Modified` "
-"レスポンスを送信することを発見しました。これは、`ETag` 検証をサポートしていることを示しています。"
+"HTTPは、クライアントがコピーがまだ有効かどうかを確認するために条件付きリクエストを行うことを可能にします。このレスポンスに`ETag`が含まれている場合、クライアントは"
+"`If-None-Match`リクエストヘッダーを使用して検証ができます。REDbotはこれを行い、リソースが`304 Not "
+"Modified`レスポンスを送信することを発見しました、これは`ETag`検証をサポートしていることを示しています。"
 
 #: redbot/resource/active_check/etag_validate.py:125
 msgid "An If-None-Match conditional request returned the full content unchanged."
@@ -838,12 +885,11 @@ msgid ""
 "response even though it hadn't\n"
 "changed, indicating that it doesn't support `ETag` validation."
 msgstr ""
-"HTTP では、クライアントは自身が保持しているコピーがまだ有効かどうかを確認するために条件付きリクエストを行うことができます。\n"
-"このレスポンスには `ETag` が含まれているため、クライアントは `If-None-Match` "
-"リクエストヘッダーを使用して検証できるはずです。\n"
+"HTTP はクライアントが、保持しているコピーの有効性を確認するために条件付きリクエストを行うことを可能にします。このレスポンスに `ETag` "
+"があるため、クライアントは検証のために `If-None-Match` リクエストヘッダーを使用できるはずです。\n"
 "\n"
-"REDbot はこれを行い、リソースが変更されていないにもかかわらず同じ完全なレスポンスを送信していることを発見しました。これは、`ETag` "
-"検証をサポートしていないことを示しています。"
+"REDbot はこれを行い、リソースが変更されていなくても同じ完全なレスポンスを送信することを発見しました。これにより、`ETag` "
+"検証をサポートしていないことが示唆されます。"
 
 #: redbot/resource/active_check/etag_validate.py:139
 #: redbot/resource/active_check/etag_validate.py:156
@@ -922,12 +968,10 @@ msgid ""
 "request, so REDbot can't tell whether or not `ETag` validation is "
 "supported."
 msgstr ""
-"HTTP では、クライアントが自身が保持しているコピーがまだ有効かどうかを確認するために条件付きリクエストを行うことができます。\n"
-"このレスポンスには `ETag` が含まれているため、クライアントは検証のために `If-None-Match` "
-"リクエストヘッダーを使用できるはずです。\n"
+"HTTPは、クライアントがコピーの有効性を確認するために条件付きリクエストを行うことを可能にします。このレスポンスに`ETag`が含まれている場合、クライアントは"
+"`If-None-Match`リクエストヘッダーを使用して検証を行うことができます。\n"
 "\n"
-"REDbot はこれを行いましたが、元のリクエストと検証リクエストの間でレスポンスが変更されたため、REDbot は `ETag` "
-"検証がサポートされているかどうかを判断できません。"
+"REDbotはこれを行ってきましたが、元の要求と検証要求の間のレスポンスが変更されたため、REDbotは`ETag`検証がサポートされているかどうかを判断できません。"
 
 #: redbot/resource/active_check/etag_validate.py:185
 #, python-format
@@ -945,9 +989,9 @@ msgid ""
 "%(enc_inm_status)s status code, so RED\n"
 "can't tell whether or not `ETag` validation is supported."
 msgstr ""
-"HTTPは、クライアントが保持しているコピーがまだ有効かどうかを確認するために、条件付きリクエストを行うことを許可しています。\n"
-"このレスポンスには`ETag`があるため、クライアントは検証のために`If-None-"
-"Match`リクエストヘッダーを使用できるはずです。REDbotはこれを行いましたが、レスポンスは%(enc_inm_status)sのステータスコードであったため、REDは`ETag`検証がサポートされているかどうかを判断できません。"
+"HTTPは、クライアントがコピーの有効性を確認するために条件付きリクエストを行うことを可能にします。このレスポンスに`ETag`が含まれている場合、クライアントは"
+"`If-None-"
+"Match`リクエストヘッダーを使用して検証ができます。REDbotはこれを実行しましたが、レスポンスには%(enc_inm_status)sステータスコードが含まれていたため、REDは`ETag`検証がサポートされているかどうかを判断できません。"
 
 #: redbot/resource/active_check/etag_validate.py:18
 msgid "ETag Validation"
@@ -957,11 +1001,11 @@ msgstr "ETag 検証"
 msgid "The ETag validation response"
 msgstr "ETag 検証応答"
 
-#: redbot/resource/active_check/lm_validate.py:110
+#: redbot/resource/active_check/lm_validate.py:112
 msgid "There was a problem checking for Last-Modified validation support."
 msgstr "Last-Modified 検証サポートの確認中に問題が発生しました。"
 
-#: redbot/resource/active_check/lm_validate.py:111
+#: redbot/resource/active_check/lm_validate.py:113
 #, python-format
 msgid ""
 "When REDbot tried to check the resource for Last-Modified validation "
@@ -977,11 +1021,11 @@ msgstr ""
 "\n"
 "再試行することで解消される可能性があります。"
 
-#: redbot/resource/active_check/lm_validate.py:122
+#: redbot/resource/active_check/lm_validate.py:124
 msgid "If-Modified-Since conditional requests are supported."
 msgstr "If-Modified-Since 条件付きリクエストがサポートされています。"
 
-#: redbot/resource/active_check/lm_validate.py:123
+#: redbot/resource/active_check/lm_validate.py:125
 msgid ""
 "HTTP allows clients to make conditional requests to see if a copy that "
 "they hold is still valid.\n"
@@ -993,20 +1037,20 @@ msgid ""
 "Modified` response, indicating\n"
 "that it supports `Last-Modified` validation."
 msgstr ""
-"HTTP により、クライアントは、自身が保持しているコピーがまだ有効かどうかを確認するための条件付きリクエストを行うことができます。\n"
-"このレスポンスには `Last-Modified` ヘッダーがあるため、クライアントは検証のために `If-Modified-Since` "
-"リクエストヘッダーを使用できるはずです。\n"
+"HTTP はクライアントが条件付きリクエストを行うことを可能にし、彼らが保持しているコピーの有効性を確認します。このレスポンスに `Last-"
+"Modified` ヘッダーがある場合、クライアントは検証のために `If-Modified-Since` "
+"リクエストヘッダーを使用できるべきです。\n"
 "\n"
 "REDbot はこれを行い、リソースが `304 Not Modified` レスポンスを送信することを発見しました。これは、`Last-"
 "Modified` 検証をサポートしていることを示しています。"
 
-#: redbot/resource/active_check/lm_validate.py:135
+#: redbot/resource/active_check/lm_validate.py:137
 msgid ""
 "An If-Modified-Since conditional request returned the full content "
 "unchanged."
 msgstr "If-Modified-Since 条件付きリクエストで、コンテンツは変更なくそのまま返されました。"
 
-#: redbot/resource/active_check/lm_validate.py:136
+#: redbot/resource/active_check/lm_validate.py:138
 msgid ""
 "HTTP allows clients to make conditional requests to see if a copy that "
 "they hold is still valid.\n"
@@ -1018,20 +1062,20 @@ msgid ""
 "even though it hadn't\n"
 "changed, indicating that it doesn't support `Last-Modified` validation."
 msgstr ""
-"HTTP は、クライアントが保持しているコピーがまだ有効かどうかを確認するための条件付きリクエストを行うことを許可しています。\n"
-"このレスポンスには `Last-Modified` ヘッダーがあるため、クライアントは検証のために `If-Modified-Since` "
+"HTTP はクライアントが、保持しているコピーの有効性を確認するために条件付きリクエストを行うことを可能にします。このレスポンスに `Last-"
+"Modified` ヘッダーがあるため、クライアントは検証のために `If-Modified-Since` "
 "リクエストヘッダーを使用できるはずです。\n"
 "\n"
-"REDbot はこれを実行し、リソースが変更されていないにもかかわらず完全なレスポンスを送信したことを発見しました。これは、`Last-"
-"Modified` 検証をサポートしていないことを示しています。"
+"REDbot がこれを行い、リソースが変更されていなくてもフルレスポンスを送信することを発見しました。これは `Last-Modified` "
+"検証をサポートしていないことを示しています。"
 
-#: redbot/resource/active_check/lm_validate.py:148
+#: redbot/resource/active_check/lm_validate.py:150
 msgid ""
 "An If-Modified-Since conditional request returned the full content, but "
 "it had changed."
 msgstr "If-Modified-Since 条件付きリクエストは、コンテンツが変更されていましたが、フルコンテンツを返しました。"
 
-#: redbot/resource/active_check/lm_validate.py:151
+#: redbot/resource/active_check/lm_validate.py:153
 msgid ""
 "HTTP allows clients to make conditional requests to see if a copy that "
 "they hold is still valid.\n"
@@ -1044,19 +1088,19 @@ msgid ""
 "request, so REDbot can't tell whether or not `Last-Modified` validation "
 "is supported."
 msgstr ""
-"HTTP は、クライアントが保持しているコピーがまだ有効かどうかを確認するために、条件付きリクエストを行うことを許可しています。\n"
-"このレスポンスには `Last-Modified` ヘッダーがあるため、クライアントは検証のために `If-Modified-Since` "
+"HTTP はクライアントが、保持しているコピーの有効性を確認するために条件付きリクエストを行うことを可能にします。このレスポンスに `Last-"
+"Modified` ヘッダーがある場合、クライアントは検証のために `If-Modified-Since` "
 "リクエストヘッダーを使用できるはずです。\n"
 "\n"
-"REDbot はこれを行いましたが、元のリクエストと検証リクエストの間でレスポンスが変更されたため、REDbot は `Last-"
-"Modified` 検証がサポートされているかどうかを判断できません。"
+"REDbot はこれを行ってきましたが、元の要求と検証要求の間のレスポンスが変更されたため、REDbot は `Last-Modified` "
+"検証がサポートされているかどうかを判断できません。"
 
-#: redbot/resource/active_check/lm_validate.py:163
+#: redbot/resource/active_check/lm_validate.py:165
 #, python-format
 msgid "An If-Modified-Since conditional request returned a %(ims_status)s status."
 msgstr "If-Modified-Since 条件付きリクエストは %(ims_status)s ステータスを返しました。"
 
-#: redbot/resource/active_check/lm_validate.py:164
+#: redbot/resource/active_check/lm_validate.py:166
 #, python-format
 msgid ""
 "HTTP allows clients to make conditional requests to see if a copy that "
@@ -1069,26 +1113,26 @@ msgid ""
 "code, so REDbot can't tell\n"
 "whether or not `Last-Modified` validation is supported."
 msgstr ""
-"HTTPでは、クライアントが保持しているコピーがまだ有効かどうかを確認するために、条件付きリクエストを行うことができます。\n"
-"このレスポンスには `Last-Modified` ヘッダーがあるので、クライアントは検証のために `If-Modified-Since` "
+"HTTPは、クライアントがコピーの有効性を確認するために条件付きリクエストを行うことを可能にします。このレスポンスに `Last-"
+"Modified` ヘッダーがあるため、クライアントは検証のために `If-Modified-Since` "
 "リクエストヘッダーを使用できるはずです。\n"
 "\n"
-"REDbot はこれを行いましたが、レスポンスは %(enc_ims_status)s のステータスコードだったので、REDbot は "
-"`Last-Modified` 検証がサポートされているかどうかを判断できませんでした。"
+"REDbotはこれを行ってきましたが、レスポンスに %(enc_ims_status)s ステータスコードがあったため、REDbotは "
+"`Last-Modified` 検証がサポートされているかどうかを判断できません。"
 
 #: redbot/resource/active_check/lm_validate.py:20
 msgid "Last-Modified Validation"
-msgstr "最終更新日時検証"
+msgstr "Last-Modified の検証"
 
 #: redbot/resource/active_check/lm_validate.py:22
 msgid "The Last-Modified validation response"
-msgstr "最終更新日時検証応答"
+msgstr "Last-Modifiedの検証レスポンス"
 
-#: redbot/resource/active_check/range.py:146
+#: redbot/resource/active_check/range.py:148
 msgid "There was a problem checking for Partial Content support."
 msgstr "Partial Content サポートの確認中に問題が発生しました。"
 
-#: redbot/resource/active_check/range.py:147
+#: redbot/resource/active_check/range.py:149
 #, python-format
 msgid ""
 "When REDbot tried to check the resource for partial content support, "
@@ -1104,11 +1148,11 @@ msgstr ""
 "\n"
 "再試行することで問題が解決するかもしれません。"
 
-#: redbot/resource/active_check/range.py:158
+#: redbot/resource/active_check/range.py:160
 msgid "The resource advertises support for non-standard range-units."
 msgstr "リソースは、標準外の range-units のサポートを宣伝しています。"
 
-#: redbot/resource/active_check/range.py:159
+#: redbot/resource/active_check/range.py:161
 msgid ""
 "The `Accept-Ranges` response header tells clients what `range-unit`s a "
 "resource is willing to\n"
@@ -1122,11 +1166,11 @@ msgstr ""
 "\n"
 "標準外の `range-unit` を知らないクライアントは、それを使用できません。"
 
-#: redbot/resource/active_check/range.py:169
+#: redbot/resource/active_check/range.py:171
 msgid "A ranged request returned the correct partial content."
 msgstr "範囲指定リクエストが正しい部分コンテンツを返しました。"
 
-#: redbot/resource/active_check/range.py:170
+#: redbot/resource/active_check/range.py:172
 msgid ""
 "This resource advertises support for ranged requests with `Accept-"
 "Ranges`; that is, it allows\n"
@@ -1138,11 +1182,11 @@ msgstr ""
 "ヘッダーでレンジリクエストをサポートしていることを示しています。つまり、クライアントが一部のみを送信するように指定できます。REDbot "
 "は、このレスポンスの一部をリクエストしてテストしましたが、正しく返されました。"
 
-#: redbot/resource/active_check/range.py:179
+#: redbot/resource/active_check/range.py:181
 msgid "A ranged request returned partial content, but it was incorrect."
 msgstr "範囲指定リクエストは部分的なコンテンツを返しましたが、それは正しくありませんでした。"
 
-#: redbot/resource/active_check/range.py:180
+#: redbot/resource/active_check/range.py:182
 #, python-format
 msgid ""
 "This resource advertises support for ranged requests with `Accept-"
@@ -1188,22 +1232,22 @@ msgstr ""
 "\n"
 "_(100文字までのサンプルを表示しています)_"
 
-#: redbot/resource/active_check/range.py:205
+#: redbot/resource/active_check/range.py:207
 msgid "A ranged request returned another representation."
 msgstr "範囲指定リクエストは別の表現を返しました。"
 
-#: redbot/resource/active_check/range.py:206
+#: redbot/resource/active_check/range.py:208
 msgid ""
 "A new representation was retrieved when checking support of ranged "
 "request. This is not an error,\n"
 "it just indicates that REDbot cannot draw any conclusion at this time."
 msgstr "範囲リクエストのサポートをチェックしたときに、新しい表現が取得されました。これはエラーではありませんが、REDbotが現時点では結論を導き出せないことを示しています。"
 
-#: redbot/resource/active_check/range.py:214
+#: redbot/resource/active_check/range.py:216
 msgid "A ranged request returned the full rather than partial content."
 msgstr "範囲指定リクエストで、部分的なコンテンツではなく完全なコンテンツが返されました。"
 
-#: redbot/resource/active_check/range.py:215
+#: redbot/resource/active_check/range.py:217
 msgid ""
 "This resource advertises support for ranged requests with `Accept-"
 "Ranges`; that is, it allows\n"
@@ -1219,12 +1263,12 @@ msgstr ""
 " "
 "はこのレスポンスの一部をリクエストしてテストしましたが、レスポンス全体が返されました。つまり、リソースは部分コンテンツのサポートを広告しているにもかかわらず、実際にはそうしていないようです。"
 
-#: redbot/resource/active_check/range.py:225
+#: redbot/resource/active_check/range.py:227
 #, python-format
 msgid "A ranged request returned a %(range_status)s status."
 msgstr "範囲リクエストは %(range_status)s ステータスを返しました。"
 
-#: redbot/resource/active_check/range.py:226
+#: redbot/resource/active_check/range.py:228
 #, python-format
 msgid ""
 "This resource advertises support for ranged requests; that is, it allows "
@@ -1238,13 +1282,13 @@ msgstr ""
 " はこのレスポンスの一部をリクエストすることでこれをテストしましたが、%(enc_range_status)s のレスポンスコードが返され、これは"
 " REDbot が予期していなかったものです。"
 
-#: redbot/resource/active_check/range.py:235
+#: redbot/resource/active_check/range.py:237
 msgid ""
 "Partial responses don't have the same support for compression that full "
 "ones do."
 msgstr "部分的なレスポンスは、完全なレスポンスほど圧縮のサポートがありません。"
 
-#: redbot/resource/active_check/range.py:236
+#: redbot/resource/active_check/range.py:238
 msgid ""
 "This resource supports ranged requests and also supports negotiation for "
 "gzip compression, but\n"
@@ -1260,11 +1304,11 @@ msgstr ""
 "\n"
 "これにより、クライアントが部分レスポンスとフルレスポンスを比較する際に問題が発生する可能性があります。部分レスポンスはバイト範囲で表現され、圧縮はバイトを変更するためです。"
 
-#: redbot/resource/active_check/range.py:247
+#: redbot/resource/active_check/range.py:249
 msgid "The partial response is missing required headers."
 msgstr "部分的なレスポンスに必要なヘッダーがありません。"
 
-#: redbot/resource/active_check/range.py:248
+#: redbot/resource/active_check/range.py:250
 #, python-format
 msgid ""
 "HTTP requires `206 Partial Content` responses to have certain headers, if"
@@ -1285,11 +1329,11 @@ msgstr ""
 "\n"
 "これはキャッシュの動作に影響を与える可能性があります。ヘッダーが存在しないため、キャッシュは保存されたコピーからそれらを削除してしまう可能性があります。"
 
-#: redbot/resource/active_check/range.py:261
+#: redbot/resource/active_check/range.py:263
 msgid "The partial response has a Content-Length equal to the full response."
 msgstr "部分的なレスポンスの Content-Length が完全なレスポンスと同じです。"
 
-#: redbot/resource/active_check/range.py:262
+#: redbot/resource/active_check/range.py:264
 msgid ""
 "The `Content-Length` header in a 206 response should indicate the size of"
 " the partial content, not\n"
@@ -1301,11 +1345,11 @@ msgstr ""
 "レスポンスで示すべきは、部分コンテンツのサイズであり、完全なレスポンスのサイズではありません。部分レスポンスの Content-Length "
 "は、完全なレスポンスのサイズと一致しており、誤りである可能性があります。"
 
-#: redbot/resource/active_check/range.py:271
+#: redbot/resource/active_check/range.py:273
 msgid "The Content-Range header indicates an incorrect total length."
 msgstr "Content-Range ヘッダーで指定された合計長が正しくありません。"
 
-#: redbot/resource/active_check/range.py:272
+#: redbot/resource/active_check/range.py:274
 #, python-format
 msgid ""
 "The `Content-Range` header in a 206 response indicates the total length "
@@ -1318,12 +1362,12 @@ msgstr ""
 "です。その値は、フルレスポンスの Content-Length (%(length_full)s) "
 "と一致しません。これは、おそらく正しくないことを示しています。"
 
-#: redbot/resource/active_check/range.py:28
+#: redbot/resource/active_check/range.py:27
 #: redbot/translations/extra_strings.py:16
 msgid "Partial Content"
 msgstr "部分コンテンツ"
 
-#: redbot/resource/active_check/range.py:30
+#: redbot/resource/active_check/range.py:29
 msgid "The partial response"
 msgstr "部分的なレスポンス"
 
