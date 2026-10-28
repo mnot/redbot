@@ -4,15 +4,20 @@
 # This file contains targets for managing translations and message catalogs.
 #
 # Recommended Workflow for updating translations:
-# 1. make i18n-extract   - Extract source strings into messages.pot
-# 2. make i18n-update    - Update existing PO files with new strings from POT
-# 3. make i18n-autotranslate - Use LLM to translate missing strings
-# 4. make i18n-compile   - Compile PO files into MO binary files for runtime
+# 1. make i18n-update    - Re-extract strings into messages.pot and update the PO files; a
+#                          changed string becomes a new, empty entry (no fuzzy matching)
+# 2. make i18n-check MARK_FUZZY=1 - Mark entries with issues fuzzy, so step 3 retranslates
+#                          them (may exit non-zero on critical errors; marking is still saved)
+# 3. make i18n-autotranslate - Use LLM to translate missing and fuzzy strings
+# 4. make i18n-check     - Verify the result (missing strings, variable mismatches)
+# 5. make i18n-compile   - Compile PO files into MO binary files for runtime
 #
 # Shortcut: 'make translations' runs i18n-update followed by i18n-compile.
 #
 # Other targets:
-# - make i18n-check      - Verify translation health (missing strings, variable mismatches)
+# - make i18n-extract    - Extract source strings into messages.pot only
+# - make i18n-clear-fuzzy - Blank entries already marked fuzzy (discards their text)
+# - make i18n-review     - Advisory LLM review of translations (see below)
 # - make i18n-init LOCALE=xx - Initialize a new translation catalog for a new language
 #
 
@@ -25,17 +30,23 @@ $(VENV)/$(MARKER)-i18n: $(VENV)/$(MARKER)
 	$(VENV)/pip install -e .[i18n]
 	touch $@
 
+# --ignore-dirs replaces Babel's default (dot and underscore directories), so
+# repeat those, or .claude/worktrees and other tool directories get scanned.
 .PHONY: i18n-extract
 i18n-extract: venv-i18n
-	PYTHONPATH=. $(VENV)/pybabel extract --omit-header --ignore-dirs="build dist .venv" -F tools/i18n/babel.cfg -o $(PROJECT)/translations/messages.pot .
+	PYTHONPATH=. $(VENV)/pybabel extract --omit-header --ignore-dirs=".* _* build dist" -F tools/i18n/babel.cfg -o $(PROJECT)/translations/messages.pot $(PROJECT)
 
 .PHONY: i18n-update
 i18n-update: i18n-extract venv-i18n
-	$(VENV)/pybabel update -i $(PROJECT)/translations/messages.pot -d $(PROJECT)/translations
+	$(VENV)/pybabel update --no-fuzzy-matching -i $(PROJECT)/translations/messages.pot -d $(PROJECT)/translations
+
+.PHONY: i18n-clear-fuzzy
+i18n-clear-fuzzy: venv-i18n
+	PYTHONPATH=. $(VENV)/python -m tools.i18n.clear_fuzzy --locale_dir $(PROJECT)/translations
 
 .PHONY: i18n-autotranslate
 i18n-autotranslate: venv-i18n
-	$(VENV)/python -m tools.i18n.autotranslate --locale_dir $(PROJECT)/translations --model $(or $(MODEL), 'mlx-community/aya-23-8B-4bit') #--rpm $(or $(RPM),10)
+	$(VENV)/python -m tools.i18n.autotranslate --locale_dir $(PROJECT)/translations $(if $(MODEL),--model $(MODEL)) $(if $(RPM),--rpm $(RPM)) $(if $(TEMPERATURE),--temperature $(TEMPERATURE)) $(if $(PROTECT),--protect $(PROTECT))
 
 .PHONY: i18n-compile
 i18n-compile: venv-i18n
@@ -46,9 +57,21 @@ translations: i18n-update i18n-compile
 
 .PHONY: i18n-check
 i18n-check: venv-i18n
-	PYTHONPATH=. $(VENV)/python -m tools.i18n.check
+	PYTHONPATH=. $(VENV)/python -m tools.i18n.check $(if $(MARK_FUZZY),--mark-fuzzy)
 
 .PHONY: i18n-init
 i18n-init: venv-i18n
-	@if [ -z "$(LOCALE)" ]; then echo "Usage: make init_locale LOCALE=xx"; exit 1; fi
+	@if [ -z "$(LOCALE)" ]; then echo "Usage: make i18n-init LOCALE=xx"; exit 1; fi
 	$(VENV)/pybabel init -i $(PROJECT)/translations/messages.pot -d $(PROJECT)/translations -l $(LOCALE)
+
+# Optional, advisory LLM review of translations (not part of 'make test'; may cost money).
+# make i18n-review MODEL=<llm model id> [LOCALE=fr] [SINCE=<git ref>] [LIMIT=n] [YES=1]
+#                  [BACKTRANSLATE=1] [MARK_FUZZY=1] [DRY_RUN=1]
+# See "Reviewing translations" in TRANSLATION.md. It never edits msgstr.
+.PHONY: i18n-review
+i18n-review: venv-i18n
+	@if [ -z "$(MODEL)" ] && [ -z "$(DRY_RUN)" ]; then \
+		echo "Usage: make i18n-review MODEL=<llm model id> [LOCALE=fr] [SINCE=<git ref>] [LIMIT=n] [YES=1] [BACKTRANSLATE=1] [MARK_FUZZY=1] [DRY_RUN=1]"; \
+		exit 1; \
+	fi
+	PYTHONPATH=. $(VENV)/python -m tools.i18n.review --locale_dir $(PROJECT)/translations --locale $(or $(LOCALE),all) $(if $(MODEL),--model $(MODEL)) $(if $(SINCE),--since $(SINCE)) $(if $(LIMIT),--limit $(LIMIT)) $(if $(YES),--yes) $(if $(BACKTRANSLATE),--backtranslate) $(if $(MARK_FUZZY),--mark-fuzzy) $(if $(DRY_RUN),--dry-run)

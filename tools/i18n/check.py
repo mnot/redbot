@@ -3,17 +3,39 @@
 import argparse
 import sys
 import re
-from typing import List, Set, Tuple, Dict
+from typing import List, Optional, Set, Tuple, Dict
 from dataclasses import dataclass
 from enum import Enum, auto
 
-from .utils import load_catalog, find_po_files, get_lang_from_path
+from . import heuristics, rules
+from .utils import load_catalog, find_po_files, get_lang_from_path, save_catalog
 
 class IssueType(Enum):
     MISSING = auto()
     FUZZY = auto()
     BAD_VARIABLE = auto()
     SYNTAX_ERROR = auto()
+    # Report-only heuristics (see heuristics.py); they never fail the build.
+    LINK_MISMATCH = auto()
+    TOKEN_CHANGED = auto()
+    DUPLICATED_TEXT = auto()
+    SUSPICIOUS_LENGTH = auto()
+    PREAMBLE = auto()
+    # Language rules (see rules.py and glossary.py); also used by autotranslate.
+    FIELD_NAME_CHANGED = auto()
+    GLOSSARY = auto()
+    GLOSSARY_LOW = auto()  # low-confidence terms: reported, but not marked fuzzy
+    STRENGTH = auto()
+    LEFTOVER_ENGLISH = auto()
+    PUNCTUATION = auto()
+    BACKTICKS_ADDED = auto()
+    STRUCTURE = auto()
+
+# Reported, but they don't get an entry marked fuzzy.
+NOT_MARKED = (IssueType.MISSING, IssueType.FUZZY, IssueType.GLOSSARY_LOW)
+
+# Only these make `main()` exit non-zero.
+CRITICAL_ISSUES = (IssueType.BAD_VARIABLE, IssueType.SYNTAX_ERROR)
 
 @dataclass
 class TranslationIssue:
@@ -61,7 +83,12 @@ class CatalogChecker:
 
     def check_file(self, po_path: str) -> List[TranslationIssue]:
         """Check a single PO file for various issues."""
-        catalog = load_catalog(po_path)
+        return self.check_catalog(load_catalog(po_path), get_lang_from_path(po_path))
+
+    def check_catalog(
+        self, catalog, lang: Optional[str] = None
+    ) -> List[TranslationIssue]:
+        """Check a loaded catalog for various issues."""
         issues = []
 
         for message in catalog:
@@ -81,43 +108,102 @@ class CatalogChecker:
                 )
                 continue
 
-            # 3. Check variables
-            orig_vars = self.find_variables(message.id)
-            trans_vars = self.find_variables(message.string)
-
-            missing_vars = orig_vars - trans_vars
-            extra_vars = trans_vars - orig_vars
-
-            if missing_vars:
-                issues.append(
-                    TranslationIssue(
-                        IssueType.BAD_VARIABLE,
-                        message.id,
-                        message.lineno,
-                        f"Missing: {', '.join(sorted(missing_vars))}",
-                    )
-                )
-
-            if extra_vars:
-                issues.append(
-                    TranslationIssue(
-                        IssueType.BAD_VARIABLE,
-                        message.id,
-                        message.lineno,
-                        f"Extra: {', '.join(sorted(extra_vars))}",
-                    )
-                )
-
-            # 4. Check syntax (stray %)
-            valid, error_msg = self.validate_format_string(message.string)
-            if not valid:
-                issues.append(
-                    TranslationIssue(
-                        IssueType.SYNTAX_ERROR, message.id, message.lineno, error_msg
-                    )
-                )
+            issues.extend(
+                self.check_pair(message.id, message.string, lang, message.lineno)
+            )
 
         return issues
+
+    def check_pair(
+        self, msgid: str, msgstr: str, lang: Optional[str] = None, lineno: int = 0
+    ) -> List[TranslationIssue]:
+        """Check one translated (msgid, msgstr) pair: variables, syntax, heuristics."""
+        issues = []
+
+        # 3. Check variables
+        orig_vars = self.find_variables(msgid)
+        trans_vars = self.find_variables(msgstr)
+
+        missing_vars = orig_vars - trans_vars
+        extra_vars = trans_vars - orig_vars
+
+        if missing_vars:
+            issues.append(
+                TranslationIssue(
+                    IssueType.BAD_VARIABLE,
+                    msgid,
+                    lineno,
+                    f"Missing: {', '.join(sorted(missing_vars))}",
+                )
+            )
+
+        if extra_vars:
+            issues.append(
+                TranslationIssue(
+                    IssueType.BAD_VARIABLE,
+                    msgid,
+                    lineno,
+                    f"Extra: {', '.join(sorted(extra_vars))}",
+                )
+            )
+
+        # 4. Check syntax (stray %)
+        valid, error_msg = self.validate_format_string(msgstr)
+        if not valid:
+            issues.append(
+                TranslationIssue(IssueType.SYNTAX_ERROR, msgid, lineno, error_msg)
+            )
+
+        issues.extend(self.check_heuristics(msgid, msgstr, lang, lineno))
+        return issues
+
+    def check_heuristics(
+        self, msgid, msgstr, lang: Optional[str], lineno: int = 0
+    ) -> List[TranslationIssue]:
+        """Run the report-only heuristics on one translated message."""
+        if not isinstance(msgid, str) or not isinstance(msgstr, str):
+            return []  # plural forms are not handled anywhere in this tool yet
+        found = [
+            (IssueType.LINK_MISMATCH, heuristics.link_mismatch(msgid, msgstr)),
+            (IssueType.TOKEN_CHANGED, heuristics.token_changed(msgid, msgstr)),
+            (IssueType.DUPLICATED_TEXT, heuristics.duplicated_text(msgid, msgstr)),
+            (
+                IssueType.SUSPICIOUS_LENGTH,
+                heuristics.suspicious_length(msgid, msgstr, lang),
+            ),
+            (IssueType.PREAMBLE, heuristics.preamble(msgid, msgstr)),
+            (IssueType.FIELD_NAME_CHANGED, rules.field_name_changed(msgid, msgstr)),
+            (IssueType.GLOSSARY, rules.glossary(msgid, msgstr, lang)),
+            (IssueType.GLOSSARY_LOW, rules.glossary_low(msgid, msgstr, lang)),
+            (IssueType.STRENGTH, rules.strength(msgid, msgstr, lang)),
+            (IssueType.LEFTOVER_ENGLISH, rules.leftover_english(msgid, msgstr, lang)),
+            (IssueType.PUNCTUATION, rules.punctuation(msgid, msgstr, lang)),
+            (IssueType.BACKTICKS_ADDED, rules.backticks_added(msgid, msgstr)),
+            (IssueType.STRUCTURE, rules.structure(msgid, msgstr, lang)),
+        ]
+        return [
+            TranslationIssue(issue_type, msgid, lineno, details)
+            for issue_type, details in found
+            if details
+        ]
+
+def mark_fuzzy(catalog, issues: List[TranslationIssue]) -> int:
+    """
+    Set the fuzzy flag on translated entries that have any issue other than MISSING,
+    FUZZY or GLOSSARY_LOW, so 'make i18n-clear-fuzzy' can blank them. Returns the number
+    marked.
+    """
+    flagged = {
+        i.message_id
+        for i in issues
+        if i.issue_type not in NOT_MARKED
+    }
+    count = 0
+    for message in catalog:
+        if message.id in flagged and message.string and "fuzzy" not in message.flags:
+            message.flags.add("fuzzy")
+            count += 1
+    return count
 
 class Reporter:
     """Handles formatted output for translation issues."""
@@ -134,7 +220,7 @@ class Reporter:
             label = issue.issue_type.name
             preview = issue.message_id[:40].replace("\n", " ")
             detail = f" - {issue.details}" if issue.details else ""
-            print(f"  {label:<12} {preview}... (line {issue.lineno}){detail}")
+            print(f"  {label:<18} {preview}... (line {issue.lineno}){detail}")
 
         summary_parts = []
         for it in IssueType:
@@ -153,6 +239,12 @@ def main():
         "--locale_dir", default="redbot/translations", help="Path to locale directory"
     )
 
+    parser.add_argument(
+        "--mark-fuzzy",
+        action="store_true",
+        help="Set the fuzzy flag on entries with issues, and save the catalogs",
+    )
+
     args = parser.parse_args()
 
     checker = CatalogChecker()
@@ -167,17 +259,19 @@ def main():
 
     for po_file in po_files:
         lang = get_lang_from_path(po_file)
-        issues = checker.check_file(po_file)
+        catalog = load_catalog(po_file)
+        issues = checker.check_catalog(catalog, lang)
+        if args.mark_fuzzy:
+            marked = mark_fuzzy(catalog, issues)
+            if marked:
+                save_catalog(po_file, catalog)
+            noun = "entry" if marked == 1 else "entries"
+            print(f"{lang}: marked {marked} {noun} fuzzy")
         reporter.report_file(lang, po_file, issues)
 
-        # Count critical errors (anything that's not just fuzzy or missing)
-        # Actually, missing might be critical too depending on requirements,
-        # but the original script only exited 1 for bad variables/syntax.
-        critical = [
-            i
-            for i in issues
-            if i.issue_type in [IssueType.BAD_VARIABLE, IssueType.SYNTAX_ERROR]
-        ]
+        # Missing, fuzzy and the heuristic reports are advisory; the original script
+        # only exited 1 for bad variables/syntax.
+        critical = [i for i in issues if i.issue_type in CRITICAL_ISSUES]
         total_critical_errors += len(critical)
 
     if total_critical_errors > 0:

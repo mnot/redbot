@@ -26,3 +26,6 @@ geckodriver.log
 /*.log
 /test_summary.md
 # === pyproject-tmpl: end "extras" ===
+
+# i18n-review output
+/i18n-review-*.md
