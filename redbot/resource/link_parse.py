@@ -17,6 +17,8 @@ DEFAULT_ENCODING = "utf-8"
 MAX_FEED_BYTES = 2 * 1024 * 1024
 # A <base> inside these isn't the document's base (noscript: as when scripting is enabled).
 INERT_TAGS = ("template", "svg", "math", "noscript")
+# Byte order marks (UTF-8, UTF-16BE, UTF-16LE), which outrank a <meta>.
+BOMS = (b"\xef\xbb\xbf", b"\xfe\xff", b"\xff\xfe")
 
 # Python codecs that decode bytes to text but that a <meta> must not select: UTF-7 and
 # UTF-16/32 (HTML treats a UTF-16 <meta> as UTF-8), and ones that aren't character encodings.
@@ -77,6 +79,9 @@ class HTMLLinkParser(HTMLParser):
         self.base_seen = False
         self.inert_depth = {tag: 0 for tag in INERT_TAGS}
         self.decode_as: Optional[str] = None
+        # Whether the encoding is certain: the header gave one, the body starts with a BOM, or a
+        # <meta> set it. None until known, as the headers can arrive after the parser is made.
+        self._charset_fixed: Optional[bool] = None
         self._decoder: Optional[codecs.IncrementalDecoder] = None
         self._decoder_encoding = ""
         HTMLParser.__init__(self)
@@ -87,6 +92,8 @@ class HTMLLinkParser(HTMLParser):
     def feed_bytes(self, bchunk: bytes) -> None:
         "Feed a given chunk of bytes to the parser"
         if self.ok:
+            if self.bytes_fed == 0 and bchunk.startswith(BOMS):
+                self._charset_fixed = True
             self.bytes_fed += len(bchunk)
             if self.bytes_fed > MAX_FEED_BYTES:
                 self.ok = False
@@ -149,7 +156,7 @@ class HTMLLinkParser(HTMLParser):
 
     def handle_starttag(self, tag: str, attrs: List[Tuple[str, Optional[str]]]) -> None:
         if tag in self.link_types:
-            attr_d = dict(attrs)
+            attr_d = first_attrs(attrs)
             url_attr, rels = self.link_types[tag]
             if not rels or attr_d.get("rel", None) in rels:
                 target = attr_d.get(url_attr, "")
@@ -160,7 +167,7 @@ class HTMLLinkParser(HTMLParser):
                     for proc in self.link_procs:
                         proc(self.message.base_uri, target, tag, title)
         elif tag == "base":
-            attr_d = dict(attrs)
+            attr_d = first_attrs(attrs)
             inert = any(self.inert_depth.values())
             if "href" in attr_d and not self.base_seen and not inert:  # first <base href> counts
                 self.base_seen = True
@@ -168,7 +175,13 @@ class HTMLLinkParser(HTMLParser):
         elif tag in self.inert_depth:
             self.inert_depth[tag] += 1
         elif tag == "meta":
-            attr_d = dict(attrs)
+            if self.message.headers.parsed.get("content-type", [None])[0] != "text/html":
+                return  # XML documents don't take their encoding from a <meta>
+            attr_d = first_attrs(attrs)
+            if "charset" in attr_d and self._set_meta_charset(
+                (attr_d["charset"] or "").strip(" \t\n\f\r")
+            ):
+                return  # otherwise, as in HTML, fall back to http-equiv
             if (attr_d.get("http-equiv", "") or "").lower() != "content-type":
                 return
             ct = attr_d.get("content", None)
@@ -187,24 +200,37 @@ class HTMLLinkParser(HTMLParser):
                         param_dict[param.lower()] = None
                 self._set_meta_charset(param_dict.get("charset"))
 
-    def _set_meta_charset(self, label: Optional[str]) -> None:
+    def _set_meta_charset(self, label: Optional[str]) -> bool:
         """
-        Apply a <meta> charset. A label that the Encoding Standard and Python both know is
-        recorded on the message, as for the header. A Python-only text encoding (`latin-1`,
-        `mac-roman`) is only used to decode later chunks, so the message never claims it.
-        Anything else is ignored.
+        Apply a <meta> charset, unless the encoding is already certain (the first <meta> that
+        sets it wins). A label that the Encoding Standard and Python both know is recorded on
+        the message, as for the header. A Python-only text encoding (`latin-1`, `mac-roman`) is
+        only used to decode later chunks, so the message never claims it. Anything else is
+        ignored. Returns whether the label was one that could be used.
         """
-        if not label or not is_text_encoding(label):
-            return
+        if self._charset_fixed is None:
+            self._charset_fixed = self.message.whatwg_encoding is not None
+        if not label:
+            return False
         encoding = whatwg_encoding(label)
-        if encoding == "replacement":
-            return
+        if encoding in ("UTF-16LE", "UTF-16BE"):
+            # The tag had to be readable as ASCII, so HTML takes these labels to mean UTF-8.
+            label, encoding = "utf-8", "UTF-8"
+        elif encoding == "x-user-defined":
+            label, encoding = "windows-1252", "windows-1252"
+        if not is_text_encoding(label) or encoding == "replacement":
+            return False
         if encoding:
-            self.message.whatwg_encoding = encoding
-            self.message.character_encoding = label
-            self.decode_as = None
-        elif not codecs.lookup(label).name.replace("-", "_").startswith(NOT_META_CHARSETS):
+            if not self._charset_fixed:
+                self.message.whatwg_encoding = encoding
+                self.message.character_encoding = label
+                self.decode_as = None
+        elif codecs.lookup(label).name.replace("-", "_").startswith(NOT_META_CHARSETS):
+            return False
+        elif not self._charset_fixed:
             self.decode_as = label
+        self._charset_fixed = True
+        return True
 
     def handle_endtag(self, tag: str) -> None:
         if self.inert_depth.get(tag):
@@ -221,6 +247,14 @@ class HTMLLinkParser(HTMLParser):
         self.last_err_pos, _ = self.getpos()
         if self.err:
             self.err(message)
+
+
+def first_attrs(attrs: List[Tuple[str, Optional[str]]]) -> Dict[str, Optional[str]]:
+    "A start tag's attributes as a dict; browsers use the first of a repeated one, not the last."
+    attr_d: Dict[str, Optional[str]] = {}
+    for name, value in attrs:
+        attr_d.setdefault(name, value)
+    return attr_d
 
 
 def new_decoder(encoding: str) -> codecs.IncrementalDecoder:
